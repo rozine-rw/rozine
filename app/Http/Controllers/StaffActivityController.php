@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Application\Identity\GetStaffAccess;
 use App\Application\Operations\BrowseActivityTrail;
 use App\Http\Requests\Staff\ListActivityTrailRequest;
 use App\Http\Resources\StaffActivityResource;
@@ -20,7 +19,7 @@ class StaffActivityController extends Controller
     /** The design shows the newest fifty and opens the rest on request. */
     private const LIMIT = 50;
 
-    public function index(ListActivityTrailRequest $request, BrowseActivityTrail $trail, GetStaffAccess $access): Response|StaffActivityResource
+    public function index(ListActivityTrailRequest $request, BrowseActivityTrail $trail): Response|StaffActivityResource
     {
         $actorId = (int) $request->user()?->getAuthIdentifier();
         $search = trim((string) $request->validated('q', ''));
@@ -29,12 +28,24 @@ class StaffActivityController extends Controller
         $from = $preset === null ? $request->validated('from') : null;
         $to = $preset === null ? $request->validated('to') : null;
         $limit = (int) $request->validated('limit', self::LIMIT);
-        $entries = $trail->handle($actorId, $search, $preset, $from === null ? null : (string) $from, $to === null ? null : (string) $to, $limit);
-        $staff = $access->handle($actorId);
+        $cursorMode = ! $request->routeIs('api.*') && ! $request->has('limit');
+        $cursor = $cursorMode ? $request->validated('cursor') : null;
+        $result = $trail->handle($actorId, $search, $preset, $from === null ? null : (string) $from, $to === null ? null : (string) $to, $limit, $cursor, $cursorMode);
+        $entries = $result['trail'];
+        $staff = $result['staff'];
 
         $resource = new StaffActivityResource([...$entries, 'search' => $search, 'preset' => $preset, 'from' => $from === null ? null : (string) $from,
-            'to' => $to === null ? null : (string) $to, 'limit' => $limit, 'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions']]);
+            'to' => $to === null ? null : (string) $to, 'limit' => $limit, 'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions'], 'cursor_mode' => $cursorMode]);
 
-        return $request->routeIs('api.*') ? $resource : Inertia::render('admin/events', $resource->resolve($request));
+        if ($request->routeIs('api.*')) {
+            return $resource;
+        }
+
+        $props = $resource->resolve($request);
+        if ($cursorMode && $cursor !== null) {
+            $props['events'] = Inertia::merge($props['events'])->matchOn('cursor_key');
+        }
+
+        return Inertia::render('admin/events', $props);
     }
 }

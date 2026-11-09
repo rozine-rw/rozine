@@ -70,7 +70,7 @@ final class AuditAssignmentFixture
         $documentId = $receipt['data']['document_id'];
         $input = StatementFixture::transcription($documentId);
         $transcription = app(RecordStatementTranscription::class)->handle($owner->id, 1, $fixture['business'], 1,
-            $input['rails'], $input['months'], $input['statements'], (string) Str::uuid());
+            $input['rails'], $input['months'], $input['statements'], StatementFixture::reviewed($owner->id, $fixture['business']), (string) Str::uuid());
 
         return ['document_id' => $documentId, 'transcription_id' => $transcription['data']['transcription']['id']];
     }

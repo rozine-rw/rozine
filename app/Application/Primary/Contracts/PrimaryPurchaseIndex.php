@@ -39,4 +39,12 @@ interface PrimaryPurchaseIndex
      * @return list<array{reservation_id: string, campaign_id: string, deal_name: string, amount: array{currency: string, amount: string}, units: string, starts_at: string, expires_at: string}>
      */
     public function activeHolds(string $partyId): array;
+
+    /**
+     * The same live holds for a signed-in user's Party, or none when the user has no Party. It reads
+     * no Investor authority, so it only ever feeds the user's own on-screen reminder.
+     *
+     * @return list<array{reservation_id: string, campaign_id: string, deal_name: string, amount: array{currency: string, amount: string}, units: string, starts_at: string, expires_at: string}>
+     */
+    public function activeHoldsOfUser(int $userId): array;
 }

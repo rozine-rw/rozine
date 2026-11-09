@@ -29,7 +29,7 @@ beforeEach(function (): void {
         $props = $this->actingAs($user)->get(route('business.show', ['business' => $business]))->assertOk()
             ->assertInertia(fn (Assert $page): Assert => $page->component('business/home'))->viewData('page')['props'];
 
-        return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count']));
+        return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count', 'checkout_holds']));
     };
     $this->purchase = function (BusinessCampaign $campaign, string $units): void {
         $investor = PrimaryReservationFixture::investor();
@@ -226,7 +226,11 @@ it('starts a raise where the mandate allows it, and resumes an open draft', func
     $resumed = ($this->props)($user, $draft);
     expect($resumed['links']['apply'])->toBe($created['data']['next'])
         ->and($resumed['create_application'])->toBeNull()
-        ->and($resumed['notes'])->toBe([]);
+        ->and($resumed['notes'])->toBe([])
+        // Its statements are not verified yet, so Today says what the draft waits on, never "all caught up".
+        ->and($resumed['today'])->toBe([['kind' => 'application_blocked', 'title' => null, 'code' => 'UNDERWRITING_EVIDENCE_REQUIRED',
+            'link' => $created['data']['next']]])
+        ->and($fresh['today'])->toBe([]);
 });
 
 it('asks a signatory still to sign a half-signed draft, and tells the rest of the mandate who it waits for', function (): void {
@@ -236,8 +240,9 @@ it('asks a signatory still to sign a half-signed draft, and tells the rest of th
     $signing = fn (User $user): array => array_values(array_filter(($this->props)($user, $business)['today'],
         fn (array $item): bool => in_array($item['kind'], ['application_signature', 'application_awaiting'], true)));
 
-    // Nobody has signed yet: the draft is still being prepared, not waiting on anyone.
-    expect($signing($users[0]))->toBe([])->and($signing($users[1]))->toBe([]);
+    // Nobody has signed yet: the draft is still being prepared, not waiting on anyone, and its evidence qualifies.
+    expect($signing($users[0]))->toBe([])->and($signing($users[1]))->toBe([])
+        ->and(array_column(($this->props)($users[0], $business)['today'], 'kind'))->not->toContain('application_blocked');
 
     expect(QuoteFixture::submit($fixture, QuoteFixture::acceptance($fixture))['code'])->toBe('APPLICATION_SIGNATURE_RECORDED');
     $pending = array_column(array_filter(QuoteFixture::review($fixture)['acceptance']['signers'],

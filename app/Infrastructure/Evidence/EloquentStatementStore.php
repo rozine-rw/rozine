@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Evidence;
 
+use App\Application\Auditor\Contracts\AuditAssignmentStore;
 use App\Application\Auditor\WithAcceptedAuditAssignment;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Evidence\Contracts\StatementStore;
+use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
+use App\Domain\Auditor\AuditEngagementState;
 use App\Domain\Evidence\StatementAuditReview;
 use App\Domain\Evidence\StatementReconciliation;
 use App\Domain\Evidence\StatementSource;
@@ -23,6 +26,7 @@ use App\Models\StatementOriginal;
 use App\Models\StatementTranscription;
 use App\Models\StatementVerification;
 use Closure;
+use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 /**
@@ -31,6 +35,11 @@ use RuntimeException;
  * @phpstan-import-type Transcription from StatementStore
  * @phpstan-import-type AuditFile from StatementStore
  * @phpstan-import-type Verification from StatementStore
+ * @phpstan-import-type SourceBinding from StatementStore
+ * @phpstan-import-type ReviewedSave from StatementStore
+ * @phpstan-import-type TranscriptionDraft from StatementStore
+ * @phpstan-import-type Readiness from StatementStore
+ * @phpstan-import-type ReviewRequest from StatementStore
  * @phpstan-import-type Business from \App\Application\Business\Contracts\BusinessAuthorityStore
  * @phpstan-import-type AccessSnapshot from \App\Domain\Identity\ActiveRolePolicy
  * @phpstan-import-type Review from StatementAuditReview
@@ -39,6 +48,10 @@ use RuntimeException;
  */
 final class EloquentStatementStore implements StatementStore
 {
+    public const string CONTRACT_VERSION = 'initial-statement-audit-1';
+
+    public const string MANIFEST_VERSION = 'statement-manifest-1';
+
     public function __construct(
         private WithBusinessAuthority $authority,
         private BusinessAuthorityStore $businessAuthority,
@@ -49,6 +62,8 @@ final class EloquentStatementStore implements StatementStore
         private StatementReconciliation $reconciler,
         private CanonicalJson $json,
         private StatementAuditReview $reviews,
+        private AuthorizeStaffPermission $staff,
+        private AuditAssignmentStore $engagements,
     ) {}
 
     /** @return array<string, mixed> */
@@ -122,7 +137,7 @@ final class EloquentStatementStore implements StatementStore
     }
 
     /** @return array<string, mixed> */
-    public function findOperation(int $userId, int $contextRevision, string $requestId, string $command = 'ingest'): array
+    public function findOperation(int $userId, int $contextRevision, string $requestId, string $command = 'ingest', ?string $businessId = null): array
     {
         if (! in_array($command, ['ingest', 'reconcile'], true)) {
             throw new CommandRejection('OPERATION_NOT_FOUND', 404);
@@ -130,8 +145,8 @@ final class EloquentStatementStore implements StatementStore
         $partyId = $this->identities->forUser($userId)['party']['id'] ?? throw new IdentityViolation('IDENTITY_NOT_LINKED');
 
         return $this->journal->find('party:'.$partyId, 'statement.'.$command, $requestId,
-            function (string $type, string $id) use ($userId, $contextRevision, $partyId): void {
-                if ($type !== 'business') {
+            function (string $type, string $id) use ($userId, $contextRevision, $partyId, $businessId): void {
+                if ($type !== 'business' || ($businessId !== null && $id !== $businessId)) {
                     throw new CommandRejection('OPERATION_NOT_FOUND', 404);
                 }
                 $this->authority->handle($userId, $contextRevision, $id, 'application.save', null,
@@ -147,29 +162,28 @@ final class EloquentStatementStore implements StatementStore
      * @param  list<Rail>  $rails
      * @param  list<string>  $months
      * @param  list<Statement>  $statements
+     * @param  ReviewedSave  $review
      * @return array<string, mixed>
      */
-    public function recordTranscription(int $userId, int $contextRevision, string $businessId, int $expectedRevision, array $rails, array $months, array $statements, string $requestId): array
+    public function recordTranscription(int $userId, int $contextRevision, string $businessId, int $expectedRevision, array $rails, array $months, array $statements, array $review, string $requestId): array
     {
         return $this->authority->handle($userId, $contextRevision, $businessId, 'application.save', null,
-            function (array $business, array $identity) use ($userId, $contextRevision, $businessId, $expectedRevision, $rails, $months, $statements, $requestId): array {
+            function (array $business, array $identity) use ($userId, $contextRevision, $businessId, $expectedRevision, $rails, $months, $statements, $review, $requestId): array {
                 $partyId = $identity['party']['id'] ?? throw new IdentityViolation('IDENTITY_NOT_LINKED');
                 $evidence = StatementEvidence::query()->where('business_id', $businessId)->lockForUpdate()->first();
 
                 return $this->journal->execute('party:'.$partyId, $userId, 'statement.reconcile', $requestId, 'business', $businessId,
                     ['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision,
-                        'rails' => $rails, 'months' => $months, 'statements' => $statements],
+                        'rails' => $rails, 'months' => $months, 'statements' => $statements, 'review' => $review],
                     function () use ($userId, $contextRevision, $businessId): void {
                         $this->authority->handle($userId, $contextRevision, $businessId, 'application.save', null, fn (): bool => true);
                     },
-                    function () use ($userId, $partyId, $businessId, $expectedRevision, $evidence, $rails, $months, $statements): OperationResult {
+                    function () use ($userId, $partyId, $business, $businessId, $expectedRevision, $evidence, $rails, $months, $statements, $review): OperationResult {
                         $revision = $evidence->revision ?? 0;
                         if ($revision !== $expectedRevision) {
                             throw new CommandRejection('VERSION_CONFLICT', 409, $revision);
                         }
-                        if ($evidence === null) {
-                            throw new CommandRejection('STATEMENT_ORIGINAL_REQUIRED', 422, $revision);
-                        }
+                        $this->requireReviewedSave($business, $evidence, $review);
                         $originals = StatementOriginal::query()->where('statement_evidence_id', $evidence->id)->get(['id', 'sha256']);
                         $availableSources = array_values($originals->map(fn (StatementOriginal $original): string => $original->id)->all());
                         $observations = $this->reconciler->reconcile($rails, $months, $statements, $availableSources);
@@ -193,6 +207,223 @@ final class EloquentStatementStore implements StatementStore
                             'sha256' => $record->sha256, 'amends_id' => $record->amends_id, 'verified' => false]], $evidence->revision);
                     });
             });
+    }
+
+    /**
+     * The representative saves against exactly what they reviewed: the same Business and mandate revisions,
+     * the same originals and extraction suggestions, and the transcription they were amending.
+     *
+     * @param  Business  $business
+     * @param  ReviewedSave  $review
+     */
+    private function requireReviewedSave(array $business, ?StatementEvidence $evidence, array $review): void
+    {
+        $revision = $evidence->revision ?? 0;
+        if ($review['reviewed_against_originals'] !== true) {
+            throw new CommandRejection('STATEMENT_REVIEW_REQUIRED', 422, $revision);
+        }
+        if ($review['expected_business_revision'] !== $business['revision']) {
+            throw new CommandRejection('BUSINESS_STALE', 409, $business['revision']);
+        }
+        if ($review['expected_mandate_version'] !== $business['mandate_version']) {
+            throw new CommandRejection('MANDATE_STALE', 409, $business['revision']);
+        }
+        if ($evidence === null) {
+            throw new CommandRejection('STATEMENT_ORIGINAL_REQUIRED', 422, $revision);
+        }
+        if ($this->json->encode($review['source_binding']) !== $this->json->encode($this->sourceBinding($evidence))) {
+            throw new CommandRejection('STATEMENT_SOURCE_CHANGED', 409, $revision);
+        }
+        $current = StatementTranscription::query()->where('statement_evidence_id', $evidence->id)->orderByDesc('evidence_revision')->first(['id', 'sha256']);
+        if ($review['expected_transcription_id'] !== $current?->id || $review['expected_transcription_sha256'] !== $current?->sha256) {
+            throw new CommandRejection('STATEMENT_TRANSCRIPTION_STALE', 409, $revision);
+        }
+    }
+
+    /** @return TranscriptionDraft */
+    public function transcriptionDraft(int $userId, int $contextRevision, string $businessId): array
+    {
+        return $this->authority->handle($userId, $contextRevision, $businessId, 'application.save', null,
+            function (array $business) use ($businessId): array {
+                $evidence = StatementEvidence::query()->where('business_id', $businessId)->first();
+                $binding = $this->sourceBinding($evidence);
+
+                return ['contract_version' => self::CONTRACT_VERSION, 'business_id' => $businessId, 'business_revision' => $business['revision'],
+                    'mandate_version' => $business['mandate_version'], 'evidence' => $binding,
+                    'assistance' => ['status' => 'unavailable', 'reason_codes' => ['STRUCTURED_CONVERSION_UNAVAILABLE'], 'candidate' => null],
+                    'current_transcription' => $this->storedTranscription($businessId, null),
+                    'allowed_actions' => $binding['originals'] === [] ? [] : ['statement.reconcile']];
+            });
+    }
+
+    /** @return Readiness */
+    public function readiness(int $userId, int $contextRevision, string $businessId): array
+    {
+        return $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null,
+            fn (array $business): array => $this->projectReadiness($businessId, $business['revision'], $business['mandate_version'], false));
+    }
+
+    /**
+     * Staff who dispatch audits see revisions, hashes, counts and status only, never originals or transcribed content.
+     *
+     * @return Readiness
+     */
+    public function staffReadiness(int $actorId, string $businessId): array
+    {
+        $this->staff->check($actorId, 'audit.assignments.manage');
+        if (! DB::table('business_profiles')->where('id', $businessId)->exists()) {
+            throw new CommandRejection('BUSINESS_NOT_FOUND', 404);
+        }
+
+        return $this->businessAuthority->withAudit(null, null, $businessId, [], false,
+            fn (array $context): array => $this->projectReadiness($businessId, $context['business']['revision'], $context['business']['mandate_version'], true, $context['current']));
+    }
+
+    /**
+     * Whether staff may request a factual statement review now, and why not. It is advisory: the
+     * request rechecks every condition under the Business lock.
+     *
+     * @return Readiness
+     */
+    private function projectReadiness(string $businessId, int $businessRevision, int $mandateVersion, bool $staff, ?bool $authorityCurrent = null): array
+    {
+        $authorityCurrent ??= $this->businessAuthority->withAudit(null, null, $businessId, [], false, fn (array $context): bool => $context['current']);
+        $evidence = StatementEvidence::query()->where('business_id', $businessId)->first();
+        $binding = $this->sourceBinding($evidence);
+        $current = $this->storedTranscription($businessId, null);
+        $transcription = $current !== null && $current['current']
+            ? ['id' => $current['id'], 'revision' => $current['revision'], 'sha256' => $current['sha256'], 'current' => true] : null;
+        $months = $transcription === null ? [] : $current['payload']['months'];
+        sort($months);
+        $assignment = $this->engagements->openEngagement($businessId);
+        $verified = ($this->storedVerification($businessId, null, $businessRevision)['current'] ?? false) === true;
+        $reasons = $authorityCurrent ? [] : [['code' => 'BUSINESS_VERIFICATION_REQUIRED', 'field' => 'business']];
+        array_push($reasons, ...$this->evidenceReasons($binding, $current, $verified));
+        if ($assignment !== null) {
+            $reasons[] = ['code' => $assignment['purpose'] === AuditEngagementState::PURPOSE_STATEMENT_REVIEW ? 'AUDIT_STATEMENT_REVIEW_OPEN' : 'AUDIT_ENGAGEMENT_OPEN', 'field' => 'assignment'];
+        } elseif ($this->engagements->lastClosed($businessId)) {
+            $reasons[] = ['code' => 'AUDIT_ENGAGEMENT_CLOSED', 'field' => 'assignment'];
+        }
+        $ready = $reasons === [];
+
+        return ['contract_version' => self::CONTRACT_VERSION, 'business_id' => $businessId, 'business_revision' => $businessRevision,
+            'mandate_version' => $mandateVersion, 'evidence_revision' => $binding['evidence_revision'], 'manifest_sha256' => $binding['manifest_sha256'],
+            'transcription' => $transcription, 'ready_to_request' => $ready, 'reasons' => $reasons,
+            'coverage' => ['declared_month_count' => count($months), 'first_month' => $months[0] ?? null, 'last_month' => $months === [] ? null : $months[count($months) - 1]],
+            'assignment' => $assignment === null ? null : ['id' => $assignment['id'], 'revision' => $assignment['revision'], 'kind' => $assignment['kind'],
+                'purpose' => $assignment['purpose'], 'status' => $assignment['status']], 'source_verified' => $verified,
+            'underwriting' => ['status' => 'not_evaluated', 'eligible' => null],
+            'readiness_sha256' => $this->readinessDigest($businessId, $businessRevision, $mandateVersion, $binding, $transcription),
+            'allowed_actions' => $staff && $ready ? ['audit.statement_review.request'] : []];
+    }
+
+    /**
+     * What the statement evidence still lacks before a factual review can be requested.
+     *
+     * @param  SourceBinding  $binding
+     * @param  Transcription|null  $current
+     * @return list<array{code: string, field: string|null}>
+     */
+    private function evidenceReasons(array $binding, ?array $current, bool $verified): array
+    {
+        $reasons = [];
+        if ($binding['originals'] === []) {
+            $reasons[] = ['code' => 'STATEMENT_ORIGINAL_REQUIRED', 'field' => 'evidence'];
+        } elseif ($current === null) {
+            $reasons[] = ['code' => 'STATEMENT_RECONCILIATION_REQUIRED', 'field' => 'transcription'];
+        } elseif (! $current['current']) {
+            $reasons[] = ['code' => 'STATEMENT_TRANSCRIPTION_STALE', 'field' => 'transcription'];
+        }
+        if ($verified) {
+            $reasons[] = ['code' => 'STATEMENT_ALREADY_VERIFIED', 'field' => null];
+        }
+
+        return $reasons;
+    }
+
+    /**
+     * The reviewed-input binding: Business and mandate revisions, the evidence manifest and the current
+     * transcription, never clock, text or partner availability.
+     *
+     * @param  SourceBinding  $binding
+     * @param  array{id: string, sha256: string}|null  $transcription
+     */
+    private function readinessDigest(string $businessId, int $businessRevision, int $mandateVersion, array $binding, ?array $transcription): string
+    {
+        return hash('sha256', $this->json->encode(['version' => self::CONTRACT_VERSION, 'business_id' => $businessId, 'business_revision' => $businessRevision,
+            'mandate_version' => $mandateVersion, 'evidence_revision' => $binding['evidence_revision'], 'manifest_sha256' => $binding['manifest_sha256'],
+            'transcription' => $transcription === null ? null : ['id' => $transcription['id'], 'sha256' => $transcription['sha256']]]));
+    }
+
+    /**
+     * @param  ReviewRequest  $binding
+     * @return array<string, mixed>
+     */
+    public function requestReview(int $actorId, string $businessId, array $binding, string $reason, string $requestId): array
+    {
+        return $this->engagements->requestStatementReview($actorId, $businessId, $reason, $requestId, $binding,
+            function (array $business) use ($businessId, $binding): void {
+                $evidence = StatementEvidence::query()->where('business_id', $businessId)->lockForUpdate()->first();
+                if ($binding['expected_business_revision'] !== $business['revision']) {
+                    throw new CommandRejection('BUSINESS_STALE', 409, $business['revision']);
+                }
+                if ($binding['expected_mandate_version'] !== $business['mandate_version']) {
+                    throw new CommandRejection('MANDATE_STALE', 409, $business['revision']);
+                }
+                $source = $this->sourceBinding($evidence);
+                if ($binding['expected_evidence_revision'] !== $source['evidence_revision']) {
+                    throw new CommandRejection('VERSION_CONFLICT', 409, $source['evidence_revision']);
+                }
+                $current = $this->storedTranscription($businessId, null);
+                $missing = $this->evidenceReasons($source, $current, false);
+                if ($missing !== []) {
+                    throw new CommandRejection('INITIAL_AUDIT_NOT_READY', 422, $source['evidence_revision'], data: ['reasons' => $missing]);
+                }
+                if ($current === null || $binding['transcription_id'] !== $current['id'] || ! hash_equals($current['sha256'], $binding['transcription_sha256'])) {
+                    throw new CommandRejection('STATEMENT_TRANSCRIPTION_STALE', 409, $source['evidence_revision']);
+                }
+                $digest = $this->readinessDigest($businessId, $business['revision'], $business['mandate_version'], $source, $current);
+                if (! hash_equals($digest, $binding['readiness_sha256'])) {
+                    throw new CommandRejection('STATEMENT_READINESS_STALE', 409, $source['evidence_revision']);
+                }
+                // A review exists to produce a current verification; one that is already current needs none.
+                if (($this->storedVerification($businessId, null, $business['revision'])['current'] ?? false) === true) {
+                    throw new CommandRejection('STATEMENT_ALREADY_VERIFIED', 409, $source['evidence_revision']);
+                }
+            });
+    }
+
+    /** @return array<string, mixed> */
+    public function findReviewOperation(int $actorId, string $businessId, string $requestId): array
+    {
+        return $this->engagements->findStatementReviewOperation($actorId, $businessId, $requestId);
+    }
+
+    /**
+     * Binds the reviewed originals by identity, hash, type and size, never by filename or extraction status.
+     *
+     * @return SourceBinding
+     */
+    private function sourceBinding(?StatementEvidence $evidence): array
+    {
+        $originals = StatementOriginal::query()->where('statement_evidence_id', $evidence?->id)->orderBy('id')->get(['id', 'sha256', 'media_type', 'size_bytes']);
+        $extractions = StatementExtraction::query()->whereIn('statement_original_id', $originals->modelKeys())
+            ->orderByDesc('revision')->get(['id', 'statement_original_id', 'revision', 'parser_version'])
+            ->unique('statement_original_id')->keyBy('statement_original_id');
+        $revision = $evidence->revision ?? 0;
+        $documents = [];
+        $bound = [];
+        $suggestions = [];
+        foreach ($originals as $original) {
+            $extraction = $extractions->get($original->id) ?? throw new RuntimeException('Statement extraction is missing.');
+            $documents[] = ['id' => $original->id, 'sha256' => $original->sha256, 'media_type' => $original->media_type, 'size_bytes' => $original->size_bytes];
+            $bound[] = ['document_id' => $original->id, 'sha256' => $original->sha256];
+            $suggestions[] = ['document_id' => $original->id, 'extraction_id' => $extraction->id, 'revision' => $extraction->revision, 'parser_version' => $extraction->parser_version];
+        }
+
+        return ['evidence_revision' => $revision,
+            'manifest_sha256' => hash('sha256', $this->json->encode(['version' => self::MANIFEST_VERSION, 'evidence_revision' => $revision, 'documents' => $documents])),
+            'originals' => $bound, 'extractions' => $suggestions];
     }
 
     /** @return Transcription|null */
@@ -235,7 +466,8 @@ final class EloquentStatementStore implements StatementStore
      */
     public function verify(int $userId, int $contextRevision, string $assignmentId, int $expectedAssignmentRevision, int $expectedEvidenceRevision, int $expectedVerificationRevision, string $transcriptionId, string $transcriptionHash, array $review, string $requestId): array
     {
-        return $this->assignments->handle($userId, $contextRevision, $assignmentId,
+        // A completed engagement still replays its retained receipt; only new work needs it accepted.
+        return $this->assignments->read($userId, $contextRevision, $assignmentId,
             function (array $assignment) use ($userId, $contextRevision, $assignmentId, $expectedAssignmentRevision, $expectedEvidenceRevision, $expectedVerificationRevision, $transcriptionId, $transcriptionHash, $review, $requestId): array {
                 $businessId = $assignment['business_id'];
                 $evidence = StatementEvidence::query()->where('business_id', $businessId)->lockForUpdate()->first();
@@ -246,6 +478,7 @@ final class EloquentStatementStore implements StatementStore
                         'expected_evidence_revision' => $expectedEvidenceRevision, 'expected_verification_revision' => $expectedVerificationRevision,
                         'transcription_id' => $transcriptionId, 'transcription_sha256' => $transcriptionHash, 'review' => $review],
                     function (): void {}, function () use ($assignment, $businessId, $userId, $evidence, $previous, $expectedAssignmentRevision, $expectedEvidenceRevision, $expectedVerificationRevision, $transcriptionId, $transcriptionHash, $review): OperationResult {
+                        $this->engagements->requireAccepted($assignment['id']);
                         if ($assignment['revision'] !== $expectedAssignmentRevision) {
                             throw new CommandRejection('VERSION_CONFLICT', 409, $assignment['revision']);
                         }
@@ -294,6 +527,7 @@ final class EloquentStatementStore implements StatementStore
                             'payload' => $snapshot, 'sha256' => hash('sha256', $this->json->encode($snapshot)),
                             'policy_version' => $snapshot['policy_version'], 'procedure_version' => $snapshot['procedure_version'],
                             'actor_user_id' => $userId, 'actor_party_id' => $assignment['party_id']])->save();
+                        $this->engagements->completeStatementReview($assignment, $record->id, $userId);
 
                         return new OperationResult('STATEMENT_SOURCE_VERIFIED', ['verification_id' => $record->id, 'sha256' => $record->sha256,
                             'source_revision' => $evidence->revision, 'report_approval' => 'not_cosigned'], $record->revision);
@@ -378,7 +612,7 @@ final class EloquentStatementStore implements StatementStore
             if ($type !== 'audit.assignment') {
                 throw new CommandRejection('OPERATION_NOT_FOUND', 404);
             }
-            $this->assignments->handle($userId, $contextRevision, $id, function (array $assignment) use ($partyId): void {
+            $this->assignments->read($userId, $contextRevision, $id, function (array $assignment) use ($partyId): void {
                 if ($assignment['party_id'] !== $partyId) {
                     throw new CommandRejection('OPERATION_NOT_FOUND', 404);
                 }

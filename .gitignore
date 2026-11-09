@@ -23,6 +23,7 @@
 
 # production build output (Vite writes here; deploys build it on the server)
 /public/build
+/public/hot
 
 # misc
 .amplify

@@ -2,9 +2,16 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\OnboardBusiness;
+use App\Application\Identity\ChangeMembership;
+use App\Application\Identity\Contracts\IdentityAccessStore;
+use App\Domain\Identity\IdentityViolation;
 use App\Models\BusinessMandate;
 use App\Models\BusinessProfile;
+use App\Models\IdentityAuditEvent;
+use App\Models\IdentityOperator;
 use App\Models\Party;
+use App\Models\RoleMembership;
 use App\Models\User;
 use App\Models\VerifiedOrganizationIdentity;
 use Illuminate\Support\Str;
@@ -73,19 +80,73 @@ it('onboards a company from its RDB code with its representative holding every r
     expect(BusinessProfile::query()->count())->toBe(1);
 });
 
-it('onboards a sole trader and says their representative still needs Business access', function (): void {
+it('onboards a sole trader and gives its owner the Business app in the same step (#491)', function (): void {
     $party = Party::factory()->verified()->create();
     $trader = User::factory()->for($party)->create(['email' => 'trader@example.test']);
+    $input = onboarding(['kind' => 'person', 'rdb_code' => null, 'established_year' => null, 'representative_email' => 'trader@example.test']);
 
-    $this->actingAs($this->officer)->post('/admin/businesses/onboard', onboarding(['kind' => 'person', 'rdb_code' => null,
-        'established_year' => null, 'representative_email' => 'trader@example.test']))
-        ->assertSessionHas('business_onboarded.business_access', false);
+    $this->actingAs($this->officer)->post('/admin/businesses/onboard', $input)->assertSessionHas('business_onboarded.business_access', true);
 
     $business = BusinessProfile::query()->sole();
+    $membership = RoleMembership::query()->where('party_id', $party->id)->where('role', 'business')->sole();
+    $event = IdentityAuditEvent::query()->where('action', 'membership.mandate_grant')->sole();
     expect($business->entity_kind)->toBe('person')
         ->and($business->entity_party_id)->toBe($party->id)
         ->and($business->profile)->toMatchArray(['company_code' => null, 'established_year' => null])
-        ->and(BusinessMandate::query()->sole()->terms['people'][0]['name'])->toBe($trader->name);
+        ->and(BusinessMandate::query()->sole()->terms['people'][0]['name'])->toBe($trader->name)
+        ->and($membership->status)->toBe('active')
+        ->and($event->actor_user_id)->toBe($this->officer->id)->and($event->target_id)->toBe($membership->id);
+
+    // A retry replays the grant rather than recording it twice.
+    $this->post('/admin/businesses/onboard', $input)->assertSessionHas('business_onboarded.business_access', true);
+    expect(IdentityAuditEvent::query()->where('action', 'membership.mandate_grant')->count())->toBe(1);
+
+    // Once access is removed, the same retry still replays, but reports access as it is now and never reinstates it.
+    $operator = User::factory()->withTwoFactor()->create();
+    IdentityOperator::factory()->create(['user_id' => $operator->id]);
+    app(ChangeMembership::class)->handle($operator->id, $party->id, 'business', 'revoked', $membership->revision,
+        'case:revocation', 'Withdraw authority.', (string) Str::uuid());
+    $this->actingAs($this->officer)->post('/admin/businesses/onboard', $input)->assertSessionHas('business_onboarded.business_access', false);
+    expect($membership->refresh()->status)->toBe('revoked')
+        ->and(IdentityAuditEvent::query()->where('action', 'membership.mandate_grant')->count())->toBe(1);
+});
+
+it('gives no Business access when the new mandate is not yet in effect', function (): void {
+    $party = Party::factory()->verified()->create();
+    User::factory()->for($party)->create(['email' => 'trader@example.test']);
+    $input = ['kind' => 'person', 'rdb_code' => null, 'name' => 'Kigali Fresh', 'industry' => 'Agriculture', 'district' => 'Gasabo',
+        'established_year' => null, 'representative_email' => 'trader@example.test', 'evidence_reference' => 'ID checked',
+        'reason' => 'Onboarding for the pilot.', 'effective_at' => now('UTC')->addHour()->format('Y-m-d\\TH:i:s\\Z'),
+        'request_id' => (string) Str::uuid(), 'mandate_request_id' => (string) Str::uuid()];
+
+    expect(app(OnboardBusiness::class)->handle($this->officer->id, $input))->toBe(['status' => 'rejected', 'code' => 'MANDATE_REQUIRED'])
+        ->and(RoleMembership::query()->where('party_id', $party->id)->where('role', 'business')->exists())->toBeFalse()
+        ->and(IdentityAuditEvent::query()->where('action', 'membership.mandate_grant')->exists())->toBeFalse();
+});
+
+it('gives Business access only to a verified person on the mandate, and never reinstates removed access (#491)', function (): void {
+    $store = app(IdentityAccessStore::class);
+    $business = BusinessAuthorityFixture::configure($this->fixture)['data']['business']['id'];
+    $mandated = $this->fixture['users'][0];
+    $outsider = User::factory()->for(Party::factory()->verified())->create();
+    $people = array_column(BusinessMandate::query()->where('business_id', $business)->sole()->terms['people'], 'party_id');
+
+    expect(fn () => $store->grantMandatedBusinessAccess($this->officer->id, (string) $outsider->party_id, $business, $people, 'Onboarding.', (string) Str::uuid()))
+        ->toThrow(IdentityViolation::class, 'PARTY_AUTHORITY_REQUIRED')
+        ->and(fn () => $store->grantMandatedBusinessAccess($this->officer->id, strtolower((string) Str::ulid()), $business, $people, 'Onboarding.', (string) Str::uuid()))
+        ->toThrow(IdentityViolation::class, 'PARTY_AUTHORITY_REQUIRED');
+
+    // A Business membership already on record, in whatever state, is reported as it is and never rewritten.
+    $existing = RoleMembership::query()->where('party_id', $mandated->party_id)->where('role', 'business')->sole();
+    expect($store->grantMandatedBusinessAccess($this->officer->id, (string) $mandated->party_id, $business, $people, 'Onboarding.', (string) Str::uuid()))
+        ->toBe(['code' => 'MEMBERSHIP_UNCHANGED', 'party_id' => $mandated->party_id, 'membership' => ['id' => $existing->id, 'role' => 'business',
+            'status' => $existing->status, 'revision' => $existing->revision], 'access_active' => $existing->status === 'active'])
+        ->and(IdentityAuditEvent::query()->where('action', 'membership.mandate_grant')->count())->toBe(0);
+
+    $analyst = User::factory()->withTwoFactor()->create();
+    StaffFixture::provision($analyst, ['analyst'], 'Reporting.');
+    expect(fn () => $store->grantMandatedBusinessAccess($analyst->id, (string) $mandated->party_id, $business, $people, 'Onboarding.', (string) Str::uuid()))
+        ->toThrow(IdentityViolation::class, 'STAFF_PERMISSION_REQUIRED');
 });
 
 it('refuses a representative who is not a verified person, and fields the server would reject, in the words of the form', function (): void {

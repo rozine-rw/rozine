@@ -541,7 +541,11 @@ export function useSealFlow({
                 >
                     {savingNote
                         ? t('auditor.seal.saving_note')
-                        : t('auditor.seal.save_note')}
+                        : t(
+                              canSeal
+                                  ? 'auditor.seal.save_note_preview'
+                                  : 'auditor.seal.save_note',
+                          )}
                 </button>
             ) : (
                 canSeal && (

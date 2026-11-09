@@ -66,7 +66,7 @@ function CloseLink({
 }
 
 /** The reservation's hold, counted down against the server clock (5 minutes at most, §11.3). */
-function HoldClock({
+export function HoldClock({
     expiresAt,
     serverTime,
 }: {

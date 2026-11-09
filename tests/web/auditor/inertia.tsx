@@ -138,9 +138,13 @@ export const router = {
     },
 };
 
-export const usePoll = () => inertia.poll;
+/* Like Inertia's own, each render returns new start and stop functions over the same poll. */
+export const usePoll = () => ({
+    start: () => inertia.poll.start(),
+    stop: () => inertia.poll.stop(),
+});
 
-export const usePage = () => ({ url: inertia.url, props: {} });
+export const usePage = () => ({ url: inertia.url, props: { errors: {} } });
 
 export function useHttp() {
     const body = useRef<() => unknown>(() => ({}));

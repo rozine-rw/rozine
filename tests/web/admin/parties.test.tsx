@@ -1,7 +1,12 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import AdminParties from '@/pages/admin/parties';
-import type { AdminPartiesProps, PartyDetail } from '@/types/admin';
+import type {
+    AdminPartiesProps,
+    BusinessAudit,
+    PartyDetail,
+    StatementReview,
+} from '@/types/admin';
 import type { LicenceQueues } from '@/types/admin-audit';
 import licenceFixture from '../../../resources/fixtures/ui/admin-auditors-licence.json';
 import auditorsFixture from '../../../resources/fixtures/ui/admin-auditors.json';
@@ -1351,6 +1356,32 @@ describe('Party 360', () => {
         },
     );
 
+    it('shows verified premises coordinates without a stated uncertainty as ±0 m', async () => {
+        const fixture = props(frozenFixture);
+
+        fixture.party = {
+            ...party(frozenFixture),
+            premises: {
+                state: 'verified',
+                latitude: '-2.6000000',
+                longitude: '29.7400000',
+                uncertainty_m: null,
+                verified_at: null,
+                reference: 'Site visit',
+                revision: 1,
+                verify: null,
+            },
+        };
+        const { user } = renderWithUser(<AdminParties {...fixture} />);
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const premises = screen.getByRole('region', {
+            name: 'Business premises',
+        });
+
+        expect(premises).toHaveTextContent('-2.6000000, 29.7400000 (±0 m)');
+    });
+
     it('says no Audit Partner is dispatched to a Business without verified premises, and records them', async () => {
         inertia.succeed = true;
         vi.spyOn(crypto, 'randomUUID').mockReturnValue(
@@ -1424,6 +1455,940 @@ describe('Party 360', () => {
                 },
             },
         ]);
+    });
+
+    const noStatements: StatementReview = {
+        verified: false,
+        coverage: {
+            declared_month_count: 0,
+            first_month: null,
+            last_month: null,
+        },
+        reasons: ['STATEMENT_ORIGINAL_REQUIRED'],
+        request: null,
+    };
+    const withAudit = (
+        audit:
+            | (Omit<BusinessAudit, 'statement_review'> & {
+                  statement_review?: StatementReview;
+              })
+            | null,
+    ) => {
+        const fixture = props(frozenFixture);
+
+        fixture.party = {
+            ...party(frozenFixture),
+            audit:
+                audit === null
+                    ? null
+                    : {
+                          ...audit,
+                          statement_review:
+                              audit.statement_review ?? noStatements,
+                      },
+        };
+
+        return fixture;
+    };
+    const noAudit = {
+        engagement: null,
+        closed: false,
+        request_flash: null,
+        redispatch: null,
+        withdraw: null,
+        close: null,
+        remedy: null,
+        partners: [],
+    };
+
+    it('says what a Business still lacks before its statements can be reviewed', async () => {
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    ...noAudit,
+                    statement_review: {
+                        verified: false,
+                        coverage: {
+                            declared_month_count: 0,
+                            first_month: null,
+                            last_month: null,
+                        },
+                        reasons: [
+                            'STATEMENT_ORIGINAL_REQUIRED',
+                            'AUDIT_ENGAGEMENT_OPEN',
+                        ],
+                        request: null,
+                    },
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+
+        expect(audit).toHaveTextContent('Statement review');
+        expect(audit).toHaveTextContent('Not verified');
+        expect(audit).toHaveTextContent(
+            'No statement months are transcribed yet.',
+        );
+        expect(audit).toHaveTextContent(
+            'The business hasn’t uploaded any statements yet.',
+        );
+        expect(audit).toHaveTextContent(
+            'Another audit is open on this business. Request the review once it ends.',
+        );
+        expect(
+            within(audit).queryByRole('button', {
+                name: 'Request statement review',
+            }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('requests a statement review bound to the readiness it shows', async () => {
+        inertia.succeed = true;
+        vi.spyOn(crypto, 'randomUUID').mockReturnValue(
+            '7a6b5c4d-3e2f-4a1b-9c8d-7e6f5a4b3c2d',
+        );
+        const binding = {
+            expected_business_revision: 3,
+            expected_mandate_version: 1,
+            expected_evidence_revision: 2,
+            transcription_id: '01jabcdefghjkmnpqrstvwxyz0',
+            transcription_sha256: 'a'.repeat(64),
+            readiness_sha256: 'b'.repeat(64),
+        };
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    ...noAudit,
+                    statement_review: {
+                        verified: false,
+                        coverage: {
+                            declared_month_count: 12,
+                            first_month: '2025-10',
+                            last_month: '2026-09',
+                        },
+                        reasons: [],
+                        request: {
+                            url: '/admin/businesses/biz_1/statement-review',
+                            method: 'post',
+                            binding,
+                        },
+                    },
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+
+        expect(audit).toHaveTextContent(
+            '12 months transcribed, 2025-10 to 2026-09.',
+        );
+        expect(audit).toHaveTextContent(
+            'The uploaded statements are ready for an Audit Partner to verify.',
+        );
+        await user.click(
+            within(audit).getByRole('button', {
+                name: 'Request statement review',
+            }),
+        );
+        const form = within(audit).getByRole('form', {
+            name: 'Request a statement review',
+        });
+
+        await user.type(
+            within(form).getByLabelText('Reason'),
+            'First review of the uploaded statements.',
+        );
+        await user.click(
+            within(form).getByRole('button', { name: 'Request review' }),
+        );
+
+        expect(inertia.posts).toEqual([
+            {
+                url: '/admin/businesses/biz_1/statement-review',
+                data: {
+                    ...binding,
+                    reason: 'First review of the uploaded statements.',
+                    request_id: '7a6b5c4d-3e2f-4a1b-9c8d-7e6f5a4b3c2d',
+                },
+            },
+        ]);
+    });
+
+    it('shows statements an Audit Partner has verified', async () => {
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    ...noAudit,
+                    statement_review: {
+                        verified: true,
+                        coverage: {
+                            declared_month_count: 36,
+                            first_month: '2023-10',
+                            last_month: '2026-09',
+                        },
+                        reasons: ['STATEMENT_ALREADY_VERIFIED'],
+                        request: null,
+                    },
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+
+        expect(audit).toHaveTextContent('Verified by an Audit Partner');
+        expect(audit).toHaveTextContent(
+            'An Audit Partner has already verified these statements.',
+        );
+    });
+
+    it('says one month transcribed in the singular', async () => {
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    ...noAudit,
+                    statement_review: {
+                        verified: false,
+                        coverage: {
+                            declared_month_count: 1,
+                            first_month: '2026-09',
+                            last_month: '2026-09',
+                        },
+                        reasons: ['BUSINESS_VERIFICATION_REQUIRED'],
+                        request: null,
+                    },
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+
+        expect(screen.getByRole('region', { name: 'Audit' })).toHaveTextContent(
+            '1 month transcribed, 2026-09 to 2026-09.',
+        );
+    });
+
+    it('still counts the months when the range is not given', async () => {
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    ...noAudit,
+                    statement_review: {
+                        verified: false,
+                        coverage: {
+                            declared_month_count: 2,
+                            first_month: null,
+                            last_month: null,
+                        },
+                        reasons: ['BUSINESS_VERIFICATION_REQUIRED'],
+                        request: null,
+                    },
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+
+        expect(screen.getByRole('region', { name: 'Audit' })).toHaveTextContent(
+            '2 months transcribed',
+        );
+    });
+
+    it('requests a Flash audit for a Business with no audit open', async () => {
+        inertia.succeed = true;
+        vi.spyOn(crypto, 'randomUUID').mockReturnValue(
+            '4d3e2f1a-5b6c-4d7e-8f90-1a2b3c4d5e6f',
+        );
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    engagement: null,
+                    closed: false,
+                    request_flash: {
+                        url: '/admin/businesses/biz_1/flash-audit',
+                        method: 'post',
+                    },
+                    redispatch: null,
+                    withdraw: null,
+                    close: null,
+                    remedy: null,
+                    partners: [],
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+
+        expect(audit).toHaveTextContent('No audit is open on this business.');
+        await user.click(
+            within(audit).getByRole('button', { name: 'Request Flash audit' }),
+        );
+        let form = within(audit).getByRole('form', {
+            name: 'Request a Flash audit',
+        });
+
+        expect(form).toHaveTextContent('The business is not told in advance.');
+        expect(
+            within(form).getByRole('button', { name: 'Request Flash audit' }),
+        ).toBeDisabled();
+        await user.click(within(form).getByRole('button', { name: 'Cancel' }));
+        expect(within(audit).queryByRole('form')).not.toBeInTheDocument();
+        await user.click(
+            within(audit).getByRole('button', { name: 'Request Flash audit' }),
+        );
+        form = within(audit).getByRole('form', {
+            name: 'Request a Flash audit',
+        });
+        await user.type(
+            within(form).getByLabelText('Reason'),
+            'Unusual movement this week.',
+        );
+        await user.click(
+            within(form).getByRole('button', { name: 'Request Flash audit' }),
+        );
+
+        expect(inertia.posts).toEqual([
+            {
+                url: '/admin/businesses/biz_1/flash-audit',
+                data: {
+                    reason: 'Unusual movement this week.',
+                    request_id: '4d3e2f1a-5b6c-4d7e-8f90-1a2b3c4d5e6f',
+                },
+            },
+        ]);
+        expect(within(audit).queryByRole('form')).not.toBeInTheDocument();
+    });
+
+    it('redispatches an audit that waits on Audit Operations and keeps the form open on a refusal', async () => {
+        inertia.errors = {
+            reason: 'This audit changed since you opened it. Review it again.',
+        };
+        vi.spyOn(crypto, 'randomUUID').mockReturnValue(
+            '5e4f3a2b-6c7d-4e8f-9a01-2b3c4d5e6f70',
+        );
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    engagement: {
+                        id: 'aud_1',
+                        kind: 'flash',
+                        status: 'operations',
+                        revision: 2,
+                        attempt: 1,
+                        operations_reason: 'AUDIT_PARTNER_AVAILABLE',
+                        due_at: null,
+                        overdue: false,
+                    },
+                    closed: false,
+                    request_flash: null,
+                    redispatch: {
+                        url: '/admin/businesses/biz_1/audits/aud_1/redispatch',
+                        method: 'post',
+                    },
+                    withdraw: null,
+                    close: null,
+                    remedy: null,
+                    partners: [],
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+
+        expect(audit).toHaveTextContent('Flash audit · 24-hour deadline');
+        expect(
+            within(audit).getByText('With Audit Operations'),
+        ).toBeInTheDocument();
+        expect(audit).toHaveTextContent(
+            'An Audit Partner within 30 km can take this audit now.',
+        );
+        expect(audit).toHaveTextContent('Dispatch attempts used: 1 of 3.');
+        expect(
+            within(audit).queryByRole('button', {
+                name: 'Request Flash audit',
+            }),
+        ).not.toBeInTheDocument();
+        await user.click(
+            within(audit).getByRole('button', { name: 'Redispatch' }),
+        );
+        const form = within(audit).getByRole('form', {
+            name: 'Redispatch this audit',
+        });
+        const reason = within(form).getByLabelText('Reason');
+
+        expect(reason).toHaveAttribute('aria-invalid', 'true');
+        await user.type(reason, 'A partner near the business was approved.');
+        await user.click(
+            within(form).getByRole('button', { name: 'Redispatch' }),
+        );
+
+        expect(inertia.posts).toEqual([
+            {
+                url: '/admin/businesses/biz_1/audits/aud_1/redispatch',
+                data: {
+                    reason: 'A partner near the business was approved.',
+                    request_id: '5e4f3a2b-6c7d-4e8f-9a01-2b3c4d5e6f70',
+                    expected_revision: 2,
+                },
+            },
+        ]);
+        expect(form).toHaveTextContent(
+            'This audit changed since you opened it. Review it again.',
+        );
+    });
+
+    it('names a statement review for what it checks and offers withdraw while it waits on Operations', async () => {
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    engagement: {
+                        id: 'aud_1',
+                        kind: 'statement_review',
+                        status: 'operations',
+                        revision: 2,
+                        attempt: 0,
+                        operations_reason: 'AUDIT_PREMISES_UNVERIFIED',
+                        due_at: null,
+                        overdue: false,
+                    },
+                    closed: false,
+                    request_flash: null,
+                    redispatch: null,
+                    withdraw: {
+                        url: '/admin/businesses/biz_1/audits/aud_1/withdraw',
+                        method: 'post',
+                    },
+                    close: {
+                        url: '/admin/businesses/biz_1/audits/aud_1/close',
+                        method: 'post',
+                    },
+                    remedy: null,
+                    partners: [],
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+
+        expect(audit).toHaveTextContent('Statement review');
+        expect(audit).not.toHaveTextContent('Monthly audit');
+        expect(
+            within(audit).getByRole('button', { name: 'Withdraw' }),
+        ).toBeInTheDocument();
+    });
+
+    it('says when an audit can no longer be redispatched and shows an accepted audit without actions', async () => {
+        const { user, unmount } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    engagement: {
+                        id: 'aud_1',
+                        kind: 'routine',
+                        status: 'operations',
+                        revision: 4,
+                        attempt: 3,
+                        operations_reason: 'AUDIT_DISPATCH_EXHAUSTED',
+                        due_at: null,
+                        overdue: false,
+                    },
+                    closed: false,
+                    request_flash: null,
+                    redispatch: null,
+                    withdraw: null,
+                    close: {
+                        url: '/admin/businesses/biz_1/audits/aud_1/close',
+                        method: 'post',
+                    },
+                    remedy: null,
+                    partners: [],
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        let audit = screen.getByRole('region', { name: 'Audit' });
+
+        expect(audit).toHaveTextContent('Monthly audit');
+        expect(audit).toHaveTextContent(
+            'this audit can no longer be redispatched',
+        );
+        expect(
+            within(audit)
+                .getAllByRole('button')
+                .map((button) => button.textContent),
+        ).toEqual(['Close permanently']);
+        unmount();
+
+        const view = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    engagement: {
+                        id: 'aud_2',
+                        kind: 'flash',
+                        status: 'accepted',
+                        revision: 2,
+                        attempt: null,
+                        operations_reason: null,
+                        due_at: '2026-10-31T11:42:00Z',
+                        overdue: true,
+                    },
+                    closed: false,
+                    request_flash: null,
+                    redispatch: null,
+                    withdraw: null,
+                    close: null,
+                    remedy: null,
+                    partners: [],
+                })}
+            />,
+        );
+
+        await view.user.click(screen.getByRole('tab', { name: 'Controls' }));
+        audit = screen.getByRole('region', { name: 'Audit' });
+        expect(within(audit).getByText('Overdue')).toBeInTheDocument();
+        expect(
+            within(audit).queryByText('Accepted by a partner'),
+        ).not.toBeInTheDocument();
+        expect(within(audit).getByRole('alert')).toHaveTextContent(
+            /^The 24-hour deadline passed on 31 Oct 2026 · 13:42 without a sealed report\. A Flash audit must be completed within 24 hours, so this one is in breach\./u,
+        );
+        expect(within(audit).queryByRole('button')).not.toBeInTheDocument();
+    });
+
+    it('says no partner office is within 30 km, links to the partners, and closes the audit', async () => {
+        inertia.succeed = true;
+        vi.spyOn(crypto, 'randomUUID').mockReturnValue(
+            '6f5e4d3c-7b8a-4c9d-8e0f-3a4b5c6d7e8f',
+        );
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    engagement: {
+                        id: 'aud_1',
+                        kind: 'flash',
+                        status: 'operations',
+                        revision: 3,
+                        attempt: 0,
+                        operations_reason: 'AUDIT_NO_PARTNER_IN_RANGE',
+                        due_at: null,
+                        overdue: false,
+                    },
+                    closed: false,
+                    request_flash: null,
+                    redispatch: null,
+                    withdraw: null,
+                    close: {
+                        url: '/admin/businesses/biz_1/audits/aud_1/close',
+                        method: 'post',
+                    },
+                    remedy: { url: '/admin/auditors', method: 'get' },
+                    partners: [],
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+
+        expect(audit).toHaveTextContent(
+            'No Audit Partner has a verified office within 30 km of these premises.',
+        );
+        expect(
+            within(audit).getByRole('link', { name: 'Open Audit Partners' }),
+        ).toHaveAttribute('href', '/admin/auditors');
+        /* Close is permanent, so it sits apart from the other actions with a warning (#506). */
+        expect(audit).toHaveTextContent(
+            'Closing is permanent: it ends this audit and this business can never be audited again.',
+        );
+        await user.click(
+            within(audit).getByRole('button', { name: 'Close permanently' }),
+        );
+        const form = within(audit).getByRole('form', {
+            name: 'Close this audit',
+        });
+
+        expect(form).toHaveTextContent(
+            'Closing ends this audit without a report and can’t be undone. This business can never be audited again',
+        );
+        expect(
+            within(audit).queryByRole('button', { name: 'Redispatch' }),
+        ).not.toBeInTheDocument();
+        await user.type(
+            within(form).getByLabelText('Reason'),
+            'The business stopped trading.',
+        );
+        await user.click(
+            within(form).getByRole('button', { name: 'Close audit' }),
+        );
+
+        expect(inertia.posts).toEqual([
+            {
+                url: '/admin/businesses/biz_1/audits/aud_1/close',
+                data: {
+                    reason: 'The business stopped trading.',
+                    request_id: '6f5e4d3c-7b8a-4c9d-8e0f-3a4b5c6d7e8f',
+                    expected_revision: 3,
+                },
+            },
+        ]);
+        expect(
+            within(audit).queryByRole('form', { name: 'Close this audit' }),
+        ).not.toBeInTheDocument();
+        expect(within(audit).getByRole('status')).toHaveTextContent(
+            'Audit closed. This business can no longer be audited.',
+        );
+    });
+
+    it('withdraws an overdue Flash audit its partner accepted, without closing the business to audits (#489)', async () => {
+        inertia.succeed = true;
+        vi.spyOn(crypto, 'randomUUID').mockReturnValue(
+            '6f5e4d3c-7b8a-4c9d-8e0f-3a4b5c6d7e8f',
+        );
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    engagement: {
+                        id: 'aud_2',
+                        kind: 'flash',
+                        status: 'accepted',
+                        revision: 2,
+                        attempt: null,
+                        operations_reason: null,
+                        due_at: '2026-10-31T11:42:00Z',
+                        overdue: true,
+                    },
+                    closed: false,
+                    request_flash: null,
+                    redispatch: null,
+                    withdraw: {
+                        url: '/admin/businesses/biz_1/audits/aud_2/withdraw',
+                        method: 'post',
+                    },
+                    close: null,
+                    remedy: null,
+                    partners: [],
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+        expect(
+            within(audit).queryByRole('button', { name: 'Close permanently' }),
+        ).not.toBeInTheDocument();
+        await user.click(
+            within(audit).getByRole('button', { name: 'Withdraw' }),
+        );
+        const form = within(audit).getByRole('form', {
+            name: 'Withdraw this audit',
+        });
+
+        expect(form).toHaveTextContent(
+            'Only this audit ends: a new Flash audit or statement review can be requested for the business afterwards.',
+        );
+        await user.type(
+            within(form).getByLabelText('Reason'),
+            'No report by the deadline.',
+        );
+        await user.click(
+            within(form).getByRole('button', { name: 'Withdraw audit' }),
+        );
+
+        expect(inertia.posts).toEqual([
+            {
+                url: '/admin/businesses/biz_1/audits/aud_2/withdraw',
+                data: {
+                    reason: 'No report by the deadline.',
+                    request_id: '6f5e4d3c-7b8a-4c9d-8e0f-3a4b5c6d7e8f',
+                    expected_revision: 2,
+                },
+            },
+        ]);
+        /* The withdrawal is confirmed in place until another action opens (#506). */
+        expect(within(audit).getByRole('status')).toHaveTextContent(
+            'Audit withdrawn. You can request a new one.',
+        );
+        await user.click(
+            within(audit).getByRole('button', { name: 'Withdraw' }),
+        );
+        expect(within(audit).queryByRole('status')).not.toBeInTheDocument();
+    });
+
+    it('holds the Flash audit request while it is being sent', async () => {
+        inertia.processing = true;
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    engagement: null,
+                    closed: false,
+                    request_flash: {
+                        url: '/admin/businesses/biz_1/flash-audit',
+                        method: 'post',
+                    },
+                    redispatch: null,
+                    withdraw: null,
+                    close: null,
+                    remedy: null,
+                    partners: [],
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+
+        await user.click(
+            within(audit).getByRole('button', { name: 'Request Flash audit' }),
+        );
+        const send = within(
+            within(audit).getByRole('form', { name: 'Request a Flash audit' }),
+        ).getByRole('button', { name: 'Request Flash audit' });
+
+        expect(send).toBeDisabled();
+        expect(send).toHaveAttribute('aria-busy', 'true');
+    });
+
+    it('asks for an independence review of a nearby partner and records one', async () => {
+        inertia.succeed = true;
+        vi.spyOn(crypto, 'randomUUID').mockReturnValue(
+            '7a6b5c4d-8e9f-4a0b-9c1d-2e3f4a5b6c7d',
+        );
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    engagement: {
+                        id: 'aud_1',
+                        kind: 'flash',
+                        status: 'operations',
+                        revision: 1,
+                        attempt: 1,
+                        operations_reason: 'AUDIT_INDEPENDENCE_REVIEW_REQUIRED',
+                        due_at: null,
+                        overdue: false,
+                    },
+                    closed: false,
+                    request_flash: null,
+                    redispatch: null,
+                    withdraw: null,
+                    close: {
+                        url: '/admin/businesses/biz_1/audits/aud_1/close',
+                        method: 'post',
+                    },
+                    remedy: null,
+                    partners: [
+                        {
+                            party_id: 'party_a',
+                            name: 'Amina Uwase',
+                            reviewed: true,
+                            revision: 1,
+                            review: null,
+                            checked_at: '2026-10-30T12:00:00Z',
+                        },
+                        {
+                            party_id: 'party_b',
+                            name: 'Bosco Habimana',
+                            reviewed: false,
+                            revision: 0,
+                            review: {
+                                url: '/admin/businesses/biz_1/auditors/party_b/independence',
+                                method: 'post',
+                            },
+                            checked_at: '2026-10-30T12:00:00Z',
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+
+        expect(audit).toHaveTextContent(
+            'none has been reviewed as independent of this business',
+        );
+        expect(
+            within(audit).queryByRole('button', { name: 'Redispatch' }),
+        ).not.toBeInTheDocument();
+        expect(audit).toHaveTextContent('Audit Partners within 30 km');
+        expect(
+            within(audit).getByText('Independence reviewed'),
+        ).toBeInTheDocument();
+        expect(within(audit).getByText('Not reviewed')).toBeInTheDocument();
+        expect(
+            within(audit).queryByRole('button', {
+                name: 'Record independence review for Amina Uwase',
+            }),
+        ).not.toBeInTheDocument();
+        const open = () =>
+            user.click(
+                within(audit).getByRole('button', {
+                    name: 'Record independence review for Bosco Habimana',
+                }),
+            );
+
+        await open();
+        let form = within(audit).getByRole('form', {
+            name: 'Independence review of Bosco Habimana',
+        });
+
+        expect(
+            within(form).getByRole('button', { name: 'Record review' }),
+        ).toBeDisabled();
+        await user.click(within(form).getByRole('button', { name: 'Cancel' }));
+        expect(
+            within(audit).queryByRole('form', {
+                name: 'Independence review of Bosco Habimana',
+            }),
+        ).not.toBeInTheDocument();
+        await open();
+        form = within(audit).getByRole('form', {
+            name: 'Independence review of Bosco Habimana',
+        });
+        await user.click(
+            within(form).getByLabelText(
+                'Has another conflict not yet resolved',
+            ),
+        );
+        await user.click(
+            within(form).getByLabelText(
+                'Has another conflict not yet resolved',
+            ),
+        );
+        await user.type(
+            within(form).getByLabelText('Evidence checked'),
+            'Partner declaration and RDB record.',
+        );
+        await user.type(
+            within(form).getByLabelText('Reason'),
+            'No ties to the business.',
+        );
+        await user.click(
+            within(form).getByRole('button', { name: 'Record review' }),
+        );
+
+        expect(inertia.posts).toEqual([
+            {
+                url: '/admin/businesses/biz_1/auditors/party_b/independence',
+                data: {
+                    financial_interest: false,
+                    current_role_tie: false,
+                    family_or_business_conflict: false,
+                    unresolved_conflict: false,
+                    role_tie_ended_on: null,
+                    reference: 'Partner declaration and RDB record.',
+                    reason: 'No ties to the business.',
+                    request_id: '7a6b5c4d-8e9f-4a0b-9c1d-2e3f4a5b6c7d',
+                    expected_revision: 0,
+                    checked_at: '2026-10-30T12:00:00Z',
+                },
+            },
+        ]);
+        expect(
+            within(audit).queryByRole('form', {
+                name: 'Independence review of Bosco Habimana',
+            }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('sends the date a past role ended with an independence review and shows its refusal', async () => {
+        inertia.errors = {
+            reason: "The date the role ended can't be in the future.",
+        };
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    engagement: null,
+                    closed: false,
+                    request_flash: null,
+                    redispatch: null,
+                    withdraw: null,
+                    close: null,
+                    remedy: null,
+                    partners: [
+                        {
+                            party_id: 'party_b',
+                            name: 'Bosco Habimana',
+                            reviewed: false,
+                            revision: 2,
+                            review: {
+                                url: '/admin/businesses/biz_1/auditors/party_b/independence',
+                                method: 'post',
+                            },
+                            checked_at: '2026-10-30T12:00:00Z',
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+
+        await user.click(
+            within(audit).getByRole('button', {
+                name: 'Record independence review for Bosco Habimana',
+            }),
+        );
+        const form = within(audit).getByRole('form', {
+            name: 'Independence review of Bosco Habimana',
+        });
+
+        await user.click(
+            within(form).getByLabelText(
+                'Has a financial interest in the business',
+            ),
+        );
+        await user.type(
+            within(form).getByLabelText(
+                'If they held a role here, the date it ended (optional)',
+            ),
+            '2024-05-31',
+        );
+        await user.type(within(form).getByLabelText('Evidence checked'), 'Ref');
+        await user.type(within(form).getByLabelText('Reason'), 'Checked.');
+        await user.click(
+            within(form).getByRole('button', { name: 'Record review' }),
+        );
+
+        expect(inertia.posts[0]?.data).toMatchObject({
+            financial_interest: true,
+            role_tie_ended_on: '2024-05-31',
+            expected_revision: 2,
+        });
+        expect(form).toHaveTextContent(
+            "The date the role ended can't be in the future.",
+        );
+    });
+
+    it('says the business can never be audited again after Audit Operations closed its last audit', async () => {
+        const { user } = renderWithUser(
+            <AdminParties
+                {...withAudit({
+                    engagement: null,
+                    closed: true,
+                    request_flash: null,
+                    redispatch: null,
+                    withdraw: null,
+                    close: null,
+                    remedy: null,
+                    partners: [],
+                })}
+            />,
+        );
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const audit = screen.getByRole('region', { name: 'Audit' });
+
+        expect(audit).toHaveTextContent(
+            'Audit Operations closed this business’s last audit, so it can never be audited again: no Flash audit or statement review can be requested here.',
+        );
+        expect(within(audit).queryByRole('button')).not.toBeInTheDocument();
     });
 
     it('shows the office read-only to a viewer who may not verify it', async () => {

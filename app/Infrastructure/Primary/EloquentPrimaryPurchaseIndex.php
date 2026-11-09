@@ -10,6 +10,7 @@ use App\Domain\Operations\CommandRejection;
 use App\Models\PrimaryCommitment;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
+use App\Models\User;
 use RuntimeException;
 
 /** Reads only immutable identifiers and initial terms; takes no locks and reveals nothing a 404 would not. */
@@ -65,5 +66,12 @@ final readonly class EloquentPrimaryPurchaseIndex implements PrimaryPurchaseInde
                 'amount' => ['currency' => 'RWF', 'amount' => (string) $record->principal], 'units' => (string) $record->units,
                 'starts_at' => $record->created_at->utc()->toIso8601String(), 'expires_at' => $record->expires_at->utc()->toIso8601String()];
         })->all());
+    }
+
+    public function activeHoldsOfUser(int $userId): array
+    {
+        $partyId = User::query()->whereKey($userId)->value('party_id');
+
+        return $partyId === null ? [] : $this->activeHolds(strtolower((string) $partyId));
     }
 }

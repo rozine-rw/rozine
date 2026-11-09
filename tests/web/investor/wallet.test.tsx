@@ -161,6 +161,14 @@ describe('Wallet (C3)', () => {
             'This records your deposit request. Nothing is credited until the payment is confirmed.',
         );
         expect(within(panel).getByLabelText('AMOUNT')).toHaveValue('100,000');
+        expect(within(panel).getByTestId('deposit-amount-field')).toHaveClass(
+            'rz-prefixed-field',
+        );
+        expect(
+            within(
+                within(panel).getByTestId('deposit-amount-field'),
+            ).getByLabelText('AMOUNT'),
+        ).toBeInTheDocument();
 
         fireEvent.change(within(panel).getByLabelText('AMOUNT'), {
             target: { value: '250,000' },
@@ -207,7 +215,7 @@ describe('Wallet (C3)', () => {
         fireEvent.submit(panel);
 
         expect(
-            within(panel).getByRole('button', { name: 'Sending…' }),
+            within(panel).getByRole('button', { name: 'Sending deposit…' }),
         ).toBeDisabled();
         expect(inertia.calls[0]).toMatchObject({
             url: '/preview/investor-wallet-deposit-pending',
@@ -224,13 +232,261 @@ describe('Wallet (C3)', () => {
         await act(async () => {
             await Promise.resolve();
         });
-        expect(inertia.visit).toHaveBeenCalledWith({
-            url: '/preview/investor-wallet-deposit-pending',
-            method: 'get',
-        });
+        expect(inertia.visit).toHaveBeenCalledWith(
+            {
+                url: '/preview/investor-wallet-deposit-pending',
+                method: 'get',
+            },
+            { onFinish: expect.any(Function) },
+        );
         expect(
             screen.getByRole('region', { name: 'Available balance' }),
         ).toHaveTextContent('RWF 1,733,485');
+    });
+
+    it('keeps "Sending deposit…" until the refresh lands, then confirms what was recorded and clears the quoted amount (#461)', async () => {
+        window.history.replaceState(
+            null,
+            '',
+            '/wallet?kind=deposit&amount=100000',
+        );
+        render(<InvestorWallet {...wallet(depositFixture)} />);
+
+        const panel = screen.getByRole('form', { name: 'Add money' });
+
+        inertia.queue.push(
+            answers({
+                status: 'completed',
+                code: 'DEPOSIT_INTENT_RECORDED',
+                data: {
+                    receipt: { code: 'DEPOSIT_INTENT_RECORDED' },
+                    current: { state: 'pending' },
+                    next: null,
+                },
+            }),
+        );
+        fireEvent.submit(panel);
+        await act(async () => {
+            await Promise.resolve();
+        });
+
+        const refresh = inertia.reload.mock.lastCall?.[0] as {
+            onFinish: () => void;
+        };
+
+        expect(
+            within(panel).getByRole('button', { name: 'Sending deposit…' }),
+        ).toBeDisabled();
+        expect(within(panel).getByRole('status')).toHaveTextContent(
+            "Deposit of RWF 100,000 requested. We'll credit it once MTN MoMo confirms.",
+        );
+        expect(within(panel).getByLabelText('AMOUNT')).toHaveValue('');
+        expect(inertia.replace).not.toHaveBeenCalled();
+
+        await act(async () => {
+            refresh.onFinish();
+            await Promise.resolve();
+        });
+        expect(
+            within(panel).getByRole('button', { name: 'Confirm deposit' }),
+        ).toBeInTheDocument();
+        expect(inertia.replace).toHaveBeenCalledWith({
+            url: '/wallet?kind=deposit',
+            preserveState: true,
+            preserveScroll: true,
+        });
+
+        fireEvent.change(within(panel).getByLabelText('AMOUNT'), {
+            target: { value: '5,000' },
+        });
+        expect(within(panel).queryByRole('status')).not.toBeInTheDocument();
+        window.history.replaceState(null, '', '/');
+    });
+
+    it.each([
+        ['succeeded', 'RWF 100,000 from MTN MoMo is now in your wallet.'],
+        [
+            'failed',
+            "The RWF 100,000 deposit from MTN MoMo didn't go through. Nothing was credited.",
+        ],
+        [
+            'unknown',
+            "Deposit of RWF 100,000 requested. We'll credit it once MTN MoMo confirms.",
+        ],
+    ])('says a %s deposit as the server recorded it', async (state, text) => {
+        finishReloads();
+        render(<InvestorWallet {...wallet(depositFixture)} />);
+
+        const panel = screen.getByRole('form', { name: 'Add money' });
+
+        inertia.queue.push(
+            answers({
+                status: 'completed',
+                code: 'DEPOSIT_INTENT_RECORDED',
+                data: {
+                    receipt: { code: 'DEPOSIT_INTENT_RECORDED' },
+                    current: { state },
+                    next: null,
+                },
+            }),
+        );
+        fireEvent.submit(panel);
+        await act(async () => {
+            await Promise.resolve();
+        });
+
+        expect(within(panel).getByRole('status')).toHaveTextContent(text);
+        expect(
+            within(panel).getByRole('button', { name: 'Confirm deposit' }),
+        ).toBeInTheDocument();
+    });
+
+    it('confirms a succeeded deposit at what was credited after the fee, not the amount asked', async () => {
+        finishReloads();
+        const props = wallet(depositFixture);
+        const quote = props.funding.quote!;
+
+        quote.fee = { currency: 'RWF', amount: '1000' };
+        quote.credited = { currency: 'RWF', amount: '99000' };
+        render(<InvestorWallet {...props} />);
+
+        const panel = screen.getByRole('form', { name: 'Add money' });
+
+        inertia.queue.push(
+            answers({
+                status: 'completed',
+                code: 'DEPOSIT_INTENT_RECORDED',
+                data: {
+                    receipt: { code: 'DEPOSIT_INTENT_RECORDED' },
+                    current: { state: 'succeeded' },
+                    next: null,
+                },
+            }),
+        );
+        fireEvent.submit(panel);
+        await act(async () => {
+            await Promise.resolve();
+        });
+
+        expect(within(panel).getByRole('status')).toHaveTextContent(
+            'RWF 99,000 from MTN MoMo is now in your wallet.',
+        );
+    });
+
+    it('sends the chosen method even when a refresh no longer lists it', async () => {
+        finishReloads();
+        const { rerender } = render(
+            <InvestorWallet {...wallet(depositFixture)} />,
+        );
+        const refreshed = wallet(depositFixture);
+
+        refreshed.funding.methods = refreshed.funding.methods.map((option) => ({
+            ...option,
+            id: `${option.id}-renamed`,
+        }));
+        rerender(<InvestorWallet {...refreshed} />);
+        inertia.queue.push(
+            answers({
+                status: 'completed',
+                code: 'DEPOSIT_INTENT_RECORDED',
+                data: null,
+            }),
+        );
+        fireEvent.submit(screen.getByRole('form', { name: 'Add money' }));
+        await act(async () => {
+            await Promise.resolve();
+        });
+
+        expect(inertia.calls[0]).toMatchObject({
+            body: { method_id: 'mtn-1' },
+        });
+    });
+
+    it('sends nothing for an amount edited after its quote until the new quote arrives', async () => {
+        vi.useFakeTimers();
+        const props = wallet(depositFixture);
+
+        props.funding.quote!.credited = { currency: 'RWF', amount: '99000' };
+        const { rerender } = render(<InvestorWallet {...props} />);
+        const panel = screen.getByRole('form', { name: 'Add money' });
+
+        fireEvent.change(within(panel).getByLabelText('AMOUNT'), {
+            target: { value: '50,000' },
+        });
+        expect(
+            within(panel).getByRole('button', { name: 'Confirm deposit' }),
+        ).toBeDisabled();
+        fireEvent.submit(panel);
+        expect(inertia.calls).toHaveLength(0);
+
+        const requoted = wallet(depositFixture);
+
+        requoted.funding.quote!.amount = { currency: 'RWF', amount: '50000' };
+        requoted.funding.quote!.credited = { currency: 'RWF', amount: '49500' };
+        rerender(<InvestorWallet {...requoted} />);
+        vi.useRealTimers();
+        inertia.queue.push(
+            answers({
+                status: 'completed',
+                code: 'DEPOSIT_INTENT_RECORDED',
+                data: {
+                    receipt: { code: 'DEPOSIT_INTENT_RECORDED' },
+                    current: { state: 'succeeded' },
+                    next: null,
+                },
+            }),
+        );
+        fireEvent.submit(panel);
+        await act(async () => {
+            await Promise.resolve();
+        });
+
+        expect(inertia.calls[0].body).toMatchObject({
+            amount: { currency: 'RWF', amount: '50000' },
+        });
+        expect(within(panel).getByRole('status')).toHaveTextContent(
+            'RWF 49,500 from MTN MoMo is now in your wallet.',
+        );
+    });
+
+    it('marks a deposit in the history as credited (#461)', () => {
+        render(<InvestorWallet {...wallet(depositFixture)} />);
+
+        const history = screen.getByRole('region', {
+            name: 'Transaction history',
+        });
+
+        expect(within(history).getAllByText('Credited').length).toBeGreaterThan(
+            0,
+        );
+    });
+
+    it('marks a withdrawal in the history as paid out (#461)', () => {
+        const props = wallet(depositFixture);
+
+        props.history.items = [
+            {
+                id: 'entry_withdrawal_1',
+                movement: 'external',
+                kind: 'withdrawal',
+                direction: 'out',
+                amount: { currency: 'RWF', amount: '5000' },
+                counterparty: 'MTN MoMo',
+                occurred_at: '2026-11-01T09:00:00Z',
+                link: {
+                    url: '/investor/wallet?entry=entry_withdrawal_1',
+                    method: 'get',
+                },
+            },
+        ];
+        render(<InvestorWallet {...props} />);
+
+        const history = screen.getByRole('region', {
+            name: 'Transaction history',
+        });
+
+        expect(within(history).getByText('Paid out')).toBeInTheDocument();
+        expect(within(history).queryByText('Credited')).not.toBeInTheDocument();
     });
 
     it('reloads the facts when the server refuses, and resends nothing after an uncertain answer', async () => {
@@ -540,6 +796,35 @@ describe('Wallet (C3)', () => {
 
         expect(sheet).toHaveTextContent('Investment · Kivu Coffee');
         expect(sheet).toHaveTextContent('RZ-CMT-7731');
+    });
+
+    it('says the history is loading while a filter, range or older page is on its way', () => {
+        render(<InvestorWallet {...wallet(pagedFixture)} />);
+        const history = screen.getByRole('region', {
+            name: 'Transaction history',
+        });
+        const status = within(history).getByRole('status');
+        const list = within(history).getByRole('list');
+        const links = [
+            within(
+                within(history).getByRole('navigation', {
+                    name: 'Movement type',
+                }),
+            ).getAllByRole('link')[1],
+            within(
+                within(history).getByRole('navigation', { name: 'Time range' }),
+            ).getByRole('link', { name: '30 days' }),
+            within(history).getByRole('link', { name: 'Show older' }),
+        ];
+
+        for (const link of links) {
+            fireEvent.click(link);
+            expect(status).toHaveTextContent('Loading transaction history…');
+            expect(list).toHaveAttribute('aria-busy', 'true');
+            act(() => inertia.linkVisits.shift()?.());
+            expect(status).toBeEmptyDOMElement();
+            expect(list).not.toHaveAttribute('aria-busy');
+        }
     });
 
     it('pages older history and states a restriction', () => {
@@ -967,10 +1252,13 @@ describe('Wallet (C3)', () => {
             expect(
                 inertia.calls.filter((call) => call.method === 'post'),
             ).toHaveLength(1);
-            expect(inertia.visit).toHaveBeenCalledWith({
-                url: '/preview/investor-wallet-deposit-pending',
-                method: 'get',
-            });
+            expect(inertia.visit).toHaveBeenCalledWith(
+                {
+                    url: '/preview/investor-wallet-deposit-pending',
+                    method: 'get',
+                },
+                { onFinish: expect.any(Function) },
+            );
         });
 
         it('treats IDEMPOTENCY_CONFLICT as final: no refresh, no lookup and no same-key retry', async () => {

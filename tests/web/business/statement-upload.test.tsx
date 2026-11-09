@@ -8,6 +8,7 @@ import ineligibleStep from '../../../resources/fixtures/ui/business-apply-inelig
 
 type Visit = {
     onStart?: () => void;
+    onProgress?: (progress: { percentage: number } | undefined) => void;
     onError?: (errors: Record<string, string>) => void;
     onFinish?: () => void;
 };
@@ -24,6 +25,19 @@ const inertia = vi.hoisted(() => ({
 
 vi.mock('@inertiajs/react', () => ({
     router: { post: inertia.post },
+    Link: ({
+        href,
+        children,
+        className,
+    }: {
+        href: { url: string };
+        children: React.ReactNode;
+        className?: string;
+    }) => (
+        <a href={href.url} className={className}>
+            {children}
+        </a>
+    ),
 }));
 
 const page = () =>
@@ -67,6 +81,14 @@ describe('Statement upload on Apply step 1', () => {
         expect(
             screen.getByText(/^Received 23 Sept? 2026$/u),
         ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', {
+                name: 'Enter the figures from your statements',
+            }),
+        ).toHaveAttribute(
+            'href',
+            '/business/01k6p4b7r2c9d3f8g1h5j0k6m2/statements/transcription',
+        );
     });
 
     it('says when nothing has arrived yet', () => {
@@ -81,6 +103,11 @@ describe('Statement upload on Apply step 1', () => {
         expect(
             screen.getByText('No statements received yet.'),
         ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', {
+                name: 'Enter the figures from your statements',
+            }),
+        ).not.toBeInTheDocument();
     });
 
     it('posts the original file with its envelope and shows the progress until the page is drawn again', async () => {
@@ -111,10 +138,20 @@ describe('Statement upload on Apply step 1', () => {
         });
 
         act(() => options.onStart?.());
-        expect(screen.getByText('Uploading…')).toBeInTheDocument();
+        expect(screen.getByRole('status')).toHaveTextContent('Uploading…');
         expect(screen.getByLabelText('Upload a statement')).toBeDisabled();
+        // A progress event without a measurable size keeps the bare label.
+        act(() => options.onProgress?.(undefined));
+        expect(screen.getByRole('status')).toHaveTextContent(/^Uploading…$/);
+        act(() => options.onProgress?.({ percentage: 37 }));
+        expect(screen.getByRole('status')).toHaveTextContent('Uploading… 37%');
+        act(() => options.onProgress?.({ percentage: 100 }));
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Checking the file…',
+        );
         act(() => options.onFinish?.());
-        expect(screen.getByText('Upload a statement')).toBeInTheDocument();
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        expect(screen.getByLabelText('Upload a statement')).toBeEnabled();
     });
 
     it('shows the server’s refusal of the file, or a general one, and clears it on the next try', async () => {
@@ -175,6 +212,9 @@ describe('Statement upload on Apply step 1', () => {
         expect(
             screen.queryByLabelText('Upload a statement'),
         ).not.toBeInTheDocument();
+        expect(
+            screen.queryByText('Enter the figures from your statements'),
+        ).not.toBeInTheDocument();
         expect(screen.getAllByRole('listitem')).toHaveLength(3);
     });
 
@@ -192,6 +232,38 @@ describe('Statement upload on Apply step 1', () => {
         ).not.toBeInTheDocument();
         expect(
             screen.getByText('Not eligible to raise yet'),
+        ).toBeInTheDocument();
+    });
+
+    it('reads a verified statement as verified, and says who checks credit history next (#511)', () => {
+        const evidence = page().evidence;
+        evidence.verified.statements = true;
+        evidence.eligibility = {
+            status: 'ineligible',
+            code: 'POLICY_INPUT_REQUIRED',
+            message:
+                'Current credit history and obligations must be verified before applying.',
+        };
+
+        render(
+            <StepBusiness
+                evidence={evidence}
+                statements={statements()}
+                identityContextRevision={4}
+                canUpload
+            />,
+        );
+
+        expect(screen.getByText('Verified')).toBeInTheDocument();
+        expect(
+            screen.queryByText('Read · awaiting verification'),
+        ).not.toBeInTheDocument();
+        /* A statement still being read is not verified by the review. */
+        expect(screen.getByText('Reading')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                /^Next, Rozine needs to check your current credit history and existing loans\./u,
+            ),
         ).toBeInTheDocument();
     });
 });

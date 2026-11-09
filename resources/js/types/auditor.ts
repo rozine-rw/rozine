@@ -38,7 +38,8 @@ export type AuditorAllowedAction =
     | 'accreditation.submit'
     | 'accreditation.renew'
     | 'accreditation.withdraw'
-    | 'availability.update';
+    | 'availability.update'
+    | 'statement.verify';
 
 /** What every Auditor page carries (point 1). */
 export type AuditorPageContract = {
@@ -574,7 +575,9 @@ export type AuditorOutcome =
           cosign_due_on: string;
       }
     | { kind: 'changes_requested'; business: string }
-    | { kind: 'report_rejected'; business: string };
+    | { kind: 'report_rejected'; business: string }
+    /** A statement review verified (#396): the Business's figures now count as checked. */
+    | { kind: 'statements_verified'; business: string };
 
 /** The operation lookup: its url holds the literal `{request_id}` token (point 7). */
 export type OperationLookupLinks = { operation: RouteLink };
@@ -674,7 +677,7 @@ export type BusinessFile = {
      * Which rules the visit answers (BRS v2.0 AUD-R03/R07 for a Flash Audit, AUD-R04 for a monthly
      * visit): the app states why it is needed and what it must clear. Null shows neither.
      */
-    brief: 'flash' | 'monthly' | null;
+    brief: 'flash' | 'monthly' | 'statement_review' | null;
     history: {
         last_audit: {
             on: string;
@@ -685,6 +688,13 @@ export type BusinessFile = {
         flags: string[];
     };
 };
+
+/** Where a sealed report stands on the business file (#490). */
+export type FileReportState =
+    | 'awaiting_cosign'
+    | 'disputed'
+    | 'escalated'
+    | 'published';
 
 export type FileJob = {
     /** The assignment's ID; its commands send `revision` as `expected_revision`. */
@@ -711,6 +721,12 @@ export type FileJob = {
     complete_by: string | null;
     /** Set when the file was reassigned to this partner; never shown, so no partner is named. */
     reassigned_from: string | null;
+    /**
+     * Where the sealed report stands, as Jobs shows it (#490): awaiting the Business's co-signature,
+     * disputed, escalated or published. The file then shows that state and runs no countdown; null
+     * while the report is not sealed.
+     */
+    report_state: FileReportState | null;
     /** This record's own actions; the page's `allowed_actions` repeats them. */
     allowed_actions: AuditorAllowedAction[];
 };
@@ -748,11 +764,64 @@ export type AuditorFileProps = AuditorPageContract &
         /** Jobs, drawn beneath the sheet on a wide screen. */
         jobs: AuditorJobsProps;
         preview_outcome?: AuditorPreviewOutcome;
+        /**
+         * An accepted statement review (#396): what its verification binds and checks. Null or
+         * absent for any other engagement.
+         */
+        review?: StatementReviewFile | null;
     } & (
         | { file: BusinessFile; blocked: null }
         /** A blocking conflict: the file is withheld and only the partner's receipt remains. */
         | { file: null; blocked: ConflictReceipt }
     );
+
+/** One of the Business's saved monthly figures, as the partner checks it against the statements. */
+export type StatementReviewObservation = {
+    month: string;
+    operating_inflow: string;
+    operating_outflow: string;
+    owner_draw: string;
+    debt_service: string;
+};
+
+/**
+ * A statement review's working file (#396): the revisions its verification binds, each statement
+ * to open, the Business's saved figures and the procedure's checks. `verify` is null until the
+ * Business has saved its figures.
+ */
+/** One account's balances for one month, as the Business transcribed them. Whole RWF. */
+export type StatementReviewBalance = {
+    account: string;
+    month: string;
+    opening_balance: string;
+    closing_balance: string;
+};
+
+export type StatementReviewFile = {
+    assignment_revision: number;
+    evidence_revision: number;
+    verification_revision: number;
+    procedure_version: string;
+    checks: string[];
+    documents: {
+        id: string;
+        filename: string;
+        sha256: string;
+        received_on: string;
+        open: RouteLink;
+    }[];
+    transcription: {
+        id: string;
+        sha256: string;
+        months: string[];
+        observations: StatementReviewObservation[];
+        /** Each account's opening and closing balance for each month, to run the balances check. */
+        balances: StatementReviewBalance[];
+    } | null;
+    verify: RouteAction | null;
+    /** The verification's operation lookup, with the literal `{request_id}` token. */
+    operation: RouteLink;
+};
 
 /* ------------------------------------------------------------------------------------------ */
 /* Audit procedure (MVP-AUDITOR-SCR-03…06, design sheets L1017–1498)                             */

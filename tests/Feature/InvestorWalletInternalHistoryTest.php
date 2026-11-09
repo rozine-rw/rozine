@@ -8,6 +8,7 @@ use App\Models\LedgerEntry;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Laravel\Sanctum\Sanctum;
@@ -159,4 +160,26 @@ it('keeps the period on the next page of history', function (): void {
 
     $next = internalWalletPage($this->actingAs($this->investor['user'])->get(route('investor.wallet', ['movement' => 'internal', 'period' => '30d'])))['history']['pagination']['next'];
     expect($next['url'])->toStartWith('/investor/wallet?movement=internal&before=')->toEndWith('&period=30d');
+});
+
+it('keeps multi-page history reads bounded for both movements', function (): void {
+    foreach (range(1, 24) as $index) {
+        $deposit = InvestorWalletFixture::deposit($this->investor, '1000');
+        InvestorWalletFixture::settle($deposit['data']['intent_id']);
+        ($this->reserve)('1', (string) Str::uuid());
+    }
+    $this->actingAs($this->investor['user']);
+    foreach (['external', 'internal'] as $movement) {
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $first = internalWalletPage($this->get(route('investor.wallet', ['movement' => $movement])));
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+        $url = $first['history']['pagination']['next']['url'];
+        $second = internalWalletPage($this->get($url));
+        expect($first['history']['items'])->toHaveCount(20)
+            ->and($second['history']['items'])->toHaveCount($movement === 'external' ? 5 : 4)
+            ->and(count($queries))->toBeLessThan(70);
+        $this->get($url.'&identity_context_revision=0')->assertStatus(409);
+    }
 });

@@ -6,13 +6,17 @@ import BusinessHomeController from './BusinessHomeController'
 import BusinessNoticesController from './BusinessNoticesController'
 import BusinessWalletController from './BusinessWalletController'
 import BusinessStatementController from './BusinessStatementController'
+import BusinessStatementTranscriptionController from './BusinessStatementTranscriptionController'
 import StaffDisbursementController from './StaffDisbursementController'
+import StaffStatementAuditReadinessController from './StaffStatementAuditReadinessController'
+import StaffStatementReviewController from './StaffStatementReviewController'
 import AuditOperationsController from './AuditOperationsController'
 import AuditorNoticesController from './AuditorNoticesController'
 import StaffApplicationReleaseController from './StaffApplicationReleaseController'
 import BusinessPublicationController from './BusinessPublicationController'
 import InvestorDealsController from './InvestorDealsController'
 import InvestorMarketController from './InvestorMarketController'
+import InvestorCartCheckoutController from './InvestorCartCheckoutController'
 import InvestorWalletController from './InvestorWalletController'
 import InvestorRiskAcknowledgementController from './InvestorRiskAcknowledgementController'
 import InvestorNoticesController from './InvestorNoticesController'
@@ -54,6 +58,7 @@ import AuditorProcedureController from './AuditorProcedureController'
 import AuditorEngagementController from './AuditorEngagementController'
 import AuditorJobsController from './AuditorJobsController'
 import AuditorPortfolioController from './AuditorPortfolioController'
+import AuditorStatementVerificationController from './AuditorStatementVerificationController'
 import BusinessContactController from './BusinessContactController'
 import BusinessPayoutAccountController from './BusinessPayoutAccountController'
 import BusinessComplaintController from './BusinessComplaintController'
@@ -64,6 +69,7 @@ import Settings from './Settings'
 import StaffNotesController from './StaffNotesController'
 import StaffAuditReportController from './StaffAuditReportController'
 import StaffSectionController from './StaffSectionController'
+import StaffCartReleaseController from './StaffCartReleaseController'
 import StaffStagingMailTesterController from './StaffStagingMailTesterController'
 
 const Controllers = {
@@ -75,13 +81,17 @@ const Controllers = {
     BusinessNoticesController: Object.assign(BusinessNoticesController, BusinessNoticesController),
     BusinessWalletController: Object.assign(BusinessWalletController, BusinessWalletController),
     BusinessStatementController: Object.assign(BusinessStatementController, BusinessStatementController),
+    BusinessStatementTranscriptionController: Object.assign(BusinessStatementTranscriptionController, BusinessStatementTranscriptionController),
     StaffDisbursementController: Object.assign(StaffDisbursementController, StaffDisbursementController),
+    StaffStatementAuditReadinessController: Object.assign(StaffStatementAuditReadinessController, StaffStatementAuditReadinessController),
+    StaffStatementReviewController: Object.assign(StaffStatementReviewController, StaffStatementReviewController),
     AuditOperationsController: Object.assign(AuditOperationsController, AuditOperationsController),
     AuditorNoticesController: Object.assign(AuditorNoticesController, AuditorNoticesController),
     StaffApplicationReleaseController: Object.assign(StaffApplicationReleaseController, StaffApplicationReleaseController),
     BusinessPublicationController: Object.assign(BusinessPublicationController, BusinessPublicationController),
     InvestorDealsController: Object.assign(InvestorDealsController, InvestorDealsController),
     InvestorMarketController: Object.assign(InvestorMarketController, InvestorMarketController),
+    InvestorCartCheckoutController: Object.assign(InvestorCartCheckoutController, InvestorCartCheckoutController),
     InvestorWalletController: Object.assign(InvestorWalletController, InvestorWalletController),
     InvestorRiskAcknowledgementController: Object.assign(InvestorRiskAcknowledgementController, InvestorRiskAcknowledgementController),
     InvestorNoticesController: Object.assign(InvestorNoticesController, InvestorNoticesController),
@@ -123,6 +133,7 @@ const Controllers = {
     AuditorEngagementController: Object.assign(AuditorEngagementController, AuditorEngagementController),
     AuditorJobsController: Object.assign(AuditorJobsController, AuditorJobsController),
     AuditorPortfolioController: Object.assign(AuditorPortfolioController, AuditorPortfolioController),
+    AuditorStatementVerificationController: Object.assign(AuditorStatementVerificationController, AuditorStatementVerificationController),
     BusinessContactController: Object.assign(BusinessContactController, BusinessContactController),
     BusinessPayoutAccountController: Object.assign(BusinessPayoutAccountController, BusinessPayoutAccountController),
     BusinessComplaintController: Object.assign(BusinessComplaintController, BusinessComplaintController),
@@ -133,6 +144,7 @@ const Controllers = {
     StaffNotesController: Object.assign(StaffNotesController, StaffNotesController),
     StaffAuditReportController: Object.assign(StaffAuditReportController, StaffAuditReportController),
     StaffSectionController: Object.assign(StaffSectionController, StaffSectionController),
+    StaffCartReleaseController: Object.assign(StaffCartReleaseController, StaffCartReleaseController),
     StaffStagingMailTesterController: Object.assign(StaffStagingMailTesterController, StaffStagingMailTesterController),
 }
 

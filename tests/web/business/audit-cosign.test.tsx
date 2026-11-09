@@ -1087,6 +1087,11 @@ describe('Business audit co-sign — N6 publication', () => {
             'Published automatically after the 24-hour window: no one signed off or disputed it in time. No signature was recorded for it.',
         );
         expect(screen.getByText('0 of 1 signatures')).toBeInTheDocument();
+        /* An unsigned signatory on a published report is not still waiting (#506). */
+        expect(
+            screen.getByRole('list', { name: 'Signatories' }),
+        ).toHaveTextContent(/Not signed$/u);
+        expect(screen.queryByText('Waiting')).not.toBeInTheDocument();
         expect(
             screen.queryByRole('note', { name: '24-hour review window' }),
         ).not.toBeInTheDocument();
@@ -1778,6 +1783,8 @@ describe('Business audit co-sign — N6 dispute sheet', () => {
         expect(
             sheet.getByRole('button', { name: 'Submitting…' }),
         ).toHaveAttribute('aria-busy', 'true');
+        // The proof files are on their way, so the sheet says so.
+        expect(sheet.getByRole('status')).toHaveTextContent('Uploading…');
     });
 
     it('sends text alone without proof_files, and files alone without supporting_text', async () => {

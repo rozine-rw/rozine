@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import { UploadTile } from '@/components/business/onboarding/upload-tile';
+import type { SendingUpload } from '@/components/business/onboarding/upload-tile';
 import { FieldError } from '@/components/rozine/form';
 import { Icon } from '@/components/rozine/icon';
 import type { IconName } from '@/components/rozine/icon';
@@ -23,10 +24,18 @@ const IMAGES = 'image/*';
 type StepDocumentsProps = {
     documents: OnboardingDocuments;
     actions: { certificate: RouteAction; upload: RouteAction };
+    /** The upload in flight, held by the page so Continue waits for it too. */
+    sending: SendingUpload | null;
+    onSending: (sending: SendingUpload | null) => void;
 };
 
 /** Step 2 of 4 — "RDB certificate, logo & photos" (design L1625–1648). */
-export function StepDocuments({ documents, actions }: StepDocumentsProps) {
+export function StepDocuments({
+    documents,
+    actions,
+    sending,
+    onSending,
+}: StepDocumentsProps) {
     const { t } = useTranslation();
     const { certificate } = documents;
     const verified = certificate.status === 'verified';
@@ -67,6 +76,8 @@ export function StepDocuments({ documents, actions }: StepDocumentsProps) {
                 <UploadTile
                     slot="certificate"
                     action={actions.upload}
+                    sending={sending}
+                    onSending={onSending}
                     label={t('business.onboarding.documents.certificate_drop')}
                     accept="application/pdf,image/*"
                     className="mt-2.5 flex h-[120px] flex-col items-center justify-center gap-1.5 overflow-hidden rounded-xl border-[1.5px] border-dashed border-[#dbe3f0] text-center dark:border-rz-border"
@@ -121,7 +132,9 @@ export function StepDocuments({ documents, actions }: StepDocumentsProps) {
                     </FieldError>
                     <button
                         type="submit"
-                        disabled={verified || form.processing}
+                        disabled={
+                            verified || form.processing || sending !== null
+                        }
                         className={cn(
                             'mt-[11px] h-[42px] w-full rounded-xl border text-[13px] font-bold',
                             verified
@@ -146,6 +159,8 @@ export function StepDocuments({ documents, actions }: StepDocumentsProps) {
                 <UploadTile
                     slot="logo"
                     action={actions.upload}
+                    sending={sending}
+                    onSending={onSending}
                     label={t('business.onboarding.documents.logo_label')}
                     accept={IMAGES}
                     className="flex size-[72px] shrink-0 flex-col items-center justify-center overflow-hidden rounded-2xl border-[1.5px] border-dashed border-[#dbe3f0] dark:border-rz-border"
@@ -190,6 +205,8 @@ export function StepDocuments({ documents, actions }: StepDocumentsProps) {
                         key={slot}
                         slot={slot}
                         action={actions.upload}
+                        sending={sending}
+                        onSending={onSending}
                         label={t(`business.apply.raise.slot.${slot}`)}
                         accept={IMAGES}
                         className={cn(

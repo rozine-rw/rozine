@@ -74,11 +74,13 @@ it('lists every halt in force and every open variance, oldest first, with what i
             ['all', 3, '/admin/exceptions', true], ['arrears', 0, '/admin/exceptions?kind=arrears', false],
             ['halt', 2, '/admin/exceptions?kind=halt', false], ['variance', 1, '/admin/exceptions?kind=variance', false],
             ['audit', 0, '/admin/exceptions?kind=audit', false], ['complaint', 0, '/admin/exceptions?kind=complaint', false],
+            ['cart_release', 0, '/admin/exceptions?kind=cart_release', false],
         ])
         ->and($props['exceptions'][0])->toEqual(['id' => $hold->id, 'kind' => 'halt', 'reference' => 'HLD-'.Str::upper(Str::substr($hold->id, -6)),
             'subject' => ['kind' => 'investor', 'label' => 'Aline Uwase'], ...$common,
             'description' => 'Account on high-risk hold: withdrawals, new purchases, secondary trading paused',
-            'opened_at' => $kigali($hold), 'age_days' => 3, 'link' => ['url' => '/admin/investors?investor='.$investor['party']->id, 'method' => 'get']])
+            'opened_at' => $kigali($hold), 'age_days' => 3, 'link' => ['url' => '/admin/investors?investor='.$investor['party']->id, 'method' => 'get'],
+            'retry' => null])
         ->and($props['exceptions'][1])->toMatchArray(['id' => $order->id, 'kind' => 'halt', 'subject' => ['kind' => 'investor', 'label' => 'Investor without an account'],
             'description' => 'Account restricted by an external order: deposits paused until '.now('Africa/Kigali')->addDays(10)->format('j M Y'),
             'opened_at' => $kigali($order), 'age_days' => 1])
@@ -99,7 +101,7 @@ it('filters by kind, searches, and opens the rest on request', function (): void
 
     $halts = ($this->page)($staff, ['kind' => 'halt']);
     expect(array_column($halts['exceptions'], 'kind'))->toBe(['halt', 'halt'])
-        ->and(array_column($halts['chips'], 'active'))->toBe([false, false, true, false, false, false])
+        ->and(array_column($halts['chips'], 'active'))->toBe([false, false, true, false, false, false, false])
         ->and($halts['counts']['open'])->toBe(3);
 
     $search = ($this->page)($staff, ['q' => 'aline', 'kind' => 'variance']);
@@ -107,7 +109,7 @@ it('filters by kind, searches, and opens the rest on request', function (): void
         ->and(array_map(fn (array $chip): array => [$chip['count'], $chip['link']['url']], $search['chips']))->toBe([
             [1, '/admin/exceptions?q=aline'], [0, '/admin/exceptions?q=aline&kind=arrears'],
             [1, '/admin/exceptions?q=aline&kind=halt'], [0, '/admin/exceptions?q=aline&kind=variance'], [0, '/admin/exceptions?q=aline&kind=audit'],
-            [0, '/admin/exceptions?q=aline&kind=complaint'],
+            [0, '/admin/exceptions?q=aline&kind=complaint'], [0, '/admin/exceptions?q=aline&kind=cart_release'],
         ]);
 
     $first = ($this->page)($staff, ['limit' => 1]);
@@ -132,7 +134,7 @@ it('raises a Flash Audit still unfinished after its 24-hour clock until its repo
         'subject' => ['kind' => 'business', 'label' => $business], 'note_title' => null,
         'description' => 'Flash audit unfinished after 24 hours: offered to a partner, not yet accepted', 'amount' => null, 'dpd' => null,
         'opened_at' => $dueAt->setTimezone('Africa/Kigali')->toIso8601String(), 'age_days' => (int) $dueAt->setTimezone('Africa/Kigali')->startOfDay()->diffInDays(now('Africa/Kigali')->startOfDay()),
-        'owner' => null, 'link' => ['url' => '/admin/businesses?business='.$fixture['business'], 'method' => 'get']]])
+        'owner' => null, 'link' => ['url' => '/admin/businesses?business='.$fixture['business'], 'method' => 'get'], 'retry' => null]])
         ->and(array_column($props['chips'], 'count', 'key'))->toMatchArray(['all' => 1, 'audit' => 1]);
 
     $offered->forceFill(['status' => 'operations', 'party_id' => null, 'state' => [...$offered->state, 'status' => 'operations']])->save();
@@ -158,7 +160,7 @@ it('names the partner of an accepted Flash Audit left unsealed, and drops it onc
 });
 
 it('names a case it does not know plainly, and shows an empty list before anything is open', function (): void {
-    $props = (new StaffExceptionsResource(['variances' => [], 'audits' => [], 'complaints' => [], 'halts' => [['id' => '01k0000000000000000000abcd', 'party_id' => '01k0000000000000000000abce',
+    $props = (new StaffExceptionsResource(['variances' => [], 'audits' => [], 'complaints' => [], 'cart_releases' => [], 'halts' => [['id' => '01k0000000000000000000abcd', 'party_id' => '01k0000000000000000000abce',
         'name' => 'Aline Uwase', 'cause' => 'court_freeze', 'scope' => ['future_scope'], 'effective_at' => '2027-01-22T08:00:00+02:00', 'expires_at' => null,
         'age_days' => 1]], 'search' => '', 'kind' => null, 'limit' => 50, 'roles' => ['treasury'], 'permissions' => ['exceptions.view']]))->resolve(request());
 

@@ -73,7 +73,7 @@ it('seals once across simultaneous retries and competing request IDs', function 
 
 it('serializes distinct mandated signatures and publishes only after the losing signer refreshes its revision', function (): void {
     $fixture = Fixture::ready(2);
-    Fixture::seal($fixture);
+    Fixture::sealLegacy($fixture);
     $sign = fn (int $index): Closure => function () use ($fixture, $index): void {
         expect(Fixture::cosign($fixture, $index)['code'])->toBeIn(['REPORT_COSIGNATURE_RECORDED', 'VERSION_CONFLICT']);
     };

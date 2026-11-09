@@ -106,7 +106,7 @@ export const ACCENTS: ThemedColor[] = [
 
 /** Static, non-policy context for the two waitlist panels. */
 export const INVESTOR_CONTEXT = [
-    '10–15% total return over 3 to 12 months.',
+    '10–15% total return over 3 to 6 months.',
     'Paid back monthly, automatically, into your Rozine account.',
     'You pick businesses you want to invest in. Each one is audited by an ICPAR-certified CPA.',
 ];

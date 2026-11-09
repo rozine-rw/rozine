@@ -125,6 +125,16 @@ const AMBER_TILE = 'bg-[rgba(194,102,31,.1)]';
 const RED_TILE = 'bg-[rgba(229,72,77,.1)]';
 const GREEN_TEXT = 'text-rz-accent-app-text';
 
+/** The eligibility codes a blocked draft names in its own words; any other reads generically. */
+const BLOCKED_REASONS = {
+    UNDERWRITING_EVIDENCE_REQUIRED:
+        'business.today.blocked.sub.UNDERWRITING_EVIDENCE_REQUIRED',
+    VERIFIED_HISTORY_INSUFFICIENT:
+        'business.today.blocked.sub.VERIFIED_HISTORY_INSUFFICIENT',
+    POLICY_INPUT_REQUIRED: 'business.today.blocked.sub.POLICY_INPUT_REQUIRED',
+    RESTRICTION_ACTIVE: 'business.today.blocked.sub.RESTRICTION_ACTIVE',
+} as const;
+
 /** "Today" — what needs the business now (design L184–238), in the server's order. */
 export function TodaySection({ items }: { items: BusinessTodo[] }) {
     const { t, locale } = useTranslation();
@@ -208,6 +218,26 @@ export function TodaySection({ items }: { items: BusinessTodo[] }) {
                         })}
                         cta={t('business.today.awaiting.cta')}
                         ctaTone={GREEN_TEXT}
+                    />
+                );
+            case 'application_blocked':
+                return (
+                    <TodoCard
+                        href={item.link}
+                        icon={lineIcon('hourglass', 'amber')}
+                        iconTile={AMBER_TILE}
+                        dot="bg-[#c2661f]"
+                        kicker={t('business.today.blocked.kicker')}
+                        title={
+                            item.title ?? t('business.today.blocked.untitled')
+                        }
+                        sub={t(
+                            BLOCKED_REASONS[
+                                item.code as keyof typeof BLOCKED_REASONS
+                            ] ?? 'business.today.blocked.sub.other',
+                        )}
+                        cta={t('business.today.blocked.cta')}
+                        ctaTone="text-rz-ink"
                     />
                 );
             case 'application_declined':

@@ -89,7 +89,7 @@ it('retains correction lineage and marks audit reads stale after new Business ev
     $input = StatementFixture::transcription($sources['document_id']);
     $owner = $fixture['authority']['users'][0];
     $correction = app(RecordStatementTranscription::class)->handle($owner->id, 1, $fixture['business'], 2,
-        $input['rails'], $input['months'], $input['statements'], (string) Str::uuid());
+        $input['rails'], $input['months'], $input['statements'], StatementFixture::reviewed($owner->id, $fixture['business']), (string) Str::uuid());
     $currentId = $correction['data']['transcription']['id'];
     $get = app(GetAuditTranscription::class);
     expect($get->handle($user->id, 1, $assignment->id)['id'])->toBe($currentId)

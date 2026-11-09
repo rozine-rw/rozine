@@ -89,7 +89,7 @@ function healthReadings(array $accounts, int $breaks, array $raised, int $pendin
     {
         public function __construct(private int $lastHour, private int $total) {}
 
-        public function trail(string $search, ?string $from, ?string $to, int $limit): array
+        public function trail(string $search, ?string $from, ?string $to, int $limit, ?string $cursor = null, bool $cursorMode = false): array
         {
             return ['entries' => [], 'total' => $from === null ? $this->total : $this->lastHour];
         }

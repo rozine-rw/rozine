@@ -521,6 +521,19 @@
 }
 
 /*
+ * An amount whose currency prefix shares one bordered box with its input: the ring goes round the
+ * whole box, so it neither cuts through the prefix nor draws a second border inside the field.
+ */
+.rz-prefixed-field:has(input:focus-visible) {
+    outline: 2px solid var(--rz-accent-fill, var(--rz-admin-fill));
+    outline-offset: 2px;
+}
+
+.rz-prefixed-field input:focus-visible {
+    outline: none;
+}
+
+/*
  * WCAG 2.2 SC 2.3.3: a person who asks their system for reduced motion gets none of the app's
  * entrances, spinners, pulses or transitions. Every page loads this stylesheet through app.css, so
  * the rule also covers the Pulse and Auditor keyframes.

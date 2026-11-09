@@ -389,10 +389,10 @@ const traction: Traction = {
 };
 
 const policy: PulsePolicy = {
-    terms: [3, 6, 9, 12],
+    terms: [3, 4, 5, 6],
     sectors: ['Agriculture', 'Other'],
     registration_years: [2026, 2020],
-    minimum_revenue: 15_000_000,
+    minimum_revenue: 30_000_000,
     minimum_loan: 5_000_000,
     maximum_loan: 50_000_000,
     pledge: {
@@ -670,7 +670,7 @@ describe('Pulse page orchestration', () => {
             annual_costs: 12_000_000,
             sector: 'Agriculture',
             registered_year: 2020,
-            term_months: 12,
+            term_months: 6,
         });
         expect(mocks.businessPreviewHttp.post).toHaveBeenCalledWith(
             '/pulse/business/preview',
@@ -875,7 +875,7 @@ describe('Pulse page orchestration', () => {
             annual_costs: 12_000_000,
             sector: 'Agriculture',
             registered_year: 2020,
-            term_months: 12,
+            term_months: 6,
             listed: false,
         });
 

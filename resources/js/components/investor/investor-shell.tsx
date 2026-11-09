@@ -1,5 +1,6 @@
 import { Head, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
+import { FloatingHold } from '@/components/investor/floating-hold';
 import { AppFrame } from '@/components/rozine/app-frame';
 import { useChangeBeacon } from '@/hooks/use-change-beacon';
 import type { ChangeBeacon } from '@/hooks/use-change-beacon';
@@ -66,7 +67,8 @@ type InvestorShellProps = {
 
 /**
  * The Investor app frame, with the design's five tabs: Deals, Portfolio, Market, Cart and Profile.
- * A tab whose destination the server does not link (null) is left out.
+ * A tab whose destination the server does not link (null) is left out. A live checkout hold floats
+ * its countdown over every page.
  */
 export function InvestorShell({
     title,
@@ -110,6 +112,7 @@ export function InvestorShell({
         >
             <Head title={title} />
             {children}
+            <FloatingHold wallet={links.wallet} raised={showTabBar ?? true} />
         </AppFrame>
     );
 }

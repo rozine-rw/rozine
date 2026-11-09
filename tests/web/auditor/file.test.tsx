@@ -35,6 +35,19 @@ describe('Auditor business file', () => {
         ).toBeInTheDocument();
     });
 
+    it('reads Overdue on the flash clock once its 24-hour deadline has passed', () => {
+        const overdue = props();
+        overdue.server_time = '2026-10-04T15:00:00Z';
+        render(<AuditorFile {...overdue} />);
+
+        const clock = within(sheetFor()).getByRole('timer', {
+            name: 'This job’s deadline has passed',
+        });
+
+        expect(clock).toHaveTextContent('Overdue');
+        expect(clock).toHaveTextContent('00:00:00');
+    });
+
     it('previews an offered file read-only, over Jobs, its flash clock already running from dispatch', () => {
         render(<AuditorFile {...props()} />);
 
@@ -317,6 +330,34 @@ describe('Auditor business file', () => {
 describe('Auditor business file on the live S-C projection', () => {
     const live = () => props(liveMinimalFixture);
     const liveSheet = () => sheetFor('Gikondo Metal Works');
+
+    it.each([
+        ['awaiting_cosign', 'Awaiting co-signature'],
+        ['disputed', 'Under desk review'],
+        ['escalated', 'Escalated'],
+        ['published', 'Published'],
+    ] as const)(
+        'shows a sealed report %s as Jobs words it, with no countdown',
+        (state, label) => {
+            const sealed = live();
+            sealed.job.report_state = state;
+            render(<AuditorFile {...sealed} />);
+
+            const sheet = liveSheet();
+
+            expect(within(sheet).queryByRole('timer')).not.toBeInTheDocument();
+            expect(within(sheet).getByText(label)).toBeInTheDocument();
+        },
+    );
+
+    it('runs the countdown while the report is not yet sealed', () => {
+        render(<AuditorFile {...live()} />);
+
+        expect(within(liveSheet()).getByRole('timer')).toBeInTheDocument();
+        expect(
+            within(liveSheet()).queryByText('Awaiting co-signature'),
+        ).not.toBeInTheDocument();
+    });
 
     it('introduces the draft fallback as the application as it stands, with no pre-screen on record', () => {
         render(<AuditorFile {...live()} />);

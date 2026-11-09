@@ -212,7 +212,7 @@ document.form = documentForm
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:95
+* @see app/Http/Controllers/InvestorVerificationController.php:100
 * @route '/api/v1/investor/verification/submit'
 */
 export const submit = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -227,7 +227,7 @@ submit.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:95
+* @see app/Http/Controllers/InvestorVerificationController.php:100
 * @route '/api/v1/investor/verification/submit'
 */
 submit.url = (options?: RouteQueryOptions) => {
@@ -236,7 +236,7 @@ submit.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:95
+* @see app/Http/Controllers/InvestorVerificationController.php:100
 * @route '/api/v1/investor/verification/submit'
 */
 submit.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -246,7 +246,7 @@ submit.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:95
+* @see app/Http/Controllers/InvestorVerificationController.php:100
 * @route '/api/v1/investor/verification/submit'
 */
 const submitForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -256,7 +256,7 @@ const submitForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> =>
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:95
+* @see app/Http/Controllers/InvestorVerificationController.php:100
 * @route '/api/v1/investor/verification/submit'
 */
 submitForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

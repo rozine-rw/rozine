@@ -165,7 +165,7 @@ it('retains factual correction lineage and never lets a replay restore a superse
         ->and(Fixture::verifyStatements($fixture, $assignment, $sources['transcription_id'], $review, evidenceRevision: 3, verificationRevision: 2)['code'])->toBe('STATEMENT_TRANSCRIPTION_STALE');
     $input = StatementFixture::transcription($sources['document_id']);
     $newTranscription = app(RecordStatementTranscription::class)->handle($owner->id, 1, $fixture['business'], 3,
-        $input['rails'], $input['months'], $input['statements'], (string) Str::uuid());
+        $input['rails'], $input['months'], $input['statements'], StatementFixture::reviewed($owner->id, $fixture['business']), (string) Str::uuid());
     expect(Fixture::verifyStatements($fixture, $assignment, $newTranscription['data']['transcription']['id'], $review, evidenceRevision: 4, verificationRevision: 2)['code'])->toBe('STATEMENT_SOURCE_REVIEW_REQUIRED');
     $this->assertDatabaseCount('statement_verifications', 2);
 });
@@ -575,7 +575,7 @@ it('supplies the full first-time underwriting window only from persisted Auditor
             ]];
     }
     $transcription = app(RecordStatementTranscription::class)->handle($owner->id, 1, $fixture['business'], 1,
-        [['id' => 'bank-a', 'active_from' => '2023-09', 'active_until' => null]], $months, $statements, (string) Str::uuid());
+        [['id' => 'bank-a', 'active_from' => '2023-09', 'active_until' => null]], $months, $statements, StatementFixture::reviewed($owner->id, $fixture['business']), (string) Str::uuid());
     $assignment = Fixture::request($fixture);
     Fixture::respond($fixture['partners'][0]['user'], $assignment);
     $review = StatementFixture::review([$sourceId => hash('sha256', $csv)]);

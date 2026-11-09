@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Application\Environment\EnvironmentIsolation;
+use App\Application\Primary\Contracts\PrimaryPurchaseIndex;
 use App\Application\Primary\GetInvestorCart;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -51,9 +52,34 @@ class HandleInertiaRequests extends Middleware
             // The Investor app's Cart tab badge; every other page has no cart.
             'cart_count' => fn (): ?int => $request->routeIs('investor.*') && $request->user() !== null
                 ? app(GetInvestorCart::class)->count((int) $request->user()->getAuthIdentifier()) : null,
+            // The floating "Held for checkout" countdown on every Investor page but the checkout itself,
+            // sent on partial reloads too so a change beacon drops a hold released or confirmed elsewhere.
+            'checkout_holds' => Inertia::always(fn (): ?array => $this->checkoutHolds($request)),
             'nonLiveEnvironment' => Inertia::always(fn (): ?string => app(EnvironmentIsolation::class)->isIsolated()
                 ? app(EnvironmentIsolation::class)->profile()
                 : null),
         ];
+    }
+
+    /**
+     * The signed-in Investor's live checkout holds, soonest to lapse first, each linking back to its
+     * deal's checkout, with the server time the countdown runs against. Null off the Investor app
+     * and on the checkout page, which shows its own hold clock.
+     *
+     * @return array{server_time: string, holds: list<array{reservation_id: string, deal_name: string, amount: array{currency: string, amount: string}, units: string, expires_at: string, link: array{url: string, method: string}}>}|null
+     */
+    private function checkoutHolds(Request $request): ?array
+    {
+        if (! $request->routeIs('investor.*') || $request->routeIs('investor.checkout') || $request->user() === null) {
+            return null;
+        }
+        $holds = app(PrimaryPurchaseIndex::class)->activeHoldsOfUser((int) $request->user()->getAuthIdentifier());
+        usort($holds, fn (array $first, array $second): int => strcmp($first['expires_at'], $second['expires_at']));
+
+        return ['server_time' => now()->toIso8601String(), 'holds' => array_map(fn (array $hold): array => [
+            'reservation_id' => $hold['reservation_id'], 'deal_name' => $hold['deal_name'], 'amount' => $hold['amount'], 'units' => $hold['units'],
+            'expires_at' => $hold['expires_at'],
+            'link' => ['url' => route('investor.checkout', ['campaign' => $hold['campaign_id'], 'reservation' => $hold['reservation_id']], false), 'method' => 'get'],
+        ], $holds)];
     }
 }

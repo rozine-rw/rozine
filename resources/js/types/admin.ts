@@ -478,8 +478,8 @@ export type AdminTodayProps = AdminFrameShellProps & {
         watch: { count: number; pct: number };
         distressed: { count: number; pct: number } | null;
     } | null;
-    /** Null while the console has no ledger feed. */
-    activity: ActivityItem[] | null;
+    /** Omitted while loading; null when this viewer cannot see the ledger. */
+    activity?: ActivityItem[] | null;
     /** A stage the platform does not record yet has a null count. */
     funnel: { stage: FunnelStage; count: number | null; width_pct: number }[];
     pending_applications: {
@@ -772,6 +772,7 @@ export type StaffPermissionKey =
     | 'payments.view'
     | 'complaints.answer'
     | 'health.view'
+    | 'cart.releases.resolve'
     | 'staff.manage'
     | 'accounts.freeze'
     | 'capacity.adjust'
@@ -846,6 +847,90 @@ export type DispatchLocation = {
     verify: (RouteAction & { verified_at: string }) | null;
 };
 
+/**
+ * The audit open on a Business, as staff who manage audit assignments see it (BR-48, #446), with
+ * where they request a Flash audit when none is open and redispatch one that waits on Audit
+ * Operations; each action is null when it is not available.
+ */
+export type BusinessAudit = {
+    engagement: {
+        id: string;
+        /** A statement review (#396) runs as a routine audit but is named for what it checks. */
+        kind: 'flash' | 'routine' | 'statement_review';
+        status: 'operations' | 'offered' | 'accepted';
+        revision: number;
+        /** Dispatch attempts used, while the audit waits on Audit Operations. */
+        attempt: number | null;
+        /** Why no partner can take it now, while it waits on Audit Operations. */
+        operations_reason:
+            | 'AUDIT_PARTNER_AVAILABLE'
+            | 'AUDIT_PREMISES_UNVERIFIED'
+            | 'AUDIT_NO_PARTNER_IN_RANGE'
+            | 'AUDIT_INDEPENDENCE_REVIEW_REQUIRED'
+            | 'AUDIT_NO_ELIGIBLE_PARTNER'
+            | 'AUDIT_DISPATCH_EXHAUSTED'
+            | null;
+        /** A Flash audit's 24-hour deadline (ISO); null for a monthly audit. */
+        due_at: string | null;
+        /** The Flash deadline passed with the audit still open (FR-303). */
+        overdue: boolean;
+    } | null;
+    /** Audit Operations closed the Business's last audit, so no new one can be requested here. */
+    closed: boolean;
+    request_flash: RouteAction | null;
+    redispatch: RouteAction | null;
+    /** Ends this audit only (#489), unlike close: a new one can be requested afterwards. */
+    withdraw: RouteAction | null;
+    close: RouteAction | null;
+    /** Where to fix a missing partner within 30 km. */
+    remedy: RouteLink | null;
+    /** Audit Partners with a verified office within 30 km, and whether each is reviewed as independent. */
+    partners: {
+        party_id: string;
+        name: string;
+        reviewed: boolean;
+        revision: number;
+        review: RouteAction | null;
+        /** The server time the review is checked as of, fixed when the form is issued. */
+        checked_at: string;
+    }[];
+    /** Whether the Business's uploaded statements are ready for a factual review, and why not (#396). */
+    statement_review: StatementReview;
+};
+
+export type StatementReviewBlocker =
+    | 'BUSINESS_VERIFICATION_REQUIRED'
+    | 'STATEMENT_ORIGINAL_REQUIRED'
+    | 'STATEMENT_RECONCILIATION_REQUIRED'
+    | 'STATEMENT_TRANSCRIPTION_STALE'
+    | 'STATEMENT_ALREADY_VERIFIED'
+    | 'AUDIT_STATEMENT_REVIEW_OPEN'
+    | 'AUDIT_ENGAGEMENT_OPEN'
+    | 'AUDIT_ENGAGEMENT_CLOSED';
+
+export type StatementReview = {
+    verified: boolean;
+    coverage: {
+        declared_month_count: number;
+        first_month: string | null;
+        last_month: string | null;
+    };
+    reasons: StatementReviewBlocker[];
+    /** The request, bound to the readiness shown, while one can be made. */
+    request:
+        | (RouteAction & {
+              binding: {
+                  expected_business_revision: number;
+                  expected_mandate_version: number;
+                  expected_evidence_revision: number;
+                  transcription_id: string;
+                  transcription_sha256: string;
+                  readiness_sha256: string;
+              };
+          })
+        | null;
+};
+
 export type PartyDetail = {
     id: string;
     kind: PartyKind;
@@ -891,6 +976,8 @@ export type PartyDetail = {
     office?: DispatchLocation | null;
     /** A Business's premises, which dispatch measures the 30 km to; sent only to viewers who verify Businesses. */
     premises?: DispatchLocation | null;
+    /** A Business's open audit; sent only to viewers who manage audit assignments. */
+    audit?: BusinessAudit | null;
     links: { close: RouteLink };
     actions: {
         freeze?: RouteAction;
@@ -1065,6 +1152,7 @@ export type AdminLedgerProps = AdminShellProps & {
 
 export type EventRow = {
     id: string;
+    cursor_key?: string;
     at: string;
     actor: string;
     action: { code: string; label: string; tone: Tone };
@@ -1080,6 +1168,7 @@ export type EventExport =
     | { state: 'ready'; requested: Attribution; download: RouteLink };
 
 export type AdminEventsProps = AdminFrameShellProps & {
+    cursor_pagination?: boolean;
     events: EventRow[];
     total: number;
     filters: {
@@ -1493,7 +1582,8 @@ export type ExceptionKind =
     | 'halt'
     | 'variance'
     | 'audit'
-    | 'complaint';
+    | 'complaint'
+    | 'cart_release';
 
 /** A server-counted filter over the open exceptions; `all` is every open one. */
 export type ExceptionChip = {
@@ -1525,6 +1615,11 @@ export type ExceptionItem = {
     owner: Attribution | null;
     /** The record it sits on, null when the viewer may not open it. */
     link: RouteLink | null;
+    /**
+     * Retries a stuck cart release, every line of the cart together (`cart.releases.resolve`);
+     * null for every other kind and for a viewer who may not.
+     */
+    retry: RouteAction | null;
 };
 
 export type AdminExceptionsProps = AdminFrameShellProps &
@@ -2042,7 +2137,12 @@ export type MessageHistoryRow = {
 };
 
 /** Who an automation or email template reaches. */
-export type MessageAudience = 'investor' | 'business' | 'auditor' | 'everyone';
+export type MessageAudience =
+    | 'investor'
+    | 'business'
+    | 'auditor'
+    | 'everyone'
+    | 'staff';
 
 /** One notice the platform sends as its event happens, on these channels. */
 export type MessageAutomation = {

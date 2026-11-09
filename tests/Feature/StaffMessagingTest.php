@@ -92,7 +92,7 @@ it('lists every automation with its audience and channels, and every email templ
             'business.repayment_reminder' => 'business', 'business.reporting_window_open' => 'business',
             'investor.investment_confirmed' => 'investor', 'investor.payment_delayed' => 'investor', 'investor.payout_received' => 'investor',
             'investor.purchase_confirmed' => 'investor', 'investor.raise_expired' => 'investor', 'investor.report_published' => 'investor', 'investor.verification_decided' => 'investor',
-            'investor.wallet_transfer_completed' => 'investor',
+            'investor.wallet_transfer_completed' => 'investor', 'staff.cart_settlement_stuck' => 'staff',
         ]);
 });
 

@@ -6,16 +6,21 @@ import { formatOrdinal } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { BusinessReportsProps } from '@/types/business';
 
-const STEPS: { key: 'opens' | 'visit' | 'cosign'; icon: IconName }[] = [
+const STEPS: {
+    key: 'flash' | 'opens' | 'visit' | 'cosign';
+    icon: IconName;
+}[] = [
+    { key: 'flash', icon: 'flash' },
     { key: 'opens', icon: 'receipt' },
     { key: 'visit', icon: 'schedule' },
     { key: 'cosign', icon: 'trend-up' },
 ];
 
 /**
- * "How monthly audits work" (design L948–981). A phone folds it away behind its heading; a wide
- * screen keeps it open as the page's right column. Without a published audit-cycle policy the
- * steps name no day rather than assume one.
+ * "How audits work" (design L948–981): a Flash audit first, since the list can hold Flash reports
+ * (#490), then the monthly routine. A phone folds it away behind its heading; a wide screen keeps
+ * it open as the page's right column. Without a published audit-cycle policy the steps name no
+ * day rather than assume one.
  */
 export function AuditGuide({
     policy,
@@ -94,6 +99,8 @@ export function AuditGuide({
                                 {t(`business.reports.guide.${key}.title`)}
                             </p>
                             <p className="mt-[3px] text-xs leading-normal text-rz-slate">
+                                {key === 'flash' &&
+                                    t('business.reports.guide.flash.body')}
                                 {key === 'opens' &&
                                     t('business.reports.guide.opens.body')}
                                 {key === 'visit' &&

@@ -56,7 +56,7 @@ final class BusinessQuoteFixture
                 ]];
         }
         $transcribed = app(RecordStatementTranscription::class)->handle($owner->id, 1, $audit['business'], 1,
-            [['id' => 'bank-a', 'active_from' => $first->format('Y-m'), 'active_until' => null]], $months, $statements, (string) Str::uuid());
+            [['id' => 'bank-a', 'active_from' => $first->format('Y-m'), 'active_until' => null]], $months, $statements, StatementFixture::reviewed($owner->id, $audit['business']), (string) Str::uuid());
         $assignment = AuditAssignmentFixture::request($audit, $auditKind);
         AuditAssignmentFixture::respond($audit['partners'][0]['user'], $assignment);
         $review = StatementFixture::review([$source => hash('sha256', $csv)]);

@@ -40,6 +40,11 @@
             }
         },
         "cart": {
+            "id": "01jc3cart0000000000000000a",
+            "revision": 5,
+            "sha256": "db6bc5d376f8db06b0fc0716e704fc4b5adaff8a4cc6405fb25c77170d5f7630",
+            "deals": 3,
+            "units": "20",
             "lines": [
                 {
                     "campaign_id": "cmp_greenleaf",
@@ -360,6 +365,15 @@
                     }
                 }
             ]
+        },
+        "checkout": null,
+        "actions": {
+            "quote": null,
+            "reserve": null
+        },
+        "operation": {
+            "url": "/preview/investor-cart-operations/{request_id}",
+            "method": "get"
         }
     }
 }

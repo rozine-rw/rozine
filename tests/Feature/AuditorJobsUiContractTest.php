@@ -66,7 +66,7 @@ function jobsUiProps(User $user, string $url, string $fixture): array
             return $inertia->component($page['component']);
         });
 
-    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count']));
+    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count', 'checkout_holds']));
 }
 
 /**
@@ -127,6 +127,7 @@ it('renders the live file summary with the component and prop shape of the file 
     jobsUiSameShape($props, jobsUiFixture('auditor-file-live-minimal'));
     expect($props['job']['state'])->toBe('assigned')
         ->and($props['blocked'])->toBeNull()
+        ->and($props['review'])->toBeNull()
         ->and($props['links']['procedure'])->toBeNull()
         ->and($props['links']['close'])->toBe(['url' => '/auditor/jobs', 'method' => 'get']);
 });

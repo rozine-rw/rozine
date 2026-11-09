@@ -16,6 +16,7 @@ import { useAuditorCommands } from '@/components/auditor/commands';
 import { Tick } from '@/components/auditor/ui';
 import { FieldError } from '@/components/rozine/form';
 import { Icon } from '@/components/rozine/icon';
+import { UploadStatus } from '@/components/rozine/upload-status';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
@@ -112,6 +113,11 @@ function DocumentRow({
                     />
                 )}
             </div>
+            {scanning && (
+                <p className="mt-[9px] text-[11px] leading-[1.5] text-rz-secondary">
+                    {t('auditor.ledger.doc.scanning_hint')}
+                </p>
+            )}
             {document.link != null && (
                 <a
                     href={document.link.url}
@@ -199,11 +205,17 @@ export function StepLedger({
     const parsed = stage.documents.filter(
         (document) => document.state === 'parsed',
     ).length;
-    const { start, stop } = usePoll(
-        SCAN_POLL_MS,
-        { only: RELOAD },
-        { autoStart: false },
-    );
+    const poll = usePoll(SCAN_POLL_MS, { only: RELOAD }, { autoStart: false });
+    /*
+     * Inertia hands back new start and stop functions on every render, and starting again resets
+     * the interval: the effect below follows only whether to poll, or a re-render every couple of
+     * seconds would keep the re-check from ever firing (#482).
+     */
+    const control = useRef(poll);
+
+    useEffect(() => {
+        control.current = poll;
+    });
 
     useVariancePreview({ observed_stock: form.data.observed_stock });
 
@@ -216,11 +228,11 @@ export function StepLedger({
 
     useEffect(() => {
         if (polling) {
-            start();
+            control.current.start();
         } else {
-            stop();
+            control.current.stop();
         }
-    }, [polling, start, stop]);
+    }, [polling]);
 
     const pick = (documentId: string | null) => {
         replaces.current = documentId;
@@ -389,6 +401,12 @@ export function StepLedger({
                         </span>
                     </button>
                 </>
+            )}
+            {center.upload !== null && (
+                <UploadStatus
+                    percent={center.upload.percent}
+                    className="mt-2"
+                />
             )}
             <FieldError id="auditor-ledger-document-error">
                 {problem === null

@@ -92,10 +92,21 @@ class InvestorVerificationController extends Controller
             (string) $file->get(), (string) $request->validated('request_id')));
     }
 
+    /**
+     * Once the details are with Compliance there is nothing left to do on this page, so the
+     * Investor goes straight to their home (Deals, where the gate reads "pending"), told the
+     * submission arrived, instead of waiting on a locked form.
+     */
     public function submit(SubmitVerificationRequest $request, SubmitInvestorVerification $action): RedirectResponse|OperationResource
     {
-        return $this->answer($request, fn (): array => $action->handle((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'),
+        $answer = $this->answer($request, fn (): array => $action->handle((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'),
             (int) $request->validated('expected_revision'), (string) $request->validated('request_id')));
+        if ($answer instanceof OperationResource) {
+            return $answer;
+        }
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Your details are with our Compliance team. We will tell you when they have been reviewed.')]);
+
+        return redirect()->route('investor.deals');
     }
 
     /**

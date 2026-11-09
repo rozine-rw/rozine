@@ -116,6 +116,14 @@ test('the site accepts the largest pledge the platform now writes', function () 
     expect(PulseSignup::query()->sole()->pledge_amount)->toBe(PulseUnderwriting::PLEDGE_MAXIMUM);
 });
 
+test('a general signup pledge is not held to one raise concentration share', function () {
+    $this->post(route('site.investor.store'), siteInvestor([
+        'pledge_amount' => 60_000_000,
+    ]))->assertRedirect();
+
+    expect(PulseSignup::query()->sole()->pledge_amount)->toBe(60_000_000);
+});
+
 test('a pledge beyond the largest the platform writes is turned away', function () {
     $this->postJson(route('site.investor.store'), siteInvestor([
         'pledge_amount' => PulseUnderwriting::PLEDGE_MAXIMUM + PulseUnderwriting::PLEDGE_STEP,

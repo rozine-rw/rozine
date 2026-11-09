@@ -6,6 +6,7 @@ import {
     SECONDARY_BUTTON,
 } from '@/components/auditor/sheets/reason-sheet';
 import { Eyebrow } from '@/components/auditor/ui';
+import { UploadStatus } from '@/components/rozine/upload-status';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDate } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
@@ -170,6 +171,9 @@ function SubmissionForm({
                     className="sr-only"
                 />
             </Field>
+            {center.upload !== null && (
+                <UploadStatus percent={center.upload.percent} />
+            )}
             <div className="flex gap-[9px]">
                 <button
                     type="button"

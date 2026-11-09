@@ -10,7 +10,7 @@ use Closure;
  * @phpstan-import-type State from \App\Domain\Auditor\AuditEngagementState
  * @phpstan-import-type Acceptance from \App\Domain\Auditor\AuditEngagementDocuments
  *
- * @phpstan-type View array{id: string, business_id: string, revision: int, kind: string, status: string, offered_at: string|null, accept_by: string|null, complete_by: string|null, visit_by: string|null, allowed_actions: list<string>, period: string|null}
+ * @phpstan-type View array{id: string, business_id: string, revision: int, kind: string, status: string, offered_at: string|null, accept_by: string|null, complete_by: string|null, visit_by: string|null, allowed_actions: list<string>, period: string|null, purpose: string}
  * @phpstan-type ConflictReceipt array{conflict_id: string, kind: string, declared_at: string, note: string, blocking: true, status: 'reassignment_pending'|'reassigned'|'closed'}
  * @phpstan-type OwnConflict array{assignment_id: string, business_id: string, conflict: ConflictReceipt}
  * @phpstan-type ConflictPage array{data: list<OwnConflict>, next_cursor: string|null}
@@ -24,6 +24,25 @@ interface AuditAssignmentStore
 {
     /** @return array<string, mixed> */
     public function request(int $actorId, string $businessId, string $kind, string $reason, string $requestId): array;
+
+    /**
+     * Staff request a factual statement review (#396): a routine engagement whose purpose is to produce a
+     * current statement verification, with no report and no application. Under the Business lock it
+     * resumes an open review, refuses while any other engagement is open, and runs $applicable inside a
+     * new effect so the caller can compare the reviewed bindings and readiness.
+     *
+     * @param  array<string, mixed>  $binding  The reviewed inputs, fingerprinted with the reason.
+     * @param  Closure(array{id: string, revision: int, mandate_version: int}): void  $applicable
+     * @return array<string, mixed>
+     */
+    public function requestStatementReview(int $actorId, string $businessId, string $reason, string $requestId, array $binding, Closure $applicable): array;
+
+    /**
+     * The acting staff member's retained statement review request receipt, bound to the Business it targeted.
+     *
+     * @return array<string, mixed>
+     */
+    public function findStatementReviewOperation(int $actorId, string $businessId, string $requestId): array;
 
     /** @return array<string, mixed> */
     public function respond(int $userId, int $contextRevision, string $assignmentId, int $expectedRevision, string $decision, ?string $conflictKind, string $reason, string $requestId, ?string $reasonCode = null): array;
@@ -111,11 +130,70 @@ interface AuditAssignmentStore
      */
     public function requestMonthly(string $businessId): ?string;
 
+    /**
+     * Trusted scheduler only: dispatches an unannounced Flash audit to the Business and returns the new
+     * assignment, or null when an engagement is still open or was closed.
+     */
+    public function requestFlash(string $businessId): ?string;
+
     /** @return array<string, mixed> */
     public function advance(int $actorId, string $assignmentId, int $expectedRevision, string $requestId): array;
 
     /** @return OperationsCase */
     public function operationsCase(int $actorId, string $assignmentId): array;
+
+    /**
+     * The newest engagement on a Business that is still open, as raw metadata for readiness projections.
+     *
+     * @return array{id: string, revision: int, kind: string, purpose: string, status: string, complete_by: string|null}|null
+     */
+    public function openEngagement(string $businessId): ?array;
+
+    /** Why the engagement exists: 'monthly' for report engagements, 'statement_review' for a factual review. */
+    public function purpose(string $assignmentId): string;
+
+    /**
+     * New verification work needs an accepted engagement; a completed one only replays its receipts.
+     * The caller holds the assignment lock.
+     */
+    public function requireAccepted(string $assignmentId): void;
+
+    /**
+     * Completes a statement review in the same transaction as the verification that finished it,
+     * reusing the locks the verifying command holds. Returns false for any other engagement, or when
+     * the verification is not this partner's current one.
+     *
+     * @param  AcceptedAssignment  $assignment
+     */
+    public function completeStatementReview(array $assignment, string $verificationId, int $userId): bool;
+
+    /** Whether Audit Operations closed the Business's last audit, so no new one can be requested for it. */
+    public function lastClosed(string $businessId): bool;
+
+    /**
+     * Whether the accepted engagement's work is done (its newest report sealed and published, no
+     * amendment open). It is marked completed only when the next request reconciles it.
+     */
+    public function workPublished(string $assignmentId): bool;
+
+    /**
+     * Why audit dispatch would find no partner for the assignment now, for staff who manage
+     * assignments: the Business's premises are not verified, no partner office is verified within
+     * 30 km of them, no partner in range has an independence review for the current mandate, or the
+     * reviewed partners in range cannot take it (availability, capacity, conflict or already tried).
+     * Null when a partner can take it.
+     *
+     * @return 'AUDIT_PREMISES_UNVERIFIED'|'AUDIT_NO_PARTNER_IN_RANGE'|'AUDIT_INDEPENDENCE_REVIEW_REQUIRED'|'AUDIT_NO_ELIGIBLE_PARTNER'|null
+     */
+    public function dispatchBlocker(int $actorId, string $assignmentId): ?string;
+
+    /**
+     * The Audit Partners with a verified office within 30 km of the Business's verified premises, and
+     * whether each has an independence review for the Business's current mandate.
+     *
+     * @return list<array{party_id: string, name: string, revision: int, reviewed: bool}>
+     */
+    public function nearbyPartners(int $actorId, string $businessId): array;
 
     /** @return array<string, mixed> */
     public function resolve(int $actorId, string $assignmentId, int $expectedRevision, string $decision, string $reason, string $requestId): array;

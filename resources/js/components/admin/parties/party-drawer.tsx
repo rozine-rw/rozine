@@ -6,6 +6,7 @@ import {
     initialOf,
 } from '@/components/admin/format';
 import { KycReview } from '@/components/admin/kyc-review';
+import { BusinessAuditSection } from '@/components/admin/parties/business-audit';
 import { KYC_TONE } from '@/components/admin/parties/directory-table';
 import { DispatchLocationSection } from '@/components/admin/parties/dispatch-location';
 import { ReasonStage } from '@/components/admin/reason-stage';
@@ -605,6 +606,14 @@ export function PartyDrawer({
                             <DispatchLocationSection
                                 kind="premises"
                                 location={party.premises}
+                                viewer={viewer}
+                                section={SECTION}
+                                box={BOX}
+                            />
+                        )}
+                        {party.audit && (
+                            <BusinessAuditSection
+                                audit={party.audit}
                                 viewer={viewer}
                                 section={SECTION}
                                 box={BOX}

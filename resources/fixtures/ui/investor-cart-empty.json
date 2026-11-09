@@ -40,7 +40,21 @@
             }
         },
         "cart": {
+            "id": null,
+            "revision": 0,
+            "sha256": "ab3ce6dd4ca516ef385a3b1362cd6a28a1c440d3eecc1f14c95e003f2bc0d8e5",
+            "deals": 0,
+            "units": "0",
             "lines": []
+        },
+        "checkout": null,
+        "actions": {
+            "quote": null,
+            "reserve": null
+        },
+        "operation": {
+            "url": "/preview/investor-cart-operations/{request_id}",
+            "method": "get"
         }
     }
 }

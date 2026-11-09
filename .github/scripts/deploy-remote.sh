@@ -118,6 +118,10 @@ fi
 # a client without it.
 "${PHP_BIN}" artisan optimize:clear
 
+# A Vite hot marker makes Laravel load assets from a development server, so a
+# release never keeps one, whether it arrived in the source or was left behind.
+rm -f public/hot
+
 npm ci --no-audit --no-fund || npm install --no-audit --no-fund
 npm run build
 

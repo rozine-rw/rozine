@@ -15,6 +15,7 @@ import type {
     LateFeeStep,
     Ordinals,
     Pagination,
+    PlusTier,
     ProviderOutcomeState,
     Receipt,
     ServicingState,
@@ -1069,6 +1070,23 @@ export type CheckoutHold = {
     link: RouteLink;
 };
 
+/**
+ * The shared `checkout_holds` prop: the signed-in Investor's live checkout holds, soonest to lapse
+ * first, and the server time their countdown runs against. Null off the Investor app and on the
+ * checkout page itself.
+ */
+export type SharedCheckoutHolds = {
+    server_time: string;
+    holds: {
+        reservation_id: string;
+        deal_name: string;
+        amount: Money;
+        units: Units;
+        expires_at: string;
+        link: RouteLink;
+    }[];
+};
+
 /** Holds and internal transfers are kept apart from external cash movements (H5). */
 export type WalletEntry =
     | {
@@ -1370,7 +1388,101 @@ export type InvestorCartLine = {
 /** The Cart page (web only). `cart` is null until the identity is verified. */
 export type C3InvestorCartProps = InvestorPageContract & {
     links: C3InvestorShellLinks;
-    cart: { lines: InvestorCartLine[] } | null;
+    cart: {
+        id: string | null;
+        revision: number;
+        sha256: string;
+        deals: number;
+        units: string;
+        lines: InvestorCartLine[];
+    } | null;
+    /** The Party's live whole-cart checkout (#383), held or waiting for its expiry to settle. */
+    checkout: CartCheckout | null;
+    /** The whole-cart commands; null while a checkout is live or before the wallet is active. */
+    actions: { quote: RouteAction | null; reserve: RouteAction | null };
+    /** The cart operation lookup; its url holds the literal `{request_id}` token. */
+    operation: RouteLink;
+};
+
+/** One INV-R04 band as the cart quote names it; `rate_pct` is the server's display string. */
+export type CartFeeBand = {
+    tier: PlusTier;
+    rate_bps: number;
+    rate_pct: string;
+    held_note_principal: Money;
+    checkout_total: Money;
+    active_capital_after_checkout: Money;
+    next_band_at: Money | null;
+    next_band_distance: Money | null;
+};
+
+/** One priced line of a whole-cart quote; its return and fee are indicative until reserved. */
+export type CartQuoteLine = {
+    cart_line_id: string;
+    campaign_id: string;
+    units: Units;
+    principal: Money;
+    contractual_return: Money;
+    earnings_fee: Money;
+    net_return: Money;
+    terms: { rate_pct: string; term_months: number };
+};
+
+/** The whole-cart quote (contract cart-checkout-1): one band for every line. */
+export type CartQuote = {
+    id: string;
+    revision: number;
+    cart_id: string;
+    cart_revision: number;
+    disclosure_sha256: string;
+    principal: Money;
+    earnings_fee: Money;
+    net_return: Money;
+    fee_band: CartFeeBand;
+    /** The band the next threshold brings; null from the top band. Only a fresh quote names it. */
+    next_fee_band?: {
+        tier: PlusTier;
+        rate_bps: number;
+        rate_pct: string;
+    } | null;
+    lines: CartQuoteLine[];
+    expires_at: string;
+};
+
+/** One line a whole-cart command refused, as its `line_refusals` names it. */
+export type CartLineRefusal = {
+    cart_line_id: string;
+    campaign_id: string;
+    code: string;
+};
+
+/** The whole-cart checkout: every line held under one deadline, confirmed or released together. */
+export type CartCheckout = {
+    id: string;
+    cart_id: string;
+    revision: number;
+    state: 'held' | 'release_pending' | 'confirmed' | 'released' | 'expired';
+    quote: CartQuote;
+    expires_at: string;
+    /** Each held line as its reservation fixed it: the exact figures Confirm all acknowledges. */
+    lines: {
+        cart_line_id: string;
+        campaign_id: string;
+        reservation_id: string;
+        principal: Money;
+        contractual_return: Money;
+        earnings_fee: Money;
+        net_return: Money;
+        disclosure_sha256: string;
+    }[];
+    total_held: Money;
+    /** The held lines' reserved figures summed; the fee is rounded per scheduled payout. */
+    reserved: {
+        contractual_return: Money;
+        earnings_fee: Money;
+        net_return: Money;
+    };
+    actions: { confirm: RouteAction | null; release: RouteAction | null };
 };
 
 /** The phone deal page; a wide screen shows the same deal in the Deals panel over `home`. */

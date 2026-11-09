@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import InvestorAccess from '@/pages/investor/auth/access';
@@ -492,8 +492,10 @@ describe('Verification', () => {
             {
                 forceFormData: true,
                 preserveScroll: true,
+                onProgress: expect.any(Function),
                 onError: expect.any(Function),
                 onSuccess: expect.any(Function),
+                onFinish: expect.any(Function),
             },
         );
         // A passport has one photo page: no back, and its own number guidance.
@@ -518,8 +520,10 @@ describe('Verification', () => {
             {
                 forceFormData: true,
                 preserveScroll: true,
+                onProgress: expect.any(Function),
                 onError: expect.any(Function),
                 onSuccess: expect.any(Function),
+                onFinish: expect.any(Function),
             },
         );
         unmountSecond();
@@ -559,7 +563,10 @@ describe('Verification', () => {
             screen.getByLabelText('Upload certificate'),
             new File(['c'], 'c.pdf', { type: 'application/pdf' }),
         );
-        await user.upload(screen.getByLabelText('Upload certificate'), []);
+        // A cancelled picker sends nothing.
+        fireEvent.change(screen.getByLabelText('Upload certificate'), {
+            target: { files: [] },
+        });
         await user.click(screen.getByRole('button', { name: 'Continue' }));
         expect(inertia.posts[0].data).toMatchObject({
             step: 'entity',
@@ -706,8 +713,10 @@ describe('Verification submission', () => {
             {
                 forceFormData: true,
                 preserveScroll: true,
+                onProgress: expect.any(Function),
                 onError: expect.any(Function),
                 onSuccess: expect.any(Function),
+                onFinish: expect.any(Function),
             },
         );
         await user.click(screen.getByRole('button', { name: 'Continue' }));
@@ -835,6 +844,58 @@ describe('Verification submission', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('shows each document uploading and holds the step until it arrives', async () => {
+        const user = userEvent.setup();
+        let visit: {
+            onProgress: (progress: { percentage: number } | undefined) => void;
+            onSuccess: () => void;
+            onFinish: () => void;
+        } | null = null;
+
+        inertia.holdPosts = true;
+        inertia.routerPost.mockImplementation(
+            (
+                _url: string,
+                _data: unknown,
+                options: NonNullable<typeof visit>,
+            ) => {
+                visit = options;
+            },
+        );
+        render(<InvestorVerification {...live(documentFixture, {})} />);
+
+        await user.upload(
+            screen.getByLabelText('Upload back'),
+            new File(['id'], 'back.jpg', { type: 'image/jpeg' }),
+        );
+        expect(screen.getByRole('status')).toHaveTextContent('Uploading…');
+        // A progress event without a measurable size keeps the bare label.
+        act(() => visit?.onProgress(undefined));
+        expect(screen.getByRole('status')).toHaveTextContent(/^Uploading…$/);
+        act(() => visit?.onProgress({ percentage: 42 }));
+        expect(screen.getByRole('status')).toHaveTextContent('Uploading… 42%');
+        act(() => visit?.onProgress({ percentage: 100 }));
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'Checking the file…',
+        );
+        // Another upload or the step's own visit would cancel this one, so both wait.
+        expect(screen.getByLabelText('Upload front')).toBeDisabled();
+        expect(screen.getByLabelText('Upload back')).toBeDisabled();
+        expect(screen.getByRole('button', { name: 'Continue' })).toBeDisabled();
+        expect(
+            screen.getByRole('button', { name: 'Previous step' }),
+        ).toBeDisabled();
+
+        act(() => {
+            visit?.onSuccess();
+            visit?.onFinish();
+        });
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        expect(screen.getByLabelText('Upload back')).toBeEnabled();
+        expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled();
+        expect(inertia.routerPost).toHaveBeenCalledTimes(1);
+    });
+
     it('shows why an upload was refused, and clears it once an upload succeeds', async () => {
         const user = userEvent.setup();
         const reply = { refuse: true };
@@ -898,18 +959,44 @@ describe('Verification submission', () => {
         );
         await user.click(screen.getByRole('button', { name: 'Continue' }));
         expect(inertia.posts).toHaveLength(0);
+        // A browser that skips constraint validation still reaches the form's own refusal.
+        fireEvent.submit(dob);
+        expect(inertia.posts).toHaveLength(0);
 
         fireEvent.change(dob, { target: { value: '1899-12-31' } });
         expect(screen.getByRole('alert')).toHaveTextContent(
             'Enter a real date of birth.',
         );
 
+        fireEvent.change(dob, { target: { value: '' } });
+        expect(dob).toHaveValue('');
+
         fireEvent.change(dob, { target: { value: '1990-06-15' } });
         expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+        inertia.succeed = true;
         await user.click(screen.getByRole('button', { name: 'Continue' }));
         expect(inertia.posts[0].data).toMatchObject({
             date_of_birth: '15 / 06 / 1990',
         });
+    });
+
+    it('shows the saved ID number and its document type once the document step is saved', () => {
+        const props = live(documentFixture, {});
+
+        if (props.investor_type !== 'individual') {
+            throw new Error('The document fixture is an individual case.');
+        }
+
+        render(
+            <InvestorVerification
+                {...props}
+                id_type="passport"
+                id_number="PC1234567"
+            />,
+        );
+
+        expect(screen.getByLabelText('ID NUMBER')).toHaveValue('PC1234567');
+        expect(screen.getByRole('radio', { name: /Passport/u })).toBeChecked();
     });
 
     it('checks the ID number for the chosen document once the field is left', async () => {
@@ -1170,6 +1257,34 @@ describe('Verification submission', () => {
         }
 
         expect(screen.queryByText(missing)).not.toBeInTheDocument();
+    });
+
+    it('shows the captured selfie back inside the round frame', () => {
+        const props = live(livenessFixture, {});
+
+        if (props.investor_type !== 'individual') {
+            throw new Error('The liveness fixture is an individual case.');
+        }
+
+        render(
+            <InvestorVerification
+                {...props}
+                uploads={{
+                    ...props.uploads,
+                    selfie: {
+                        status: 'uploaded',
+                        filename: 'selfie.jpg',
+                        media_type: 'image/jpeg',
+                        link: {
+                            url: '/investor/verification/documents/selfie',
+                            method: 'get',
+                        },
+                    },
+                }}
+            />,
+        );
+
+        expect(screen.getByRole('presentation')).toHaveClass('rounded-full');
     });
 
     it('stops showing the missing-selfie error once the selfie is uploaded', () => {

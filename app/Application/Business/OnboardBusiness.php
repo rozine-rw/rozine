@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Business;
 
+use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Identity\GetStaffAccess;
 use App\Application\Identity\ResolveVerifiedOrganization;
@@ -47,6 +48,8 @@ final class OnboardBusiness
         private IdentityRepository $identities,
         private ResolveVerifiedOrganization $organizations,
         private ConfigureBusinessAuthority $authority,
+        private IdentityAccessStore $memberships,
+        private WithBusinessReview $review,
     ) {}
 
     /**
@@ -80,15 +83,19 @@ final class OnboardBusiness
                     'required_signatories' => [$partyId], 'effective_at' => $input['effective_at'], 'expires_at' => null,
                     'status' => 'active', 'attested_complete' => true],
                 0, $input['evidence_reference'], $input['reason'], $input['mandate_request_id']);
+            if ($result['status'] !== 'completed') {
+                return ['status' => 'rejected', 'code' => $result['code']];
+            }
+            $businessId = $result['data']['business']['id'];
+            // The verified representative on the Business's current, valid mandate gets the Business app in the same step (#491).
+            $access = $this->review->handle($actorId, $businessId, true, fn (array $business): bool => $this->memberships->grantMandatedBusinessAccess(
+                $actorId, $partyId, $businessId, array_column($business['mandate']['people'], 'party_id'),
+                'Business access for the mandated representative of an onboarded business.', $input['mandate_request_id'])['access_active']);
         } catch (CommandRejection|IdentityViolation $refusal) {
             return ['status' => 'rejected', 'code' => $refusal->reason];
         }
-        if ($result['status'] !== 'completed') {
-            return ['status' => 'rejected', 'code' => $result['code']];
-        }
-        $memberships = array_filter($person['memberships'], fn (array $membership): bool => $membership['role'] === 'business' && $membership['status'] === 'active');
 
-        return ['status' => 'completed', 'code' => $result['code'], 'business_id' => $result['data']['business']['id'],
-            'representative' => $name, 'business_access' => $memberships !== []];
+        return ['status' => 'completed', 'code' => $result['code'], 'business_id' => $businessId,
+            'representative' => $name, 'business_access' => $access];
     }
 }

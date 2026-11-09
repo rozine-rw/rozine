@@ -606,6 +606,40 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
         }, 3);
     }
 
+    public function grantMandatedBusinessAccess(int $actorId, string $partyId, string $businessId, array $mandatedPartyIds, string $reason, string $requestId): array
+    {
+        return DB::transaction(function () use ($actorId, $partyId, $businessId, $mandatedPartyIds, $reason, $requestId): array {
+            User::query()->whereKey($actorId)->lockForUpdate()->first();
+            $this->requireStaffPermission($actorId, 'businesses.verify');
+            $hash = $this->requestHash(['membership.mandate_grant', $partyId, $businessId], $reason, $requestId);
+            if (($replay = $this->replay('user:'.$actorId, $requestId, $hash)) !== null) {
+                /** @var array{code: string, party_id: string, membership: array{id: string, role: string, status: string, revision: int}} $replay */
+                $current = RoleMembership::query()->whereKey($replay['membership']['id'])->value('status');
+
+                return [...$replay, 'access_active' => $current === 'active'];
+            }
+            $party = $this->lockParty($partyId);
+            if ($party === null || $party->kind !== 'person' || $party->verified_at === null || $party->verified_at->gt(now())
+                || ! $party->verifiedIdentity()->exists() || ! in_array($partyId, $mandatedPartyIds, true)) {
+                throw new IdentityViolation('PARTY_AUTHORITY_REQUIRED');
+            }
+            $existing = $party->memberships()->where('role', 'business')->first();
+            if ($existing !== null) {
+                return ['code' => 'MEMBERSHIP_UNCHANGED', 'party_id' => $partyId, 'membership' => [
+                    'id' => $existing->id, 'role' => 'business', 'status' => $existing->status, 'revision' => $existing->revision,
+                ], 'access_active' => $existing->status === 'active'];
+            }
+            [$membership, , $revision] = $this->transitionMembership($party, 'business', 'active', 0);
+            $result = ['code' => 'MEMBERSHIP_UPDATED', 'party_id' => $partyId, 'membership' => [
+                'id' => $membership->id, 'role' => 'business', 'status' => 'active', 'revision' => $revision,
+            ]];
+            $this->record('user:'.$actorId, $actorId, 'membership', $membership->id, 'membership.mandate_grant', $reason, $requestId, $hash,
+                [], ['status' => 'active', 'revision' => $revision, 'business_id' => $businessId], $result);
+
+            return [...$result, 'access_active' => true];
+        }, 3);
+    }
+
     /**
      * The one verified-person writer, after the caller has locked the actor and the account. Lock order
      * continues identity advisory lock, then parties; `$approve` runs last, in the same transaction, and
@@ -880,7 +914,7 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
             }
 
             return ['contract_version' => 'staff-access-v1', 'can_open_admin' => $allowed,
-                'allowed_actions' => $allowed ? $staff->allowedActions() : [], 'roles' => $allowed ? $staff->roleNames() : []];
+                ...($allowed ? $staff->accessProjection() : ['allowed_actions' => [], 'roles' => []])];
         }, 3);
     }
 

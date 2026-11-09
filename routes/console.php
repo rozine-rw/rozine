@@ -14,6 +14,8 @@ Schedule::command('audits:advance-reviews')->everyMinute()->withoutOverlapping(5
 
 Schedule::command('audits:request-monthly')->hourly()->withoutOverlapping(30);
 
+Schedule::command('audits:request-flash')->hourly()->withoutOverlapping(30);
+
 Schedule::command('auditors:remind-renewals')->hourly()->withoutOverlapping(30);
 
 Artisan::command('inspire', function () {
@@ -23,6 +25,8 @@ Artisan::command('inspire', function () {
 Schedule::command('campaigns:expire')->everyMinute()->withoutOverlapping(5);
 
 Schedule::command('primary:expire-reservations')->everyMinute()->withoutOverlapping(5);
+
+Schedule::command('cart:expire-checkouts')->everyMinute()->withoutOverlapping(5);
 
 Schedule::command('disbursements:reconcile')->everyMinute()->withoutOverlapping(5);
 

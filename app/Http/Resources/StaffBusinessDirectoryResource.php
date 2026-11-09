@@ -17,16 +17,23 @@ use Illuminate\Support\Str;
  * A viewer who verifies Businesses may onboard one; the notice after it says whether its representative
  * can open the Business app yet.
  * A Business with no rated
- * note reads as pending its audit, and the average is of published scores only.
+ * note reads as pending its audit, and the average is of published scores only. A viewer who manages
+ * audit assignments sees the audit open on the Business and, in the console, may request a Flash audit
+ * when none is open or redispatch one that waits on Audit Operations, sees a Flash audit past its
+ * 24-hour deadline as overdue, and sees whether the Business's
+ * statements are ready for a factual review, with the request bound to that readiness.
  *
  * @phpstan-import-type DirectoryRow from \App\Application\Business\Contracts\BusinessDirectoryStore
  * @phpstan-import-type Counts from \App\Application\Business\Contracts\BusinessDirectoryStore
  * @phpstan-import-type Detail from \App\Application\Business\Contracts\BusinessDirectoryStore
  * @phpstan-import-type ReviewedLocation from \App\Application\Auditor\GetAuditLocation
+ * @phpstan-import-type Engagement from \App\Application\Auditor\GetBusinessAuditEngagement
+ * @phpstan-import-type NearbyPartner from \App\Application\Auditor\GetBusinessAuditEngagement
+ * @phpstan-import-type Readiness from \App\Application\Evidence\Contracts\StatementStore
  *
  * @phpstan-type Page array{
  *     rows: list<DirectoryRow>, matching: int, counts: Counts, active_notes: int, raised: string, average_score: string|null,
- *     sectors: list<string>, chip: string, sort: string, sector: string, search: string, business: Detail|null, premises?: ReviewedLocation|null,
+ *     sectors: list<string>, chip: string, sort: string, sector: string, search: string, business: Detail|null, premises?: ReviewedLocation|null, audit?: array{engagement: Engagement|null, closed: bool, partners: list<NearbyPartner>, statements: Readiness}|null,
  *     roles: list<string>, permissions: list<string>, policy: list<array{key: string, value: string}>,
  *     onboarded?: array{business_id: string, representative: string, business_access: bool}|null, onboarding_sectors?: list<string>
  * }
@@ -88,7 +95,64 @@ class StaffBusinessDirectoryResource extends JsonResource
                 'link' => $link([...$position, 'business' => $row['business_id']])], $page['rows'])],
             'party' => $page['business'] === null ? null : [...self::business($page['business'], $link($position)),
                 'premises' => ($page['premises'] ?? null) === null ? null : StaffAuditorDirectoryResource::location($page['premises'], $prefix === ''
-                    ? ['url' => route('staff.businesses.premises.verify', ['business' => $page['business']['row']['business_id']], false), 'method' => 'post'] : null)]];
+                    ? ['url' => route('staff.businesses.premises.verify', ['business' => $page['business']['row']['business_id']], false), 'method' => 'post'] : null),
+                'audit' => ($page['audit'] ?? null) === null ? null : self::audit($page['audit']['engagement'], $page['audit']['closed'], $page['audit']['partners'], $page['audit']['statements'], $page['business']['row']['business_id'], $prefix === '')]];
+    }
+
+    /**
+     * @param  Engagement|null  $engagement
+     * @param  list<NearbyPartner>  $partners
+     * @param  Readiness  $statements
+     * @return array<string, mixed>
+     */
+    private static function audit(?array $engagement, bool $closed, array $partners, array $statements, string $businessId, bool $console): array
+    {
+        $allowed = $engagement === null ? [] : $engagement['allowed_actions'];
+        $action = fn (string $decision, string $route): ?array => $console && $engagement !== null && in_array('audit.assignment.'.$decision, $allowed, true)
+            ? ['url' => route($route, ['business' => $businessId, 'assignment' => $engagement['id']], false), 'method' => 'post'] : null;
+        $reason = $engagement['operations_reason'] ?? null;
+
+        // A statement review runs as a routine audit, but staff see it named for what it checks (#396).
+        return ['engagement' => $engagement === null ? null : ['id' => $engagement['id'],
+            'kind' => $engagement['purpose'] === 'statement_review' ? 'statement_review' : $engagement['kind'], 'status' => $engagement['status'],
+            'revision' => $engagement['revision'], 'attempt' => $engagement['attempt'], 'operations_reason' => $reason,
+            // A Flash audit with no sealed report by its 24-hour deadline is overdue (FR-303), whatever its status.
+            'due_at' => $engagement['complete_by'], 'overdue' => $engagement['overdue']],
+            // A Business whose last audit Audit Operations closed can't be sent a new one from here.
+            'closed' => $engagement === null && $closed,
+            'request_flash' => $console && $engagement === null && ! $closed ? ['url' => route('staff.businesses.audit.flash', ['business' => $businessId], false), 'method' => 'post'] : null,
+            // Redispatch is offered only when a partner can take the audit now; otherwise it would change nothing.
+            'redispatch' => $reason === 'AUDIT_PARTNER_AVAILABLE' ? $action('redispatch', 'staff.businesses.audit.redispatch') : null,
+            'close' => $action('close', 'staff.businesses.audit.close'),
+            // Withdraw ends only this audit (#489), unlike close, so the Business can be sent a new one.
+            'withdraw' => $action('withdraw', 'staff.businesses.audit.withdraw'),
+            'remedy' => $console && $reason === 'AUDIT_NO_PARTNER_IN_RANGE' ? ['url' => route('staff.auditors.index', [], false), 'method' => 'get'] : null,
+            // The review is checked as of when the drawer issued the form, so an exact retry replays it.
+            'partners' => array_map(fn (array $partner): array => ['party_id' => $partner['party_id'], 'name' => $partner['name'], 'reviewed' => $partner['reviewed'],
+                'revision' => $partner['revision'], 'review' => $console ? ['url' => route('staff.businesses.audit.independence',
+                    ['business' => $businessId, 'party' => $partner['party_id']], false), 'method' => 'post'] : null,
+                'checked_at' => now('UTC')->format('Y-m-d\TH:i:s\Z')], $partners),
+            'statement_review' => self::statementReview($statements, $businessId, $console)];
+    }
+
+    /**
+     * Whether the Business's statements are ready for a factual review and why not. The request carries
+     * the readiness it answers, so the server refuses it if the statements changed since.
+     *
+     * @param  Readiness  $statements
+     * @return array<string, mixed>
+     */
+    private static function statementReview(array $statements, string $businessId, bool $console): array
+    {
+        $transcription = $statements['transcription'];
+
+        return ['verified' => $statements['source_verified'], 'coverage' => $statements['coverage'],
+            'reasons' => array_column($statements['reasons'], 'code'),
+            'request' => $console && $transcription !== null && in_array('audit.statement_review.request', $statements['allowed_actions'], true)
+                ? ['url' => route('staff.businesses.audit.statement-review', ['business' => $businessId], false), 'method' => 'post',
+                    'binding' => ['expected_business_revision' => $statements['business_revision'], 'expected_mandate_version' => $statements['mandate_version'],
+                        'expected_evidence_revision' => $statements['evidence_revision'], 'transcription_id' => $transcription['id'],
+                        'transcription_sha256' => $transcription['sha256'], 'readiness_sha256' => $statements['readiness_sha256']]] : null];
     }
 
     /**

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import type { ComponentProps, FormEvent, ReactNode } from 'react';
+import type { ComponentProps, FormEvent, MouseEvent, ReactNode } from 'react';
 import { vi } from 'vite-plus/test';
 
 /**
@@ -26,11 +26,14 @@ export const inertia = {
     posts: [] as { url: string; data: Payload }[],
     reload: vi.fn(),
     visit: vi.fn(),
+    replace: vi.fn(),
     routerPost: vi.fn(),
     forms: [] as { action?: string; method?: string }[],
     errors: {} as Record<string, string>,
     processing: false,
     succeed: false,
+    /** Keep `router.post` visits open (no `onFinish`) so a test can watch one in flight. */
+    holdPosts: false,
     /** Every JSON request sent through `useHttp`, with the body it carried. */
     calls: [] as { url: string; method: string; body: unknown }[],
     queue: [] as Responder[],
@@ -38,6 +41,8 @@ export const inertia = {
     httpErrors: {} as Record<string, string>,
     /** The shared page props `usePage` returns, such as the Cart tab's count. */
     shared: {} as Record<string, unknown>,
+    /** The `onFinish` of each link visit a click started, so a test can end one when it chooses. */
+    linkVisits: [] as (() => void)[],
 };
 
 export function resetInertia(): void {
@@ -46,12 +51,15 @@ export function resetInertia(): void {
     inertia.errors = {};
     inertia.processing = false;
     inertia.succeed = false;
+    inertia.holdPosts = false;
     inertia.calls = [];
     inertia.queue = [];
     inertia.httpErrors = {};
     inertia.shared = {};
+    inertia.linkVisits = [];
     inertia.reload.mockReset();
     inertia.visit.mockReset();
+    inertia.replace.mockReset();
     inertia.routerPost.mockReset();
 }
 
@@ -133,17 +141,31 @@ export function Head({ title }: { title: string }) {
     return <span data-testid="head">{title}</span>;
 }
 
+/** A link whose click starts a visit that stays open until the test ends it from `inertia.linkVisits`. */
 export function Link({
     href,
     children,
     preserveScroll: _preserveScroll,
+    onStart,
+    onFinish,
     ...props
 }: Omit<ComponentProps<'a'>, 'href'> & {
     href: { url: string };
     preserveScroll?: boolean;
+    onStart?: () => void;
+    onFinish?: () => void;
 }) {
+    const start =
+        onStart === undefined
+            ? props.onClick
+            : (event: MouseEvent<HTMLAnchorElement>) => {
+                  event.preventDefault();
+                  onStart();
+                  inertia.linkVisits.push(() => onFinish?.());
+              };
+
     return (
-        <a href={href.url} {...props}>
+        <a href={href.url} {...props} onClick={start}>
             {children}
         </a>
     );
@@ -191,7 +213,17 @@ export function Form({
 export const router = {
     reload: (...args: unknown[]) => inertia.reload(...args),
     visit: (...args: unknown[]) => inertia.visit(...args),
-    post: (...args: unknown[]) => inertia.routerPost(...args),
+    replace: (...args: unknown[]) => inertia.replace(...args),
+    // A visit ends with `onFinish` whatever its answer, after `onSuccess` or `onError`.
+    post: (...args: unknown[]) => {
+        const result = inertia.routerPost(...args);
+
+        if (!inertia.holdPosts) {
+            (args[2] as { onFinish?: () => void } | undefined)?.onFinish?.();
+        }
+
+        return result;
+    },
 };
 
 export function useForm<T extends Payload>(initial: T) {

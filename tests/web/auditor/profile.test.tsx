@@ -197,6 +197,28 @@ describe('Auditor Profile', () => {
         ).toBeInTheDocument();
     });
 
+    it('shows the certificate uploading while the renewal is on its way', async () => {
+        const { user } = renderWithUser(<AuditorProfile {...props()} />);
+
+        await user.click(
+            screen.getByRole('button', { name: 'Renew accreditation' }),
+        );
+        await user.type(screen.getByLabelText('New expiry date'), '2028-03-31');
+        await user.upload(
+            screen.getByLabelText('Licence certificate'),
+            new File(['%PDF'], 'icpar.pdf', { type: 'application/pdf' }),
+        );
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+        await user.click(
+            screen.getByRole('button', { name: 'Submit for review' }),
+        );
+
+        expect(screen.getByRole('status')).toHaveTextContent('Uploading…');
+        expect(
+            screen.getByRole('button', { name: 'Submit for review' }),
+        ).toBeDisabled();
+    });
+
     it('sends a renewal to its own route, so its lookup names the renewal', async () => {
         const base = props();
         const { user } = renderWithUser(

@@ -49,6 +49,15 @@ const en = {
     'identity.denied.expired_offer.title': 'This offer has closed',
     'identity.denied.expired_offer.body':
         'The time to accept this job ran out, so it is no longer open to you. Choose an app to see your current work.',
+    'identity.denied.withdrawn_audit.title':
+        'This audit was withdrawn by Rozine',
+    'identity.denied.withdrawn_audit.body':
+        'Audit Operations withdrew this audit, so it is no longer yours to work on and nothing more is needed from you. Your other jobs are in Jobs.',
+    'identity.denied.withdrawn_audit.action': 'Go to Jobs',
+    'identity.denied.completed_review.title':
+        'You have verified these statements',
+    'identity.denied.completed_review.body':
+        'This statement review is complete. Your verification is on record and nothing more is needed from you. Your other jobs are in Jobs.',
     'errors.not_found.head_title': 'Not found',
     'errors.not_found.title': "We couldn't find that page",
     'errors.not_found.body':
@@ -350,6 +359,19 @@ const en = {
     'business.today.repayment.kicker': 'Upcoming repayment',
     'business.today.repayment.sub': '{note} · Due {date}',
     'business.today.repayment.cta': 'Pay now',
+    'business.today.blocked.kicker': 'Application on hold',
+    'business.today.blocked.untitled': 'Your application',
+    'business.today.blocked.sub.UNDERWRITING_EVIDENCE_REQUIRED':
+        'Your statements must be verified by an Audit Partner before you can continue.',
+    'business.today.blocked.sub.VERIFIED_HISTORY_INSUFFICIENT':
+        'More verified months of statements are needed before you can continue.',
+    'business.today.blocked.sub.POLICY_INPUT_REQUIRED':
+        'Rozine needs to check your credit history and existing loans first. Nothing is needed from you.',
+    'business.today.blocked.sub.RESTRICTION_ACTIVE':
+        'A restriction on your account stops this application for now.',
+    'business.today.blocked.sub.other':
+        'Something needs attention before you can continue.',
+    'business.today.blocked.cta': "See what's needed",
     'business.today.caught_up.title': "You're all caught up",
     'business.today.caught_up.body':
         "No repayments or actions due. We'll let you know the moment something needs you.",
@@ -410,6 +432,8 @@ const en = {
         'From your RDB certificate and your verified bank & mobile-money statements. Review it — if it looks right, continue.',
     'business.apply.business.rdb_verified': '✓ RDB verified',
     'business.apply.business.statements_verified': '✓ Statements verified',
+    'business.apply.business.policy_check_next':
+        'Next, Rozine needs to check your current credit history and existing loans. You don’t need to do anything, and this page updates once it is done.',
     'business.apply.business.active': '● Active',
     'business.apply.business.established': 'Est. {year}',
     'business.apply.business.standing': 'Financial standing',
@@ -711,9 +735,12 @@ const en = {
     'common.ordinal.other': '{n}th',
     'business.reports.title': 'Reports',
     'business.reports.subtitle':
-        'Verified each month by your on-site Audit Partner.',
-    'business.reports.guide.title': 'How monthly audits work',
-    'business.reports.guide.opens.title': 'Gather your records',
+        'Every Flash and monthly audit your Audit Partner seals, verified on site.',
+    'business.reports.guide.title': 'How audits work',
+    'business.reports.guide.flash.title': 'A Flash audit, when Rozine asks',
+    'business.reports.guide.flash.body':
+        'Before you raise, or whenever Rozine needs a fresh check, an Audit Partner visits unannounced and seals a Flash report within 24 hours. You co-sign it just like a monthly report.',
+    'business.reports.guide.opens.title': 'Every month, gather your records',
     'business.reports.guide.opens.body':
         'Between the 20th and month-end, gather all physical and digital financial records for your scheduled CPA in-person audit.',
     'business.reports.guide.visit.title': 'Be ready for the site visit',
@@ -728,9 +755,14 @@ const en = {
     'business.reports.tabs': 'Report status',
     'business.reports.tab.verified': 'Published',
     'business.reports.tab.in_audit': 'In audit',
+    'business.reports.tab.in_audit_cosign': {
+        one: 'In audit · {count} to co-sign',
+        other: 'In audit · {count} to co-sign',
+    },
     'business.reports.tab.archived': 'Archived',
     'business.reports.status.verified': 'Verified',
     'business.reports.status.in_audit': 'In audit',
+    'business.reports.status.awaiting': 'Co-sign now',
     'business.reports.status.archived': 'Archived',
     'business.reports.health.healthy': 'Healthy',
     'business.reports.health.watch': 'Watch',
@@ -739,12 +771,16 @@ const en = {
         'Inflow {inflow} · {health} · audited by {auditor}',
     'business.reports.row.in_audit': 'With {auditor} · sealed by {date}',
     'business.reports.row.awaiting': 'Needs your co-signature',
+    'business.reports.row.hours_left': {
+        one: '{date} · {count} hour left',
+        other: '{date} · {count} hours left',
+    },
     'business.reports.row.awaiting_by': 'Co-sign or dispute by {date}',
     'business.reports.row.annual': 'Full year summary',
     'business.reports.annual': '{year} Annual',
     'business.reports.empty': 'No reports here yet.',
     'business.reports.empty_body':
-        'Each monthly report appears here once your Audit Partner seals it.',
+        'Each Flash or monthly report appears here once your Audit Partner seals it.',
     'business.reports.percent': '{value}%',
     'business.reports.count_of': '{count} of {of}',
     'business.reports.sheet.live': 'Live to your investors',
@@ -1307,6 +1343,7 @@ const en = {
     'admin.messaging.audience.business': 'Businesses',
     'admin.messaging.audience.auditor': 'Audit Partners',
     'admin.messaging.audience.everyone': 'Everyone with an account',
+    'admin.messaging.audience.staff': 'Rozine staff',
     'admin.messaging.trigger.verification.approved':
         'Compliance approves an identity check',
     'admin.messaging.trigger.verification.rejected':
@@ -2040,6 +2077,9 @@ const en = {
     'admin.today.activity.title': 'Live activity',
     'admin.today.activity.caption': 'Across the ecosystem',
     'admin.today.activity.empty': 'No money has moved yet.',
+    'admin.today.activity.loading': 'Loading activity',
+    'admin.today.activity.failed': 'Activity could not be loaded.',
+    'admin.today.activity.retry': 'Try again',
     'admin.today.untracked': 'Not tracked in the console yet.',
     'admin.today.capital.empty': 'No capital raised in this window.',
     'admin.today.activity.see_all': 'See all activity in the ledger',
@@ -2053,6 +2093,8 @@ const en = {
     'admin.today.lifecycle.failed': 'Failed',
     'admin.today.pending.title': 'Pending applications',
     'admin.today.pending.empty': 'No applications waiting.',
+    'admin.today.pending.restricted':
+        'You do not have access to pending applications.',
     'admin.today.pending.review': 'Review',
     'admin.today.pending.review_named': 'Review {name}',
     'admin.today.sectors.title': 'Sector exposure',
@@ -2588,6 +2630,9 @@ const en = {
     'admin.permission.health.view': 'View system health',
     'admin.permission_detail.health.view':
         'See queues, jobs and service status.',
+    'admin.permission.cart.releases.resolve': 'Retry stuck cart releases',
+    'admin.permission_detail.cart.releases.resolve':
+        'Release a whole-cart hold whose expiry failed, every line together.',
     'admin.parties.you': 'You',
     'admin.parties.drawer_label': '{name}, party record',
     'admin.parties.type.business': 'Business',
@@ -2709,6 +2754,126 @@ const en = {
     'admin.parties.premises.placeholder.reason':
         'e.g. Premises confirmed on a site visit and against the RDB address.',
     'admin.parties.premises.cta': 'Record as verified',
+    'admin.parties.audit.title': 'Audit',
+    'admin.parties.audit.none': 'No audit is open on this business.',
+    'admin.parties.audit.closed_last':
+        'Audit Operations closed this business’s last audit, so it can never be audited again: no Flash audit or statement review can be requested here.',
+    'admin.parties.audit.kind.flash': 'Flash audit · 24-hour deadline',
+    'admin.parties.audit.kind.routine': 'Monthly audit',
+    'admin.parties.audit.kind.statement_review': 'Statement review',
+    'admin.parties.audit.status.operations': 'With Audit Operations',
+    'admin.parties.audit.status.offered': 'Offered to a partner',
+    'admin.parties.audit.status.accepted': 'Accepted by a partner',
+    'admin.parties.audit.status.overdue': 'Overdue',
+    'admin.parties.audit.overdue':
+        'The 24-hour deadline passed on {date} without a sealed report. A Flash audit must be completed within 24 hours, so this one is in breach. It is listed in Open exceptions for Audit Operations to follow up.',
+    'admin.parties.audit.reason.AUDIT_NO_ELIGIBLE_PARTNER':
+        'Audit Partners have verified offices within 30 km, but none can take this audit now (availability, capacity or independence). Dispatch attempts used: {attempts} of 3. Redispatch it once one can.',
+    'admin.parties.audit.reason.AUDIT_DISPATCH_EXHAUSTED':
+        'Every dispatch attempt is used, or the deadline has passed, so this audit can no longer be redispatched.',
+    'admin.parties.audit.reason.AUDIT_PREMISES_UNVERIFIED':
+        'This business’s premises are not verified, so dispatch cannot measure the 30 km. Staff who verify businesses record them in the Premises section. Dispatch attempts used: {attempts} of 3.',
+    'admin.parties.audit.reason.AUDIT_NO_PARTNER_IN_RANGE':
+        'No Audit Partner has a verified office within 30 km of these premises. Approve a partner nearby or verify their office location. Dispatch attempts used: {attempts} of 3.',
+    'admin.parties.audit.remedy': 'Open Audit Partners',
+    'admin.parties.audit.field.reason': 'Reason',
+    'admin.parties.audit.flash.open': 'Request Flash audit',
+    'admin.parties.audit.flash.form': 'Request a Flash audit',
+    'admin.parties.audit.flash.form_body':
+        'The audit is offered to the next eligible Audit Partner within 30 km and must be completed within 24 hours. The business is not told in advance.',
+    'admin.parties.audit.flash.placeholder':
+        'e.g. Unusual movement on the revenue account this week.',
+    'admin.parties.audit.flash.cta': 'Request Flash audit',
+    'admin.parties.audit.flash.done': 'Flash audit requested.',
+    'admin.parties.audit.redispatch.open': 'Redispatch',
+    'admin.parties.audit.redispatch.form': 'Redispatch this audit',
+    'admin.parties.audit.redispatch.form_body':
+        'The audit is offered to the next eligible Audit Partner it has not been offered to. Its original deadline does not move.',
+    'admin.parties.audit.redispatch.placeholder':
+        'e.g. A new Audit Partner near this business was approved.',
+    'admin.parties.audit.redispatch.cta': 'Redispatch',
+    'admin.parties.audit.redispatch.done': 'Audit sent back to dispatch.',
+    'admin.parties.audit.close.open': 'Close permanently',
+    'admin.parties.audit.close.hint':
+        'Closing is permanent: it ends this audit and this business can never be audited again. To end only this audit, withdraw it.',
+    'admin.parties.audit.close.done':
+        'Audit closed. This business can no longer be audited.',
+    'admin.parties.audit.close.form': 'Close this audit',
+    'admin.parties.audit.close.form_body':
+        'Closing ends this audit without a report and can’t be undone. This business can never be audited again: no Flash audit or statement review can be requested for it afterwards.',
+    'admin.parties.audit.close.placeholder':
+        'e.g. The business stopped trading before a partner could visit.',
+    'admin.parties.audit.close.cta': 'Close audit',
+    'admin.parties.audit.withdraw.open': 'Withdraw',
+    'admin.parties.audit.withdraw.form': 'Withdraw this audit',
+    'admin.parties.audit.withdraw.form_body':
+        'Withdrawing ends this audit without a report and takes it from its partner, along with any unsealed draft. Only this audit ends: a new Flash audit or statement review can be requested for the business afterwards.',
+    'admin.parties.audit.withdraw.placeholder':
+        'e.g. The partner did not seal a report by the deadline.',
+    'admin.parties.audit.withdraw.cta': 'Withdraw audit',
+    'admin.parties.audit.withdraw.done':
+        'Audit withdrawn. You can request a new one.',
+    'admin.parties.audit.reason.AUDIT_PARTNER_AVAILABLE':
+        'An Audit Partner within 30 km can take this audit now. Redispatch it to offer it to them. Dispatch attempts used: {attempts} of 3.',
+    'admin.parties.audit.reason.AUDIT_INDEPENDENCE_REVIEW_REQUIRED':
+        'Audit Partners have verified offices within 30 km, but none has been reviewed as independent of this business for its current mandate, so dispatch can’t offer it to them. Record an independence review for a partner below. Dispatch attempts used: {attempts} of 3.',
+    'admin.parties.audit.partners.title': 'Audit Partners within 30 km',
+    'admin.parties.audit.partners.reviewed': 'Independence reviewed',
+    'admin.parties.audit.partners.unreviewed': 'Not reviewed',
+    'admin.parties.audit.independence.open':
+        'Record independence review for {name}',
+    'admin.parties.audit.independence.form': 'Independence review of {name}',
+    'admin.parties.audit.independence.form_body':
+        'Record what you checked about this partner’s ties to the business. Dispatch offers them this business’s audits only if none of these apply and any past role here ended over 24 months ago.',
+    'admin.parties.audit.independence.fact.financial_interest':
+        'Has a financial interest in the business',
+    'admin.parties.audit.independence.fact.current_role_tie':
+        'Holds a role at the business now',
+    'admin.parties.audit.independence.fact.family_or_business_conflict':
+        'Has a family or business tie to its owners',
+    'admin.parties.audit.independence.fact.unresolved_conflict':
+        'Has another conflict not yet resolved',
+    'admin.parties.audit.independence.field.ended':
+        'If they held a role here, the date it ended (optional)',
+    'admin.parties.audit.independence.field.reference': 'Evidence checked',
+    'admin.parties.audit.independence.placeholder.reference':
+        'e.g. Partner declaration of 30 Oct and RDB shareholder record.',
+    'admin.parties.audit.independence.cta': 'Record review',
+    'admin.parties.audit.review.title': 'Statement review',
+    'admin.parties.audit.review.months': {
+        one: '{count} month transcribed, {first} to {last}.',
+        other: '{count} months transcribed, {first} to {last}.',
+    },
+    'admin.parties.audit.review.no_months':
+        'No statement months are transcribed yet.',
+    'admin.parties.audit.review.verified': 'Verified by an Audit Partner',
+    'admin.parties.audit.review.unverified': 'Not verified',
+    'admin.parties.audit.review.ready':
+        'The uploaded statements are ready for an Audit Partner to verify. Until they are verified, the business can’t continue its application.',
+    'admin.parties.audit.review.blocked.BUSINESS_VERIFICATION_REQUIRED':
+        'The business’s registration or representative isn’t currently verified.',
+    'admin.parties.audit.review.blocked.STATEMENT_ORIGINAL_REQUIRED':
+        'The business hasn’t uploaded any statements yet.',
+    'admin.parties.audit.review.blocked.STATEMENT_RECONCILIATION_REQUIRED':
+        'The uploaded statements haven’t been transcribed into monthly figures yet.',
+    'admin.parties.audit.review.blocked.STATEMENT_TRANSCRIPTION_STALE':
+        'New statements were uploaded after the last transcription, so it needs redoing first.',
+    'admin.parties.audit.review.blocked.STATEMENT_ALREADY_VERIFIED':
+        'An Audit Partner has already verified these statements.',
+    'admin.parties.audit.review.blocked.AUDIT_STATEMENT_REVIEW_OPEN':
+        'A statement review is already in progress.',
+    'admin.parties.audit.review.blocked.AUDIT_ENGAGEMENT_OPEN':
+        'Another audit is open on this business. Request the review once it ends.',
+    'admin.parties.audit.review.blocked.AUDIT_ENGAGEMENT_CLOSED':
+        'Audit Operations closed this business’s last audit, so a review can’t be requested here.',
+    'admin.parties.audit.review.open': 'Request statement review',
+    'admin.parties.audit.review.form': 'Request a statement review',
+    'admin.parties.audit.review.form_body':
+        'An Audit Partner within 30 km checks the uploaded statements against their originals. The request is for the statements shown here; if they change first, you’ll be asked to review them again.',
+    'admin.parties.audit.review.placeholder':
+        'e.g. First review of the statements uploaded with the application.',
+    'admin.parties.audit.review.cta': 'Request review',
+    'admin.parties.audit.review.done': 'Statement review requested.',
     'admin.parties.licence_status': 'Verification status',
     'admin.parties.licence.verified': 'Verified',
     'admin.parties.licence.pending': 'Pending',
@@ -2818,6 +2983,13 @@ const en = {
     'admin.events.clear_filters': 'Clear filters',
     'admin.events.filtered_empty':
         'Nothing in the trail matches these filters.',
+    'admin.events.load_more': 'Load more',
+    'admin.events.loading_more': 'Loading more…',
+    'admin.events.load_failed':
+        'Unable to load more activity. Please try again.',
+    'admin.events.retry_more': 'Retry',
+    'admin.events.access_revoked':
+        'Your access to the activity trail has changed.',
     'admin.events.empty': 'No actions recorded yet.',
     'admin.events.col.when': 'When',
     'admin.events.col.who': 'Who',
@@ -2887,6 +3059,8 @@ const en = {
     'auditor.nav.jobs_badge': '{count} open offers',
     'auditor.clock.label': 'Time left on this job',
     'auditor.clock.time_left': 'Time left',
+    'auditor.clock.overdue': 'Overdue',
+    'auditor.clock.overdue_label': 'This job’s deadline has passed',
     'auditor.time.minutes_ago': '{count}m ago',
     'auditor.time.hours_ago': '{count}h ago',
     'auditor.time.days_ago': '{count}d ago',
@@ -3109,6 +3283,18 @@ const en = {
         'Take the required photos with the in-app camera inside the premises geofence.',
     'auditor.file.brief.monthly.step_4':
         'Seal by the report’s due date: the end of the 7th of the following month (Kigali time) in the current app.',
+    'auditor.file.why_review': 'Why this statement review is required',
+    'auditor.file.mandate_review': 'What you must check',
+    'auditor.file.brief.statement_review.reason':
+        'Before this business can raise, an Audit Partner checks its bank and Mobile Money statements against the monthly figures it saved. This is a factual review of the documents, done from the statements on file. There is no site visit, stock count or photos.',
+    'auditor.file.brief.statement_review.step_1':
+        'Open each statement and note where you checked it.',
+    'auditor.file.brief.statement_review.step_2':
+        'Compare the monthly figures and each account’s opening and closing balances with the statements.',
+    'auditor.file.brief.statement_review.step_3':
+        'Record every debt you find, with what was paid each month and its schedule ahead.',
+    'auditor.file.brief.statement_review.step_4':
+        'Record the usual owner draw and your findings, then verify the statements.',
     'auditor.file.why': 'Why a field audit is required',
     'auditor.file.mandate': 'What you must clear on site',
     'auditor.file.history': 'File history',
@@ -3200,6 +3386,8 @@ const en = {
     'auditor.ledger.rules':
         'Upload the original ledger as a PDF or CSV (up to 10 MB). A scanned ledger can be a PDF; a scan without text is marked for manual source review.',
     'auditor.ledger.doc.scanning': 'Checking … {detail}',
+    'auditor.ledger.doc.scanning_hint':
+        'Reading a ledger usually takes about a minute. This page updates on its own.',
     'auditor.ledger.doc.parsed': 'Accepted · {detail}',
     'auditor.ledger.doc.failed': 'Rejected · {detail}',
     'auditor.ledger.reading': 'Reading the document',
@@ -3768,9 +3956,55 @@ const en = {
     'investor.cart.quantity': 'Number of notes in {name}',
     'investor.cart.checkout': 'Check out',
     'investor.cart.checkout_note':
-        'Each deal checks out on its own for now: open its checkout to reserve and pay.',
+        'Check out the whole cart at once below, or open one deal to buy it on its own.',
     'investor.cart.before_charge':
         'Get back is before the charge on earnings. Each checkout shows the exact amount.',
+    'investor.cart.whole.band_title': 'FEE ON EARNINGS',
+    'investor.cart.whole.band_next': '{amount} more unlocks {rate}',
+    'investor.cart.whole.band_top': "You're on the lowest fee band.",
+    'investor.cart.whole.band_basis':
+        'Your band counts the notes you hold plus this cart, never wallet cash.',
+    'investor.cart.whole.quoting': 'Pricing your cart…',
+    'investor.cart.whole.checkout': 'Check out all · {amount}',
+    'investor.cart.whole.fine_print':
+        'Holds every note in your cart for 5 minutes while you confirm. Nothing is committed until you confirm.',
+    'investor.cart.whole.remove_filled':
+        'Remove the fully funded deals to check out the whole cart.',
+    'investor.cart.whole.fix_units':
+        'Some deals are above what you can take now. Fit them, or remove them, to check out the whole cart.',
+    'investor.cart.whole.over_cap': 'This line is above what you can take now.',
+    'investor.cart.whole.fit': {
+        one: 'Fit to {count} note',
+        other: 'Fit to {count} notes',
+    },
+    'investor.cart.whole.risks_first':
+        'Confirm the risk statements on a deal’s checkout first, then check out the whole cart.',
+    'investor.cart.whole.open_checkout': 'Open checkout',
+    'investor.cart.whole.held_title': 'Confirm your cart',
+    'investor.cart.whole.held_lead':
+        'Every note below is held for you at one fee band. Confirm all buys them together, or none.',
+    'investor.cart.whole.line': {
+        one: '{count} note · {rate}% return',
+        other: '{count} notes · {rate}% return',
+    },
+    'investor.cart.whole.line_return': 'Return {return} · fee {fee}',
+    'investor.cart.whole.net_return': 'Expected return after fee',
+    'investor.cart.whole.acknowledge':
+        'I have read these terms and confirm every note in this cart.',
+    'investor.cart.whole.confirm': 'Confirm all · {amount}',
+    'investor.cart.whole.release': 'Release all notes',
+    'investor.cart.whole.requoted':
+        'The terms changed before you confirmed. Check the new total and band, then confirm again.',
+    'investor.cart.whole.settling':
+        'Your hold has ended. These notes are being released back to your wallet.',
+    'investor.cart.whole.done_title': 'Cart checked out',
+    'investor.cart.whole.done_body': {
+        one: 'You committed {amount} to {count} deal. Your notes are issued after the business is paid.',
+        other: 'You committed {amount} across {count} deals. Your notes are issued after each business is paid.',
+    },
+    'investor.cart.whole.done_fee': 'Fee on earnings {rate}',
+    'investor.cart.whole.go_portfolio': 'Go to Portfolio',
+    'investor.cart.whole.go_deals': 'Go to Deals',
     'investor.common.back': 'Back',
     'investor.money.rwf': 'RWF',
     'investor.rating.strong': 'Strong',
@@ -4298,6 +4532,8 @@ const en = {
     'investor.portfolio.empty.active.title': 'Nothing held yet',
     'investor.portfolio.empty.active.body':
         'Notes you buy appear here with their payouts and reports.',
+    'investor.portfolio.empty.active.awaiting':
+        'Your notes move into your holdings here once they are issued, after disbursement.',
     'investor.portfolio.empty.matured.title': 'Nothing here yet',
     'investor.portfolio.empty.matured.body':
         'Holdings in this category will appear here.',
@@ -4419,6 +4655,21 @@ const en = {
     'investor.wallet.result.withdraw': 'You receive',
     'investor.wallet.confirm.deposit': 'Confirm deposit',
     'investor.wallet.confirm.withdraw': 'Confirm withdrawal',
+    'investor.wallet.sending.deposit': 'Sending deposit…',
+    'investor.wallet.sending.withdraw': 'Sending withdrawal…',
+    'investor.wallet.done.deposit.pending':
+        "Deposit of {amount} requested. We'll credit it once {method} confirms.",
+    'investor.wallet.done.deposit.succeeded':
+        '{amount} from {method} is now in your wallet.',
+    'investor.wallet.done.deposit.failed':
+        "The {amount} deposit from {method} didn't go through. Nothing was credited.",
+    'investor.wallet.done.withdraw.pending':
+        "Withdrawal of {amount} to {method} requested. It's paid out once {method} confirms.",
+    'investor.wallet.done.withdraw.succeeded':
+        '{amount} was paid out to {method}.',
+    'investor.wallet.done.withdraw.failed':
+        "The {amount} withdrawal to {method} didn't go through. The money is back in your wallet.",
+    'investor.wallet.c3.credited': 'Credited',
     'investor.wallet.processing': 'Sending…',
     'investor.wallet.refusal.TRADE_BELOW_MINIMUM':
         'Enter an amount of at least the minimum',
@@ -4897,18 +5148,28 @@ const en = {
         'Statements are provided for your records. Rozine does not provide tax advice — consult a qualified adviser about your obligations.',
     'business.apply.business.unavailable': 'Unavailable',
     'business.apply.business.ineligible': 'Not eligible to raise yet',
+    'business.apply.business.requirement':
+        'Verified history: {verified} of {required} months',
+    'business.apply.business.uploaded_statements': {
+        one: '{count} statement uploaded. Months not yet verified count once an Audit Partner verifies them.',
+        other: '{count} statements uploaded. Months not yet verified count once an Audit Partner verifies them.',
+    },
+    'business.apply.business.no_statements':
+        'No statements uploaded yet. Upload them below to start verification.',
+    'business.apply.business.obligations':
+        'Existing loans and other obligations are checked in the same verification, from your statements and a credit bureau check. There is nothing separate to upload.',
     'business.apply.statements.title': 'Bank & Mobile Money statements',
     'business.apply.statements.body':
         'Upload the original statement of every bank and Mobile Money account the business uses (PDF, or a CSV export; up to 10 MB each). Rozine reads them, then an Audit Partner verifies them before your figures and capacity appear here.',
     'business.apply.statements.empty': 'No statements received yet.',
     'business.apply.statements.upload': 'Upload a statement',
-    'business.apply.statements.uploading': 'Uploading…',
     'business.apply.statements.failed':
         'We could not keep this statement. Try again.',
     'business.apply.statements.received': 'Received {date}',
     'business.apply.statements.reading.reading': 'Reading',
     'business.apply.statements.reading.read': 'Read · awaiting verification',
     'business.apply.statements.reading.needs_review': 'Our team will check it',
+    'business.apply.statements.reading.verified': 'Verified',
     'business.apply.raise.target_required': 'Enter how much you want to raise.',
     'business.apply.raise.resized_reason':
         '{capacity} is the most you can raise right now: your borrowing capacity sets this limit.',
@@ -4939,6 +5200,113 @@ const en = {
         "The agreement isn't available yet.",
     'business.apply.review.agreement_unavailable_body':
         'Rozine has not published the approved terms and risk disclosures for this application, so there is nothing to sign yet. Your draft and your offer stay saved.',
+    'business.apply.statements.transcribe':
+        'Enter the figures from your statements',
+    'business.transcription.title': 'Enter your statement figures',
+    'business.transcription.intro':
+        'Copy each month from the statements you uploaded: the balance at the start and end, and every transaction in between. An Audit Partner then checks these figures against your original statements. Months count only once they are verified.',
+    'business.transcription.saved': 'Figures saved · not yet verified',
+    'business.transcription.no_statements':
+        'Upload at least one bank or Mobile Money statement on step 1 first. Then come back to enter its figures.',
+    'business.transcription.view_only':
+        'You can see your statements, but only someone who can save the application can enter their figures.',
+    'business.transcription.months.title': 'Months your statements cover',
+    'business.transcription.months.first': 'From',
+    'business.transcription.months.last': 'To',
+    'business.transcription.months.count': {
+        one: '{count} month (at most {max})',
+        other: '{count} months (at most {max})',
+    },
+    'business.transcription.accounts.title': 'Accounts',
+    'business.transcription.accounts.hint':
+        'Add each bank or Mobile Money account the statements are from. Use letters, numbers, - and _ in the name.',
+    'business.transcription.account.unnamed': 'Account {number}',
+    'business.transcription.account.name': 'Account name',
+    'business.transcription.account.placeholder':
+        'e.g. BK-current or MoMo-0788',
+    'business.transcription.account.from': 'Opened in',
+    'business.transcription.account.until': 'Closed in',
+    'business.transcription.account.open': 'Still open',
+    'business.transcription.account.remove': 'Remove {account}',
+    'business.transcription.account.add': 'Add an account',
+    'business.transcription.figures.title': 'Monthly figures',
+    'business.transcription.figures.months': 'Choose a month',
+    'business.transcription.figures.heading': '{account} · {month}',
+    'business.transcription.figures.sources': 'From statement',
+    'business.transcription.figures.opening': 'Opening balance (RWF)',
+    'business.transcription.figures.opening_fixed':
+        'Carried from the month before, or 0 in the month the account opened.',
+    'business.transcription.figures.transactions': 'Transactions',
+    'business.transcription.figures.none': 'No transactions this month.',
+    'business.transcription.figures.closing':
+        'Closing balance on the statement (RWF)',
+    'business.transcription.figures.computed':
+        'Opening balance plus transactions: RWF {amount}',
+    'business.transcription.row.label': 'Transaction {number}',
+    'business.transcription.row.date': 'Date',
+    'business.transcription.row.direction': 'Money',
+    'business.transcription.row.in': 'In',
+    'business.transcription.row.out': 'Out',
+    'business.transcription.row.amount': 'Amount (RWF)',
+    'business.transcription.row.type': 'What it was',
+    'business.transcription.row.choose': 'Choose…',
+    'business.transcription.row.link.transfer':
+        'The same transfer on your other account',
+    'business.transcription.row.link.owner_return':
+        'The owner withdrawal it pays back',
+    'business.transcription.row.reference': 'Reference on the statement',
+    'business.transcription.row.remove': 'Remove {row}',
+    'business.transcription.row.add': 'Add a transaction',
+    'business.transcription.type.in.operating_inflow':
+        'Sales or other business income',
+    'business.transcription.type.in.financing': 'Loan or investment received',
+    'business.transcription.type.in.transfer':
+        'Transfer from your other account',
+    'business.transcription.type.in.owner_return': 'Owner paid money back',
+    'business.transcription.type.out.operating_outflow': 'Business expense',
+    'business.transcription.type.out.debt_service': 'Loan repayment',
+    'business.transcription.type.out.owner_draw': 'Owner withdrawal',
+    'business.transcription.type.out.transfer':
+        'Transfer to your other account',
+    'business.transcription.problem.months':
+        'Choose the first and last month your statements cover.',
+    'business.transcription.problem.too_many_months':
+        'Choose {max} months at most.',
+    'business.transcription.problem.no_accounts': 'Add at least one account.',
+    'business.transcription.problem.account_name':
+        'Give the account a name using letters, numbers, - and _.',
+    'business.transcription.problem.account_duplicate':
+        'Two accounts have the same name.',
+    'business.transcription.problem.account_dates':
+        'An account cannot close before it opens.',
+    'business.transcription.problem.sources':
+        'Tick the statement these figures are from.',
+    'business.transcription.problem.balance':
+        'Enter the opening and closing balances in whole francs.',
+    'business.transcription.problem.row_amount':
+        'Enter each amount in whole francs.',
+    'business.transcription.problem.row_date':
+        'Each transaction date must be in this month.',
+    'business.transcription.problem.row_reference':
+        'Each transaction needs its own reference.',
+    'business.transcription.problem.row_type':
+        'Choose what each transaction was.',
+    'business.transcription.problem.row_link':
+        'Link each transfer or owner pay-back to its other side.',
+    'business.transcription.problem.difference':
+        'This month does not add up: the opening balance plus transactions must equal the closing balance.',
+    'business.transcription.problem.closed_balance':
+        'An account must end at 0 in the month it closed.',
+    'business.transcription.to_fix': {
+        one: '{count} thing to fix before saving',
+        other: '{count} things to fix before saving',
+    },
+    'business.transcription.reviewed':
+        'I checked every figure against my original statements.',
+    'business.transcription.save': 'Save figures',
+    'business.transcription.saving': 'Saving…',
+    'business.transcription.failed':
+        'We could not save these figures. Try again.',
     'business.apply.view_only':
         'You can view this application, but not change it.',
     'business.apply.submitted.application_id': 'Application ID · {id}',
@@ -5174,6 +5542,7 @@ const en = {
     'auditor.accreditation.view_submitted':
         'Download the submitted certificate',
     'auditor.seal.save_note': 'Save note',
+    'auditor.seal.save_note_preview': 'Save note to preview',
     'auditor.seal.saving_note': 'Saving note…',
     'auditor.seal.note_unsaved':
         'Save your note before you preview. The preview, your code and the seal all cover the saved note.',
@@ -5344,6 +5713,33 @@ const en = {
         'Verify your email and turn on two-factor authentication to continue.',
     'settlement.refusal.MFA_REQUIRED': 'Two-factor authentication is required.',
     'settlement.refusal.NOT_FOUND': 'You can no longer view this record.',
+    'settlement.refusal.CART_REVISION_CONFLICT':
+        'Your cart changed. We refreshed it — check it and try again.',
+    'settlement.refusal.CART_LINES_REFUSED':
+        "Some deals in your cart can't be bought right now, so nothing was held.",
+    'settlement.refusal.CART_QUOTE_STALE':
+        'The terms changed since we priced your cart. Check the new total and try again.',
+    'settlement.refusal.CART_QUOTE_EXPIRED':
+        'Your cart price expired. We priced it again — check it and try again.',
+    'settlement.refusal.CART_QUOTE_NOT_FOUND':
+        "We couldn't find that price for your cart. Try again.",
+    'settlement.refusal.CART_CHECKOUT_ACTIVE':
+        'Your cart is held for checkout. Confirm or release it first.',
+    'settlement.refusal.CART_EXISTING_RESERVATION':
+        'You already hold notes in one of these deals. Confirm or release that hold first.',
+    'settlement.refusal.CART_RESERVATION_EXPIRED':
+        'Your hold ended before you confirmed. Check out again.',
+    'settlement.refusal.CART_RESERVATION_NOT_HELD':
+        'This checkout is no longer held.',
+    'settlement.refusal.CART_RESERVATION_NOT_FOUND':
+        "We couldn't find this checkout.",
+    'settlement.refusal.CART_LINE_UNAVAILABLE':
+        'A deal in your cart is no longer open. Remove it to check out.',
+    'settlement.refusal.CART_UNITS_ABOVE_LIMIT':
+        'Some deals are above what you can take now. Adjust them and try again.',
+    'settlement.refusal.CART_EMPTY': 'Your cart is empty.',
+    'settlement.refusal.RISK_ACKNOWLEDGEMENT_REQUIRED':
+        'Confirm the risk statements before your first investment.',
     'investor.wallet.c3.available_balance': 'Available balance',
     'investor.wallet.c3.total': 'Wallet total',
     'investor.wallet.c3.bucket.available': 'Available',
@@ -5380,6 +5776,13 @@ const en = {
         other: '{name} · {count} notes',
     },
     'investor.wallet.c3.hold_expires': 'Released in {time} unless you confirm',
+    'investor.hold_float.label':
+        'Held for checkout, {time} left. Open checkout',
+    'investor.hold_float.continue': 'Continue to checkout',
+    'investor.hold_float.more': {
+        one: '+{count} more hold in your wallet',
+        other: '+{count} more holds in your wallet',
+    },
     'investor.wallet.c3.deposits': 'Deposits',
     'investor.wallet.c3.deposit_from': 'Deposit · {method}',
     'investor.wallet.c3.intent.pending': 'Not yet confirmed',
@@ -5403,6 +5806,7 @@ const en = {
     'investor.wallet.c3.filter.external': 'Cash in and out',
     'investor.wallet.c3.filter.internal': 'Holds and commitments',
     'investor.wallet.c3.transfer': '{from} → {to}',
+    'investor.wallet.c3.history_loading': 'Loading transaction history…',
     'investor.wallet.c3.older': 'Show older',
     'investor.wallet.c3.receipt_policy': 'Policy version',
     'investor.wallet.c3.not_credited':
@@ -6156,6 +6560,7 @@ const en = {
     'business.audit_cosign.status.signed_on': 'Signed · {date}',
     'business.audit_cosign.status.signed': 'Signed',
     'business.audit_cosign.status.pending': 'Waiting',
+    'business.audit_cosign.status.not_signed': 'Not signed',
     'business.audit_cosign.due': 'Co-sign by {date}',
     'business.audit_cosign.overdue': 'Overdue — co-signing was due by {date}',
     'business.audit_cosign.published': 'Published {date}',
@@ -6226,6 +6631,9 @@ const en = {
         'Only the report ID, its digest and the result of the seal check are shown here.',
     'business.audit_cosign.refused.AUDIT_REPORT_AMENDED':
         "The auditor has amended this report, so it can no longer be co-signed. The amended report will come to you for sign-off once it's sealed.",
+    'common.upload.sending': 'Uploading…',
+    'common.upload.percent': 'Uploading… {percent}%',
+    'common.upload.checking': 'Checking the file…',
     'common.file_size.kb': '{size} KB',
     'common.file_size.mb': '{size} MB',
     'common.file_size.kind': '{kind} · {size}',
@@ -6642,6 +7050,10 @@ const en = {
     'admin.exceptions.kind.variance': 'Variance',
     'admin.exceptions.kind.audit': 'Overdue flash audit',
     'admin.exceptions.kind.complaint': 'Complaint',
+    'admin.exceptions.kind.cart_release': 'Cart release',
+    'admin.exceptions.retry': 'Retry release',
+    'admin.exceptions.retry_named': 'Retry the release of {reference}',
+    'admin.exceptions.retrying': 'Releasing…',
     'admin.exceptions.col.reference': 'Reference',
     'admin.exceptions.col.kind': 'Kind',
     'admin.exceptions.col.subject': 'Exception',
@@ -7203,6 +7615,90 @@ const en = {
         'Once per completed audit',
     'auditor.academy.lesson.earnings.topic2.option3':
         'Only when the note matures',
+    'auditor.outcome.verified.title': 'Statements verified',
+    'auditor.outcome.verified.body':
+        "{business}'s statements and monthly figures are now on record as checked. They count toward its application once every other requirement is met.",
+    'auditor.verify.title': 'Verify the statements',
+    'auditor.verify.lead':
+        'Open each statement, compare it with the figures the business saved, and record what you checked. This is a factual review, not a credit decision.',
+    'auditor.verify.waiting_for_figures':
+        "The business hasn't saved its monthly figures yet. You can verify the statements once it has.",
+    'auditor.verify.statements': 'Statements on file',
+    'auditor.verify.open': 'Open',
+    'auditor.verify.reference': 'Where you checked it (page, line or note)',
+    'auditor.verify.figures': "The business's monthly figures",
+    'auditor.verify.month': 'Month',
+    'auditor.verify.inflow': 'Money in',
+    'auditor.verify.outflow': 'Money out',
+    'auditor.verify.owner_draw': 'Owner draw',
+    'auditor.verify.debt_service': 'Debt payments',
+    'auditor.verify.checks': 'Checks',
+    'auditor.verify.check.complete_rail_inventory':
+        'Every account and wallet the business uses is listed',
+    'auditor.verify.check.originals_authentic':
+        'The statements are genuine originals',
+    'auditor.verify.check.balances_and_transactions':
+        'Balances and transactions match the figures',
+    'auditor.verify.check.duplicates_and_classification':
+        'No duplicates, and money in and out is classed correctly',
+    'auditor.verify.check.debt_schedules':
+        'Debts and their payment schedules are accounted for',
+    'auditor.verify.check.baseline_and_gaps':
+        'The months are complete, with any gaps explained',
+    'auditor.verify.check.draws_returns_and_exceptions':
+        'Owner draws, refunds and unusual items are explained',
+    'auditor.verify.inventory': 'Where the full list of accounts is recorded',
+    'auditor.verify.debts': 'Debts',
+    'auditor.verify.no_debts':
+        'No debts declared. Add any loan or credit you found; leaving none says the business has none.',
+    'auditor.verify.debt': 'Debt {number}',
+    'auditor.verify.debt_name': 'Lender and loan',
+    'auditor.verify.debt_principal': 'Amount still owed (RWF)',
+    'auditor.verify.debt_service_in': 'Paid in {month} (RWF)',
+    'auditor.verify.debt_scheduled':
+        'Scheduled monthly payment from {month} (RWF)',
+    'auditor.verify.debt_last_payment': 'Last scheduled payment',
+    'auditor.verify.debt_last_payment_pick': 'Choose a month',
+    'auditor.verify.debt_beyond': 'After {month}',
+    'auditor.verify.debt_schedule_hint':
+        'Each coming month fills from the payment above. Change any month that differs, such as a stepped or final balloon payment.',
+    'auditor.verify.debt_due_in': 'Due in {month} (RWF)',
+    'auditor.verify.debt_sources': 'Statements showing this debt',
+    'auditor.verify.add_debt': 'Add a debt',
+    'auditor.verify.remove_debt': 'Remove this debt',
+    'auditor.verify.owner': 'Owner draw and findings',
+    'auditor.verify.owner_draw_amount': 'Usual monthly owner draw (RWF)',
+    'auditor.verify.owner_draw_reference': 'Where you saw it',
+    'auditor.verify.findings': 'Your findings',
+    'auditor.verify.balances': 'Opening and closing balances',
+    'auditor.verify.account': 'Account',
+    'auditor.verify.opening_balance': 'Opening',
+    'auditor.verify.closing_balance': 'Closing',
+    'auditor.verify.amount_hint': 'Whole RWF, e.g. 150000',
+    'auditor.verify.done.title': 'Verification recorded',
+    'auditor.verify.done.body':
+        '{business}’s statements are now on record as verified. Nothing more is needed from you on this review.',
+    'auditor.verify.done.jobs': 'Back to Jobs',
+    'auditor.verify.incomplete':
+        'Tick every check and fill in each field to verify. Amounts are whole RWF.',
+    'auditor.verify.submit': 'Verify statements',
+    'auditor.verify.sending': 'Verifying…',
+    'auditor.verify.refused.STATEMENT_REVIEW_INCOMPLETE':
+        'Every check must be ticked before the statements can be verified.',
+    'auditor.verify.refused.STATEMENT_SOURCE_REVIEW_REQUIRED':
+        "A statement on file changed or wasn't reviewed. Reload the file and check each statement again.",
+    'auditor.verify.refused.STATEMENT_REVIEW_REFERENCE_REQUIRED':
+        'Each note must be plain text of up to 2,000 characters.',
+    'auditor.verify.refused.STATEMENT_DEBT_EVIDENCE_REQUIRED':
+        'Each debt needs a unique name, its statements and a payment for every month.',
+    'auditor.verify.refused.STATEMENT_REVIEW_AMOUNT_INVALID':
+        'Amounts must be whole RWF, without separators.',
+    'auditor.verify.refused.STATEMENT_COMPLETE_MONTH_REQUIRED':
+        "The figures include the current month, which can't be verified until it ends. Ask the business to save completed months only.",
+    'auditor.verify.refused.STATEMENT_RECONCILIATION_REQUIRED':
+        "The business's figures no longer reconcile with its statements. The business needs to save them again.",
+    'auditor.verify.refused.STATEMENT_TRANSCRIPTION_STALE':
+        'The business saved new figures since you opened the file. Reload it and review them.',
 } as const;
 
 export default en;

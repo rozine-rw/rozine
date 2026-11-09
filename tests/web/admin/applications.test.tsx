@@ -785,6 +785,19 @@ describe('The live staff applications index (#147)', () => {
         ).toHaveTextContent('Needs review');
     });
 
+    it('marks a row without a capacity figure while another row has one', () => {
+        const fixture = props(liveFixture);
+        fixture.applications[1].capacity_used_pct = 40;
+        render(<AdminApplications {...fixture} />);
+
+        const [head, first, second] = screen.getAllByRole('row');
+
+        expect(head).toHaveTextContent('Capacity');
+        expect(within(first).getByText('Not available')).toBeInTheDocument();
+        expect(within(second).getByRole('progressbar')).toBeInTheDocument();
+        expect(within(second).getByText('40%')).toBeInTheDocument();
+    });
+
     it('opens the review with only what the server sources', () => {
         render(<AdminApplications {...props(liveFixture)} />);
         const drawer = screen.getByRole('dialog');

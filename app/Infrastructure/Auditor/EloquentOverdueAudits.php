@@ -8,6 +8,7 @@ use App\Application\Operations\Contracts\OverdueAudits;
 use App\Models\AuditAssignment;
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -23,17 +24,14 @@ final class EloquentOverdueAudits implements OverdueAudits
     {
         $now = CarbonImmutable::instance($at)->utc();
         $overdue = [];
-        AuditAssignment::query()->whereIn('status', self::OPEN)
-            ->whereNotExists(fn ($query) => $query->from('audit_reports')->whereColumn('audit_reports.assignment_id', 'audit_assignments.id')->where('audit_reports.status', 'sealed'))
-            ->lazyById(100)->each(function (AuditAssignment $assignment) use ($now, &$overdue): void {
-                $completeBy = $assignment->state['complete_by'];
-                if ($assignment->state['kind'] !== 'flash' || $completeBy === null || CarbonImmutable::parse($completeBy)->gt($now)) {
-                    return;
-                }
-                $overdue[] = ['id' => $assignment->id, 'business_id' => $assignment->business_id,
-                    'status' => in_array($assignment->status, ['offered', 'accepted'], true) ? $assignment->status : 'operations',
-                    'party_id' => $assignment->status === 'accepted' ? $assignment->party_id : null, 'due_at' => CarbonImmutable::parse($completeBy)->utc()->toIso8601String()];
-            });
+        $this->unfinished()->lazyById(100)->each(function (AuditAssignment $assignment) use ($now, &$overdue): void {
+            if (! $this->due($assignment, $now)) {
+                return;
+            }
+            $overdue[] = ['id' => $assignment->id, 'business_id' => $assignment->business_id,
+                'status' => in_array($assignment->status, ['offered', 'accepted'], true) ? $assignment->status : 'operations',
+                'party_id' => $assignment->status === 'accepted' ? $assignment->party_id : null, 'due_at' => CarbonImmutable::parse($assignment->state['complete_by'])->utc()->toIso8601String()];
+        });
         $businesses = DB::table('business_profiles')->whereIn('id', array_column($overdue, 'business_id'))
             ->selectRaw("id, profile->>'name' AS name")->pluck('name', 'id')->all();
         $partners = DB::table('users')->whereIn('party_id', array_filter(array_column($overdue, 'party_id')))
@@ -43,5 +41,26 @@ final class EloquentOverdueAudits implements OverdueAudits
         return array_map(fn (array $row): array => ['id' => $row['id'], 'business_id' => $row['business_id'],
             'business' => (string) ($businesses[$row['business_id']] ?? 'Business'), 'partner' => $row['party_id'] === null ? null : (string) ($partners[$row['party_id']] ?? 'Audit Partner'),
             'status' => $row['status'], 'due_at' => $row['due_at']], $overdue);
+    }
+
+    public function isFlashOverdue(string $assignmentId, DateTimeInterface $at): bool
+    {
+        $assignment = $this->unfinished()->whereKey($assignmentId)->first();
+
+        return $assignment !== null && $this->due($assignment, CarbonImmutable::instance($at)->utc());
+    }
+
+    /** @return Builder<AuditAssignment> */
+    private function unfinished(): Builder
+    {
+        return AuditAssignment::query()->whereIn('status', self::OPEN)
+            ->whereNotExists(fn ($query) => $query->from('audit_reports')->whereColumn('audit_reports.assignment_id', 'audit_assignments.id')->where('audit_reports.status', 'sealed'));
+    }
+
+    private function due(AuditAssignment $assignment, CarbonImmutable $now): bool
+    {
+        $completeBy = $assignment->state['complete_by'];
+
+        return $assignment->state['kind'] === 'flash' && $completeBy !== null && ! CarbonImmutable::parse($completeBy)->gt($now);
     }
 }

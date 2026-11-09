@@ -9,6 +9,10 @@
             "upload": {
                 "url": "/business/01k6p5t2w8x4y7z9a3b6c1d5e0/statements",
                 "method": "post"
+            },
+            "transcription": {
+                "url": "/business/01k6p5t2w8x4y7z9a3b6c1d5e0/statements/transcription",
+                "method": "get"
             }
         },
         "identity_context_revision": 4,
@@ -33,6 +37,10 @@
         },
         "evidence": {
             "version": "ev-2026-09-21.3",
+            "requirement": {
+                "months_required": 36,
+                "months_verified": 36
+            },
             "eligibility": {
                 "status": "eligible"
             },

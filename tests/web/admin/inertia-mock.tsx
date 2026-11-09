@@ -20,8 +20,10 @@ export type Responder = (options: HttpOptions) => Promise<unknown>;
  * answered in order by the responders a test queues on `inertia.queue`.
  */
 export const inertia = {
+    deferredState: 'ready' as 'ready' | 'loading' | 'reloading' | 'error',
     reload: [] as Record<string, unknown>[],
     visits: [] as string[],
+    visitOptions: [] as Record<string, unknown>[],
     posts: [] as { url: string; data: Record<string, unknown> }[],
     errors: {} as Record<string, string>,
     processing: false,
@@ -33,11 +35,24 @@ export const inertia = {
     queue: [] as Responder[],
     /** Field errors `useHttp` reports after a 422. */
     httpErrors: {} as Record<string, string>,
+    /** `router.reload` also calls `onSuccess` before `onFinish`. */
+    reloadSucceeds: false,
+    /** The global router events a page listens to, by name. */
+    listeners: {} as Record<string, Set<(event: unknown) => unknown>>,
 };
 
+/** Fires a global router event at every listener, returning what each one answered. */
+export function emit(name: string, event: unknown = {}): unknown[] {
+    return [...(inertia.listeners[name] ?? [])].map((listener) =>
+        listener(event),
+    );
+}
+
 export function resetInertia() {
+    inertia.deferredState = 'ready';
     inertia.reload = [];
     inertia.visits = [];
+    inertia.visitOptions = [];
     inertia.posts = [];
     inertia.errors = {};
     inertia.processing = false;
@@ -46,6 +61,8 @@ export function resetInertia() {
     inertia.formState = { processing: false, errors: {} };
     inertia.calls = [];
     inertia.queue = [];
+    inertia.reloadSucceeds = false;
+    inertia.listeners = {};
     inertia.httpErrors = {};
 }
 
@@ -106,13 +123,51 @@ export function Form({
     return <form aria-label="sign in form">{children(inertia.formState)}</form>;
 }
 
+export function Deferred({
+    children,
+    fallback,
+    rescue,
+}: {
+    children: ReactNode | ((state: { reloading: boolean }) => ReactNode);
+    fallback: ReactNode;
+    rescue: ReactNode;
+}) {
+    if (inertia.deferredState === 'loading') {
+        return fallback;
+    }
+
+    if (inertia.deferredState === 'error') {
+        return rescue;
+    }
+
+    return typeof children === 'function'
+        ? children({ reloading: inertia.deferredState === 'reloading' })
+        : children;
+}
+
 export const router = {
-    reload: (options: Record<string, unknown> & { onFinish?: () => void }) => {
+    on: (name: string, listener: (event: unknown) => unknown) => {
+        (inertia.listeners[name] ??= new Set()).add(listener);
+
+        return () => inertia.listeners[name]?.delete(listener);
+    },
+    reload: (
+        options: Record<string, unknown> & {
+            onSuccess?: () => void;
+            onFinish?: () => void;
+        },
+    ) => {
         inertia.reload.push(options);
+
+        if (inertia.reloadSucceeds) {
+            options.onSuccess?.();
+        }
+
         options.onFinish?.();
     },
-    visit: (url: string) => {
+    visit: (url: string, options: Record<string, unknown> = {}) => {
         inertia.visits.push(url);
+        inertia.visitOptions.push(options);
     },
 };
 

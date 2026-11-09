@@ -621,7 +621,7 @@ export const document = {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:95
+* @see app/Http/Controllers/InvestorVerificationController.php:100
 * @route '/api/v1/investor/verification/submit'
 */
 const submitab9c35128af7f532a1a67ae1ae838a78 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -636,7 +636,7 @@ submitab9c35128af7f532a1a67ae1ae838a78.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:95
+* @see app/Http/Controllers/InvestorVerificationController.php:100
 * @route '/api/v1/investor/verification/submit'
 */
 submitab9c35128af7f532a1a67ae1ae838a78.url = (options?: RouteQueryOptions) => {
@@ -645,7 +645,7 @@ submitab9c35128af7f532a1a67ae1ae838a78.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:95
+* @see app/Http/Controllers/InvestorVerificationController.php:100
 * @route '/api/v1/investor/verification/submit'
 */
 submitab9c35128af7f532a1a67ae1ae838a78.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -655,7 +655,7 @@ submitab9c35128af7f532a1a67ae1ae838a78.post = (options?: RouteQueryOptions): Rou
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:95
+* @see app/Http/Controllers/InvestorVerificationController.php:100
 * @route '/api/v1/investor/verification/submit'
 */
 const submitab9c35128af7f532a1a67ae1ae838a78Form = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -665,7 +665,7 @@ const submitab9c35128af7f532a1a67ae1ae838a78Form = (options?: RouteQueryOptions)
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:95
+* @see app/Http/Controllers/InvestorVerificationController.php:100
 * @route '/api/v1/investor/verification/submit'
 */
 submitab9c35128af7f532a1a67ae1ae838a78Form.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -676,7 +676,7 @@ submitab9c35128af7f532a1a67ae1ae838a78Form.post = (options?: RouteQueryOptions):
 submitab9c35128af7f532a1a67ae1ae838a78.form = submitab9c35128af7f532a1a67ae1ae838a78Form
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:95
+* @see app/Http/Controllers/InvestorVerificationController.php:100
 * @route '/investor/verification/submit'
 */
 const submitda95dfa569d727bede107655bee3682a = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -691,7 +691,7 @@ submitda95dfa569d727bede107655bee3682a.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:95
+* @see app/Http/Controllers/InvestorVerificationController.php:100
 * @route '/investor/verification/submit'
 */
 submitda95dfa569d727bede107655bee3682a.url = (options?: RouteQueryOptions) => {
@@ -700,7 +700,7 @@ submitda95dfa569d727bede107655bee3682a.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:95
+* @see app/Http/Controllers/InvestorVerificationController.php:100
 * @route '/investor/verification/submit'
 */
 submitda95dfa569d727bede107655bee3682a.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -710,7 +710,7 @@ submitda95dfa569d727bede107655bee3682a.post = (options?: RouteQueryOptions): Rou
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:95
+* @see app/Http/Controllers/InvestorVerificationController.php:100
 * @route '/investor/verification/submit'
 */
 const submitda95dfa569d727bede107655bee3682aForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -720,7 +720,7 @@ const submitda95dfa569d727bede107655bee3682aForm = (options?: RouteQueryOptions)
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:95
+* @see app/Http/Controllers/InvestorVerificationController.php:100
 * @route '/investor/verification/submit'
 */
 submitda95dfa569d727bede107655bee3682aForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

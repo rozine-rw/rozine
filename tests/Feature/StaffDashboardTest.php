@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 use App\Application\Business\Contracts\InvestorDealCatalogue;
 use App\Application\Identity\ConfigureStaffAccess;
+use App\Application\Identity\Contracts\InvestorDirectoryStore;
 use App\Application\Identity\SaveInvestorVerification;
 use App\Application\Identity\SubmitInvestorVerification;
 use App\Application\Identity\UploadInvestorVerificationDocument;
+use App\Application\Operations\Contracts\LedgerJournal;
 use App\Application\Operations\Contracts\OperationsDashboardStore;
+use App\Application\Operations\Contracts\ReconciliationStore;
 use App\Models\Party;
 use App\Models\PrimaryHolding;
 use App\Models\User;
@@ -88,7 +91,7 @@ test('an empty platform shows zero figures, empty queues and every untracked fig
             ->where('attention', [['key' => 'applications_pending', 'count' => null, 'link' => null], ['key' => 'kyc_awaiting', 'count' => 0, 'link' => null],
                 ['key' => 'notes_late', 'count' => null, 'link' => null], ['key' => 'notes_default_risk', 'count' => null, 'link' => null],
                 ['key' => 'frozen_accounts', 'count' => 0, 'link' => null]])
-            ->where('breaks', null)->where('portfolio_health', ['total' => 0, 'healthy' => ['count' => 0, 'pct' => 0], 'watch' => ['count' => 0, 'pct' => 0], 'distressed' => null])->where('activity', null)->where('sector_exposure', [])->where('collections', null)
+            ->where('breaks', null)->where('portfolio_health', ['total' => 0, 'healthy' => ['count' => 0, 'pct' => 0], 'watch' => ['count' => 0, 'pct' => 0], 'distressed' => null])->missing('activity')->where('sector_exposure', [])->where('collections', null)
             ->where('capital_raised', ['from' => null, 'to' => null, 'grain' => 'year', 'bars' => []])
             ->where('funnel', array_map(fn (string $stage): array => ['stage' => $stage, 'count' => in_array($stage, ['submitted', 'matured'], true) ? null : 0, 'width_pct' => 0],
                 ['submitted', 'live', 'funded', 'repaying', 'matured', 'failed']))
@@ -277,4 +280,58 @@ test('the Operations Center answers over the API with the read ability and links
         ->assertJsonPath('data.attention.1.link.url', '/api/v1/staff/investors?chip=pending');
     Sanctum::actingAs($viewer, ['staff:investors:read']);
     $this->getJson('/api/v1/staff/dashboard')->assertForbidden();
+});
+
+test('a capital chart partial reload reads only the chart while retaining staff authorization', function (): void {
+    $viewer = boardStaff(['superadmin']);
+    $version = $this->actingAs($viewer)->get(route('staff.dashboard'))->assertOk()->inertiaPage()['version'];
+    $store = $this->createMock(OperationsDashboardStore::class);
+    $store->expects($this->once())->method('capitalRaised')->with('day', '2027-03-01T22:00:00+00:00', '2027-03-10T22:00:00+00:00')
+        ->willReturn([['label' => '02/03', 'amount' => '5000', 'height_pct' => 100]]);
+    foreach (['figures', 'noteStates', 'sectorExposure'] as $method) {
+        $store->expects($this->never())->method($method);
+    }
+    app()->instance(OperationsDashboardStore::class, $store);
+    app()->instance(InvestorDirectoryStore::class, Mockery::mock(InvestorDirectoryStore::class));
+    app()->instance(ReconciliationStore::class, Mockery::mock(ReconciliationStore::class));
+    app()->instance(LedgerJournal::class, Mockery::mock(LedgerJournal::class));
+
+    $headers = ['X-Inertia' => 'true', 'X-Inertia-Partial-Component' => 'admin/today', 'X-Inertia-Partial-Data' => 'capital_raised', 'X-Inertia-Version' => $version];
+    $this->actingAs($viewer)->get(route('staff.dashboard', ['from' => '2027-03-02T00:00', 'to' => '2027-03-11T00:00']), $headers)
+        ->assertOk()->assertJsonPath('component', 'admin/today')
+        ->assertJsonPath('props.capital_raised', ['from' => '2027-03-02T00:00:00+02:00', 'to' => '2027-03-11T00:00:00+02:00', 'grain' => 'day',
+            'bars' => [['label' => '02/03', 'amount' => ['currency' => 'RWF', 'amount' => '5000'], 'height_pct' => 100]]])
+        ->assertJsonMissingPath('props.breaks')->assertJsonMissingPath('props.activity')->assertJsonMissingPath('props.kpis');
+
+    app(ConfigureStaffAccess::class)->handle($viewer->id, false, 'Access revoked.', (string) Str::uuid(), ['superadmin']);
+    $this->actingAs($viewer)->get(route('staff.dashboard'), $headers)->assertForbidden();
+    $headers['X-Inertia-Partial-Data'] = 'unknown';
+    $this->actingAs($viewer)->get(route('staff.dashboard'), $headers)->assertForbidden();
+});
+
+test('activity is deferred and its permission is rechecked when it loads', function (): void {
+    $viewer = boardStaff(['treasury']);
+    $response = $this->actingAs($viewer)->get(route('staff.dashboard'))->assertOk();
+    $response->assertInertia(fn (Assert $page) => $page->missing('activity'));
+    $version = $response->inertiaPage()['version'];
+    $headers = ['X-Inertia' => 'true', 'X-Inertia-Partial-Component' => 'admin/today', 'X-Inertia-Partial-Data' => 'activity', 'X-Inertia-Version' => $version];
+    $this->actingAs($viewer)->get(route('staff.dashboard'), $headers)->assertOk()->assertJsonPath('props.activity', []);
+
+    app(ConfigureStaffAccess::class)->handle($viewer->id, true, 'Ledger access removed.', (string) Str::uuid(), ['analyst']);
+    $this->actingAs($viewer)->get(route('staff.dashboard'), $headers)->assertOk()->assertJsonPath('props.activity', null);
+    app(ConfigureStaffAccess::class)->handle($viewer->id, false, 'Access revoked.', (string) Str::uuid(), ['analyst']);
+    $this->actingAs($viewer)->get(route('staff.dashboard'), $headers)->assertForbidden();
+});
+
+test('activity failures are rescued without blocking dashboard data', function (): void {
+    $viewer = boardStaff(['treasury']);
+    $journal = $this->createMock(LedgerJournal::class);
+    $journal->expects($this->once())->method('latest')->willThrowException(new RuntimeException('Synthetic ledger read failure'));
+    app()->instance(LedgerJournal::class, $journal);
+
+    $initial = $this->actingAs($viewer)->get(route('staff.dashboard'))->assertOk();
+    $initial->assertInertia(fn (Assert $page) => $page->has('kpis')->missing('activity'));
+    $headers = ['X-Inertia' => 'true', 'X-Inertia-Partial-Component' => 'admin/today', 'X-Inertia-Partial-Data' => 'activity', 'X-Inertia-Version' => $initial->inertiaPage()['version']];
+    $this->actingAs($viewer)->get(route('staff.dashboard'), $headers)->assertOk()
+        ->assertJsonPath('rescuedProps.0', 'activity')->assertJsonMissingPath('props.activity');
 });

@@ -99,8 +99,12 @@ test('a person completes every step and submits for Compliance review', function
         ->assertInertia(fn (Assert $page) => $page->where('step', 'liveness')->where('date_of_birth', '01 / 05 / 1990')
             ->where('id_number', '1199080012345678')->where('uploads.back.status', 'uploaded')->where('uploads.selfie.status', 'uploaded'));
 
+    // Nothing is left to do on the form, so the Investor goes home and is told the details arrived.
     $this->actingAs($this->person)->post(route('investor.verification.submit'), kycCommand(['expected_revision' => kycRevision($this->person)]))
-        ->assertRedirect(route('investor.verification'))->assertSessionHasNoErrors();
+        ->assertRedirect(route('investor.deals'))->assertSessionHasNoErrors();
+    $this->actingAs($this->person)->get(route('investor.deals'))
+        ->assertInertia(fn (Assert $page) => $page->component('investor/deals')->where('gate.status', 'verification_pending')->hasFlash('toast', ['type' => 'success',
+            'message' => 'Your details are with our Compliance team. We will tell you when they have been reviewed.']));
 
     $record = InvestorVerification::query()->where('party_id', $this->person->party_id)->sole();
     expect($record->status)->toBe('submitted')->and($record->revision)->toBe(6)->and($record->submitted_at?->toDateString())->toBe('2026-10-06')

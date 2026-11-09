@@ -529,6 +529,93 @@ describe('Apply — step 1, business & finances', () => {
         expect(
             screen.queryByRole('button', { name: 'Continue' }),
         ).not.toBeInTheDocument();
+        /* How far the verified history has come, what is still waiting, and what obligations mean. */
+        expect(
+            screen.getByText('Verified history: 28 of 36 months'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                '3 statements uploaded. Months not yet verified count once an Audit Partner verifies them.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                /^Existing loans and other obligations are checked/u,
+            ),
+        ).toBeInTheDocument();
+    });
+
+    it('never says uploaded statements are waiting when the history is stale but fully verified', () => {
+        const page = props(ineligibleStep);
+
+        page.evidence = {
+            ...page.evidence,
+            requirement: { months_required: 36, months_verified: 36 },
+            eligibility: {
+                status: 'ineligible',
+                code: 'UNDERWRITING_EVIDENCE_REQUIRED',
+                message: 'Fresh verified statements are needed.',
+            },
+        };
+        render(<BusinessApply {...page} />);
+
+        expect(
+            screen.getByText('Verified history: 36 of 36 months'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                /^3 statements uploaded\. Months not yet verified/u,
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText(/waiting for an Audit Partner/u),
+        ).not.toBeInTheDocument();
+    });
+
+    it('asks for statements when none are uploaded, and keeps the evidence help off other refusals', () => {
+        const page = props(ineligibleStep);
+
+        page.statements = { ...page.statements!, documents: [] };
+        const { unmount } = render(<BusinessApply {...page} />);
+
+        expect(
+            screen.getByText(
+                'No statements uploaded yet. Upload them below to start verification.',
+            ),
+        ).toBeInTheDocument();
+        unmount();
+
+        page.statements = undefined;
+        page.evidence = { ...page.evidence, requirement: undefined };
+        const { unmount: unmountBare } = render(<BusinessApply {...page} />);
+
+        expect(
+            screen.queryByText(/^Verified history:/u),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByText(/^No statements uploaded/u),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByText(/^Existing loans and other obligations/u),
+        ).toBeInTheDocument();
+        unmountBare();
+
+        page.evidence = {
+            ...page.evidence,
+            eligibility: {
+                status: 'ineligible',
+                code: 'RESTRICTION_ACTIVE',
+                message: 'A restriction stops this application.',
+            },
+        };
+        render(<BusinessApply {...page} />);
+
+        expect(
+            screen.getByText('A restriction stops this application.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText(/^Existing loans and other obligations/u),
+        ).not.toBeInTheDocument();
     });
 
     it('hides the window when the server states none, and names a one-month window and year', () => {
@@ -2821,7 +2908,10 @@ describe('Apply — the live business-application-v1 projection', () => {
                 /^Complete verified statements and current obligation evidence/u,
             ),
         ).toBeInTheDocument();
-        expect(screen.queryByText(/ months$/u)).not.toBeInTheDocument();
+        expect(screen.queryByText(/ · \d+ months$/u)).not.toBeInTheDocument();
+        expect(
+            screen.getByText('Verified history: 0 of 36 months'),
+        ).toBeInTheDocument();
         expect(
             screen.queryByText(/Statements verified/u),
         ).not.toBeInTheDocument();

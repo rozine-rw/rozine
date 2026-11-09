@@ -1,11 +1,11 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import AdminToday from '@/pages/admin/today';
 import type { AdminTodayProps } from '@/types/admin';
 import clearFixture from '../../../resources/fixtures/ui/admin-today-clear.json';
 import todayFixture from '../../../resources/fixtures/ui/admin-today.json';
 import { renderWithUser } from '../helpers/render-with-user';
-import { inertia, resetInertia } from './inertia-mock';
+import { emit, inertia, resetInertia } from './inertia-mock';
 
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 
@@ -13,6 +13,121 @@ const props = (fixture: { props: unknown }) =>
     structuredClone(fixture.props) as AdminTodayProps;
 
 beforeEach(resetInertia);
+
+describe('deferred activity', () => {
+    it('removes the ledger link when the deferred response revokes access', () => {
+        const fixture = props(todayFixture);
+        fixture.activity = null;
+        expect(fixture.nav.ledger).not.toBeNull();
+        render(<AdminToday {...fixture} />);
+        expect(
+            screen.queryByRole('link', {
+                name: 'See all activity in the ledger',
+            }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows an accessible loading state and offers a targeted retry', async () => {
+        inertia.deferredState = 'loading';
+        const { rerender } = render(<AdminToday {...props(todayFixture)} />);
+        expect(
+            screen.getByRole('status', { name: 'Loading activity' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', {
+                name: 'See all activity in the ledger',
+            }),
+        ).not.toBeInTheDocument();
+
+        inertia.deferredState = 'reloading';
+        rerender(<AdminToday {...props(todayFixture)} />);
+        expect(
+            screen.getByRole('status', { name: 'Loading activity' }),
+        ).toBeInTheDocument();
+
+        inertia.deferredState = 'error';
+        rerender(<AdminToday {...props(todayFixture)} />);
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Activity could not be loaded.',
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+        expect(inertia.reload.at(-1)).toMatchObject({ only: ['activity'] });
+    });
+});
+
+describe('activity refreshes', () => {
+    const visit = (pathname: string, only: string[]) => ({
+        detail: {
+            visit: { url: new URL(pathname, window.location.origin), only },
+        },
+    });
+
+    it('shows loading while its own refresh runs, an error if it fails, and recovers on retry', () => {
+        render(<AdminToday {...props(todayFixture)} />);
+        const here = window.location.pathname;
+        const other = visit('/somewhere-else', []);
+        const unrelated = visit(here, ['attention']);
+
+        act(() => {
+            emit('start', other);
+            emit('start', unrelated);
+            emit('finish', other);
+        });
+        expect(
+            screen.queryByRole('status', { name: 'Loading activity' }),
+        ).not.toBeInTheDocument();
+        // No activity refresh is pending, so a failure elsewhere is not ours to show.
+        expect(emit('httpException')).toEqual([undefined]);
+
+        const full = visit(here, []);
+        const targeted = visit(here, ['activity']);
+
+        act(() => {
+            emit('start', full);
+            emit('start', targeted);
+        });
+        expect(
+            screen.getByRole('status', { name: 'Loading activity' }),
+        ).toBeInTheDocument();
+
+        let answers: unknown[] = [];
+
+        act(() => {
+            answers = emit('networkError');
+            emit('finish', full);
+        });
+        expect(answers).toEqual([false]);
+        expect(
+            screen.getByRole('status', { name: 'Loading activity' }),
+        ).toBeInTheDocument();
+        act(() => {
+            emit('finish', targeted);
+        });
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Activity could not be loaded.',
+        );
+
+        inertia.reloadSucceeds = true;
+        fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+        expect(inertia.reload.at(-1)).toMatchObject({ only: ['activity'] });
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+
+    it('clears a failure once fresh activity arrives', () => {
+        const { rerender } = render(<AdminToday {...props(todayFixture)} />);
+        const refresh = visit(window.location.pathname, ['activity']);
+
+        act(() => {
+            emit('start', refresh);
+            emit('networkError');
+            emit('finish', refresh);
+        });
+        expect(screen.getByRole('alert')).toBeInTheDocument();
+
+        rerender(<AdminToday {...props(todayFixture)} />);
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+});
 
 describe('Admin frame', () => {
     it('draws the grouped design sidebar with live badges', () => {
@@ -389,6 +504,24 @@ describe('Admin Today', () => {
 
         expect(screen.getByText('just now')).toBeInTheDocument();
         expect(screen.getByText('3d ago')).toBeInTheDocument();
+    });
+
+    it('shows restricted access instead of claiming the applications queue is empty', () => {
+        const fixture = props(todayFixture);
+        render(
+            <AdminToday
+                {...fixture}
+                nav={{ ...fixture.nav, applications: null }}
+                pending_applications={[]}
+            />,
+        );
+
+        expect(
+            screen.getByText('You do not have access to pending applications.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText('No applications waiting.'),
+        ).not.toBeInTheDocument();
     });
 
     it('says when there is no activity or no application waiting', () => {

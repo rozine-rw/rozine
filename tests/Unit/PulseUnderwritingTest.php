@@ -177,7 +177,7 @@ test('an investor projection uses the supplied yield', function () {
 test('policy options are produced by the domain', function () {
     $policy = PulseUnderwriting::policy(2026);
 
-    expect($policy['terms'])->toBe([3, 4, 5, 6, 9, 12])
+    expect($policy['terms'])->toBe([3, 4, 5, 6])
         ->and($policy['sectors'])->toBe([
             'Agriculture',
             'Retail & trade',

@@ -400,6 +400,7 @@ export function WalletHistory({
         wide ? 'investor.wallet.tx.title_short' : 'investor.wallet.tx.title',
     );
     const [expanded, setExpanded] = useState(false);
+    const [loading, setLoading] = useState(false);
     const collapsible = history.items.length > HISTORY_PREVIEW;
     const items =
         collapsible && !expanded
@@ -421,6 +422,8 @@ export function WalletHistory({
                         key={filter.key}
                         href={filter.link}
                         preserveScroll
+                        onStart={() => setLoading(true)}
+                        onFinish={() => setLoading(false)}
                         aria-current={filter.active ? 'true' : undefined}
                         className={cn(
                             'shrink-0 rounded-[10px] border px-[13px] py-[7px] text-xs font-semibold whitespace-nowrap',
@@ -442,6 +445,8 @@ export function WalletHistory({
                         key={period.key}
                         href={period.link}
                         preserveScroll
+                        onStart={() => setLoading(true)}
+                        onFinish={() => setLoading(false)}
                         aria-current={period.active ? 'true' : undefined}
                         className={cn(
                             'shrink-0 rounded-[10px] border px-[11px] py-[5px] text-[11.5px] font-semibold whitespace-nowrap',
@@ -458,7 +463,13 @@ export function WalletHistory({
                     </Link>
                 ))}
             </nav>
-            <ul className="mt-2.5 overflow-hidden rounded-2xl border border-rz-border bg-rz-surface">
+            <p role="status" className="mt-2 text-xs text-rz-secondary">
+                {loading ? t('investor.wallet.c3.history_loading') : null}
+            </p>
+            <ul
+                aria-busy={loading || undefined}
+                className="mt-2.5 overflow-hidden rounded-2xl border border-rz-border bg-rz-surface"
+            >
                 {items.map((entry) => (
                     <li
                         key={entry.id}
@@ -476,6 +487,24 @@ export function WalletHistory({
                                 </span>
                                 <span className="mt-px block text-[11px] text-rz-secondary">
                                     {formatDate(entry.occurred_at, locale)}
+                                    {/* The ledger records a deposit only once it is credited, and a withdrawal only once it is paid out (#461). */}
+                                    {entry.movement === 'external' && (
+                                        <>
+                                            {' · '}
+                                            <span
+                                                className={cn(
+                                                    'font-semibold',
+                                                    INTENT_TONE.succeeded,
+                                                )}
+                                            >
+                                                {t(
+                                                    entry.kind === 'deposit'
+                                                        ? 'investor.wallet.c3.credited'
+                                                        : 'investor.wallet.c3.withdrawal.succeeded',
+                                                )}
+                                            </span>
+                                        </>
+                                    )}
                                     {entry.movement === 'internal' &&
                                         ` · ${t('investor.wallet.c3.transfer', {
                                             from: t(
@@ -520,6 +549,8 @@ export function WalletHistory({
                             <Link
                                 href={history.pagination.next}
                                 preserveScroll
+                                onStart={() => setLoading(true)}
+                                onFinish={() => setLoading(false)}
                                 className="block w-full bg-[#fafbfd] py-3 text-center text-[12.5px] font-semibold text-rz-accent-app-text dark:bg-rz-surface-sunken"
                             >
                                 {t('investor.wallet.c3.older')}

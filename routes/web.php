@@ -12,6 +12,7 @@ use App\Http\Controllers\AuditorNoticesController;
 use App\Http\Controllers\AuditorPortfolioController;
 use App\Http\Controllers\AuditorProcedureController;
 use App\Http\Controllers\AuditorProfileController;
+use App\Http\Controllers\AuditorStatementVerificationController;
 use App\Http\Controllers\AuditSealVerificationController;
 use App\Http\Controllers\BusinessApplicationController;
 use App\Http\Controllers\BusinessAuditReportController;
@@ -23,12 +24,14 @@ use App\Http\Controllers\BusinessPayoutAccountController;
 use App\Http\Controllers\BusinessPublicationController;
 use App\Http\Controllers\BusinessRepaymentController;
 use App\Http\Controllers\BusinessStatementController;
+use App\Http\Controllers\BusinessStatementTranscriptionController;
 use App\Http\Controllers\BusinessWalletController;
 use App\Http\Controllers\ChangeFeedController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmailVerificationCodeController;
 use App\Http\Controllers\EnterAppController;
 use App\Http\Controllers\IdentityManagementController;
+use App\Http\Controllers\InvestorCartCheckoutController;
 use App\Http\Controllers\InvestorComplaintController;
 use App\Http\Controllers\InvestorDealPhotoController;
 use App\Http\Controllers\InvestorDealsController;
@@ -50,6 +53,7 @@ use App\Http\Controllers\StaffApplicationReleaseController;
 use App\Http\Controllers\StaffAuditorDirectoryController;
 use App\Http\Controllers\StaffAuditReportController;
 use App\Http\Controllers\StaffBusinessDirectoryController;
+use App\Http\Controllers\StaffCartReleaseController;
 use App\Http\Controllers\StaffComplaintController;
 use App\Http\Controllers\StaffCoverageController;
 use App\Http\Controllers\StaffDashboardController;
@@ -136,6 +140,12 @@ Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;n
     Route::post('deals/{campaign}/cart', [InvestorMarketController::class, 'addToCart'])->whereUlid('campaign')->name('cart_add');
     Route::post('cart/{campaign}/units', [InvestorMarketController::class, 'changeCartUnits'])->whereUlid('campaign')->name('cart_units');
     Route::post('cart/{campaign}/remove', [InvestorMarketController::class, 'removeFromCart'])->whereUlid('campaign')->name('cart_remove');
+    Route::post('cart/quote', [InvestorCartCheckoutController::class, 'quote'])->name('cart_quote');
+    Route::post('cart/reservations', [InvestorCartCheckoutController::class, 'reserve'])->name('cart_reserve');
+    Route::get('cart/reservations/{checkout}', [InvestorCartCheckoutController::class, 'reservation'])->whereUlid('checkout')->name('cart_reservation');
+    Route::post('cart/reservations/{checkout}/confirm', [InvestorCartCheckoutController::class, 'confirm'])->whereUlid('checkout')->name('cart_confirm');
+    Route::post('cart/reservations/{checkout}/release', [InvestorCartCheckoutController::class, 'release'])->whereUlid('checkout')->name('cart_release');
+    Route::get('cart/operations/{request_id}', [InvestorCartCheckoutController::class, 'operation'])->whereUuid('request_id')->name('cart_operation');
     Route::get('deals/{campaign}', [InvestorDealsController::class, 'show'])->whereUlid('campaign')->name('deals.show');
     Route::get('deals/{campaign}/checkout', [InvestorDealsController::class, 'checkout'])->whereUlid('campaign')->name('checkout');
     Route::get('wallet', [InvestorWalletController::class, 'show'])->name('wallet');
@@ -191,6 +201,9 @@ Route::middleware(['auth', 'throttle:60,1'])->prefix('auditor')->name('auditor.'
         Route::post('jobs/{assignment}/'.$decision, [AuditorJobsController::class, 'respond'])->where('assignment', '[0-9a-z]{26}')->defaults('decision', $decision)->name('jobs.'.$decision);
     }
     Route::get('assignment-operations/{request_id}', [AuditorJobsController::class, 'operation'])->whereUuid('request_id')->middleware('cache.headers:private;no_store')->name('jobs.operations.show');
+    Route::get('jobs/{assignment}/statements/{document}', [AuditorStatementVerificationController::class, 'original'])->where(['assignment' => '[0-9a-z]{26}', 'document' => '[0-9a-z]{26}'])->middleware('cache.headers:private;no_store')->name('jobs.statements.show');
+    Route::post('jobs/{assignment}/statement-verification', [AuditorStatementVerificationController::class, 'store'])->where('assignment', '[0-9a-z]{26}')->middleware('cache.headers:private;no_store')->name('jobs.verification.store');
+    Route::get('statement-operations/{request_id}', [AuditorStatementVerificationController::class, 'operation'])->whereUuid('request_id')->middleware('cache.headers:private;no_store')->name('jobs.verification.operations.show');
     Route::post('accreditation', [AuditorProfileController::class, 'submit'])->name('accreditation.submit');
     Route::post('accreditation/renewal', [AuditorProfileController::class, 'renew'])->name('accreditation.renew');
     Route::post('accreditation/withdrawal', [AuditorProfileController::class, 'withdraw'])->name('accreditation.withdraw');
@@ -224,6 +237,8 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::get('{business}/rating', [BusinessHomeController::class, 'rating'])->whereUlid('business')->name('rating');
     Route::get('{business}/audit-prep', [BusinessHomeController::class, 'auditPrep'])->whereUlid('business')->name('audit-prep');
     Route::post('{business}/statements', [BusinessStatementController::class, 'upload'])->whereUlid('business')->name('statements.upload');
+    Route::get('{business}/statements/transcription', [BusinessStatementTranscriptionController::class, 'page'])->whereUlid('business')->name('statements.transcription.show');
+    Route::post('{business}/statements/transcription', [BusinessStatementTranscriptionController::class, 'save'])->whereUlid('business')->name('statements.transcription.save');
     Route::get('{business}/statements/{document}', [BusinessStatementController::class, 'show'])->whereUlid(['business', 'document'])->name('statements.show');
 });
 
@@ -326,6 +341,18 @@ Route::get('admin/businesses', [StaffBusinessDirectoryController::class, 'index'
     ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.index');
 Route::post('admin/businesses/{business}/premises', [StaffBusinessDirectoryController::class, 'premises'])->whereUlid('business')
     ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.premises.verify');
+Route::post('admin/businesses/{business}/flash-audit', [StaffBusinessDirectoryController::class, 'flashAudit'])->whereUlid('business')
+    ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.audit.flash');
+Route::post('admin/businesses/{business}/audits/{assignment}/redispatch', [StaffBusinessDirectoryController::class, 'redispatchAudit'])->whereUlid('business')
+    ->where('assignment', '[0-9a-z]{26}')->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.audit.redispatch');
+Route::post('admin/businesses/{business}/audits/{assignment}/close', [StaffBusinessDirectoryController::class, 'closeAudit'])->whereUlid('business')
+    ->where('assignment', '[0-9a-z]{26}')->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.audit.close');
+Route::post('admin/businesses/{business}/audits/{assignment}/withdraw', [StaffBusinessDirectoryController::class, 'withdrawAudit'])->whereUlid('business')
+    ->where('assignment', '[0-9a-z]{26}')->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.audit.withdraw');
+Route::post('admin/businesses/{business}/statement-review', [StaffBusinessDirectoryController::class, 'statementReview'])->whereUlid('business')
+    ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.audit.statement-review');
+Route::post('admin/businesses/{business}/auditors/{party}/independence', [StaffBusinessDirectoryController::class, 'auditorIndependence'])->whereUlid(['business', 'party'])
+    ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.audit.independence');
 Route::post('admin/businesses/onboard', [StaffBusinessDirectoryController::class, 'onboard'])
     ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.onboard');
 
@@ -349,6 +376,7 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::get('admin/messaging/history', StaffMessagingController::class)->name('staff.messaging.index');
     Route::get('admin/ledger', StaffLedgerController::class)->name('staff.ledger.index');
     Route::get('admin/exceptions', StaffExceptionsController::class)->name('staff.exceptions.index');
+    Route::post('admin/exceptions/cart-releases/{checkout}/retry', StaffCartReleaseController::class)->whereUlid('checkout')->name('staff.exceptions.cart-releases.retry');
     Route::get('admin/primary-market', StaffPrimaryMarketController::class)->name('staff.primary-market.index');
     Route::get('admin/payments', StaffPaymentsController::class)->name('staff.payments.index');
     Route::get('admin/coverage', StaffCoverageController::class)->name('staff.coverage.index');
