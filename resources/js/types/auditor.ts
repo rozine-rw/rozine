@@ -831,6 +831,8 @@ export type FlashStep = 'review' | 'check_in' | 'photos' | 'ledger' | 'seal';
 export type MonthlyStep =
     | 'statements'
     | 'count'
+    | 'drawings'
+    | 'loans'
     | 'differences'
     | 'photos'
     | 'seal';
@@ -1011,6 +1013,26 @@ export type CountStage = {
     operational_status: 'active' | 'suspended' | 'restricted' | null;
 };
 
+/** Owner drawings for the month, in whole francs (BRS v3 VIS-R01 step 7); null before it is recorded. */
+export type DrawingsStage = {
+    step: 'drawings';
+    owner_drawings: Money | null;
+};
+
+/** One loan the business owes anyone other than its Rozine note. */
+export type OtherLoan = {
+    lender: string;
+    outstanding: Money;
+    monthly_payment: Money;
+};
+
+/** Other loans as the CPA saw them (BRS v3 VIS-R01 step 8); an empty list means none. */
+export type LoansStage = {
+    step: 'loans';
+    max: number;
+    loans: OtherLoan[];
+};
+
 /** The cause codes that explain a monthly cash difference (BRS v3 VIS-R01 step 9). */
 export type DifferenceCause =
     | 'unrecorded_sales'
@@ -1159,6 +1181,8 @@ export type AuditStage =
     | LedgerStage
     | StatementsStage
     | CountStage
+    | DrawingsStage
+    | LoansStage
     | DifferencesStage
     | SealStage
     | SealedStage

@@ -35,6 +35,14 @@
                 "state": "done"
             },
             {
+                "key": "drawings",
+                "state": "done"
+            },
+            {
+                "key": "loans",
+                "state": "done"
+            },
+            {
                 "key": "differences",
                 "state": "done"
             },

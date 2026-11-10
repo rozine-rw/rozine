@@ -3460,6 +3460,8 @@ const rw: Catalog = {
     'auditor.audit.step.seal': 'Kashe',
     'auditor.audit.step.statements': 'Inyandiko za konti',
     'auditor.audit.step.count': 'Kubara',
+    'auditor.audit.step.drawings': 'Ibyafashwe na ba nyirabwo',
+    'auditor.audit.step.loans': 'Indi myenda',
     'auditor.audit.step.differences': 'Itandukaniro',
     'auditor.audit.continue': 'Komeza',
     'auditor.audit.to_seal': 'Suzuma ushyireho kashe',
@@ -5680,6 +5682,21 @@ const rw: Catalog = {
         'Buri mubare wanditswe, hamwe n’ikimenyetso kimwe nibura cy’imari n’ikimwe cy’ibicuruzwa byahiswemo.',
     'auditor.audit.guide.count.how':
         'Bara ubwawe amafaranga n’ibicuruzwa. Buri mubare ugereranywa na raporo ziri muri dosiye; nta na kimwe hano gituruka ku bucuruzi.',
+    'auditor.audit.guide.drawings.do':
+        'Andika ibyo ba nyir’ubucuruzi bakuyemo muri uku kwezi.',
+    'auditor.audit.guide.drawings.enter':
+        'Umubare umwe mu mafaranga yuzuye. Urugero 150000. Andika 0 niba nta cyakuwemo.',
+    'auditor.audit.guide.drawings.done': 'Umubare wanditswe, n’iyo waba 0.',
+    'auditor.audit.guide.drawings.how':
+        'Shakisha amafaranga yoherejwe cyangwa yafashwe na ba nyirabwo muri raporo no mu gitabo cy’amafaranga. Bara imishahara ya ba nyirabwo gusa niba itari ku rutonde rw’abakozi.',
+    'auditor.audit.guide.loans.do':
+        'Andika buri mwenda ubucuruzi bufitiye undi utari Rozine.',
+    'auditor.audit.guide.loans.enter':
+        'Kuri buri mwenda: uwawutanze, ayasigaye kwishyurwa n’ayishyurwa buri kwezi, mu mafaranga yuzuye. Urugero Bank of Kigali, 2400000 na 200000.',
+    'auditor.audit.guide.loans.done':
+        'Buri mwenda ufite uwawutanze n’ayasigaye. Ubucuruzi butagira indi myenda bukomeza nta mwenda wanditswe.',
+    'auditor.audit.guide.loans.how':
+        'Baza nyir’ubucuruzi kandi urebe muri raporo niba hari ubwishyu buhoraho. Soma imibare mu masezerano y’inguzanyo cyangwa muri raporo iheruka y’uwatanze umwenda.',
     'auditor.audit.guide.differences.do':
         'Ha buri mpamvu y’itandukaniro ry’amafaranga umubare kugeza ntacyo gisigaye cyo gusobanura.',
     'auditor.audit.guide.differences.enter':
@@ -5710,6 +5727,22 @@ const rw: Catalog = {
     'auditor.differences.cause.wrong_month': 'Byanditswe mu kwezi kutari ko',
     'auditor.differences.cause.entry_error': 'Ikosa ryo kwandika',
     'auditor.differences.cause.counted_twice': 'Byabazwe kabiri',
+    'auditor.drawings.title': 'Ibyafashwe na ba nyirabwo',
+    'auditor.drawings.lead':
+        'Ibyo ba nyir’ubucuruzi bakuyemo muri uku kwezi, ukurikije raporo n’igitabo cy’amafaranga.',
+    'auditor.drawings.amount': 'Ibyakuwemo na ba nyirabwo muri uku kwezi',
+    'auditor.drawings.hint': 'Andika 0 niba ba nyirabwo nta cyo bakuyemo.',
+    'auditor.loans.title': 'Indi myenda',
+    'auditor.loans.lead':
+        'Buri mwenda ubucuruzi bufitiye undi utari Rozine, ukurikije amasezerano cyangwa raporo y’uwatanze umwenda.',
+    'auditor.loans.none':
+        'Nta yindi myenda yanditswe. Komeza niba ubucuruzi nta wundi bubereyemo umwenda.',
+    'auditor.loans.item': 'Umwenda wa {number}',
+    'auditor.loans.lender': 'Uwatanze umwenda',
+    'auditor.loans.outstanding': 'Ayasigaye (RWF)',
+    'auditor.loans.monthly_payment': 'Ayishyurwa buri kwezi (RWF)',
+    'auditor.loans.remove': 'Kuraho umwenda wa {number}',
+    'auditor.loans.add': 'Ongeraho umwenda',
     'auditor.audit.guide.seal.do':
         'Genzura ibyavuyemo, hanyuma ushyireho kashe ukoresheje kode yawe.',
     'auditor.audit.guide.seal.enter':

@@ -22,12 +22,15 @@ final class AuditProcedure
     /** The cause codes a monthly difference is explained by (BRS v3 VIS-R01 step 9), in their listed order. */
     public const array DIFFERENCE_CAUSES = ['unrecorded_sales', 'unproven_expense', 'personal_spending', 'wrong_month', 'entry_error', 'counted_twice'];
 
+    /** At most this many other loans are recorded on one monthly visit (BRS v3 VIS-R01 step 8). */
+    public const int MAX_OTHER_LOANS = 10;
+
     /** @return list<string> */
     public function steps(string $kind): array
     {
         return match ($kind) {
             'flash' => ['review', 'check_in', 'photos', 'ledger', 'seal'],
-            'monthly' => ['statements', 'count', 'differences', 'photos', 'seal'],
+            'monthly' => ['statements', 'count', 'drawings', 'loans', 'differences', 'photos', 'seal'],
             default => throw new CommandRejection('AUDIT_PROCEDURE_INVALID', 422),
         };
     }
@@ -156,6 +159,8 @@ final class AuditProcedure
             'ledger' => ['observed_stock', 'reconciled'],
             'count' => ['financial_proofs', 'inventory_proofs', 'cash', 'stock_units', 'operational_status'],
             'photos' => ['titles'],
+            'drawings' => ['owner_drawings'],
+            'loans' => ['loans'],
             'differences' => ['explanations'],
             'seal' => ['note'],
             default => [],
@@ -191,6 +196,12 @@ final class AuditProcedure
                 'financial_proofs' => $this->proofs($input['financial_proofs'], $sources['financial_proofs'], 'financial_proofs'),
                 'inventory_proofs' => $this->proofs($input['inventory_proofs'], $sources['inventory_proofs'], 'inventory_proofs')];
         }
+        if ($step === 'drawings') {
+            return ['owner_drawings' => $this->amount($input['owner_drawings'], 'owner_drawings')];
+        }
+        if ($step === 'loans') {
+            return ['loans' => $this->loans($input['loans'])];
+        }
         if ($step === 'differences') {
             return ['explanations' => $this->explanations($input['explanations'], $this->cashDifference($draft, $sources)
                 ?? throw new CommandRejection('AUDIT_DECLARATION_REQUIRED', 409))];
@@ -224,7 +235,7 @@ final class AuditProcedure
             'check_in' => ['check_in'],
             'photos' => ['photos'],
             'statements' => ['verification'],
-            'ledger', 'count', 'differences' => ['verification', 'declaration'],
+            'ledger', 'count', 'drawings', 'loans', 'differences' => ['verification', 'declaration'],
             default => [],
         };
         $pins = [];
@@ -283,6 +294,37 @@ final class AuditProcedure
         }
 
         return $ordered;
+    }
+
+    /**
+     * Each loan the business owes anyone other than its Rozine note, as the CPA saw it in the loan
+     * agreement or statement: who lent it, what is still owed and the monthly payment, in whole
+     * francs. A business with no other loans records an empty list.
+     *
+     * @return list<array{lender: string, outstanding: string, monthly_payment: string}>
+     */
+    private function loans(mixed $values): array
+    {
+        if (! is_array($values) || ! array_is_list($values) || count($values) > self::MAX_OTHER_LOANS) {
+            throw new CommandRejection('AUDIT_STEP_INPUT_INVALID', 422, fieldErrors: ['loans' => ['List at most '.self::MAX_OTHER_LOANS.' other loans.']]);
+        }
+        $loans = [];
+        foreach ($values as $value) {
+            $keys = is_array($value) ? array_keys($value) : [];
+            sort($keys);
+            if ($keys !== ['lender', 'monthly_payment', 'outstanding']) {
+                throw new CommandRejection('AUDIT_STEP_INPUT_INVALID', 422, fieldErrors: ['loans' => ['Give each loan its lender, the amount still owed and the monthly payment.']]);
+            }
+            /** @var array{lender: mixed, outstanding: mixed, monthly_payment: mixed} $value */
+            $outstanding = $this->amount($value['outstanding'], 'loans');
+            if (BigDecimal::of($outstanding)->isZero()) {
+                throw new CommandRejection('AUDIT_STEP_INPUT_INVALID', 422, fieldErrors: ['loans' => ['Leave out a loan that is fully repaid.']]);
+            }
+            $loans[] = ['lender' => trim($this->text($value['lender'], 'loans', 100, true)), 'outstanding' => $outstanding,
+                'monthly_payment' => $this->amount($value['monthly_payment'], 'loans')];
+        }
+
+        return $loans;
     }
 
     private function amount(mixed $value, string $field): string

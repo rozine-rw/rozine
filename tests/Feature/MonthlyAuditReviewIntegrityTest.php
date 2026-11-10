@@ -66,7 +66,7 @@ it('retains a disputed parent until its authorized replacement is sealed and sta
     expect($amended['code'])->toBe('AUDIT_AMENDMENT_CREATED')->and($parent->fresh()->status)->toBe($staffRequired ? 'escalated' : 'disputed');
     $child = AuditReport::query()->whereKey($amended['data']['audit_id'])->firstOrFail();
     foreach (['statements' => [], 'count' => ['cash' => '108000000', 'stock_units' => '190', 'operational_status' => 'active',
-        'financial_proofs' => ['bank', 'momo'], 'inventory_proofs' => ['photo']], 'differences' => ['explanations' => []], 'photos' => ['titles' => ['extra-1' => 'Stock room']]] as $step => $fields) {
+        'financial_proofs' => ['bank', 'momo'], 'inventory_proofs' => ['photo']], 'drawings' => ['owner_drawings' => '0'], 'loans' => ['loans' => []], 'differences' => ['explanations' => []], 'photos' => ['titles' => ['extra-1' => 'Stock room']]] as $step => $fields) {
         expect(app(SaveAuditReportStep::class)->handle($fixture['user']->id, 1, $child->id, $child->refresh()->revision, $step, $fields, (string) Str::uuid())['code'])->toBe('AUDIT_STEP_SAVED');
     }
     $prepared = Fixture::prepare([...$fixture, 'report' => $child]);

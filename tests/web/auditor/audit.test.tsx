@@ -1458,9 +1458,7 @@ describe('Audit procedure — monthly statements and count', () => {
         });
 
         fireEvent.click(
-            within(dialog).getByRole('button', {
-                name: 'Explain the difference',
-            }),
+            within(dialog).getByRole('button', { name: 'Continue' }),
         );
         expect(inertia.calls[0].body).toEqual({
             financial_proofs: ['momo', 'po'],

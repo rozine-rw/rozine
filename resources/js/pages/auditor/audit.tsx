@@ -11,8 +11,10 @@ import { StepBar } from '@/components/auditor/audit/step-bar';
 import { StepCheckIn } from '@/components/auditor/audit/step-check-in';
 import { StepCount } from '@/components/auditor/audit/step-count';
 import { StepDifferences } from '@/components/auditor/audit/step-differences';
+import { StepDrawings } from '@/components/auditor/audit/step-drawings';
 import { StepGuide } from '@/components/auditor/audit/step-guide';
 import { StepLedger } from '@/components/auditor/audit/step-ledger';
+import { StepLoans } from '@/components/auditor/audit/step-loans';
 import { StepPhotos } from '@/components/auditor/audit/step-photos';
 import { StepStatements } from '@/components/auditor/audit/step-statements';
 import { AuditorShell } from '@/components/auditor/auditor-shell';
@@ -47,6 +49,8 @@ import type {
  */
 const SHOWN_FIELDS: Partial<Record<AuditStage['step'], string[]>> = {
     ledger: ['observed_stock', 'document', 'replaces'],
+    drawings: ['owner_drawings'],
+    loans: ['loans'],
     differences: ['explanations'],
     seal: ['note'],
 };
@@ -61,7 +65,9 @@ const CONTINUE: Record<
     photos: 'auditor.audit.continue',
     ledger: 'auditor.audit.to_seal',
     statements: 'auditor.audit.start_count',
-    count: 'auditor.audit.explain_differences',
+    count: 'auditor.audit.continue',
+    drawings: 'auditor.audit.continue',
+    loans: 'auditor.audit.explain_differences',
     differences: 'auditor.audit.to_photos',
 };
 
@@ -123,6 +129,10 @@ function StageBody({
             return <StepStatements stage={stage} context={context} />;
         case 'count':
             return <StepCount stage={stage} context={context} />;
+        case 'drawings':
+            return <StepDrawings stage={stage} context={context} />;
+        case 'loans':
+            return <StepLoans stage={stage} context={context} />;
         case 'differences':
             return <StepDifferences stage={stage} context={context} />;
         case 'seal':

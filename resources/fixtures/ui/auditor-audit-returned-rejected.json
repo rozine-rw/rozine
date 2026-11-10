@@ -29,6 +29,14 @@
                 "state": "todo"
             },
             {
+                "key": "drawings",
+                "state": "todo"
+            },
+            {
+                "key": "loans",
+                "state": "todo"
+            },
+            {
                 "key": "differences",
                 "state": "todo"
             },

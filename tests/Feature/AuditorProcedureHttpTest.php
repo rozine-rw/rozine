@@ -237,6 +237,8 @@ it('completes the isolated factual procedure and previews only the persisted rep
             'ledger' => ['observed_stock' => '37000000', 'reconciled' => true]]
         : ['statements' => [], 'count' => ['cash' => '108000001', 'stock_units' => '189', 'operational_status' => 'restricted',
             'financial_proofs' => ['bank', 'momo'], 'inventory_proofs' => ['photo']],
+            'drawings' => ['owner_drawings' => '150000'],
+            'loans' => ['loans' => [['lender' => 'Equity Bank', 'outstanding' => '2400000', 'monthly_payment' => '200000']]],
             'differences' => ['explanations' => [['amount' => '1', 'cause' => 'unrecorded_sales']]], 'photos' => ['titles' => ['extra-1' => 'Rear stock room']]];
     $checkIn = ['position' => null, 'captured_at' => null, 'accuracy_m' => null];
     foreach ($steps as $step => $fields) {
@@ -251,6 +253,10 @@ it('completes the isolated factual procedure and previews only the persisted rep
                 ->and($current['stage']['slots'][2]['thumbnail_url'])->toBeNull()->and($current['stage']['package']['handoff'])->toBeNull();
         } elseif ($step === 'ledger') {
             expect($current['stage']['reported_stock']['amount'])->toBe('38000000');
+        } elseif ($step === 'drawings') {
+            expect($current['stage'])->toBe(['step' => 'drawings', 'owner_drawings' => null]);
+        } elseif ($step === 'loans') {
+            expect($current['stage'])->toBe(['step' => 'loans', 'max' => AuditProcedure::MAX_OTHER_LOANS, 'loans' => []]);
         } elseif ($step === 'differences') {
             expect($current['stage'])->toMatchArray(['reported' => ['currency' => 'RWF', 'amount' => '108000000'],
                 'observed' => ['currency' => 'RWF', 'amount' => '108000001'], 'difference' => ['currency' => 'RWF', 'amount' => '1'],

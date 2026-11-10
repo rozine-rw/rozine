@@ -290,6 +290,8 @@ describe('Returned report — step states and repeat decisions', () => {
         expect(items.map((item) => item.textContent)).toEqual([
             'Statements',
             'Count & cash',
+            'Drawings',
+            'Other loans',
             'Differences',
             'Photos',
             'Seal',
@@ -313,10 +315,10 @@ describe('Returned report — step states and repeat decisions', () => {
             'text-rz-ink',
         );
         expect(items[1]).toHaveAttribute('aria-current', 'step');
-        expect(within(items[2]).getByText('Differences')).toHaveClass(
+        expect(within(items[2]).getByText('Drawings')).toHaveClass(
             'text-rz-secondary',
         );
-        expect(within(items[3]).getByText('Photos')).toHaveClass(
+        expect(within(items[5]).getByText('Photos')).toHaveClass(
             'text-rz-secondary',
         );
     });

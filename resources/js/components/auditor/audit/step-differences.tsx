@@ -117,7 +117,7 @@ export function StepDifferences({
                                     {t(CAUSE_LABEL[cause])}
                                 </span>
                                 <span className="flex items-center gap-1.5 text-[12px] text-rz-secondary">
-                                    RWF
+                                    {t('common.currency.rwf')}
                                     <input
                                         inputMode="numeric"
                                         aria-label={t(

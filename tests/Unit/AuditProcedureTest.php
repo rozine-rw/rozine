@@ -28,6 +28,8 @@ function procedureFields(string $step): array
     return match ($step) {
         'ledger' => ['observed_stock' => '36400000', 'reconciled' => true],
         'count' => ['cash' => '1184000', 'stock_units' => '184', 'operational_status' => 'active', 'financial_proofs' => ['cash', 'bank'], 'inventory_proofs' => ['photo']],
+        'drawings' => ['owner_drawings' => '150000'],
+        'loans' => ['loans' => [['lender' => 'Bank of Kigali', 'outstanding' => '2400000', 'monthly_payment' => '200000']]],
         'differences' => ['explanations' => [['cause' => 'entry_error', 'amount' => '6000'], ['cause' => 'personal_spending', 'amount' => '20000']]],
         'photos' => ['titles' => ['extra' => 'Side store']],
         'seal' => ['note' => 'A physical stock difference was observed.'],
@@ -281,3 +283,47 @@ it('withholds the difference step until the statements and declaration it explai
         ->and(fn () => $procedure->save('monthly', 'differences', $state['draft'], 'differences', ['explanations' => []], $sources))
         ->toThrow(CommandRejection::class, 'AUDIT_DECLARATION_REQUIRED');
 });
+
+it('records owner drawings and other loans after the count, before the differences (BRS v3 VIS-R01 steps 7 and 8)', function (): void {
+    $procedure = new AuditProcedure;
+    expect($procedure->steps('monthly'))->toBe(['statements', 'count', 'drawings', 'loans', 'differences', 'photos', 'seal']);
+
+    $state = procedureBefore('monthly', 'drawings');
+    $drawn = $procedure->save('monthly', 'drawings', $state['draft'], 'drawings', ['owner_drawings' => '0'], procedureSources());
+    expect($drawn['step'])->toBe('loans')->and($drawn['draft']['fields']['drawings'])->toBe(['owner_drawings' => '0'])
+        ->and($drawn['draft']['sources']['drawings'])->toBe(['verification' => procedureSource('verification'), 'declaration' => procedureSource('declaration')]);
+
+    $none = $procedure->save('monthly', 'loans', $drawn['draft'], 'loans', ['loans' => []], procedureSources());
+    $listed = $procedure->save('monthly', 'loans', $drawn['draft'], 'loans', ['loans' => [
+        ['monthly_payment' => '0', 'outstanding' => '500000', 'lender' => '  Umurenge SACCO '],
+        ['lender' => 'Family', 'outstanding' => '90000', 'monthly_payment' => '15000'],
+    ]], procedureSources());
+    expect($none['step'])->toBe('differences')->and($none['draft']['fields']['loans'])->toBe(['loans' => []])
+        ->and($listed['draft']['fields']['loans']['loans'])->toBe([
+            ['lender' => 'Umurenge SACCO', 'outstanding' => '500000', 'monthly_payment' => '0'],
+            ['lender' => 'Family', 'outstanding' => '90000', 'monthly_payment' => '15000'],
+        ]);
+});
+
+it('refuses owner drawings and loans it cannot record exactly', function (string $step, array $input, string $field, string $message): void {
+    $procedure = new AuditProcedure;
+    $state = procedureBefore('monthly', $step);
+
+    try {
+        $procedure->save('monthly', $step, $state['draft'], $step, $input, procedureSources());
+        $this->fail('The step was accepted.');
+    } catch (CommandRejection $rejection) {
+        expect($rejection->reason)->toBe('AUDIT_STEP_INPUT_INVALID')->and($rejection->fieldErrors)->toBe([$field => [$message]]);
+    }
+})->with([
+    'drawings missing' => ['drawings', [], 'step', 'Send only the fields for this procedure step.'],
+    'drawings negative' => ['drawings', ['owner_drawings' => '-1'], 'owner_drawings', 'Use a non-negative whole-number amount.'],
+    'drawings as a number' => ['drawings', ['owner_drawings' => 1000], 'owner_drawings', 'Use a non-negative whole-number amount.'],
+    'loans not a list' => ['loans', ['loans' => ['a' => []]], 'loans', 'List at most 10 other loans.'],
+    'loans too many' => ['loans', ['loans' => array_fill(0, 11, ['lender' => 'Bank', 'outstanding' => '1', 'monthly_payment' => '1'])], 'loans', 'List at most 10 other loans.'],
+    'loan not an object' => ['loans', ['loans' => ['Bank']], 'loans', 'Give each loan its lender, the amount still owed and the monthly payment.'],
+    'loan with an extra key' => ['loans', ['loans' => [['lender' => 'Bank', 'outstanding' => '1', 'monthly_payment' => '1', 'rate' => '5']]], 'loans', 'Give each loan its lender, the amount still owed and the monthly payment.'],
+    'loan repaid' => ['loans', ['loans' => [['lender' => 'Bank', 'outstanding' => '0', 'monthly_payment' => '0']]], 'loans', 'Leave out a loan that is fully repaid.'],
+    'loan blank lender' => ['loans', ['loans' => [['lender' => '  ', 'outstanding' => '1', 'monthly_payment' => '0']]], 'loans', 'Use plain text of at most 100 characters.'],
+    'loan bad payment' => ['loans', ['loans' => [['lender' => 'Bank', 'outstanding' => '1', 'monthly_payment' => '1.5']]], 'loans', 'Use a non-negative whole-number amount.'],
+]);

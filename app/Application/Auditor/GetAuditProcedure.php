@@ -51,7 +51,8 @@ final class GetAuditProcedure
             'variance' => ['ledger' => $this->variance->compare($page['sources']['reported_stock'], $observed['observed_stock'] ?? null),
                 'cash' => $this->variance->compare($page['sources']['reported_cash'], $observed['cash'] ?? null),
                 'stock' => $this->variance->compare($page['sources']['reported_units'], $observed['stock_units'] ?? null)],
-            'differences' => ['amount' => $this->procedure->cashDifference($draft, $page['sources']), 'causes' => AuditProcedure::DIFFERENCE_CAUSES],
+            'monthly' => ['difference' => $this->procedure->cashDifference($draft, $page['sources']), 'causes' => AuditProcedure::DIFFERENCE_CAUSES,
+                'loans_max' => AuditProcedure::MAX_OTHER_LOANS],
             'unavailable' => $unavailable, 'steps' => array_map(fn (string $step): array => ['key' => $step,
                 'state' => $step === $report['step'] ? 'current' : (in_array($step, $draft['completed_steps'], true) ? 'done' : 'todo')], $steps)];
     }

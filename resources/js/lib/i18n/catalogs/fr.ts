@@ -3478,6 +3478,8 @@ const fr: Catalog = {
     'auditor.audit.step.seal': 'Sceau',
     'auditor.audit.step.statements': 'Relevés',
     'auditor.audit.step.count': 'Comptage',
+    'auditor.audit.step.drawings': 'Prélèvements',
+    'auditor.audit.step.loans': 'Autres prêts',
     'auditor.audit.step.differences': 'Écarts',
     'auditor.audit.continue': 'Continuer',
     'auditor.audit.to_seal': 'Examiner et sceller',
@@ -5699,6 +5701,22 @@ const fr: Catalog = {
         'Chaque montant est saisi, avec au moins une preuve financière et une preuve d’inventaire cochées.',
     'auditor.audit.guide.count.how':
         'Comptez vous-même les espèces et le stock. Chaque montant est comparé aux relevés au dossier ; rien ici ne vient de l’entreprise.',
+    'auditor.audit.guide.drawings.do':
+        'Notez ce que les propriétaires ont retiré de l’entreprise ce mois-ci.',
+    'auditor.audit.guide.drawings.enter':
+        'Un montant en francs entiers. Par exemple 150000. Saisissez 0 si rien n’a été retiré.',
+    'auditor.audit.guide.drawings.done':
+        'Un montant est saisi, même s’il vaut 0.',
+    'auditor.audit.guide.drawings.how':
+        'Cherchez les virements et les espèces pris par les propriétaires dans les relevés et le livre de caisse. Comptez les salaires des propriétaires seulement s’ils ne sont pas sur la paie.',
+    'auditor.audit.guide.loans.do':
+        'Listez chaque prêt que l’entreprise doit à quelqu’un d’autre que Rozine.',
+    'auditor.audit.guide.loans.enter':
+        'Pour chaque prêt : le prêteur, le montant restant dû et la mensualité, en francs entiers. Par exemple Bank of Kigali, 2400000 et 200000.',
+    'auditor.audit.guide.loans.done':
+        'Chaque prêt a un prêteur et un montant restant dû. Une entreprise sans autre prêt continue avec une liste vide.',
+    'auditor.audit.guide.loans.how':
+        'Interrogez le propriétaire et cherchez des remboursements réguliers dans les relevés. Lisez les montants dans le contrat de prêt ou le dernier relevé du prêteur.',
     'auditor.audit.guide.differences.do':
         'Attribuez un montant à chaque cause de l’écart d’espèces jusqu’à ce qu’il ne reste rien à expliquer.',
     'auditor.audit.guide.differences.enter':
@@ -5729,6 +5747,23 @@ const fr: Catalog = {
     'auditor.differences.cause.wrong_month': 'Enregistré dans le mauvais mois',
     'auditor.differences.cause.entry_error': 'Erreur de saisie',
     'auditor.differences.cause.counted_twice': 'Compté deux fois',
+    'auditor.drawings.title': 'Prélèvements des propriétaires',
+    'auditor.drawings.lead':
+        'Ce que les propriétaires ont retiré de l’entreprise ce mois-ci, d’après les relevés et le livre de caisse.',
+    'auditor.drawings.amount': 'Retiré par les propriétaires ce mois-ci',
+    'auditor.drawings.hint':
+        'Saisissez 0 si les propriétaires n’ont rien retiré.',
+    'auditor.loans.title': 'Autres prêts',
+    'auditor.loans.lead':
+        'Chaque prêt que l’entreprise doit à quelqu’un d’autre que Rozine, d’après le contrat ou le relevé du prêteur.',
+    'auditor.loans.none':
+        'Aucun autre prêt noté. Continuez si l’entreprise ne doit rien à personne d’autre.',
+    'auditor.loans.item': 'Prêt {number}',
+    'auditor.loans.lender': 'Prêteur',
+    'auditor.loans.outstanding': 'Restant dû (RWF)',
+    'auditor.loans.monthly_payment': 'Mensualité (RWF)',
+    'auditor.loans.remove': 'Retirer le prêt {number}',
+    'auditor.loans.add': 'Ajouter un prêt',
     'auditor.audit.guide.seal.do':
         'Vérifiez le résultat, puis scellez avec votre code d’authentification.',
     'auditor.audit.guide.seal.enter':

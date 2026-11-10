@@ -3318,6 +3318,8 @@ const en = {
     'auditor.audit.step.seal': 'Seal',
     'auditor.audit.step.statements': 'Statements',
     'auditor.audit.step.count': 'Count & cash',
+    'auditor.audit.step.drawings': 'Drawings',
+    'auditor.audit.step.loans': 'Other loans',
     'auditor.audit.step.differences': 'Differences',
     'auditor.audit.continue': 'Continue',
     'auditor.audit.to_seal': 'Review & seal',
@@ -5476,6 +5478,22 @@ const en = {
         'Every figure is entered, with at least one financial proof and one inventory proof ticked.',
     'auditor.audit.guide.count.how':
         'Count the cash and the stock yourself. Each figure is compared to the statements on file; nothing here comes from the business.',
+    'auditor.audit.guide.drawings.do':
+        'Record what the owners took out of the business this month.',
+    'auditor.audit.guide.drawings.enter':
+        'One amount in whole francs. For example 150000. Enter 0 if nothing was taken.',
+    'auditor.audit.guide.drawings.done':
+        'An amount is entered, even if it is 0.',
+    'auditor.audit.guide.drawings.how':
+        'Look for transfers and cash taken by the owners in the statements and the cash book. Count salaries paid to owners only if they are not on the payroll.',
+    'auditor.audit.guide.loans.do':
+        'List every loan the business owes anyone other than Rozine.',
+    'auditor.audit.guide.loans.enter':
+        'For each loan: who lent it, what is still owed and the monthly payment, in whole francs. For example Bank of Kigali, 2400000 and 200000.',
+    'auditor.audit.guide.loans.done':
+        'Each loan has a lender and the amount still owed. A business with no other loans continues with an empty list.',
+    'auditor.audit.guide.loans.how':
+        'Ask the owner and check the statements for regular repayments. Read the figures from the loan agreement or the lender’s latest statement.',
     'auditor.audit.guide.differences.do':
         'Give each cause of the cash difference an amount until nothing is left to explain.',
     'auditor.audit.guide.differences.enter':
@@ -5506,6 +5524,22 @@ const en = {
     'auditor.differences.cause.wrong_month': 'Recorded in the wrong month',
     'auditor.differences.cause.entry_error': 'Entry error',
     'auditor.differences.cause.counted_twice': 'Counted twice',
+    'auditor.drawings.title': 'Owner drawings',
+    'auditor.drawings.lead':
+        'What the owners took out of the business this month, from the statements and the cash book.',
+    'auditor.drawings.amount': 'Taken by the owners this month',
+    'auditor.drawings.hint': 'Enter 0 if the owners took nothing.',
+    'auditor.loans.title': 'Other loans',
+    'auditor.loans.lead':
+        'Every loan the business owes anyone other than Rozine, from the agreement or the lender’s statement.',
+    'auditor.loans.none':
+        'No other loans recorded. Continue if the business owes no one else.',
+    'auditor.loans.item': 'Loan {number}',
+    'auditor.loans.lender': 'Lender',
+    'auditor.loans.outstanding': 'Still owed (RWF)',
+    'auditor.loans.monthly_payment': 'Monthly payment (RWF)',
+    'auditor.loans.remove': 'Remove loan {number}',
+    'auditor.loans.add': 'Add a loan',
     'auditor.audit.guide.seal.do':
         'Check the result, then seal with your authenticator code.',
     'auditor.audit.guide.seal.enter':

@@ -57,7 +57,7 @@ class AuditorProcedureResource extends JsonResource
                     : ['report_id' => $report['amends_id'], 'link' => AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['amends_id']])]],
             'assignment' => ['id' => $report['assignment_id'], 'revision' => $job['revision']],
             'steps' => $page['steps'], 'stage' => $page['sealed'] === null || $report['step'] !== 'seal'
-                ? $this->stage($report, $page['sources'], $file['file'], $prefix, $page['variance'], $page['differences'], $page['seal'], $reasonOptions, $upload, $page['mfa_confirmed'])
+                ? $this->stage($report, $page['sources'], $file['file'], $prefix, $page['variance'], $page['monthly'], $page['seal'], $reasonOptions, $upload, $page['mfa_confirmed'])
                 : [...array_diff_key($page['sealed'], ['sources' => true]), 'step' => 'sealed', 'verification' => AuditorJobsResource::link($request->routeIs('api.*') ? 'api.v1.audit.seals.verify' : 'audit.seals.verify', ['report' => $report['id']]), 'amended_by' => $report['amendment_id'] === null ? null
                     : ['report_id' => $report['amendment_id'], 'link' => AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['amendment_id']])]],
             'can_continue' => $page['can_continue'], 'hint' => $report['status'] === 'draft' ? $this->hint($page['unavailable']) : null,
@@ -81,13 +81,13 @@ class AuditorProcedureResource extends JsonResource
      * @param  array<string, mixed>  $sources
      * @param  array<string, mixed>  $file
      * @param  array<string, mixed>  $variance
-     * @param  array{amount: string|null, causes: list<string>}  $differences
+     * @param  array{difference: string|null, causes: list<string>, loans_max: int}  $monthly
      * @param  array<string, mixed>|null  $seal
      * @param  array<string, mixed>|null  $reasonOptions
      * @param  array{url: string, method: string}|null  $upload
      * @return array<string, mixed>
      */
-    private function stage(array $report, array $sources, array $file, string $prefix, array $variance, array $differences, ?array $seal, ?array $reasonOptions, ?array $upload, bool $mfaConfirmed): array
+    private function stage(array $report, array $sources, array $file, string $prefix, array $variance, array $monthly, ?array $seal, ?array $reasonOptions, ?array $upload, bool $mfaConfirmed): array
     {
         if (in_array($report['status'], ['changes_requested', 'rejected'], true)) {
             $decision = $report['draft']['decision'];
@@ -119,10 +119,13 @@ class AuditorProcedureResource extends JsonResource
                 'sector' => ['label' => $sources['source_facts']['declared_sector_label'] ?? __('Unavailable'),
                     'definition' => $sources['source_facts']['declared_unit_label'] ?? __('A declared inventory unit definition is required.')],
                 'operational_status' => $fields['operational_status'] ?? null],
+            'drawings' => ['step' => 'drawings', 'owner_drawings' => AuditorJobsResource::money($fields['owner_drawings'] ?? null)],
+            'loans' => ['step' => 'loans', 'max' => $monthly['loans_max'], 'loans' => array_map(fn (array $loan): array => ['lender' => $loan['lender'],
+                'outstanding' => AuditorJobsResource::money($loan['outstanding']), 'monthly_payment' => AuditorJobsResource::money($loan['monthly_payment'])], $fields['loans'] ?? [])],
             'differences' => ['step' => 'differences', 'reported' => AuditorJobsResource::money($sources['reported_cash']),
                 'observed' => AuditorJobsResource::money($report['draft']['fields']['count']['cash'] ?? null),
-                'difference' => AuditorJobsResource::money($differences['amount']),
-                'causes' => $differences['causes'], 'explanations' => array_map(fn (array $explanation): array => [
+                'difference' => AuditorJobsResource::money($monthly['difference']),
+                'causes' => $monthly['causes'], 'explanations' => array_map(fn (array $explanation): array => [
                     'cause' => $explanation['cause'], 'amount' => $explanation['amount']], $fields['explanations'] ?? [])],
             'seal' => $this->seal($report, $sources, $seal ?? throw new \LogicException('A persisted report preview is required.'), $reasonOptions, $mfaConfirmed),
             default => ['step' => 'statements', 'statements' => $this->statements($report, $sources, $prefix)],
