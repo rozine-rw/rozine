@@ -351,6 +351,53 @@ const rw: Catalog = {
         'Komeza guhera ku mpuzandengo yawe yagenzuwe n’ibyo wasabwe mu nyandiko.',
     'business.readiness.guidance.forecast_error.fix':
         'Teganya ukwezi gutaha uhereye ku mpuzandengo yawe yagenzuwe, wongereho gusa ibyo wasabwe mu nyandiko.',
+    'business.academy.title': 'Ishuri',
+    'business.academy.intro':
+        'Amasomo magufi y’icyiciro cyawe. Buri somo ni amakarita, hanyuma ikizamini cy’ibibazo {questions}. Ibisubizo {pass} by’ukuri birahagije.',
+    'business.academy.core_title': 'Amasomo y’ibanze ya {stage}',
+    'business.academy.preview_title': 'Icyerekezo cya {stage}',
+    'business.academy.preview_body':
+        'Amakarita gusa. Ikizamini gifunguka ugeze kuri iki cyiciro.',
+    'business.academy.cards': {
+        one: 'Ikarita {count}',
+        other: 'Amakarita {count}',
+    },
+    'business.academy.state.open': 'Ikizamini kirafunguye',
+    'business.academy.state.passed': 'Watsinze',
+    'business.academy.state.waiting': 'Wongera guhera ku wa {date}',
+    'business.academy.state.preview': 'Icyerekezo',
+    'business.academy.best': 'Amanota meza: {score} kuri {total}',
+    'business.academy.syllabus':
+        'Ishuri: amasomo y’ibanze {passed} kuri {total} yatsinzwe mu cyiciro cyawe.',
+    'business.academy.open': 'Fungura Ishuri',
+    'business.academy.back': 'Subira inyuma',
+    'business.academy.flashcards': 'Amakarita',
+    'business.academy.card_progress': 'Ikarita {current} kuri {total}',
+    'business.academy.show_back': 'Reba igisubizo',
+    'business.academy.show_front': 'Reba ikarita',
+    'business.academy.previous': 'Ibanziriza',
+    'business.academy.next': 'Ikurikira',
+    'business.academy.start_test': 'Tangira ikizamini',
+    'business.academy.test_title': 'Ikizamini',
+    'business.academy.test_intro':
+        'Subiza ibibazo byose {count}. Ibisubizo {pass} by’ukuri birahagije.',
+    'business.academy.question': 'Ikibazo {current} kuri {total}',
+    'business.academy.left': {
+        one: 'Hasigaye ikibazo {count} cyo gusubiza.',
+        other: 'Hasigaye ibibazo {count} byo gusubiza.',
+    },
+    'business.academy.send': 'Ohereza ibisubizo',
+    'business.academy.sending': 'Birimo koherezwa…',
+    'business.academy.result.passed':
+        'Watsinze n’amanota {score} kuri {total}.',
+    'business.academy.result.waiting':
+        'Ntiwatsinze: {score} kuri {total}. Ikizamini kizongera gufunguka ku wa {date} gifite ibibazo bishya.',
+    'business.academy.result.open':
+        'Ntiwatsinze: {score} kuri {total}. Ikizamini gikurikira kiri hepfo.',
+    'business.academy.note.passed':
+        'Watsinze iri somo. Amakarita yaryo aguma hano kugira ngo usubiremo.',
+    'business.academy.note.preview':
+        'Iri somo ni iry’icyiciro gikurikira. Ikizamini cyaryo gifunguka ugeze kuri icyo cyiciro.',
     'business.readiness.stages': 'Ibyiciro bine',
     'business.readiness.stage_from': 'Guhera kuri {amount} ku kwezi',
     'business.readiness.current': 'Icy’ubu',

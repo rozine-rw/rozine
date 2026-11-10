@@ -354,6 +354,52 @@ const fr: Catalog = {
         'Continuez à partir de votre moyenne vérifiée et des commandes que vous détenez par écrit.',
     'business.readiness.guidance.forecast_error.fix':
         'Partez de votre moyenne vérifiée pour la prévision du mois prochain, et n’ajoutez que les commandes que vous détenez par écrit.',
+    'business.academy.title': 'Académie',
+    'business.academy.intro':
+        'Des leçons courtes pour votre étape. Chaque module est une série de cartes, puis un test de {questions} questions. {pass} bonnes réponses suffisent.',
+    'business.academy.core_title': 'Modules de base pour {stage}',
+    'business.academy.preview_title': 'Aperçu de {stage}',
+    'business.academy.preview_body':
+        'Cartes seulement. Le test s’ouvre quand vous atteignez cette étape.',
+    'business.academy.cards': {
+        one: '{count} carte',
+        other: '{count} cartes',
+    },
+    'business.academy.state.open': 'Test ouvert',
+    'business.academy.state.passed': 'Réussi',
+    'business.academy.state.waiting': 'Nouvel essai dès le {date}',
+    'business.academy.state.preview': 'Aperçu',
+    'business.academy.best': 'Meilleur score : {score} sur {total}',
+    'business.academy.syllabus':
+        'Académie : {passed} modules de base réussis sur {total} pour votre étape.',
+    'business.academy.open': 'Ouvrir l’Académie',
+    'business.academy.back': 'Retour',
+    'business.academy.flashcards': 'Cartes',
+    'business.academy.card_progress': 'Carte {current} sur {total}',
+    'business.academy.show_back': 'Voir la réponse',
+    'business.academy.show_front': 'Voir la carte',
+    'business.academy.previous': 'Précédente',
+    'business.academy.next': 'Suivante',
+    'business.academy.start_test': 'Commencer le test',
+    'business.academy.test_title': 'Test',
+    'business.academy.test_intro':
+        'Répondez aux {count} questions. {pass} bonnes réponses suffisent.',
+    'business.academy.question': 'Question {current} sur {total}',
+    'business.academy.left': {
+        one: 'Il reste {count} question.',
+        other: 'Il reste {count} questions.',
+    },
+    'business.academy.send': 'Envoyer les réponses',
+    'business.academy.sending': 'Envoi…',
+    'business.academy.result.passed': 'Réussi avec {score} sur {total}.',
+    'business.academy.result.waiting':
+        'Non réussi : {score} sur {total}. Le test rouvre le {date} avec de nouvelles questions.',
+    'business.academy.result.open':
+        'Non réussi : {score} sur {total}. Votre prochain test est prêt ci-dessous.',
+    'business.academy.note.passed':
+        'Vous avez réussi ce module. Ses cartes restent ici pour réviser.',
+    'business.academy.note.preview':
+        'Ce module fait partie de l’étape suivante. Son test s’ouvre quand vous l’atteignez.',
     'business.readiness.stages': 'Les quatre étapes',
     'business.readiness.stage_from': 'À partir de {amount} par mois',
     'business.readiness.current': 'Actuelle',

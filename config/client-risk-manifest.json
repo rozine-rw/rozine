@@ -425,6 +425,8 @@
         "resources/js/pages/auth/reset-password.tsx",
         "resources/js/pages/auth/two-factor-challenge.tsx",
         "resources/js/pages/auth/verify-email.tsx",
+        "resources/js/pages/business/academy-module.tsx",
+        "resources/js/pages/business/academy.tsx",
         "resources/js/pages/business/apply.tsx",
         "resources/js/pages/business/audit-cosign.tsx",
         "resources/js/pages/business/audit-prep.tsx",

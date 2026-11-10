@@ -204,4 +204,19 @@ describe('Readiness', () => {
             screen.queryByRole('list', { name: 'Monthly guidance' }),
         ).not.toBeInTheDocument();
     });
+
+    it('opens the Academy with how much of the core syllabus is passed', () => {
+        render(<BusinessReadiness {...props(readinessFixture)} />);
+
+        expect(
+            screen.getByRole('link', {
+                name: /^Open the Academy/u,
+            }),
+        ).toHaveAttribute('href', '/preview/business-academy');
+        expect(
+            screen.getByText(
+                'Academy: 1 of 2 core modules passed for your stage.',
+            ),
+        ).toBeInTheDocument();
+    });
 });

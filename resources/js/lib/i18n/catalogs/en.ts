@@ -344,6 +344,52 @@ const en = {
         'Keep starting each forecast from your verified average and the orders you hold in writing.',
     'business.readiness.guidance.forecast_error.fix':
         "Start next month's forecast from your verified average, and add only orders you hold in writing.",
+    'business.academy.title': 'Academy',
+    'business.academy.intro':
+        'Short lessons for your stage. Each module is a set of flashcards, then a test of {questions} questions. {pass} correct answers pass.',
+    'business.academy.core_title': 'Core modules for {stage}',
+    'business.academy.preview_title': 'Preview of {stage}',
+    'business.academy.preview_body':
+        'Cards only. The test opens when you reach this stage.',
+    'business.academy.cards': {
+        one: '{count} card',
+        other: '{count} cards',
+    },
+    'business.academy.state.open': 'Test open',
+    'business.academy.state.passed': 'Passed',
+    'business.academy.state.waiting': 'Retake from {date}',
+    'business.academy.state.preview': 'Preview',
+    'business.academy.best': 'Best score: {score} of {total}',
+    'business.academy.syllabus':
+        'Academy: {passed} of {total} core modules passed for your stage.',
+    'business.academy.open': 'Open the Academy',
+    'business.academy.back': 'Back',
+    'business.academy.flashcards': 'Flashcards',
+    'business.academy.card_progress': 'Card {current} of {total}',
+    'business.academy.show_back': 'Show answer',
+    'business.academy.show_front': 'Show card',
+    'business.academy.previous': 'Previous',
+    'business.academy.next': 'Next',
+    'business.academy.start_test': 'Start the test',
+    'business.academy.test_title': 'Test',
+    'business.academy.test_intro':
+        'Answer all {count} questions. {pass} correct answers pass.',
+    'business.academy.question': 'Question {current} of {total}',
+    'business.academy.left': {
+        one: '{count} question left to answer.',
+        other: '{count} questions left to answer.',
+    },
+    'business.academy.send': 'Send answers',
+    'business.academy.sending': 'Sending…',
+    'business.academy.result.passed': 'Passed with {score} of {total}.',
+    'business.academy.result.waiting':
+        'Not passed: {score} of {total}. The test reopens on {date} with new questions.',
+    'business.academy.result.open':
+        'Not passed: {score} of {total}. Your next test is ready below.',
+    'business.academy.note.passed':
+        'You have passed this module. Its cards stay here to revise.',
+    'business.academy.note.preview':
+        'This module belongs to the next stage. Its test opens when you reach it.',
     'business.readiness.stages': 'The four stages',
     'business.readiness.stage_from': 'From {amount} a month',
     'business.readiness.current': 'Current',
