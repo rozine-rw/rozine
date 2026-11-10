@@ -54,7 +54,7 @@ describe('Guided visit step (VIS-R01)', () => {
 
             for (const message of Object.values(VISIT_GUIDE[step])) {
                 expect(
-                    within(guide()).getByText(en[message]),
+                    within(guide()).getByText(String(en[message])),
                 ).toBeInTheDocument();
             }
         },
