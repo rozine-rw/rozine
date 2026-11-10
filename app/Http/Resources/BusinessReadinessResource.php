@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Domain\Business\ReadinessStage;
 use Brick\Math\BigInteger;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -18,7 +17,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * (`window` readings in a row move it), and `next` how far the stage above is. The months are the
  * published reports the VMR averages, newest first. Readiness is shown only inside the Business app.
  *
- * @phpstan-import-type Stage from ReadinessStage
+ * @phpstan-import-type Stage from \App\Domain\Business\ReadinessStage
  */
 class BusinessReadinessResource extends JsonResource
 {
@@ -35,13 +34,12 @@ class BusinessReadinessResource extends JsonResource
         $pointing = $readiness['months_pointing'];
 
         return ['readiness' => ['stage' => $stage, 'status' => 'building', 'vmr' => $vmr === null ? null : self::money($vmr),
-            'reports' => $readiness['reports'], 'reports_needed' => $readiness['reports_needed'], 'window' => ReadinessStage::WINDOW,
+            'reports' => $readiness['reports'], 'reports_needed' => $readiness['reports_needed'], 'window' => $readiness['window'],
             'pending' => $stage === null || $pointing === 0 ? null : ['direction' => $readiness['indicated'] > $stage ? 'up' : 'down',
                 'stage' => $readiness['indicated'], 'months' => $pointing],
             'next' => $next === null || $vmr === null ? null : ['stage' => $next['stage'], 'threshold' => self::money($next['threshold']),
                 'gap' => self::money((string) BigInteger::max(BigInteger::of($next['threshold'])->minus($vmr), BigInteger::zero()))],
-            'thresholds' => array_map(fn (int $number, string $threshold): array => ['stage' => $number, 'from' => self::money($threshold)],
-                array_keys(ReadinessStage::THRESHOLDS), ReadinessStage::THRESHOLDS),
+            'thresholds' => array_map(fn (array $row): array => ['stage' => $row['stage'], 'from' => self::money($row['from'])], $readiness['thresholds']),
             'months' => array_map(fn (array $month): array => ['period' => $month['period'], 'revenue' => self::money($month['revenue'])], $readiness['months'])],
             'links' => ['home' => BusinessHomeResource::link($request, 'business.show', ['business' => $business]), ...BusinessHomeResource::tabs($request, $business),
                 'launcher' => ['url' => route('dashboard', [], false), 'method' => 'get']]];
