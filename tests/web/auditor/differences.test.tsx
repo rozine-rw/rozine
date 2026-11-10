@@ -152,5 +152,10 @@ describe('Audit procedure — explain the monthly difference', () => {
                 'Explain the whole difference of RWF 26000, to the franc.',
             ),
         ).toBeInTheDocument();
+        expect(amount('Entry error')).toHaveAttribute('aria-invalid', 'true');
+        expect(amount('Entry error')).toHaveAttribute(
+            'aria-describedby',
+            'auditor-differences-error',
+        );
     });
 });

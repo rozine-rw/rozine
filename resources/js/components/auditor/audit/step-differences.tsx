@@ -25,8 +25,7 @@ const CAUSE_LABEL: Record<DifferenceCause, MessageCode> = {
 };
 
 /** Whole francs as a whole number; an empty or non-digit entry counts as nothing. */
-const francs = (value: string): bigint =>
-    value === '' ? BigInt(0) : BigInt(onlyDigits(value) || '0');
+const francs = (value: string): bigint => BigInt(onlyDigits(value) || '0');
 
 /** Whole francs as server-shaped money, for display only. */
 const rwf = (amount: bigint): Money => ({
@@ -137,6 +136,16 @@ export function StepDifferences({
                                                     event.target.value,
                                                 ),
                                             })
+                                        }
+                                        aria-invalid={
+                                            errors.explanations
+                                                ? true
+                                                : undefined
+                                        }
+                                        aria-describedby={
+                                            errors.explanations
+                                                ? 'auditor-differences-error'
+                                                : undefined
                                         }
                                         placeholder="0"
                                         className="w-28 rounded-lg border border-rz-border bg-rz-page px-2 py-1.5 text-right text-[13px] font-bold text-rz-ink tabular-nums"
