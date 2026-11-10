@@ -805,10 +805,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 776,
+        "totalTrackedSources": 777,
         "generated": 337,
         "declarationOnly": 20,
-        "authoredExecutable": 419
+        "authoredExecutable": 420
     },
-    "coverageSetSha256": "e8ba444f4d927572f71705bad674c1d9a5997e84a5e05004ce67650e4fa35352"
+    "coverageSetSha256": "55a751cbae655d765d1e9653e4eee9665e155c17bada03112cbd8a7f9c8de075"
 }
