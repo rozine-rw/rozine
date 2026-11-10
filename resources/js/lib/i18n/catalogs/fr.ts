@@ -3595,7 +3595,7 @@ const fr: Catalog = {
     'auditor.count.status.restricted': 'Restreint',
     'auditor.seal.title': 'Valider et sceller',
     'auditor.seal.lead':
-        "Vos constats sont attribués à votre licence ICPAR et publiés aux porteurs après la validation de l'entreprise.",
+        "Vos constats sont attribués à votre licence ICPAR et publiés aux porteurs à la fin du délai de contestation de 24 heures de l'entreprise.",
     'auditor.seal.note': "Note d'évaluation",
     'auditor.seal.note_optional': 'Facultatif',
     'auditor.seal.note_required': 'Obligatoire',
