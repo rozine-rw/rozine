@@ -46,6 +46,15 @@
             "deals": 0,
             "units": "0",
             "lines": []
+        },
+        "checkout": null,
+        "actions": {
+            "quote": null,
+            "reserve": null
+        },
+        "operation": {
+            "url": "/preview/investor-cart-operations/{request_id}",
+            "method": "get"
         }
     }
 }

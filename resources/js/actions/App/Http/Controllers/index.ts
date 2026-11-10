@@ -16,6 +16,7 @@ import StaffApplicationReleaseController from './StaffApplicationReleaseControll
 import BusinessPublicationController from './BusinessPublicationController'
 import InvestorDealsController from './InvestorDealsController'
 import InvestorMarketController from './InvestorMarketController'
+import InvestorCartCheckoutController from './InvestorCartCheckoutController'
 import InvestorWalletController from './InvestorWalletController'
 import InvestorRiskAcknowledgementController from './InvestorRiskAcknowledgementController'
 import InvestorNoticesController from './InvestorNoticesController'
@@ -90,6 +91,7 @@ const Controllers = {
     BusinessPublicationController: Object.assign(BusinessPublicationController, BusinessPublicationController),
     InvestorDealsController: Object.assign(InvestorDealsController, InvestorDealsController),
     InvestorMarketController: Object.assign(InvestorMarketController, InvestorMarketController),
+    InvestorCartCheckoutController: Object.assign(InvestorCartCheckoutController, InvestorCartCheckoutController),
     InvestorWalletController: Object.assign(InvestorWalletController, InvestorWalletController),
     InvestorRiskAcknowledgementController: Object.assign(InvestorRiskAcknowledgementController, InvestorRiskAcknowledgementController),
     InvestorNoticesController: Object.assign(InvestorNoticesController, InvestorNoticesController),

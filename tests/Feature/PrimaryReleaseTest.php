@@ -300,3 +300,12 @@ it('rolls back cash state and actor receipt when retained return verification fa
         ->and(CommandOperation::query()->whereIn('command', ['primary.release', 'primary.confirm'])->count())->toBe(0);
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
 })->with(['release', 'expired release', 'system expiry', 'expired confirm'])->with(['refused', 'wrong_entry', 'wrong_kind']);
+
+it('requotes a held reservation only while its window is open', function (): void {
+    $requotes = fn (): bool => app(PrimaryReservations::class)->requotes($this->campaign->id, $this->root->id, $this->investor['party']->id,
+        PrimaryReservationFixture::terms(...));
+
+    expect($requotes())->toBeFalse();
+    $this->travelTo($this->root->expires_at);
+    expect($requotes)->toThrow(CommandRejection::class, 'RESERVATION_EXPIRED');
+});

@@ -79,8 +79,12 @@ it('counts every tab, filters by state and search, and pages', function (): void
             return null;
         }
 
-        public function card(string $campaignId): array
+        public function card(string $campaignId): ?array
         {
+            if ($campaignId === '01K0000000000000000000DDDD') {
+                return null;
+            }
+
             return notesCard($campaignId, match ($campaignId) {
                 '01K0000000000000000000AAAA' => 'Ubuki Crafts', '01K0000000000000000000BBBB' => 'GreenLeaf Agro', default => 'Kivu Fisheries',
             }, match ($campaignId) {
@@ -96,7 +100,9 @@ it('counts every tab, filters by state and search, and pages', function (): void
     app()->instance(OperationsDashboardStore::class, Mockery::mock(OperationsDashboardStore::class, [
         'noteStates' => [['campaign_id' => '01K0000000000000000000AAAA', 'business_id' => '01K0000000000000000000BAAA', 'state' => 'live', 'live_at' => '2026-10-15T08:00:00+00:00'],
             ['campaign_id' => '01K0000000000000000000BBBB', 'business_id' => '01K0000000000000000000BBBB', 'state' => 'repaying', 'live_at' => '2026-10-01T08:00:00+00:00'],
-            ['campaign_id' => '01K0000000000000000000CCCC', 'business_id' => '01K0000000000000000000BCCC', 'state' => 'failed', 'live_at' => '2026-09-01T08:00:00+00:00']],
+            ['campaign_id' => '01K0000000000000000000CCCC', 'business_id' => '01K0000000000000000000BCCC', 'state' => 'failed', 'live_at' => '2026-09-01T08:00:00+00:00'],
+            // A publication the investor catalogue no longer presents is left off the register.
+            ['campaign_id' => '01K0000000000000000000DDDD', 'business_id' => '01K0000000000000000000BDDD', 'state' => 'live', 'live_at' => '2026-08-01T08:00:00+00:00']],
         'figures' => ['capital_raised' => '6000000', 'active_businesses' => 0, 'disbursements_waiting' => 0, 'disbursed' => '0',
             'notes' => ['live' => 1, 'funded' => 0, 'repaying' => 1, 'failed' => 1]]]));
     $staff = notesStaff(['treasury']);

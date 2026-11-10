@@ -62,6 +62,8 @@ type Options<Name extends string> = {
     onCompleted?: (resource: C3Resource) => void;
     /** Runs once that next page or refresh has loaded. */
     onSettled?: () => void;
+    /** Runs on a definitive refusal, with the refusal's own data when it carried any. */
+    onRefused?: (code: string, status: number, data: unknown) => void;
 };
 
 /**
@@ -81,6 +83,7 @@ export function useC3Command<Name extends string>({
     only,
     onCompleted,
     onSettled,
+    onRefused,
 }: Options<Name>) {
     const scope = only === undefined ? {} : { only };
     /* Between the server's answer and its next page or refresh, the page still reads as sending. */
@@ -120,7 +123,9 @@ export function useC3Command<Name extends string>({
 
             router.visit(resource.data.next, { onFinish: settle });
         },
-        onRefused: (_sent, code, status) => {
+        onRefused: (_sent, code, status, data) => {
+            onRefused?.(code, status, data);
+
             if (refusalRefreshes(code, status, FINAL)) {
                 void reloadPreservingState(scope);
             }

@@ -39,7 +39,7 @@ def stop_checks(processes):
 def run_checks(checks=CHECKS, cancelled=lambda: 0):
     if not checks:
         raise ValueError("PHP static checks must not be empty")
-    processes, reported = [], set()
+    processes, reported, started = [], set(), []
     complete = False
     try:
         for label, command in checks:
@@ -47,13 +47,14 @@ def run_checks(checks=CHECKS, cancelled=lambda: 0):
                 return 128 + received
             print(f"{label}: starting complete check", flush=True)
             processes.append(subprocess.Popen(command, start_new_session=True))
+            started.append(time.monotonic())
         while True:
             if received := cancelled():
                 return 128 + received
             for index, process in enumerate(processes):
                 status = process.poll()
                 if status is not None and index not in reported:
-                    print(f"{checks[index][0]}: exited {status}", flush=True)
+                    print(f"{checks[index][0]}: exited {status} after {time.monotonic() - started[index]:.2f}s", flush=True)
                     reported.add(index)
             if len(reported) == len(processes):
                 if received := cancelled():

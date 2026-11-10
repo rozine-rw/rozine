@@ -365,6 +365,15 @@
                     }
                 }
             ]
+        },
+        "checkout": null,
+        "actions": {
+            "quote": null,
+            "reserve": null
+        },
+        "operation": {
+            "url": "/preview/investor-cart-operations/{request_id}",
+            "method": "get"
         }
     }
 }

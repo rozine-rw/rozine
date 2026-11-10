@@ -1,8 +1,18 @@
 import { Link, router, useHttp } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
+import {
+    CartCheckedOut,
+    CartCheckoutAction,
+    HeldCart,
+    LineRefusal,
+    useCartCommand,
+    useCartQuote,
+    cartBlock,
+} from '@/components/investor/cart/whole-cart';
 import { RANGE_CLASS } from '@/components/investor/deals/invest-bar';
 import { InvestorShell } from '@/components/investor/investor-shell';
 import { POSITIVE_TEXT } from '@/components/investor/tokens';
+import { C3Notice } from '@/components/rozine/c3-notice';
 import { useTranslation } from '@/hooks/use-translation';
 import { withQuery } from '@/lib/investor/links';
 import { useWide } from '@/lib/investor/use-wide';
@@ -14,7 +24,11 @@ import {
 } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { Money } from '@/types';
-import type { C3InvestorCartProps, InvestorCartLine } from '@/types/investor';
+import type {
+    C3InvestorCartProps,
+    CartLineRefusal,
+    InvestorCartLine,
+} from '@/types/investor';
 import type { RouteAction } from '@/types/routing';
 
 /** How long a slider rests before its new quantity is saved to the cart. */
@@ -73,12 +87,15 @@ function CartCard({
     onUnits,
     onRemove,
     removing,
+    refusals,
 }: {
     line: InvestorCartLine;
     units: number;
     onUnits: (units: number) => void;
     onRemove: () => void;
     removing: boolean;
+    /** The lines the last whole-cart refusal named; this card shows its own. */
+    refusals: CartLineRefusal[];
 }) {
     const { t } = useTranslation();
     const { deal } = line;
@@ -282,6 +299,23 @@ function CartCard({
                             {t('investor.deal.cap.max', { count: max, reason })}
                         </p>
                     )}
+                    {Number(line.units) > max &&
+                        line.actions.units !== null && (
+                            <div className="mt-2 flex items-center justify-between gap-2 rounded-[10px] bg-rz-warning-tint px-2.5 py-2">
+                                <p className="text-[11px] leading-[1.4] font-semibold text-rz-warning-text">
+                                    {t('investor.cart.whole.over_cap')}
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={() => onUnits(max)}
+                                    className="shrink-0 rounded-lg border border-rz-border bg-rz-surface px-2.5 py-1 text-[11.5px] font-semibold text-rz-ink"
+                                >
+                                    {t('investor.cart.whole.fit', {
+                                        count: max,
+                                    })}
+                                </button>
+                            </div>
+                        )}
                     {line.checkout !== null && (
                         <Link
                             href={withQuery(line.checkout, { units })}
@@ -292,6 +326,7 @@ function CartCard({
                     )}
                 </>
             )}
+            <LineRefusal refusals={refusals} campaignId={line.campaign_id} />
         </article>
     );
 }
@@ -300,18 +335,23 @@ function CartCard({
  * Cart (BRS v2.0 INV-R02, design L2832–2992): the notes an Investor picked from Deals, each with its
  * own amount. The cart total sits fixed at the top — pinned above the list on a phone, in the side
  * column on a wide screen — and moves with every slider at once; a slider that rests is saved to
- * the cart. A deal that filled after it was added stays visible, marked fully funded, and is left
- * out of the total. Totals are display only: each line's checkout quotes, caps and admits its own
- * purchase.
+ * the cart, which then reloads so the server prices the cart it holds. A deal that filled after it
+ * was added stays visible, marked fully funded, and is left out of the total.
  *
- * Checking the whole cart out in one atomic purchase (INV-R03) has no server command yet, so there
- * is no cart-wide Check out button and no fee band here: each line opens its deal's existing
- * checkout with the chosen notes. Before verification there is no cart, so the empty cart shows.
+ * The whole cart checks out at once (#383, INV-R03): the server quotes every line under one fee
+ * band, shown in the summary, and Check out all holds every line together. The held checkout then
+ * replaces the list until it is confirmed as a whole, released or expired; a confirmed cart shows
+ * what it bought. Each line also still opens its own deal's checkout. Before verification there is
+ * no cart, so the empty cart shows.
  */
 export default function InvestorCart({
     identity_context_revision,
+    server_time: serverTime,
     links,
     cart,
+    checkout,
+    actions,
+    operation,
 }: C3InvestorCartProps) {
     const { t } = useTranslation();
     const wide = useWide();
@@ -319,9 +359,32 @@ export default function InvestorCart({
     const [chosen, setChosen] = useState<Record<string, number>>({});
     const [removing, setRemoving] = useState<Record<string, boolean>>({});
     const [failed, setFailed] = useState(false);
+    /* Lines whose newest quantity is not yet saved; the cart is priced only once none is left. */
+    const [unsaved, setUnsaved] = useState<Record<string, boolean>>({});
     const timers = useRef<Record<string, number>>({});
+    const moves = useRef<Record<string, number>>({});
     const pending = useRef<Partial<Record<string, Promise<boolean>>>>({});
     const lines = cart?.lines ?? [];
+    const names = Object.fromEntries(
+        lines.map((line) => [line.campaign_id, line.deal.name]),
+    );
+    const pendingSave = Object.values(unsaved).some(Boolean);
+    const quote = useCartQuote({
+        action: actions.quote,
+        identityRevision: identity_context_revision,
+        cartRevision: cart?.revision ?? 0,
+        ready:
+            checkout === null && lines.length > 0 && cartBlock(lines) === null,
+        paused: pendingSave,
+    });
+    const whole = useCartCommand({
+        identity_context_revision,
+        actions,
+        checkout,
+        operation,
+        names,
+        requote: quote.refresh,
+    });
 
     useEffect(() => {
         const pending = timers.current;
@@ -397,14 +460,46 @@ export default function InvestorCart({
         window.clearTimeout(timers.current[line.campaign_id]);
 
         if (action !== null) {
+            const move = (moves.current[line.campaign_id] ?? 0) + 1;
+
+            moves.current[line.campaign_id] = move;
+            setUnsaved((current) => ({ ...current, [line.campaign_id]: true }));
             timers.current[line.campaign_id] = window.setTimeout(() => {
-                void enqueue(line, action, { units: next });
+                void enqueue(line, action, { units: next }).then((saved) => {
+                    if (moves.current[line.campaign_id] !== move) {
+                        return;
+                    }
+
+                    setUnsaved((current) => ({
+                        ...current,
+                        [line.campaign_id]: false,
+                    }));
+
+                    /*
+                     * An unsaved quantity goes back to what the cart holds, so the line, its total
+                     * and the whole-cart quote all read the saved cart again.
+                     */
+                    if (!saved) {
+                        setChosen((current) => {
+                            const { [line.campaign_id]: _unsaved, ...rest } =
+                                current;
+
+                            return rest;
+                        });
+                    }
+
+                    router.reload({ only: ['cart'] });
+                });
             }, SAVE_DELAY_MS);
         }
     };
 
     const remove = async (line: InvestorCartLine) => {
         window.clearTimeout(timers.current[line.campaign_id]);
+        /* A quantity still waiting to be saved goes with the line. */
+        moves.current[line.campaign_id] =
+            (moves.current[line.campaign_id] ?? 0) + 1;
+        setUnsaved((current) => ({ ...current, [line.campaign_id]: false }));
         setRemoving((current) => ({ ...current, [line.campaign_id]: true }));
         const finish = () =>
             setRemoving((current) => ({
@@ -508,6 +603,21 @@ export default function InvestorCart({
                 <p>{t('investor.cart.checkout_note')}</p>
                 <p className="mt-1">{t('investor.cart.before_charge')}</p>
             </div>
+            {actions.quote !== null && (
+                <CartCheckoutAction
+                    lines={lines}
+                    quote={quote}
+                    reserve={whole.reserve}
+                    checkoutLink={
+                        lines.find((line) => line.checkout !== null)
+                            ?.checkout ?? null
+                    }
+                    command={whole.command}
+                />
+            )}
+            {actions.quote !== null && (
+                <C3Notice command={whole.command} className="mt-2.5" />
+            )}
             {failed && (
                 <p
                     role="alert"
@@ -528,10 +638,51 @@ export default function InvestorCart({
                     onUnits={(next) => change(line, next)}
                     onRemove={() => void remove(line)}
                     removing={removing[line.campaign_id] ?? false}
+                    refusals={whole.lineRefusals}
                 />
             ))}
         </div>
     );
+
+    const done = whole.confirmed !== null && (
+        <div className={wide ? 'mb-3' : 'px-4 pt-3'}>
+            <CartCheckedOut
+                receipt={whole.confirmed.receipt}
+                names={whole.confirmed.names}
+                links={links}
+            />
+        </div>
+    );
+
+    if (checkout !== null) {
+        return (
+            <InvestorShell
+                title={t('investor.cart.title')}
+                tab="cart"
+                links={links}
+            >
+                <div
+                    className={
+                        wide
+                            ? 'mx-auto max-w-[560px] px-[18px] py-4'
+                            : 'flex min-h-full flex-col pb-[calc(63px+env(safe-area-inset-bottom)+16px)]'
+                    }
+                >
+                    {header}
+                    <div className={wide ? undefined : 'px-4 pt-3'}>
+                        <HeldCart
+                            key={checkout.id}
+                            checkout={checkout}
+                            names={names}
+                            serverTime={serverTime}
+                            identityRevision={identity_context_revision}
+                            cart={whole}
+                        />
+                    </div>
+                </div>
+            </InvestorShell>
+        );
+    }
 
     return (
         <InvestorShell
@@ -543,6 +694,7 @@ export default function InvestorCart({
                 <div className="grid h-full grid-cols-[minmax(0,1fr)_300px] gap-[18px] px-[18px] py-4">
                     <div className="min-w-0">
                         {header}
+                        {done}
                         {lines.length === 0 ? empty : list}
                     </div>
                     {lines.length > 0 && (
@@ -552,6 +704,7 @@ export default function InvestorCart({
             ) : (
                 <div className="flex min-h-full flex-col pb-[calc(63px+env(safe-area-inset-bottom)+16px)]">
                     {header}
+                    {done}
                     {lines.length === 0 ? (
                         empty
                     ) : (
