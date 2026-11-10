@@ -145,7 +145,7 @@ it('narrows history to today, the last 7 or 30 Kigali days, keeping the period o
 });
 
 it('counts a movement in the first Kigali hours of the day as today', function (): void {
-    $this->travelTo(CarbonImmutable::parse('2026-11-05 00:30:00', 'Africa/Kigali'));
+    $this->travelTo(CarbonImmutable::now('Africa/Kigali')->addDay()->startOfDay()->addMinutes(30));
     ($this->reserve)('1', (string) Str::uuid());
     $this->travel(1)->hours();
     $this->actingAs($this->investor['user']);
