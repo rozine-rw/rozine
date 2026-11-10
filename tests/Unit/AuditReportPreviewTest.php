@@ -62,8 +62,9 @@ it('seals the cause codes that explain a monthly cash difference on its cash fin
         'documents' => [], 'monthly' => null, 'licence' => 'SYNTHETIC-CPA', 'source_facts' => null,
         'authority' => ['mandate_version' => 1, 'mandate_sha256' => str_repeat('a', 64), 'profile_revision' => 1, 'engagement_id' => 'engagement']];
     $explanations = [['cause' => 'unrecorded_sales', 'amount' => '4'], ['cause' => 'entry_error', 'amount' => '6']];
-    $report = ['id' => 'report', 'assignment_id' => 'assignment', 'revision' => 3, 'kind' => 'monthly', 'period' => '2026-08',
-        'binding_sha256' => str_repeat('c', 64), 'draft' => ['note' => 'Recorded.', 'completed_steps' => [],
+    $report = ['id' => 'report', 'assignment_id' => 'assignment', 'business_id' => 'business', 'application_id' => 'application',
+        'application_revision' => 4, 'revision' => 3, 'kind' => 'monthly', 'status' => 'draft', 'step' => 'seal', 'period' => '2026-08',
+        'amends_id' => null, 'amendment_id' => null, 'binding_sha256' => str_repeat('c', 64), 'version' => ['id' => 'version', 'sha256' => str_repeat('d', 64)], 'draft' => ['note' => 'Recorded.', 'completed_steps' => [],
             'fields' => ['count' => ['cash' => '90', 'stock_units' => '9', 'operational_status' => 'active'], 'differences' => ['explanations' => $explanations]]]];
 
     $findings = $builder->handle($report, $sources)['findings'];

@@ -29,8 +29,10 @@ it('seals the cause codes on the cash finding and refuses an explanation a franc
 
     expect(Fixture::seal($fixture)['code'])->toBe('AUDIT_SEALED');
     $payload = AuditReportSeal::query()->where('audit_report_id', $report->id)->sole()->payload;
-    $finding = collect($payload['report']['findings'])->firstWhere('measure', 'cash');
-    expect($finding['explained_by'])->toBe([['cause' => 'entry_error', 'amount' => '1']]);
+    /** @var list<array<string, mixed>> $findings */
+    $findings = $payload['report']['findings'];
+    $finding = array_find($findings, fn (array $finding): bool => $finding['measure'] === 'cash');
+    expect($finding['explained_by'] ?? null)->toBe([['cause' => 'entry_error', 'amount' => '1']]);
 });
 
 it('keeps a monthly report at the difference step only while the step constraint allows it, and refuses rollback once one stands there', function (): void {

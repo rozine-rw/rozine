@@ -232,7 +232,7 @@ it('explains the whole monthly cash difference by cause code, to the franc, in t
         ['amount' => '20000', 'cause' => 'personal_spending'], ['cause' => 'unrecorded_sales', 'amount' => '6000']]], procedureSources());
     expect($saved['step'])->toBe('photos')
         ->and($saved['draft']['fields']['differences']['explanations'])->toBe([['cause' => 'unrecorded_sales', 'amount' => '6000'], ['cause' => 'personal_spending', 'amount' => '20000']])
-        ->and($saved['draft']['sources']['differences'])->toBe(['verification' => procedureSource('verification'), 'declaration' => procedureSource('declaration')]);
+        ->and($saved['draft']['sources']['differences'] ?? null)->toBe(['verification' => procedureSource('verification'), 'declaration' => procedureSource('declaration')]);
 });
 
 it('records no explanation for a month whose count matches the statements', function (): void {
