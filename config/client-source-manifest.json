@@ -52,6 +52,7 @@
         "resources/js/actions/App/Http/Controllers/BusinessHomeController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessNoticesController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessPayoutAccountController.ts",
+        "resources/js/actions/App/Http/Controllers/BusinessProspectusController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessPublicationController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessRepaymentController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessStatementController.ts",
@@ -262,6 +263,7 @@
         "resources/js/routes/boost/index.ts",
         "resources/js/routes/business/applications/index.ts",
         "resources/js/routes/business/applications/operations/index.ts",
+        "resources/js/routes/business/applications/prospectus/index.ts",
         "resources/js/routes/business/applications/publish/index.ts",
         "resources/js/routes/business/audit-reports/disputes/index.ts",
         "resources/js/routes/business/audit-reports/disputes/proofs/index.ts",
@@ -771,6 +773,7 @@
         "resources/js/pages/business/note.tsx",
         "resources/js/pages/business/onboarding.tsx",
         "resources/js/pages/business/profile.tsx",
+        "resources/js/pages/business/prospectus.tsx",
         "resources/js/pages/business/publish.tsx",
         "resources/js/pages/business/rating.tsx",
         "resources/js/pages/business/repayments.tsx",
@@ -802,10 +805,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 774,
-        "generated": 337,
+        "totalTrackedSources": 777,
+        "generated": 339,
         "declarationOnly": 20,
-        "authoredExecutable": 417
+        "authoredExecutable": 418
     },
-    "coverageSetSha256": "14b3f272332ceec92ace915f99ebcadde2a4b89e62ffe63308d3acbede36a359"
+    "coverageSetSha256": "a06f48eb5cc8e7d9d5f97ee0f68272182b0eebfc608a77a1bc1730a34d004112"
 }

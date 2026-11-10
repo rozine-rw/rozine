@@ -21,6 +21,7 @@ use App\Http\Controllers\BusinessContactController;
 use App\Http\Controllers\BusinessHomeController;
 use App\Http\Controllers\BusinessNoticesController;
 use App\Http\Controllers\BusinessPayoutAccountController;
+use App\Http\Controllers\BusinessProspectusController;
 use App\Http\Controllers\BusinessPublicationController;
 use App\Http\Controllers\BusinessRepaymentController;
 use App\Http\Controllers\BusinessStatementController;
@@ -263,6 +264,9 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     foreach (['save', 'evaluate', 'submit'] as $command) {
         Route::post('{business}/applications/{application}/'.$command, [BusinessApplicationController::class, $command])->whereUlid(['business', 'application'])->name($command);
     }
+    Route::get('{business}/applications/{application}/prospectus', [BusinessProspectusController::class, 'show'])->whereUlid(['business', 'application'])->name('prospectus.show');
+    Route::put('{business}/applications/{application}/prospectus', [BusinessProspectusController::class, 'save'])->whereUlid(['business', 'application'])->name('prospectus.save');
+    Route::post('{business}/applications/{application}/prospectus/sign', [BusinessProspectusController::class, 'sign'])->whereUlid(['business', 'application'])->name('prospectus.sign');
 });
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/audit-assignments')->name('staff.audit.')->group(function (): void {

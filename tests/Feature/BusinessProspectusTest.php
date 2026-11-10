@@ -6,11 +6,13 @@ use App\Application\Business\GetBusinessProspectus;
 use App\Application\Business\SaveBusinessProspectus;
 use App\Application\Business\SignBusinessProspectus;
 use App\Application\Operations\Contracts\CanonicalJson;
+use App\Domain\Business\ProspectusGates;
 use App\Models\BusinessProspectusVersion;
 use App\Models\CommandOperation;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\AuditSealingFixture;
 use Tests\Support\BusinessQuoteFixture;
 
@@ -161,4 +163,44 @@ it('has no prospectus to judge before the application is accepted, nor for anoth
     expect(($this->read)($fixture))->toMatchArray(['facts' => null, 'evaluation' => null, 'unavailable' => 'PROSPECTUS_NOT_AVAILABLE'])
         ->and(app(SaveBusinessProspectus::class)->handle(($this->user)($fixture), 1, $fixture['audit']['business'], (string) Str::ulid(), 0, [], (string) Str::uuid()))
         ->toMatchArray(['status' => 'rejected', 'code' => 'APPLICATION_NOT_FOUND']);
+});
+
+it('serves the Listing Builder and answers its saves and signature over the web', function (): void {
+    $this->withoutVite();
+    $fixture = ($this->accepted)();
+    $route = ['business' => $fixture['audit']['business'], 'application' => $fixture['application']->id];
+    $owner = $fixture['audit']['authority']['users'][0];
+    $name = ($this->read)($fixture)['inputs']['profiles'][0]['name'];
+
+    $this->actingAs($owner)->get(route('business.applications.prospectus.show', $route))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->component('business/prospectus')->where('version', 0)
+            ->where('facts.platform_fee', '324000')->where('facts.net_of_fee', '10476000')->where('signed', null)
+            ->where('actions.save.url', route('business.applications.prospectus.save', $route, false))->where('actions.sign', null)
+            ->where('sections', ProspectusGates::SECTIONS));
+
+    $this->put(route('business.applications.prospectus.save', $route), ['request_id' => (string) Str::uuid(), 'expected_version' => 0, ...($this->complete)($name)])
+        ->assertRedirect(route('business.applications.prospectus.show', $route))->assertSessionHasNoErrors();
+    $this->put(route('business.applications.prospectus.save', $route), ['request_id' => (string) Str::uuid(), 'expected_version' => 0, ...($this->complete)($name)])
+        ->assertSessionHasErrors(['purpose' => 'The prospectus changed since you opened it. Reload to see the latest version.']);
+    $this->put(route('business.applications.prospectus.save', $route), ['request_id' => (string) Str::uuid(), 'expected_version' => 1,
+        ...($this->complete)($name), 'largest_customer_share_percent' => 101])
+        ->assertSessionHasErrors(['largest_customer_share_percent' => 'Enter a whole percentage from 0 to 100.']);
+    $this->get(route('business.applications.prospectus.show', $route))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('version', 1)->where('actions.sign.url', route('business.applications.prospectus.sign', $route, false)));
+
+    $this->post(route('business.applications.prospectus.sign', $route), ['request_id' => (string) Str::uuid(), 'expected_version' => 1])
+        ->assertRedirect(route('business.applications.prospectus.show', $route))->assertSessionHasNoErrors();
+    $this->post(route('business.applications.prospectus.sign', $route), ['request_id' => (string) Str::uuid(), 'expected_version' => 2])
+        ->assertSessionHasErrors(['declaration' => 'The prospectus is signed and locked.']);
+    $this->get(route('business.applications.prospectus.show', $route))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('signed.version', 2)->where('actions.save', null)->where('actions.sign', null));
+});
+
+it('falls back to a general refusal for a code the builder has no words for', function (): void {
+    $fixture = ($this->accepted)();
+    $route = ['business' => $fixture['audit']['business'], 'application' => (string) Str::ulid()];
+
+    $this->actingAs($fixture['audit']['authority']['users'][0])
+        ->post(route('business.applications.prospectus.sign', $route), ['request_id' => (string) Str::uuid(), 'expected_version' => 1, 'identity_context_revision' => 1])
+        ->assertSessionHasErrors(['declaration' => 'We could not save the prospectus. Try again.']);
 });

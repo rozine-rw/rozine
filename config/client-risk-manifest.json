@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "19896dc047820000fb6e56f3792ca02de7aeb7d4a3a62955c0b1d39f3d574805",
-    "coverageSetSha256": "14b3f272332ceec92ace915f99ebcadde2a4b89e62ffe63308d3acbede36a359",
+    "sourceManifestSha256": "3ee01f7d264691ea3adbd5a0b11e46363cd461bee9c62b4226113141a1baf15d",
+    "coverageSetSha256": "a06f48eb5cc8e7d9d5f97ee0f68272182b0eebfc608a77a1bc1730a34d004112",
     "thresholds": {
         "critical": {
             "global": {
@@ -436,6 +436,7 @@
         "resources/js/pages/business/note.tsx",
         "resources/js/pages/business/onboarding.tsx",
         "resources/js/pages/business/profile.tsx",
+        "resources/js/pages/business/prospectus.tsx",
         "resources/js/pages/business/publish.tsx",
         "resources/js/pages/business/rating.tsx",
         "resources/js/pages/business/repayments.tsx",

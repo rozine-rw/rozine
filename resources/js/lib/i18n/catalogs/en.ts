@@ -7704,6 +7704,71 @@ const en = {
         "The business's figures no longer reconcile with its statements. The business needs to save them again.",
     'auditor.verify.refused.STATEMENT_TRANSCRIPTION_STALE':
         'The business saved new figures since you opened the file. Reload it and review them.',
+    'business.prospectus.title': 'Listing Builder',
+    'business.prospectus.back': 'Back to Home',
+    'business.prospectus.draft': 'Draft · version {version}',
+    'business.prospectus.signed': 'Signed · version {version}',
+    'business.prospectus.locked':
+        'Signed on {date} and locked. Fingerprint {fingerprint}…',
+    'business.prospectus.unavailable':
+        'We can’t check your prospectus against your approved terms right now ({code}). Your drafts still save.',
+    'business.prospectus.facts.title': 'Your approved terms',
+    'business.prospectus.facts.note':
+        'These come from your accepted offer and verified statements. You can’t edit them here.',
+    'business.prospectus.facts.principal': 'Amount raised',
+    'business.prospectus.facts.fee': 'Platform fee (3%)',
+    'business.prospectus.facts.net': 'To spend on your plan',
+    'business.prospectus.facts.term': 'Term',
+    'business.prospectus.facts.instalment': 'Monthly instalment',
+    'business.prospectus.facts.revenue': 'Verified average monthly revenue',
+    'business.prospectus.checks.title': 'Checks · {passed} of {total} passed',
+    'business.prospectus.checks.passed': 'Passed',
+    'business.prospectus.purpose.title': 'Purpose and use of funds',
+    'business.prospectus.purpose.label': 'What the money is for',
+    'business.prospectus.funds.title': 'Use of funds',
+    'business.prospectus.funds.label': 'Item',
+    'business.prospectus.funds.amount': 'Amount (RWF)',
+    'business.prospectus.funds.quote': 'Quote or invoice (RWF)',
+    'business.prospectus.funds.add': 'Add a line',
+    'business.prospectus.remove': 'Remove',
+    'business.prospectus.forecast.title': 'Forecast',
+    'business.prospectus.forecast.revenue': 'Revenue in {month} (RWF)',
+    'business.prospectus.forecast.costs': 'Costs in {month} (RWF)',
+    'business.prospectus.forecast.contract': 'Signed contract attached',
+    'business.prospectus.forecast.assumptions': 'Assumptions',
+    'business.prospectus.forecast.downside': 'If sales fall short',
+    'business.prospectus.management.title': 'Management',
+    'business.prospectus.management.name': 'Name as registered',
+    'business.prospectus.management.role': 'Role',
+    'business.prospectus.management.text': 'About {name}',
+    'business.prospectus.management.add': 'Add a person',
+    'business.prospectus.management.roles.representative':
+        'Official representative',
+    'business.prospectus.management.roles.director': 'Director',
+    'business.prospectus.management.roles.owner': 'Owner (10% or more)',
+    'business.prospectus.risks.title': 'Risk factors',
+    'business.prospectus.risks.share':
+        'Largest customer’s share of revenue (%)',
+    'business.prospectus.risks.text': 'Risk {number}',
+    'business.prospectus.risks.concentration': 'Customer concentration',
+    'business.prospectus.risks.add': 'Add a risk',
+    'business.prospectus.save': 'Save draft',
+    'business.prospectus.saving': 'Saving…',
+    'business.prospectus.declaration.title': 'Declaration',
+    'business.prospectus.declaration.text':
+        'I confirm this prospectus is true and complete, and that investors may rely on it. Once signed it is locked and published as written.',
+    'business.prospectus.declaration.ready':
+        'Every check passes. The official representative can sign now.',
+    'business.prospectus.declaration.save_first':
+        'Save your changes before signing.',
+    'business.prospectus.declaration.waiting':
+        'Signing opens for the official representative once every check passes.',
+    'business.prospectus.sign': 'Sign and lock',
+    'business.prospectus.signing': 'Signing…',
+    'business.prospectus.facts.months': {
+        one: '{count} month',
+        other: '{count} months',
+    },
 } as const;
 
 export default en;

@@ -8020,6 +8020,72 @@ const fr: Catalog = {
         "Les chiffres de l'entreprise ne concordent plus avec ses relevés. L'entreprise doit les enregistrer de nouveau.",
     'auditor.verify.refused.STATEMENT_TRANSCRIPTION_STALE':
         "L'entreprise a enregistré de nouveaux chiffres depuis l'ouverture du dossier. Rechargez-le et examinez-les.",
+    'business.prospectus.title': 'Créateur d’annonce',
+    'business.prospectus.back': 'Retour à l’accueil',
+    'business.prospectus.draft': 'Brouillon · version {version}',
+    'business.prospectus.signed': 'Signé · version {version}',
+    'business.prospectus.locked':
+        'Signé le {date} et verrouillé. Empreinte {fingerprint}…',
+    'business.prospectus.unavailable':
+        'Nous ne pouvons pas vérifier votre prospectus par rapport à vos conditions approuvées pour le moment ({code}). Vos brouillons restent enregistrés.',
+    'business.prospectus.facts.title': 'Vos conditions approuvées',
+    'business.prospectus.facts.note':
+        'Elles proviennent de votre offre acceptée et de vos relevés vérifiés. Vous ne pouvez pas les modifier ici.',
+    'business.prospectus.facts.principal': 'Montant levé',
+    'business.prospectus.facts.fee': 'Frais de plateforme (3 %)',
+    'business.prospectus.facts.net': 'À dépenser pour votre projet',
+    'business.prospectus.facts.term': 'Durée',
+    'business.prospectus.facts.instalment': 'Mensualité',
+    'business.prospectus.facts.revenue': 'Revenu mensuel moyen vérifié',
+    'business.prospectus.checks.title':
+        'Contrôles · {passed} sur {total} réussis',
+    'business.prospectus.checks.passed': 'Réussi',
+    'business.prospectus.purpose.title': 'Objet et utilisation des fonds',
+    'business.prospectus.purpose.label': 'À quoi servira l’argent',
+    'business.prospectus.funds.title': 'Utilisation des fonds',
+    'business.prospectus.funds.label': 'Poste',
+    'business.prospectus.funds.amount': 'Montant (RWF)',
+    'business.prospectus.funds.quote': 'Devis ou facture (RWF)',
+    'business.prospectus.funds.add': 'Ajouter une ligne',
+    'business.prospectus.remove': 'Retirer',
+    'business.prospectus.forecast.title': 'Prévisions',
+    'business.prospectus.forecast.revenue': 'Revenu en {month} (RWF)',
+    'business.prospectus.forecast.costs': 'Charges en {month} (RWF)',
+    'business.prospectus.forecast.contract': 'Contrat signé joint',
+    'business.prospectus.forecast.assumptions': 'Hypothèses',
+    'business.prospectus.forecast.downside': 'Si les ventes baissent',
+    'business.prospectus.management.title': 'Direction',
+    'business.prospectus.management.name': 'Nom tel qu’enregistré',
+    'business.prospectus.management.role': 'Rôle',
+    'business.prospectus.management.text': 'À propos de {name}',
+    'business.prospectus.management.add': 'Ajouter une personne',
+    'business.prospectus.management.roles.representative':
+        'Représentant officiel',
+    'business.prospectus.management.roles.director': 'Administrateur',
+    'business.prospectus.management.roles.owner': 'Propriétaire (10 % ou plus)',
+    'business.prospectus.risks.title': 'Facteurs de risque',
+    'business.prospectus.risks.share':
+        'Part du plus gros client dans le revenu (%)',
+    'business.prospectus.risks.text': 'Risque {number}',
+    'business.prospectus.risks.concentration': 'Concentration client',
+    'business.prospectus.risks.add': 'Ajouter un risque',
+    'business.prospectus.save': 'Enregistrer le brouillon',
+    'business.prospectus.saving': 'Enregistrement…',
+    'business.prospectus.declaration.title': 'Déclaration',
+    'business.prospectus.declaration.text':
+        'Je confirme que ce prospectus est exact et complet, et que les investisseurs peuvent s’y fier. Une fois signé, il est verrouillé et publié tel quel.',
+    'business.prospectus.declaration.ready':
+        'Tous les contrôles sont réussis. Le représentant officiel peut signer.',
+    'business.prospectus.declaration.save_first':
+        'Enregistrez vos modifications avant de signer.',
+    'business.prospectus.declaration.waiting':
+        'La signature s’ouvre au représentant officiel une fois tous les contrôles réussis.',
+    'business.prospectus.sign': 'Signer et verrouiller',
+    'business.prospectus.signing': 'Signature…',
+    'business.prospectus.facts.months': {
+        one: '{count} mois',
+        other: '{count} mois',
+    },
 };
 
 export default fr;

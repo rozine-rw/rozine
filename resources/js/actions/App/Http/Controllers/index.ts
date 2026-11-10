@@ -63,6 +63,7 @@ import BusinessContactController from './BusinessContactController'
 import BusinessPayoutAccountController from './BusinessPayoutAccountController'
 import BusinessComplaintController from './BusinessComplaintController'
 import BusinessApplicationController from './BusinessApplicationController'
+import BusinessProspectusController from './BusinessProspectusController'
 import IdentityManagementController from './IdentityManagementController'
 import RoleBookmarkController from './RoleBookmarkController'
 import Settings from './Settings'
@@ -138,6 +139,7 @@ const Controllers = {
     BusinessPayoutAccountController: Object.assign(BusinessPayoutAccountController, BusinessPayoutAccountController),
     BusinessComplaintController: Object.assign(BusinessComplaintController, BusinessComplaintController),
     BusinessApplicationController: Object.assign(BusinessApplicationController, BusinessApplicationController),
+    BusinessProspectusController: Object.assign(BusinessProspectusController, BusinessProspectusController),
     IdentityManagementController: Object.assign(IdentityManagementController, IdentityManagementController),
     RoleBookmarkController: Object.assign(RoleBookmarkController, RoleBookmarkController),
     Settings: Object.assign(Settings, Settings),
