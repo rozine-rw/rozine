@@ -677,6 +677,7 @@ export default function InvestorCart({
                             serverTime={serverTime}
                             identityRevision={identity_context_revision}
                             cart={whole}
+                            deals={links.deals}
                         />
                     </div>
                 </div>
