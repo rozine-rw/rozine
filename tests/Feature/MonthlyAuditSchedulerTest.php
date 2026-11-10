@@ -42,6 +42,7 @@ function dueBusinesses(array $businessIds): void
 }
 
 it('dispatches each funded business its monthly audit once, in the report window of the month just ended', function (): void {
+    $this->travelTo(CarbonImmutable::now('Africa/Kigali')->startOfMonth()->addHours(6));
     $fixture = Fixture::ready();
     $business = $fixture['audit']['business'];
     dueBusinesses([$business, 'missing-business']);
