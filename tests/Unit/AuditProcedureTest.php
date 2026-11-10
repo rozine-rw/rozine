@@ -291,7 +291,7 @@ it('records owner drawings and other loans after the count, before the differenc
     $state = procedureBefore('monthly', 'drawings');
     $drawn = $procedure->save('monthly', 'drawings', $state['draft'], 'drawings', ['owner_drawings' => '0'], procedureSources());
     expect($drawn['step'])->toBe('loans')->and($drawn['draft']['fields']['drawings'])->toBe(['owner_drawings' => '0'])
-        ->and($drawn['draft']['sources']['drawings'])->toBe(['verification' => procedureSource('verification'), 'declaration' => procedureSource('declaration')]);
+        ->and($drawn['draft']['sources']['drawings'] ?? null)->toBe(['verification' => procedureSource('verification'), 'declaration' => procedureSource('declaration')]);
 
     $none = $procedure->save('monthly', 'loans', $drawn['draft'], 'loans', ['loans' => []], procedureSources());
     $listed = $procedure->save('monthly', 'loans', $drawn['draft'], 'loans', ['loans' => [
