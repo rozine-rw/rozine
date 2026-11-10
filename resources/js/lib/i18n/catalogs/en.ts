@@ -5420,6 +5420,68 @@ const en = {
     'auditor.audit.amends':
         'This is a linked amendment of report {report}. That report remains unchanged.',
     'auditor.audit.open_original': 'Open the original',
+    'auditor.audit.guide.label': 'How to do this step',
+    'auditor.audit.guide.how_to': 'How to',
+    'auditor.audit.guide.part.do': 'Do',
+    'auditor.audit.guide.part.enter': 'Enter',
+    'auditor.audit.guide.part.upload': 'Upload',
+    'auditor.audit.guide.part.done': 'Done when',
+    'auditor.audit.guide.uploads_rule':
+        'Collect only what proves a figure: statements, invoices, receipts, contracts, loan agreements, certificates, minutes, audit reports, and premises and asset photos. Never collect staff names or personal details (the RSSB total page only, names covered), passwords or PINs, medical records, or anything about your other clients. Uploads are encrypted and seen only by you, the business and Rozine.',
+    'auditor.audit.guide.review.do':
+        'Read the business file before you go on site.',
+    'auditor.audit.guide.review.done':
+        'You have read the file. Continue to check in.',
+    'auditor.audit.guide.review.how':
+        'Open each document in the file and note what you need to see on site. Nothing is recorded in this step.',
+    'auditor.audit.guide.check_in.do':
+        'Check in at the business premises with the capture app.',
+    'auditor.audit.guide.check_in.enter':
+        'Nothing to type. Your position and the time come from your phone.',
+    'auditor.audit.guide.check_in.done':
+        'Your check-in has arrived and shows here.',
+    'auditor.audit.guide.check_in.how':
+        'Stand inside the premises, open the capture app, allow location and check in. A check-in far from the registered premises, or with a weak location, goes to review; carry on.',
+    'auditor.audit.guide.photos.do':
+        'Take every required site photo live in the capture app.',
+    'auditor.audit.guide.photos.upload':
+        'Live photos only. Gallery uploads are refused.',
+    'auditor.audit.guide.photos.done':
+        'Every required photo has arrived and has a title.',
+    'auditor.audit.guide.photos.how':
+        'Photograph the premises and the stock as the list asks. Each photo carries its own time and place. Add more photos only where they prove a figure.',
+    'auditor.audit.guide.ledger.do':
+        'Count the stock and enter the inventory value you counted.',
+    'auditor.audit.guide.ledger.enter':
+        'Inventory value in whole francs, for example 1250000.',
+    'auditor.audit.guide.ledger.upload':
+        'The original ledger as a PDF or CSV, up to 10 MB.',
+    'auditor.audit.guide.ledger.done':
+        'The ledger is attached and the difference from the reported figure is shown.',
+    'auditor.audit.guide.ledger.how':
+        'Count what is on the shelves, add up its value and type the total. Then attach the ledger the business keeps. A scan without text is marked for manual review.',
+    'auditor.audit.guide.statements.do':
+        'Read what the bank, MoMo and POS statements on file report for the month.',
+    'auditor.audit.guide.statements.done':
+        'You have read money in, money out and the net for the month.',
+    'auditor.audit.guide.statements.how':
+        'Open each statement to see where a figure comes from. Nothing is typed here; the figures come from the statements.',
+    'auditor.audit.guide.count.do':
+        'Tick the proof you actually saw, then enter what you observed.',
+    'auditor.audit.guide.count.enter':
+        'Cash on hand and stock value in whole francs, and units counted. For example 450000 and 120.',
+    'auditor.audit.guide.count.done':
+        'Every figure is entered, with at least one financial proof and one inventory proof ticked.',
+    'auditor.audit.guide.count.how':
+        'Count the cash and the stock yourself. Each figure is compared to the statements on file; nothing here comes from the business.',
+    'auditor.audit.guide.seal.do':
+        'Check the result, then seal with your authenticator code.',
+    'auditor.audit.guide.seal.enter':
+        'The six-digit code from your authenticator app.',
+    'auditor.audit.guide.seal.done':
+        'Every earlier step is complete. Seal stays off until then.',
+    'auditor.audit.guide.seal.how':
+        'Read the findings once more. When you seal, the report is fixed under your licence and the business has 24 hours to dispute it.',
     'auditor.receipt.title': 'Conflict recorded',
     'auditor.receipt.body.reassignment_pending':
         'Your conflict has been recorded. Work on this assignment is stopped while Audit Operations arranges reassignment.',

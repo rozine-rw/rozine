@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "19896dc047820000fb6e56f3792ca02de7aeb7d4a3a62955c0b1d39f3d574805",
-    "coverageSetSha256": "14b3f272332ceec92ace915f99ebcadde2a4b89e62ffe63308d3acbede36a359",
+    "sourceManifestSha256": "bd75d0e0bf5b68a497a29f97c3fe44d1b7d4bf9adafd372e71e66e88dc24c6e3",
+    "coverageSetSha256": "e8ba444f4d927572f71705bad674c1d9a5997e84a5e05004ce67650e4fa35352",
     "thresholds": {
         "critical": {
             "global": {
@@ -105,6 +105,7 @@
         "resources/js/components/auditor/audit/step-bar.tsx",
         "resources/js/components/auditor/audit/step-check-in.tsx",
         "resources/js/components/auditor/audit/step-count.tsx",
+        "resources/js/components/auditor/audit/step-guide.tsx",
         "resources/js/components/auditor/audit/step-ledger.tsx",
         "resources/js/components/auditor/audit/step-photos.tsx",
         "resources/js/components/auditor/audit/step-statements.tsx",
@@ -365,6 +366,7 @@
         "resources/js/layouts/auth/auth-split-layout.tsx",
         "resources/js/layouts/public-layout.tsx",
         "resources/js/layouts/settings/layout.tsx",
+        "resources/js/lib/audit-visit-guide.ts",
         "resources/js/lib/i18n/catalogs/en.ts",
         "resources/js/lib/i18n/catalogs/fr.ts",
         "resources/js/lib/i18n/catalogs/rw.ts",

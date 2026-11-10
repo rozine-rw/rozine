@@ -5643,6 +5643,68 @@ const fr: Catalog = {
     'auditor.audit.amends':
         'Ceci est une modification liée du rapport {report}. Ce rapport reste inchangé.',
     'auditor.audit.open_original': "Ouvrir l'original",
+    'auditor.audit.guide.label': 'Comment faire cette étape',
+    'auditor.audit.guide.how_to': 'Comment faire',
+    'auditor.audit.guide.part.do': 'À faire',
+    'auditor.audit.guide.part.enter': 'À saisir',
+    'auditor.audit.guide.part.upload': 'À joindre',
+    'auditor.audit.guide.part.done': 'Terminé quand',
+    'auditor.audit.guide.uploads_rule':
+        'Ne recueillez que ce qui prouve un montant : relevés, factures, reçus, contrats, contrats de prêt, certificats, procès-verbaux, rapports d’audit, et photos des locaux et des actifs. Ne recueillez jamais les noms ou données personnelles du personnel (seule la page de total RSSB, noms masqués), ni mots de passe ou codes PIN, ni dossiers médicaux, ni rien sur vos autres clients. Les fichiers sont chiffrés et visibles uniquement par vous, l’entreprise et Rozine.',
+    'auditor.audit.guide.review.do':
+        'Lisez le dossier de l’entreprise avant d’aller sur place.',
+    'auditor.audit.guide.review.done':
+        'Vous avez lu le dossier. Passez à l’enregistrement sur place.',
+    'auditor.audit.guide.review.how':
+        'Ouvrez chaque document du dossier et notez ce que vous devez voir sur place. Rien n’est enregistré à cette étape.',
+    'auditor.audit.guide.check_in.do':
+        'Enregistrez votre arrivée dans les locaux avec l’application de capture.',
+    'auditor.audit.guide.check_in.enter':
+        'Rien à saisir. Votre position et l’heure viennent de votre téléphone.',
+    'auditor.audit.guide.check_in.done':
+        'Votre arrivée est reçue et s’affiche ici.',
+    'auditor.audit.guide.check_in.how':
+        'Placez-vous dans les locaux, ouvrez l’application de capture, autorisez la localisation et enregistrez-vous. Une arrivée loin des locaux enregistrés, ou avec une localisation faible, part en revue ; continuez.',
+    'auditor.audit.guide.photos.do':
+        'Prenez chaque photo requise en direct dans l’application de capture.',
+    'auditor.audit.guide.photos.upload':
+        'Photos en direct uniquement. Les imports depuis la galerie sont refusés.',
+    'auditor.audit.guide.photos.done':
+        'Chaque photo requise est reçue et porte un titre.',
+    'auditor.audit.guide.photos.how':
+        'Photographiez les locaux et le stock comme la liste le demande. Chaque photo porte sa propre heure et son lieu. N’ajoutez des photos que si elles prouvent un montant.',
+    'auditor.audit.guide.ledger.do':
+        'Comptez le stock et saisissez la valeur d’inventaire comptée.',
+    'auditor.audit.guide.ledger.enter':
+        'Valeur d’inventaire en francs entiers, par exemple 1250000.',
+    'auditor.audit.guide.ledger.upload':
+        'Le registre original en PDF ou CSV, jusqu’à 10 Mo.',
+    'auditor.audit.guide.ledger.done':
+        'Le registre est joint et l’écart avec le montant déclaré s’affiche.',
+    'auditor.audit.guide.ledger.how':
+        'Comptez ce qui est en rayon, calculez sa valeur et saisissez le total. Joignez ensuite le registre tenu par l’entreprise. Un scan sans texte est marqué pour revue manuelle.',
+    'auditor.audit.guide.statements.do':
+        'Lisez ce que les relevés bancaires, MoMo et TPE au dossier indiquent pour le mois.',
+    'auditor.audit.guide.statements.done':
+        'Vous avez lu les entrées, les sorties et le net du mois.',
+    'auditor.audit.guide.statements.how':
+        'Ouvrez chaque relevé pour voir d’où vient un montant. Rien n’est saisi ici ; les montants viennent des relevés.',
+    'auditor.audit.guide.count.do':
+        'Cochez les preuves que vous avez vues, puis saisissez ce que vous avez constaté.',
+    'auditor.audit.guide.count.enter':
+        'Espèces en caisse et valeur du stock en francs entiers, et unités comptées. Par exemple 450000 et 120.',
+    'auditor.audit.guide.count.done':
+        'Chaque montant est saisi, avec au moins une preuve financière et une preuve d’inventaire cochées.',
+    'auditor.audit.guide.count.how':
+        'Comptez vous-même les espèces et le stock. Chaque montant est comparé aux relevés au dossier ; rien ici ne vient de l’entreprise.',
+    'auditor.audit.guide.seal.do':
+        'Vérifiez le résultat, puis scellez avec votre code d’authentification.',
+    'auditor.audit.guide.seal.enter':
+        'Le code à six chiffres de votre application d’authentification.',
+    'auditor.audit.guide.seal.done':
+        'Toutes les étapes précédentes sont terminées. Le scellement reste désactivé jusque-là.',
+    'auditor.audit.guide.seal.how':
+        'Relisez les constats. Une fois scellé, le rapport est figé sous votre licence et l’entreprise a 24 heures pour le contester.',
     'auditor.receipt.title': 'Conflit enregistré',
     'auditor.receipt.body.reassignment_pending':
         "Votre conflit a été enregistré. Le travail sur cette mission est arrêté pendant que les Opérations d'audit organisent la réattribution.",

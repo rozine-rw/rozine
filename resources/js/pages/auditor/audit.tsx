@@ -10,6 +10,7 @@ import { SealedStatus } from '@/components/auditor/audit/sealed-status';
 import { StepBar } from '@/components/auditor/audit/step-bar';
 import { StepCheckIn } from '@/components/auditor/audit/step-check-in';
 import { StepCount } from '@/components/auditor/audit/step-count';
+import { StepGuide } from '@/components/auditor/audit/step-guide';
 import { StepLedger } from '@/components/auditor/audit/step-ledger';
 import { StepPhotos } from '@/components/auditor/audit/step-photos';
 import { StepStatements } from '@/components/auditor/audit/step-statements';
@@ -370,6 +371,7 @@ function AuditSheet(props: AuditProcedureProps) {
                     </Link>
                 </p>
             )}
+            {!terminal && !blocked && <StepGuide step={stage.step} />}
             <StageBody
                 props={props}
                 stage={stage}
