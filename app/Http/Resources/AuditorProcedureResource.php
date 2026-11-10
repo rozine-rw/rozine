@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Domain\Auditor\AuditProcedure;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -58,7 +57,7 @@ class AuditorProcedureResource extends JsonResource
                     : ['report_id' => $report['amends_id'], 'link' => AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['amends_id']])]],
             'assignment' => ['id' => $report['assignment_id'], 'revision' => $job['revision']],
             'steps' => $page['steps'], 'stage' => $page['sealed'] === null || $report['step'] !== 'seal'
-                ? $this->stage($report, $page['sources'], $file['file'], $prefix, $page['variance'], $page['seal'], $reasonOptions, $upload, $page['mfa_confirmed'])
+                ? $this->stage($report, $page['sources'], $file['file'], $prefix, $page['variance'], $page['differences'], $page['seal'], $reasonOptions, $upload, $page['mfa_confirmed'])
                 : [...array_diff_key($page['sealed'], ['sources' => true]), 'step' => 'sealed', 'verification' => AuditorJobsResource::link($request->routeIs('api.*') ? 'api.v1.audit.seals.verify' : 'audit.seals.verify', ['report' => $report['id']]), 'amended_by' => $report['amendment_id'] === null ? null
                     : ['report_id' => $report['amendment_id'], 'link' => AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['amendment_id']])]],
             'can_continue' => $page['can_continue'], 'hint' => $report['status'] === 'draft' ? $this->hint($page['unavailable']) : null,
@@ -82,12 +81,13 @@ class AuditorProcedureResource extends JsonResource
      * @param  array<string, mixed>  $sources
      * @param  array<string, mixed>  $file
      * @param  array<string, mixed>  $variance
+     * @param  array{amount: string|null, causes: list<string>}  $differences
      * @param  array<string, mixed>|null  $seal
      * @param  array<string, mixed>|null  $reasonOptions
      * @param  array{url: string, method: string}|null  $upload
      * @return array<string, mixed>
      */
-    private function stage(array $report, array $sources, array $file, string $prefix, array $variance, ?array $seal, ?array $reasonOptions, ?array $upload, bool $mfaConfirmed): array
+    private function stage(array $report, array $sources, array $file, string $prefix, array $variance, array $differences, ?array $seal, ?array $reasonOptions, ?array $upload, bool $mfaConfirmed): array
     {
         if (in_array($report['status'], ['changes_requested', 'rejected'], true)) {
             $decision = $report['draft']['decision'];
@@ -121,8 +121,8 @@ class AuditorProcedureResource extends JsonResource
                 'operational_status' => $fields['operational_status'] ?? null],
             'differences' => ['step' => 'differences', 'reported' => AuditorJobsResource::money($sources['reported_cash']),
                 'observed' => AuditorJobsResource::money($report['draft']['fields']['count']['cash'] ?? null),
-                'difference' => AuditorJobsResource::money((new AuditProcedure)->cashDifference($report['draft'], $sources)),
-                'causes' => AuditProcedure::DIFFERENCE_CAUSES, 'explanations' => array_map(fn (array $explanation): array => [
+                'difference' => AuditorJobsResource::money($differences['amount']),
+                'causes' => $differences['causes'], 'explanations' => array_map(fn (array $explanation): array => [
                     'cause' => $explanation['cause'], 'amount' => $explanation['amount']], $fields['explanations'] ?? [])],
             'seal' => $this->seal($report, $sources, $seal ?? throw new \LogicException('A persisted report preview is required.'), $reasonOptions, $mfaConfirmed),
             default => ['step' => 'statements', 'statements' => $this->statements($report, $sources, $prefix)],

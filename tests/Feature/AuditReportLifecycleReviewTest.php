@@ -129,7 +129,7 @@ it('counts the reason limit in characters and keeps unfinished step states when 
         ->and($report->draft['completed_steps'])->toBe([])->and(mb_strlen($report->draft['decision']['explanation']))->toBe(2000);
     $this->actingAs($actor);
     $steps = $this->get(route('auditor.reports.show', ['report' => $id]))->assertOk()->viewData('page')['props']['steps'];
-    expect(array_column($steps, 'state'))->toBe(['current', 'todo', 'todo', 'todo']);
+    expect(array_column($steps, 'state'))->toBe(['current', 'todo', 'todo', 'todo', 'todo']);
 });
 
 it('refuses at the database an amendment whose kind differs from its terminal parent', function (): void {
