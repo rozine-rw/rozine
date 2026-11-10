@@ -39,6 +39,7 @@ class StaffActivityResource extends JsonResource
         'application.create' => ['Started an application', 'blue'], 'application.save' => ['Saved an application', 'grey'],
         'application.evaluate' => ['Priced an application', 'blue'], 'application.submit' => ['Submitted an application', 'blue'],
         'application.release' => ['Released an application', 'green'], 'application.publish' => ['Published a note', 'green'],
+        'prospectus.save' => ['Saved a prospectus draft', 'grey'], 'prospectus.sign' => ['Signed a prospectus', 'green'],
         'campaign.cancel' => ['Cancelled a campaign', 'amber'], 'primary.reserve' => ['Reserved notes', 'blue'],
         'primary.confirm' => ['Confirmed a purchase', 'green'], 'primary.release' => ['Released a reservation', 'grey'],
         'primary.refund' => ['Refunded a reservation', 'amber'], 'wallet.deposit' => ['Started a deposit', 'blue'],
