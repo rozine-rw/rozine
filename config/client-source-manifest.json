@@ -773,6 +773,7 @@
         "resources/js/pages/business/profile.tsx",
         "resources/js/pages/business/publish.tsx",
         "resources/js/pages/business/rating.tsx",
+        "resources/js/pages/business/readiness.tsx",
         "resources/js/pages/business/repayments.tsx",
         "resources/js/pages/business/reports.tsx",
         "resources/js/pages/business/statement-transcription.tsx",
@@ -802,10 +803,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 774,
+        "totalTrackedSources": 775,
         "generated": 337,
         "declarationOnly": 20,
-        "authoredExecutable": 417
+        "authoredExecutable": 418
     },
-    "coverageSetSha256": "14b3f272332ceec92ace915f99ebcadde2a4b89e62ffe63308d3acbede36a359"
+    "coverageSetSha256": "c9a28264321e499ce572cdb3c699ec0108b5381c54f8a8f559dc2962e7259917"
 }

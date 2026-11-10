@@ -1,0 +1,111 @@
+{
+    "component": "business/readiness",
+    "props": {
+        "readiness": {
+            "stage": 2,
+            "status": "building",
+            "vmr": {
+                "currency": "RWF",
+                "amount": "31666666"
+            },
+            "reports": 7,
+            "reports_needed": 0,
+            "window": 3,
+            "pending": {
+                "direction": "up",
+                "stage": 3,
+                "months": 2
+            },
+            "next": {
+                "stage": 3,
+                "threshold": {
+                    "currency": "RWF",
+                    "amount": "30000000"
+                },
+                "gap": {
+                    "currency": "RWF",
+                    "amount": "0"
+                }
+            },
+            "thresholds": [
+                {
+                    "stage": 1,
+                    "from": {
+                        "currency": "RWF",
+                        "amount": "2500000"
+                    }
+                },
+                {
+                    "stage": 2,
+                    "from": {
+                        "currency": "RWF",
+                        "amount": "10000000"
+                    }
+                },
+                {
+                    "stage": 3,
+                    "from": {
+                        "currency": "RWF",
+                        "amount": "30000000"
+                    }
+                },
+                {
+                    "stage": 4,
+                    "from": {
+                        "currency": "RWF",
+                        "amount": "80000000"
+                    }
+                }
+            ],
+            "months": [
+                {
+                    "period": "2026-09",
+                    "revenue": {
+                        "currency": "RWF",
+                        "amount": "36000000"
+                    }
+                },
+                {
+                    "period": "2026-08",
+                    "revenue": {
+                        "currency": "RWF",
+                        "amount": "34000000"
+                    }
+                },
+                {
+                    "period": "2026-07",
+                    "revenue": {
+                        "currency": "RWF",
+                        "amount": "25000000"
+                    }
+                }
+            ]
+        },
+        "links": {
+            "home": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/business-reports",
+                "method": "get"
+            },
+            "readiness": {
+                "url": "/preview/business-readiness",
+                "method": "get"
+            },
+            "market": {
+                "url": "/preview/business-market",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/business-profile",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        }
+    }
+}

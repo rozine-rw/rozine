@@ -224,6 +224,7 @@ Route::get('business/{business}', [BusinessHomeController::class, 'show'])->midd
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('business')->name('business.')->group(function (): void {
     Route::get('{business}/reports', [BusinessHomeController::class, 'reports'])->whereUlid('business')->name('reports');
+    Route::get('{business}/readiness', [BusinessHomeController::class, 'readiness'])->whereUlid('business')->name('readiness');
     Route::get('{business}/market', [BusinessHomeController::class, 'market'])->whereUlid('business')->name('market');
     Route::get('{business}/profile/{section?}', [BusinessHomeController::class, 'profile'])->whereUlid('business')
         ->whereIn('section', GetBusinessProfile::SECTIONS)->name('profile');

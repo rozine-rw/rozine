@@ -222,6 +222,7 @@
         "resources/js/pages/business/profile.tsx",
         "resources/js/pages/business/publish.tsx",
         "resources/js/pages/business/rating.tsx",
+        "resources/js/pages/business/readiness.tsx",
         "resources/js/pages/business/repayments.tsx",
         "resources/js/pages/business/reports.tsx",
         "resources/js/pages/business/statement-transcription.tsx",

@@ -277,6 +277,7 @@ export type BusinessApplications = {
 export type BusinessAppLinks = {
     home: RouteLink;
     reports: RouteLink;
+    readiness: RouteLink;
     market: RouteLink;
     profile: RouteLink;
     launcher: RouteLink;
@@ -290,6 +291,7 @@ export type BusinessShellLinks = {
     home: RouteLink;
     launcher: RouteLink;
     reports: RouteLink | null;
+    readiness: RouteLink | null;
     market: RouteLink | null;
     profile: RouteLink | null;
 };
@@ -299,6 +301,41 @@ export type BusinessShellLinks = {
  * secondary-market read yet, so the page carries its links only and measures nothing.
  */
 export type BusinessMarketProps = {
+    links: BusinessAppLinks;
+};
+
+/** A readiness stage: 1 Foundation, 2 Growth, 3 Scale, 4 Market; 0 is below Foundation. */
+export type ReadinessStageNumber = 0 | 1 | 2 | 3 | 4;
+
+/**
+ * Readiness (BRS v3.0 Section 20): the stage the business's verified monthly revenue (VMR, the
+ * average of its last 3 published monthly reports) has settled in, and its status line. The stage
+ * is null until 3 reports are published. It moves only after 3 readings in a row point to another
+ * stage; `pending` says how many already do. Ready is not measured yet, so the status is always
+ * `building`. Readiness is shown only to the business.
+ */
+export type BusinessReadiness = {
+    stage: ReadinessStageNumber | null;
+    status: 'building' | 'ready';
+    vmr: Money | null;
+    reports: number;
+    reports_needed: number;
+    /** Readings in a row, each a 3-report average, that move the stage. */
+    window: number;
+    /** The newest readings point to `stage`; `months` of them in a row so far. */
+    pending: {
+        direction: 'up' | 'down';
+        stage: ReadinessStageNumber;
+        months: number;
+    } | null;
+    next: { stage: ReadinessStageNumber; threshold: Money; gap: Money } | null;
+    thresholds: { stage: ReadinessStageNumber; from: Money }[];
+    /** The published reports the VMR averages, newest first; `period` is `YYYY-MM`. */
+    months: { period: string; revenue: Money }[];
+};
+
+export type BusinessReadinessProps = {
+    readiness: BusinessReadiness;
     links: BusinessAppLinks;
 };
 

@@ -283,8 +283,47 @@ const en = {
         "You're offline. What you see may be out of date, and nothing can be sent until you're back online.",
     'business.nav.home': 'Home',
     'business.nav.reports': 'Reports',
+    'business.nav.readiness': 'Readiness',
     'business.nav.market': 'Market',
     'business.nav.profile': 'Profile',
+    'business.readiness.title': 'Readiness',
+    'business.readiness.subtitle':
+        'How your business grows toward the capital market, in step with its size. Only you see this page.',
+    'business.readiness.stage.0': 'Below Foundation',
+    'business.readiness.stage.1': 'Stage 1 · Foundation',
+    'business.readiness.stage.2': 'Stage 2 · Growth',
+    'business.readiness.stage.3': 'Stage 3 · Scale',
+    'business.readiness.stage.4': 'Stage 4 · Market',
+    'business.readiness.stage_pending': 'Stage not set yet',
+    'business.readiness.status.building': 'Building',
+    'business.readiness.status.ready': 'Ready',
+    'business.readiness.vmr': 'Verified monthly revenue',
+    'business.readiness.vmr_basis':
+        'The average of your last 3 published monthly reports.',
+    'business.readiness.reports_needed': {
+        one: 'Your stage is set once 3 monthly reports are published. {count} more to go.',
+        other: 'Your stage is set once 3 monthly reports are published. {count} more to go.',
+    },
+    'business.readiness.pending.up': {
+        one: '{count} reading so far points to {stage}. The stage moves up after {needed} readings in a row, with 2 of the last 3 months there too.',
+        other: '{count} readings in a row point to {stage}. The stage moves up after {needed} readings in a row, with 2 of the last 3 months there too.',
+    },
+    'business.readiness.pending.down': {
+        one: '{count} reading so far points to {stage}. The stage moves down only after {needed} readings in a row, with 2 of the last 3 months there too.',
+        other: '{count} readings in a row point to {stage}. The stage moves down only after {needed} readings in a row, with 2 of the last 3 months there too.',
+    },
+    'business.readiness.next':
+        '{stage} starts at {threshold} a month: {gap} to go.',
+    'business.readiness.next_reached':
+        '{stage} starts at {threshold} a month. Your average is there: hold it for {needed} readings in a row.',
+    'business.readiness.top': 'You are in the top stage.',
+    'business.readiness.ready_rule':
+        'Ready comes when every requirement due is met, your three signals stay on target for 3 reports in a row, and you pass your stage’s core Academy modules.',
+    'business.readiness.stages': 'The four stages',
+    'business.readiness.stage_from': 'From {amount} a month',
+    'business.readiness.current': 'Current',
+    'business.readiness.months': 'Months counted',
+    'business.readiness.months_empty': 'No monthly report is published yet.',
     'business.market.title': 'Market Overview',
     'business.market.subtitle':
         'How your notes are performing on the secondary market.',
