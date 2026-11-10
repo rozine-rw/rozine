@@ -39,8 +39,10 @@ function retainedRefundRaise(): array
             ...array_fill_keys(['eligibility', 'policy', 'connections', 'destination'], ['status' => 'passed', 'evidence' => ['synthetic' => 'Isolated refund command race.']])]];
 }
 
-it('requires a caller transaction before attempting a commitment refund', function (): void {
+it('requires a caller transaction before attempting a commitment refund or withdrawal', function (): void {
     expect(fn () => app(PrimaryReservations::class)->refund('campaign', 'reservation', 'party', 2))
+        ->toThrow(CommandRejection::class, 'PRIMARY_TRANSACTION_REQUIRED')
+        ->and(fn () => app(PrimaryReservations::class)->withdraw('campaign', 'reservation', 'party', 2))
         ->toThrow(CommandRejection::class, 'PRIMARY_TRANSACTION_REQUIRED');
 });
 

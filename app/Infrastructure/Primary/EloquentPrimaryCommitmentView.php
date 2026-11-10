@@ -9,11 +9,14 @@ use App\Application\Identity\GetIdentityContext;
 use App\Application\Operations\Contracts\OperationRecords;
 use App\Application\Primary\Contracts\CampaignDisbursementProgress;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
+use App\Application\Primary\Contracts\CampaignReservationSummary;
 use App\Application\Primary\Contracts\InvestorHoldings;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryCommitmentView;
 use App\Application\Primary\Contracts\PrimaryPurchaseIndex;
 use App\Domain\Operations\CommandRejection;
+use App\Models\BusinessCampaign;
+use Brick\Math\BigDecimal;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -25,7 +28,8 @@ use RuntimeException;
  * payout in flight, until the Holding issued from it makes it `issued`. When the campaign expired
  * or failed its closing, the closure's refund makes it `expired` or `failed_closing`, with the
  * wallet's receipt for that refund (`cancelled` by the Business if a cancellation ever returned
- * one). A closure that returned nothing to this purchase leaves it refused.
+ * one). A closure that returned nothing to this purchase leaves it refused. While the raise is open
+ * and below 100%, a `confirmed` commitment lists `primary.cancel`: its Investor may withdraw it (INV-R03).
  *
  * @phpstan-import-type OperationRecord from OperationRecords
  */
@@ -33,7 +37,7 @@ final readonly class EloquentPrimaryCommitmentView implements PrimaryCommitmentV
 {
     public function __construct(private PrimaryPurchaseIndex $index, private PrimaryCheckout $checkout, private PrimaryCampaignSource $campaigns,
         private CampaignFundingEvidence $fundings, private OperationRecords $operations, private GetIdentityContext $identity, private InvestorHoldings $holdings,
-        private CampaignDisbursementProgress $disbursements) {}
+        private CampaignDisbursementProgress $disbursements, private CampaignReservationSummary $summary) {}
 
     public function show(int $userId, ?int $contextRevision, string $commitmentId): array
     {
@@ -87,7 +91,20 @@ final readonly class EloquentPrimaryCommitmentView implements PrimaryCommitmentV
                 $facts['terms']['policy_version'], $facts['terms']['disclosure_version']),
             'refund' => $refund === null ? $returned : $this->receipt($refund, $refund['operation_id'], 'RZF-', $refund['recorded_at'],
                 ['currency' => 'RWF', 'amount' => $facts['principal']['amount']], $units, (string) $refund['result']['policy_version'], null),
-            'holding' => $holding === null ? null : ['id' => $holding['id']], 'allowed_actions' => []]];
+            'holding' => $holding === null ? null : ['id' => $holding['id']],
+            'allowed_actions' => $state === 'confirmed' && $campaign['closure'] === null && $this->raising($facts['campaign_id']) ? ['primary.cancel'] : []]];
+    }
+
+    /**
+     * Whether the raise is still below 100% and open, so a commitment in it may be withdrawn
+     * (INV-R03). The withdrawal command decides again under its locks; this only offers it.
+     */
+    private function raising(string $campaignId): bool
+    {
+        $campaign = BusinessCampaign::query()->whereKey($campaignId)->firstOrFail();
+        $committed = $this->summary->read($campaignId, now('UTC')->toDateTimeImmutable())['committed_principal'];
+
+        return now()->lt($campaign->expires_at) && BigDecimal::of($committed)->isLessThan($campaign->principal);
     }
 
     /**

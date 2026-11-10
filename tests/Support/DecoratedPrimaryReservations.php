@@ -81,6 +81,11 @@ final readonly class DecoratedPrimaryReservations implements PrimaryReservations
         return $this->live->refund($campaignId, $reservationId, $partyId, $expectedRevision);
     }
 
+    public function withdraw(string $campaignId, string $reservationId, string $partyId, int $expectedRevision): ReservationRefund
+    {
+        return $this->live->withdraw($campaignId, $reservationId, $partyId, $expectedRevision);
+    }
+
     public function expireDue(int $limit): int
     {
         return $this->live->expireDue($limit);

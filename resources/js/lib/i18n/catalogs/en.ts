@@ -5660,6 +5660,8 @@ const en = {
         "Investors have already committed to this raise, so it can't be cancelled here. Their commitments have to be settled first.",
     'settlement.refusal.CAMPAIGN_FUNDED':
         "This raise is funded and awaiting disbursement, so it can't be cancelled.",
+    'settlement.refusal.COMMITMENT_WITHDRAWN':
+        "You've already withdrawn this commitment. Its amount is back in Available.",
     'settlement.refusal.NOTE_INELIGIBLE': "This note isn't eligible right now.",
     'settlement.refusal.DISCLOSURE_STALE':
         'The disclosure changed. Read the current version and acknowledge it again.',
@@ -6469,11 +6471,11 @@ const en = {
         "Due dates are set when the notes are issued: the first falls one month after the payout's effective date.",
     'investor.primary.commitment_title': 'Commitment',
     'investor.primary.back_to_portfolio': 'Back to portfolio',
-    'investor.primary.cancel': 'Cancel commitment',
-    'investor.primary.cancel_title': 'Cancel this commitment?',
+    'investor.primary.cancel': 'Withdraw commitment',
+    'investor.primary.cancel_title': 'Withdraw this commitment?',
     'investor.primary.cancel_body':
-        "Your principal goes back to Available in full, with no fee. You'll no longer hold these notes.",
-    'investor.primary.cancel_confirm': 'Yes, cancel and refund',
+        'Your full amount goes back to Available at once, with no fee. You can withdraw until the raise reaches 100%.',
+    'investor.primary.cancel_confirm': 'Yes, withdraw and refund',
     'investor.primary.cancel_keep': 'Keep it',
     'investor.holding.issue.title': 'Issue record',
     'investor.holding.issue.issued_at': 'Issued',
