@@ -34,6 +34,10 @@
                 "state": "todo"
             },
             {
+                "key": "differences",
+                "state": "todo"
+            },
+            {
                 "key": "photos",
                 "state": "todo"
             },

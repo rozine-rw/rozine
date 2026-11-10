@@ -3478,10 +3478,12 @@ const fr: Catalog = {
     'auditor.audit.step.seal': 'Sceau',
     'auditor.audit.step.statements': 'Relevés',
     'auditor.audit.step.count': 'Comptage',
+    'auditor.audit.step.differences': 'Écarts',
     'auditor.audit.continue': 'Continuer',
     'auditor.audit.to_seal': 'Examiner et sceller',
     'auditor.audit.start_count': 'Commencer le comptage',
     'auditor.audit.to_photos': 'Continuer vers les photos',
+    'auditor.audit.explain_differences': 'Expliquer l’écart',
     'auditor.audit.back': 'Retour',
     'auditor.audit.back_to_jobs': 'Retour aux missions',
     'auditor.audit.offline':
@@ -5697,6 +5699,36 @@ const fr: Catalog = {
         'Chaque montant est saisi, avec au moins une preuve financière et une preuve d’inventaire cochées.',
     'auditor.audit.guide.count.how':
         'Comptez vous-même les espèces et le stock. Chaque montant est comparé aux relevés au dossier ; rien ici ne vient de l’entreprise.',
+    'auditor.audit.guide.differences.do':
+        'Attribuez un montant à chaque cause de l’écart d’espèces jusqu’à ce qu’il ne reste rien à expliquer.',
+    'auditor.audit.guide.differences.enter':
+        'Des francs entiers par cause. Par exemple 20000 pour des dépenses personnelles et 6000 pour une erreur de saisie.',
+    'auditor.audit.guide.differences.done':
+        'Les montants égalent l’écart entier, au franc près. Un mois sans écart n’a rien à expliquer.',
+    'auditor.audit.guide.differences.how':
+        'Interrogez le propriétaire sur chaque écart et vérifiez-le dans le registre ou les reçus. Utilisez seulement les causes listées ; les montants sont scellés avec le constat sur les espèces.',
+    'auditor.differences.title': 'Expliquer l’écart',
+    'auditor.differences.lead':
+        'Répartissez l’écart entre les espèces comptées et les relevés selon ses causes, au franc près.',
+    'auditor.differences.lead_none':
+        'Les espèces comptées correspondent aux relevés : il n’y a rien à expliquer. Continuez vers les photos.',
+    'auditor.differences.reported': 'Relevés',
+    'auditor.differences.observed': 'Compté',
+    'auditor.differences.difference': 'Écart',
+    'auditor.differences.unavailable': 'Indisponible',
+    'auditor.differences.causes': 'Causes',
+    'auditor.differences.amount': 'Montant pour {cause}',
+    'auditor.differences.balanced': 'L’écart entier est expliqué.',
+    'auditor.differences.left': 'Reste {amount} à expliquer.',
+    'auditor.differences.over':
+        '{amount} de plus que l’écart. Réduisez un montant.',
+    'auditor.differences.cause.unrecorded_sales': 'Ventes non enregistrées',
+    'auditor.differences.cause.unproven_expense': 'Dépense sans justificatif',
+    'auditor.differences.cause.personal_spending':
+        'Dépenses personnelles sur l’entreprise',
+    'auditor.differences.cause.wrong_month': 'Enregistré dans le mauvais mois',
+    'auditor.differences.cause.entry_error': 'Erreur de saisie',
+    'auditor.differences.cause.counted_twice': 'Compté deux fois',
     'auditor.audit.guide.seal.do':
         'Vérifiez le résultat, puis scellez avec votre code d’authentification.',
     'auditor.audit.guide.seal.enter':

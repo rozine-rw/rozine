@@ -7,6 +7,7 @@ namespace App\Domain\Auditor;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Underwriting\ExactFinancialValue;
 use App\Domain\Underwriting\UnderwritingViolation;
+use Brick\Math\BigDecimal;
 
 /**
  * The procedure records observations and source pins, never a credit verdict. Source facts are
@@ -18,12 +19,15 @@ use App\Domain\Underwriting\UnderwritingViolation;
  */
 final class AuditProcedure
 {
+    /** The cause codes a monthly difference is explained by (BRS v3 VIS-R01 step 9), in their listed order. */
+    public const array DIFFERENCE_CAUSES = ['unrecorded_sales', 'unproven_expense', 'personal_spending', 'wrong_month', 'entry_error', 'counted_twice'];
+
     /** @return list<string> */
     public function steps(string $kind): array
     {
         return match ($kind) {
             'flash' => ['review', 'check_in', 'photos', 'ledger', 'seal'],
-            'monthly' => ['statements', 'count', 'photos', 'seal'],
+            'monthly' => ['statements', 'count', 'differences', 'photos', 'seal'],
             default => throw new CommandRejection('AUDIT_PROCEDURE_INVALID', 422),
         };
     }
@@ -65,7 +69,7 @@ final class AuditProcedure
             }
             $this->pins($step, $sources);
             if (($step === 'ledger' && $sources['reported_stock'] === null)
-                || ($step === 'count' && ($sources['reported_cash'] === null || $sources['reported_units'] === null))) {
+                || (in_array($step, ['count', 'differences'], true) && ($sources['reported_cash'] === null || $sources['reported_units'] === null))) {
                 return 'AUDIT_DECLARATION_REQUIRED';
             }
             if ($step === 'count' && ($sources['financial_proofs'] === [] || $sources['inventory_proofs'] === [])) {
@@ -102,7 +106,7 @@ final class AuditProcedure
                 throw new CommandRejection('AUDIT_PROCEDURE_SOURCE_CHANGED', 409, fieldErrors: ['step' => ['Review the changed source before continuing.']], data: ['step' => $previous]);
             }
         }
-        $fields = $this->fields($step, $input, $sources);
+        $fields = $this->fields($step, $input, $sources, $draft);
         $pins = $this->pins($step, $sources);
         $completed = $step === 'seal' ? $preceding : [...$preceding, $step];
         $retained = array_fill_keys($completed, true);
@@ -124,16 +128,35 @@ final class AuditProcedure
     }
 
     /**
+     * The cash difference the monthly count left to explain: what the CPA counted against what the
+     * statements report, as a non-negative whole-franc amount; null before both are known.
+     *
+     * @param  Draft  $draft
+     * @param  Sources  $sources
+     */
+    public function cashDifference(array $draft, array $sources): ?string
+    {
+        $observed = $draft['fields']['count']['cash'] ?? null;
+        if (! is_string($observed) || $sources['reported_cash'] === null) {
+            return null;
+        }
+
+        return (string) ExactFinancialValue::amount($observed)->minus(ExactFinancialValue::amount($sources['reported_cash']))->abs();
+    }
+
+    /**
      * @param  array<string, mixed>  $input
      * @param  Sources  $sources
+     * @param  Draft  $draft
      * @return array<string, mixed>
      */
-    private function fields(string $step, array $input, array $sources): array
+    private function fields(string $step, array $input, array $sources, array $draft): array
     {
         $required = match ($step) {
             'ledger' => ['observed_stock', 'reconciled'],
             'count' => ['financial_proofs', 'inventory_proofs', 'cash', 'stock_units', 'operational_status'],
             'photos' => ['titles'],
+            'differences' => ['explanations'],
             'seal' => ['note'],
             default => [],
         };
@@ -168,6 +191,10 @@ final class AuditProcedure
                 'financial_proofs' => $this->proofs($input['financial_proofs'], $sources['financial_proofs'], 'financial_proofs'),
                 'inventory_proofs' => $this->proofs($input['inventory_proofs'], $sources['inventory_proofs'], 'inventory_proofs')];
         }
+        if ($step === 'differences') {
+            return ['explanations' => $this->explanations($input['explanations'], $this->cashDifference($draft, $sources)
+                ?? throw new CommandRejection('AUDIT_DECLARATION_REQUIRED', 409))];
+        }
         if ($step === 'photos') {
             if (! is_array($input['titles']) || array_diff(array_keys($input['titles']), $sources['extra_photos']) !== []) {
                 throw new CommandRejection('AUDIT_STEP_INPUT_INVALID', 422, fieldErrors: ['titles' => ['Use the received extra-photo identifiers.']]);
@@ -197,7 +224,7 @@ final class AuditProcedure
             'check_in' => ['check_in'],
             'photos' => ['photos'],
             'statements' => ['verification'],
-            'ledger', 'count' => ['verification', 'declaration'],
+            'ledger', 'count', 'differences' => ['verification', 'declaration'],
             default => [],
         };
         $pins = [];
@@ -214,6 +241,48 @@ final class AuditProcedure
         }
 
         return $step === 'ledger' ? [...$pins, ...$sources['ledger_sources'] ?? []] : $pins;
+    }
+
+    /**
+     * Every franc of the difference is explained, once per cause, by positive whole amounts that
+     * add up to it exactly (BRS v3 VIS-R01: "explained differences must equal the total difference
+     * to the franc"). A month with no difference records none.
+     *
+     * @return list<array{cause: string, amount: string}>
+     */
+    private function explanations(mixed $values, string $difference): array
+    {
+        if (! is_array($values) || ! array_is_list($values) || count($values) > count(self::DIFFERENCE_CAUSES)) {
+            throw new CommandRejection('AUDIT_STEP_INPUT_INVALID', 422, fieldErrors: ['explanations' => ['List each cause once with its amount.']]);
+        }
+        $explanations = [];
+        $total = BigDecimal::zero();
+        foreach ($values as $value) {
+            $keys = is_array($value) ? array_keys($value) : [];
+            sort($keys);
+            $cause = is_array($value) ? ($value['cause'] ?? null) : null;
+            $given = is_array($value) ? ($value['amount'] ?? null) : null;
+            if ($keys !== ['amount', 'cause'] || ! is_string($cause) || ! in_array($cause, self::DIFFERENCE_CAUSES, true) || isset($explanations[$cause])) {
+                throw new CommandRejection('AUDIT_STEP_INPUT_INVALID', 422, fieldErrors: ['explanations' => ['List each cause once with its amount.']]);
+            }
+            $amount = $this->amount($given, 'explanations');
+            if (BigDecimal::of($amount)->isZero()) {
+                throw new CommandRejection('AUDIT_STEP_INPUT_INVALID', 422, fieldErrors: ['explanations' => ['Give each cause an amount above zero.']]);
+            }
+            $explanations[$cause] = $amount;
+            $total = $total->plus(BigDecimal::of($amount));
+        }
+        if (! $total->isEqualTo(BigDecimal::of($difference))) {
+            throw new CommandRejection('AUDIT_DIFFERENCE_UNEXPLAINED', 422, fieldErrors: ['explanations' => ['Explain the whole difference of RWF '.$difference.', to the franc.']]);
+        }
+        $ordered = [];
+        foreach (self::DIFFERENCE_CAUSES as $cause) {
+            if (isset($explanations[$cause])) {
+                $ordered[] = ['cause' => $cause, 'amount' => $explanations[$cause]];
+            }
+        }
+
+        return $ordered;
     }
 
     private function amount(mixed $value, string $field): string

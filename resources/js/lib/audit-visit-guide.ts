@@ -57,6 +57,12 @@ export const VISIT_GUIDE: Record<
         done: 'auditor.audit.guide.count.done',
         how: 'auditor.audit.guide.count.how',
     },
+    differences: {
+        do: 'auditor.audit.guide.differences.do',
+        enter: 'auditor.audit.guide.differences.enter',
+        done: 'auditor.audit.guide.differences.done',
+        how: 'auditor.audit.guide.differences.how',
+    },
     seal: {
         do: 'auditor.audit.guide.seal.do',
         enter: 'auditor.audit.guide.seal.enter',

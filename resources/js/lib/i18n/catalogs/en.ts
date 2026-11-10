@@ -3318,10 +3318,12 @@ const en = {
     'auditor.audit.step.seal': 'Seal',
     'auditor.audit.step.statements': 'Statements',
     'auditor.audit.step.count': 'Count & cash',
+    'auditor.audit.step.differences': 'Differences',
     'auditor.audit.continue': 'Continue',
     'auditor.audit.to_seal': 'Review & seal',
     'auditor.audit.start_count': 'Start the count',
     'auditor.audit.to_photos': 'Continue to photos',
+    'auditor.audit.explain_differences': 'Explain the difference',
     'auditor.audit.back': 'Back',
     'auditor.audit.back_to_jobs': 'Back to jobs',
     'auditor.audit.offline':
@@ -5474,6 +5476,36 @@ const en = {
         'Every figure is entered, with at least one financial proof and one inventory proof ticked.',
     'auditor.audit.guide.count.how':
         'Count the cash and the stock yourself. Each figure is compared to the statements on file; nothing here comes from the business.',
+    'auditor.audit.guide.differences.do':
+        'Give each cause of the cash difference an amount until nothing is left to explain.',
+    'auditor.audit.guide.differences.enter':
+        'Whole francs per cause. For example 20000 for personal spending and 6000 for an entry error.',
+    'auditor.audit.guide.differences.done':
+        'The amounts add up to the whole difference, to the franc. A month with no difference has nothing to explain.',
+    'auditor.audit.guide.differences.how':
+        'Ask the owner about each gap and check it against the ledger or receipts. Use only the causes listed; the amounts are sealed with the cash finding.',
+    'auditor.differences.title': 'Explain the difference',
+    'auditor.differences.lead':
+        'Split the gap between the cash counted and what the statements report across its causes, to the franc.',
+    'auditor.differences.lead_none':
+        'The cash counted matches the statements, so there is nothing to explain. Continue to photos.',
+    'auditor.differences.reported': 'Statements',
+    'auditor.differences.observed': 'Counted',
+    'auditor.differences.difference': 'Difference',
+    'auditor.differences.unavailable': 'Unavailable',
+    'auditor.differences.causes': 'Causes',
+    'auditor.differences.amount': 'Amount for {cause}',
+    'auditor.differences.balanced': 'The whole difference is explained.',
+    'auditor.differences.left': '{amount} still to explain.',
+    'auditor.differences.over':
+        '{amount} more than the difference. Lower an amount.',
+    'auditor.differences.cause.unrecorded_sales': 'Sales not recorded',
+    'auditor.differences.cause.unproven_expense': 'Expense without proof',
+    'auditor.differences.cause.personal_spending':
+        'Personal spending from the business',
+    'auditor.differences.cause.wrong_month': 'Recorded in the wrong month',
+    'auditor.differences.cause.entry_error': 'Entry error',
+    'auditor.differences.cause.counted_twice': 'Counted twice',
     'auditor.audit.guide.seal.do':
         'Check the result, then seal with your authenticator code.',
     'auditor.audit.guide.seal.enter':

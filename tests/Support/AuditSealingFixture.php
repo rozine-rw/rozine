@@ -45,6 +45,7 @@ final class AuditSealingFixture
                 'ledger' => ['observed_stock' => $findings ? '37000000' : '38000000', 'reconciled' => true]]
             : ['statements' => [], 'count' => ['cash' => $findings ? '108000001' : '108000000', 'stock_units' => '190',
                 'operational_status' => 'active', 'financial_proofs' => ['bank', 'momo'], 'inventory_proofs' => ['photo']],
+                'differences' => ['explanations' => $findings ? [['cause' => 'entry_error', 'amount' => '1']] : []],
                 'photos' => ['titles' => ['extra-1' => 'Stock room']]];
         if ($findings) {
             $steps['seal'] = ['note' => 'Observed difference retained for review.'];

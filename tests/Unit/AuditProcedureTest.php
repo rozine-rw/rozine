@@ -28,6 +28,7 @@ function procedureFields(string $step): array
     return match ($step) {
         'ledger' => ['observed_stock' => '36400000', 'reconciled' => true],
         'count' => ['cash' => '1184000', 'stock_units' => '184', 'operational_status' => 'active', 'financial_proofs' => ['cash', 'bank'], 'inventory_proofs' => ['photo']],
+        'differences' => ['explanations' => [['cause' => 'entry_error', 'amount' => '6000'], ['cause' => 'personal_spending', 'amount' => '20000']]],
         'photos' => ['titles' => ['extra' => 'Side store']],
         'seal' => ['note' => 'A physical stock difference was observed.'],
         default => [],
@@ -220,4 +221,63 @@ it('pins the exact active ledger originals and requires review if that set chang
     expect($state['draft']['sources']['ledger']['ledger:one'] ?? null)->toBe(procedureSource('ledger'));
     $sources['ledger_sources']['ledger:one']['sha256'] = 'changed';
     expect($procedure->unavailable('flash', 'seal', $state['draft'], 'seal', $sources))->toBe('AUDIT_PROCEDURE_SOURCE_CHANGED');
+});
+
+it('explains the whole monthly cash difference by cause code, to the franc, in the listed cause order', function (): void {
+    $procedure = new AuditProcedure;
+    $state = procedureBefore('monthly', 'differences');
+    expect($state['step'])->toBe('differences')->and($procedure->cashDifference($state['draft'], procedureSources()))->toBe('26000');
+
+    $saved = $procedure->save('monthly', 'differences', $state['draft'], 'differences', ['explanations' => [
+        ['amount' => '20000', 'cause' => 'personal_spending'], ['cause' => 'unrecorded_sales', 'amount' => '6000']]], procedureSources());
+    expect($saved['step'])->toBe('photos')
+        ->and($saved['draft']['fields']['differences']['explanations'])->toBe([['cause' => 'unrecorded_sales', 'amount' => '6000'], ['cause' => 'personal_spending', 'amount' => '20000']])
+        ->and($saved['draft']['sources']['differences'])->toBe(['verification' => procedureSource('verification'), 'declaration' => procedureSource('declaration')]);
+});
+
+it('records no explanation for a month whose count matches the statements', function (): void {
+    $procedure = new AuditProcedure;
+    $state = procedureBefore('monthly', 'differences');
+    $sources = [...procedureSources(), 'reported_cash' => '1184000'];
+    expect($procedure->cashDifference($state['draft'], $sources))->toBe('0')
+        ->and($procedure->save('monthly', 'differences', $state['draft'], 'differences', ['explanations' => []], $sources)['draft']['fields']['differences'])
+        ->toBe(['explanations' => []])
+        ->and(fn () => $procedure->save('monthly', 'differences', $state['draft'], 'differences', ['explanations' => [['cause' => 'entry_error', 'amount' => '1']]], $sources))
+        ->toThrow(CommandRejection::class, 'AUDIT_DIFFERENCE_UNEXPLAINED');
+});
+
+it('refuses explanations that leave a franc unexplained, repeat a cause or are not plain amounts', function (mixed $explanations, string $code): void {
+    $procedure = new AuditProcedure;
+    $state = procedureBefore('monthly', 'differences');
+    try {
+        $procedure->save('monthly', 'differences', $state['draft'], 'differences', ['explanations' => $explanations], procedureSources());
+        $this->fail('The explanations were accepted.');
+    } catch (CommandRejection $rejection) {
+        expect($rejection->reason)->toBe($code)->and($rejection->fieldErrors)->toHaveKey('explanations');
+    }
+})->with([
+    'one franc short' => [[['cause' => 'entry_error', 'amount' => '25999']], 'AUDIT_DIFFERENCE_UNEXPLAINED'],
+    'one franc over' => [[['cause' => 'entry_error', 'amount' => '26001']], 'AUDIT_DIFFERENCE_UNEXPLAINED'],
+    'nothing explained' => [[], 'AUDIT_DIFFERENCE_UNEXPLAINED'],
+    'a repeated cause' => [[['cause' => 'entry_error', 'amount' => '13000'], ['cause' => 'entry_error', 'amount' => '13000']], 'AUDIT_STEP_INPUT_INVALID'],
+    'an unknown cause' => [[['cause' => 'theft', 'amount' => '26000']], 'AUDIT_STEP_INPUT_INVALID'],
+    'a zero amount' => [[['cause' => 'entry_error', 'amount' => '26000'], ['cause' => 'wrong_month', 'amount' => '0']], 'AUDIT_STEP_INPUT_INVALID'],
+    'a fractional amount' => [[['cause' => 'entry_error', 'amount' => '26000.0']], 'AUDIT_STEP_INPUT_INVALID'],
+    'a numeric amount' => [[['cause' => 'entry_error', 'amount' => 26000]], 'AUDIT_STEP_INPUT_INVALID'],
+    'an extra key' => [[['cause' => 'entry_error', 'amount' => '26000', 'note' => 'x']], 'AUDIT_STEP_INPUT_INVALID'],
+    'a bare value' => [['entry_error'], 'AUDIT_STEP_INPUT_INVALID'],
+    'a keyed map' => [['entry_error' => ['cause' => 'entry_error', 'amount' => '26000']], 'AUDIT_STEP_INPUT_INVALID'],
+    'more rows than causes' => [array_fill(0, 7, ['cause' => 'entry_error', 'amount' => '1']), 'AUDIT_STEP_INPUT_INVALID'],
+    'not a list' => ['26000', 'AUDIT_STEP_INPUT_INVALID'],
+]);
+
+it('withholds the difference step until the statements and declaration it explains are on file', function (): void {
+    $procedure = new AuditProcedure;
+    $state = procedureBefore('monthly', 'differences');
+    $sources = [...procedureSources(), 'reported_cash' => null];
+    expect($procedure->unavailable('monthly', 'differences', $state['draft'], 'differences', $sources))->toBe('AUDIT_DECLARATION_REQUIRED')
+        ->and($procedure->cashDifference($state['draft'], $sources))->toBeNull()
+        ->and($procedure->cashDifference(['note' => '', 'completed_steps' => [], 'fields' => []], procedureSources()))->toBeNull()
+        ->and(fn () => $procedure->save('monthly', 'differences', $state['draft'], 'differences', ['explanations' => []], $sources))
+        ->toThrow(CommandRejection::class, 'AUDIT_DECLARATION_REQUIRED');
 });

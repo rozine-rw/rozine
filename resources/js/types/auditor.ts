@@ -828,7 +828,12 @@ export type StatementReviewFile = {
 /* ------------------------------------------------------------------------------------------ */
 
 export type FlashStep = 'review' | 'check_in' | 'photos' | 'ledger' | 'seal';
-export type MonthlyStep = 'statements' | 'count' | 'photos' | 'seal';
+export type MonthlyStep =
+    | 'statements'
+    | 'count'
+    | 'differences'
+    | 'photos'
+    | 'seal';
 export type AuditStepKey = FlashStep | MonthlyStep;
 
 /**
@@ -1006,6 +1011,29 @@ export type CountStage = {
     operational_status: 'active' | 'suspended' | 'restricted' | null;
 };
 
+/** The cause codes that explain a monthly cash difference (BRS v3 VIS-R01 step 9). */
+export type DifferenceCause =
+    | 'unrecorded_sales'
+    | 'unproven_expense'
+    | 'personal_spending'
+    | 'wrong_month'
+    | 'entry_error'
+    | 'counted_twice';
+
+/**
+ * Explain the difference: the cash the statements report against the cash counted, and the
+ * amounts already given to each cause. The difference is absolute and in whole francs; a month
+ * with no difference has nothing to explain.
+ */
+export type DifferencesStage = {
+    step: 'differences';
+    reported: Money | null;
+    observed: Money | null;
+    difference: Money | null;
+    causes: DifferenceCause[];
+    explanations: { cause: DifferenceCause; amount: string }[];
+};
+
 export type SealStage = {
     step: 'seal';
     summary: {
@@ -1131,6 +1159,7 @@ export type AuditStage =
     | LedgerStage
     | StatementsStage
     | CountStage
+    | DifferencesStage
     | SealStage
     | SealedStage
     | ReturnedStage

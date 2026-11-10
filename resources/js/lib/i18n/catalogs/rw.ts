@@ -3460,10 +3460,12 @@ const rw: Catalog = {
     'auditor.audit.step.seal': 'Kashe',
     'auditor.audit.step.statements': 'Inyandiko za konti',
     'auditor.audit.step.count': 'Kubara',
+    'auditor.audit.step.differences': 'Itandukaniro',
     'auditor.audit.continue': 'Komeza',
     'auditor.audit.to_seal': 'Suzuma ushyireho kashe',
     'auditor.audit.start_count': 'Tangira kubara',
     'auditor.audit.to_photos': 'Komeza ku mafoto',
+    'auditor.audit.explain_differences': 'Sobanura itandukaniro',
     'auditor.audit.back': 'Inyuma',
     'auditor.audit.back_to_jobs': 'Subira ku mirimo',
     'auditor.audit.offline':
@@ -5678,6 +5680,36 @@ const rw: Catalog = {
         'Buri mubare wanditswe, hamwe n’ikimenyetso kimwe nibura cy’imari n’ikimwe cy’ibicuruzwa byahiswemo.',
     'auditor.audit.guide.count.how':
         'Bara ubwawe amafaranga n’ibicuruzwa. Buri mubare ugereranywa na raporo ziri muri dosiye; nta na kimwe hano gituruka ku bucuruzi.',
+    'auditor.audit.guide.differences.do':
+        'Ha buri mpamvu y’itandukaniro ry’amafaranga umubare kugeza ntacyo gisigaye cyo gusobanura.',
+    'auditor.audit.guide.differences.enter':
+        'Amafaranga yuzuye kuri buri mpamvu. Urugero 20000 ku mafaranga yakoreshejwe ku giti cye na 6000 ku ikosa ryo kwandika.',
+    'auditor.audit.guide.differences.done':
+        'Imibare iteranyijwe ingana n’itandukaniro ryose, ku ifaranga. Ukwezi kudafite itandukaniro nta cyo gusobanura.',
+    'auditor.audit.guide.differences.how':
+        'Baza nyir’ubucuruzi kuri buri cyuho kandi ubigenzure mu gitabo cy’ibaruramari cyangwa inyemezabuguzi. Koresha impamvu ziri ku rutonde gusa; imibare ifungiranwa hamwe n’ibyagaragaye ku mafaranga.',
+    'auditor.differences.title': 'Sobanura itandukaniro',
+    'auditor.differences.lead':
+        'Gabanya icyuho kiri hagati y’amafaranga wabaze n’ibyo raporo zivuga ukurikije impamvu zacyo, ku ifaranga.',
+    'auditor.differences.lead_none':
+        'Amafaranga wabaze ahura n’ibyo raporo zivuga, nta cyo gusobanura. Komeza ku mafoto.',
+    'auditor.differences.reported': 'Raporo',
+    'auditor.differences.observed': 'Ibyabazwe',
+    'auditor.differences.difference': 'Itandukaniro',
+    'auditor.differences.unavailable': 'Ntibihari',
+    'auditor.differences.causes': 'Impamvu',
+    'auditor.differences.amount': 'Umubare kuri {cause}',
+    'auditor.differences.balanced': 'Itandukaniro ryose ryasobanuwe.',
+    'auditor.differences.left': 'Hasigaye {amount} byo gusobanura.',
+    'auditor.differences.over':
+        '{amount} birenze itandukaniro. Gabanya umubare.',
+    'auditor.differences.cause.unrecorded_sales': 'Ibyagurishijwe bitanditswe',
+    'auditor.differences.cause.unproven_expense': 'Ikiguzi kidafite gihamya',
+    'auditor.differences.cause.personal_spending':
+        'Amafaranga y’ubucuruzi yakoreshejwe ku giti cye',
+    'auditor.differences.cause.wrong_month': 'Byanditswe mu kwezi kutari ko',
+    'auditor.differences.cause.entry_error': 'Ikosa ryo kwandika',
+    'auditor.differences.cause.counted_twice': 'Byabazwe kabiri',
     'auditor.audit.guide.seal.do':
         'Genzura ibyavuyemo, hanyuma ushyireho kashe ukoresheje kode yawe.',
     'auditor.audit.guide.seal.enter':

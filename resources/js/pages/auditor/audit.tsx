@@ -10,6 +10,7 @@ import { SealedStatus } from '@/components/auditor/audit/sealed-status';
 import { StepBar } from '@/components/auditor/audit/step-bar';
 import { StepCheckIn } from '@/components/auditor/audit/step-check-in';
 import { StepCount } from '@/components/auditor/audit/step-count';
+import { StepDifferences } from '@/components/auditor/audit/step-differences';
 import { StepGuide } from '@/components/auditor/audit/step-guide';
 import { StepLedger } from '@/components/auditor/audit/step-ledger';
 import { StepPhotos } from '@/components/auditor/audit/step-photos';
@@ -46,6 +47,7 @@ import type {
  */
 const SHOWN_FIELDS: Partial<Record<AuditStage['step'], string[]>> = {
     ledger: ['observed_stock', 'document', 'replaces'],
+    differences: ['explanations'],
     seal: ['note'],
 };
 
@@ -59,7 +61,8 @@ const CONTINUE: Record<
     photos: 'auditor.audit.continue',
     ledger: 'auditor.audit.to_seal',
     statements: 'auditor.audit.start_count',
-    count: 'auditor.audit.to_photos',
+    count: 'auditor.audit.explain_differences',
+    differences: 'auditor.audit.to_photos',
 };
 
 /** The review step records only that the partner read the file and moved on. */
@@ -120,6 +123,8 @@ function StageBody({
             return <StepStatements stage={stage} context={context} />;
         case 'count':
             return <StepCount stage={stage} context={context} />;
+        case 'differences':
+            return <StepDifferences stage={stage} context={context} />;
         case 'seal':
             return seal;
         case 'sealed':

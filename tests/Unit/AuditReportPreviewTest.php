@@ -53,3 +53,23 @@ it('binds persisted observations, notes, licence and source revisions into the p
     ['monthly', '100', '90', 'active', '', true],
     ['monthly', '100', '100', 'suspended', '', true],
 ]);
+
+it('seals the cause codes that explain a monthly cash difference on its cash finding only', function (): void {
+    $builder = new BuildAuditReportPreview(new JcsCanonicalJson);
+    $pin = ['id' => 'source', 'revision' => 1, 'sha256' => str_repeat('a', 64)];
+    $sources = ['verification' => $pin, 'declaration' => [...$pin, 'id' => 'declaration'], 'check_in' => null, 'photos' => null,
+        'reported_stock' => null, 'reported_cash' => '100', 'reported_units' => '10', 'financial_proofs' => [], 'inventory_proofs' => [], 'extra_photos' => [],
+        'documents' => [], 'monthly' => null, 'licence' => 'SYNTHETIC-CPA', 'source_facts' => null,
+        'authority' => ['mandate_version' => 1, 'mandate_sha256' => str_repeat('a', 64), 'profile_revision' => 1, 'engagement_id' => 'engagement']];
+    $explanations = [['cause' => 'unrecorded_sales', 'amount' => '4'], ['cause' => 'entry_error', 'amount' => '6']];
+    $report = ['id' => 'report', 'assignment_id' => 'assignment', 'revision' => 3, 'kind' => 'monthly', 'period' => '2026-08',
+        'binding_sha256' => str_repeat('c', 64), 'draft' => ['note' => 'Recorded.', 'completed_steps' => [],
+            'fields' => ['count' => ['cash' => '90', 'stock_units' => '9', 'operational_status' => 'active'], 'differences' => ['explanations' => $explanations]]]];
+
+    $findings = $builder->handle($report, $sources)['findings'];
+    expect($findings[0])->toMatchArray(['code' => 'CASH_DIFFERENCE', 'difference' => '-10', 'explained_by' => $explanations])
+        ->and($findings[1])->not->toHaveKey('explained_by');
+
+    $report['draft']['fields']['differences'] = ['explanations' => []];
+    expect($builder->handle($report, $sources)['findings'][0])->not->toHaveKey('explained_by');
+});

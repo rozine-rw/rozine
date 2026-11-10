@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Domain\Auditor\AuditProcedure;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -118,6 +119,11 @@ class AuditorProcedureResource extends JsonResource
                 'sector' => ['label' => $sources['source_facts']['declared_sector_label'] ?? __('Unavailable'),
                     'definition' => $sources['source_facts']['declared_unit_label'] ?? __('A declared inventory unit definition is required.')],
                 'operational_status' => $fields['operational_status'] ?? null],
+            'differences' => ['step' => 'differences', 'reported' => AuditorJobsResource::money($sources['reported_cash']),
+                'observed' => AuditorJobsResource::money($report['draft']['fields']['count']['cash'] ?? null),
+                'difference' => AuditorJobsResource::money((new AuditProcedure)->cashDifference($report['draft'], $sources)),
+                'causes' => AuditProcedure::DIFFERENCE_CAUSES, 'explanations' => array_map(fn (array $explanation): array => [
+                    'cause' => $explanation['cause'], 'amount' => $explanation['amount']], $fields['explanations'] ?? [])],
             'seal' => $this->seal($report, $sources, $seal ?? throw new \LogicException('A persisted report preview is required.'), $reasonOptions, $mfaConfirmed),
             default => ['step' => 'statements', 'statements' => $this->statements($report, $sources, $prefix)],
         };

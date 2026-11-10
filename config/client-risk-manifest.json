@@ -105,6 +105,7 @@
         "resources/js/components/auditor/audit/step-bar.tsx",
         "resources/js/components/auditor/audit/step-check-in.tsx",
         "resources/js/components/auditor/audit/step-count.tsx",
+        "resources/js/components/auditor/audit/step-differences.tsx",
         "resources/js/components/auditor/audit/step-guide.tsx",
         "resources/js/components/auditor/audit/step-ledger.tsx",
         "resources/js/components/auditor/audit/step-photos.tsx",

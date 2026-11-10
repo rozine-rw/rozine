@@ -35,6 +35,10 @@
                 "state": "done"
             },
             {
+                "key": "differences",
+                "state": "done"
+            },
+            {
                 "key": "photos",
                 "state": "done"
             },

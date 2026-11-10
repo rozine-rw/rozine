@@ -29,6 +29,10 @@
                 "state": "current"
             },
             {
+                "key": "differences",
+                "state": "todo"
+            },
+            {
                 "key": "photos",
                 "state": "todo"
             },

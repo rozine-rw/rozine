@@ -6,6 +6,7 @@ use App\Application\Auditor\GetAuditProcedure;
 use App\Application\Auditor\RecordIsolatedAuditSourceFacts;
 use App\Application\Evidence\GetAuditStatements;
 use App\Application\Evidence\IngestStatement;
+use App\Domain\Auditor\AuditProcedure;
 use App\Models\AuditReport;
 use App\Models\RoleMembership;
 use Carbon\CarbonImmutable;
@@ -235,7 +236,8 @@ it('completes the isolated factual procedure and previews only the persisted rep
         ? ['review' => [], 'check_in' => [], 'photos' => ['titles' => ['extra-1' => 'Rear stock room']],
             'ledger' => ['observed_stock' => '37000000', 'reconciled' => true]]
         : ['statements' => [], 'count' => ['cash' => '108000001', 'stock_units' => '189', 'operational_status' => 'restricted',
-            'financial_proofs' => ['bank', 'momo'], 'inventory_proofs' => ['photo']], 'photos' => ['titles' => ['extra-1' => 'Rear stock room']]];
+            'financial_proofs' => ['bank', 'momo'], 'inventory_proofs' => ['photo']],
+            'differences' => ['explanations' => [['amount' => '1', 'cause' => 'unrecorded_sales']]], 'photos' => ['titles' => ['extra-1' => 'Rear stock room']]];
     $checkIn = ['position' => null, 'captured_at' => null, 'accuracy_m' => null];
     foreach ($steps as $step => $fields) {
         $current = $page();
@@ -249,6 +251,10 @@ it('completes the isolated factual procedure and previews only the persisted rep
                 ->and($current['stage']['slots'][2]['thumbnail_url'])->toBeNull()->and($current['stage']['package']['handoff'])->toBeNull();
         } elseif ($step === 'ledger') {
             expect($current['stage']['reported_stock']['amount'])->toBe('38000000');
+        } elseif ($step === 'differences') {
+            expect($current['stage'])->toMatchArray(['reported' => ['currency' => 'RWF', 'amount' => '108000000'],
+                'observed' => ['currency' => 'RWF', 'amount' => '108000001'], 'difference' => ['currency' => 'RWF', 'amount' => '1'],
+                'causes' => AuditProcedure::DIFFERENCE_CAUSES, 'explanations' => []]);
         } elseif ($step === 'count') {
             expect($current['stage']['cash']['statement']['amount'])->toBe('108000000')
                 ->and($current['stage']['sector']['definition'])->toBe('Sealed crates')
