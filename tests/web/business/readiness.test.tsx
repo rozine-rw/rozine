@@ -154,4 +154,54 @@ describe('Readiness', () => {
         );
         expect(requirement('G2')).toContain('Due by 30 March 2027');
     });
+
+    it('gives each measured signal its value, target, verdict and one action, and never a question', () => {
+        render(<BusinessReadiness {...props(readinessFixture)} />);
+
+        const guidance = within(
+            screen.getByRole('list', { name: 'Monthly guidance' }),
+        );
+        const [gap, forecast] = guidance.getAllByRole('listitem');
+
+        expect(gap).toHaveTextContent(
+            'Record GapOn target2.7% over the last 3 months. Target: 10% or less.Keep recording every sale and every payment in your books on the day it happens.',
+        );
+        expect(forecast).toHaveTextContent(
+            "Forecast ErrorOff target30.0% over the last 2 months. Target: 25% or less.Your forecasts were above the money that came in.Start next month's forecast from your verified average, and add only orders you hold in writing.",
+        );
+        expect(
+            screen.getByText(
+                'After each published report, each signal is measured against the target for your stage, with one action.',
+            ),
+        ).toBeInTheDocument();
+        expect(lines()).not.toContain('?');
+    });
+
+    it('names a single month, a forecast that ran under and a record gap to fix', () => {
+        render(<BusinessReadiness {...props(growthFixture)} />);
+
+        const [gap, forecast] = within(
+            screen.getByRole('list', { name: 'Monthly guidance' }),
+        ).getAllByRole('listitem');
+
+        expect(gap).toHaveTextContent(
+            'Record GapOff target6.4% over the last 1 month. Target: 5% or less.Record every cash sale and every payment in your books on the same day, and keep each receipt.',
+        );
+        expect(forecast).toHaveTextContent(
+            'Your forecasts were below the money that came in.Keep starting each forecast from your verified average and the orders you hold in writing.',
+        );
+    });
+
+    it('says when guidance starts before any sent month is verified', () => {
+        render(<BusinessReadiness {...props(newFixture)} />);
+
+        expect(
+            screen.getByText(
+                'Your guidance starts once a month you sent figures for is verified in a published report.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('list', { name: 'Monthly guidance' }),
+        ).not.toBeInTheDocument();
+    });
 });

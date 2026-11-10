@@ -376,9 +376,25 @@ export type ReadinessRequirement = {
       }
 );
 
+/**
+ * One RDY-R06 guidance line: a signal's value and target in percent (as written, one decimal for
+ * the value), the verdict, how many months were averaged, whether forecasts ran over or under,
+ * and the one action to take.
+ */
+export type ReadinessGuidanceLine = {
+    signal: 'record_gap' | 'forecast_error';
+    value: string;
+    target: string;
+    on_target: boolean;
+    months: number;
+    bias: 'over' | 'under' | null;
+    action: `${'record_gap' | 'forecast_error'}.${'keep' | 'fix'}`;
+};
+
 export type BusinessReadinessProps = {
     readiness: BusinessReadiness;
     requirements: ReadinessRequirement[];
+    guidance: ReadinessGuidanceLine[];
     links: BusinessAppLinks;
 };
 

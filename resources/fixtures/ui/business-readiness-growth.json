@@ -176,6 +176,26 @@
                 }
             }
         ],
+        "guidance": [
+            {
+                "signal": "record_gap",
+                "value": "6.4",
+                "target": "5",
+                "on_target": false,
+                "months": 1,
+                "bias": null,
+                "action": "record_gap.fix"
+            },
+            {
+                "signal": "forecast_error",
+                "value": "8.0",
+                "target": "15",
+                "on_target": true,
+                "months": 1,
+                "bias": "under",
+                "action": "forecast_error.keep"
+            }
+        ],
         "links": {
             "home": {
                 "url": "/preview/business-home",

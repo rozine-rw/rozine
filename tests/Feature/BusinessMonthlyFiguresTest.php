@@ -119,3 +119,25 @@ it('lets nobody without the Business authority read or send its figures', functi
         ->assertNotFound();
     expect(BusinessMonthlySubmission::query()->count())->toBe(0);
 });
+
+it('turns the sent figures into Record Gap and Forecast Error guidance once their months are verified', function (): void {
+    ($this->send)()->assertRedirect();
+    app()->instance(PublishedMonthlyReports::class, new class implements PublishedMonthlyReports
+    {
+        public function forBusiness(string $businessId): array
+        {
+            return array_map(fn (array $month): array => ['report_id' => strtolower((string) Str::ulid()), 'period' => $month[0], 'inflow' => $month[1],
+                'outflow' => $month[2], 'net' => '0', 'operational_status' => 'active', 'differences' => false,
+                'auditor' => ['name' => 'Auditor', 'licence' => 'ICPAR-1', 'sealed_on' => '2026-11-01'], 'auditor_note' => '', 'business_note' => ''],
+                [['2026-10', '15000000', '0'], ['2026-09', '12000000', '8300000']]);
+        }
+    });
+
+    $guidance = $this->actingAs($this->user)->get(route('business.readiness', ['business' => $this->business]))->assertOk()
+        ->viewData('page')['props']['guidance'];
+
+    expect($guidance)->toBe([
+        ['signal' => 'record_gap', 'value' => '2.5', 'target' => '10', 'on_target' => true, 'months' => 1, 'bias' => null, 'action' => 'record_gap.keep'],
+        ['signal' => 'forecast_error', 'value' => '20.0', 'target' => '25', 'on_target' => true, 'months' => 1, 'bias' => 'under', 'action' => 'forecast_error.keep'],
+    ]);
+});

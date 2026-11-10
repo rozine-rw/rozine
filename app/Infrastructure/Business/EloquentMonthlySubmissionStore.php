@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\DB;
  * The monthly submission adapter. A submission is journaled under the acting Party against the
  * Business; its permitted input keeps only a digest of the figures. An advisory lock per business
  * and period means two sends never both land: the second is refused as already sent.
+ *
+ * @phpstan-import-type Stored from MonthlySubmissionStore
  */
 final class EloquentMonthlySubmissionStore implements MonthlySubmissionStore
 {
@@ -28,16 +30,14 @@ final class EloquentMonthlySubmissionStore implements MonthlySubmissionStore
     {
         $record = BusinessMonthlySubmission::query()->where('business_id', $businessId)->where('period', $period)->first();
 
-        if ($record === null) {
-            return null;
-        }
-        $costs = $record->costs;
-        $changes = $record->changes;
+        return $record === null ? null : $this->stored($record);
+    }
 
-        return ['period' => $record->period, 'forecast_period' => $record->forecast_period, 'figures' => [
-            'money_in' => $record->money_in, 'costs' => array_merge(array_fill_keys(MonthlySubmission::COST_CATEGORIES, '0'), $costs), 'costs_total' => $record->costs_total, 'paid_to_owners' => $record->paid_to_owners,
-            'forecast' => $record->forecast, 'forecast_basis' => $record->forecast_basis, 'order' => $record->order, 'changes' => array_merge(array_fill_keys(MonthlySubmission::CHANGES, false), $changes),
-        ], 'submitted_at' => $record->submitted_at->setTimezone('UTC')->format('Y-m-d\TH:i:s\Z')];
+    public function forBusiness(string $businessId): array
+    {
+        $records = BusinessMonthlySubmission::query()->where('business_id', $businessId)->orderByDesc('period')->get()->all();
+
+        return array_values(array_map(fn (BusinessMonthlySubmission $record): array => $this->stored($record), $records));
     }
 
     public function submit(int $userId, int $contextRevision, string $businessId, string $requestId, array $input, Closure $decide): array
@@ -69,5 +69,20 @@ final class EloquentMonthlySubmissionStore implements MonthlySubmissionStore
                         return new OperationResult('MONTHLY_SUBMISSION_SENT', ['business_id' => $id, 'period' => $decided['period']], 1);
                     });
             });
+    }
+
+    /**
+     * A sent submission as the port returns it, its categories and changes in screen order.
+     *
+     * @return Stored
+     */
+    private function stored(BusinessMonthlySubmission $record): array
+    {
+        return ['period' => $record->period, 'forecast_period' => $record->forecast_period, 'figures' => [
+            'money_in' => $record->money_in, 'costs' => array_merge(array_fill_keys(MonthlySubmission::COST_CATEGORIES, '0'), $record->costs),
+            'costs_total' => $record->costs_total, 'paid_to_owners' => $record->paid_to_owners, 'forecast' => $record->forecast,
+            'forecast_basis' => $record->forecast_basis, 'order' => $record->order,
+            'changes' => array_merge(array_fill_keys(MonthlySubmission::CHANGES, false), $record->changes),
+        ], 'submitted_at' => $record->submitted_at->setTimezone('UTC')->format('Y-m-d\TH:i:s\Z')];
     }
 }

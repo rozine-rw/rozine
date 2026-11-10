@@ -319,6 +319,31 @@ const en = {
     'business.readiness.top': 'You are in the top stage.',
     'business.readiness.ready_rule':
         'Ready comes when every requirement due is met, your three signals stay on target for 3 reports in a row, and you pass your stage’s core Academy modules.',
+    'business.readiness.guidance.title': 'Monthly guidance',
+    'business.readiness.guidance.rule':
+        'After each published report, each signal is measured against the target for your stage, with one action.',
+    'business.readiness.guidance.empty':
+        'Your guidance starts once a month you sent figures for is verified in a published report.',
+    'business.readiness.guidance.record_gap': 'Record Gap',
+    'business.readiness.guidance.forecast_error': 'Forecast Error',
+    'business.readiness.guidance.on_target': 'On target',
+    'business.readiness.guidance.off_target': 'Off target',
+    'business.readiness.guidance.value': {
+        one: '{value}% over the last {count} month. Target: {target}% or less.',
+        other: '{value}% over the last {count} months. Target: {target}% or less.',
+    },
+    'business.readiness.guidance.bias.over':
+        'Your forecasts were above the money that came in.',
+    'business.readiness.guidance.bias.under':
+        'Your forecasts were below the money that came in.',
+    'business.readiness.guidance.record_gap.keep':
+        'Keep recording every sale and every payment in your books on the day it happens.',
+    'business.readiness.guidance.record_gap.fix':
+        'Record every cash sale and every payment in your books on the same day, and keep each receipt.',
+    'business.readiness.guidance.forecast_error.keep':
+        'Keep starting each forecast from your verified average and the orders you hold in writing.',
+    'business.readiness.guidance.forecast_error.fix':
+        "Start next month's forecast from your verified average, and add only orders you hold in writing.",
     'business.readiness.stages': 'The four stages',
     'business.readiness.stage_from': 'From {amount} a month',
     'business.readiness.current': 'Current',

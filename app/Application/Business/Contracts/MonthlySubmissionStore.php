@@ -25,6 +25,14 @@ interface MonthlySubmissionStore
     public function find(string $businessId, string $period): ?array;
 
     /**
+     * Every submission the Business has sent, newest period first. Read only behind the caller's
+     * own Business authority.
+     *
+     * @return list<Stored>
+     */
+    public function forBusiness(string $businessId): array;
+
+    /**
      * Sends a submission for a Business the person may view. `$decide` receives the Business id
      * under that authority and returns what to record, or refuses; a period already sent is refused.
      *
