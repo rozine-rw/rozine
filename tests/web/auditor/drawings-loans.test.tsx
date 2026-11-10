@@ -214,9 +214,13 @@ describe('Audit procedure — other loans', () => {
                 'Leave out a loan that is fully repaid.',
             ),
         ).toBeInTheDocument();
-        for (const field of within(sheet())
-            .getByRole('listitem', { name: 'Loan 1' })
-            .querySelectorAll('input')) {
+        const loan = within(sheet()).getByRole('listitem', { name: 'Loan 1' });
+
+        for (const field of [
+            within(loan).getByLabelText('Lender'),
+            within(loan).getByLabelText('Still owed (RWF)'),
+            within(loan).getByLabelText('Monthly payment (RWF)'),
+        ]) {
             expect(field).toHaveAttribute('aria-invalid', 'true');
             expect(field).toHaveAttribute(
                 'aria-describedby',
