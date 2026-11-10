@@ -15,7 +15,6 @@ use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\PrimaryCommitmentView;
 use App\Application\Primary\Contracts\PrimaryPurchaseIndex;
 use App\Domain\Operations\CommandRejection;
-use App\Models\BusinessCampaign;
 use Brick\Math\BigDecimal;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -101,10 +100,10 @@ final readonly class EloquentPrimaryCommitmentView implements PrimaryCommitmentV
      */
     private function raising(string $campaignId): bool
     {
-        $campaign = BusinessCampaign::query()->whereKey($campaignId)->firstOrFail();
+        $raise = $this->campaigns->raise($campaignId);
         $committed = $this->summary->read($campaignId, now('UTC')->toDateTimeImmutable())['committed_principal'];
 
-        return now()->lt($campaign->expires_at) && BigDecimal::of($committed)->isLessThan($campaign->principal);
+        return now()->lt($raise['expires_at']) && BigDecimal::of($committed)->isLessThan($raise['principal']);
     }
 
     /**
