@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "19896dc047820000fb6e56f3792ca02de7aeb7d4a3a62955c0b1d39f3d574805",
-    "coverageSetSha256": "14b3f272332ceec92ace915f99ebcadde2a4b89e62ffe63308d3acbede36a359",
+    "sourceManifestSha256": "b64cf8acfe4242227319672690578f34326b4162af22345a45f147c45b4cbf19",
+    "coverageSetSha256": "fcae2f15acada3c6bd0f398bc5408f83370ef4be41ebb238a2b4d1ea24524377",
     "thresholds": {
         "critical": {
             "global": {
@@ -260,6 +260,7 @@
         "resources/js/components/investor/profile/academy.tsx",
         "resources/js/components/investor/profile/help-answers.ts",
         "resources/js/components/investor/profile/profile-parts.tsx",
+        "resources/js/components/investor/risk-gate.tsx",
         "resources/js/components/investor/tokens.ts",
         "resources/js/components/investor/wallet/funding.tsx",
         "resources/js/components/investor/wallet/history.tsx",

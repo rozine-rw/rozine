@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use App\Application\Business\Contracts\PrimaryCampaignSource;
+use App\Application\Primary\AcknowledgeInvestorRisks;
 use App\Application\Primary\Contracts\PrimaryCheckout;
+use App\Domain\Primary\RiskStatements;
 use App\Models\LedgerEntry;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
@@ -36,6 +38,8 @@ beforeEach(function (): void {
     InvestorWalletFixture::policy(maximum: null);
     $this->campaign = PrimaryReservationFixture::campaign();
     $this->investor = PrimaryReservationFixture::investor();
+    // An Investor who invests has acknowledged the KYC-R05 risk statements once, so no Investor page asks again.
+    app(AcknowledgeInvestorRisks::class)->handle($this->investor['user']->id, 1, RiskStatements::VERSION, RiskStatements::sha256(), (string) Str::uuid());
     $this->checkout = app(PrimaryCheckout::class);
     $this->reserve = function (string $units, string $requestId) {
         $result = $this->checkout->reserve($this->investor['user']->id, 1, $this->campaign->id, $units, $requestId, PrimaryReservationFixture::terms(...));

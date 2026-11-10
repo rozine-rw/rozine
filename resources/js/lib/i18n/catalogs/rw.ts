@@ -191,7 +191,7 @@ const rw: Catalog = {
     'suite.add_investor.body':
         "Umwirondoro wawe wamaze kwemezwa kuri konti yawe y'Ubucuruzi, ntuzongera kuwusabwa. Soma kandi wemere amabwiriza y'Umushoramari kugira ngo utangire gushora.",
     'suite.add_investor.accept':
-        "Nasomye kandi nemera aya mabwiriza y'Umushoramari.",
+        "Gukomeza bisobanura ko wemera aya mabwiriza y'Umushoramari.",
     'suite.add_investor.confirm': "Ongeraho uburenganzira bw'Umushoramari",
     'suite.add_investor.cancel': 'Hagarika',
     'suite.add_investor.network_error':
@@ -4148,7 +4148,7 @@ const rw: Catalog = {
         other: 'Bihuze n’inyandiko {count}',
     },
     'investor.cart.whole.risks_first':
-        'Banza wemeze ibyerekeye ingaruka aho kwishyura amahirwe, hanyuma wishyure igitebo cyose.',
+        'Banza wemeze ibyerekeye ingaruka, hanyuma wishyure igitebo cyose.',
     'investor.cart.whole.open_checkout': 'Fungura aho kwishyura',
     'investor.cart.whole.held_title': 'Emeza igitebo cyawe',
     'investor.cart.whole.held_lead':
@@ -4160,8 +4160,8 @@ const rw: Catalog = {
     'investor.cart.whole.line_return': 'Inyungu {return} · igiciro {fee}',
     'investor.cart.whole.net_return': 'Inyungu iteganyijwe nyuma y’igiciro',
     'investor.cart.whole.acknowledge':
-        'Nasomye aya mabwiriza kandi nemeje buri nyandiko iri muri iki gitebo.',
-    'investor.cart.whole.confirm': 'Emeza byose · {amount}',
+        'Kwishyura byemeza ko wasomye inyandiko isobanura buri rupapuro.',
+    'investor.cart.whole.confirm': 'Ishyura {amount}',
     'investor.cart.whole.release': 'Rekura inyandiko zose',
     'investor.cart.whole.requoted':
         'Amabwiriza yahindutse mbere y’uko wemeza. Reba igiteranyo gishya n’icyiciro, hanyuma wongere wemeze.',
@@ -4348,7 +4348,7 @@ const rw: Catalog = {
     'investor.checkout.deposit': 'Shyiraho',
     'investor.checkout.disclosure': "IKIGUZI N'INGARUKA",
     'investor.checkout.acknowledge':
-        "Nasomye ibisobanuro ku kiguzi n'ingaruka ({version}).",
+        'Kwishyura byemeza ko wasomye inyandiko isobanura uru rupapuro ({version}).',
     'investor.checkout.refusal.TRADE_BELOW_MINIMUM':
         'Shora nibura urupapuro rumwe.',
     'investor.checkout.refusal.INSUFFICIENT_AVAILABLE_FUNDS':
@@ -4364,7 +4364,7 @@ const rw: Catalog = {
     'investor.checkout.refusal.VERSION_CONFLICT':
         'Amabwiriza yahindutse urimo gusoma. Yongere uyasome wemeze.',
     'investor.checkout.processing': 'Biremezwa…',
-    'investor.checkout.confirm': 'Emeza ishoramari · {amount}',
+    'investor.checkout.confirm': 'Ishyura {amount}',
     'investor.checkout.fine_print':
         'Amafaranga ahita yiyemezwa · Inyungu iteganyijwe, ntisezeranyijwe',
     'investor.checkout.confirmed': 'Ishoramari ryemejwe',
@@ -6512,7 +6512,7 @@ const rw: Catalog = {
     'investor.checkout.c3.held_amount': 'Afashwe ku aboneka',
     'investor.checkout.c3.release': 'Rekura izi mpapuro',
     'investor.checkout.c3.confirm_fine_print':
-        'Kwemeza bishyira amafaranga yafashwe mu cyiyemezo. Icyiyemezo cyemejwe ni ntakuka, ntigishobora guhagarikwa. Niba imari yose itabonetse, amafaranga yawe agaruka mu gikapu cyawe.',
+        'Kwishyura bishyira amafaranga yafashwe mu cyiyemezo. Ushobora kugikuraho, ugasubizwa amafaranga yose, kugeza igikorwa kigeze kuri 100%. Niba imari yose itabonetse, amafaranga yawe agaruka mu gikapu cyawe.',
     'investor.checkout.c3.at_maturity': {
         one: 'Bigaruka mu kwezi {count}',
         other: 'Bigaruka mu mezi {count}',
@@ -6674,14 +6674,15 @@ const rw: Catalog = {
         'Amakuru y’umwirondoro wawe akeneye kongera kurebwa',
     'investor.notices.verification.rejected.body':
         'Ishami rishinzwe kubahiriza amategeko ntiryashoboye kwemeza amakuru yawe: {reason}',
-    'investor.checkout.risks.title': "Mbere y'ishoramari ryawe rya mbere",
+    'investor.checkout.risks.title': 'Mbere yo gushora',
     'investor.checkout.risks.lead':
-        'Shyira akamenyetso kuri buri nteruro kugira ngo wemeze ko uyumva.',
-    'investor.checkout.risks.accept': 'Ndumva izi ngaruka',
+        'Soma aya magambo atanu. Uyemeza rimwe gusa; kwishyura ntibizongera kugira ikindi bikubaza.',
+    'investor.checkout.risks.understood': 'Ndumva ibivuzwe haruguru byose',
+    'investor.checkout.risks.accept': 'Komeza',
     'investor.checkout.risks.failed':
         'Ntitwashoboye kubika igisubizo cyawe. Ongera ugerageze.',
     'investor.checkout.c3.reserve_after_risks':
-        "Emeza amagambo y'ingaruka ari hejuru kugira ngo ubike.",
+        "Banza wemeze amagambo y'ingaruka kugira ngo ubike.",
     'investor.checkout.c3.reserve_unavailable': 'Gufata ntibishoboka ubu.',
     'investor.checkout.c3.reserve_fine_print':
         "Gufata bibika impapuro n'amafaranga iminota 5 mu gihe wemeza.",

@@ -595,6 +595,7 @@
         "resources/js/components/investor/profile/academy.tsx",
         "resources/js/components/investor/profile/help-answers.ts",
         "resources/js/components/investor/profile/profile-parts.tsx",
+        "resources/js/components/investor/risk-gate.tsx",
         "resources/js/components/investor/tokens.ts",
         "resources/js/components/investor/wallet/funding.tsx",
         "resources/js/components/investor/wallet/history.tsx",
@@ -802,10 +803,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 774,
+        "totalTrackedSources": 775,
         "generated": 337,
         "declarationOnly": 20,
-        "authoredExecutable": 417
+        "authoredExecutable": 418
     },
-    "coverageSetSha256": "14b3f272332ceec92ace915f99ebcadde2a4b89e62ffe63308d3acbede36a359"
+    "coverageSetSha256": "fcae2f15acada3c6bd0f398bc5408f83370ef4be41ebb238a2b4d1ea24524377"
 }

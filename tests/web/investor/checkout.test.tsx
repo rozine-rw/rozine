@@ -468,20 +468,22 @@ describe('Checkout: the reserved step', () => {
         );
     });
 
-    it('confirms only after the disclosure is acknowledged, with its version and digest', async () => {
+    it('pays with no tick box, binding the prospectus version and digest it shows', async () => {
         const user = userEvent.setup();
 
         render(<InvestorCheckout {...props(reservedFixture)} />);
 
         const confirm = screen.getByRole('button', {
-            name: 'Confirm investment · RWF 30,000',
+            name: 'Pay RWF 30,000',
         });
 
-        expect(confirm).toBeDisabled();
-        await user.click(screen.getByRole('checkbox'));
         expect(confirm).toBeEnabled();
-        await user.click(screen.getByRole('checkbox'));
-        await user.click(screen.getByRole('checkbox'));
+        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Paying confirms you have read the prospectus for this note (disclosure-2026-09.1).',
+            ),
+        ).toBeInTheDocument();
         await user.click(confirm);
 
         expect(inertia.calls[0]).toMatchObject({
@@ -523,10 +525,9 @@ describe('Checkout: the reserved step', () => {
         render(<InvestorCheckout {...props(unconfirmedFixture)} />);
 
         expect(screen.getByText('Not yet confirmed')).toBeInTheDocument();
-        await user.click(screen.getByRole('checkbox'));
         expect(
             screen.getByRole('button', {
-                name: 'Confirm investment · RWF 30,000',
+                name: 'Pay RWF 30,000',
             }),
         ).toBeDisabled();
         expect(
@@ -682,10 +683,9 @@ describe('Checkout: refusals the server records', () => {
 
             render(<InvestorCheckout {...props(reservedFixture)} />);
             inertia.queue.push(respond);
-            await user.click(screen.getByRole('checkbox'));
             await user.click(
                 screen.getByRole('button', {
-                    name: 'Confirm investment · RWF 30,000',
+                    name: 'Pay RWF 30,000',
                 }),
             );
 
@@ -709,10 +709,9 @@ describe('Checkout: refusals the server records', () => {
         );
 
         inertia.queue.push(fails(409, { code: 'RESERVATION_EXPIRED' }));
-        fireEvent.click(screen.getByRole('checkbox'));
         fireEvent.click(
             screen.getByRole('button', {
-                name: 'Confirm investment · RWF 30,000',
+                name: 'Pay RWF 30,000',
             }),
         );
         await flush();
@@ -726,17 +725,16 @@ describe('Checkout: refusals the server records', () => {
         expect(inertia.visit).not.toHaveBeenCalled();
     });
 
-    it('asks for the acknowledgement again once a refresh brings a new disclosure', async () => {
+    it('names the new prospectus once a refresh brings a new disclosure, and pays against it', async () => {
         const user = userEvent.setup();
         const { rerender } = render(
             <InvestorCheckout {...props(reservedFixture)} />,
         );
 
         inertia.queue.push(fails(409, { code: 'DISCLOSURE_STALE' }));
-        await user.click(screen.getByRole('checkbox'));
         await user.click(
             screen.getByRole('button', {
-                name: 'Confirm investment · RWF 30,000',
+                name: 'Pay RWF 30,000',
             }),
         );
         expect(
@@ -755,17 +753,15 @@ describe('Checkout: refusals the server records', () => {
         };
         rerender(<InvestorCheckout {...fresh} />);
 
-        expect(screen.getByRole('checkbox')).not.toBeChecked();
         expect(
-            screen.getByRole('button', {
-                name: 'Confirm investment · RWF 30,000',
-            }),
-        ).toBeDisabled();
+            screen.getByText(
+                'Paying confirms you have read the prospectus for this note (disclosure-2026-10.1).',
+            ),
+        ).toBeInTheDocument();
 
-        await user.click(screen.getByRole('checkbox'));
         await user.click(
             screen.getByRole('button', {
-                name: 'Confirm investment · RWF 30,000',
+                name: 'Pay RWF 30,000',
             }),
         );
 
@@ -818,10 +814,9 @@ describe('Checkout: Hussain’s contract answers (#96)', () => {
         );
 
         inertia.queue.push(fails(409, { code: 'DISCLOSURE_STALE' }));
-        await user.click(screen.getByRole('checkbox'));
         await user.click(
             screen.getByRole('button', {
-                name: 'Confirm investment · RWF 30,000',
+                name: 'Pay RWF 30,000',
             }),
         );
         await screen.findByText(
@@ -840,12 +835,10 @@ describe('Checkout: Hussain’s contract answers (#96)', () => {
         expect(
             screen.getByRole('dialog', { name: 'Confirm your notes' }),
         ).toHaveTextContent('Fee on earnings · 6.5% (Silver)');
-        expect(screen.getByRole('checkbox')).not.toBeChecked();
 
-        await user.click(screen.getByRole('checkbox'));
         await user.click(
             screen.getByRole('button', {
-                name: 'Confirm investment · RWF 30,000',
+                name: 'Pay RWF 30,000',
             }),
         );
 
@@ -874,10 +867,9 @@ describe('Checkout: Hussain’s contract answers (#96)', () => {
             fails(503, { code: 'RETRYABLE_CONTENTION' }),
             fails(409, { code: 'DISCLOSURE_STALE' }),
         );
-        await user.click(screen.getByRole('checkbox'));
         await user.click(
             screen.getByRole('button', {
-                name: 'Confirm investment · RWF 30,000',
+                name: 'Pay RWF 30,000',
             }),
         );
         await screen.findByText(
@@ -894,10 +886,9 @@ describe('Checkout: Hussain’s contract answers (#96)', () => {
         expect(inertia.reload).toHaveBeenCalledTimes(1);
 
         rerender(<InvestorCheckout {...refreshedDisclosure()} />);
-        await user.click(screen.getByRole('checkbox'));
         await user.click(
             screen.getByRole('button', {
-                name: 'Confirm investment · RWF 30,000',
+                name: 'Pay RWF 30,000',
             }),
         );
 
@@ -921,10 +912,9 @@ describe('Checkout: Hussain’s contract answers (#96)', () => {
             fails(503, { code: 'RETRYABLE_CONTENTION' }),
             fails(409, { code: 'RESERVATION_EXPIRED' }),
         );
-        await user.click(screen.getByRole('checkbox'));
         await user.click(
             screen.getByRole('button', {
-                name: 'Confirm investment · RWF 30,000',
+                name: 'Pay RWF 30,000',
             }),
         );
 
@@ -961,10 +951,9 @@ describe('Checkout: Hussain’s contract answers (#96)', () => {
         );
 
         inertia.queue.push(fails(409, { code: 'RESERVATION_EXPIRED' }));
-        await user.click(screen.getByRole('checkbox'));
         await user.click(
             screen.getByRole('button', {
-                name: 'Confirm investment · RWF 30,000',
+                name: 'Pay RWF 30,000',
             }),
         );
         await screen.findByText(
@@ -1000,10 +989,9 @@ describe('Checkout: Hussain’s contract answers (#96)', () => {
                 },
             }),
         );
-        fireEvent.click(screen.getByRole('checkbox'));
         fireEvent.click(
             screen.getByRole('button', {
-                name: 'Confirm investment · RWF 30,000',
+                name: 'Pay RWF 30,000',
             }),
         );
         /* The answer is lost, and the browser's hold clock runs out before the lookup answers. */
@@ -1035,10 +1023,9 @@ describe('Checkout: Hussain’s contract answers (#96)', () => {
             fails(503, { code: 'RETRYABLE_CONTENTION' }),
             fails(404, { code: 'OPERATION_NOT_FOUND' }),
         );
-        await user.click(screen.getByRole('checkbox'));
         await user.click(
             screen.getByRole('button', {
-                name: 'Confirm investment · RWF 30,000',
+                name: 'Pay RWF 30,000',
             }),
         );
 
@@ -1084,10 +1071,9 @@ describe('Checkout: Hussain’s contract answers (#96)', () => {
             fails(503, { code: 'RETRYABLE_CONTENTION' }),
             fails(404, { code: 'OPERATION_NOT_FOUND' }),
         );
-        await user.click(screen.getByRole('checkbox'));
         await user.click(
             screen.getByRole('button', {
-                name: 'Confirm investment · RWF 30,000',
+                name: 'Pay RWF 30,000',
             }),
         );
         await screen.findByText('Nothing was recorded');
@@ -1141,10 +1127,9 @@ describe('Checkout: the server clock and lost answers', () => {
                 },
             }),
         );
-        await user.click(screen.getByRole('checkbox'));
         await user.click(
             screen.getByRole('button', {
-                name: 'Confirm investment · RWF 30,000',
+                name: 'Pay RWF 30,000',
             }),
         );
 
@@ -1222,7 +1207,7 @@ describe('Checkout: the risk statements (BRS KYC-R05)', () => {
     const withRisks = (acknowledged = false) => {
         const page = props();
         page.risks = {
-            version: 'brs-2.0-kyc-r05',
+            version: 'brs-3.0-kyc-r05',
             statements_sha256: 'a'.repeat(64),
             statements: [
                 { key: 'total_loss', text: 'You can lose all of your money.' },
@@ -1252,7 +1237,7 @@ describe('Checkout: the risk statements (BRS KYC-R05)', () => {
         render(<InvestorCheckout {...page} />);
 
         expect(
-            screen.getByText('Confirm the risk statements above to reserve.'),
+            screen.getByText('Confirm the risk statements first to reserve.'),
         ).toBeInTheDocument();
         expect(
             screen.queryByText("Reserving isn't available right now."),
@@ -1265,67 +1250,5 @@ describe('Checkout: the risk statements (BRS KYC-R05)', () => {
         expect(
             screen.queryByText('You can lose all of your money.'),
         ).not.toBeInTheDocument();
-    });
-
-    it('accepts only once every statement is ticked, binding the version and digest', async () => {
-        const user = userEvent.setup();
-        render(<InvestorCheckout {...withRisks()} />);
-        const accept = screen.getByRole('button', {
-            name: 'I understand these risks',
-        });
-        const boxes = screen.getAllByRole('checkbox', {
-            name: /money|guarantee/,
-        });
-
-        expect(accept).toBeDisabled();
-        await user.click(boxes[0]);
-        await user.click(boxes[1]);
-        await user.click(boxes[1]);
-        expect(accept).toBeDisabled();
-        await user.click(boxes[1]);
-        expect(accept).toBeEnabled();
-
-        inertia.queue.push(answers({ status: 'completed' }));
-        await user.click(accept);
-
-        expect(inertia.calls).toHaveLength(1);
-        expect(inertia.calls[0]).toMatchObject({
-            url: '/investor/risk-statements/acknowledgements',
-            method: 'post',
-            body: {
-                version: 'brs-2.0-kyc-r05',
-                statements_sha256: 'a'.repeat(64),
-                acknowledged: true,
-            },
-        });
-        await vi.waitFor(() => expect(inertia.reload).toHaveBeenCalledTimes(1));
-    });
-
-    it('clears the ticks when the wording changed, and says so when acceptance fails', async () => {
-        const user = userEvent.setup();
-        render(<InvestorCheckout {...withRisks()} />);
-        const boxes = screen.getAllByRole('checkbox', {
-            name: /money|guarantee/,
-        });
-        const accept = screen.getByRole('button', {
-            name: 'I understand these risks',
-        });
-
-        await user.click(boxes[0]);
-        await user.click(boxes[1]);
-        inertia.queue.push(fails(409, { code: 'RISK_STATEMENTS_STALE' }));
-        await user.click(accept);
-
-        expect(await screen.findByRole('alert')).toBeInTheDocument();
-        expect(boxes[0]).not.toBeChecked();
-        expect(inertia.reload).not.toHaveBeenCalled();
-
-        await user.click(boxes[0]);
-        await user.click(boxes[1]);
-        inertia.queue.push(fails(500));
-        await user.click(accept);
-
-        await vi.waitFor(() => expect(boxes[0]).toBeChecked());
-        expect(screen.getByRole('alert')).toBeInTheDocument();
     });
 });
