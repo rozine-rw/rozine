@@ -4,6 +4,7 @@ import contextlib
 import copy
 import ast
 import itertools
+import json
 import re
 import threading
 import time
@@ -246,6 +247,15 @@ class WorkflowCacheTests(unittest.TestCase):
             actual = eval(compile(tree, '<cache publication condition>', 'eval'), {'__builtins__': {}})
             expected = event in ('push', 'workflow_dispatch') and ref in ('refs/heads/dev', 'refs/heads/uat') and outcome == 'success'
             self.assertEqual(actual, expected, (event, ref, outcome))
+
+    def test_formatter_never_scans_the_restored_analysis_cache(self):
+        root = Path(__file__).parents[2]
+        workflow = (root / '.github/workflows/tests.yml').read_text()
+        cache_paths = set(re.findall(r'path: (tmp/phpstan)\n', workflow))
+        self.assertEqual(cache_paths, {'tmp/phpstan'})
+        self.assertIn('tmpDir: tmp/phpstan', (root / 'phpstan.neon').read_text())
+        pint = json.loads((root / 'pint.json').read_text())
+        self.assertIn('tmp', pint.get('exclude', []))
 
 
 if __name__ == "__main__":
