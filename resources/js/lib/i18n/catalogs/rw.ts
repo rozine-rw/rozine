@@ -3576,7 +3576,7 @@ const rw: Catalog = {
     'auditor.count.status.restricted': 'Gifite imbogamizi',
     'auditor.seal.title': 'Emeza ushyireho kashe',
     'auditor.seal.lead':
-        "Ibyo wabonye byitirirwa uruhushya rwawe rwa ICPAR kandi bigezwa ku bashoramari iyo amasaha 24 ikigo gifite yo kujuririra arangiye.",
+        'Ibyo wabonye byitirirwa uruhushya rwawe rwa ICPAR kandi bigezwa ku bashoramari iyo amasaha 24 ikigo gifite yo kujuririra arangiye.',
     'auditor.seal.note': "Inyandiko y'isuzuma",
     'auditor.seal.note_optional': 'Si ngombwa',
     'auditor.seal.note_required': 'Ni ngombwa',
