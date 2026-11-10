@@ -765,7 +765,7 @@ class SeparateStaticEvidenceTests(unittest.TestCase):
                 if "--paginate" in args:return json.dumps([{"jobs":jobs}])
                 run=self.run if len(calls)==1 or final_run is None else final_run
                 return json.dumps(run)
-            with patch.dict(os.environ,env),patch.object(budget.subprocess,"check_output",side_effect=output),patch.object(budget.time,"monotonic",side_effect=[0,91] if timeout else lambda:0),patch.object(budget.time,"sleep"),contextlib.redirect_stdout(io.StringIO()):
+            with patch.dict(os.environ,env),patch.object(budget.subprocess,"check_output",side_effect=output),patch.object(budget.time,"monotonic",side_effect=[0,budget.PEER_WAIT_SECONDS+1] if timeout else lambda:0),patch.object(budget.time,"sleep"),contextlib.redirect_stdout(io.StringIO()):
                 budget.main()
             self.assertTrue(summary.exists())
             self.assertTrue(any("/attempts/2/jobs?" in args[-1] for args in calls))
@@ -779,6 +779,18 @@ class SeparateStaticEvidenceTests(unittest.TestCase):
         for name in [poc.CATALOG_JOB,poc.WEB_JOB,poc.BOARD_JOB]:
             jobs=copy.deepcopy(self.jobs);next(j for j in jobs if j["name"]==name).update(status="in_progress",conclusion=None)
             with self.subTest(pending=name),self.assertRaisesRegex(ValueError,"queued/running"):self.run_budget(jobs,timeout=True)
+
+    def test_budget_waits_past_ninety_seconds_for_a_slower_php_catalog(self):
+        pending=copy.deepcopy(self.jobs);next(j for j in pending if j["name"]==poc.CATALOG_JOB).update(status="in_progress",conclusion=None)
+        pages=iter([pending,self.jobs])
+        with tempfile.TemporaryDirectory() as directory:
+            env={"GITHUB_REPOSITORY":"rozine-rw/rozine","GITHUB_RUN_ID":"99","GITHUB_RUN_ATTEMPT":"2","GITHUB_STEP_SUMMARY":str(Path(directory)/"summary")}
+            def output(args,**kwargs):
+                return json.dumps([{"jobs":next(pages)}]) if "--paginate" in args else json.dumps(self.run)
+            with patch.dict(os.environ,env),patch.object(budget.subprocess,"check_output",side_effect=output),patch.object(budget.time,"monotonic",side_effect=[0,120,240]),patch.object(budget.time,"sleep") as sleep,contextlib.redirect_stdout(io.StringIO()):
+                budget.main()
+            sleep.assert_called_once_with(budget.PEER_POLL_SECONDS)
+            self.assertTrue(Path(env["GITHUB_STEP_SUMMARY"]).exists())
 
     def test_new_poc_record_is_exact_checkout_and_never_claims_legacy_job_set(self):
         env={"GITHUB_REPOSITORY":"rozine-rw/rozine","GITHUB_RUN_ID":"99","GITHUB_RUN_ATTEMPT":"2","GITHUB_SHA":"b"*40}
