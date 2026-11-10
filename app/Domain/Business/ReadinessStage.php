@@ -54,10 +54,14 @@ final class ReadinessStage
             'months_pointing' => $stage === null ? 0 : $this->pointing($stage, $history),
             'reports' => count($reports), 'reports_needed' => max(0, self::WINDOW - count($reports)),
             'next' => $stage === null || $stage === 4 ? null : ['stage' => $stage + 1, 'threshold' => self::THRESHOLDS[$stage + 1]],
-            'months' => array_values(array_reverse(array_slice($reports, -self::WINDOW)))];
+            'months' => array_reverse(array_slice($reports, -self::WINDOW))];
     }
 
-    /** The stage one VMR reading points to on its own; 0 below Foundation. */
+    /**
+     * The stage one VMR reading points to on its own; 0 below Foundation.
+     *
+     * @return int<0, 4>
+     */
     public static function stageFor(BigInteger $vmr): int
     {
         $stage = 0;
@@ -87,8 +91,10 @@ final class ReadinessStage
      * nearest of the readings. A single strong month lifts every 3-month average it is part of, so
      * the months themselves are checked: one month beyond a threshold never moves the stage.
      *
-     * @param  list<int>  $recent
+     * @param  int<0, 4>  $stage
+     * @param  list<int<0, 4>>  $recent
      * @param  list<Month>  $months
+     * @return int<0, 4>
      */
     private function settle(int $stage, array $recent, array $months): int
     {

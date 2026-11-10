@@ -39,7 +39,7 @@ class BusinessReadinessResource extends JsonResource
             'pending' => $stage === null || $pointing === 0 ? null : ['direction' => $readiness['indicated'] > $stage ? 'up' : 'down',
                 'stage' => $readiness['indicated'], 'months' => $pointing],
             'next' => $next === null || $vmr === null ? null : ['stage' => $next['stage'], 'threshold' => self::money($next['threshold']),
-                'gap' => self::money((string) BigInteger::of($next['threshold'])->minus($vmr)->max(BigInteger::zero()))],
+                'gap' => self::money((string) BigInteger::max(BigInteger::of($next['threshold'])->minus($vmr), BigInteger::zero()))],
             'thresholds' => array_map(fn (int $number, string $threshold): array => ['stage' => $number, 'from' => self::money($threshold)],
                 array_keys(ReadinessStage::THRESHOLDS), ReadinessStage::THRESHOLDS),
             'months' => array_map(fn (array $month): array => ['period' => $month['period'], 'revenue' => self::money($month['revenue'])], $readiness['months'])],
