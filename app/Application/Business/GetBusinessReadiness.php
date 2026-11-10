@@ -6,6 +6,7 @@ namespace App\Application\Business;
 
 use App\Application\Auditor\Contracts\PublishedMonthlyReports;
 use App\Application\Business\Contracts\ReadinessRequirementStore;
+use App\Domain\Business\ReadinessRequirements;
 use App\Domain\Business\ReadinessStage;
 
 /**
@@ -19,20 +20,20 @@ use App\Domain\Business\ReadinessStage;
  * Its requirements are the ones triggered so far, as the hourly readiness sweep keeps them.
  *
  * @phpstan-import-type Stage from ReadinessStage
- * @phpstan-import-type Requirement from ReadinessRequirementStore
+ * @phpstan-import-type Listed from ReadinessRequirements
  */
 final class GetBusinessReadiness
 {
     public function __construct(private WithBusinessAuthority $authority, private PublishedMonthlyReports $reports, private ReadinessStage $stage,
-        private ReadinessRequirementStore $requirements) {}
+        private ReadinessRequirementStore $requirements, private ReadinessRequirements $rules) {}
 
-    /** @return array{identity_context_revision: int, business_id: string, readiness: Stage, requirements: list<Requirement>, today: string} */
+    /** @return array{identity_context_revision: int, business_id: string, readiness: Stage, requirements: list<Listed>} */
     public function handle(int $userId, int $contextRevision, string $businessId): array
     {
         $id = $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null, fn (array $business): string => (string) $business['id']);
         $months = ReadinessStage::months($this->reports->forBusiness($id));
 
         return ['identity_context_revision' => $contextRevision, 'business_id' => $id, 'readiness' => $this->stage->assess($months),
-            'requirements' => $this->requirements->forBusiness($id), 'today' => now('Africa/Kigali')->toDateString()];
+            'requirements' => $this->rules->listed($this->requirements->forBusiness($id), now('Africa/Kigali')->toDateString())];
     }
 }

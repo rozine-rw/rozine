@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Domain\Business\ReadinessRequirements;
-use App\Domain\Business\ReadinessStage;
 use Brick\Math\BigInteger;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -23,15 +21,15 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * its grace ends and the days left, and one not yet triggered with the stage or headcount it
  * applies from. Ready is lost while any requirement is Overdue.
  *
- * @phpstan-import-type Stage from ReadinessStage
- * @phpstan-import-type Requirement from \App\Application\Business\Contracts\ReadinessRequirementStore
+ * @phpstan-import-type Stage from \App\Domain\Business\ReadinessStage
+ * @phpstan-import-type Listed from \App\Domain\Business\ReadinessRequirements
  */
 class BusinessReadinessResource extends JsonResource
 {
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        /** @var array{business_id: string, readiness: Stage, requirements: list<Requirement>, today: string} $data */
+        /** @var array{business_id: string, readiness: Stage, requirements: list<Listed>} $data */
         $data = $this->resource;
         $business = $data['business_id'];
         $readiness = $data['readiness'];
@@ -41,42 +39,16 @@ class BusinessReadinessResource extends JsonResource
         $pointing = $readiness['months_pointing'];
 
         return ['readiness' => ['stage' => $stage, 'status' => 'building', 'vmr' => $vmr === null ? null : self::money($vmr),
-            'reports' => $readiness['reports'], 'reports_needed' => $readiness['reports_needed'], 'window' => ReadinessStage::WINDOW,
+            'reports' => $readiness['reports'], 'reports_needed' => $readiness['reports_needed'], 'window' => $readiness['window'],
             'pending' => $stage === null || $pointing === 0 ? null : ['direction' => $readiness['indicated'] > $stage ? 'up' : 'down',
                 'stage' => $readiness['indicated'], 'months' => $pointing],
             'next' => $next === null || $vmr === null ? null : ['stage' => $next['stage'], 'threshold' => self::money($next['threshold']),
                 'gap' => self::money((string) BigInteger::max(BigInteger::of($next['threshold'])->minus($vmr), BigInteger::zero()))],
-            'thresholds' => array_map(fn (int $number, string $threshold): array => ['stage' => $number, 'from' => self::money($threshold)],
-                array_keys(ReadinessStage::THRESHOLDS), ReadinessStage::THRESHOLDS),
+            'thresholds' => array_map(fn (array $row): array => ['stage' => $row['stage'], 'from' => self::money($row['from'])], $readiness['thresholds']),
             'months' => array_map(fn (array $month): array => ['period' => $month['period'], 'revenue' => self::money($month['revenue'])], $readiness['months'])],
-            'requirements' => self::requirements($data['requirements'], $data['today']),
+            'requirements' => $data['requirements'],
             'links' => ['home' => BusinessHomeResource::link($request, 'business.show', ['business' => $business]), ...BusinessHomeResource::tabs($request, $business),
                 'launcher' => ['url' => route('dashboard', [], false), 'method' => 'get']]];
-    }
-
-    /**
-     * @param  list<Requirement>  $triggered
-     * @return list<array<string, mixed>>
-     */
-    private static function requirements(array $triggered, string $today): array
-    {
-        $rules = new ReadinessRequirements;
-        $rows = array_column($triggered, null, 'code');
-        $list = [];
-        foreach (ReadinessRequirements::RULES as $code => $rule) {
-            $row = $rows[$code] ?? null;
-            $status = match (true) {
-                $row !== null => $rules->on($row['status'], $row['due_on'], $today),
-                $rule['trigger'] === 'always' => 'met',
-                default => 'not_triggered',
-            };
-            $dueOn = $row === null || $status === 'met' ? null : $row['due_on'];
-            $list[] = ['code' => $code, 'status' => $status, 'due_on' => $dueOn,
-                'days_left' => $dueOn === null ? null : max(0, $rules->daysLeft($dueOn, $today)), 'met_on' => $row['met_on'] ?? null,
-                'applies_from' => $rule['trigger'] === 'always' ? null : ['kind' => $rule['trigger'], 'value' => $rule['from']]];
-        }
-
-        return $list;
     }
 
     /** @return array{currency: 'RWF', amount: string} */

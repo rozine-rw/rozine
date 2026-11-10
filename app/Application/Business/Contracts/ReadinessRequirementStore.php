@@ -17,13 +17,6 @@ namespace App\Application\Business\Contracts;
 interface ReadinessRequirementStore
 {
     /**
-     * Every Business that has entered the platform: it has at least one published audit report.
-     *
-     * @return list<string>
-     */
-    public function enteredBusinesses(): array;
-
-    /**
      * The Business's triggered requirements in BRS order.
      *
      * @return list<Requirement>

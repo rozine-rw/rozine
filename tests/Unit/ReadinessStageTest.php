@@ -14,7 +14,8 @@ $months = fn (array $revenues): array => array_map(fn (string $revenue, int $ind
 
 it('waits for 3 sealed reports before naming a stage', function () use ($months): void {
     expect((new ReadinessStage)->assess($months(['12000000', '12000000'])))->toBe(['vmr' => null, 'stage' => null, 'indicated' => null,
-        'months_pointing' => 0, 'reports' => 2, 'reports_needed' => 1, 'next' => null,
+        'months_pointing' => 0, 'reports' => 2, 'reports_needed' => 1, 'window' => 3, 'next' => null,
+        'thresholds' => [['stage' => 1, 'from' => '2500000'], ['stage' => 2, 'from' => '10000000'], ['stage' => 3, 'from' => '30000000'], ['stage' => 4, 'from' => '80000000']],
         'months' => [['period' => '2026-02', 'revenue' => '12000000'], ['period' => '2026-01', 'revenue' => '12000000']]])
         ->and((new ReadinessStage)->assess([]))->toMatchArray(['stage' => null, 'reports' => 0, 'reports_needed' => 3, 'months' => []]);
 });

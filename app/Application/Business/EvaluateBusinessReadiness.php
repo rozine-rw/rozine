@@ -6,12 +6,12 @@ namespace App\Application\Business;
 
 use App\Application\Auditor\Contracts\PublishedMonthlyReports;
 use App\Application\Business\Contracts\BusinessNoticeAudience;
+use App\Application\Business\Contracts\EnteredBusinesses;
 use App\Application\Business\Contracts\ReadinessRequirementStore;
 use App\Application\Identity\Contracts\PartyNotices;
 use App\Domain\Business\ReadinessRequirements;
 use App\Domain\Business\ReadinessStage;
 use App\Domain\Identity\PartyNoticeKind;
-use Illuminate\Support\Facades\DB;
 
 /**
  * The readiness sweep (BRS v3.0 RDY-R02, RDY-R03, NTF-R01), run hourly so every transition lands
@@ -19,20 +19,22 @@ use Illuminate\Support\Facades\DB;
  * from its published monthly reports, records any requirement that stage triggers, turns Due and
  * Lapsed requirements Overdue on the day their grace ends, and tells the Business: a requirement
  * Due, 14 days left, Overdue, and a stage change on the report that moved it. Each notice has its
- * own event key, so a replayed sweep records nothing new. Business-only.
+ * own event key, so a replayed sweep records nothing new, and every step reads what the last one
+ * stored: a sweep stopped part-way is finished by the next one. Business-only.
  */
 final class EvaluateBusinessReadiness
 {
     public function __construct(private ReadinessRequirementStore $requirements, private PublishedMonthlyReports $reports,
-        private ReadinessStage $stage, private ReadinessRequirements $rules, private PartyNotices $notices, private BusinessNoticeAudience $audience) {}
+        private ReadinessStage $stage, private ReadinessRequirements $rules, private PartyNotices $notices, private BusinessNoticeAudience $audience,
+        private EnteredBusinesses $entered) {}
 
     /** @return int the Businesses evaluated */
     public function handle(): int
     {
         $today = now('Africa/Kigali')->toDateString();
-        $businesses = $this->requirements->enteredBusinesses();
+        $businesses = $this->entered->all();
         foreach ($businesses as $businessId) {
-            DB::transaction(fn () => $this->evaluate($businessId, $today));
+            $this->evaluate($businessId, $today);
         }
 
         return count($businesses);
@@ -52,22 +54,23 @@ final class EvaluateBusinessReadiness
         }
         foreach ($this->rules->triggered($now['stage'] ?? 0) as $code) {
             $start = $this->rules->start($code, $today);
-            if ($this->requirements->trigger($businessId, $code, $start['status'], $start['due_on'], $today) && $start['status'] === 'due') {
-                $this->notices->record($party, PartyNoticeKind::BusinessReadinessRequirementDue, ['business_id' => $businessId, 'code' => $code,
-                    'due_on' => (string) $start['due_on']], "readiness-due:{$businessId}:{$code}:{$today}");
-            }
+            $this->requirements->trigger($businessId, $code, $start['status'], $start['due_on'], $today);
         }
         foreach ($this->requirements->forBusiness($businessId) as $requirement) {
+            $code = $requirement['code'];
             $dueOn = $requirement['due_on'];
-            if ($dueOn === null || ! in_array($requirement['status'], ['due', 'lapsed'], true)) {
+            if ($dueOn === null) {
                 continue;
             }
-            $facts = ['business_id' => $businessId, 'code' => $requirement['code'], 'due_on' => $dueOn];
+            $facts = ['business_id' => $businessId, 'code' => $code, 'due_on' => $dueOn];
+            if ($requirement['status'] === 'due') {
+                $this->notices->record($party, PartyNoticeKind::BusinessReadinessRequirementDue, $facts, "readiness-due:{$businessId}:{$code}:{$requirement['triggered_on']}");
+            }
             if ($this->rules->on($requirement['status'], $dueOn, $today) === 'overdue') {
-                $this->requirements->move($businessId, $requirement['code'], [$requirement['status']], 'overdue', $dueOn);
-                $this->notices->record($party, PartyNoticeKind::BusinessReadinessRequirementOverdue, $facts, "readiness-overdue:{$businessId}:{$requirement['code']}:{$dueOn}");
+                $this->requirements->move($businessId, $code, ['due', 'lapsed'], 'overdue', $dueOn);
+                $this->notices->record($party, PartyNoticeKind::BusinessReadinessRequirementOverdue, $facts, "readiness-overdue:{$businessId}:{$code}:{$dueOn}");
             } elseif ($this->rules->daysLeft($dueOn, $today) <= ReadinessRequirements::REMINDER_DAYS) {
-                $this->notices->record($party, PartyNoticeKind::BusinessReadinessRequirementClosing, $facts, "readiness-closing:{$businessId}:{$requirement['code']}:{$dueOn}");
+                $this->notices->record($party, PartyNoticeKind::BusinessReadinessRequirementClosing, $facts, "readiness-closing:{$businessId}:{$code}:{$dueOn}");
             }
         }
     }

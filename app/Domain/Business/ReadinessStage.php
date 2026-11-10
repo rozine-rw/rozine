@@ -19,7 +19,8 @@ use Brick\Math\RoundingMode;
  *
  * @phpstan-type Month array{period: string, revenue: string}
  * @phpstan-type Stage array{vmr: string|null, stage: int|null, indicated: int|null, months_pointing: int,
- *     reports: int, reports_needed: int, next: array{stage: int, threshold: string}|null, months: list<Month>}
+ *     reports: int, reports_needed: int, window: int, next: array{stage: int, threshold: string}|null,
+ *     thresholds: list<array{stage: int, from: string}>, months: list<Month>}
  */
 final class ReadinessStage
 {
@@ -66,8 +67,9 @@ final class ReadinessStage
 
         return ['vmr' => $vmr === null ? null : (string) $vmr, 'stage' => $stage, 'indicated' => $indicated,
             'months_pointing' => $stage === null ? 0 : $this->pointing($stage, $history),
-            'reports' => count($reports), 'reports_needed' => max(0, self::WINDOW - count($reports)),
+            'reports' => count($reports), 'reports_needed' => max(0, self::WINDOW - count($reports)), 'window' => self::WINDOW,
             'next' => $stage === null || $stage === 4 ? null : ['stage' => $stage + 1, 'threshold' => self::THRESHOLDS[$stage + 1]],
+            'thresholds' => array_map(fn (int $number, string $from): array => ['stage' => $number, 'from' => $from], array_keys(self::THRESHOLDS), self::THRESHOLDS),
             'months' => array_reverse(array_slice($reports, -self::WINDOW))];
     }
 

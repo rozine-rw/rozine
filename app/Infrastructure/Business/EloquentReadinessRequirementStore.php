@@ -6,18 +6,11 @@ namespace App\Infrastructure\Business;
 
 use App\Application\Business\Contracts\ReadinessRequirementStore;
 use App\Domain\Business\ReadinessRequirements;
-use App\Models\AuditReportPublication;
 use App\Models\BusinessReadinessRequirement;
 use Illuminate\Support\Facades\DB;
 
 final class EloquentReadinessRequirementStore implements ReadinessRequirementStore
 {
-    public function enteredBusinesses(): array
-    {
-        return array_values(AuditReportPublication::query()->where('status', 'published')->distinct()->orderBy('business_id')
-            ->pluck('business_id')->map(fn (mixed $id): string => (string) $id)->all());
-    }
-
     public function forBusiness(string $businessId): array
     {
         $order = array_flip(array_keys(ReadinessRequirements::RULES));
