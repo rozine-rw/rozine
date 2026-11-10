@@ -391,12 +391,34 @@ export type ReadinessGuidanceLine = {
     action: `${'record_gap' | 'forecast_error'}.${'keep' | 'fix'}`;
 };
 
+/** One condition of an RDY-R08 milestone; `pending` while Rozine cannot measure it yet. */
+export type ReadinessMilestoneCondition = {
+    key:
+        | 'stage'
+        | 'ready_6_months'
+        | 'notes_on_time'
+        | 'audited_statements'
+        | 'limited_company'
+        | 'trading_3_years'
+        | 'no_proceedings'
+        | 'ready_12_months';
+    state: 'met' | 'not_met' | 'pending';
+};
+
+/** A milestone toward the capital market (RDY-R08), reached once every condition is met. */
+export type ReadinessMilestone = {
+    reached: boolean;
+    conditions: ReadinessMilestoneCondition[];
+};
+
 export type BusinessReadinessProps = {
     readiness: BusinessReadiness;
     requirements: ReadinessRequirement[];
     guidance: ReadinessGuidanceLine[];
     /** Core Academy modules of the stage passed, of all of them (RDY-R07). */
     syllabus: { passed: number; total: number };
+    /** The bond track and the RSE Investment Clinic referral (RDY-R08). */
+    milestones: { bond: ReadinessMilestone; clinic: ReadinessMilestone };
     links: BusinessAppLinks & { academy: RouteLink };
 };
 

@@ -10,6 +10,8 @@ import { cn } from '@/lib/utils';
 import type {
     BusinessReadinessProps,
     ReadinessGuidanceLine,
+    ReadinessMilestone,
+    ReadinessMilestoneCondition,
     ReadinessRequirement,
     ReadinessStageNumber,
 } from '@/types/business';
@@ -32,6 +34,62 @@ const REQUIREMENT_TONE = {
     met: 'bg-[rgba(31,138,76,.12)] text-[#17663a] dark:text-[#7fd6a2]',
     lapsed: 'bg-[rgba(194,102,31,.12)] text-[#8a4710] dark:text-[#f0b27a]',
 } as const satisfies Record<ReadinessRequirement['status'], string>;
+
+const CONDITION_TONE = {
+    met: 'bg-[rgba(31,138,76,.12)] text-[#17663a] dark:text-[#7fd6a2]',
+    not_met: 'bg-rz-page text-rz-secondary',
+    pending: 'bg-rz-accent-soft text-rz-accent-app-text',
+} as const satisfies Record<ReadinessMilestoneCondition['state'], string>;
+
+/** One RDY-R08 milestone: its name, whether it is reached, and each condition with its state. */
+function Milestone({
+    track,
+    milestone,
+}: {
+    track: 'bond' | 'clinic';
+    milestone: ReadinessMilestone;
+}) {
+    const { t } = useTranslation();
+
+    return (
+        <li className="rounded-2xl border border-rz-border bg-rz-surface p-3.5">
+            <p className="text-[14px] font-semibold text-rz-ink">
+                {t(`business.readiness.milestones.${track}.title`)}
+            </p>
+            <p className="mt-0.5 text-[12.5px] text-rz-secondary">
+                {t(
+                    milestone.reached
+                        ? `business.readiness.milestones.${track}.reached`
+                        : `business.readiness.milestones.${track}.summary`,
+                )}
+            </p>
+            <ul className="mt-2 space-y-1.5">
+                {milestone.conditions.map((condition) => (
+                    <li
+                        key={condition.key}
+                        className="flex items-start justify-between gap-3 text-[13px] text-rz-ink"
+                    >
+                        <span>
+                            {t(
+                                `business.readiness.milestones.condition.${condition.key}`,
+                            )}
+                        </span>
+                        <span
+                            className={cn(
+                                'shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold',
+                                CONDITION_TONE[condition.state],
+                            )}
+                        >
+                            {t(
+                                `business.readiness.milestones.state.${condition.state}`,
+                            )}
+                        </span>
+                    </li>
+                ))}
+            </ul>
+        </li>
+    );
+}
 
 /** One RDY-R06 line: the signal and its verdict, the value against the target, then the one action. */
 function GuidanceLine({ line }: { line: ReadinessGuidanceLine }) {
@@ -88,6 +146,7 @@ export default function BusinessReadiness({
     requirements,
     guidance,
     syllabus,
+    milestones,
     links,
 }: BusinessReadinessProps) {
     const { t, locale } = useTranslation();
@@ -318,6 +377,25 @@ export default function BusinessReadiness({
                             })}
                         </span>
                     </Link>
+                    <h2
+                        id="readiness-milestones-title"
+                        className="mt-6 text-base font-semibold text-rz-ink"
+                    >
+                        {t('business.readiness.milestones.title')}
+                    </h2>
+                    <p className="mt-1 text-[12.5px] text-rz-secondary">
+                        {t('business.readiness.milestones.rule')}
+                    </p>
+                    <ul
+                        aria-labelledby="readiness-milestones-title"
+                        className="mt-3 space-y-2"
+                    >
+                        <Milestone track="bond" milestone={milestones.bond} />
+                        <Milestone
+                            track="clinic"
+                            milestone={milestones.clinic}
+                        />
+                    </ul>
                     <h2
                         id="readiness-stages-title"
                         className="mt-6 text-base font-semibold text-rz-ink"

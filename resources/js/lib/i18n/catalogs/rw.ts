@@ -398,6 +398,39 @@ const rw: Catalog = {
         'Watsinze iri somo. Amakarita yaryo aguma hano kugira ngo usubiremo.',
     'business.academy.note.preview':
         'Iri somo ni iry’icyiciro gikurikira. Ikizamini cyaryo gifunguka ugeze kuri icyo cyiciro.',
+    'business.readiness.milestones.title': 'Intambwe zigana ku isoko ry’imari',
+    'business.readiness.milestones.rule':
+        'Buri ntambwe igerwaho ubwayo iyo ibisabwa byose byujujwe. Ibyo Rozine itarabasha gupima bigaragazwa nk’ibitegereje.',
+    'business.readiness.milestones.bond.title':
+        'Inzira y’impapuro mpeshwamwenda',
+    'business.readiness.milestones.bond.summary':
+        'Uzuza ibisabwa byose, Rozine igutegurire dosiye yo kwitegura impapuro mpeshwamwenda.',
+    'business.readiness.milestones.bond.reached':
+        'Ibisabwa byose byujujwe. Rozine igutegurira dosiye yo kwitegura impapuro mpeshwamwenda.',
+    'business.readiness.milestones.clinic.title':
+        'Kohererezwa Investment Clinic ya RSE',
+    'business.readiness.milestones.clinic.summary':
+        'Uzuza ibisabwa byose, Rozine ishobora kukohereza muri Investment Clinic y’Isoko ry’Imari n’Imigabane ry’u Rwanda, ubyemeye. Kohereza bizatangira amasezerano ya Rozine na RSE amaze gusinywa.',
+    'business.readiness.milestones.clinic.reached':
+        'Ibisabwa byose byujujwe. Rozine izakohereza ubyemeye, amasezerano yayo na RSE amaze gusinywa.',
+    'business.readiness.milestones.condition.stage': 'Icyiciro cya 3 cyangwa 4',
+    'business.readiness.milestones.condition.ready_6_months':
+        'Witeguye amezi 6 akurikirana',
+    'business.readiness.milestones.condition.ready_12_months':
+        'Witeguye amezi 12 akurikirana',
+    'business.readiness.milestones.condition.notes_on_time':
+        'Impapuro za Rozine 3 cyangwa zirenga, buri cyiciro cyishyurwa ku munsi wacyo',
+    'business.readiness.milestones.condition.audited_statements':
+        'Raporo z’imari z’umwaka zagenzuwe zashyizweho',
+    'business.readiness.milestones.condition.limited_company':
+        'Sosiyete ifite uburyozwe buhinitse',
+    'business.readiness.milestones.condition.trading_3_years':
+        'Imyaka 3 cyangwa irenga ukora ubucuruzi',
+    'business.readiness.milestones.condition.no_proceedings':
+        'Nta manza zikomeye',
+    'business.readiness.milestones.state.met': 'Byujujwe',
+    'business.readiness.milestones.state.not_met': 'Ntibyujujwe',
+    'business.readiness.milestones.state.pending': 'Bitegereje',
     'business.readiness.stages': 'Ibyiciro bine',
     'business.readiness.stage_from': 'Guhera kuri {amount} ku kwezi',
     'business.readiness.current': 'Icy’ubu',

@@ -400,6 +400,38 @@ const fr: Catalog = {
         'Vous avez réussi ce module. Ses cartes restent ici pour réviser.',
     'business.academy.note.preview':
         'Ce module fait partie de l’étape suivante. Son test s’ouvre quand vous l’atteignez.',
+    'business.readiness.milestones.title': 'Étapes vers le marché des capitaux',
+    'business.readiness.milestones.rule':
+        'Chaque étape est franchie automatiquement dès que toutes ses conditions sont remplies. Les conditions que Rozine ne mesure pas encore sont indiquées en attente.',
+    'business.readiness.milestones.bond.title': 'Parcours obligataire',
+    'business.readiness.milestones.bond.summary':
+        'Remplissez toutes les conditions et Rozine prépare votre dossier de préparation obligataire.',
+    'business.readiness.milestones.bond.reached':
+        'Toutes les conditions sont remplies. Rozine prépare votre dossier de préparation obligataire.',
+    'business.readiness.milestones.clinic.title':
+        'Orientation vers l’Investment Clinic de la RSE',
+    'business.readiness.milestones.clinic.summary':
+        'Remplissez toutes les conditions et Rozine peut vous orienter vers l’Investment Clinic de la Bourse du Rwanda, avec votre accord. Les orientations commencent une fois l’accord entre Rozine et la RSE signé.',
+    'business.readiness.milestones.clinic.reached':
+        'Toutes les conditions sont remplies. Rozine vous oriente, avec votre accord, une fois son accord avec la RSE signé.',
+    'business.readiness.milestones.condition.stage': 'Étape 3 ou 4',
+    'business.readiness.milestones.condition.ready_6_months':
+        'Prête pendant 6 mois consécutifs',
+    'business.readiness.milestones.condition.ready_12_months':
+        'Prête pendant 12 mois consécutifs',
+    'business.readiness.milestones.condition.notes_on_time':
+        '3 billets Rozine ou plus, chaque échéance encaissée à sa date',
+    'business.readiness.milestones.condition.audited_statements':
+        'États financiers annuels audités déposés',
+    'business.readiness.milestones.condition.limited_company':
+        'Une société à responsabilité limitée',
+    'business.readiness.milestones.condition.trading_3_years':
+        '3 ans d’activité ou plus',
+    'business.readiness.milestones.condition.no_proceedings':
+        'Aucune procédure judiciaire majeure',
+    'business.readiness.milestones.state.met': 'Remplie',
+    'business.readiness.milestones.state.not_met': 'Non remplie',
+    'business.readiness.milestones.state.pending': 'En attente',
     'business.readiness.stages': 'Les quatre étapes',
     'business.readiness.stage_from': 'À partir de {amount} par mois',
     'business.readiness.current': 'Actuelle',

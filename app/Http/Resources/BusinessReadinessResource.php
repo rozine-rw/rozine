@@ -24,18 +24,21 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * `guidance` is the RDY-R06 line for each signal that has a reading, Record Gap then Forecast
  * Error: the value and target in percent, the verdict, the months averaged, the forecasts' bias
  * and one action. Cash Lead waits for collected instalments. `syllabus` counts the stage's core
- * Academy modules passed (RDY-R07), opened from `links.academy`.
+ * Academy modules passed (RDY-R07), opened from `links.academy`. `milestones` lists the bond-track
+ * and RSE Investment Clinic conditions (RDY-R08), each met, not met or pending while unmeasured.
  *
  * @phpstan-import-type Stage from \App\Domain\Business\ReadinessStage
  * @phpstan-import-type Listed from \App\Domain\Business\ReadinessRequirements
  * @phpstan-import-type Line from \App\Domain\Business\ReadinessSignals
+ * @phpstan-import-type Track from \App\Domain\Business\ReadinessMilestones
  */
 class BusinessReadinessResource extends JsonResource
 {
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        /** @var array{business_id: string, readiness: Stage, requirements: list<Listed>, guidance: list<Line>, syllabus: array{passed: int, total: int}} $data */
+        /** @var array{business_id: string, readiness: Stage, requirements: list<Listed>, guidance: list<Line>, syllabus: array{passed: int, total: int},
+         *     milestones: array{bond: Track, clinic: Track}} $data */
         $data = $this->resource;
         $business = $data['business_id'];
         $readiness = $data['readiness'];
@@ -55,6 +58,7 @@ class BusinessReadinessResource extends JsonResource
             'requirements' => $data['requirements'],
             'guidance' => $data['guidance'],
             'syllabus' => $data['syllabus'],
+            'milestones' => $data['milestones'],
             'links' => ['home' => BusinessHomeResource::link($request, 'business.show', ['business' => $business]), ...BusinessHomeResource::tabs($request, $business),
                 'launcher' => ['url' => route('dashboard', [], false), 'method' => 'get'],
                 'academy' => BusinessHomeResource::link($request, 'business.academy', ['business' => $business])]];
