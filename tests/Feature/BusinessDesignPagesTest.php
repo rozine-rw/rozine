@@ -309,7 +309,8 @@ it('opens Get ready for your audit for the open monthly audit until its report i
     expect($home['today'][0])->toBe(['kind' => 'audit_window', 'month' => '2026-09-01', 'window_open' => true, 'days_left' => 5,
         'sealed_by' => '2026-10-07T21:59:59Z', 'link' => $prep])
         ->and(($this->props)($user, 'business.audit-prep', ['business' => $business], 'business/audit-prep'))
-        ->toBe(['home' => $home, 'audit' => $audit, 'links' => ['close' => ($this->link)("/business/{$business}")]]);
+        ->toBe(['home' => $home, 'audit' => $audit, 'links' => ['close' => ($this->link)("/business/{$business}"),
+            'figures' => ($this->link)("/business/{$business}/monthly-figures")]]);
     $this->actingAs($user)->getJson(route('api.v1.business.show', ['business' => $business]))->assertOk()
         ->assertJsonMissing(['kind' => 'audit_window']);
 

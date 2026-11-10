@@ -3,6 +3,7 @@ import auditReports from './audit-reports'
 import repayments from './repayments'
 import profile937a89 from './profile'
 import complaints from './complaints'
+import monthlyFigures from './monthly-figures'
 import statements from './statements'
 import notices from './notices'
 import wallet from './wallet'
@@ -797,6 +798,7 @@ const business = {
     complaints: Object.assign(complaints, complaints),
     rating: Object.assign(rating, rating),
     auditPrep: Object.assign(auditPrep, auditPrep),
+    monthlyFigures: Object.assign(monthlyFigures, monthlyFigures),
     statements: Object.assign(statements, statements),
     notices: Object.assign(notices, notices),
     wallet: Object.assign(wallet, wallet),

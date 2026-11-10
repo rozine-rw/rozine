@@ -245,6 +245,10 @@
             "close": {
                 "url": "/preview/business-home",
                 "method": "get"
+            },
+            "figures": {
+                "url": "/preview/business-monthly-figures",
+                "method": "get"
             }
         }
     }

@@ -4103,6 +4103,69 @@ const rw: Catalog = {
     'business.servicing.repay.ladder_version':
         "Amabwiriza y'amafaranga y'ubukererwe {version}.",
     'business.audit_prep.title': 'Itegure igenzura',
+    'business.monthly_figures.title': 'Imibare y’ukwezi',
+    'business.monthly_figures.intro':
+        'Ohereza amafaranga yinjiye n’ayasohotse muri {month}. Umugenzuzi wawe azagenzura iyi mibare igihe cy’isura, mbere ya {date}.',
+    'business.monthly_figures.step': 'Intambwe {current} kuri {total}',
+    'business.monthly_figures.money_in.title':
+        'Amafaranga yinjiye muri {month}',
+    'business.monthly_figures.money_in.body':
+        'Amafaranga yose ikigo cyakiriye mu kwezi, kuri konti zose no mu ntoki, mu mafaranga y’u Rwanda.',
+    'business.monthly_figures.money_in.label': 'Amafaranga yinjiye',
+    'business.monthly_figures.costs.title':
+        'Amafaranga yakoreshejwe muri {month}',
+    'business.monthly_figures.costs.body':
+        'Ibyo ikigo cyakoresheje mu kwezi, muri buri cyiciro mu byiciro bitandatu. Andika 0 aho nta byabaye.',
+    'business.monthly_figures.costs.stock': 'Ibicuruzwa n’ibikoresho',
+    'business.monthly_figures.costs.staff': 'Imishahara',
+    'business.monthly_figures.costs.premises':
+        'Ubukode n’amazi n’amashanyarazi',
+    'business.monthly_figures.costs.transport': 'Ingendo',
+    'business.monthly_figures.costs.taxes': 'Imisoro n’amahoro',
+    'business.monthly_figures.costs.other': 'Ibindi byakoreshejwe',
+    'business.monthly_figures.costs.total': 'Igiteranyo cy’ibyakoreshejwe',
+    'business.monthly_figures.costs.total_line':
+        'Igiteranyo cy’ibyakoreshejwe: {amount}',
+    'business.monthly_figures.paid.title':
+        'Ibyahawe ba nyir’ikigo muri {month}',
+    'business.monthly_figures.paid.body':
+        'Amafaranga ba nyir’ikigo bakuyemo ku giti cyabo. Andika 0 niba nta yo.',
+    'business.monthly_figures.paid.label': 'Ibyahawe ba nyir’ikigo',
+    'business.monthly_figures.forecast.title': 'Iteganyagihe rya {forecast}',
+    'business.monthly_figures.forecast.basis':
+        'Byujujwe n’impuzandengo yawe yagenzuwe y’amezi atatu ashize: {amount}.',
+    'business.monthly_figures.forecast.no_basis':
+        'Andika amafaranga uteganya kwinjiza. Nta mpuzandengo yagenzuwe irabaho.',
+    'business.monthly_figures.forecast.label':
+        'Amafaranga ateganyijwe kwinjira muri {month}',
+    'business.monthly_figures.forecast.order': 'Komande yasinywe',
+    'business.monthly_figures.forecast.order_hint':
+        'Iri teganyagihe rirenga 25% ugereranyije n’impuzandengo yawe yagenzuwe. Vuga komande yasinywe irishingiyeho, urugero "Komande 114 ya Simba Supermarket". Umugenzuzi wawe azayibona igihe cy’isura.',
+    'business.monthly_figures.changes.title': 'Impinduka muri {month}',
+    'business.monthly_figures.changes.owners':
+        'Ba nyir’ikigo cyangwa abayobozi bahindutse',
+    'business.monthly_figures.changes.premises':
+        'Ikigo cyimutse, cyangwa hafunguwe cyangwa hafunzwe ishami',
+    'business.monthly_figures.changes.borrowing': 'Hafashwe inguzanyo nshya',
+    'business.monthly_figures.changes.customers':
+        'Habuze umukiriya cyangwa umutanga w’ingenzi',
+    'business.monthly_figures.changes.yes': 'Yego',
+    'business.monthly_figures.changes.no': 'Oya',
+    'business.monthly_figures.summary.title': 'Genzura wohereze',
+    'business.monthly_figures.summary.line':
+        '{month}: amafaranga yinjiye {money_in}, ayakoreshejwe {costs}, ayahawe ba nyir’ikigo {paid}. Iteganyagihe rya {forecast_month}: {forecast}.',
+    'business.monthly_figures.summary.final':
+        'Iyi mibare imaze koherezwa, iba ari ntakuka kuri uku kwezi.',
+    'business.monthly_figures.sent.title': 'Imibare ya {month}',
+    'business.monthly_figures.sent.body':
+        'Yoherejwe {date}. Umugenzuzi wawe azayigenzura igihe cy’isura.',
+    'business.monthly_figures.back': 'Subira inyuma',
+    'business.monthly_figures.next': 'Komeza',
+    'business.monthly_figures.send': 'Ohereza imibare',
+    'business.monthly_figures.sending': 'Birimo koherezwa…',
+    'business.audit_prep.figures.title': 'Ohereza imibare y’ukwezi',
+    'business.audit_prep.figures.body':
+        'Amapaji atandatu magufi, iminota igera kuri 3. Umugenzuzi wawe azayigenzura igihe cy’isura.',
     'business.audit_prep.window_open': "Igihe cy'igenzura cyatangiye",
     'business.audit_prep.next': 'Igenzura rikurikira',
     'business.audit_prep.first': 'Igenzura ryawe rya mbere',

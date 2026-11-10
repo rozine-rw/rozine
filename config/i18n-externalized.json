@@ -217,6 +217,7 @@
         "resources/js/pages/business/auth/register.tsx",
         "resources/js/pages/business/campaign.tsx",
         "resources/js/pages/business/home.tsx",
+        "resources/js/pages/business/monthly-figures.tsx",
         "resources/js/pages/business/note.tsx",
         "resources/js/pages/business/onboarding.tsx",
         "resources/js/pages/business/profile.tsx",

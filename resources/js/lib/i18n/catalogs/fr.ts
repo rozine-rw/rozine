@@ -4119,6 +4119,64 @@ const fr: Catalog = {
     'business.servicing.repay.ladder_version':
         'Politique de frais de retard {version}.',
     'business.audit_prep.title': 'Préparez votre audit',
+    'business.monthly_figures.title': 'Chiffres du mois',
+    'business.monthly_figures.intro':
+        'Envoyez ce qui est entré et sorti en {month}. Votre partenaire d’audit vérifie ces chiffres lors de la visite, avant le {date}.',
+    'business.monthly_figures.step': 'Étape {current} sur {total}',
+    'business.monthly_figures.money_in.title': 'Entrées de {month}',
+    'business.monthly_figures.money_in.body':
+        'Tout l’argent reçu par l’entreprise pendant le mois, sur chaque compte et en espèces, en francs rwandais.',
+    'business.monthly_figures.money_in.label': 'Entrées',
+    'business.monthly_figures.costs.title': 'Dépenses de {month}',
+    'business.monthly_figures.costs.body':
+        'Ce que l’entreprise a dépensé pendant le mois, dans chacune des six catégories. Saisissez 0 s’il n’y en a pas eu.',
+    'business.monthly_figures.costs.stock': 'Stock et matières',
+    'business.monthly_figures.costs.staff': 'Salaires',
+    'business.monthly_figures.costs.premises': 'Loyer et charges',
+    'business.monthly_figures.costs.transport': 'Transport',
+    'business.monthly_figures.costs.taxes': 'Impôts et frais',
+    'business.monthly_figures.costs.other': 'Autres dépenses',
+    'business.monthly_figures.costs.total': 'Total des dépenses',
+    'business.monthly_figures.costs.total_line':
+        'Total des dépenses : {amount}',
+    'business.monthly_figures.paid.title': 'Versé aux propriétaires en {month}',
+    'business.monthly_figures.paid.body':
+        'L’argent que les propriétaires ont retiré de l’entreprise pour eux-mêmes. Saisissez 0 s’il n’y en a pas eu.',
+    'business.monthly_figures.paid.label': 'Versé aux propriétaires',
+    'business.monthly_figures.forecast.title': 'Prévision pour {forecast}',
+    'business.monthly_figures.forecast.basis':
+        'Prérempli avec votre moyenne vérifiée des trois derniers mois : {amount}.',
+    'business.monthly_figures.forecast.no_basis':
+        'Saisissez les entrées que vous attendez. Il n’y a pas encore de moyenne vérifiée.',
+    'business.monthly_figures.forecast.label': 'Entrées attendues en {month}',
+    'business.monthly_figures.forecast.order': 'Commande signée',
+    'business.monthly_figures.forecast.order_hint':
+        'Cette prévision s’écarte de plus de 25 % de votre moyenne vérifiée. Indiquez la commande signée qui la justifie, par exemple « Commande 114 de Simba Supermarket ». Votre partenaire d’audit la voit lors de la visite.',
+    'business.monthly_figures.changes.title': 'Changements en {month}',
+    'business.monthly_figures.changes.owners':
+        'Les propriétaires ou les administrateurs ont changé',
+    'business.monthly_figures.changes.premises':
+        'Déménagement, ou ouverture ou fermeture d’un site',
+    'business.monthly_figures.changes.borrowing': 'Nouveau prêt ou crédit',
+    'business.monthly_figures.changes.customers':
+        'Perte d’un client ou d’un fournisseur principal',
+    'business.monthly_figures.changes.yes': 'Oui',
+    'business.monthly_figures.changes.no': 'Non',
+    'business.monthly_figures.summary.title': 'Vérifier et envoyer',
+    'business.monthly_figures.summary.line':
+        '{month} : entrées {money_in}, dépenses {costs}, versé aux propriétaires {paid}. Prévision pour {forecast_month} : {forecast}.',
+    'business.monthly_figures.summary.final':
+        'Une fois envoyés, ces chiffres sont définitifs pour le mois.',
+    'business.monthly_figures.sent.title': 'Chiffres de {month}',
+    'business.monthly_figures.sent.body':
+        'Envoyés le {date}. Votre partenaire d’audit les vérifie lors de la visite.',
+    'business.monthly_figures.back': 'Retour',
+    'business.monthly_figures.next': 'Suivant',
+    'business.monthly_figures.send': 'Envoyer les chiffres',
+    'business.monthly_figures.sending': 'Envoi…',
+    'business.audit_prep.figures.title': 'Envoyez vos chiffres du mois',
+    'business.audit_prep.figures.body':
+        'Six écrans courts, environ 3 minutes. Votre partenaire d’audit les vérifie lors de la visite.',
     'business.audit_prep.window_open': "Fenêtre d'audit ouverte",
     'business.audit_prep.next': 'Prochain audit',
     'business.audit_prep.first': 'Votre premier audit',
