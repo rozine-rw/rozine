@@ -3965,6 +3965,11 @@ const en = {
     'investor.cart.whole.band_basis':
         'Your band counts the notes you hold plus this cart, never wallet cash.',
     'investor.cart.whole.quoting': 'Pricing your cart…',
+    'investor.cart.whole.holding': 'Holding your notes…',
+    'investor.cart.whole.confirming': 'Confirming…',
+    'investor.cart.whole.releasing': 'Releasing…',
+    'investor.cart.whole.settling_wait':
+        'This usually takes a few minutes. This page updates by itself, then you can check out again.',
     'investor.cart.whole.checkout': 'Check out all · {amount}',
     'investor.cart.whole.fine_print':
         'Holds every note in your cart for 5 minutes while you confirm. Nothing is committed until you confirm.',
