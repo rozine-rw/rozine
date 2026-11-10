@@ -191,6 +191,10 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
 
                 return $this->journal->execute('party:'.$partyId, $userId, 'report.cosign', $requestId, 'audit.publication', $publication->id,
                     $input, function (): void {}, function () use ($publication, $seal, $business, $partyId, $userId, $current, $expectedRevision, $reportRevision, $mandateVersion, $digest, $accepted, $note): OperationResult {
+                        /* BRS v3.0 AUD-R04: one CPA seals; the Business may dispute within 24 hours but never co-signs. */
+                        if ($this->monthly($publication)) {
+                            throw new CommandRejection('REPORT_COSIGN_NOT_REQUIRED', revision: $publication->revision);
+                        }
                         if ($publication->revision !== $expectedRevision) {
                             throw new CommandRejection('VERSION_CONFLICT', revision: $publication->revision);
                         }
@@ -218,10 +222,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                             throw new CommandRejection('AUDIT_PUBLICATION_UNAVAILABLE', revision: $publication->revision);
                         }
                         $at = now('UTC')->toImmutable();
-                        if ($this->monthly($publication)) {
-                            $this->reviewPolicy->requireOpen($publication->status, $publication->due_at->toIso8601String(), $at->toDateTimeImmutable());
-                        }
-                        if (! $this->monthly($publication) && ! $this->window->mayPublish($seal->payload['report']['period'], $at->toDateTimeImmutable())) {
+                        if (! $this->window->mayPublish($seal->payload['report']['period'], $at->toDateTimeImmutable())) {
                             throw new CommandRejection('REPORT_WINDOW_CLOSED', revision: $publication->revision);
                         }
                         $payload = ['report_id' => $publication->audit_report_id, 'report_revision' => $reportRevision, 'digest' => $digest,
@@ -233,11 +234,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                             'actor_party_id' => $partyId, 'actor_user_id' => $userId, 'payload' => $payload,
                             'sha256' => hash('sha256', $this->json->encode($payload)), 'created_at' => $at])->save();
                         $signed = AuditReportSignature::query()->where('audit_report_publication_id', $publication->id)->pluck('actor_party_id')->all();
-                        $complete = $this->monthly($publication) || array_diff($business['mandate']['required_signatories'], $signed) === [];
-                        if ($this->monthly($publication)) {
-                            $this->event($publication, 'report.cosign', 'party', $userId, $partyId, ['signature_id' => $signature->id, 'published_reason' => 'signed'], at: $at);
-                            $publication->published_reason = 'signed';
-                        }
+                        $complete = array_diff($business['mandate']['required_signatories'], $signed) === [];
                         $publication->forceFill(['revision' => $publication->revision + 1, 'status' => $complete ? 'published' : 'pending',
                             'published_at' => $complete ? $at : null])->save();
                         $this->noticeHolders($publication);
@@ -462,7 +459,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
             : $this->window->mayPublish($seal->payload['report']['period'], now()->toDateTimeImmutable()));
         $own = $signatures->get($partyId);
         $person = array_find($business['mandate']['people'], fn (array $person): bool => $person['party_id'] === $partyId);
-        $canSign = $available && $publication->status === 'pending' && $own === null
+        $canSign = ! $this->monthly($publication) && $available && $publication->status === 'pending' && $own === null
             && in_array($partyId, $business['mandate']['required_signatories'], true) && in_array('report.cosign', $person['permissions'] ?? [], true);
 
         return ['business' => ['id' => $business['id'], 'name' => $business['profile']['name']],

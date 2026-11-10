@@ -45,7 +45,7 @@ beforeEach(function (): void {
 it('offers a released application for publication before anything is listed', function (): void {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     $business = $fixture['audit']['business'];
     $application = $fixture['application'];
     $user = $fixture['audit']['authority']['users'][0];
@@ -94,14 +94,14 @@ it('leads Today with a sealed audit report awaiting co-signatures, opening its c
     Sanctum::actingAs($user, ['business:read']);
     $this->getJson(route('api.v1.business.show', ['business' => $business]))->assertOk()->assertJsonPath('data.today', []);
 
-    expect(AuditSealingFixture::cosign($fixture)['status'])->toBe('completed')
+    expect(AuditSealingFixture::publish($fixture)['status'])->toBe('completed')
         ->and(($this->props)($user, $business)['today'])->toBe([]);
 })->with(['flash', 'monthly']);
 
 it('moves the submitted application page on to approved, with its publish link, once staff release it', function (): void {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     $business = $fixture['audit']['business'];
     $application = $fixture['application'];
     $user = $fixture['audit']['authority']['users'][0];

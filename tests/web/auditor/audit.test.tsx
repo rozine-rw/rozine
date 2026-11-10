@@ -1722,7 +1722,7 @@ describe('Audit procedure — after the seal', () => {
 
         expect(
             within(intro('Kivu Coffee Roasters')).getByText(
-                'The report is sealed and can no longer be edited. Kivu Coffee Roasters co-signs by 7 Oct 2026; it publishes to holders after that.',
+                'The report is sealed and can no longer be edited. Kivu Coffee Roasters can dispute it until 7 Oct 2026; it publishes to holders after that.',
             ),
         ).toBeInTheDocument();
     });
@@ -1745,7 +1745,7 @@ describe('Audit procedure — after the seal', () => {
 
         expect(
             within(intro('Kivu Coffee Roasters')).getByText(
-                'The report is sealed and can no longer be edited. Kivu Coffee Roasters co-signs by 2 Nov 2026 · 10:52; it publishes to holders after that.',
+                'The report is sealed and can no longer be edited. Kivu Coffee Roasters can dispute it until 2 Nov 2026 · 10:52; it publishes to holders after that.',
             ),
         ).toBeInTheDocument();
     });

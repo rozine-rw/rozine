@@ -80,13 +80,13 @@ describe('Business Home', () => {
             'Application approvedSolar Dryer Expansion is approved for RWF 12,000,000 over 12 months. Review and sign to publish the raise.',
         );
         expect(items[7]).toHaveTextContent(
-            'Review window closingYour window to co-sign or dispute the audit report closes at',
+            'Review window closingYour window to dispute the audit report closes at',
         );
         expect(items[8]).toHaveTextContent(
-            'Audit report ready for your approvalAline Uwase sealed your audit report. Co-sign or dispute it by',
+            'Audit report ready for reviewAline Uwase sealed your audit report. Dispute it by',
         );
         expect(items[9]).toHaveTextContent(
-            'Audit report ready for your approvalAline Uwase sealed your audit report. Review it, then co-sign or dispute it.',
+            'Audit report ready for reviewAline Uwase sealed your audit report. Review it, and dispute it if something is wrong.',
         );
         expect(items[10]).toHaveTextContent(
             "Monthly audit openYour September 2026 audit has started. Have the month's statements and records ready so your Audit Partner can verify them and seal the audit report by",
@@ -255,11 +255,11 @@ describe('Business Home', () => {
         );
 
         expect(
-            screen.getByText(/^Co-sign or dispute by .+ · 5 h left$/u),
+            screen.getByText(/^Dispute by .+ · 5 h left$/u),
         ).toBeInTheDocument();
         expect(
             screen.queryByText(
-                'Your CPA sealed it. Read the findings before you co-sign.',
+                'Your CPA sealed it. Read the findings. There is nothing to sign.',
             ),
         ).not.toBeInTheDocument();
     });
@@ -319,11 +319,11 @@ describe('Business Home', () => {
         expect(screen.getByText('Flash audit report')).toBeInTheDocument();
         expect(
             screen.getByText(
-                'Your CPA sealed it. Read the findings before you co-sign.',
+                'Your CPA sealed it. Read the findings. There is nothing to sign.',
             ),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole('link', { name: /Review & co-sign/ }),
+            screen.getByRole('link', { name: /Review report/ }),
         ).toHaveAttribute('href', '/business/b1/audit-reports/r1');
         expect(screen.getByText('Signature needed')).toBeInTheDocument();
         expect(

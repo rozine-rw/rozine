@@ -9,12 +9,15 @@ use App\Application\Auditor\Contracts\AuditReportCryptography;
 use App\Application\Auditor\Contracts\AuditReportPublicationStore;
 use App\Application\Auditor\CosignAuditReport;
 use App\Application\Auditor\GetAuditProcedure;
+use App\Application\Auditor\ReviewAuditPublication;
 use App\Application\Auditor\SaveAuditReportStep;
 use App\Application\Auditor\SealAuditReport;
 use App\Application\Auditor\StartAuditReport;
 use App\Models\AuditReport;
+use App\Models\AuditReportPublication;
 use App\Models\AuditReportSeal;
 use App\Models\AuditSigningKey;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Mockery;
@@ -145,5 +148,30 @@ final class AuditSealingFixture
             'accepted' => true, 'note' => '', 'requestId' => (string) Str::uuid()], ...$overrides];
 
         return app(CosignAuditReport::class)->handle(...$values);
+    }
+
+    /**
+     * Publishes a sealed report the way BRS v3.0 AUD-R04 does: the Business does not co-sign, so
+     * the report stands once its 24-hour dispute window ends. The clock moves to the window's end
+     * only for the auto-approval and then returns, so the caller's own clock is unchanged.
+     *
+     * @param  array<string, mixed>  $fixture
+     * @return array{status: string, code: string, published_at: string}
+     */
+    public static function publish(array $fixture): array
+    {
+        $publication = AuditReportPublication::query()->where('audit_report_id', $fixture['report']->id)->firstOrFail();
+        $now = Date::hasTestNow() ? Date::now() : null;
+        Date::setTestNow($publication->due_at);
+        try {
+            $result = app(ReviewAuditPublication::class)->advanceDue(100);
+        } finally {
+            Date::setTestNow($now);
+        }
+        if ($result['published'] < 1 || $publication->refresh()->status !== 'published') {
+            throw new RuntimeException('Synthetic publication did not publish: '.json_encode($result['blocked']));
+        }
+
+        return ['status' => 'completed', 'code' => 'REPORT_PUBLISHED', 'published_at' => $publication->published_at->toIso8601String()];
     }
 }
