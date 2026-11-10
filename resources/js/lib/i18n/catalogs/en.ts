@@ -3434,7 +3434,7 @@ const en = {
     'auditor.count.status.restricted': 'Restricted',
     'auditor.seal.title': 'Sign off & seal',
     'auditor.seal.lead':
-        'Your findings are attributed to your ICPAR licence and published to holders once the business's 24-hour dispute window closes.',
+        'Your findings are attributed to your ICPAR licence and published to holders once the business has had 24 hours to dispute them.',
     'auditor.seal.note': 'Assessment note',
     'auditor.seal.note_optional': 'Optional',
     'auditor.seal.note_required': 'Required',
