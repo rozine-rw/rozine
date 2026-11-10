@@ -334,8 +334,51 @@ export type BusinessReadiness = {
     months: { period: string; revenue: Money }[];
 };
 
+export type ReadinessRequirementCode =
+    | 'C1'
+    | 'F1'
+    | 'F2'
+    | 'F3'
+    | 'F4'
+    | 'P1'
+    | 'P2'
+    | 'G1'
+    | 'G2';
+
+/**
+ * One RDY-R03 requirement, in BRS order. A triggered one carries its status and, while Due or
+ * Lapsed, the day its grace ends; one not triggered yet names the stage or headcount it applies
+ * from (`applies_from` is null for the two that apply from entry).
+ */
+export type ReadinessRequirement = {
+    code: ReadinessRequirementCode;
+} & (
+    | {
+          status: 'not_triggered';
+          due_on: null;
+          days_left: null;
+          met_on: null;
+          applies_from: { kind: 'stage' | 'headcount'; value: number };
+      }
+    | {
+          status: 'met';
+          due_on: null;
+          days_left: null;
+          met_on: string | null;
+          applies_from: { kind: 'stage' | 'headcount'; value: number } | null;
+      }
+    | {
+          status: 'due' | 'overdue' | 'lapsed';
+          due_on: string;
+          days_left: number;
+          met_on: string | null;
+          applies_from: { kind: 'stage' | 'headcount'; value: number } | null;
+      }
+);
+
 export type BusinessReadinessProps = {
     readiness: BusinessReadiness;
+    requirements: ReadinessRequirement[];
     links: BusinessAppLinks;
 };
 

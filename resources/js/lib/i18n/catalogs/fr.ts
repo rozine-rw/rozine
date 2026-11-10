@@ -335,6 +335,58 @@ const fr: Catalog = {
     'business.readiness.months': 'Mois pris en compte',
     'business.readiness.months_empty':
         'Aucun rapport mensuel publié pour l’instant.',
+    'business.readiness.requirements': 'Exigences',
+    'business.readiness.requirements_rule':
+        'Votre taille fixe ces exigences. Votre CPA confirme chacune lors de la visite mensuelle.',
+    'business.readiness.requirement.status.not_triggered': 'Pas encore',
+    'business.readiness.requirement.status.due': 'Due',
+    'business.readiness.requirement.status.overdue': 'En retard',
+    'business.readiness.requirement.status.met': 'Remplie',
+    'business.readiness.requirement.status.lapsed': 'Expirée',
+    'business.readiness.requirement.due_by': {
+        one: 'À remplir d’ici le {date} · {count} jour restant',
+        other: 'À remplir d’ici le {date} · {count} jours restants',
+    },
+    'business.readiness.requirement.lapsed_by': {
+        one: 'À remplir de nouveau d’ici le {date} · {count} jour restant',
+        other: 'À remplir de nouveau d’ici le {date} · {count} jours restants',
+    },
+    'business.readiness.requirement.overdue_line':
+        'En retard depuis le {date}. Votre prochaine levée attend qu’elle soit remplie.',
+    'business.readiness.requirement.met_on': 'Confirmée le {date}',
+    'business.readiness.requirement.met_entry':
+        'Vérifiée à votre arrivée sur Rozine',
+    'business.readiness.requirement.applies_stage': 'S’applique dès {stage}',
+    'business.readiness.requirement.applies_headcount':
+        'S’applique dès {count} employés',
+    'business.readiness.requirement.C1.title': 'Impôts et RSSB à jour',
+    'business.readiness.requirement.C1.detail':
+        'Attestation fiscale et cotisations RSSB à jour.',
+    'business.readiness.requirement.F1.title':
+        'Argent de l’entreprise sur ses comptes',
+    'business.readiness.requirement.F1.detail':
+        'Tout l’argent de l’entreprise passe par des comptes à son nom, et au moins 90 % du revenu vérifié y est traçable.',
+    'business.readiness.requirement.F2.title': 'Comptable qualifié',
+    'business.readiness.requirement.F2.detail':
+        'Un comptable qualifié, salarié ou sous contrat, et un logiciel comptable utilisé.',
+    'business.readiness.requirement.F3.title': 'Responsable financier',
+    'business.readiness.requirement.F3.detail':
+        'Un responsable financier qualifié à temps plein (CPA, ACCA ou équivalent, au moins 3 ans) et des comptes de gestion mensuels.',
+    'business.readiness.requirement.F4.title': 'Audit externe',
+    'business.readiness.requirement.F4.detail':
+        'Un audit annuel selon l’IFRS pour les PME par un auditeur ICPAR autre que votre CPA Rozine, et des paiements préparés et approuvés par des personnes différentes.',
+    'business.readiness.requirement.P1.title': 'Contrat pour chaque employé',
+    'business.readiness.requirement.P1.detail':
+        'Un contrat écrit et une immatriculation RSSB pour chaque employé.',
+    'business.readiness.requirement.P2.title': 'Responsable RH et politique',
+    'business.readiness.requirement.P2.detail':
+        'Un responsable RH désigné ou un prestataire RH sous contrat, et une politique RH écrite.',
+    'business.readiness.requirement.G1.title': 'Conseil d’administration',
+    'business.readiness.requirement.G1.detail':
+        'Un conseil d’au moins 2 administrateurs se réunissant chaque trimestre avec procès-verbal, et une délégation de paiement écrite.',
+    'business.readiness.requirement.G2.title': 'Administrateur indépendant',
+    'business.readiness.requirement.G2.detail':
+        'Au moins un administrateur indépendant, un code de gouvernance et un registre des parties liées.',
     'business.market.title': 'Aperçu du marché',
     'business.market.subtitle':
         'Comment vos notes se comportent sur le marché secondaire.',
@@ -1517,6 +1569,14 @@ const fr: Catalog = {
         'Le délai pour cosigner ou contester un rapport se termine',
     'admin.messaging.trigger.business.reporting_window_open':
         'Un audit mensuel s’ouvre pour une entreprise ayant une note active',
+    'admin.messaging.trigger.business.readiness_stage_changed':
+        'Une entreprise change d’étape de préparation',
+    'admin.messaging.trigger.business.readiness_requirement_due':
+        'Une exigence de préparation devient due',
+    'admin.messaging.trigger.business.readiness_requirement_closing':
+        'Il reste 14 jours pour une exigence de préparation',
+    'admin.messaging.trigger.business.readiness_requirement_overdue':
+        'Une exigence de préparation passe en retard',
     'admin.messaging.trigger.auditor.accreditation_approved':
         'L’accréditation est approuvée',
     'admin.messaging.trigger.auditor.accreditation_rejected':
@@ -6678,6 +6738,22 @@ const fr: Catalog = {
         'Audit mensuel ouvert',
     'investor.notices.business.reporting_window_open.body':
         "Votre audit de {month} a commencé. Préparez les relevés et registres du mois pour que votre partenaire d'audit les vérifie et scelle le rapport d'ici le {date}. Vous le cosignez ensuite ou le contestez.",
+    'investor.notices.business.readiness_stage_changed.title':
+        'Étape de préparation modifiée',
+    'investor.notices.business.readiness_stage_changed.body':
+        'Votre rapport de {month} vous fait passer de {previous} à {stage}.',
+    'investor.notices.business.readiness_requirement_due.title':
+        'Nouvelle exigence',
+    'investor.notices.business.readiness_requirement_due.body':
+        '{requirement} s’applique désormais à votre entreprise. À remplir d’ici le {date}.',
+    'investor.notices.business.readiness_requirement_closing.title':
+        'Exigence bientôt due',
+    'investor.notices.business.readiness_requirement_closing.body':
+        '{requirement} est à remplir d’ici le {date}. Votre CPA la confirme lors de la prochaine visite.',
+    'investor.notices.business.readiness_requirement_overdue.title':
+        'Exigence en retard',
+    'investor.notices.business.readiness_requirement_overdue.body':
+        '{requirement} était due le {date}. Votre prochaine levée attend qu’elle soit remplie.',
     'investor.notices.business.raise_expired.title':
         'Levée clôturée sans financement complet',
     'investor.notices.business.raise_expired.body':

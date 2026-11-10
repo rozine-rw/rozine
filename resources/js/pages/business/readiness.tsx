@@ -1,9 +1,14 @@
 import { BusinessShell } from '@/components/business/business-shell';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatMonthYearLong, formatRwfShort } from '@/lib/rozine/format';
+import {
+    formatDateLong,
+    formatMonthYearLong,
+    formatRwfShort,
+} from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
     BusinessReadinessProps,
+    ReadinessRequirement,
     ReadinessStageNumber,
 } from '@/types/business';
 
@@ -18,6 +23,14 @@ const STAGE_KEY = {
     4: 'business.readiness.stage.4',
 } as const satisfies Record<ReadinessStageNumber, string>;
 
+const REQUIREMENT_TONE = {
+    not_triggered: 'bg-rz-page text-rz-secondary',
+    due: 'bg-rz-accent-soft text-rz-accent-app-text',
+    overdue: 'bg-[rgba(196,48,43,.12)] text-[#a12622] dark:text-[#ff8a84]',
+    met: 'bg-[rgba(31,138,76,.12)] text-[#17663a] dark:text-[#7fd6a2]',
+    lapsed: 'bg-[rgba(194,102,31,.12)] text-[#8a4710] dark:text-[#f0b27a]',
+} as const satisfies Record<ReadinessRequirement['status'], string>;
+
 /**
  * Readiness (BRS v3.0 Section 20, APP-B01): the stage the business's verified monthly revenue has
  * settled in, with the RDY-R05 status line beside it, what is still pending, how far the next
@@ -26,11 +39,45 @@ const STAGE_KEY = {
  */
 export default function BusinessReadiness({
     readiness,
+    requirements,
     links,
 }: BusinessReadinessProps) {
     const { t, locale } = useTranslation();
     const stageName = (stage: ReadinessStageNumber) => t(STAGE_KEY[stage]);
     const { stage, vmr, pending, next } = readiness;
+    const date = (iso: string) => formatDateLong(iso, locale);
+    const requirementLine = (requirement: ReadinessRequirement): string => {
+        if (requirement.status === 'not_triggered') {
+            const { kind, value } = requirement.applies_from;
+
+            return kind === 'headcount'
+                ? t('business.readiness.requirement.applies_headcount', {
+                      count: value,
+                  })
+                : t('business.readiness.requirement.applies_stage', {
+                      stage: stageName(value as ReadinessStageNumber),
+                  });
+        }
+
+        if (requirement.status === 'met') {
+            return requirement.met_on === null
+                ? t('business.readiness.requirement.met_entry')
+                : t('business.readiness.requirement.met_on', {
+                      date: date(requirement.met_on),
+                  });
+        }
+
+        if (requirement.status === 'overdue') {
+            return t('business.readiness.requirement.overdue_line', {
+                date: date(requirement.due_on),
+            });
+        }
+
+        return t(`business.readiness.requirement.${requirement.status}_by`, {
+            date: date(requirement.due_on),
+            count: requirement.days_left,
+        });
+    };
 
     return (
         <BusinessShell
@@ -133,6 +180,54 @@ export default function BusinessReadiness({
                         <li className="px-1 text-[12.5px] text-rz-secondary">
                             {t('business.readiness.ready_rule')}
                         </li>
+                    </ul>
+                    <h2
+                        id="readiness-requirements-title"
+                        className="mt-6 text-base font-semibold text-rz-ink"
+                    >
+                        {t('business.readiness.requirements')}
+                    </h2>
+                    <p className="mt-1 text-[12.5px] text-rz-secondary">
+                        {t('business.readiness.requirements_rule')}
+                    </p>
+                    <ul
+                        aria-labelledby="readiness-requirements-title"
+                        className="mt-3 space-y-2"
+                    >
+                        {requirements.map((requirement) => (
+                            <li
+                                key={requirement.code}
+                                className="rounded-2xl border border-rz-border bg-rz-surface p-3.5"
+                            >
+                                <div className="flex items-start justify-between gap-3">
+                                    <p className="text-[14px] font-semibold text-rz-ink">
+                                        {t(
+                                            `business.readiness.requirement.${requirement.code}.title`,
+                                        )}
+                                    </p>
+                                    <span
+                                        className={cn(
+                                            'shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold',
+                                            REQUIREMENT_TONE[
+                                                requirement.status
+                                            ],
+                                        )}
+                                    >
+                                        {t(
+                                            `business.readiness.requirement.status.${requirement.status}`,
+                                        )}
+                                    </span>
+                                </div>
+                                <p className="mt-1 text-[12.5px] text-rz-secondary">
+                                    {t(
+                                        `business.readiness.requirement.${requirement.code}.detail`,
+                                    )}
+                                </p>
+                                <p className="mt-1.5 text-[12.5px] font-medium text-rz-ink">
+                                    {requirementLine(requirement)}
+                                </p>
+                            </li>
+                        ))}
                     </ul>
                 </section>
                 <section

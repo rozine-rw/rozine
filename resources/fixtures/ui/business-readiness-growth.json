@@ -81,6 +81,101 @@
                 }
             ]
         },
+        "requirements": [
+            {
+                "code": "C1",
+                "status": "met",
+                "due_on": null,
+                "days_left": null,
+                "met_on": "2026-10-14",
+                "applies_from": null
+            },
+            {
+                "code": "F1",
+                "status": "met",
+                "due_on": null,
+                "days_left": null,
+                "met_on": null,
+                "applies_from": null
+            },
+            {
+                "code": "F2",
+                "status": "overdue",
+                "due_on": "2026-10-01",
+                "days_left": 0,
+                "met_on": null,
+                "applies_from": {
+                    "kind": "stage",
+                    "value": 2
+                }
+            },
+            {
+                "code": "F3",
+                "status": "not_triggered",
+                "due_on": null,
+                "days_left": null,
+                "met_on": null,
+                "applies_from": {
+                    "kind": "stage",
+                    "value": 3
+                }
+            },
+            {
+                "code": "F4",
+                "status": "not_triggered",
+                "due_on": null,
+                "days_left": null,
+                "met_on": null,
+                "applies_from": {
+                    "kind": "stage",
+                    "value": 4
+                }
+            },
+            {
+                "code": "P1",
+                "status": "not_triggered",
+                "due_on": null,
+                "days_left": null,
+                "met_on": null,
+                "applies_from": {
+                    "kind": "headcount",
+                    "value": 10
+                }
+            },
+            {
+                "code": "P2",
+                "status": "not_triggered",
+                "due_on": null,
+                "days_left": null,
+                "met_on": null,
+                "applies_from": {
+                    "kind": "headcount",
+                    "value": 30
+                }
+            },
+            {
+                "code": "G1",
+                "status": "not_triggered",
+                "due_on": null,
+                "days_left": null,
+                "met_on": null,
+                "applies_from": {
+                    "kind": "stage",
+                    "value": 3
+                }
+            },
+            {
+                "code": "G2",
+                "status": "not_triggered",
+                "due_on": null,
+                "days_left": null,
+                "met_on": null,
+                "applies_from": {
+                    "kind": "stage",
+                    "value": 4
+                }
+            }
+        ],
         "links": {
             "home": {
                 "url": "/preview/business-home",

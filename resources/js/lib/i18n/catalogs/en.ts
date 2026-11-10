@@ -324,6 +324,58 @@ const en = {
     'business.readiness.current': 'Current',
     'business.readiness.months': 'Months counted',
     'business.readiness.months_empty': 'No monthly report is published yet.',
+    'business.readiness.requirements': 'Requirements',
+    'business.readiness.requirements_rule':
+        'Your size sets these requirements. Your CPA confirms each one at the monthly visit.',
+    'business.readiness.requirement.status.not_triggered': 'Not yet',
+    'business.readiness.requirement.status.due': 'Due',
+    'business.readiness.requirement.status.overdue': 'Overdue',
+    'business.readiness.requirement.status.met': 'Met',
+    'business.readiness.requirement.status.lapsed': 'Lapsed',
+    'business.readiness.requirement.due_by': {
+        one: 'Due by {date} · {count} day left',
+        other: 'Due by {date} · {count} days left',
+    },
+    'business.readiness.requirement.lapsed_by': {
+        one: 'Meet it again by {date} · {count} day left',
+        other: 'Meet it again by {date} · {count} days left',
+    },
+    'business.readiness.requirement.overdue_line':
+        'Overdue since {date}. Your next raise waits until it is met.',
+    'business.readiness.requirement.met_on': 'Confirmed on {date}',
+    'business.readiness.requirement.met_entry':
+        'Checked when you joined Rozine',
+    'business.readiness.requirement.applies_stage': 'Applies from {stage}',
+    'business.readiness.requirement.applies_headcount':
+        'Applies from {count} employees',
+    'business.readiness.requirement.C1.title': 'Tax and RSSB up to date',
+    'business.readiness.requirement.C1.detail':
+        'Tax clearance and RSSB contributions current.',
+    'business.readiness.requirement.F1.title':
+        'Business money in business accounts',
+    'business.readiness.requirement.F1.detail':
+        'All business money goes through business-named accounts, with at least 90% of verified revenue traceable to them.',
+    'business.readiness.requirement.F2.title': 'Qualified accountant',
+    'business.readiness.requirement.F2.detail':
+        'A qualified accountant, employed or contracted, and accounting software in use.',
+    'business.readiness.requirement.F3.title': 'Finance manager',
+    'business.readiness.requirement.F3.detail':
+        'A full-time qualified finance manager (CPA, ACCA or equivalent, at least 3 years) and monthly management accounts.',
+    'business.readiness.requirement.F4.title': 'External audit',
+    'business.readiness.requirement.F4.detail':
+        'An annual audit under IFRS for SMEs by an ICPAR auditor other than your Rozine CPA, and payments prepared and approved by different people.',
+    'business.readiness.requirement.P1.title': 'Contracts for every employee',
+    'business.readiness.requirement.P1.detail':
+        'Written contracts and RSSB registration for every employee.',
+    'business.readiness.requirement.P2.title': 'HR lead and policy',
+    'business.readiness.requirement.P2.detail':
+        'A named HR lead or contracted HR provider, and a written HR policy.',
+    'business.readiness.requirement.G1.title': 'Board of directors',
+    'business.readiness.requirement.G1.detail':
+        'A board of at least 2 directors meeting quarterly with minutes, and a written payment delegation.',
+    'business.readiness.requirement.G2.title': 'Independent director',
+    'business.readiness.requirement.G2.detail':
+        'At least one independent director, a governance code and a related-party register.',
     'business.market.title': 'Market Overview',
     'business.market.subtitle':
         'How your notes are performing on the secondary market.',
@@ -1430,6 +1482,14 @@ const en = {
         'The window to co-sign or dispute a report is closing',
     'admin.messaging.trigger.business.reporting_window_open':
         'A monthly audit opens for a business with a live note',
+    'admin.messaging.trigger.business.readiness_stage_changed':
+        'A business moves to another readiness stage',
+    'admin.messaging.trigger.business.readiness_requirement_due':
+        'A readiness requirement becomes due',
+    'admin.messaging.trigger.business.readiness_requirement_closing':
+        'A readiness requirement has 14 days left',
+    'admin.messaging.trigger.business.readiness_requirement_overdue':
+        'A readiness requirement turns overdue',
     'admin.messaging.trigger.auditor.accreditation_approved':
         'Accreditation is approved',
     'admin.messaging.trigger.auditor.accreditation_rejected':
@@ -6370,6 +6430,22 @@ const en = {
         'Monthly audit open',
     'investor.notices.business.reporting_window_open.body':
         "Your {month} audit has started. Have the month's statements and records ready so your Audit Partner can verify them and seal the audit report by {date}. You then co-sign it or raise a dispute.",
+    'investor.notices.business.readiness_stage_changed.title':
+        'Readiness stage changed',
+    'investor.notices.business.readiness_stage_changed.body':
+        'Your {month} report moved you from {previous} to {stage}.',
+    'investor.notices.business.readiness_requirement_due.title':
+        'New readiness requirement',
+    'investor.notices.business.readiness_requirement_due.body':
+        '{requirement} now applies to your business. Meet it by {date}.',
+    'investor.notices.business.readiness_requirement_closing.title':
+        'Requirement due soon',
+    'investor.notices.business.readiness_requirement_closing.body':
+        '{requirement} is due by {date}. Your CPA confirms it at the next visit.',
+    'investor.notices.business.readiness_requirement_overdue.title':
+        'Requirement overdue',
+    'investor.notices.business.readiness_requirement_overdue.body':
+        '{requirement} was due on {date}. Your next raise waits until it is met.',
     'investor.notices.business.raise_expired.title':
         'Raise closed without full funding',
     'investor.notices.business.raise_expired.body':
