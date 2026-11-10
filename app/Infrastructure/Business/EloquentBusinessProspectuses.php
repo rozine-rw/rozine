@@ -63,7 +63,7 @@ final class EloquentBusinessProspectuses implements BusinessProspectuses
                 $permissions = $person['permissions'] ?? [];
                 $representative = in_array($person['party_id'] ?? null, $business['mandate']['required_signatories'], true);
 
-                return ['application_id' => $application->id, 'business_id' => $business['id'], 'title' => (string) ($application->draft['title'] ?? ''),
+                return ['application_id' => $application->id, 'business_id' => $business['id'], 'title' => (string) ($application->draft['title'] ?? ''), 'sections' => ProspectusGates::SECTIONS,
                     'version' => $latest->version ?? 0, 'inputs' => $inputs,
                     'signed' => $signed === null ? null : ['version' => $signed->version, 'fingerprint' => (string) $signed->fingerprint,
                         'signed_at' => $signed->created_at->toIso8601String()],

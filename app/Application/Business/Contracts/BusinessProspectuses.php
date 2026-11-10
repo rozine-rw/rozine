@@ -14,7 +14,7 @@ namespace App\Application\Business\Contracts;
  * @phpstan-import-type Facts from \App\Domain\Business\ProspectusGates
  * @phpstan-import-type Gate from \App\Domain\Business\ProspectusGates
  *
- * @phpstan-type Prospectus array{application_id: string, business_id: string, title: string, version: int, inputs: Inputs,
+ * @phpstan-type Prospectus array{application_id: string, business_id: string, title: string, sections: list<string>, version: int, inputs: Inputs,
  *     signed: array{version: int, fingerprint: string, signed_at: string}|null, facts: Facts|null, unavailable: string|null,
  *     evaluation: array{policy_version: string, gates: list<Gate>, may_sign: bool, publishable: bool}|null, can_edit: bool, can_sign: bool}
  */

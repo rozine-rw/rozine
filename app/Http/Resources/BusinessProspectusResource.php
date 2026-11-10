@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Domain\Business\ProspectusGates;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -26,7 +25,7 @@ class BusinessProspectusResource extends JsonResource
         $facts = $page['facts'];
         $fee = $facts === null ? null : (string) intdiv((int) $facts['principal'] * 3, 100);
 
-        return ['contract_version' => 'business-prospectus-v1', 'server_time' => now()->toIso8601String(), 'sections' => ProspectusGates::SECTIONS,
+        return ['contract_version' => 'business-prospectus-v1', 'server_time' => now()->toIso8601String(), 'sections' => $page['sections'],
             'shell_links' => ['home' => $home, 'launcher' => ['url' => route('dashboard', [], false), 'method' => 'get'], ...BusinessHomeResource::tabs($request, $page['business_id'])],
             'application' => ['id' => $page['application_id'], 'title' => $page['title']], 'version' => $page['version'], 'inputs' => $page['inputs'],
             'signed' => $page['signed'], 'unavailable' => $page['unavailable'], 'evaluation' => $page['evaluation'],
