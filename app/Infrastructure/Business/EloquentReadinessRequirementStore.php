@@ -7,6 +7,7 @@ namespace App\Infrastructure\Business;
 use App\Application\Business\Contracts\ReadinessRequirementStore;
 use App\Domain\Business\ReadinessRequirements;
 use App\Models\BusinessReadinessRequirement;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 final class EloquentReadinessRequirementStore implements ReadinessRequirementStore
@@ -42,8 +43,11 @@ final class EloquentReadinessRequirementStore implements ReadinessRequirementSto
             ->update([...$changes, 'revision' => DB::raw('revision + 1')]) === 1;
     }
 
-    public function hasOverdue(string $businessId): bool
+    public function hasOverdue(string $businessId, string $today): bool
     {
-        return BusinessReadinessRequirement::query()->where('business_id', $businessId)->where('status', 'overdue')->exists();
+        return BusinessReadinessRequirement::query()->where('business_id', $businessId)
+            ->where(fn (Builder $query): Builder => $query->where('status', 'overdue')
+                ->orWhere(fn (Builder $grace): Builder => $grace->whereIn('status', ['due', 'lapsed'])->where('due_on', '<=', $today)))
+            ->exists();
     }
 }

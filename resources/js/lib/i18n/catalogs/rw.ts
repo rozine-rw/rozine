@@ -377,6 +377,8 @@ const rw: Catalog = {
     'business.readiness.requirement.met_on': 'Byemejwe ku wa {date}',
     'business.readiness.requirement.met_entry':
         'Byagenzuwe igihe winjiraga kuri Rozine',
+    'business.readiness.requirement.applies_entry':
+        'Bitangira gusabwa igenzura ryawe ryo kwinjira rimaze gutangazwa',
     'business.readiness.requirement.applies_stage':
         'Bitangira gusabwa kuva {stage}',
     'business.readiness.requirement.applies_headcount':

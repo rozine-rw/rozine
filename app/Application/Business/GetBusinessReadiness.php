@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Business;
 
 use App\Application\Auditor\Contracts\PublishedMonthlyReports;
+use App\Application\Business\Contracts\EnteredBusinesses;
 use App\Application\Business\Contracts\MonthlySubmissionStore;
 use App\Application\Business\Contracts\ReadinessRequirementStore;
 use App\Domain\Business\ReadinessRequirements;
@@ -20,7 +21,8 @@ use Brick\Math\BigInteger;
  * report. Readiness is Business-only: no Investor page reads it, and it never changes a label, a
  * return or any note's terms.
  *
- * Its requirements are the ones triggered so far, as the hourly readiness sweep keeps them. Its
+ * Its requirements are the ones triggered so far, as the hourly readiness sweep keeps them. C1 and
+ * F1 read Met from entry only once the Business has entered (a published audit report). Its
  * guidance lines (RDY-R06) compare the monthly figures the Business sent with what its published
  * reports verified, held to the targets of its stage.
  *
@@ -32,7 +34,7 @@ final class GetBusinessReadiness
 {
     public function __construct(private WithBusinessAuthority $authority, private PublishedMonthlyReports $reports, private ReadinessStage $stage,
         private ReadinessRequirementStore $requirements, private ReadinessRequirements $rules, private MonthlySubmissionStore $submissions,
-        private ReadinessSignals $signals) {}
+        private ReadinessSignals $signals, private EnteredBusinesses $entered) {}
 
     /** @return array{identity_context_revision: int, business_id: string, readiness: Stage, requirements: list<Listed>, guidance: list<Line>} */
     public function handle(int $userId, int $contextRevision, string $businessId): array
@@ -45,7 +47,7 @@ final class GetBusinessReadiness
             'forecast_period' => $sent['forecast_period'], 'forecast' => $sent['figures']['forecast']], $this->submissions->forBusiness($id));
 
         return ['identity_context_revision' => $contextRevision, 'business_id' => $id, 'readiness' => $readiness,
-            'requirements' => $this->rules->listed($this->requirements->forBusiness($id), now('Africa/Kigali')->toDateString()),
+            'requirements' => $this->rules->listed($this->requirements->forBusiness($id), now('Africa/Kigali')->toDateString(), $this->entered->has($id)),
             'guidance' => $this->signals->guidance(ReadinessSignals::verified($reports), $declared, $readiness['stage'])];
     }
 }
