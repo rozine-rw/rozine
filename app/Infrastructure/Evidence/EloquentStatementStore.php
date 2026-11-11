@@ -296,6 +296,10 @@ final class EloquentStatementStore implements StatementStore
         $months = $transcription === null ? [] : $current['payload']['months'];
         sort($months);
         $assignment = $this->engagements->openEngagement($businessId);
+        // An accepted engagement whose report is published is done: the request completes it, as the drawer already shows.
+        if ($assignment !== null && $assignment['status'] === 'accepted' && $this->engagements->workPublished($assignment['id'])) {
+            $assignment = null;
+        }
         $verified = ($this->storedVerification($businessId, null, $businessRevision)['current'] ?? false) === true;
         $reasons = $authorityCurrent ? [] : [['code' => 'BUSINESS_VERIFICATION_REQUIRED', 'field' => 'business']];
         array_push($reasons, ...$this->evidenceReasons($binding, $current, $verified));

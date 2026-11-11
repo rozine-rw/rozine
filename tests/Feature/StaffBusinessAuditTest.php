@@ -15,6 +15,7 @@ use App\Models\AuditReport;
 use App\Models\AuditReportVersion;
 use App\Models\User;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
@@ -265,11 +266,14 @@ it('offers a new Flash audit once the accepted audit\'s report is published, and
     AuditSealingFixture::seal($fixture);
 
     $this->actingAs($audit['staff'])->get($page)
-        ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.status', 'accepted')->where('party.audit.request_flash', null));
+        ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.status', 'accepted')->where('party.audit.request_flash', null)
+            ->where('party.audit.statement_review.reasons', fn (Collection $reasons): bool => $reasons->contains('AUDIT_ENGAGEMENT_OPEN')));
 
     AuditSealingFixture::cosign($fixture);
+    // The published audit no longer holds back a statement review either (#522).
     $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement', null)
-        ->where('party.audit.closed', false)->where('party.audit.request_flash.url', '/admin/businesses/'.$audit['business'].'/flash-audit'));
+        ->where('party.audit.closed', false)->where('party.audit.request_flash.url', '/admin/businesses/'.$audit['business'].'/flash-audit')
+        ->where('party.audit.statement_review.reasons', fn (Collection $reasons): bool => ! $reasons->contains('AUDIT_ENGAGEMENT_OPEN')));
     $this->from($page)->post('/admin/businesses/'.$audit['business'].'/flash-audit', flashAuditRequest())->assertRedirect($page);
 
     expect($fixture['assignment']->refresh()->status)->toBe('completed')
