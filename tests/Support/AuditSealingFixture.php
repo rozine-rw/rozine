@@ -47,6 +47,8 @@ final class AuditSealingFixture
                 'operational_status' => 'active', 'financial_proofs' => ['bank', 'momo'], 'inventory_proofs' => ['photo']],
                 'drawings' => ['owner_drawings' => '0'], 'loans' => ['loans' => []],
                 'differences' => ['explanations' => $findings ? [['cause' => 'entry_error', 'amount' => '1']] : []],
+                'staff' => ['staff_count' => '6', 'rssb_checked' => true], 'expiries' => ['tax_clearance_expires_on' => '2027-03-31', 'rssb_clearance_expires_on' => '2027-06-30'],
+                'loan_use' => ['loan_use' => 'as_planned', 'loan_use_note' => ''], 'changes' => ['changes' => ['new_debt' => false, 'director_change' => false, 'ownership_change' => false, 'legal_claim' => false]],
                 'photos' => ['titles' => ['extra-1' => 'Stock room']]];
         if ($findings) {
             $steps['seal'] = ['note' => 'Observed difference retained for review.'];

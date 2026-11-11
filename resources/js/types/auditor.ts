@@ -834,6 +834,10 @@ export type MonthlyStep =
     | 'drawings'
     | 'loans'
     | 'differences'
+    | 'staff'
+    | 'expiries'
+    | 'loan_use'
+    | 'changes'
     | 'photos'
     | 'seal';
 export type AuditStepKey = FlashStep | MonthlyStep;
@@ -1033,6 +1037,43 @@ export type LoansStage = {
     loans: OtherLoan[];
 };
 
+/** The staff count as the CPA checked it on the RSSB total page (BRS v3 VIS-R01 step 10). */
+export type StaffStage = {
+    step: 'staff';
+    staff_count: string | null;
+    rssb_checked: boolean;
+};
+
+/** The tax and RSSB clearance expiry dates, `YYYY-MM-DD` (BRS v3 VIS-R01 step 12). */
+export type ExpiriesStage = {
+    step: 'expiries';
+    tax_clearance_expires_on: string | null;
+    rssb_clearance_expires_on: string | null;
+};
+
+/** How the business used its Rozine loan money this month (BRS v3 VIS-R01 step 13). */
+export type LoanUse = 'as_planned' | 'partly' | 'not_as_planned';
+
+export type LoanUseStage = {
+    step: 'loan_use';
+    options: LoanUse[];
+    loan_use: LoanUse | null;
+    note: string;
+};
+
+/** The four yes/no changes the CPA asks about (BRS v3 VIS-R01 step 14). */
+export type ChangeKind =
+    | 'new_debt'
+    | 'director_change'
+    | 'ownership_change'
+    | 'legal_claim';
+
+export type ChangesStage = {
+    step: 'changes';
+    kinds: ChangeKind[];
+    changes: Record<ChangeKind, boolean> | null;
+};
+
 /** The cause codes that explain a monthly cash difference (BRS v3 VIS-R01 step 9). */
 export type DifferenceCause =
     | 'unrecorded_sales'
@@ -1184,6 +1225,10 @@ export type AuditStage =
     | DrawingsStage
     | LoansStage
     | DifferencesStage
+    | StaffStage
+    | ExpiriesStage
+    | LoanUseStage
+    | ChangesStage
     | SealStage
     | SealedStage
     | ReturnedStage

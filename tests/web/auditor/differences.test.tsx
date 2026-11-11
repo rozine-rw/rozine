@@ -69,7 +69,7 @@ describe('Audit procedure — explain the monthly difference', () => {
         });
         fireEvent.click(
             within(sheet()).getByRole('button', {
-                name: 'Continue to photos',
+                name: 'Continue',
             }),
         );
 
@@ -100,14 +100,14 @@ describe('Audit procedure — explain the monthly difference', () => {
 
         expect(
             within(sheet()).getByText(
-                'The cash counted matches the statements, so there is nothing to explain. Continue to photos.',
+                'The cash counted matches the statements, so there is nothing to explain.',
             ),
         ).toBeInTheDocument();
         expect(within(sheet()).queryByRole('status')).not.toBeInTheDocument();
 
         fireEvent.click(
             within(sheet()).getByRole('button', {
-                name: 'Continue to photos',
+                name: 'Continue',
             }),
         );
         expect(inertia.calls[0].body).toMatchObject({
@@ -143,7 +143,7 @@ describe('Audit procedure — explain the monthly difference', () => {
 
         await user.click(
             within(sheet()).getByRole('button', {
-                name: 'Continue to photos',
+                name: 'Continue',
             }),
         );
 

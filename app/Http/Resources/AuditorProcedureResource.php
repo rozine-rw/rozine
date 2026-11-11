@@ -81,7 +81,7 @@ class AuditorProcedureResource extends JsonResource
      * @param  array<string, mixed>  $sources
      * @param  array<string, mixed>  $file
      * @param  array<string, mixed>  $variance
-     * @param  array{difference: string|null, causes: list<string>, loans_max: int}  $monthly
+     * @param  array{difference: string|null, causes: list<string>, loans_max: int, loan_uses: list<string>, change_kinds: list<string>}  $monthly
      * @param  array<string, mixed>|null  $seal
      * @param  array<string, mixed>|null  $reasonOptions
      * @param  array{url: string, method: string}|null  $upload
@@ -122,6 +122,11 @@ class AuditorProcedureResource extends JsonResource
             'drawings' => ['step' => 'drawings', 'owner_drawings' => AuditorJobsResource::money($fields['owner_drawings'] ?? null)],
             'loans' => ['step' => 'loans', 'max' => $monthly['loans_max'], 'loans' => array_map(fn (array $loan): array => ['lender' => $loan['lender'],
                 'outstanding' => AuditorJobsResource::money($loan['outstanding']), 'monthly_payment' => AuditorJobsResource::money($loan['monthly_payment'])], $fields['loans'] ?? [])],
+            'staff' => ['step' => 'staff', 'staff_count' => $fields['staff_count'] ?? null, 'rssb_checked' => $fields['rssb_checked'] ?? false],
+            'expiries' => ['step' => 'expiries', 'tax_clearance_expires_on' => $fields['tax_clearance_expires_on'] ?? null,
+                'rssb_clearance_expires_on' => $fields['rssb_clearance_expires_on'] ?? null],
+            'loan_use' => ['step' => 'loan_use', 'options' => $monthly['loan_uses'], 'loan_use' => $fields['loan_use'] ?? null, 'note' => $fields['loan_use_note'] ?? ''],
+            'changes' => ['step' => 'changes', 'kinds' => $monthly['change_kinds'], 'changes' => $fields['changes'] ?? null],
             'differences' => ['step' => 'differences', 'reported' => AuditorJobsResource::money($sources['reported_cash']),
                 'observed' => AuditorJobsResource::money($report['draft']['fields']['count']['cash'] ?? null),
                 'difference' => AuditorJobsResource::money($monthly['difference']),

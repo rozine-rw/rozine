@@ -239,7 +239,9 @@ it('completes the isolated factual procedure and previews only the persisted rep
             'financial_proofs' => ['bank', 'momo'], 'inventory_proofs' => ['photo']],
             'drawings' => ['owner_drawings' => '150000'],
             'loans' => ['loans' => [['lender' => 'Equity Bank', 'outstanding' => '2400000', 'monthly_payment' => '200000']]],
-            'differences' => ['explanations' => [['amount' => '1', 'cause' => 'unrecorded_sales']]], 'photos' => ['titles' => ['extra-1' => 'Rear stock room']]];
+            'differences' => ['explanations' => [['amount' => '1', 'cause' => 'unrecorded_sales']]],
+            'staff' => ['staff_count' => '6', 'rssb_checked' => true], 'expiries' => ['tax_clearance_expires_on' => '2027-03-31', 'rssb_clearance_expires_on' => '2027-06-30'],
+            'loan_use' => ['loan_use' => 'partly', 'loan_use_note' => 'Part went on rent.'], 'changes' => ['changes' => ['new_debt' => true, 'director_change' => false, 'ownership_change' => false, 'legal_claim' => false]], 'photos' => ['titles' => ['extra-1' => 'Rear stock room']]];
     $checkIn = ['position' => null, 'captured_at' => null, 'accuracy_m' => null];
     foreach ($steps as $step => $fields) {
         $current = $page();
@@ -257,6 +259,14 @@ it('completes the isolated factual procedure and previews only the persisted rep
             expect($current['stage'])->toBe(['step' => 'drawings', 'owner_drawings' => null]);
         } elseif ($step === 'loans') {
             expect($current['stage'])->toBe(['step' => 'loans', 'max' => AuditProcedure::MAX_OTHER_LOANS, 'loans' => []]);
+        } elseif ($step === 'staff') {
+            expect($current['stage'])->toBe(['step' => 'staff', 'staff_count' => null, 'rssb_checked' => false]);
+        } elseif ($step === 'expiries') {
+            expect($current['stage'])->toBe(['step' => 'expiries', 'tax_clearance_expires_on' => null, 'rssb_clearance_expires_on' => null]);
+        } elseif ($step === 'loan_use') {
+            expect($current['stage'])->toBe(['step' => 'loan_use', 'options' => AuditProcedure::LOAN_USES, 'loan_use' => null, 'note' => '']);
+        } elseif ($step === 'changes') {
+            expect($current['stage'])->toBe(['step' => 'changes', 'kinds' => AuditProcedure::CHANGE_KINDS, 'changes' => null]);
         } elseif ($step === 'differences') {
             expect($current['stage'])->toMatchArray(['reported' => ['currency' => 'RWF', 'amount' => '108000000'],
                 'observed' => ['currency' => 'RWF', 'amount' => '108000001'], 'difference' => ['currency' => 'RWF', 'amount' => '1'],

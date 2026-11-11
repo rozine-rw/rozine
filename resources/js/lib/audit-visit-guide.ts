@@ -75,6 +75,30 @@ export const VISIT_GUIDE: Record<
         done: 'auditor.audit.guide.differences.done',
         how: 'auditor.audit.guide.differences.how',
     },
+    staff: {
+        do: 'auditor.audit.guide.staff.do',
+        enter: 'auditor.audit.guide.staff.enter',
+        done: 'auditor.audit.guide.staff.done',
+        how: 'auditor.audit.guide.staff.how',
+    },
+    expiries: {
+        do: 'auditor.audit.guide.expiries.do',
+        enter: 'auditor.audit.guide.expiries.enter',
+        done: 'auditor.audit.guide.expiries.done',
+        how: 'auditor.audit.guide.expiries.how',
+    },
+    loan_use: {
+        do: 'auditor.audit.guide.loan_use.do',
+        enter: 'auditor.audit.guide.loan_use.enter',
+        done: 'auditor.audit.guide.loan_use.done',
+        how: 'auditor.audit.guide.loan_use.how',
+    },
+    changes: {
+        do: 'auditor.audit.guide.changes.do',
+        enter: 'auditor.audit.guide.changes.enter',
+        done: 'auditor.audit.guide.changes.done',
+        how: 'auditor.audit.guide.changes.how',
+    },
     seal: {
         do: 'auditor.audit.guide.seal.do',
         enter: 'auditor.audit.guide.seal.enter',

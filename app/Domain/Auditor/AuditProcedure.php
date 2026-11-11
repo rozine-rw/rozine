@@ -25,12 +25,21 @@ final class AuditProcedure
     /** At most this many other loans are recorded on one monthly visit (BRS v3 VIS-R01 step 8). */
     public const int MAX_OTHER_LOANS = 10;
 
+    /** How the business used its Rozine loan money this month (BRS v3 VIS-R01 step 13). */
+    public const array LOAN_USES = ['as_planned', 'partly', 'not_as_planned'];
+
+    /**
+     * The four yes/no changes the CPA asks about (BRS v3 VIS-R01 step 14): the report-detected material
+     * changes of PRO-R05 other than the revenue and cash movements, which are computed from the figures.
+     */
+    public const array CHANGE_KINDS = ['new_debt', 'director_change', 'ownership_change', 'legal_claim'];
+
     /** @return list<string> */
     public function steps(string $kind): array
     {
         return match ($kind) {
             'flash' => ['review', 'check_in', 'photos', 'ledger', 'seal'],
-            'monthly' => ['statements', 'count', 'drawings', 'loans', 'differences', 'photos', 'seal'],
+            'monthly' => ['statements', 'count', 'drawings', 'loans', 'differences', 'staff', 'expiries', 'loan_use', 'changes', 'photos', 'seal'],
             default => throw new CommandRejection('AUDIT_PROCEDURE_INVALID', 422),
         };
     }
@@ -162,6 +171,10 @@ final class AuditProcedure
             'drawings' => ['owner_drawings'],
             'loans' => ['loans'],
             'differences' => ['explanations'],
+            'staff' => ['staff_count', 'rssb_checked'],
+            'expiries' => ['tax_clearance_expires_on', 'rssb_clearance_expires_on'],
+            'loan_use' => ['loan_use', 'loan_use_note'],
+            'changes' => ['changes'],
             'seal' => ['note'],
             default => [],
         };
@@ -202,6 +215,29 @@ final class AuditProcedure
         if ($step === 'loans') {
             return ['loans' => $this->loans($input['loans'])];
         }
+        if ($step === 'staff') {
+            $staff = $this->amount($input['staff_count'], 'staff_count');
+            if ($input['rssb_checked'] !== true) {
+                throw new CommandRejection('AUDIT_STEP_INPUT_INVALID', 422, fieldErrors: ['rssb_checked' => ['Check the staff count against the RSSB total page before continuing.']]);
+            }
+
+            return ['staff_count' => $staff, 'rssb_checked' => true];
+        }
+        if ($step === 'expiries') {
+            return ['tax_clearance_expires_on' => $this->date($input['tax_clearance_expires_on'], 'tax_clearance_expires_on'),
+                'rssb_clearance_expires_on' => $this->date($input['rssb_clearance_expires_on'], 'rssb_clearance_expires_on')];
+        }
+        if ($step === 'loan_use') {
+            if (! in_array($input['loan_use'], self::LOAN_USES, true)) {
+                throw new CommandRejection('AUDIT_STEP_INPUT_INVALID', 422, fieldErrors: ['loan_use' => ['Say how the loan money was used.']]);
+            }
+            $note = trim($this->text($input['loan_use_note'], 'loan_use_note', 200, $input['loan_use'] !== 'as_planned'));
+
+            return ['loan_use' => $input['loan_use'], 'loan_use_note' => $note];
+        }
+        if ($step === 'changes') {
+            return ['changes' => $this->changes($input['changes'])];
+        }
         if ($step === 'differences') {
             return ['explanations' => $this->explanations($input['explanations'], $this->cashDifference($draft, $sources)
                 ?? throw new CommandRejection('AUDIT_DECLARATION_REQUIRED', 409))];
@@ -235,7 +271,7 @@ final class AuditProcedure
             'check_in' => ['check_in'],
             'photos' => ['photos'],
             'statements' => ['verification'],
-            'ledger', 'count', 'drawings', 'loans', 'differences' => ['verification', 'declaration'],
+            'ledger', 'count', 'drawings', 'loans', 'differences', 'staff', 'expiries', 'loan_use', 'changes' => ['verification', 'declaration'],
             default => [],
         };
         $pins = [];
@@ -325,6 +361,38 @@ final class AuditProcedure
         }
 
         return $loans;
+    }
+
+    /**
+     * A yes or no for each change the CPA asks about, in the listed order.
+     *
+     * @return array<string, bool>
+     */
+    private function changes(mixed $values): array
+    {
+        if (! is_array($values) || count($values) !== count(self::CHANGE_KINDS)) {
+            throw new CommandRejection('AUDIT_STEP_INPUT_INVALID', 422, fieldErrors: ['changes' => ['Answer yes or no for each change.']]);
+        }
+        $answers = [];
+        foreach (self::CHANGE_KINDS as $kind) {
+            $answer = $values[$kind] ?? null;
+            if (! is_bool($answer)) {
+                throw new CommandRejection('AUDIT_STEP_INPUT_INVALID', 422, fieldErrors: ['changes' => ['Answer yes or no for each change.']]);
+            }
+            $answers[$kind] = $answer;
+        }
+
+        return $answers;
+    }
+
+    /** A calendar date as written on the certificate, `YYYY-MM-DD`; a date already past is recorded as seen. */
+    private function date(mixed $value, string $field): string
+    {
+        if (! is_string($value) || preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $value, $parts) !== 1 || ! checkdate((int) $parts[2], (int) $parts[3], (int) $parts[1])) {
+            throw new CommandRejection('AUDIT_STEP_INPUT_INVALID', 422, fieldErrors: [$field => ['Use the date on the certificate, as YYYY-MM-DD.']]);
+        }
+
+        return $value;
     }
 
     private function amount(mixed $value, string $field): string

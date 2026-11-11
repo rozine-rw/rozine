@@ -31,6 +31,10 @@ function procedureFields(string $step): array
         'drawings' => ['owner_drawings' => '150000'],
         'loans' => ['loans' => [['lender' => 'Bank of Kigali', 'outstanding' => '2400000', 'monthly_payment' => '200000']]],
         'differences' => ['explanations' => [['cause' => 'entry_error', 'amount' => '6000'], ['cause' => 'personal_spending', 'amount' => '20000']]],
+        'staff' => ['staff_count' => '6', 'rssb_checked' => true],
+        'expiries' => ['tax_clearance_expires_on' => '2027-03-31', 'rssb_clearance_expires_on' => '2027-06-30'],
+        'loan_use' => ['loan_use' => 'as_planned', 'loan_use_note' => ''],
+        'changes' => ['changes' => ['new_debt' => false, 'director_change' => false, 'ownership_change' => false, 'legal_claim' => false]],
         'photos' => ['titles' => ['extra' => 'Side store']],
         'seal' => ['note' => 'A physical stock difference was observed.'],
         default => [],
@@ -232,7 +236,7 @@ it('explains the whole monthly cash difference by cause code, to the franc, in t
 
     $saved = $procedure->save('monthly', 'differences', $state['draft'], 'differences', ['explanations' => [
         ['amount' => '20000', 'cause' => 'personal_spending'], ['cause' => 'unrecorded_sales', 'amount' => '6000']]], procedureSources());
-    expect($saved['step'])->toBe('photos')
+    expect($saved['step'])->toBe('staff')
         ->and($saved['draft']['fields']['differences']['explanations'])->toBe([['cause' => 'unrecorded_sales', 'amount' => '6000'], ['cause' => 'personal_spending', 'amount' => '20000']])
         ->and($saved['draft']['sources']['differences'] ?? null)->toBe(['verification' => procedureSource('verification'), 'declaration' => procedureSource('declaration')]);
 });
@@ -286,7 +290,7 @@ it('withholds the difference step until the statements and declaration it explai
 
 it('records owner drawings and other loans after the count, before the differences (BRS v3 VIS-R01 steps 7 and 8)', function (): void {
     $procedure = new AuditProcedure;
-    expect($procedure->steps('monthly'))->toBe(['statements', 'count', 'drawings', 'loans', 'differences', 'photos', 'seal']);
+    expect(array_slice($procedure->steps('monthly'), 0, 5))->toBe(['statements', 'count', 'drawings', 'loans', 'differences']);
 
     $state = procedureBefore('monthly', 'drawings');
     $drawn = $procedure->save('monthly', 'drawings', $state['draft'], 'drawings', ['owner_drawings' => '0'], procedureSources());
@@ -326,4 +330,53 @@ it('refuses owner drawings and loans it cannot record exactly', function (string
     'loan repaid' => ['loans', ['loans' => [['lender' => 'Bank', 'outstanding' => '0', 'monthly_payment' => '0']]], 'loans', 'Leave out a loan that is fully repaid.'],
     'loan blank lender' => ['loans', ['loans' => [['lender' => '  ', 'outstanding' => '1', 'monthly_payment' => '0']]], 'loans', 'Use plain text of at most 100 characters.'],
     'loan bad payment' => ['loans', ['loans' => [['lender' => 'Bank', 'outstanding' => '1', 'monthly_payment' => '1.5']]], 'loans', 'Use a non-negative whole-number amount.'],
+]);
+
+it('records the staff count, expiry dates, use of the loan money and changes after the differences (BRS v3 VIS-R01 steps 10, 12, 13 and 14)', function (): void {
+    $procedure = new AuditProcedure;
+    expect($procedure->steps('monthly'))->toBe(['statements', 'count', 'drawings', 'loans', 'differences', 'staff', 'expiries', 'loan_use', 'changes', 'photos', 'seal']);
+
+    $state = procedureBefore('monthly', 'staff');
+    $staff = $procedure->save('monthly', 'staff', $state['draft'], 'staff', ['rssb_checked' => true, 'staff_count' => '0'], procedureSources());
+    expect($staff['step'])->toBe('expiries')->and($staff['draft']['fields']['staff'])->toBe(['staff_count' => '0', 'rssb_checked' => true])
+        ->and($staff['draft']['sources']['staff'] ?? null)->toBe(['verification' => procedureSource('verification'), 'declaration' => procedureSource('declaration')]);
+
+    // A certificate already expired is recorded as the CPA saw it.
+    $expiries = $procedure->save('monthly', 'expiries', $staff['draft'], 'expiries', ['tax_clearance_expires_on' => '2024-02-29', 'rssb_clearance_expires_on' => '2027-12-31'], procedureSources());
+    expect($expiries['step'])->toBe('loan_use')->and($expiries['draft']['fields']['expiries'])->toBe(['tax_clearance_expires_on' => '2024-02-29', 'rssb_clearance_expires_on' => '2027-12-31']);
+
+    $planned = $procedure->save('monthly', 'loan_use', $expiries['draft'], 'loan_use', ['loan_use' => 'as_planned', 'loan_use_note' => ''], procedureSources());
+    $partly = $procedure->save('monthly', 'loan_use', $expiries['draft'], 'loan_use', ['loan_use' => 'partly', 'loan_use_note' => '  Part paid the rent. '], procedureSources());
+    expect($planned['step'])->toBe('changes')->and($planned['draft']['fields']['loan_use'])->toBe(['loan_use' => 'as_planned', 'loan_use_note' => ''])
+        ->and($partly['draft']['fields']['loan_use'])->toBe(['loan_use' => 'partly', 'loan_use_note' => 'Part paid the rent.']);
+
+    $changes = $procedure->save('monthly', 'changes', $planned['draft'], 'changes', ['changes' => ['legal_claim' => false, 'ownership_change' => false, 'director_change' => true, 'new_debt' => false]], procedureSources());
+    expect($changes['step'])->toBe('photos')
+        ->and($changes['draft']['fields']['changes'])->toBe(['changes' => ['new_debt' => false, 'director_change' => true, 'ownership_change' => false, 'legal_claim' => false]]);
+});
+
+it('refuses a staff count, expiry date, loan use or change it cannot record exactly', function (string $step, array $input, string $field, string $message): void {
+    $procedure = new AuditProcedure;
+    $state = procedureBefore('monthly', $step);
+
+    try {
+        $procedure->save('monthly', $step, $state['draft'], $step, $input, procedureSources());
+        $this->fail('The step was accepted.');
+    } catch (CommandRejection $rejection) {
+        expect($rejection->reason)->toBe('AUDIT_STEP_INPUT_INVALID')->and($rejection->fieldErrors)->toBe([$field => [$message]]);
+    }
+})->with([
+    'staff missing the RSSB check' => ['staff', ['staff_count' => '6'], 'step', 'Send only the fields for this procedure step.'],
+    'staff count not whole' => ['staff', ['staff_count' => '6.5', 'rssb_checked' => true], 'staff_count', 'Use a non-negative whole-number amount.'],
+    'staff RSSB not checked' => ['staff', ['staff_count' => '6', 'rssb_checked' => false], 'rssb_checked', 'Check the staff count against the RSSB total page before continuing.'],
+    'tax date not a date' => ['expiries', ['tax_clearance_expires_on' => '31/03/2027', 'rssb_clearance_expires_on' => '2027-06-30'], 'tax_clearance_expires_on', 'Use the date on the certificate, as YYYY-MM-DD.'],
+    'RSSB date impossible' => ['expiries', ['tax_clearance_expires_on' => '2027-03-31', 'rssb_clearance_expires_on' => '2027-02-30'], 'rssb_clearance_expires_on', 'Use the date on the certificate, as YYYY-MM-DD.'],
+    'RSSB date missing' => ['expiries', ['tax_clearance_expires_on' => '2027-03-31', 'rssb_clearance_expires_on' => null], 'rssb_clearance_expires_on', 'Use the date on the certificate, as YYYY-MM-DD.'],
+    'loan use unknown' => ['loan_use', ['loan_use' => 'unknown', 'loan_use_note' => ''], 'loan_use', 'Say how the loan money was used.'],
+    'loan use unexplained' => ['loan_use', ['loan_use' => 'not_as_planned', 'loan_use_note' => '  '], 'loan_use_note', 'Use plain text of at most 200 characters.'],
+    'loan use note too long' => ['loan_use', ['loan_use' => 'partly', 'loan_use_note' => str_repeat('a', 201)], 'loan_use_note', 'Use plain text of at most 200 characters.'],
+    'changes not a map' => ['changes', ['changes' => 'no'], 'changes', 'Answer yes or no for each change.'],
+    'changes missing one' => ['changes', ['changes' => ['new_debt' => false, 'director_change' => false, 'ownership_change' => false]], 'changes', 'Answer yes or no for each change.'],
+    'changes with another' => ['changes', ['changes' => ['new_debt' => false, 'director_change' => false, 'ownership_change' => false, 'other' => false]], 'changes', 'Answer yes or no for each change.'],
+    'change not yes or no' => ['changes', ['changes' => ['new_debt' => 'no', 'director_change' => false, 'ownership_change' => false, 'legal_claim' => false]], 'changes', 'Answer yes or no for each change.'],
 ]);

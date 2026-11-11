@@ -53,6 +53,22 @@
                 "state": "done"
             },
             {
+                "key": "staff",
+                "state": "done"
+            },
+            {
+                "key": "expiries",
+                "state": "done"
+            },
+            {
+                "key": "loan_use",
+                "state": "done"
+            },
+            {
+                "key": "changes",
+                "state": "done"
+            },
+            {
                 "key": "photos",
                 "state": "done"
             },

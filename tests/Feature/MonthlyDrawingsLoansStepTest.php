@@ -16,7 +16,7 @@ it('seals the owner drawings and other loans the visit recorded', function (): v
     $fixture = Fixture::ready(kind: 'monthly');
     $draft = $fixture['report']->refresh()->draft;
 
-    expect($draft['completed_steps'])->toBe(['statements', 'count', 'drawings', 'loans', 'differences', 'photos'])
+    expect($draft['completed_steps'])->toBe(['statements', 'count', 'drawings', 'loans', 'differences', 'staff', 'expiries', 'loan_use', 'changes', 'photos'])
         ->and($draft['fields']['drawings'])->toBe(['owner_drawings' => '0'])
         ->and($draft['fields']['loans'])->toBe(['loans' => []])
         ->and(Fixture::seal($fixture)['code'])->toBe('AUDIT_SEALED');

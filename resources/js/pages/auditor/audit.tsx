@@ -8,14 +8,18 @@ import { ReturnedStatus } from '@/components/auditor/audit/returned-status';
 import { useSealFlow } from '@/components/auditor/audit/seal-flow';
 import { SealedStatus } from '@/components/auditor/audit/sealed-status';
 import { StepBar } from '@/components/auditor/audit/step-bar';
+import { StepChanges } from '@/components/auditor/audit/step-changes';
 import { StepCheckIn } from '@/components/auditor/audit/step-check-in';
 import { StepCount } from '@/components/auditor/audit/step-count';
 import { StepDifferences } from '@/components/auditor/audit/step-differences';
 import { StepDrawings } from '@/components/auditor/audit/step-drawings';
+import { StepExpiries } from '@/components/auditor/audit/step-expiries';
 import { StepGuide } from '@/components/auditor/audit/step-guide';
 import { StepLedger } from '@/components/auditor/audit/step-ledger';
+import { StepLoanUse } from '@/components/auditor/audit/step-loan-use';
 import { StepLoans } from '@/components/auditor/audit/step-loans';
 import { StepPhotos } from '@/components/auditor/audit/step-photos';
+import { StepStaff } from '@/components/auditor/audit/step-staff';
 import { StepStatements } from '@/components/auditor/audit/step-statements';
 import { AuditorShell } from '@/components/auditor/auditor-shell';
 import {
@@ -52,6 +56,10 @@ const SHOWN_FIELDS: Partial<Record<AuditStage['step'], string[]>> = {
     drawings: ['owner_drawings'],
     loans: ['loans'],
     differences: ['explanations'],
+    staff: ['staff_count', 'rssb_checked'],
+    expiries: ['tax_clearance_expires_on', 'rssb_clearance_expires_on'],
+    loan_use: ['loan_use', 'loan_use_note'],
+    changes: ['changes'],
     seal: ['note'],
 };
 
@@ -68,7 +76,11 @@ const CONTINUE: Record<
     count: 'auditor.audit.continue',
     drawings: 'auditor.audit.continue',
     loans: 'auditor.audit.explain_differences',
-    differences: 'auditor.audit.to_photos',
+    differences: 'auditor.audit.continue',
+    staff: 'auditor.audit.continue',
+    expiries: 'auditor.audit.continue',
+    loan_use: 'auditor.audit.continue',
+    changes: 'auditor.audit.to_photos',
 };
 
 /** The review step records only that the partner read the file and moved on. */
@@ -135,6 +147,14 @@ function StageBody({
             return <StepLoans stage={stage} context={context} />;
         case 'differences':
             return <StepDifferences stage={stage} context={context} />;
+        case 'staff':
+            return <StepStaff stage={stage} context={context} />;
+        case 'expiries':
+            return <StepExpiries stage={stage} context={context} />;
+        case 'loan_use':
+            return <StepLoanUse stage={stage} context={context} />;
+        case 'changes':
+            return <StepChanges stage={stage} context={context} />;
         case 'seal':
             return seal;
         case 'sealed':

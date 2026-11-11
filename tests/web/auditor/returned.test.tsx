@@ -293,6 +293,10 @@ describe('Returned report — step states and repeat decisions', () => {
             'Drawings',
             'Other loans',
             'Differences',
+            'Staff',
+            'Expiry dates',
+            'Loan money',
+            'Changes',
             'Photos',
             'Seal',
         ]);
@@ -318,7 +322,7 @@ describe('Returned report — step states and repeat decisions', () => {
         expect(within(items[2]).getByText('Drawings')).toHaveClass(
             'text-rz-secondary',
         );
-        expect(within(items[5]).getByText('Photos')).toHaveClass(
+        expect(within(items[9]).getByText('Photos')).toHaveClass(
             'text-rz-secondary',
         );
     });

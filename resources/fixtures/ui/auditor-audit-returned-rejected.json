@@ -41,6 +41,22 @@
                 "state": "todo"
             },
             {
+                "key": "staff",
+                "state": "todo"
+            },
+            {
+                "key": "expiries",
+                "state": "todo"
+            },
+            {
+                "key": "loan_use",
+                "state": "todo"
+            },
+            {
+                "key": "changes",
+                "state": "todo"
+            },
+            {
                 "key": "photos",
                 "state": "todo"
             },

@@ -3321,6 +3321,10 @@ const en = {
     'auditor.audit.step.drawings': 'Drawings',
     'auditor.audit.step.loans': 'Other loans',
     'auditor.audit.step.differences': 'Differences',
+    'auditor.audit.step.staff': 'Staff',
+    'auditor.audit.step.expiries': 'Expiry dates',
+    'auditor.audit.step.loan_use': 'Loan money',
+    'auditor.audit.step.changes': 'Changes',
     'auditor.audit.continue': 'Continue',
     'auditor.audit.to_seal': 'Review & seal',
     'auditor.audit.start_count': 'Start the count',
@@ -5473,9 +5477,9 @@ const en = {
     'auditor.audit.guide.count.do':
         'Tick the proof you actually saw, then enter what you observed.',
     'auditor.audit.guide.count.enter':
-        'Cash on hand and stock value in whole francs, and units counted. For example 450000 and 120.',
+        'Cash on hand in whole francs and the stock units you counted. For example 450000 and 120.',
     'auditor.audit.guide.count.done':
-        'Every figure is entered, with at least one financial proof and one inventory proof ticked.',
+        'Every figure is entered and every listed proof is ticked.',
     'auditor.audit.guide.count.how':
         'Count the cash and the stock yourself. Each figure is compared to the statements on file; nothing here comes from the business.',
     'auditor.audit.guide.drawings.do':
@@ -5506,7 +5510,7 @@ const en = {
     'auditor.differences.lead':
         'Split the gap between the cash counted and what the statements report across its causes, to the franc.',
     'auditor.differences.lead_none':
-        'The cash counted matches the statements, so there is nothing to explain. Continue to photos.',
+        'The cash counted matches the statements, so there is nothing to explain.',
     'auditor.differences.reported': 'Statements',
     'auditor.differences.observed': 'Counted',
     'auditor.differences.difference': 'Difference',
@@ -5540,6 +5544,65 @@ const en = {
     'auditor.loans.monthly_payment': 'Monthly payment (RWF)',
     'auditor.loans.remove': 'Remove loan {number}',
     'auditor.loans.add': 'Add a loan',
+    'auditor.audit.guide.staff.do':
+        'Record how many people the business employs, from the RSSB declaration.',
+    'auditor.audit.guide.staff.enter':
+        'One whole number. For example 6. Enter 0 if no one is employed.',
+    'auditor.audit.guide.staff.done':
+        'A number is entered and the RSSB total page is checked.',
+    'auditor.audit.guide.staff.how':
+        'Ask for the latest RSSB declaration and read the total from its summary page. Ask the owner to cover the names; Rozine never collects employee details.',
+    'auditor.audit.guide.expiries.do':
+        'Record when the tax and RSSB clearance certificates expire.',
+    'auditor.audit.guide.expiries.enter':
+        'Two dates, as printed on each certificate. For example 31/03/2027.',
+    'auditor.audit.guide.expiries.done':
+        'Both dates are entered, even if one has already passed.',
+    'auditor.audit.guide.expiries.how':
+        'Read each date from the certificate itself, not from what the owner says. An expired certificate is recorded as you saw it.',
+    'auditor.audit.guide.loan_use.do':
+        'Say how the Rozine loan money was used this month.',
+    'auditor.audit.guide.loan_use.enter':
+        'Choose as planned, partly or not as planned. Anything but as planned needs one line, for example: Part paid the October rent.',
+    'auditor.audit.guide.loan_use.done':
+        'An answer is chosen, with a line saying where the money went if it was not as planned.',
+    'auditor.audit.guide.loan_use.how':
+        'Compare what the money paid for with the use stated in the prospectus. Check receipts or statements for the larger payments.',
+    'auditor.audit.guide.changes.do':
+        'Ask about four changes since the last visit.',
+    'auditor.audit.guide.changes.enter':
+        'Yes or no for each: a new loan, a director change, an ownership change, a legal claim.',
+    'auditor.audit.guide.changes.done': 'Every question has a yes or no.',
+    'auditor.audit.guide.changes.how':
+        'Ask the owner each question plainly and check the registry extract or loan papers where you can. A yes is sealed with the report.',
+    'auditor.staff.title': 'Staff count',
+    'auditor.staff.lead':
+        'How many people the business employs, read from the RSSB total page.',
+    'auditor.staff.count': 'People employed',
+    'auditor.staff.rssb_checked':
+        'I checked this against the RSSB total page, with the names covered.',
+    'auditor.expiries.title': 'Tax and RSSB expiry dates',
+    'auditor.expiries.lead':
+        'The expiry date printed on each clearance certificate.',
+    'auditor.expiries.tax': 'Tax clearance expires',
+    'auditor.expiries.rssb': 'RSSB clearance expires',
+    'auditor.loan_use.title': 'Use of the loan money',
+    'auditor.loan_use.lead':
+        'Whether the Rozine loan money went where the prospectus said.',
+    'auditor.loan_use.option.as_planned': 'As planned',
+    'auditor.loan_use.option.partly': 'Partly as planned',
+    'auditor.loan_use.option.not_as_planned': 'Not as planned',
+    'auditor.loan_use.note': 'Note (optional)',
+    'auditor.loan_use.note_required': 'Where did the money go?',
+    'auditor.changes.title': 'Changes',
+    'auditor.changes.lead': 'Has any of these changed since the last visit?',
+    'auditor.changes.kind.new_debt': 'A new loan or debt',
+    'auditor.changes.kind.director_change': 'A change of director',
+    'auditor.changes.kind.ownership_change':
+        'A change of owners or shareholders',
+    'auditor.changes.kind.legal_claim': 'A legal claim against the business',
+    'auditor.changes.yes': 'Yes',
+    'auditor.changes.no': 'No',
     'auditor.audit.guide.seal.do':
         'Check the result, then seal with your authenticator code.',
     'auditor.audit.guide.seal.enter':

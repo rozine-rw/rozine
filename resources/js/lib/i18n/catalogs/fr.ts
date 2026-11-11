@@ -3481,6 +3481,10 @@ const fr: Catalog = {
     'auditor.audit.step.drawings': 'Prélèvements',
     'auditor.audit.step.loans': 'Autres prêts',
     'auditor.audit.step.differences': 'Écarts',
+    'auditor.audit.step.staff': 'Personnel',
+    'auditor.audit.step.expiries': 'Échéances',
+    'auditor.audit.step.loan_use': 'Fonds du prêt',
+    'auditor.audit.step.changes': 'Changements',
     'auditor.audit.continue': 'Continuer',
     'auditor.audit.to_seal': 'Examiner et sceller',
     'auditor.audit.start_count': 'Commencer le comptage',
@@ -5696,9 +5700,9 @@ const fr: Catalog = {
     'auditor.audit.guide.count.do':
         'Cochez les preuves que vous avez vues, puis saisissez ce que vous avez constaté.',
     'auditor.audit.guide.count.enter':
-        'Espèces en caisse et valeur du stock en francs entiers, et unités comptées. Par exemple 450000 et 120.',
+        'Espèces en caisse en francs entiers et unités de stock comptées. Par exemple 450000 et 120.',
     'auditor.audit.guide.count.done':
-        'Chaque montant est saisi, avec au moins une preuve financière et une preuve d’inventaire cochées.',
+        'Chaque montant est saisi et chaque preuve listée est cochée.',
     'auditor.audit.guide.count.how':
         'Comptez vous-même les espèces et le stock. Chaque montant est comparé aux relevés au dossier ; rien ici ne vient de l’entreprise.',
     'auditor.audit.guide.drawings.do':
@@ -5729,7 +5733,7 @@ const fr: Catalog = {
     'auditor.differences.lead':
         'Répartissez l’écart entre les espèces comptées et les relevés selon ses causes, au franc près.',
     'auditor.differences.lead_none':
-        'Les espèces comptées correspondent aux relevés : il n’y a rien à expliquer. Continuez vers les photos.',
+        'Les espèces comptées correspondent aux relevés : il n’y a rien à expliquer.',
     'auditor.differences.reported': 'Relevés',
     'auditor.differences.observed': 'Compté',
     'auditor.differences.difference': 'Écart',
@@ -5764,6 +5768,67 @@ const fr: Catalog = {
     'auditor.loans.monthly_payment': 'Mensualité (RWF)',
     'auditor.loans.remove': 'Retirer le prêt {number}',
     'auditor.loans.add': 'Ajouter un prêt',
+    'auditor.audit.guide.staff.do':
+        'Notez combien de personnes l’entreprise emploie, d’après la déclaration RSSB.',
+    'auditor.audit.guide.staff.enter':
+        'Un nombre entier. Par exemple 6. Saisissez 0 si personne n’est employé.',
+    'auditor.audit.guide.staff.done':
+        'Un nombre est saisi et la page de totaux RSSB est vérifiée.',
+    'auditor.audit.guide.staff.how':
+        'Demandez la dernière déclaration RSSB et lisez le total sur sa page récapitulative. Demandez au propriétaire de masquer les noms ; Rozine ne collecte jamais de données sur les employés.',
+    'auditor.audit.guide.expiries.do':
+        'Notez quand expirent les attestations de quitus fiscal et RSSB.',
+    'auditor.audit.guide.expiries.enter':
+        'Deux dates, telles qu’imprimées sur chaque attestation. Par exemple 31/03/2027.',
+    'auditor.audit.guide.expiries.done':
+        'Les deux dates sont saisies, même si l’une est déjà passée.',
+    'auditor.audit.guide.expiries.how':
+        'Lisez chaque date sur l’attestation elle-même, pas d’après le propriétaire. Une attestation expirée est notée telle que vous l’avez vue.',
+    'auditor.audit.guide.loan_use.do':
+        'Indiquez comment les fonds du prêt Rozine ont été utilisés ce mois-ci.',
+    'auditor.audit.guide.loan_use.enter':
+        'Choisissez comme prévu, en partie ou pas comme prévu. Sauf « comme prévu », ajoutez une ligne, par exemple : une partie a payé le loyer d’octobre.',
+    'auditor.audit.guide.loan_use.done':
+        'Une réponse est choisie, avec une ligne indiquant où sont allés les fonds s’ils n’ont pas servi comme prévu.',
+    'auditor.audit.guide.loan_use.how':
+        'Comparez ce que les fonds ont payé avec l’usage annoncé dans le prospectus. Vérifiez les reçus ou relevés des paiements les plus importants.',
+    'auditor.audit.guide.changes.do':
+        'Posez quatre questions sur les changements depuis la dernière visite.',
+    'auditor.audit.guide.changes.enter':
+        'Oui ou non pour chacun : un nouveau prêt, un changement de dirigeant, un changement de propriétaires, une action en justice.',
+    'auditor.audit.guide.changes.done': 'Chaque question a un oui ou un non.',
+    'auditor.audit.guide.changes.how':
+        'Posez simplement chaque question au propriétaire et vérifiez l’extrait du registre ou les contrats de prêt quand c’est possible. Un oui est scellé avec le rapport.',
+    'auditor.staff.title': 'Effectif',
+    'auditor.staff.lead':
+        'Combien de personnes l’entreprise emploie, d’après la page de totaux RSSB.',
+    'auditor.staff.count': 'Personnes employées',
+    'auditor.staff.rssb_checked':
+        'J’ai vérifié ce nombre sur la page de totaux RSSB, noms masqués.',
+    'auditor.expiries.title': 'Échéances fiscales et RSSB',
+    'auditor.expiries.lead':
+        'La date d’expiration imprimée sur chaque attestation.',
+    'auditor.expiries.tax': 'Quitus fiscal expire le',
+    'auditor.expiries.rssb': 'Attestation RSSB expire le',
+    'auditor.loan_use.title': 'Usage des fonds du prêt',
+    'auditor.loan_use.lead':
+        'Les fonds du prêt Rozine ont-ils servi à ce que prévoyait le prospectus ?',
+    'auditor.loan_use.option.as_planned': 'Comme prévu',
+    'auditor.loan_use.option.partly': 'En partie comme prévu',
+    'auditor.loan_use.option.not_as_planned': 'Pas comme prévu',
+    'auditor.loan_use.note': 'Note (facultative)',
+    'auditor.loan_use.note_required': 'Où sont allés les fonds ?',
+    'auditor.changes.title': 'Changements',
+    'auditor.changes.lead':
+        'L’un de ces points a-t-il changé depuis la dernière visite ?',
+    'auditor.changes.kind.new_debt': 'Un nouveau prêt ou une nouvelle dette',
+    'auditor.changes.kind.director_change': 'Un changement de dirigeant',
+    'auditor.changes.kind.ownership_change':
+        'Un changement de propriétaires ou d’actionnaires',
+    'auditor.changes.kind.legal_claim':
+        'Une action en justice contre l’entreprise',
+    'auditor.changes.yes': 'Oui',
+    'auditor.changes.no': 'Non',
     'auditor.audit.guide.seal.do':
         'Vérifiez le résultat, puis scellez avec votre code d’authentification.',
     'auditor.audit.guide.seal.enter':
