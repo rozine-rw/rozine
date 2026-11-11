@@ -60,6 +60,20 @@ final readonly class SecondaryListing
             $listedAt->add(new DateInterval('PT'.SecondaryTerms::LISTING_SECONDS.'S')), 'open', null, null);
     }
 
+    /**
+     * A listing as it was recorded, for the adapter that keeps it. Every rule applies again from here:
+     * the restored state goes through the same transitions as one just opened.
+     *
+     * @param  'open'|'sold'|'cancelled'|'expired'  $state
+     * @param  array{id: string, buyer_party_id: string, units: string, expires_at: DateTimeImmutable}|null  $reservation
+     * @param  array{by: 'seller'|'staff'|'halt', reason: string|null}|null  $cancellation
+     */
+    public static function restore(string $id, string $sellerPartyId, string $holdingId, string $listedUnits, string $remainingUnits, string $price,
+        DateTimeImmutable $listedAt, DateTimeImmutable $expiresAt, string $state, ?array $reservation, ?array $cancellation): self
+    {
+        return new self($id, $sellerPartyId, $holdingId, $listedUnits, $remainingUnits, $price, $listedAt, $expiresAt, $state, $reservation, $cancellation);
+    }
+
     /** The state as of an instant: a lapsed reservation is gone, and a listing past its seven days is expired. */
     public function at(DateTimeImmutable $at): self
     {

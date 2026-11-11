@@ -28,6 +28,8 @@ Schedule::command('primary:expire-reservations')->everyMinute()->withoutOverlapp
 
 Schedule::command('cart:expire-checkouts')->everyMinute()->withoutOverlapping(5);
 
+Schedule::command('secondary:expire')->everyMinute()->withoutOverlapping(5);
+
 Schedule::command('disbursements:reconcile')->everyMinute()->withoutOverlapping(5);
 
 Schedule::command('changes:prune')->daily()->withoutOverlapping(60);
