@@ -111,7 +111,7 @@ it('locks the signed prospectus under its fingerprint once every gate passes', f
     expect($record->fingerprint)->toBe($signed['data']['fingerprint'])
         ->and($record->fingerprint)->toBe(hash('sha256', app(CanonicalJson::class)->encode($document)))
         ->and($document)->toMatchArray(['version' => 2, 'draft_version' => 1, 'inputs' => ($this->complete)($name, $quote),
-            'evidence_sha256' => [$quote => hash('sha256', "%PDF-1.7\nSupplier quote\n")]])
+            'evidence_sha256' => [$quote => hash('sha256', "%PDF-1.7\nSupplier quote\n")], 'signed_by_name' => $name])
         ->and($document['facts']['signed'] ?? null)->toBeTrue()
         ->and($current['signed'])->toBe(['version' => 2, 'fingerprint' => $record->fingerprint, 'signed_at' => $record->created_at->toIso8601String()])
         ->and($current['evaluation']['publishable'])->toBeTrue()->and($current['evaluation']['may_sign'])->toBeFalse()
@@ -139,8 +139,8 @@ it('refuses to sign while a gate fails, and names each fix', function (): void {
         ->and(BusinessProspectusVersion::query()->where('kind', 'signed')->exists())->toBeFalse();
 });
 
-it('refuses malformed drafts, stale versions and a signature from anyone but the representative', function (): void {
-    $fixture = ($this->accepted)(2, 1);
+it('refuses malformed drafts, stale versions and a signature from anyone but the representative, even another required signatory', function (): void {
+    $fixture = ($this->accepted)(2, 2);
     $name = ($this->read)($fixture)['inputs']['profiles'][0]['name'];
 
     $malformed = ($this->save)($fixture, 0, ['use_of_funds' => [['label' => 'Stock', 'amount' => '12.50']], 'forecast' => [['month' => '2027-13']],
