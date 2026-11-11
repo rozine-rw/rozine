@@ -240,6 +240,7 @@ export default function BusinessMonthlyFigures({
                 : null,
             request_id: crypto.randomUUID(),
             identity_context_revision,
+            period,
         }));
         form.post(links.submit.url, {
             preserveScroll: true,

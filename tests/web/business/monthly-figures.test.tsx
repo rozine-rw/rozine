@@ -220,6 +220,7 @@ describe('Monthly figures', () => {
                 customers: false,
             },
             identity_context_revision: 3,
+            period: '2026-09-01',
         });
         expect(inertia.posts[0].data.request_id).toMatch(/^[0-9a-f-]{36}$/u);
     });
