@@ -578,7 +578,7 @@ describe('Auditor Home', () => {
         expect(screen.getAllByText('Overdue')).toHaveLength(2);
         expect(screen.getByText('Reassigned to you')).toBeInTheDocument();
         expect(screen.queryByText(/Chantal Rwema/)).not.toBeInTheDocument();
-        expect(screen.getByText('In dispute window')).toBeInTheDocument();
+        expect(screen.getByText('Awaiting publication')).toBeInTheDocument();
 
         act(() => {
             vi.advanceTimersByTime(3000);

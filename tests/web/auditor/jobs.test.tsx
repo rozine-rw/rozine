@@ -709,7 +709,7 @@ describe('Auditor Jobs', () => {
         expect(within(running).getByRole('timer')).toBeInTheDocument();
         expect(within(finished).getByText('Monthly visit')).toBeInTheDocument();
         expect(
-            within(finished).getByText('In dispute window'),
+            within(finished).getByText('Awaiting publication'),
         ).toBeInTheDocument();
         expect(within(finished).queryByRole('timer')).not.toBeInTheDocument();
     });
@@ -770,7 +770,7 @@ describe('Auditor outcomes', () => {
                 cosign_due_on: '2026-10-07',
             },
             'Audit sealed and filed',
-            'The field report for Huye Motors is sealed. Huye Motors can dispute it until 7 Oct 2026; the engine rates the business from your findings.',
+            'The field report for Huye Motors is sealed. Huye Motors co-signs by 7 Oct 2026; the engine rates the business from your findings.',
         ],
         [
             {

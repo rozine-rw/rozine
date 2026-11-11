@@ -334,6 +334,9 @@ const en = {
     'business.today.cosign.sub':
         'Your CPA sealed it. Read the findings. There is nothing to sign.',
     'business.today.cosign.cta': 'Review report',
+    'business.today.cosign.sign_sub':
+        'Your CPA sealed it. Read the findings before you co-sign.',
+    'business.today.cosign.sign_cta': 'Review & co-sign',
     'business.today.cosign.due': 'Dispute by {date} · {hours} h left',
     'business.today.signature.kicker': 'Signature needed',
     'business.today.signature.sub':
@@ -738,7 +741,7 @@ const en = {
     'business.reports.guide.title': 'How audits work',
     'business.reports.guide.flash.title': 'A Flash audit, when Rozine asks',
     'business.reports.guide.flash.body':
-        'Before you raise, or whenever Rozine needs a fresh check, an Audit Partner visits unannounced and seals a Flash report within 24 hours. You review it just like a monthly report.',
+        'Before you raise, or whenever Rozine needs a fresh check, an Audit Partner visits unannounced and seals a Flash report within 24 hours. You review it and co-sign it before it is published.',
     'business.reports.guide.opens.title': 'Every month, gather your records',
     'business.reports.guide.opens.body':
         'Between the 20th and month-end, gather all physical and digital financial records for your scheduled CPA in-person audit.',
@@ -2324,12 +2327,12 @@ const en = {
     'admin.audit_reports.pdf_named':
         'Download the sealed report for {business} (PDF)',
     'admin.audit_reports.stats.published': 'Audited & published',
-    'admin.audit_reports.stats.awaiting_cosign': 'In dispute window',
+    'admin.audit_reports.stats.awaiting_cosign': 'Awaiting publication',
     'admin.audit_reports.stats.overdue': 'Overdue reports',
     'admin.audit_reports.stats.on_time': 'On-time audit rate',
     'admin.audit_reports.chip.all': 'All',
     'admin.audit_reports.chip.owed': 'Owed by a partner',
-    'admin.audit_reports.chip.awaiting_cosign': 'In dispute window',
+    'admin.audit_reports.chip.awaiting_cosign': 'Awaiting publication',
     'admin.audit_reports.chip.published': 'Published',
     'admin.audit_reports.chip.disputed': 'In dispute',
     'admin.audit_reports.col.business': 'Business',
@@ -2343,7 +2346,7 @@ const en = {
     'admin.audit_reports.status.overdue': 'Overdue',
     'admin.audit_reports.status.returned': 'Returned',
     'admin.audit_reports.status.sealed': 'Sealed',
-    'admin.audit_reports.status.awaiting_cosign': 'In dispute window',
+    'admin.audit_reports.status.awaiting_cosign': 'Awaiting publication',
     'admin.audit_reports.status.published': 'Published',
     'admin.audit_reports.status.disputed': 'Disputed',
     'admin.audit_reports.status.escalated': 'Escalated',
@@ -3091,7 +3094,7 @@ const en = {
     'auditor.home.in_progress': 'In progress',
     'auditor.job.step_of': 'Step {step} of {steps}',
     'auditor.job.status.overdue': 'Overdue',
-    'auditor.job.status.awaiting_cosign': 'In dispute window',
+    'auditor.job.status.awaiting_cosign': 'Awaiting publication',
     'auditor.job.reassigned': 'Reassigned to you',
     'auditor.standing.title': 'Your standing',
     'auditor.standing.on_time': 'On-time close',
@@ -3213,7 +3216,7 @@ const en = {
         '{business} is back with dispatch and your reason is on the record.',
     'auditor.outcome.sealed.title': 'Audit sealed and filed',
     'auditor.outcome.sealed.flash':
-        'The field report for {business} is sealed. {business} can dispute it until {date}; the engine rates the business from your findings.',
+        'The field report for {business} is sealed. {business} co-signs by {date}; the engine rates the business from your findings.',
     'auditor.outcome.sealed.monthly':
         'The {month} report for {business} — its uploaded statements and your factual findings — is sealed. {business} can dispute it until {date}.',
     'auditor.outcome.suggested.title': 'Changes requested',
@@ -3434,7 +3437,7 @@ const en = {
     'auditor.count.status.restricted': 'Restricted',
     'auditor.seal.title': 'Sign off & seal',
     'auditor.seal.lead':
-        'Your findings are attributed to your ICPAR licence and published to holders once the business has had 24 hours to dispute them.',
+        'Your findings are attributed to your ICPAR licence and published to holders once the business review is complete.',
     'auditor.seal.note': 'Assessment note',
     'auditor.seal.note_optional': 'Optional',
     'auditor.seal.note_required': 'Required',
@@ -3570,7 +3573,7 @@ const en = {
     'auditor.conflicts.empty': 'You have not declared any conflicts.',
     'auditor.conflicts.page_empty':
         'Nothing to show on this page. Earlier declarations may follow.',
-    'auditor.reports.status.awaiting_cosign': 'In dispute window',
+    'auditor.reports.status.awaiting_cosign': 'Awaiting publication',
     'auditor.reports.status.published': 'Published',
     'auditor.reports.status.late': 'Late',
     'auditor.reports.status.rejected': 'Rejected',
@@ -6324,7 +6327,7 @@ const en = {
     'investor.notices.business.report_sealed.title':
         'Audit report ready for review',
     'investor.notices.business.report_sealed.body':
-        '{auditor} sealed your audit report. Review it, and dispute it if something is wrong.',
+        '{auditor} sealed your audit report. Review it, then co-sign or dispute it.',
     'investor.notices.business.report_sealed.body_due':
         '{auditor} sealed your audit report. Dispute it by {time} if something is wrong.',
     'investor.notices.business.report_review_closing.title':
