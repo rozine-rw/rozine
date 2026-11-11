@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * the one `signed` version the official representative locked under its fingerprint.
  *
  * @phpstan-import-type Inputs from \App\Domain\Business\ProspectusGates
+ * @phpstan-import-type Facts from \App\Domain\Business\ProspectusGates
  *
  * @property string $id
  * @property string $business_id
@@ -21,7 +22,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $kind
  * @property string $actor_party_id
  * @property string $operation_id
- * @property array{inputs: Inputs, document?: array<string, mixed>} $payload
+ * @property array{inputs: Inputs, document?: array{facts: Facts}&array<string, mixed>} $payload
  * @property string $sha256
  * @property string|null $fingerprint
  * @property CarbonImmutable $created_at

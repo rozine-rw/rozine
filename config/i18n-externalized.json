@@ -241,6 +241,7 @@
         "resources/js/pages/investor/market.tsx",
         "resources/js/pages/investor/portfolio.tsx",
         "resources/js/pages/investor/profile.tsx",
+        "resources/js/pages/investor/prospectus.tsx",
         "resources/js/pages/investor/verification.tsx",
         "resources/js/pages/investor/verified.tsx",
         "resources/js/pages/investor/wallet.tsx"

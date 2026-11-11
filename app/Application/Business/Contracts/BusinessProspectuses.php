@@ -18,6 +18,10 @@ namespace App\Application\Business\Contracts;
  *     signed: array{version: int, fingerprint: string, signed_at: string}|null, facts: Facts|null, unavailable: string|null,
  *     evaluation: array{policy_version: string, gates: list<Gate>, may_sign: bool, publishable: bool}|null,
  *     documents: list<array{id: string, kind: string, filename: string, media_type: string, size_bytes: int, uploaded_at: string}>, can_edit: bool, can_sign: bool}
+ * @phpstan-type SignedSummary array{version: int, fingerprint: string, signed_at: string, signed_by: string}
+ * @phpstan-type PublishedProspectus array{summary: SignedSummary, inputs: Inputs,
+ *     facts: array{principal: string, term_months: int, instalment: string, verified_monthly_revenue: string, latest_sealed_report_at: string|null},
+ *     quoted_lines: list<int>, contracted_months: list<string>}
  */
 interface BusinessProspectuses
 {
@@ -44,4 +48,13 @@ interface BusinessProspectuses
 
     /** @return array<string, mixed> */
     public function sign(int $userId, int $contextRevision, string $businessId, string $applicationId, int $expectedVersion, string $requestId): array;
+
+    /**
+     * The signed prospectus behind a published campaign, as an Investor reads it (PRO-R04), or null
+     * when that campaign's application has no signed version. It carries no document ids, filenames
+     * or registered names: only which lines cite a quote and which months cite a contract.
+     *
+     * @return PublishedProspectus|null
+     */
+    public function published(string $campaignId): ?array;
 }

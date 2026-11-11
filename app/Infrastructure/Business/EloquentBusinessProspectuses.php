@@ -17,6 +17,7 @@ use App\Domain\Business\ProspectusGates;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Models\BusinessApplication;
+use App\Models\BusinessCampaign;
 use App\Models\BusinessProspectusDocument;
 use App\Models\BusinessProspectusVersion;
 use Brick\Math\BigInteger;
@@ -128,6 +129,27 @@ final class EloquentBusinessProspectuses implements BusinessProspectuses
                         return new OperationResult('PROSPECTUS_DOCUMENT_UPLOADED', ['application_id' => $application->id, 'document_id' => $document->id, 'kind' => $kind], 1);
                     });
             });
+    }
+
+    public function published(string $campaignId): ?array
+    {
+        $applicationId = BusinessCampaign::query()->whereKey($campaignId)->value('business_application_id');
+        $signed = is_string($applicationId)
+            ? BusinessProspectusVersion::query()->where('business_application_id', $applicationId)->where('kind', 'signed')->first() : null;
+        $facts = $signed?->payload['document']['facts'] ?? null;
+        if ($signed === null || $signed->fingerprint === null || $facts === null) {
+            return null;
+        }
+        $inputs = $signed->payload['inputs'];
+        $representative = array_values(array_filter($inputs['profiles'], fn (array $profile): bool => $profile['role'] === 'representative'))[0]['name'] ?? '';
+        $cites = fn (?string $id, string $kind): bool => $id !== null && ($facts['evidence'][$id] ?? null) === $kind;
+
+        return ['summary' => ['version' => $signed->version, 'fingerprint' => $signed->fingerprint, 'signed_at' => $signed->created_at->toIso8601String(),
+            'signed_by' => $representative], 'inputs' => $inputs,
+            'facts' => ['principal' => $facts['principal'], 'term_months' => $facts['term_months'], 'instalment' => $facts['instalment'],
+                'verified_monthly_revenue' => $facts['verified_monthly_revenue'], 'latest_sealed_report_at' => $facts['latest_sealed_report_at']],
+            'quoted_lines' => array_keys(array_filter($inputs['use_of_funds'], fn (array $line): bool => $cites($line['quote_document_id'], 'quote'))),
+            'contracted_months' => array_column(array_filter($inputs['forecast'], fn (array $month): bool => $cites($month['contract_document_id'], 'contract')), 'month')];
     }
 
     public function sign(int $userId, int $contextRevision, string $businessId, string $applicationId, int $expectedVersion, string $requestId): array
