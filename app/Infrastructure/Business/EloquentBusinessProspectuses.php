@@ -64,7 +64,7 @@ final class EloquentBusinessProspectuses implements BusinessProspectuses
                 $evaluation = $facts === null ? null : $this->gates->evaluate($inputs, $facts, CarbonImmutable::now('UTC'));
                 $person = array_find($business['mandate']['people'], fn (array $person): bool => $person['party_id'] === ($identity['party']['id'] ?? null));
                 $permissions = $person['permissions'] ?? [];
-                $representative = in_array($person['party_id'] ?? null, $business['mandate']['required_signatories'], true);
+                $representative = $person !== null && $person['party_id'] === $this->representative($business);
 
                 return ['application_id' => $application->id, 'business_id' => $business['id'], 'title' => (string) ($application->draft['title'] ?? ''), 'sections' => ProspectusGates::SECTIONS,
                     'version' => $latest->version ?? 0, 'inputs' => $inputs,
@@ -157,7 +157,7 @@ final class EloquentBusinessProspectuses implements BusinessProspectuses
         return $this->authority->handle($userId, $contextRevision, $businessId, 'application.sign', null,
             function (array $business, array $identity) use ($userId, $contextRevision, $businessId, $applicationId, $expectedVersion, $requestId): array {
                 $partyId = (string) ($identity['party']['id'] ?? throw new CommandRejection('BUSINESS_NOT_FOUND', 404));
-                if (! in_array($partyId, $business['mandate']['required_signatories'], true)) {
+                if ($partyId !== $this->representative($business)) {
                     throw new CommandRejection('ACTION_FORBIDDEN', 403);
                 }
                 $application = $this->application($business['id'], $applicationId);
@@ -182,7 +182,9 @@ final class EloquentBusinessProspectuses implements BusinessProspectuses
                         $document = ['policy_version' => ProspectusGates::POLICY_VERSION, 'business_id' => $business['id'], 'application_id' => $application->id,
                             'version' => $version, 'draft_version' => $draft->version, 'inputs' => $inputs, 'facts' => [...$facts, 'signed' => true],
                             'evidence_sha256' => BusinessProspectusDocument::query()->where('business_application_id', $application->id)->orderBy('id')->pluck('sha256', 'id')->all(),
-                            'signed_by_party_id' => $partyId, 'signed_at' => $now->format('Y-m-d\TH:i:s.u\Z')];
+                            'signed_by_party_id' => $partyId,
+                            'signed_by_name' => (string) (array_find($business['mandate']['people'], fn (array $person): bool => $person['party_id'] === $partyId)['name'] ?? ''),
+                            'signed_at' => $now->format('Y-m-d\TH:i:s.u\Z')];
                         $fingerprint = hash('sha256', $this->json->encode($document));
                         $this->append($application, $version, 'signed', $partyId, $operationId, ['inputs' => $inputs, 'document' => $document], $fingerprint);
 
@@ -239,6 +241,17 @@ final class EloquentBusinessProspectuses implements BusinessProspectuses
     }
 
     /**
+     * The Business's official representative: the first required signatory on the current mandate.
+     * Only this person signs the prospectus (PRO-R04), and the prospectus introduces them as such.
+     *
+     * @param  Business  $business
+     */
+    private function representative(array $business): ?string
+    {
+        return $business['mandate']['required_signatories'][0] ?? null;
+    }
+
+    /**
      * The people PRO-R02 asks the prospectus to introduce, from the current mandate: the first required
      * signatory as the official representative, then every director and owner, each once under the
      * strongest role they hold.
@@ -248,7 +261,7 @@ final class EloquentBusinessProspectuses implements BusinessProspectuses
      */
     private function requiredPeople(array $business): array
     {
-        $representative = $business['mandate']['required_signatories'][0] ?? null;
+        $representative = $this->representative($business);
         $people = [];
         foreach ($business['mandate']['people'] as $person) {
             $role = $person['party_id'] === $representative ? 'representative'
