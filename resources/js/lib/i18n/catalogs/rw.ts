@@ -4367,6 +4367,11 @@ const rw: Catalog = {
     'investor.cart.whole.band_basis':
         'Icyiciro cyawe kibara inyandiko ufite wongeyeho iki gitebo, ntikibara amafaranga ari mu gikapu.',
     'investor.cart.whole.quoting': 'Turimo kubara igiciro cy’igitebo cyawe…',
+    'investor.cart.whole.holding': 'Turimo kugufatira inyandiko…',
+    'investor.cart.whole.confirming': 'Turimo kwemeza…',
+    'investor.cart.whole.releasing': 'Turimo kurekura…',
+    'investor.cart.whole.settling_wait':
+        'Ubusanzwe bimara iminota mike. Uru rupapuro rwivugurura ubwarwo, hanyuma ukongera kwishyura.',
     'investor.cart.whole.checkout': 'Ishyura byose · {amount}',
     'investor.cart.whole.fine_print':
         'Bifatira buri nyandiko iri mu gitebo iminota 5 mu gihe wemeza. Nta kintu cyemezwa utaremeza.',

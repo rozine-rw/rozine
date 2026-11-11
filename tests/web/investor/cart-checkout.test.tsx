@@ -276,7 +276,7 @@ describe('Cart: whole-cart quote', () => {
 
         expect(screen.getByTestId('cart-band')).toHaveClass('animate-pulse');
         expect(
-            screen.getByRole('button', { name: 'Check out all · RWF 70,000' }),
+            screen.getByRole('button', { name: 'Pricing your cart…' }),
         ).toBeDisabled();
     });
 
@@ -295,6 +295,13 @@ describe('Cart: whole-cart quote', () => {
             identity_context_revision: 3,
             expected_cart_revision: 6,
         });
+        /* The old total is never offered for the changed cart (#531). */
+        expect(
+            screen.queryByRole('button', { name: /RWF 70,000/u }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Pricing your cart…' }),
+        ).toBeDisabled();
     });
 
     it('shows a pulsing band while the cart is priced and offers no checkout yet', () => {
@@ -305,7 +312,7 @@ describe('Cart: whole-cart quote', () => {
             'Pricing your cart…',
         );
         expect(
-            screen.getByRole('button', { name: 'Check out all · RWF 0' }),
+            screen.getByRole('button', { name: 'Pricing your cart…' }),
         ).toBeDisabled();
     });
 
@@ -335,7 +342,7 @@ describe('Cart: whole-cart quote', () => {
         expect(inertia.reload).toHaveBeenCalled();
     });
 
-    it('says Sending while the hold is on its way', async () => {
+    it('says it is holding the notes while the hold is on its way', async () => {
         inertia.queue.push(quoted());
         inertia.queue.push(() => new Promise(() => undefined));
         render(<InvestorCart {...page()} />);
@@ -346,7 +353,27 @@ describe('Cart: whole-cart quote', () => {
         );
         await flush();
 
-        expect(screen.getByRole('button', { name: 'Sending…' })).toBeDisabled();
+        expect(
+            screen.getByRole('button', { name: 'Holding your notes…' }),
+        ).toBeDisabled();
+    });
+
+    it('stays busy until the held checkout has loaded', async () => {
+        inertia.queue.push(quoted());
+        inertia.queue.push(completed('CART_RESERVED'));
+        inertia.reload.mockImplementation(() => undefined);
+        render(<InvestorCart {...page()} />);
+        await flush();
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Check out all · RWF 70,000' }),
+        );
+        await flush();
+
+        expect(inertia.reload).toHaveBeenCalled();
+        expect(
+            screen.getByRole('button', { name: 'Holding your notes…' }),
+        ).toHaveAttribute('aria-busy', 'true');
     });
 
     it('names a refused hold as a whole, and each line it stopped on', async () => {
@@ -397,6 +424,30 @@ describe('Cart: whole-cart quote', () => {
         inertia.queue.push(quoted());
         inertia.queue.push(offline());
         inertia.queue.push(fails(409, refusedBody('CART_LINES_REFUSED')));
+        inertia.queue.push(quoted());
+        render(<InvestorCart {...page()} />);
+        await flush();
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Check out all · RWF 70,000' }),
+        );
+        await flush();
+        await flush();
+
+        expect(inertia.calls[2]).toMatchObject({
+            url: expect.stringContaining('/preview/investor-cart-operations/'),
+        });
+        expect(screen.getByTestId('line-refusal-cmp_volt')).toHaveTextContent(
+            "Your available balance doesn't cover this amount.",
+        );
+    });
+
+    it('names each line a recorded 422 refusal recovered by the operation lookup stopped on', async () => {
+        inertia.queue.push(quoted());
+        inertia.queue.push(offline());
+        inertia.queue.push(
+            refused422(refusedBody('INSUFFICIENT_AVAILABLE_FUNDS')),
+        );
         inertia.queue.push(quoted());
         render(<InvestorCart {...page()} />);
         await flush();
@@ -670,7 +721,7 @@ describe('Cart: whole-cart quote', () => {
 
         fireEvent.change(slider, { target: { value: '30' } });
         expect(
-            screen.getByRole('button', { name: 'Check out all · RWF 70,000' }),
+            screen.getByRole('button', { name: 'Pricing your cart…' }),
         ).toBeDisabled();
         await act(async () => {
             vi.advanceTimersByTime(400);
@@ -922,7 +973,7 @@ describe('Cart: the held checkout', () => {
         expect(inertia.reload).toHaveBeenCalled();
     });
 
-    it('says Sending while the confirmation is on its way', async () => {
+    it('says it is confirming while the confirmation is on its way', async () => {
         inertia.queue.push(() => new Promise(() => undefined));
         render(<InvestorCart {...heldPage()} />);
 
@@ -932,16 +983,74 @@ describe('Cart: the held checkout', () => {
         );
         await flush();
 
-        expect(screen.getByRole('button', { name: 'Sending…' })).toBeDisabled();
+        expect(
+            screen.getByRole('button', { name: 'Confirming…' }),
+        ).toBeDisabled();
         expect(
             screen.getByRole('button', { name: 'Release all notes' }),
         ).toBeDisabled();
+    });
+
+    it('says it is releasing while the release is on its way', async () => {
+        inertia.queue.push(() => new Promise(() => undefined));
+        render(<InvestorCart {...heldPage()} />);
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Release all notes' }),
+        );
+        await flush();
+
+        expect(
+            screen.getByRole('button', { name: 'Releasing…' }),
+        ).toHaveAttribute('aria-busy', 'true');
+        expect(
+            screen.getByRole('button', { name: 'Confirm all · RWF 70,000' }),
+        ).toBeDisabled();
+    });
+
+    it('offers no confirm or release once the hold runs out, and reads the cart until it settles', async () => {
+        /* The page's server time is 07:00; the hold runs to 07:03. */
+        vi.useFakeTimers({ now: Date.parse('2026-09-23T07:00:00Z') });
+        render(<InvestorCart {...heldPage()} />);
+
+        expect(
+            screen.getByRole('button', { name: 'Release all notes' }),
+        ).toBeEnabled();
+
+        await act(async () => {
+            vi.advanceTimersByTime(181_000);
+        });
+
+        expect(
+            screen.getByText(
+                'Your hold has ended. These notes are being released back to your wallet.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: /Confirm all/u }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Release all notes' }),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'Go to Deals' }),
+        ).toBeInTheDocument();
+        expect(inertia.reload).not.toHaveBeenCalled();
+
+        await act(async () => {
+            vi.advanceTimersByTime(10_000);
+        });
+
+        expect(inertia.reload).toHaveBeenCalledTimes(1);
+        vi.useRealTimers();
     });
 
     it('only waits for an ended hold to settle, on a wide screen too', () => {
         setWide(true);
         const props = heldPage('release_pending');
         props.checkout!.lines[1].campaign_id = 'cmp_unknown';
+        props.links.deals = null;
         render(<InvestorCart {...props} />);
 
         expect(
@@ -956,6 +1065,9 @@ describe('Cart: the held checkout', () => {
         ).not.toBeInTheDocument();
         expect(
             screen.queryByRole('button', { name: 'Release all notes' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: 'Go to Deals' }),
         ).not.toBeInTheDocument();
     });
 

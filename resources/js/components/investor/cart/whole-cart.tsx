@@ -1,4 +1,4 @@
-import { Link, useHttp } from '@inertiajs/react';
+import { Link, router, useHttp } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import { HoldClock } from '@/components/investor/deals/checkout-sheet';
 import { earningsFeeRate } from '@/components/investor/primary/earnings-fee';
@@ -7,6 +7,7 @@ import { C3Notice, useRefusalText } from '@/components/rozine/c3-notice';
 import { useC3Command } from '@/hooks/use-c3-command';
 import type { C3Resource } from '@/hooks/use-c3-command';
 import { useTranslation } from '@/hooks/use-translation';
+import { useServerNow } from '@/lib/investor/server-clock';
 import { formatRwf } from '@/lib/rozine/format';
 import { readErrorCode } from '@/lib/rozine/operation';
 import { cn } from '@/lib/utils';
@@ -30,6 +31,9 @@ const PRIMARY_ON = 'bg-rz-accent-fill text-white';
 const PRIMARY_OFF = 'cursor-not-allowed bg-rz-disabled text-rz-secondary';
 
 type CartCommand = 'cart.reserve' | 'cart.confirm' | 'cart.release';
+
+/** How often a page whose hold has ended reads the cart again until the expiry has settled. */
+export const SETTLE_POLL_MS = 10_000;
 
 /** What the last quote said: the quote, or the code it was refused with. */
 export type CartQuoteState = {
@@ -327,13 +331,15 @@ export function CartCheckoutAction({
     reserve: (quote: CartQuote) => void;
     /** A deal checkout to open when the risk statements come first. */
     checkoutLink: RouteLink | null;
-    command: { busy: boolean; unresolved: boolean };
+    command: { busy: boolean; unresolved: boolean; settling?: boolean };
 }) {
     const { t } = useTranslation();
     const refusal = useRefusalText();
     const block = cartBlock(lines);
     const priced = quote.quote;
-    const idle = !command.busy && !command.unresolved;
+    /* Busy until the held checkout has loaded, so the button never reads as idle in between. */
+    const sending = command.busy || command.settling === true;
+    const idle = !sending && !command.unresolved;
     const canCheckOut =
         block === null && priced !== null && !quote.quoting && idle;
 
@@ -386,7 +392,7 @@ export function CartCheckoutAction({
             <button
                 type="button"
                 disabled={!canCheckOut}
-                aria-busy={command.busy || undefined}
+                aria-busy={sending || undefined}
                 onClick={() => priced !== null && reserve(priced)}
                 className={cn(
                     PRIMARY,
@@ -394,16 +400,19 @@ export function CartCheckoutAction({
                     canCheckOut ? PRIMARY_ON : PRIMARY_OFF,
                 )}
             >
-                {command.busy
-                    ? t('investor.checkout.c3.processing')
-                    : t('investor.cart.whole.checkout', {
-                          amount: formatRwf(
-                              priced?.principal ?? {
-                                  currency: 'RWF',
-                                  amount: '0',
-                              },
-                          ),
-                      })}
+                {sending
+                    ? t('investor.cart.whole.holding')
+                    : quote.quoting
+                      ? /* A total from before the cart changed is never offered (#531). */
+                        t('investor.cart.whole.quoting')
+                      : t('investor.cart.whole.checkout', {
+                            amount: formatRwf(
+                                priced?.principal ?? {
+                                    currency: 'RWF',
+                                    amount: '0',
+                                },
+                            ),
+                        })}
             </button>
             <p className="mt-1.5 text-center text-[10px] leading-[1.4] text-rz-secondary">
                 {t('investor.cart.whole.fine_print')}
@@ -508,15 +517,47 @@ export function HeldCart({
     serverTime,
     identityRevision,
     cart,
+    deals,
 }: {
     checkout: CartCheckout;
     names: Record<string, string>;
     serverTime: string;
     identityRevision: number;
     cart: ReturnType<typeof useCartCommand>;
+    /** Where an Investor may go while an ended hold settles. */
+    deals: RouteLink | null;
 }) {
     const { t } = useTranslation();
     const { command, requoted, lineRefusals } = cart;
+    const now = useServerNow(serverTime, true);
+    /*
+     * Past its deadline the hold can no longer be confirmed or released, only expire (#531): the
+     * page says so as the clock runs out, and reads the cart again until the expiry has settled
+     * and the cart is back.
+     */
+    const ended =
+        checkout.state !== 'held' || now >= Date.parse(checkout.expires_at);
+
+    useEffect(() => {
+        if (!ended) {
+            return;
+        }
+
+        const timer = window.setInterval(() => router.reload(), SETTLE_POLL_MS);
+
+        return () => window.clearInterval(timer);
+    }, [ended]);
+    /* Which command is on its way, so its own button says what it is doing. */
+    const [sent, setSent] = useState<'cart.confirm' | 'cart.release' | null>(
+        null,
+    );
+    const sendHeld = (
+        name: 'cart.confirm' | 'cart.release',
+        payload: Record<string, unknown>,
+    ) => {
+        setSent(name);
+        command.send(name, payload);
+    };
     const { quote } = checkout;
     /* The acknowledgement binds the exact reserved terms: each line's own disclosure too. */
     const key = [
@@ -529,9 +570,10 @@ export function HeldCart({
     );
     const [acknowledgedKey, setAcknowledgedKey] = useState<string | null>(null);
     const acknowledged = acknowledgedKey === key;
-    const idle = !command.busy && !command.unresolved;
-    const confirm = checkout.actions.confirm;
-    const release = checkout.actions.release;
+    const sending = command.busy || command.settling;
+    const idle = !sending && !command.unresolved;
+    const confirm = ended ? null : checkout.actions.confirm;
+    const release = ended ? null : checkout.actions.release;
     const canConfirm = confirm !== null && acknowledged && idle;
 
     return (
@@ -549,18 +591,23 @@ export function HeldCart({
                 {t('investor.cart.whole.held_lead')}
             </p>
             <div className="mt-2.5">
-                {checkout.state === 'held' ? (
+                {ended ? (
+                    <div
+                        role="status"
+                        className="rounded-[10px] bg-[#fdeaea] px-3 py-2 text-center text-[12px] text-rz-danger-text dark:bg-rz-danger-tint"
+                    >
+                        <p className="font-semibold">
+                            {t('investor.cart.whole.settling')}
+                        </p>
+                        <p className="mt-1 leading-[1.45]">
+                            {t('investor.cart.whole.settling_wait')}
+                        </p>
+                    </div>
+                ) : (
                     <HoldClock
                         expiresAt={checkout.expires_at}
                         serverTime={serverTime}
                     />
-                ) : (
-                    <p
-                        role="status"
-                        className="rounded-[10px] bg-[#fdeaea] px-3 py-2 text-center text-[12px] font-semibold text-rz-danger-text dark:bg-rz-danger-tint"
-                    >
-                        {t('investor.cart.whole.settling')}
-                    </p>
                 )}
             </div>
             {requoted && (
@@ -648,9 +695,11 @@ export function HeldCart({
                 <button
                     type="button"
                     disabled={!canConfirm}
-                    aria-busy={command.busy || undefined}
+                    aria-busy={
+                        (sending && sent === 'cart.confirm') || undefined
+                    }
                     onClick={() =>
-                        command.send('cart.confirm', {
+                        sendHeld('cart.confirm', {
                             identity_context_revision: identityRevision,
                             checkout_id: checkout.id,
                             expected_revision: checkout.revision,
@@ -667,8 +716,8 @@ export function HeldCart({
                         canConfirm ? PRIMARY_ON : PRIMARY_OFF,
                     )}
                 >
-                    {command.busy
-                        ? t('investor.checkout.c3.processing')
+                    {sending && sent === 'cart.confirm'
+                        ? t('investor.cart.whole.confirming')
                         : t('investor.cart.whole.confirm', {
                               amount: formatRwf(checkout.total_held),
                           })}
@@ -678,8 +727,11 @@ export function HeldCart({
                 <button
                     type="button"
                     disabled={!idle}
+                    aria-busy={
+                        (sending && sent === 'cart.release') || undefined
+                    }
                     onClick={() =>
-                        command.send('cart.release', {
+                        sendHeld('cart.release', {
                             identity_context_revision: identityRevision,
                             checkout_id: checkout.id,
                             expected_revision: checkout.revision,
@@ -687,8 +739,18 @@ export function HeldCart({
                     }
                     className="mt-2 h-10 w-full rounded-xl border border-rz-border bg-rz-surface text-[13px] font-semibold text-rz-slate disabled:opacity-60"
                 >
-                    {t('investor.cart.whole.release')}
+                    {sending && sent === 'cart.release'
+                        ? t('investor.cart.whole.releasing')
+                        : t('investor.cart.whole.release')}
                 </button>
+            )}
+            {ended && deals !== null && (
+                <Link
+                    href={deals}
+                    className="mt-3 flex h-10 w-full items-center justify-center rounded-xl border border-rz-border text-[13px] font-semibold text-rz-slate"
+                >
+                    {t('investor.cart.whole.go_deals')}
+                </Link>
             )}
             <p className="mt-2 text-center text-[10px] leading-[1.4] text-rz-secondary">
                 {t('investor.checkout.c3.confirm_fine_print')}
