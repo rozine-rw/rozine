@@ -42,7 +42,7 @@ class BusinessHomeResource extends JsonResource
         $placeholder = '00000000-0000-0000-0000-000000000000';
         $wallet = fn (array $query = []): array => self::link($request, 'business.wallet.show', ['business' => $business, ...$query]);
         $report = $entry['audit_report'] ?? null;
-        $cosign = $report === null || $report['status'] !== 'pending' || $request->routeIs('api.*') ? [] : [['kind' => 'audit_cosign', 'report_kind' => $report['kind'], 'due_at' => $report['due_at'] ?? null,
+        $cosign = $report === null || $report['status'] !== 'pending' || $request->routeIs('api.*') ? [] : [['kind' => 'audit_cosign', 'report_kind' => $report['kind'], 'cosign' => $report['cosign'] ?? false, 'due_at' => $report['due_at'] ?? null,
             'hours_left' => ($report['due_at'] ?? null) === null ? null : max(0, (int) ceil((strtotime($report['due_at']) - now()->getTimestamp()) / 3600)),
             'link' => self::link($request, 'business.audit-reports.show', ['business' => $business, 'report' => $report['id']])]];
         $signing = $entry['draft_signatures'] ?? null;

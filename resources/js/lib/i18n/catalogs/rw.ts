@@ -762,7 +762,7 @@ const rw: Catalog = {
     'business.reports.guide.flash.title':
         'Igenzura rya Flash, iyo Rozine irisabye',
     'business.reports.guide.flash.body':
-        'Mbere yo gushaka igishoro, cyangwa igihe cyose Rozine ikeneye igenzura rishya, Audit Partner aza atabanje kubimenyesha agafunga raporo ya Flash mu masaha 24. Urayisuzuma kandi ukayishyiraho umukono mbere y’uko itangazwa.',
+        "Mbere yo gushaka igishoro, cyangwa igihe cyose Rozine ikeneye isuzuma rishya, Audit Partner aza atabanje kumenyesha agafunga raporo ya Flash mu masaha 24. Uyisuzuma nk'uko usuzuma raporo y'ukwezi.",
     'business.reports.guide.opens.title': 'Buri kwezi, kusanya inyandiko zawe',
     'business.reports.guide.opens.body':
         "Hagati ya tariki ya 20 n'impera z'ukwezi, kusanya inyandiko zose z'imari, izo ku mpapuro n'iz'ikoranabuhanga, witegura igenzura CPA wawe azakorera aho ukorera.",
@@ -2450,12 +2450,12 @@ const rw: Catalog = {
     'admin.audit_reports.pdf_named':
         'Kuramo raporo yashyizweho kashe ya {business} (PDF)',
     'admin.audit_reports.stats.published': 'Byagenzuwe kandi byatangajwe',
-    'admin.audit_reports.stats.awaiting_cosign': 'Bitegereje gutangazwa',
+    'admin.audit_reports.stats.awaiting_cosign': 'Mu gihe cyo kujurira',
     'admin.audit_reports.stats.overdue': 'Raporo zatinze',
     'admin.audit_reports.stats.on_time': 'Igipimo cyo kurangiza ku gihe',
     'admin.audit_reports.chip.all': 'Byose',
     'admin.audit_reports.chip.owed': 'Bitegereje umugenzuzi',
-    'admin.audit_reports.chip.awaiting_cosign': 'Bitegereje gutangazwa',
+    'admin.audit_reports.chip.awaiting_cosign': 'Mu gihe cyo kujurira',
     'admin.audit_reports.chip.published': 'Byatangajwe',
     'admin.audit_reports.chip.disputed': 'Byajuririwe',
     'admin.audit_reports.col.business': 'Ubucuruzi',
@@ -2469,7 +2469,7 @@ const rw: Catalog = {
     'admin.audit_reports.status.overdue': 'Byatinze',
     'admin.audit_reports.status.returned': 'Byagaruwe',
     'admin.audit_reports.status.sealed': 'Byashyizweho kashe',
-    'admin.audit_reports.status.awaiting_cosign': 'Bitegereje gutangazwa',
+    'admin.audit_reports.status.awaiting_cosign': 'Mu gihe cyo kujurira',
     'admin.audit_reports.status.published': 'Byatangajwe',
     'admin.audit_reports.status.disputed': 'Byajuririwe',
     'admin.audit_reports.status.escalated': 'Byazamuwe',
@@ -3233,7 +3233,7 @@ const rw: Catalog = {
     'auditor.home.in_progress': 'Birakorwa',
     'auditor.job.step_of': 'Intambwe {step} kuri {steps}',
     'auditor.job.status.overdue': 'Yarenze igihe',
-    'auditor.job.status.awaiting_cosign': 'Bitegereje gutangazwa',
+    'auditor.job.status.awaiting_cosign': 'Mu gihe cyo kujurira',
     'auditor.job.reassigned': 'Wahawe uyu murimo',
     'auditor.standing.title': 'Uko uhagaze',
     'auditor.standing.on_time': 'Gusoza ku gihe',
@@ -3357,7 +3357,7 @@ const rw: Catalog = {
         '{business} yasubijwe mu kugabanywa kandi impamvu yawe yanditswe.',
     'auditor.outcome.sealed.title': 'Igenzura ryashyizweho kashe riratangwa',
     'auditor.outcome.sealed.flash':
-        'Raporo yo ku kibanza ya {business} yashyizweho kashe. {business} isinya bitarenze {date}; moteri itanga amanota ishingiye ku byo wabonye.',
+        "Raporo y'aho bakorera ya {business} yafunzwe. {business} ishobora kuyijuririra kugeza {date}; sisitemu ishyira amanota ku bucuruzi ishingiye ku byo wabonye.",
     'auditor.outcome.sealed.monthly':
         "Raporo ya {month} ya {business} — inyandiko zashyizweho n'ibyo wabonye — yafunzwe. {business} ishobora kuyijuririra kugeza {date}.",
     'auditor.outcome.suggested.title': 'Impinduka zasabwe',
@@ -3579,7 +3579,7 @@ const rw: Catalog = {
     'auditor.count.status.restricted': 'Gifite imbogamizi',
     'auditor.seal.title': 'Emeza ushyireho kashe',
     'auditor.seal.lead':
-        'Ibyo wabonye byitirirwa uruhushya rwawe rwa ICPAR kandi bigezwa ku bashoramari nyuma y’isuzuma ry’ikigo.',
+        'Ibyo wabonye byitirirwa uruhushya rwawe rwa ICPAR kandi bigezwa ku bashoramari iyo amasaha 24 ikigo gifite yo kujuririra arangiye.',
     'auditor.seal.note': "Inyandiko y'isuzuma",
     'auditor.seal.note_optional': 'Si ngombwa',
     'auditor.seal.note_required': 'Ni ngombwa',
@@ -3716,7 +3716,7 @@ const rw: Catalog = {
     'auditor.conflicts.empty': 'Nta nyungu wagaragaje.',
     'auditor.conflicts.page_empty':
         'Nta kigaragara kuri uru rupapuro. Izo wagaragaje mbere zishobora gukurikiraho.',
-    'auditor.reports.status.awaiting_cosign': 'Bitegereje gutangazwa',
+    'auditor.reports.status.awaiting_cosign': 'Mu gihe cyo kujurira',
     'auditor.reports.status.published': 'Yatangajwe',
     'auditor.reports.status.late': 'Yatinze',
     'auditor.reports.status.rejected': 'Yanzwe',
@@ -6603,7 +6603,7 @@ const rw: Catalog = {
     'investor.notices.business.report_sealed.title':
         "Raporo y'igenzura yiteguye gusuzumwa",
     'investor.notices.business.report_sealed.body':
-        "{auditor} yashyizeho kashe kuri raporo y'igenzura yawe. Yisuzume, hanyuma uyisinyeho cyangwa uyijurire.",
+        "{auditor} yafunze raporo yawe y'igenzura. Yisuzume, kandi uyijuririre niba hari ikitari cyo.",
     'investor.notices.business.report_sealed.body_due':
         "{auditor} yafunze raporo yawe y'igenzura. Yijuririre bitarenze {time} niba hari ikitari cyo.",
     'investor.notices.business.report_review_closing.title':

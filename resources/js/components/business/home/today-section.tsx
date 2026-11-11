@@ -185,14 +185,14 @@ export function TodaySection({ items }: { items: BusinessTodo[] }) {
                                       hours: item.hours_left,
                                   })
                                 : t(
-                                      /* A Flash report is still co-signed; only a monthly report is dispute-only (AUD-R04). */
-                                      item.report_kind === 'flash'
+                                      /* Only a report sealed under the legacy policy is co-signed; a reviewed one is dispute-only (AUD-R04). */
+                                      item.cosign
                                           ? 'business.today.cosign.sign_sub'
                                           : 'business.today.cosign.sub',
                                   )
                         }
                         cta={t(
-                            item.report_kind === 'flash'
+                            item.cosign
                                 ? 'business.today.cosign.sign_cta'
                                 : 'business.today.cosign.cta',
                         )}

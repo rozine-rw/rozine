@@ -154,18 +154,20 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
             });
     }
 
-    /** @return array{id: string, kind: string, status: string, due_at: string|null}|null */
+    /** @return array{id: string, kind: string, status: string, due_at: string|null, cosign: bool}|null */
     public function latestForBusiness(string $businessId): ?array
     {
         $report = AuditReport::query()->join('audit_report_publications as publications', 'publications.audit_report_id', '=', 'audit_reports.id')
             ->where('audit_reports.business_id', $businessId)->where('audit_reports.status', 'sealed')
             ->whereNotExists(fn (Builder $query): Builder => $query->selectRaw('1')->from('audit_reports as amendments')
                 ->whereColumn('amendments.amends_id', 'audit_reports.id'))
-            ->orderByDesc('audit_reports.id')->first(['audit_reports.id', 'audit_reports.kind', 'publications.status as publication_status', 'publications.due_at']);
+            ->orderByDesc('audit_reports.id')->first(['audit_reports.id', 'audit_reports.kind', 'publications.status as publication_status', 'publications.due_at', 'publications.policy_version']);
         $due = $report?->getAttribute('due_at');
 
         return $report === null ? null : ['id' => $report->id, 'kind' => $report->kind, 'status' => $report->getAttribute('publication_status'),
-            'due_at' => $due === null ? null : CarbonImmutable::parse($due)->utc()->format('Y-m-d\TH:i:s\Z')];
+            'due_at' => $due === null ? null : CarbonImmutable::parse($due)->utc()->format('Y-m-d\TH:i:s\Z'),
+            // Only a report sealed before its kind had a review window still waits for the Business's co-signature.
+            'cosign' => ! MonthlyReportReview::reviewed($report->getAttribute('policy_version'))];
     }
 
     /** @return array<string, mixed> */
