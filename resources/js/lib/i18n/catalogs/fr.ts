@@ -356,6 +356,8 @@ const fr: Catalog = {
     'business.readiness.requirement.met_on': 'Confirmée le {date}',
     'business.readiness.requirement.met_entry':
         'Vérifiée à votre arrivée sur Rozine',
+    'business.readiness.requirement.applies_entry':
+        'S’applique dès la publication de votre audit d’entrée',
     'business.readiness.requirement.applies_stage': 'S’applique dès {stage}',
     'business.readiness.requirement.applies_headcount':
         'S’applique dès {count} employés',

@@ -345,6 +345,8 @@ const en = {
     'business.readiness.requirement.met_on': 'Confirmed on {date}',
     'business.readiness.requirement.met_entry':
         'Checked when you joined Rozine',
+    'business.readiness.requirement.applies_entry':
+        'Applies once your entry audit is published',
     'business.readiness.requirement.applies_stage': 'Applies from {stage}',
     'business.readiness.requirement.applies_headcount':
         'Applies from {count} employees',

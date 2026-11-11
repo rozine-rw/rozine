@@ -12,4 +12,7 @@ interface EnteredBusinesses
 {
     /** @return list<string> */
     public function all(): array;
+
+    /** Whether this Business has entered: its entry evidence is a published audit report. */
+    public function has(string $businessId): bool;
 }

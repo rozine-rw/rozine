@@ -348,7 +348,8 @@ export type ReadinessRequirementCode =
 /**
  * One RDY-R03 requirement, in BRS order. A triggered one carries its status and, while Due or
  * Lapsed, the day its grace ends; one not triggered yet names the stage or headcount it applies
- * from (`applies_from` is null for the two that apply from entry).
+ * from. The two that apply from entry read Met once the business has entered, and before that
+ * not triggered with `applies_from` of kind `entry`.
  */
 export type ReadinessRequirement = {
     code: ReadinessRequirementCode;
@@ -358,7 +359,10 @@ export type ReadinessRequirement = {
           due_on: null;
           days_left: null;
           met_on: null;
-          applies_from: { kind: 'stage' | 'headcount'; value: number };
+          applies_from: {
+              kind: 'stage' | 'headcount' | 'entry';
+              value: number;
+          };
       }
     | {
           status: 'met';

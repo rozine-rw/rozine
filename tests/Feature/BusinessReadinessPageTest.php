@@ -57,12 +57,18 @@ it('names no stage before 3 published reports, counting a real published monthly
     $business = $fixture['audit']['business'];
     $user = $fixture['audit']['authority']['users'][0];
 
-    // Sealed but still in its review window: not final, so not counted.
-    expect(($this->readiness)($user, $business)['readiness'])->toMatchArray(['stage' => null, 'vmr' => null, 'reports' => 0, 'reports_needed' => 3, 'months' => []]);
+    // Sealed but still in its review window: not final, so not counted, and not yet entered, so no check reads as completed.
+    $before = ($this->readiness)($user, $business);
+    expect($before['readiness'])->toMatchArray(['stage' => null, 'vmr' => null, 'reports' => 0, 'reports_needed' => 3, 'months' => []])
+        ->and(array_slice($before['requirements'], 0, 2))->toBe([
+            ['code' => 'C1', 'status' => 'not_triggered', 'due_on' => null, 'days_left' => null, 'met_on' => null, 'applies_from' => ['kind' => 'entry', 'value' => 0]],
+            ['code' => 'F1', 'status' => 'not_triggered', 'due_on' => null, 'days_left' => null, 'met_on' => null, 'applies_from' => ['kind' => 'entry', 'value' => 0]]]);
 
     AuditSealingFixture::cosign($fixture);
     [$published] = app(PublishedMonthlyReports::class)->forBusiness($business);
     $props = ($this->readiness)($user, $business);
+    expect(array_column(array_slice($props['requirements'], 0, 2), 'status'))->toBe(['met', 'met'])
+        ->and($props['requirements'][0]['applies_from'])->toBeNull();
 
     expect($props['readiness'])->toBe(['stage' => null, 'status' => 'building', 'vmr' => null, 'reports' => 1, 'reports_needed' => 2, 'window' => 3,
         'pending' => null, 'next' => null,
