@@ -21,7 +21,7 @@ use Carbon\CarbonImmutable;
  * @phpstan-type Rule array{trigger: 'always'|'stage'|'headcount', from: int, grace: int|'year_end'|'entry'|'expiry'}
  * @phpstan-type Stored array{code: Code, status: Status, due_on: string|null, met_on: string|null}
  * @phpstan-type Listed array{code: Code, status: Status|'not_triggered', due_on: string|null, days_left: int|null, met_on: string|null,
- *     applies_from: array{kind: 'stage'|'headcount', value: int}|null}
+ *     applies_from: array{kind: 'stage'|'headcount'|'entry', value: int}|null}
  */
 final class ReadinessRequirements
 {
@@ -106,13 +106,15 @@ final class ReadinessRequirements
 
     /**
      * Every requirement in BRS order as the Business sees it on `$today`: a stored one with the
-     * status it holds that day, C1 and F1 Met from entry before the first sweep records them, and
-     * the rest not triggered with the stage or headcount they apply from.
+     * status it holds that day, C1 and F1 Met from entry before the first sweep records them (only
+     * once `$entered`: a published audit report is the entry evidence, so before it they apply from
+     * entry and nothing is shown as completed), and the rest not triggered with the stage or
+     * headcount they apply from.
      *
      * @param  list<Stored>  $stored
      * @return list<Listed>
      */
-    public function listed(array $stored, string $today): array
+    public function listed(array $stored, string $today, bool $entered): array
     {
         $rows = array_column($stored, null, 'code');
         $list = [];
@@ -120,13 +122,17 @@ final class ReadinessRequirements
             $row = $rows[$code] ?? null;
             $status = match (true) {
                 $row !== null => $this->on($row['status'], $row['due_on'], $today),
-                $rule['trigger'] === 'always' => 'met',
+                $rule['trigger'] === 'always' && $entered => 'met',
                 default => 'not_triggered',
             };
             $dueOn = $row === null || $status === 'met' ? null : $row['due_on'];
             $list[] = ['code' => $code, 'status' => $status, 'due_on' => $dueOn,
                 'days_left' => $dueOn === null ? null : max(0, $this->daysLeft($dueOn, $today)), 'met_on' => $row['met_on'] ?? null,
-                'applies_from' => $rule['trigger'] === 'always' ? null : ['kind' => $rule['trigger'], 'value' => $rule['from']]];
+                'applies_from' => match (true) {
+                    $rule['trigger'] !== 'always' => ['kind' => $rule['trigger'], 'value' => $rule['from']],
+                    $status === 'not_triggered' => ['kind' => 'entry', 'value' => 0],
+                    default => null,
+                }];
         }
 
         return $list;

@@ -41,6 +41,10 @@ interface ReadinessRequirementStore
      */
     public function move(string $businessId, string $code, array $from, string $to, ?string $dueOn, ?string $metOn = null, ?array $confirmation = null): bool;
 
-    /** Whether any requirement of the Business is Overdue (REP-R02, RDY-R05). */
-    public function hasOverdue(string $businessId): bool;
+    /**
+     * Whether any requirement of the Business is Overdue on the Kigali day `$today` (REP-R02,
+     * RDY-R05): recorded Overdue, or Due or Lapsed with its grace ended that day or before, so it
+     * agrees with the page before the hourly sweep records the move.
+     */
+    public function hasOverdue(string $businessId, string $today): bool;
 }

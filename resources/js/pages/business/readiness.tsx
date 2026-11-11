@@ -98,6 +98,10 @@ export default function BusinessReadiness({
         if (requirement.status === 'not_triggered') {
             const { kind, value } = requirement.applies_from;
 
+            if (kind === 'entry') {
+                return t('business.readiness.requirement.applies_entry');
+            }
+
             return kind === 'headcount'
                 ? t('business.readiness.requirement.applies_headcount', {
                       count: value,

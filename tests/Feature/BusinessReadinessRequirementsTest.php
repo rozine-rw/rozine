@@ -91,16 +91,18 @@ it('records what the settled stage triggers, tells the Business once, and turns 
     ($this->sweep)();
     $facts = ['business_id' => $id, 'code' => 'F2', 'due_on' => '2027-02-08'];
     expect(($this->notices)('business.readiness_requirement_closing'))->toEqual([[$party, "readiness-closing:{$id}:F2:2027-02-08", $facts]])
-        ->and(app(ReadinessRequirementStore::class)->hasOverdue($id))->toBeFalse();
+        ->and(app(ReadinessRequirementStore::class)->hasOverdue($id, '2027-02-07'))->toBeFalse();
 
-    // On the day the grace ends the page reads Overdue before the sweep records it.
+    // On the day the grace ends the page and the store read Overdue before the sweep records it.
     ($this->on)('2027-02-08');
-    expect(($this->requirements)()['F2'])->toMatchArray(['status' => 'overdue', 'due_on' => '2027-02-08', 'days_left' => 0]);
+    expect(($this->requirements)()['F2'])->toMatchArray(['status' => 'overdue', 'due_on' => '2027-02-08', 'days_left' => 0])
+        ->and(($this->rows)()['F2'][0])->toBe('due')
+        ->and(app(ReadinessRequirementStore::class)->hasOverdue($id, '2027-02-08'))->toBeTrue();
     ($this->sweep)();
     ($this->sweep)();
     expect(($this->rows)()['F2'])->toBe(['overdue', '2027-02-08', null])
         ->and(($this->notices)('business.readiness_requirement_overdue'))->toEqual([[$party, "readiness-overdue:{$id}:F2:2027-02-08", $facts]])
-        ->and(app(ReadinessRequirementStore::class)->hasOverdue($id))->toBeTrue();
+        ->and(app(ReadinessRequirementStore::class)->hasOverdue($id, '2027-02-08'))->toBeTrue();
 
     $this->actingAs($this->user)->getJson(route('business.notices.index', $id))->assertOk()
         ->assertJsonPath('data.notices.0.kind', 'business.readiness_requirement_overdue')
