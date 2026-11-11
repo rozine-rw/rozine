@@ -86,8 +86,12 @@ def immutable_commit(repository, sha):
     return reads.read(repository, sha) if reads is not None else api(f"repos/{repository}/git/commits/{sha}")
 
 
-def historical_identities(repository, runs, inventory):
-    """Keep four readers busy without batch barriers; consume results in history order."""
+def historical_identities(repository, runs, inventory, blocking_tree=None):
+    """Keep four readers busy without batch barriers; consume results in history order.
+
+    With ``blocking_tree``, a peer whose natively verified tree differs is returned
+    after its proof and commit checks, without its job and attempt reads: only a
+    peer on the same tree can block, so those reads cannot change the decision."""
     readers = ThreadPoolExecutor(max_workers=4)
     pending, ready = {}, {}
     remaining = iter(enumerate(runs))
@@ -99,7 +103,8 @@ def historical_identities(repository, runs, inventory):
             index, run = item
             artifact = inventory[f"ci-coordination-identity-{run['id']}-{run['run_attempt']}"]
             context = contextvars.copy_context()
-            pending[readers.submit(context.run, coordination_identity, repository, run, artifact=artifact)] = (index, run)
+            pending[readers.submit(context.run, coordination_identity, repository, run, artifact=artifact,
+                                   blocking_tree=blocking_tree)] = (index, run)
 
     try:
         for _ in range(4):
@@ -592,7 +597,7 @@ def successful_steps(jobs, name, steps, *, artifact_verified=False):
             raise CoordinationRefusal("identity_or_decision_step_not_successful")
 
 
-def coordination_identity(repository, run, *, reader=None, artifact=None):
+def coordination_identity(repository, run, *, reader=None, artifact=None, blocking_tree=None):
     if reader is not None and artifact is not None:
         raise ValueError("identity reader and indexed descriptor cannot be combined")
     proof = ((reader or download_evidence)(repository, run, "ci-coordination-identity") if artifact is None else
@@ -616,6 +621,12 @@ def coordination_identity(repository, run, *, reader=None, artifact=None):
             raise CoordinationRefusal("coordination_identity_pr_contract_mismatch")
     elif run["event"] not in ("push", "workflow_dispatch") or run.get("head_branch") not in ("dev", "uat") or proof["tested_sha"] != run["head_sha"]:
         raise CoordinationRefusal("coordination_identity_target_mismatch")
+    if blocking_tree is not None and proof["tree_sha"] != blocking_tree:
+        # The tree is bound natively above. A failed peer on another tree can
+        # never block this selection, so its mutable job/attempt reads (two API
+        # requests per peer, the bulk of the hourly token budget) are skipped.
+        count_lookup("unrelated_peers_without_job_reads")
+        return proof
     for read in range(3):
         jobs = run_jobs(repository, run)
         try:
@@ -874,7 +885,7 @@ def select_canonical_candidate(env):
     # Each immutable identity still receives all native tree/job/attempt checks.
     # Bound independent reads instead of serially downloading every old proof.
     try:
-        with contextlib.closing(historical_identities(repository, failed_peers, inventory)) as identities:
+        with contextlib.closing(historical_identities(repository, failed_peers, inventory, tree)) as identities:
             for run, failed_identity in identities:
                 if failed_identity["tree_sha"] == tree:
                     if intent or run["head_sha"] not in possible_recovery_heads:
