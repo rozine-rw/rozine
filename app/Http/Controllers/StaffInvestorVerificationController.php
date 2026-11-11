@@ -76,12 +76,12 @@ class StaffInvestorVerificationController extends Controller
 
     public function approve(DecideInvestorVerificationRequest $request): RedirectResponse|OperationResource
     {
-        return $this->answer($request, $this->review->approve(...$this->command($request)));
+        return $this->answer($request, $this->review->approve(...$this->command($request)), 'Identity approved. :name can now invest.');
     }
 
     public function reject(DecideInvestorVerificationRequest $request): RedirectResponse|OperationResource
     {
-        return $this->answer($request, $this->review->reject(...$this->command($request)));
+        return $this->answer($request, $this->review->reject(...$this->command($request)), 'Identity rejected. :name will see your reason and can correct their details.');
     }
 
     /** @return array{int, string, int, string, string} */
@@ -91,8 +91,13 @@ class StaffInvestorVerificationController extends Controller
             (int) $request->validated('expected_revision'), (string) $request->validated('reason'), (string) $request->validated('request_id')];
     }
 
-    /** @param array<string, mixed> $result */
-    private function answer(Request $request, array $result): RedirectResponse|OperationResource
+    /**
+     * The recorded decision goes back to where it was taken, with a confirmation naming the person,
+     * so a reviewer working down a long queue sees that it went through and what it changed (#550).
+     *
+     * @param  array<string, mixed>  $result
+     */
+    private function answer(Request $request, array $result, string $done): RedirectResponse|OperationResource
     {
         if ($request->routeIs('api.*')) {
             return OperationResource::fromResult($result, 'engineering-2026-10-06.1');
@@ -101,9 +106,13 @@ class StaffInvestorVerificationController extends Controller
             throw ValidationException::withMessages(['form' => [self::MESSAGES[$result['code']] ?? 'We could not record this decision. Try again.']]);
         }
 
+        $verification = (string) $request->route('verification');
+        $name = $this->review->show((int) $request->user()?->getAuthIdentifier(), $verification)['account']['name'];
+        Inertia::flash('toast', ['type' => 'success', 'message' => __($done, ['name' => $name])]);
+
         // A decision taken from the Investor directory returns to that person's 360 there.
         $route = $request->input('return_to') === 'directory' ? 'staff.investors.index' : 'staff.investor-verifications.index';
 
-        return redirect()->route($route, ['verification' => (string) $request->route('verification')]);
+        return redirect()->route($route, ['verification' => $verification]);
     }
 }
