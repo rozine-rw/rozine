@@ -154,4 +154,25 @@ describe('Readiness', () => {
         );
         expect(requirement('G2')).toContain('Due by 30 March 2027');
     });
+
+    it('shows the entry checks as applying from entry before the entry audit is published', () => {
+        const before = props(newFixture);
+        before.requirements[0] = {
+            code: 'C1',
+            status: 'not_triggered',
+            due_on: null,
+            days_left: null,
+            met_on: null,
+            applies_from: { kind: 'entry', value: 0 },
+        };
+        render(<BusinessReadiness {...before} />);
+
+        const [first] = within(
+            screen.getByRole('list', { name: 'Requirements' }),
+        ).getAllByRole('listitem');
+        expect(first).toHaveTextContent('Not yet');
+        expect(first).toHaveTextContent(
+            'Applies once your entry audit is published',
+        );
+    });
 });
