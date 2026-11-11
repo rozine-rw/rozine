@@ -25,6 +25,7 @@ class BusinessMonthlyFiguresController extends Controller
     /** Refusals that are not about one field, in the words the page shows. */
     private const array MESSAGES = [
         'MONTHLY_SUBMISSION_CLOSED' => 'The window for this month has closed, so the figures can no longer be sent.',
+        'MONTHLY_SUBMISSION_PERIOD_STALE' => 'This form was opened for an earlier month. Reload the page to send this month\'s figures.',
         'MONTHLY_SUBMISSION_ALREADY_SENT' => 'This month\'s figures were already sent.',
         'IDEMPOTENCY_CONFLICT' => 'These figures were already sent with different values. Reload the page.',
     ];
@@ -48,7 +49,7 @@ class BusinessMonthlyFiguresController extends Controller
     {
         $business = (string) $request->route('business');
         /** @var array<string, mixed> $input */
-        $input = $request->safe()->only(['money_in', 'costs', 'paid_to_owners', 'forecast', 'order', 'changes']);
+        $input = $request->safe()->only(['period', 'money_in', 'costs', 'paid_to_owners', 'forecast', 'order', 'changes']);
         $result = $action->handle((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'), $business,
             (string) $request->validated('request_id'), $input);
         if ($result['status'] !== 'completed') {
