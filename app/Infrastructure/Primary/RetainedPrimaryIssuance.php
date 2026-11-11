@@ -65,9 +65,12 @@ final readonly class RetainedPrimaryIssuance
 
                 return;
             }
+            // A commitment withdrawn before 100% was refunded and left out of the funding (INV-R03); only a funded one may not be.
+            $funded = array_column($funding['commitments'], 'reservation_id');
             if (PrimaryHolding::query()->where('business_campaign_id', $campaign->campaignId)->exists()
                 || DB::table('ledger_entries')->where('source_type', 'primary_reservation')->whereIn('source_id', $roots->pluck('id'))
-                    ->whereIn('kind', ['primary_issue', 'primary_refund'])->exists()
+                    ->where(fn ($query) => $query->where('kind', 'primary_issue')->orWhere(fn ($refunds) => $refunds->where('kind', 'primary_refund')->whereIn('source_id', $funded)))
+                    ->exists()
                 || DB::table('business_campaign_closures')->where('business_campaign_id', $campaign->campaignId)->exists()) {
                 throw new RuntimeException('PRIMARY_ISSUANCE_INTEGRITY_FAILED');
             }

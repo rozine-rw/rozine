@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Primary\Contracts\CampaignReservationSummary;
 use App\Application\Primary\Contracts\PrimaryCheckout;
+use App\Application\Primary\Contracts\PrimaryFunding;
 use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Application\Wallet\Contracts\PrimaryReturnedCash;
 use App\Application\Wallet\PostingSource;
@@ -13,8 +14,10 @@ use App\Domain\Wallet\WalletMoney;
 use App\Domain\Wallet\WalletViolation;
 use App\Infrastructure\Primary\RetainedHeldClaimRelease;
 use App\Infrastructure\Primary\RetainedPrimaryReservation;
+use App\Models\Disbursement;
 use App\Models\LedgerEntry;
 use App\Models\PartyNotice;
+use App\Models\PrimaryHolding;
 use App\Models\PrimaryReservationRecord;
 use App\Models\PrimaryReservationVersion;
 use Illuminate\Database\QueryException;
@@ -23,6 +26,8 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\InvestorWalletFixture;
+use Tests\Support\PrimaryHoldingFixture;
+use Tests\Support\PrimaryIssuanceFixture;
 use Tests\Support\PrimaryReservationFixture;
 
 /**
@@ -186,4 +191,28 @@ it('lets the database refuse a withdrawn retirement whose commit evidence does n
         'hold_entry_id' => $hold->id, 'hold_sha256' => $hold->sha256])))->toThrow(QueryException::class, 'Held claim retirement requires full original terminal held cash return');
     expect(fn () => DB::transaction(fn () => DB::table('primary_held_claim_releases')->where('primary_reservation_id', $this->root->id)->delete()))
         ->toThrow(QueryException::class);
+});
+
+it('funds and pays out a raise completed after a withdrawal without the withdrawn commitment', function (): void {
+    ($this->withdraw)()->assertOk()->assertJsonPath('code', 'COMMITMENT_REFUNDED');
+    $units = intdiv((int) $this->campaign->principal, 5000);
+    $replacement = ($this->commit)(PrimaryReservationFixture::investor(), '3');
+    $others = [($this->commit)(PrimaryReservationFixture::investor(), (string) intdiv($units, 2)),
+        ($this->commit)(PrimaryReservationFixture::investor(), (string) ($units - intdiv($units, 2) - 3))];
+    $funded = [$replacement['commitment'], ...array_column($others, 'commitment')];
+    sort($funded);
+
+    $funding = DB::transaction(fn (): array => app(PrimaryFunding::class)->lock($this->campaign->id, fn (): array => PrimaryHoldingFixture::admission($this->campaign)));
+    expect(array_column($funding['commitments'], 'commitment_id'))->toEqualCanonicalizing($funded)
+        ->and(array_sum(array_column($funding['commitments'], 'units')))->toBe($units)
+        ->and(DB::table('primary_funding_commitments')->pluck('commitment_id')->sort()->values()->all())->toBe($funded);
+
+    PrimaryIssuanceFixture::fromFunded($this->campaign->id)['observe'](now('UTC')->subHour()->format('Y-m-d\TH:i:sP'));
+    $holdings = PrimaryHolding::query()->orderBy('commitment_id')->get();
+    expect(Disbursement::query()->where('business_campaign_id', $this->campaign->id)->sole()->amount)->toBe($this->campaign->principal)
+        ->and($holdings->pluck('commitment_id')->all())->toBe($funded)
+        ->and($holdings->sum('units'))->toBe($units)
+        ->and($holdings->where('party_id', $this->root->party_id))->toBeEmpty()
+        ->and($holdings->firstWhere('commitment_id', $replacement['commitment'])->ordinals)->toEqual([['first' => 1, 'last' => 3]])
+        ->and(LedgerEntry::query()->where('kind', 'primary_refund')->sole()->source_id)->toBe($this->root->id);
 });
