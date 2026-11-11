@@ -14,6 +14,7 @@ const inertia = vi.hoisted(() => ({
     sent: [] as { method: string; url: string; data: unknown }[],
     errors: {} as Record<string, string>,
     signErrors: {} as Record<string, string>,
+    uploadErrors: {} as Record<string, string>,
     processing: false,
 }));
 
@@ -38,6 +39,7 @@ vi.mock('@inertiajs/react', async () => {
         useForm: <T extends object>(initial: T) => {
             const [data, setState] = useState(initial);
             const signing = Object.keys(initial).length === 0;
+            const uploading = 'file' in initial;
             let transform = (current: T): unknown => current;
 
             return {
@@ -52,7 +54,11 @@ vi.mock('@inertiajs/react', async () => {
                             : { ...current, [key]: value },
                     ),
                 isDirty: JSON.stringify(data) !== JSON.stringify(initial),
-                errors: signing ? inertia.signErrors : inertia.errors,
+                errors: signing
+                    ? inertia.signErrors
+                    : uploading
+                      ? inertia.uploadErrors
+                      : inertia.errors,
                 processing: inertia.processing,
                 transform: (callback: (current: T) => unknown) => {
                     transform = callback;
@@ -63,12 +69,17 @@ vi.mock('@inertiajs/react', async () => {
                         url,
                         data: transform(data),
                     }),
-                post: (url: string) =>
+                post: (
+                    url: string,
+                    options: { onSuccess?: () => void } = {},
+                ) => {
                     inertia.sent.push({
                         method: 'post',
                         url,
                         data: transform(data),
-                    }),
+                    });
+                    options.onSuccess?.();
+                },
             };
         },
     };
@@ -83,6 +94,7 @@ const complete = (): ProspectusInputs => ({
             label: 'Solar cold room',
             amount: '8476000',
             quote_amount: '8500000',
+            quote_document_id: 'quote1',
         },
     ],
     forecast: [
@@ -90,13 +102,13 @@ const complete = (): ProspectusInputs => ({
             month: '2026-12',
             revenue: '4000000',
             costs: '1000000',
-            contract_attached: false,
+            contract_document_id: null,
         },
         {
             month: '2027-01',
             revenue: '4000000',
             costs: '1000000',
-            contract_attached: false,
+            contract_document_id: null,
         },
     ],
     assumptions: 'Sales hold.',
@@ -133,6 +145,10 @@ const page = (
         verified_monthly_revenue: '4000000',
         latest_sealed_report_at: '2026-11-01T00:00:00+00:00',
         registered_names: ['Verified person 0'],
+        required_people: [
+            { name: 'Verified person 0', role: 'representative' },
+        ],
+        evidence: { quote1: 'quote', contract1: 'contract' },
         signed: false,
         platform_fee: '324000',
         net_of_fee: '10476000',
@@ -158,8 +174,30 @@ const page = (
         may_sign: false,
         publishable: false,
     },
+    documents: [
+        {
+            id: 'quote1',
+            kind: 'quote',
+            filename: 'cold-room-quote.pdf',
+            media_type: 'application/pdf',
+            size_bytes: 2048,
+            uploaded_at: '2026-11-10T08:00:00+00:00',
+        },
+        {
+            id: 'contract1',
+            kind: 'contract',
+            filename: 'hotel-contract.png',
+            media_type: 'image/png',
+            size_bytes: 4096,
+            uploaded_at: '2026-11-10T08:30:00+00:00',
+        },
+    ],
     actions: {
         save: { url: '/business/b/applications/app/prospectus', method: 'put' },
+        upload: {
+            url: '/business/b/applications/app/prospectus/documents',
+            method: 'post',
+        },
         sign: null,
     },
     links: { close: LINK('/business/home') },
@@ -172,6 +210,7 @@ beforeEach(() => {
     inertia.sent = [];
     inertia.errors = {};
     inertia.signErrors = {};
+    inertia.uploadErrors = {};
     inertia.processing = false;
 });
 
@@ -248,6 +287,7 @@ describe('Listing Builder', () => {
                             url: '/business/b/applications/app/prospectus',
                             method: 'put',
                         },
+                        upload: null,
                         sign: { url: '/sign', method: 'post' },
                     },
                 })}
@@ -271,6 +311,14 @@ describe('Listing Builder', () => {
 
         await user.type(quotes[1], '2000000');
         await user.clear(quotes[1]);
+        await user.selectOptions(
+            screen.getAllByLabelText('Quote document')[1],
+            'cold-room-quote.pdf',
+        );
+        await user.selectOptions(
+            screen.getAllByLabelText('Quote document')[0],
+            'No document',
+        );
         await user.click(screen.getAllByRole('button', { name: 'Remove' })[0]);
 
         await user.clear(screen.getByLabelText('Revenue in 2026-12 (RWF)'));
@@ -283,9 +331,15 @@ describe('Listing Builder', () => {
             screen.getByLabelText('Costs in 2026-12 (RWF)'),
             '900000',
         );
-        await user.click(
-            screen.getAllByLabelText('Signed contract attached')[1],
+        await user.selectOptions(
+            screen.getByLabelText('Signed contract for 2027-01'),
+            'hotel-contract.png',
         );
+        expect(
+            within(
+                screen.getByLabelText('Signed contract for 2026-12'),
+            ).queryByText('cold-room-quote.pdf'),
+        ).not.toBeInTheDocument();
         await user.type(screen.getByLabelText('Assumptions'), ' Steady.');
         await user.type(screen.getByLabelText('If sales fall short'), ' Cut.');
 
@@ -328,20 +382,25 @@ describe('Listing Builder', () => {
         expect(inertia.sent[0].data).toEqual({
             purpose: 'A cold room.',
             use_of_funds: [
-                { label: 'Wiring', amount: '2000000', quote_amount: null },
+                {
+                    label: 'Wiring',
+                    amount: '2000000',
+                    quote_amount: null,
+                    quote_document_id: 'quote1',
+                },
             ],
             forecast: [
                 {
                     month: '2026-12',
                     revenue: '3900000',
                     costs: '900000',
-                    contract_attached: false,
+                    contract_document_id: null,
                 },
                 {
                     month: '2027-01',
                     revenue: '4000000',
                     costs: '1000000',
-                    contract_attached: true,
+                    contract_document_id: 'contract1',
                 },
             ],
             assumptions: 'Sales hold. Steady.',
@@ -369,6 +428,7 @@ describe('Listing Builder', () => {
                 {...page({
                     actions: {
                         save: { url: '/save', method: 'put' },
+                        upload: null,
                         sign: { url: '/sign', method: 'post' },
                     },
                 })}
@@ -406,7 +466,8 @@ describe('Listing Builder', () => {
                         fingerprint: 'abcdef0123456789',
                         signed_at: '2026-11-10T09:00:00+00:00',
                     },
-                    actions: { save: null, sign: null },
+                    documents: [],
+                    actions: { save: null, upload: null, sign: null },
                 })}
             />,
         );
@@ -422,6 +483,9 @@ describe('Listing Builder', () => {
             screen.queryByRole('button', { name: 'Sign and lock' }),
         ).not.toBeInTheDocument();
         expect(screen.getByLabelText('What the money is for')).toBeDisabled();
+        expect(
+            screen.queryByRole('heading', { name: 'Quotes and contracts' }),
+        ).not.toBeInTheDocument();
 
         fireEvent.submit(screen.getByRole('form', { name: 'Listing Builder' }));
         expect(inertia.sent).toEqual([]);
@@ -445,6 +509,7 @@ describe('Listing Builder', () => {
                     },
                     actions: {
                         save: { url: '/save', method: 'put' },
+                        upload: null,
                         sign: { url: '/sign', method: 'post' },
                     },
                 })}
@@ -464,5 +529,99 @@ describe('Listing Builder', () => {
         ).toHaveValue('');
         expect(screen.getByRole('button', { name: 'Saving…' })).toBeDisabled();
         expect(screen.getByRole('button', { name: 'Signing…' })).toBeDisabled();
+    });
+
+    it('uploads a quote or contract, lists what is uploaded and clears the picker after', async () => {
+        const user = userEvent.setup();
+        const file = new File(['%PDF-1.7'], 'contract.pdf', {
+            type: 'application/pdf',
+        });
+
+        render(<BusinessProspectus {...page()} />);
+
+        const evidence = within(
+            screen.getByRole('region', { name: 'Quotes and contracts' }),
+        );
+
+        expect(evidence.getByText('cold-room-quote.pdf')).toBeInTheDocument();
+        expect(evidence.getByText(/^Signed contract · /u)).toBeInTheDocument();
+        expect(evidence.getByRole('button', { name: 'Upload' })).toBeDisabled();
+        await user.selectOptions(
+            evidence.getByLabelText('Document type'),
+            'contract',
+        );
+        await user.upload(evidence.getByLabelText('File'), file);
+        await user.click(evidence.getByRole('button', { name: 'Upload' }));
+
+        expect(inertia.sent).toEqual([
+            {
+                method: 'post',
+                url: '/business/b/applications/app/prospectus/documents',
+                data: {
+                    kind: 'contract',
+                    file,
+                    request_id: expect.stringMatching(UUID),
+                },
+            },
+        ]);
+        expect(evidence.getByRole('button', { name: 'Upload' })).toBeDisabled();
+        await user.selectOptions(
+            evidence.getByLabelText('Document type'),
+            'quote',
+        );
+        expect(evidence.getByLabelText('Document type')).toHaveValue('quote');
+    });
+
+    it('shows an upload refusal and progress, and says when nothing is uploaded yet', async () => {
+        const user = userEvent.setup();
+
+        inertia.uploadErrors = { file: 'Upload a PDF, PNG or JPEG.' };
+        const { rerender } = render(
+            <BusinessProspectus {...page({ documents: [] })} />,
+        );
+
+        expect(
+            screen.getByText('No documents uploaded yet.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText('Upload a PDF, PNG or JPEG.'),
+        ).toBeInTheDocument();
+        await user.upload(
+            screen.getByLabelText('File'),
+            new File(['x'], 'x.pdf', { type: 'application/pdf' }),
+        );
+        await user.upload(screen.getByLabelText('File'), []);
+        expect(screen.getByRole('button', { name: 'Upload' })).toBeDisabled();
+
+        inertia.uploadErrors = {
+            kind: 'Choose a quote or invoice, or a signed contract.',
+        };
+        inertia.processing = true;
+        rerender(<BusinessProspectus {...page({ documents: [] })} />);
+        expect(
+            screen.getByText(
+                'Choose a quote or invoice, or a signed contract.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Uploading…' }),
+        ).toBeDisabled();
+    });
+
+    it('lists uploaded documents on a locked prospectus without offering uploads', () => {
+        render(
+            <BusinessProspectus
+                {...page({ actions: { save: null, upload: null, sign: null } })}
+            />,
+        );
+
+        expect(
+            within(
+                screen.getByRole('region', { name: 'Quotes and contracts' }),
+            ).getByText('hotel-contract.png'),
+        ).toBeInTheDocument();
+        expect(screen.queryByLabelText('File')).not.toBeInTheDocument();
+        fireEvent.submit(screen.getByRole('form', { name: 'Listing Builder' }));
+        expect(inertia.sent).toEqual([]);
     });
 });

@@ -13,14 +13,15 @@ use DateTimeImmutable;
  * before the official representative may sign, and that signature completes P-G12. There is no review
  * queue and no staff override (GEN-R04); every failure names its section and the exact fix.
  *
- * @phpstan-type UseOfFundsLine array{label: string, amount: string, quote_amount: string|null}
- * @phpstan-type ForecastMonth array{month: string, revenue: string, costs: string, contract_attached: bool}
+ * @phpstan-type UseOfFundsLine array{label: string, amount: string, quote_amount: string|null, quote_document_id: string|null}
+ * @phpstan-type ForecastMonth array{month: string, revenue: string, costs: string, contract_document_id: string|null}
  * @phpstan-type Profile array{name: string, role: string, text: string}
  * @phpstan-type Risk array{text: string, concentration: bool}
  * @phpstan-type Inputs array{purpose: string, use_of_funds: array<int, UseOfFundsLine>, forecast: array<int, ForecastMonth>, assumptions: string, downside: string,
  *     profiles: array<int, Profile>, largest_customer_share_percent: int|null, risks: array<int, Risk>}
+ * @phpstan-type Person array{name: string, role: string}
  * @phpstan-type Facts array{principal: string, term_months: int, instalment: string, verified_monthly_revenue: string, latest_sealed_report_at: string|null,
- *     registered_names: list<string>, signed: bool}
+ *     registered_names: list<string>, required_people: list<Person>, evidence: array<string, string>, signed: bool}
  * @phpstan-type Gate array{id: string, section: string, passed: bool, fix: string|null}
  */
 final class ProspectusGates
@@ -108,7 +109,7 @@ final class ProspectusGates
         $missing = match (true) {
             trim($inputs['purpose']) === '' => 'purpose',
             $inputs['use_of_funds'] === [] => 'purpose',
-            count($inputs['forecast']) !== $facts['term_months'] => 'forecast',
+            ! self::consecutive(array_column($inputs['forecast'], 'month'), $facts['term_months']) => 'forecast',
             trim($inputs['assumptions']) === '' || trim($inputs['downside']) === '' => 'forecast',
             ! in_array('representative', array_column($inputs['profiles'], 'role'), true) => 'management',
             $inputs['largest_customer_share_percent'] === null => 'risks',
@@ -118,7 +119,7 @@ final class ProspectusGates
         return $this->gate('P-G01', $missing ?? 'offer_summary', $missing === null, match ($missing) {
             null => null,
             'purpose' => 'Describe the purpose and add at least one use-of-funds line.',
-            'forecast' => 'Give a forecast for every month of the term, with your assumptions and downside.',
+            'forecast' => 'Give a forecast for each of the term\'s consecutive months, once each, with your assumptions and downside.',
             'management' => 'Add the official representative\'s profile.',
             default => 'Enter your largest customer\'s share of revenue.',
         });
@@ -145,9 +146,16 @@ final class ProspectusGates
     {
         $registered = array_map(self::name(...), $facts['registered_names']);
         $unknown = array_values(array_filter(array_column($inputs['profiles'], 'name'), fn (string $name): bool => ! in_array(self::name($name), $registered, true)));
+        $written = array_map(fn (array $profile): string => self::name($profile['name']).'|'.$profile['role'], $inputs['profiles']);
+        $missing = array_values(array_filter($facts['required_people'], fn (array $person): bool => ! in_array(self::name($person['name']).'|'.$person['role'], $written, true)));
+        $fix = match (true) {
+            $unknown !== [] => 'Use each person\'s name exactly as it appears in KYC and the RDB register: '.implode(', ', $unknown).'.',
+            $missing !== [] => 'Add a profile for every director, 10% owner and the official representative on record: '
+                .implode(', ', array_map(fn (array $person): string => $person['name'].' ('.$person['role'].')', $missing)).'.',
+            default => null,
+        };
 
-        return $this->gate('P-G03', 'management', $unknown === [], $unknown === [] ? null
-            : 'Use each person\'s name exactly as it appears in KYC and the RDB register: '.implode(', ', $unknown).'.');
+        return $this->gate('P-G03', 'management', $fix === null, $fix);
     }
 
     /**
@@ -184,13 +192,14 @@ final class ProspectusGates
             }
             $quote = $line['quote_amount'] === null ? null : self::amount($line['quote_amount']);
             $allowed = BigRational::of(self::QUOTE_TOLERANCE)->multipliedBy($amount);
-            if ($quote === null || $quote->minus($amount)->abs()->toBigRational()->isGreaterThan($allowed)) {
+            if ($quote === null || ! self::evidenced($facts, $line['quote_document_id'], 'quote')
+                || $quote->minus($amount)->abs()->toBigRational()->isGreaterThan($allowed)) {
                 $unbacked[] = $line['label'];
             }
         }
 
         return $this->gate('P-G05', 'purpose', $unbacked === [], $unbacked === [] ? null
-            : 'Attach a quote or invoice within 5% of the amount for: '.implode(', ', $unbacked).'.');
+            : 'Upload the quote or invoice, and give its amount within 5% of the line, for: '.implode(', ', $unbacked).'.');
     }
 
     /**
@@ -202,11 +211,11 @@ final class ProspectusGates
     {
         $average = BigInteger::of($facts['verified_monthly_revenue']);
         $allowed = BigRational::of(self::FORECAST_TOLERANCE)->multipliedBy($average);
-        $outside = array_values(array_filter($inputs['forecast'], fn (array $month): bool => ! $month['contract_attached']
+        $outside = array_values(array_filter($inputs['forecast'], fn (array $month): bool => ! self::evidenced($facts, $month['contract_document_id'], 'contract')
             && self::amount($month['revenue'])->minus($average)->abs()->toBigRational()->isGreaterThan($allowed)));
 
         return $this->gate('P-G06', 'forecast', $outside === [], $outside === [] ? null
-            : 'Keep each month within 25% of your verified average of RWF '.number_format($average->toInt()).', or attach a signed contract for: '
+            : 'Keep each month within 25% of your verified average of RWF '.number_format($average->toInt()).', or upload the signed contract for: '
                 .implode(', ', array_column($outside, 'month')).'.');
     }
 
@@ -309,6 +318,32 @@ final class ProspectusGates
     private static function amount(string $value): BigInteger
     {
         return preg_match('/^(0|[1-9][0-9]{0,17})$/D', $value) === 1 ? BigInteger::of($value) : BigInteger::zero();
+    }
+
+    /**
+     * True when the document is one the Business uploaded to this prospectus, of the kind named.
+     *
+     * @param  Facts  $facts
+     */
+    private static function evidenced(array $facts, ?string $documentId, string $kind): bool
+    {
+        return $documentId !== null && ($facts['evidence'][$documentId] ?? null) === $kind;
+    }
+
+    /**
+     * True when the months are the term's length, each once, one after another.
+     *
+     * @param  list<string>  $months
+     */
+    private static function consecutive(array $months, int $term): bool
+    {
+        if (count($months) !== $term || $term < 1) {
+            return false;
+        }
+        $indexes = array_map(fn (string $month): int => preg_match('/^([0-9]{4})-([0-9]{2})$/D', $month, $parts) === 1 ? (int) $parts[1] * 12 + (int) $parts[2] : -1, $months);
+        sort($indexes);
+
+        return $indexes[0] > 0 && $indexes === range($indexes[0], $indexes[0] + $term - 1);
     }
 
     private static function name(string $name): string

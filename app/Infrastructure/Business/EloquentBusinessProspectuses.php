@@ -11,11 +11,13 @@ use App\Application\Business\Contracts\BusinessProspectuses;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
+use App\Domain\Business\ProspectusDocument;
 use App\Domain\Business\ProspectusDraft;
 use App\Domain\Business\ProspectusGates;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Models\BusinessApplication;
+use App\Models\BusinessProspectusDocument;
 use App\Models\BusinessProspectusVersion;
 use Brick\Math\BigInteger;
 use Brick\Math\RoundingMode;
@@ -41,7 +43,7 @@ final class EloquentBusinessProspectuses implements BusinessProspectuses
 
     public function __construct(private WithBusinessAuthority $authority, private OperationJournal $journal, private CanonicalJson $json,
         private AcceptedApplicationStore $accepted, private AuditReportPublicationStore $reports, private PublishedMonthlyReports $monthly,
-        private ProspectusGates $gates) {}
+        private ProspectusGates $gates, private ProspectusDocument $documentRules) {}
 
     public function current(int $userId, int $contextRevision, string $businessId, string $applicationId): array
     {
@@ -67,7 +69,7 @@ final class EloquentBusinessProspectuses implements BusinessProspectuses
                     'version' => $latest->version ?? 0, 'inputs' => $inputs,
                     'signed' => $signed === null ? null : ['version' => $signed->version, 'fingerprint' => (string) $signed->fingerprint,
                         'signed_at' => $signed->created_at->toIso8601String()],
-                    'facts' => $facts, 'unavailable' => $unavailable, 'evaluation' => $evaluation,
+                    'facts' => $facts, 'unavailable' => $unavailable, 'evaluation' => $evaluation, 'documents' => $this->documents($application->id),
                     'can_edit' => $signed === null && in_array('application.save', $permissions, true),
                     'can_sign' => ($evaluation['may_sign'] ?? false) && $latest !== null && $representative && in_array('application.sign', $permissions, true)];
             });
@@ -96,6 +98,34 @@ final class EloquentBusinessProspectuses implements BusinessProspectuses
                         $this->append($application, $version, 'draft', $partyId, $operationId, $payload, null);
 
                         return new OperationResult('PROSPECTUS_SAVED', ['application_id' => $application->id, 'version' => $version], $version);
+                    });
+            });
+    }
+
+    public function upload(int $userId, int $contextRevision, string $businessId, string $applicationId, string $kind, string $filename, string $content, string $requestId): array
+    {
+        return $this->authority->handle($userId, $contextRevision, $businessId, 'application.save', null,
+            function (array $business, array $identity) use ($userId, $contextRevision, $businessId, $applicationId, $kind, $filename, $content, $requestId): array {
+                $partyId = (string) ($identity['party']['id'] ?? throw new CommandRejection('BUSINESS_NOT_FOUND', 404));
+                $application = $this->application($business['id'], $applicationId);
+
+                return $this->journal->execute('party:'.$partyId, $userId, 'prospectus.document.upload', $requestId, 'application', $application->id,
+                    ['identity_context_revision' => $contextRevision, 'kind' => $kind, 'content_sha256' => hash('sha256', $content)],
+                    function () use ($userId, $contextRevision, $businessId): void {
+                        $this->authority->handle($userId, $contextRevision, $businessId, 'application.save', null, fn (): bool => true);
+                    },
+                    function (string $operationId) use ($application, $partyId, $kind, $filename, $content): OperationResult {
+                        $this->lock($application);
+                        $signed = $this->latest($application->id);
+                        if ($signed?->kind === 'signed') {
+                            throw new CommandRejection('PROSPECTUS_SIGNED', 409, $signed->version);
+                        }
+                        $described = $this->documentRules->describe($kind, $filename, $content);
+                        $document = new BusinessProspectusDocument;
+                        $document->forceFill([...$described, 'business_id' => $application->business_id, 'business_application_id' => $application->id,
+                            'kind' => $kind, 'content' => $content, 'actor_party_id' => $partyId, 'operation_id' => $operationId, 'created_at' => now('UTC')])->save();
+
+                        return new OperationResult('PROSPECTUS_DOCUMENT_UPLOADED', ['application_id' => $application->id, 'document_id' => $document->id, 'kind' => $kind], 1);
                     });
             });
     }
@@ -129,6 +159,7 @@ final class EloquentBusinessProspectuses implements BusinessProspectuses
                         }
                         $document = ['policy_version' => ProspectusGates::POLICY_VERSION, 'business_id' => $business['id'], 'application_id' => $application->id,
                             'version' => $version, 'draft_version' => $draft->version, 'inputs' => $inputs, 'facts' => [...$facts, 'signed' => true],
+                            'evidence_sha256' => BusinessProspectusDocument::query()->where('business_application_id', $application->id)->orderBy('id')->pluck('sha256', 'id')->all(),
                             'signed_by_party_id' => $partyId, 'signed_at' => $now->format('Y-m-d\TH:i:s.u\Z')];
                         $fingerprint = hash('sha256', $this->json->encode($document));
                         $this->append($application, $version, 'signed', $partyId, $operationId, ['inputs' => $inputs, 'document' => $document], $fingerprint);
@@ -152,7 +183,7 @@ final class EloquentBusinessProspectuses implements BusinessProspectuses
             throw new CommandRejection('PROSPECTUS_NOT_AVAILABLE', 409);
         }
 
-        return $this->accepted->withReleaseInput($business['id'], $application->id, function (array $input) use ($business, $signed): array {
+        return $this->accepted->withReleaseInput($business['id'], $application->id, function (array $input) use ($business, $application, $signed): array {
             $evidence = $input['public_evidence'];
             $months = (int) ($evidence['period']['months'] ?? 0);
             $revenue = $evidence['totals']['revenue']['amount'] ?? '0';
@@ -164,13 +195,13 @@ final class EloquentBusinessProspectuses implements BusinessProspectuses
                 'instalment' => (string) ($input['quote']['schedule'][0]['amount']['amount'] ?? '0'),
                 'verified_monthly_revenue' => $months < 1 ? '0' : (string) BigInteger::of($revenue)->dividedBy($months, RoundingMode::HalfUp),
                 'latest_sealed_report_at' => $sealedAt?->toIso8601String(),
-                'registered_names' => array_column($business['mandate']['people'], 'name'), 'signed' => $signed];
+                'registered_names' => array_column($business['mandate']['people'], 'name'), 'required_people' => $this->requiredPeople($business),
+                'evidence' => $this->evidence($application->id), 'signed' => $signed];
         });
     }
 
     /**
-     * Blank inputs with one profile for each person PRO-R02 asks to introduce: the first required
-     * signatory as the official representative, then every director and owner.
+     * Blank inputs with a profile to write for each person the prospectus must introduce.
      *
      * @param  Business  $business
      * @return Inputs
@@ -178,16 +209,58 @@ final class EloquentBusinessProspectuses implements BusinessProspectuses
     private function prefilled(array $business): array
     {
         $inputs = ProspectusDraft::blank();
+        foreach ($this->requiredPeople($business) as $person) {
+            $inputs['profiles'][] = [...$person, 'text' => ''];
+        }
+
+        return $inputs;
+    }
+
+    /**
+     * The people PRO-R02 asks the prospectus to introduce, from the current mandate: the first required
+     * signatory as the official representative, then every director and owner, each once under the
+     * strongest role they hold.
+     *
+     * @param  Business  $business
+     * @return list<array{name: string, role: string}>
+     */
+    private function requiredPeople(array $business): array
+    {
         $representative = $business['mandate']['required_signatories'][0] ?? null;
+        $people = [];
         foreach ($business['mandate']['people'] as $person) {
             $role = $person['party_id'] === $representative ? 'representative'
                 : array_values(array_filter(array_map(fn (string $role): ?string => self::PROFILE_ROLES[$role] ?? null, $person['roles'])))[0] ?? null;
             if ($role !== null) {
-                $inputs['profiles'][] = ['name' => $person['name'], 'role' => $role, 'text' => ''];
+                $people[] = ['name' => $person['name'], 'role' => $role];
             }
         }
 
-        return $inputs;
+        return $people;
+    }
+
+    /**
+     * The evidence documents uploaded for this application, by id, each with its kind.
+     *
+     * @return array<string, string>
+     */
+    private function evidence(string $applicationId): array
+    {
+        /** @var array<string, string> */
+        return BusinessProspectusDocument::query()->where('business_application_id', $applicationId)->pluck('kind', 'id')->all();
+    }
+
+    /**
+     * The documents as the Listing Builder lists them, oldest first.
+     *
+     * @return list<array{id: string, kind: string, filename: string, media_type: string, size_bytes: int, uploaded_at: string}>
+     */
+    private function documents(string $applicationId): array
+    {
+        return array_values(array_map(fn (BusinessProspectusDocument $document): array => ['id' => $document->id, 'kind' => $document->kind,
+            'filename' => $document->filename, 'media_type' => $document->media_type, 'size_bytes' => $document->size_bytes,
+            'uploaded_at' => $document->created_at->toIso8601String()],
+            BusinessProspectusDocument::query()->where('business_application_id', $applicationId)->orderBy('created_at')->orderBy('id')->get()->all()));
     }
 
     private function application(string $businessId, string $applicationId): BusinessApplication
@@ -201,10 +274,16 @@ final class EloquentBusinessProspectuses implements BusinessProspectuses
         return BusinessProspectusVersion::query()->where('business_application_id', $applicationId)->orderByDesc('version')->first();
     }
 
+    /** Serializes saves, signatures and uploads for one application's prospectus. */
+    private function lock(BusinessApplication $application): void
+    {
+        DB::select('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', ['business-prospectus|'.$application->id]);
+    }
+
     /** Locks the application's versions and returns the next number, refusing a stale or locked prospectus. */
     private function nextVersion(BusinessApplication $application, int $expectedVersion): int
     {
-        DB::select('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', ['business-prospectus|'.$application->id]);
+        $this->lock($application);
         $latest = $this->latest($application->id);
         if ($latest?->kind === 'signed') {
             throw new CommandRejection('PROSPECTUS_SIGNED', 409, $latest->version);

@@ -171,6 +171,10 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     // The ledger-precision held release check rewrites check_primary_held_release, so it comes off first and goes back last.
     $heldReleasePrecision = require database_path('migrations/2026_10_30_190000_compare_held_release_cash_at_ledger_precision.php');
     // Prospectus versions reference business applications, which are rebuilt below, so they come off first and go back last.
+    $prospectusDocuments = require database_path('migrations/2026_11_11_060000_create_business_prospectus_documents_table.php');
+    $prospectusDocuments->down();
+    expect(Schema::hasTable('business_prospectus_documents'))->toBeFalse()
+        ->and(DB::scalar("SELECT to_regprocedure('reject_business_prospectus_document_mutation()') IS NULL"))->toBeTrue();
     $prospectusVersions = require database_path('migrations/2026_11_10_090000_create_business_prospectus_versions_table.php');
     $prospectusVersions->down();
     expect(Schema::hasTable('business_prospectus_versions'))->toBeFalse()
@@ -467,6 +471,8 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $cartCheckouts->up();
     $prospectusVersions->up();
     expect(Schema::hasTable('business_prospectus_versions'))->toBeTrue();
+    $prospectusDocuments->up();
+    expect(Schema::hasTable('business_prospectus_documents'))->toBeTrue();
     expect(Schema::hasColumn('business_photos', 'url'))->toBeTrue();
     expect(Schema::hasTable('investor_cart_lines'))->toBeTrue()
         ->and(DB::scalar("SELECT count(*) FROM pg_constraint WHERE conname = 'investor_cart_line_units'"))->toBe(1);

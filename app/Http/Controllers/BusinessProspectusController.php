@@ -7,13 +7,16 @@ namespace App\Http\Controllers;
 use App\Application\Business\GetBusinessProspectus;
 use App\Application\Business\SaveBusinessProspectus;
 use App\Application\Business\SignBusinessProspectus;
+use App\Application\Business\UploadProspectusDocument;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Http\Requests\Business\SaveBusinessProspectusRequest;
 use App\Http\Requests\Business\ShowApplicationRequest;
 use App\Http\Requests\Business\SignBusinessProspectusRequest;
+use App\Http\Requests\Business\UploadProspectusDocumentRequest;
 use App\Http\Resources\BusinessProspectusResource;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -55,6 +58,16 @@ class BusinessProspectusController extends Controller
             (string) $request->validated('request_id'));
 
         return $this->back($request, $result, 'purpose');
+    }
+
+    public function upload(UploadProspectusDocumentRequest $request, UploadProspectusDocument $action): RedirectResponse
+    {
+        /** @var UploadedFile $file */
+        $file = $request->validated('file');
+        $result = $action->handle($this->user($request), $this->revision($request), (string) $request->route('business'), (string) $request->route('application'),
+            (string) $request->validated('kind'), $file->getClientOriginalName(), (string) $file->get(), (string) $request->validated('request_id'));
+
+        return $this->back($request, $result, 'file');
     }
 
     public function sign(SignBusinessProspectusRequest $request, SignBusinessProspectus $action): RedirectResponse

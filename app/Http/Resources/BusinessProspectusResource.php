@@ -30,7 +30,9 @@ class BusinessProspectusResource extends JsonResource
             'application' => ['id' => $page['application_id'], 'title' => $page['title']], 'version' => $page['version'], 'inputs' => $page['inputs'],
             'signed' => $page['signed'], 'unavailable' => $page['unavailable'], 'evaluation' => $page['evaluation'],
             'facts' => $facts === null ? null : [...$facts, 'platform_fee' => $fee, 'net_of_fee' => (string) ((int) $facts['principal'] - (int) $fee)],
+            'documents' => $page['documents'],
             'actions' => ['save' => $page['can_edit'] ? ['url' => route('business.applications.prospectus.save', $route, false), 'method' => 'put'] : null,
+                'upload' => $page['can_edit'] ? ['url' => route('business.applications.prospectus.documents.store', $route, false), 'method' => 'post'] : null,
                 'sign' => $page['can_sign'] ? ['url' => route('business.applications.prospectus.sign', $route, false), 'method' => 'post'] : null],
             'links' => ['close' => $home]];
     }

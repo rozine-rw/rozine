@@ -1803,13 +1803,26 @@ export type ProspectusFundsLine = {
     label: string;
     amount: string;
     quote_amount: string | null;
+    /** An uploaded quote or invoice for this application; P-G05 counts only these. */
+    quote_document_id: string | null;
 };
 
 export type ProspectusForecastMonth = {
     month: string;
     revenue: string;
     costs: string;
-    contract_attached: boolean;
+    /** An uploaded signed contract for this application; P-G06 counts only these. */
+    contract_document_id: string | null;
+};
+
+/** A quote, invoice or signed contract the Business uploaded as prospectus evidence. */
+export type ProspectusDocument = {
+    id: string;
+    kind: 'quote' | 'contract';
+    filename: string;
+    media_type: string;
+    size_bytes: number;
+    uploaded_at: string;
 };
 
 export type ProspectusProfile = {
@@ -1859,6 +1872,8 @@ export type BusinessProspectusProps = {
         verified_monthly_revenue: string;
         latest_sealed_report_at: string | null;
         registered_names: string[];
+        required_people: { name: string; role: string }[];
+        evidence: Record<string, string>;
         signed: boolean;
         platform_fee: string;
         net_of_fee: string;
@@ -1869,8 +1884,10 @@ export type BusinessProspectusProps = {
         may_sign: boolean;
         publishable: boolean;
     } | null;
+    documents: ProspectusDocument[];
     actions: {
         save: { url: string; method: 'put' } | null;
+        upload: RouteAction | null;
         sign: RouteAction | null;
     };
     links: { close: RouteLink };

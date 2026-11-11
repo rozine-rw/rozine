@@ -266,6 +266,7 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     }
     Route::get('{business}/applications/{application}/prospectus', [BusinessProspectusController::class, 'show'])->whereUlid(['business', 'application'])->name('prospectus.show');
     Route::put('{business}/applications/{application}/prospectus', [BusinessProspectusController::class, 'save'])->whereUlid(['business', 'application'])->name('prospectus.save');
+    Route::post('{business}/applications/{application}/prospectus/documents', [BusinessProspectusController::class, 'upload'])->whereUlid(['business', 'application'])->name('prospectus.documents.store');
     Route::post('{business}/applications/{application}/prospectus/sign', [BusinessProspectusController::class, 'sign'])->whereUlid(['business', 'application'])->name('prospectus.sign');
 });
 

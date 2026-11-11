@@ -16,7 +16,8 @@ namespace App\Application\Business\Contracts;
  *
  * @phpstan-type Prospectus array{application_id: string, business_id: string, title: string, sections: list<string>, version: int, inputs: Inputs,
  *     signed: array{version: int, fingerprint: string, signed_at: string}|null, facts: Facts|null, unavailable: string|null,
- *     evaluation: array{policy_version: string, gates: list<Gate>, may_sign: bool, publishable: bool}|null, can_edit: bool, can_sign: bool}
+ *     evaluation: array{policy_version: string, gates: list<Gate>, may_sign: bool, publishable: bool}|null,
+ *     documents: list<array{id: string, kind: string, filename: string, media_type: string, size_bytes: int, uploaded_at: string}>, can_edit: bool, can_sign: bool}
  */
 interface BusinessProspectuses
 {
@@ -33,6 +34,13 @@ interface BusinessProspectuses
      * @return array<string, mixed>
      */
     public function save(int $userId, int $contextRevision, string $businessId, string $applicationId, int $expectedVersion, array $input, string $requestId): array;
+
+    /**
+     * Keeps a quote, invoice or signed contract as evidence the prospectus may cite (P-G05, P-G06).
+     *
+     * @return array<string, mixed>
+     */
+    public function upload(int $userId, int $contextRevision, string $businessId, string $applicationId, string $kind, string $filename, string $content, string $requestId): array;
 
     /** @return array<string, mixed> */
     public function sign(int $userId, int $contextRevision, string $businessId, string $applicationId, int $expectedVersion, string $requestId): array;

@@ -263,6 +263,7 @@
         "resources/js/routes/boost/index.ts",
         "resources/js/routes/business/applications/index.ts",
         "resources/js/routes/business/applications/operations/index.ts",
+        "resources/js/routes/business/applications/prospectus/documents/index.ts",
         "resources/js/routes/business/applications/prospectus/index.ts",
         "resources/js/routes/business/applications/publish/index.ts",
         "resources/js/routes/business/audit-reports/disputes/index.ts",
@@ -805,8 +806,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 777,
-        "generated": 339,
+        "totalTrackedSources": 778,
+        "generated": 340,
         "declarationOnly": 20,
         "authoredExecutable": 418
     },

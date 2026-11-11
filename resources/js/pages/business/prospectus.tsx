@@ -1,4 +1,5 @@
 import { Link, useForm } from '@inertiajs/react';
+import { useRef } from 'react';
 import type { ReactNode } from 'react';
 import { BusinessShell } from '@/components/business/business-shell';
 import { FieldError } from '@/components/rozine/form';
@@ -7,6 +8,7 @@ import { formatDateTime, formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
     BusinessProspectusProps,
+    ProspectusDocument,
     ProspectusForecastMonth,
     ProspectusInputs,
     ProspectusProfile,
@@ -48,7 +50,7 @@ export function forecastMonths(
                 month,
                 revenue: '',
                 costs: '',
-                contract_attached: false,
+                contract_document_id: null,
             }
         );
     });
@@ -86,6 +88,39 @@ function Section({
     );
 }
 
+/** A choice of the uploaded documents of one kind, or none. */
+function DocumentPicker({
+    label,
+    documents,
+    value,
+    none,
+    onChange,
+}: {
+    label: string;
+    documents: ProspectusDocument[];
+    value: string | null;
+    none: string;
+    onChange: (id: string | null) => void;
+}) {
+    return (
+        <select
+            aria-label={label}
+            value={value ?? ''}
+            onChange={(event) =>
+                onChange(event.target.value === '' ? null : event.target.value)
+            }
+            className={INPUT}
+        >
+            <option value="">{none}</option>
+            {documents.map((document) => (
+                <option key={document.id} value={document.id}>
+                    {document.filename}
+                </option>
+            ))}
+        </select>
+    );
+}
+
 function Fact({ label, value }: { label: string; value: string }) {
     return (
         <div className="flex items-center justify-between gap-3 border-b border-rz-divider py-2 text-sm last:border-b-0">
@@ -113,12 +148,14 @@ export default function BusinessProspectus({
     unavailable,
     facts,
     evaluation,
+    documents,
     actions,
     links,
 }: BusinessProspectusProps) {
     const { t, locale } = useTranslation();
     const editable = actions.save !== null;
     const signAction = actions.sign;
+    const uploadAction = actions.upload;
     const form = useForm<ProspectusInputs>({
         ...inputs,
         forecast:
@@ -131,6 +168,15 @@ export default function BusinessProspectus({
                   ),
     });
     const signing = useForm({});
+    const uploading = useForm<{
+        kind: ProspectusDocument['kind'];
+        file: File | null;
+    }>({ kind: 'quote', file: null });
+    const uploadForm = useRef<HTMLFormElement>(null);
+    const quotes = documents.filter((document) => document.kind === 'quote');
+    const contracts = documents.filter(
+        (document) => document.kind === 'contract',
+    );
     const { data, errors } = form;
     const fieldErrors = errors as Record<string, string | undefined>;
     const gates = evaluation?.gates ?? [];
@@ -171,6 +217,20 @@ export default function BusinessProspectus({
             expected_version: version,
         }));
         form.put(action.url, { preserveScroll: true });
+    };
+    const upload = (action: { url: string }) => {
+        uploading.transform((current) => ({
+            ...current,
+            request_id: crypto.randomUUID(),
+        }));
+        uploading.post(action.url, {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                uploading.setData('file', null);
+                uploadForm.current?.reset();
+            },
+        });
     };
     const sign = (action: { url: string }) => {
         signing.transform(() => ({
@@ -331,6 +391,127 @@ export default function BusinessProspectus({
                     </section>
                 ) : null}
 
+                {uploadAction !== null || documents.length > 0 ? (
+                    <section aria-labelledby="evidence-title" className={CARD}>
+                        <h2
+                            id="evidence-title"
+                            className="text-[15px] font-semibold text-rz-ink"
+                        >
+                            {t('business.prospectus.evidence.title')}
+                        </h2>
+                        <p className="mt-1 text-[12.5px] text-rz-secondary">
+                            {t('business.prospectus.evidence.note')}
+                        </p>
+                        {documents.length === 0 ? (
+                            <p className="mt-3 text-[13px] text-rz-secondary">
+                                {t('business.prospectus.evidence.empty')}
+                            </p>
+                        ) : (
+                            <ul className="mt-3 flex flex-col">
+                                {documents.map((document) => (
+                                    <li
+                                        key={document.id}
+                                        className="flex items-center justify-between gap-3 border-b border-rz-divider py-2 text-[13px] last:border-b-0"
+                                    >
+                                        <span className="min-w-0 truncate font-semibold text-rz-ink">
+                                            {document.filename}
+                                        </span>
+                                        <span className="shrink-0 text-rz-secondary">
+                                            {document.kind === 'quote'
+                                                ? t(
+                                                      'business.prospectus.evidence.kind_quote',
+                                                  )
+                                                : t(
+                                                      'business.prospectus.evidence.kind_contract',
+                                                  )}
+                                            {' · '}
+                                            {formatDateTime(
+                                                document.uploaded_at,
+                                                locale,
+                                            )}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                        {uploadAction !== null ? (
+                            <form
+                                ref={uploadForm}
+                                aria-label={t(
+                                    'business.prospectus.evidence.title',
+                                )}
+                                aria-busy={uploading.processing || undefined}
+                                className="mt-3 grid grid-cols-1 items-end gap-2 sm:grid-cols-[1fr_2fr_auto]"
+                                onSubmit={(event) => {
+                                    event.preventDefault();
+                                    upload(uploadAction);
+                                }}
+                            >
+                                <select
+                                    aria-label={t(
+                                        'business.prospectus.evidence.kind',
+                                    )}
+                                    value={uploading.data.kind}
+                                    onChange={(event) =>
+                                        uploading.setData(
+                                            'kind',
+                                            event.target.value === 'contract'
+                                                ? 'contract'
+                                                : 'quote',
+                                        )
+                                    }
+                                    className={INPUT}
+                                >
+                                    <option value="quote">
+                                        {t(
+                                            'business.prospectus.evidence.kind_quote',
+                                        )}
+                                    </option>
+                                    <option value="contract">
+                                        {t(
+                                            'business.prospectus.evidence.kind_contract',
+                                        )}
+                                    </option>
+                                </select>
+                                <input
+                                    type="file"
+                                    accept="application/pdf,image/png,image/jpeg"
+                                    aria-label={t(
+                                        'business.prospectus.evidence.file',
+                                    )}
+                                    onChange={(event) =>
+                                        uploading.setData(
+                                            'file',
+                                            event.target.files?.[0] ?? null,
+                                        )
+                                    }
+                                    className="text-[13px] text-rz-secondary"
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={
+                                        uploading.data.file === null ||
+                                        uploading.processing
+                                    }
+                                    className="h-[44px] rounded-xl border border-rz-border px-4 text-[13.5px] font-semibold text-rz-accent disabled:opacity-50"
+                                >
+                                    {uploading.processing
+                                        ? t(
+                                              'business.prospectus.evidence.uploading',
+                                          )
+                                        : t(
+                                              'business.prospectus.evidence.upload',
+                                          )}
+                                </button>
+                                <FieldError id="prospectus-evidence-error">
+                                    {uploading.errors.kind ??
+                                        uploading.errors.file}
+                                </FieldError>
+                            </form>
+                        ) : null}
+                    </section>
+                ) : null}
+
                 <form
                     aria-label={t('business.prospectus.title')}
                     className="flex flex-col gap-4"
@@ -375,7 +556,7 @@ export default function BusinessProspectus({
                             {data.use_of_funds.map((line, index) => (
                                 <div
                                     key={index}
-                                    className="grid grid-cols-1 gap-2 sm:grid-cols-[2fr_1fr_1fr_auto]"
+                                    className="grid grid-cols-1 gap-2 sm:grid-cols-[2fr_1fr_1fr_1.5fr_auto]"
                                 >
                                     <input
                                         aria-label={t(
@@ -426,6 +607,21 @@ export default function BusinessProspectus({
                                         }}
                                         className={INPUT}
                                     />
+                                    <DocumentPicker
+                                        label={t(
+                                            'business.prospectus.funds.quote_document',
+                                        )}
+                                        documents={quotes}
+                                        value={line.quote_document_id}
+                                        none={t(
+                                            'business.prospectus.evidence.none',
+                                        )}
+                                        onChange={(id) =>
+                                            setRow('use_of_funds', index, {
+                                                quote_document_id: id,
+                                            })
+                                        }
+                                    />
                                     <button
                                         type="button"
                                         onClick={() =>
@@ -446,6 +642,7 @@ export default function BusinessProspectus({
                                             label: '',
                                             amount: '',
                                             quote_amount: null,
+                                            quote_document_id: null,
                                         },
                                     ])
                                 }
@@ -463,7 +660,7 @@ export default function BusinessProspectus({
                             {data.forecast.map((month, index) => (
                                 <div
                                     key={month.month}
-                                    className="grid grid-cols-[5rem_1fr_1fr] items-center gap-2 sm:grid-cols-[5rem_1fr_1fr_auto]"
+                                    className="grid grid-cols-[5rem_1fr_1fr] items-center gap-2 sm:grid-cols-[5rem_1fr_1fr_1.5fr]"
                                 >
                                     <span className="text-[13px] font-semibold text-rz-ink tabular-nums">
                                         {month.month}
@@ -503,21 +700,24 @@ export default function BusinessProspectus({
                                         }
                                         className={INPUT}
                                     />
-                                    <label className="col-span-3 flex items-center gap-2 text-[12.5px] text-rz-secondary sm:col-span-1">
-                                        <input
-                                            type="checkbox"
-                                            checked={month.contract_attached}
-                                            onChange={(event) =>
+                                    <div className="col-span-3 sm:col-span-1">
+                                        <DocumentPicker
+                                            label={t(
+                                                'business.prospectus.forecast.contract',
+                                                { month: month.month },
+                                            )}
+                                            documents={contracts}
+                                            value={month.contract_document_id}
+                                            none={t(
+                                                'business.prospectus.evidence.none',
+                                            )}
+                                            onChange={(id) =>
                                                 setRow('forecast', index, {
-                                                    contract_attached:
-                                                        event.target.checked,
+                                                    contract_document_id: id,
                                                 })
                                             }
                                         />
-                                        {t(
-                                            'business.prospectus.forecast.contract',
-                                        )}
-                                    </label>
+                                    </div>
                                 </div>
                             ))}
                             <label

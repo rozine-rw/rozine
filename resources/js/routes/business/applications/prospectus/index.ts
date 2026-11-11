@@ -1,7 +1,8 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
+import documents from './documents'
 /**
 * @see \App\Http\Controllers\BusinessProspectusController::show
-* @see app/Http/Controllers/BusinessProspectusController.php:42
+* @see app/Http/Controllers/BusinessProspectusController.php:45
 * @route '/business/{business}/applications/{application}/prospectus'
 */
 export const show = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +17,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessProspectusController::show
-* @see app/Http/Controllers/BusinessProspectusController.php:42
+* @see app/Http/Controllers/BusinessProspectusController.php:45
 * @route '/business/{business}/applications/{application}/prospectus'
 */
 show.url = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions) => {
@@ -42,7 +43,7 @@ show.url = (args: { business: string | number, application: string | number } | 
 
 /**
 * @see \App\Http\Controllers\BusinessProspectusController::show
-* @see app/Http/Controllers/BusinessProspectusController.php:42
+* @see app/Http/Controllers/BusinessProspectusController.php:45
 * @route '/business/{business}/applications/{application}/prospectus'
 */
 show.get = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -52,7 +53,7 @@ show.get = (args: { business: string | number, application: string | number } | 
 
 /**
 * @see \App\Http\Controllers\BusinessProspectusController::show
-* @see app/Http/Controllers/BusinessProspectusController.php:42
+* @see app/Http/Controllers/BusinessProspectusController.php:45
 * @route '/business/{business}/applications/{application}/prospectus'
 */
 show.head = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -62,7 +63,7 @@ show.head = (args: { business: string | number, application: string | number } |
 
 /**
 * @see \App\Http\Controllers\BusinessProspectusController::show
-* @see app/Http/Controllers/BusinessProspectusController.php:42
+* @see app/Http/Controllers/BusinessProspectusController.php:45
 * @route '/business/{business}/applications/{application}/prospectus'
 */
 const showForm = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -72,7 +73,7 @@ const showForm = (args: { business: string | number, application: string | numbe
 
 /**
 * @see \App\Http\Controllers\BusinessProspectusController::show
-* @see app/Http/Controllers/BusinessProspectusController.php:42
+* @see app/Http/Controllers/BusinessProspectusController.php:45
 * @route '/business/{business}/applications/{application}/prospectus'
 */
 showForm.get = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +83,7 @@ showForm.get = (args: { business: string | number, application: string | number 
 
 /**
 * @see \App\Http\Controllers\BusinessProspectusController::show
-* @see app/Http/Controllers/BusinessProspectusController.php:42
+* @see app/Http/Controllers/BusinessProspectusController.php:45
 * @route '/business/{business}/applications/{application}/prospectus'
 */
 showForm.head = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -99,7 +100,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\BusinessProspectusController::save
-* @see app/Http/Controllers/BusinessProspectusController.php:51
+* @see app/Http/Controllers/BusinessProspectusController.php:54
 * @route '/business/{business}/applications/{application}/prospectus'
 */
 export const save = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -114,7 +115,7 @@ save.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessProspectusController::save
-* @see app/Http/Controllers/BusinessProspectusController.php:51
+* @see app/Http/Controllers/BusinessProspectusController.php:54
 * @route '/business/{business}/applications/{application}/prospectus'
 */
 save.url = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions) => {
@@ -140,7 +141,7 @@ save.url = (args: { business: string | number, application: string | number } | 
 
 /**
 * @see \App\Http\Controllers\BusinessProspectusController::save
-* @see app/Http/Controllers/BusinessProspectusController.php:51
+* @see app/Http/Controllers/BusinessProspectusController.php:54
 * @route '/business/{business}/applications/{application}/prospectus'
 */
 save.put = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'put'> => ({
@@ -150,7 +151,7 @@ save.put = (args: { business: string | number, application: string | number } | 
 
 /**
 * @see \App\Http\Controllers\BusinessProspectusController::save
-* @see app/Http/Controllers/BusinessProspectusController.php:51
+* @see app/Http/Controllers/BusinessProspectusController.php:54
 * @route '/business/{business}/applications/{application}/prospectus'
 */
 const saveForm = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -165,7 +166,7 @@ const saveForm = (args: { business: string | number, application: string | numbe
 
 /**
 * @see \App\Http\Controllers\BusinessProspectusController::save
-* @see app/Http/Controllers/BusinessProspectusController.php:51
+* @see app/Http/Controllers/BusinessProspectusController.php:54
 * @route '/business/{business}/applications/{application}/prospectus'
 */
 saveForm.put = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -182,7 +183,7 @@ save.form = saveForm
 
 /**
 * @see \App\Http\Controllers\BusinessProspectusController::sign
-* @see app/Http/Controllers/BusinessProspectusController.php:60
+* @see app/Http/Controllers/BusinessProspectusController.php:73
 * @route '/business/{business}/applications/{application}/prospectus/sign'
 */
 export const sign = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -197,7 +198,7 @@ sign.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessProspectusController::sign
-* @see app/Http/Controllers/BusinessProspectusController.php:60
+* @see app/Http/Controllers/BusinessProspectusController.php:73
 * @route '/business/{business}/applications/{application}/prospectus/sign'
 */
 sign.url = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions) => {
@@ -223,7 +224,7 @@ sign.url = (args: { business: string | number, application: string | number } | 
 
 /**
 * @see \App\Http\Controllers\BusinessProspectusController::sign
-* @see app/Http/Controllers/BusinessProspectusController.php:60
+* @see app/Http/Controllers/BusinessProspectusController.php:73
 * @route '/business/{business}/applications/{application}/prospectus/sign'
 */
 sign.post = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -233,7 +234,7 @@ sign.post = (args: { business: string | number, application: string | number } |
 
 /**
 * @see \App\Http\Controllers\BusinessProspectusController::sign
-* @see app/Http/Controllers/BusinessProspectusController.php:60
+* @see app/Http/Controllers/BusinessProspectusController.php:73
 * @route '/business/{business}/applications/{application}/prospectus/sign'
 */
 const signForm = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -243,7 +244,7 @@ const signForm = (args: { business: string | number, application: string | numbe
 
 /**
 * @see \App\Http\Controllers\BusinessProspectusController::sign
-* @see app/Http/Controllers/BusinessProspectusController.php:60
+* @see app/Http/Controllers/BusinessProspectusController.php:73
 * @route '/business/{business}/applications/{application}/prospectus/sign'
 */
 signForm.post = (args: { business: string | number, application: string | number } | [business: string | number, application: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -256,6 +257,7 @@ sign.form = signForm
 const prospectus = {
     show: Object.assign(show, show),
     save: Object.assign(save, save),
+    documents: Object.assign(documents, documents),
     sign: Object.assign(sign, sign),
 }
 

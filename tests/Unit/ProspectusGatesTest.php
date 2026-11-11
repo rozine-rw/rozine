@@ -8,15 +8,15 @@ use App\Domain\Business\ProspectusGates;
  * A prospectus for RWF 12,000,000 over 6 months: the 3% platform fee is 360,000, so use-of-funds lines
  * must total 11,640,000. The verified monthly revenue is 7,000,000 and the instalment 2,280,000.
  *
- * @return array{0: array{purpose: string, use_of_funds: array<int, array{label: string, amount: string, quote_amount: string|null}>, forecast: array<int, array{month: string, revenue: string, costs: string, contract_attached: bool}>, assumptions: string, downside: string, profiles: array<int, array{name: string, role: string, text: string}>, largest_customer_share_percent: int|null, risks: array<int, array{text: string, concentration: bool}>}, 1: array{principal: string, term_months: int, instalment: string, verified_monthly_revenue: string, latest_sealed_report_at: string|null, registered_names: list<string>, signed: bool}}
+ * @return array{0: array{purpose: string, use_of_funds: array<int, array{label: string, amount: string, quote_amount: string|null, quote_document_id: string|null}>, forecast: array<int, array{month: string, revenue: string, costs: string, contract_document_id: string|null}>, assumptions: string, downside: string, profiles: array<int, array{name: string, role: string, text: string}>, largest_customer_share_percent: int|null, risks: array<int, array{text: string, concentration: bool}>}, 1: array{principal: string, term_months: int, instalment: string, verified_monthly_revenue: string, latest_sealed_report_at: string|null, registered_names: list<string>, required_people: list<array{name: string, role: string}>, evidence: array<string, string>, signed: bool}}
  */
 function prospectusCase(): array
 {
     $profile = fn (string $name, string $role): array => ['name' => $name, 'role' => $role, 'text' => trim(str_repeat('Runs the shop floor and supplier accounts. ', 8))];
-    $month = fn (string $month): array => ['month' => $month, 'revenue' => '7000000', 'costs' => '3000000', 'contract_attached' => false];
+    $month = fn (string $month): array => ['month' => $month, 'revenue' => '7000000', 'costs' => '3000000', 'contract_document_id' => null];
     $inputs = [
         'purpose' => 'Buy a second cold room so we can hold three weeks of stock for hotel customers in Kigali during the busy season.',
-        'use_of_funds' => [['label' => 'Cold room', 'amount' => '9640000', 'quote_amount' => '9700000'], ['label' => 'Installation', 'amount' => '2000000', 'quote_amount' => null]],
+        'use_of_funds' => [['label' => 'Cold room', 'amount' => '9640000', 'quote_amount' => '9700000', 'quote_document_id' => '01jc0quote0000000000000000'], ['label' => 'Installation', 'amount' => '2000000', 'quote_amount' => null, 'quote_document_id' => null]],
         'forecast' => array_map($month, ['2026-12', '2027-01', '2027-02', '2027-03', '2027-04', '2027-05']),
         'assumptions' => 'Hotel orders stay at the level verified over the last three months.',
         'downside' => 'If orders fall, we pause the second delivery van and repay from the existing cold room.',
@@ -26,14 +26,16 @@ function prospectusCase(): array
             ['text' => 'Supplier prices can rise.', 'concentration' => false]],
     ];
     $facts = ['principal' => '12000000', 'term_months' => 6, 'instalment' => '2280000', 'verified_monthly_revenue' => '7000000',
-        'latest_sealed_report_at' => '2026-11-01T10:00:00Z', 'registered_names' => ['Aline  Uwase', 'jean mugabo'], 'signed' => false];
+        'latest_sealed_report_at' => '2026-11-01T10:00:00Z', 'registered_names' => ['Aline  Uwase', 'jean mugabo'],
+        'required_people' => [['name' => 'Aline Uwase', 'role' => 'representative'], ['name' => 'JEAN MUGABO', 'role' => 'director']],
+        'evidence' => ['01jc0quote0000000000000000' => 'quote', '01jc0contract0000000000000' => 'contract'], 'signed' => false];
 
     return [$inputs, $facts];
 }
 
 /**
- * @param  array{purpose: string, use_of_funds: array<int, array{label: string, amount: string, quote_amount: string|null}>, forecast: array<int, array{month: string, revenue: string, costs: string, contract_attached: bool}>, assumptions: string, downside: string, profiles: array<int, array{name: string, role: string, text: string}>, largest_customer_share_percent: int|null, risks: array<int, array{text: string, concentration: bool}>}  $inputs
- * @param  array{principal: string, term_months: int, instalment: string, verified_monthly_revenue: string, latest_sealed_report_at: string|null, registered_names: list<string>, signed: bool}  $facts
+ * @param  array{purpose: string, use_of_funds: array<int, array{label: string, amount: string, quote_amount: string|null, quote_document_id: string|null}>, forecast: array<int, array{month: string, revenue: string, costs: string, contract_document_id: string|null}>, assumptions: string, downside: string, profiles: array<int, array{name: string, role: string, text: string}>, largest_customer_share_percent: int|null, risks: array<int, array{text: string, concentration: bool}>}  $inputs
+ * @param  array{principal: string, term_months: int, instalment: string, verified_monthly_revenue: string, latest_sealed_report_at: string|null, registered_names: list<string>, required_people: list<array{name: string, role: string}>, evidence: array<string, string>, signed: bool}  $facts
  * @return array<string, array{id: string, section: string, passed: bool, fix: string|null}>
  */
 function prospectusGates(array $inputs, array $facts, string $now = '2026-11-10T08:00:00Z'): array
@@ -119,8 +121,12 @@ it('keeps forecast months within 25% of the verified average unless a signed con
     expect(prospectusGates([...$inputs, 'forecast' => $forecast], $facts)['P-G06']['passed'])->toBeTrue();
     $forecast[2] = [...$forecast[2], 'revenue' => '8750001'];
     expect(prospectusGates([...$inputs, 'forecast' => $forecast], $facts)['P-G06']['fix'])->toContain('2027-02');
-    $forecast[2] = [...$forecast[2], 'contract_attached' => true];
+    $forecast[2] = [...$forecast[2], 'contract_document_id' => '01jc0contract0000000000000'];
     expect(prospectusGates([...$inputs, 'forecast' => $forecast], $facts)['P-G06']['passed'])->toBeTrue();
+    $forecast[2] = [...$forecast[2], 'contract_document_id' => '01jc0quote0000000000000000'];
+    expect(prospectusGates([...$inputs, 'forecast' => $forecast], $facts)['P-G06']['passed'])->toBeFalse();
+    $forecast[2] = [...$forecast[2], 'contract_document_id' => '01jc0foreign00000000000000'];
+    expect(prospectusGates([...$inputs, 'forecast' => $forecast], $facts)['P-G06']['passed'])->toBeFalse();
 });
 
 it('requires a downside line when any forecast month is below 1.25 coverage', function (): void {
@@ -167,3 +173,41 @@ it('enforces purpose and profile lengths', function (): void {
         ->and(prospectusGates([...$inputs, 'purpose' => str_repeat('a', 600)], $facts)['P-G11']['passed'])->toBeTrue()
         ->and(prospectusGates([...$inputs, 'profiles' => $short], $facts)['P-G11'])->toMatchArray(['passed' => false, 'section' => 'management']);
 });
+
+it('counts the term\'s months once each and one after another, not just the number of rows', function (): void {
+    [$inputs, $facts] = prospectusCase();
+    $repeated = array_fill(0, 6, $inputs['forecast'][0]);
+    $gap = $inputs['forecast'];
+    $gap[5] = [...$gap[5], 'month' => '2027-07'];
+    $shuffled = array_reverse($inputs['forecast']);
+    $blank = $inputs['forecast'];
+    $blank[0] = [...$blank[0], 'month' => ''];
+    expect(prospectusGates([...$inputs, 'forecast' => $repeated], $facts)['P-G01'])
+        ->toMatchArray(['passed' => false, 'section' => 'forecast', 'fix' => 'Give a forecast for each of the term\'s consecutive months, once each, with your assumptions and downside.'])
+        ->and(prospectusGates([...$inputs, 'forecast' => $gap], $facts)['P-G01']['passed'])->toBeFalse()
+        ->and(prospectusGates([...$inputs, 'forecast' => $blank], $facts)['P-G01']['passed'])->toBeFalse()
+        ->and(prospectusGates([...$inputs, 'forecast' => $shuffled], $facts)['P-G01']['passed'])->toBeTrue()
+        ->and(prospectusGates([...$inputs, 'forecast' => []], [...$facts, 'term_months' => 0])['P-G01']['passed'])->toBeFalse();
+});
+
+it('requires a profile for every director, owner and representative on record', function (): void {
+    [$inputs, $facts] = prospectusCase();
+    $owner = ['name' => 'Grace Ingabire', 'role' => 'owner'];
+    expect(prospectusGates($inputs, [...$facts, 'registered_names' => [...$facts['registered_names'], 'Grace Ingabire'], 'required_people' => [...$facts['required_people'], $owner]])['P-G03'])
+        ->toMatchArray(['passed' => false, 'fix' => 'Add a profile for every director, 10% owner and the official representative on record: Grace Ingabire (owner).']);
+    $wrongRole = $inputs['profiles'];
+    $wrongRole[1] = [...$wrongRole[1], 'role' => 'owner'];
+    expect(prospectusGates([...$inputs, 'profiles' => $wrongRole], $facts)['P-G03']['passed'])->toBeFalse();
+});
+
+it('accepts a quote only when it is a quote this Business uploaded to this prospectus', function (?string $documentId): void {
+    [$inputs, $facts] = prospectusCase();
+    $lines = $inputs['use_of_funds'];
+    $lines[0] = [...$lines[0], 'quote_document_id' => $documentId];
+    expect(prospectusGates([...$inputs, 'use_of_funds' => $lines], $facts)['P-G05'])
+        ->toMatchArray(['passed' => false, 'fix' => 'Upload the quote or invoice, and give its amount within 5% of the line, for: Cold room.']);
+})->with([
+    'no document' => [null],
+    'a document from another application' => ['01jc0foreign00000000000000'],
+    'a contract, not a quote' => ['01jc0contract0000000000000'],
+]);

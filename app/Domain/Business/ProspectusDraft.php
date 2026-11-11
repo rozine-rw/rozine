@@ -59,6 +59,18 @@ final class ProspectusDraft
 
             return $amount;
         };
+        $document = function (mixed $value, string $field) use (&$errors): ?string {
+            if ($value === null || $value === '') {
+                return null;
+            }
+            if (! is_string($value) || ! preg_match('/^[0-9a-hjkmnp-tv-z]{26}$/D', strtolower($value))) {
+                $errors[$field][] = 'Choose one of the documents you uploaded.';
+
+                return null;
+            }
+
+            return strtolower($value);
+        };
         $list = function (mixed $value, string $field, int $maximum) use (&$errors): array {
             if ($value === null) {
                 return [];
@@ -81,7 +93,8 @@ final class ProspectusDraft
         foreach ($list($input['use_of_funds'] ?? null, 'use_of_funds', self::MAXIMUM_LINES) as $index => $row) {
             $lines[] = ['label' => $text($row['label'] ?? null, "use_of_funds.{$index}.label", self::LABEL_MAXIMUM),
                 'amount' => (string) $amount($row['amount'] ?? null, "use_of_funds.{$index}.amount"),
-                'quote_amount' => $amount($row['quote_amount'] ?? null, "use_of_funds.{$index}.quote_amount", true)];
+                'quote_amount' => $amount($row['quote_amount'] ?? null, "use_of_funds.{$index}.quote_amount", true),
+                'quote_document_id' => $document($row['quote_document_id'] ?? null, "use_of_funds.{$index}.quote_document_id")];
         }
         $forecast = [];
         foreach ($list($input['forecast'] ?? null, 'forecast', self::MAXIMUM_MONTHS) as $index => $row) {
@@ -91,7 +104,7 @@ final class ProspectusDraft
                 $month = '';
             }
             $forecast[] = ['month' => $month, 'revenue' => (string) $amount($row['revenue'] ?? null, "forecast.{$index}.revenue"),
-                'costs' => (string) $amount($row['costs'] ?? null, "forecast.{$index}.costs"), 'contract_attached' => ($row['contract_attached'] ?? false) === true];
+                'costs' => (string) $amount($row['costs'] ?? null, "forecast.{$index}.costs"), 'contract_document_id' => $document($row['contract_document_id'] ?? null, "forecast.{$index}.contract_document_id")];
         }
         $profiles = [];
         foreach ($list($input['profiles'] ?? null, 'profiles', self::MAXIMUM_PROFILES) as $index => $row) {
