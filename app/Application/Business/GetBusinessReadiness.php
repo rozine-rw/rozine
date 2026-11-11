@@ -6,6 +6,7 @@ namespace App\Application\Business;
 
 use App\Application\Auditor\Contracts\PublishedMonthlyReports;
 use App\Application\Business\Contracts\BusinessCampaignStore;
+use App\Application\Business\Contracts\EnteredBusinesses;
 use App\Application\Business\Contracts\MonthlySubmissionStore;
 use App\Application\Business\Contracts\ReadinessRequirementStore;
 use App\Domain\Business\ReadinessMilestones;
@@ -22,7 +23,8 @@ use Brick\Math\BigInteger;
  * report. Readiness is Business-only: no Investor page reads it, and it never changes a label, a
  * return or any note's terms.
  *
- * Its requirements are the ones triggered so far, as the hourly readiness sweep keeps them. Its
+ * Its requirements are the ones triggered so far, as the hourly readiness sweep keeps them. C1 and
+ * F1 read Met from entry only once the Business has entered (a published audit report). Its
  * guidance lines (RDY-R06) compare the monthly figures the Business sent with what its published
  * reports verified, held to the targets of its stage. Its syllabus counts the core Academy
  * modules of its stage passed (RDY-R07). Its milestones (RDY-R08) read the stage, the business's
@@ -37,7 +39,7 @@ final class GetBusinessReadiness
 {
     public function __construct(private WithBusinessAuthority $authority, private PublishedMonthlyReports $reports, private ReadinessStage $stage,
         private ReadinessRequirementStore $requirements, private ReadinessRequirements $rules, private MonthlySubmissionStore $submissions,
-        private ReadinessSignals $signals, private BusinessAcademySyllabus $academy, private BusinessCampaignStore $campaigns) {}
+        private ReadinessSignals $signals, private BusinessAcademySyllabus $academy, private BusinessCampaignStore $campaigns, private EnteredBusinesses $entered) {}
 
     /** @return array{identity_context_revision: int, business_id: string, readiness: Stage, requirements: list<Listed>, guidance: list<Line>,
      *     syllabus: array{passed: int, total: int}, milestones: array{bond: Track, clinic: Track}} */
@@ -56,7 +58,7 @@ final class GetBusinessReadiness
             'forecast_period' => $sent['forecast_period'], 'forecast' => $sent['figures']['forecast']], $this->submissions->forBusiness($id));
 
         return ['identity_context_revision' => $contextRevision, 'business_id' => $id, 'readiness' => $readiness,
-            'requirements' => $this->rules->listed($requirements, now('Africa/Kigali')->toDateString()),
+            'requirements' => $this->rules->listed($requirements, now('Africa/Kigali')->toDateString(), $this->entered->has($id)),
             'guidance' => $this->signals->guidance(ReadinessSignals::verified($reports), $declared, $readiness['stage']),
             'syllabus' => ['passed' => count(array_filter($core, fn (array $entry): bool => $entry['status']['state'] === 'passed')), 'total' => count($core)],
             'milestones' => ReadinessMilestones::assess(['stage' => $readiness['stage'],
