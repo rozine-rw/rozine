@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Infrastructure\Secondary\EloquentSecondaryMarket;
+use App\Application\Secondary\Contracts\SecondaryMarketSweep;
 use Illuminate\Console\Command;
 
 /**
@@ -18,7 +18,7 @@ class ExpireSecondaryMarket extends Command
 
     protected $description = 'Release lapsed resale reservations and expire week-old listings';
 
-    public function handle(EloquentSecondaryMarket $market): int
+    public function handle(SecondaryMarketSweep $market): int
     {
         ['released' => $released, 'expired' => $expired] = $market->sweep(now('UTC')->toDateTimeImmutable());
         $this->info("Released {$released} reservations and expired {$expired} listings.");

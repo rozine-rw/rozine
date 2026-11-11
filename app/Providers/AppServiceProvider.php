@@ -109,7 +109,9 @@ use App\Application\Primary\Contracts\RetainedNoteSchedules;
 use App\Application\Primary\Contracts\RiskAcknowledgements;
 use App\Application\Pulse\Contracts\PulseSignupRepository;
 use App\Application\Secondary\Contracts\NoteUnitHolders;
+use App\Application\Secondary\Contracts\SecondaryLedger;
 use App\Application\Secondary\Contracts\SecondaryMarket;
+use App\Application\Secondary\Contracts\SecondaryMarketSweep;
 use App\Application\Secondary\Contracts\SecondaryNotes;
 use App\Application\Wallet\Contracts\BusinessPayoutAccounts;
 use App\Application\Wallet\Contracts\BusinessWalletStore;
@@ -249,6 +251,7 @@ use App\Infrastructure\Wallet\SyntheticWithdrawalProvider;
 use App\Infrastructure\Wallet\UnavailableDepositProvider;
 use App\Infrastructure\Wallet\UnavailablePayoutAccountVerifier;
 use App\Infrastructure\Wallet\UnavailableWithdrawalProvider;
+use App\Infrastructure\Wallet\WalletSecondaryLedger;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -395,6 +398,8 @@ class AppServiceProvider extends ServiceProvider
         // Secondary trading stays off until Erastus switches it on (BRS v3.0 §12, `app.secondary_trading`).
         $this->app->bind(SecondaryNotes::class, RetainedSecondaryNotes::class);
         $this->app->bind(NoteUnitHolders::class, EloquentNoteUnitHolders::class);
+        $this->app->bind(SecondaryLedger::class, WalletSecondaryLedger::class);
+        $this->app->bind(SecondaryMarketSweep::class, EloquentSecondaryMarket::class);
         $this->app->bind(SecondaryMarket::class, fn (): SecondaryMarket => config('app.secondary_trading') === true
             ? $this->app->make(EloquentSecondaryMarket::class) : $this->app->make(UnavailableSecondaryMarket::class));
     }

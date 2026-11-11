@@ -2781,6 +2781,13 @@ const fr: Catalog = {
         'Relancer les libérations de panier bloquées',
     'admin.permission_detail.cart.releases.resolve':
         "Libérer une réservation de panier dont l'expiration a échoué, toutes les lignes ensemble.",
+    'admin.permission.secondary.halt': 'Suspendre le marché secondaire',
+    'admin.permission_detail.secondary.halt':
+        'Suspendre ou rouvrir le marché secondaire ou une note, avec un motif enregistré.',
+    'admin.permission.secondary.listings.cancel':
+        'Annuler des annonces de revente',
+    'admin.permission_detail.secondary.listings.cancel':
+        'Annuler une annonce de revente, avec un motif montré au vendeur.',
     'admin.parties.you': 'Vous',
     'admin.parties.drawer_label': '{name}, fiche de la partie',
     'admin.parties.type.business': 'Entreprise',

@@ -191,8 +191,9 @@ it('settles in one step: cash and the lowest ordinals swap, and the seller pays 
         ->and($lots[$this->holding->id]['ordinals'][0]['first'])->toBe((string) ($first + 4))
         ->and($lots[$bought->id])->toMatchArray(['lot_type' => 'secondary_transfer', 'party_id' => $buyerParty, 'units' => '4']);
 
-    // The buyer may relist what they bought; the seller cannot settle the same reservation twice.
-    expect(($this->list)('4', '2700', $bought->id, $this->buyer['user'])['code'])->toBe('SECONDARY_LISTED')
+    // The buyer may relist what they bought, the seller may not list it, and nobody settles the same reservation twice.
+    expect(($this->list)('4', '2700', $bought->id)['code'])->toBe('LOT_NOT_FOUND')
+        ->and(($this->list)('4', '2700', $bought->id, $this->buyer['user'])['code'])->toBe('SECONDARY_LISTED')
         ->and($this->market->settle($this->buyer['user']->id, 1, $listing['listing_id'], $reservation['reservation_id'], (string) Str::uuid())['code'])
         ->toBe('RESERVATION_NOT_OPEN');
 });
@@ -342,7 +343,7 @@ it('knows no holders for an unknown note or lot type', function (): void {
     $holders = app(NoteUnitHolders::class);
 
     expect(DB::transaction(fn (): array => $holders->lots((string) Str::ulid())))->toBe([])
-        ->and(DB::transaction(fn (): ?array => $holders->lot('unknown', $this->holding->id)))->toBeNull();
+        ->and(DB::transaction(fn (): ?array => $holders->lot($this->noteId, 'unknown', $this->holding->id)))->toBeNull();
 });
 
 it('sweeps lapsed reservations and expired listings on the schedule', function (): void {

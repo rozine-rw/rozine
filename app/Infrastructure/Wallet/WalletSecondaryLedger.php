@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Infrastructure\Secondary;
+namespace App\Infrastructure\Wallet;
 
 use App\Application\Operations\Contracts\CanonicalJson;
+use App\Application\Secondary\Contracts\SecondaryLedger;
 use App\Application\Wallet\LockedWallet;
 use App\Domain\Operations\CommandRejection;
 use App\Models\LedgerEntry;
@@ -25,7 +26,7 @@ use Illuminate\Support\Str;
  * - sale: `secondary_settlement` pays the seller's `investor_available` less the seller fee, which
  *   goes to `secondary_fee_revenue`.
  */
-final readonly class SecondaryPostings
+final readonly class WalletSecondaryLedger implements SecondaryLedger
 {
     public function __construct(private CanonicalJson $json) {}
 

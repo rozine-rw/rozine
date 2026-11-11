@@ -7,8 +7,11 @@ namespace App\Infrastructure\Secondary;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Operations\Contracts\OperationJournal;
+use App\Application\Primary\Contracts\InvestorHoldings;
 use App\Application\Secondary\Contracts\NoteUnitHolders;
+use App\Application\Secondary\Contracts\SecondaryLedger;
 use App\Application\Secondary\Contracts\SecondaryMarket;
+use App\Application\Secondary\Contracts\SecondaryMarketSweep;
 use App\Application\Secondary\Contracts\SecondaryNotes;
 use App\Application\Wallet\Contracts\WalletPostings;
 use App\Domain\Operations\CommandRejection;
@@ -19,7 +22,6 @@ use App\Domain\Secondary\SecondaryListing;
 use App\Domain\Secondary\SecondaryTerms;
 use App\Domain\Secondary\SecondaryViolation;
 use App\Domain\Secondary\TradingWindow;
-use App\Models\PrimaryHolding;
 use App\Models\SecondaryHalt;
 use App\Models\SecondaryHaltLift;
 use App\Models\SecondaryListingRecord;
@@ -49,19 +51,19 @@ use Illuminate\Support\Str;
  * @phpstan-import-type MarketResult from SecondaryMarket
  * @phpstan-import-type Note from SecondaryNotes
  */
-final readonly class EloquentSecondaryMarket implements SecondaryMarket
+final readonly class EloquentSecondaryMarket implements SecondaryMarket, SecondaryMarketSweep
 {
     /** Refusals about what the caller asked for, rather than the market's current state. */
     private const array INPUT_REFUSALS = ['INVALID_UNITS', 'INVALID_PRICE', 'PRICE_ABOVE_CAP', 'UNITS_NOT_HELD', 'UNITS_NOT_LISTED', 'HOLDING_LIMIT_EXCEEDED',
         'OWN_LISTING', 'REASON_REQUIRED'];
 
     public function __construct(private AuthorizeActiveRole $authority, private AuthorizeStaffPermission $staff, private OperationJournal $journal,
-        private SecondaryNotes $notes, private NoteUnitHolders $holders, private WalletPostings $wallets, private SecondaryPostings $postings) {}
+        private SecondaryNotes $notes, private NoteUnitHolders $holders, private InvestorHoldings $holdings, private WalletPostings $wallets, private SecondaryLedger $postings) {}
 
     public function list(int $userId, int $contextRevision, string $holdingId, string $units, string $price, string $requestId): array
     {
         return $this->asInvestor($userId, $contextRevision, 'secondary.list', $requestId, 'secondary_lot', strtolower($holdingId),
-            ['units' => $units, 'price' => $price], fn (string $partyId, string $operationId): OperationResult => $this->openListing($partyId, strtolower($holdingId), $units, $price, $operationId));
+            ['units' => $units, 'price' => $price], fn (string $partyId, string $operationId): OperationResult => $this->openListing($userId, $partyId, strtolower($holdingId), $units, $price, $operationId));
     }
 
     public function reserve(int $userId, int $contextRevision, string $listingId, string $units, string $requestId): array
@@ -139,17 +141,17 @@ final readonly class EloquentSecondaryMarket implements SecondaryMarket
         return ['released' => $released, 'expired' => $expired];
     }
 
-    private function openListing(string $partyId, string $lotId, string $units, string $price, string $operationId): OperationResult
+    private function openListing(int $userId, string $partyId, string $lotId, string $units, string $price, string $operationId): OperationResult
     {
         $now = self::now();
-        $lotType = PrimaryHolding::query()->whereKey($lotId)->exists() ? 'primary_holding' : 'secondary_transfer';
-        $noteId = $lotType === 'primary_holding' ? PrimaryHolding::query()->whereKey($lotId)->value('business_campaign_id')
-            : SecondaryTransfer::query()->whereKey($lotId)->value('business_campaign_id');
+        $holding = $this->holdings->find($userId, $lotId);
+        $lotType = $holding === null ? 'secondary_transfer' : 'primary_holding';
+        $noteId = $holding['campaign_id'] ?? SecondaryTransfer::query()->whereKey($lotId)->value('business_campaign_id');
         if (! is_string($noteId)) {
             throw new CommandRejection('LOT_NOT_FOUND', 404);
         }
         $this->lockNote($noteId);
-        $lot = $this->holders->lot($lotType, $lotId);
+        $lot = $this->holders->lot($noteId, $lotType, $lotId);
         if ($lot === null || $lot['party_id'] !== $partyId) {
             throw new CommandRejection('LOT_NOT_FOUND', 404);
         }
@@ -208,7 +210,7 @@ final readonly class EloquentSecondaryMarket implements SecondaryMarket
         $window = $this->window($note);
         ['listing' => $after, 'quote' => $quote] = $this->decide(fn (): array => $this->restore($row, $reservation)->settle($reservationId, $window, $now),
             ['TRADING_PAUSED' => $this->paused($window, $now)]);
-        $lot = $this->holders->lot($row->lot_type, $row->lot_id);
+        $lot = $this->holders->lot($row->business_campaign_id, $row->lot_type, $row->lot_id);
         $moved = $this->decide(fn (): HoldingLot => HoldingLot::of($lot['ordinals'] ?? [])->split((string) $quote->units)['moved']);
         $wallets = [];
         foreach (collect([$row->seller_party_id, $partyId])->sort()->values() as $holder) {

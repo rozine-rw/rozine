@@ -7,7 +7,6 @@ namespace App\Infrastructure\Secondary;
 use App\Application\Secondary\Contracts\NoteUnitHolders;
 use App\Application\Secondary\Contracts\SecondaryNotes;
 use App\Domain\Secondary\HoldingLot;
-use App\Models\PrimaryHolding;
 use App\Models\SecondaryTransfer;
 use Illuminate\Support\Collection;
 use RuntimeException;
@@ -37,16 +36,14 @@ final readonly class EloquentNoteUnitHolders implements NoteUnitHolders
             $lots)));
     }
 
-    public function lot(string $lotType, string $lotId): ?array
+    public function lot(string $noteId, string $lotType, string $lotId): ?array
     {
         $lotId = strtolower($lotId);
         if ($lotType === 'primary_holding') {
-            $noteId = PrimaryHolding::query()->whereKey($lotId)->value('business_campaign_id');
-            $issued = is_string($noteId) ? array_values(array_filter($this->notes->find($noteId)['issued_lots'] ?? [],
-                fn (array $lot): bool => $lot['lot_id'] === $lotId)) : [];
+            $issued = array_values(array_filter($this->notes->find($noteId)['issued_lots'] ?? [], fn (array $lot): bool => $lot['lot_id'] === $lotId));
             $lot = $issued[0] ?? null;
         } elseif ($lotType === 'secondary_transfer') {
-            $transfer = SecondaryTransfer::query()->whereKey($lotId)->first();
+            $transfer = SecondaryTransfer::query()->whereKey($lotId)->where('business_campaign_id', $noteId)->first();
             $lot = $transfer === null ? null : self::bought($transfer);
         } else {
             $lot = null;

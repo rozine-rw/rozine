@@ -2633,6 +2633,12 @@ const en = {
     'admin.permission.cart.releases.resolve': 'Retry stuck cart releases',
     'admin.permission_detail.cart.releases.resolve':
         'Release a whole-cart hold whose expiry failed, every line together.',
+    'admin.permission.secondary.halt': 'Halt resale trading',
+    'admin.permission_detail.secondary.halt':
+        'Halt or reopen the resale market or one note, with a recorded reason.',
+    'admin.permission.secondary.listings.cancel': 'Cancel resale listings',
+    'admin.permission_detail.secondary.listings.cancel':
+        'Cancel one resale listing, with a reason shown to the seller.',
     'admin.parties.you': 'You',
     'admin.parties.drawer_label': '{name}, party record',
     'admin.parties.type.business': 'Business',

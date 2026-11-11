@@ -23,9 +23,9 @@ interface NoteUnitHolders
     public function lots(string $noteId): array;
 
     /**
-     * One lot as it stands now, or null when it does not exist or holds nothing any more.
+     * One lot of the note as it stands now, or null when the note has no such lot or it holds nothing any more.
      *
      * @return Lot|null
      */
-    public function lot(string $lotType, string $lotId): ?array;
+    public function lot(string $noteId, string $lotType, string $lotId): ?array;
 }
