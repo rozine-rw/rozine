@@ -32,7 +32,7 @@ beforeEach(function (): void {
         $page = ($this->page)($this->user);
 
         return $this->actingAs($this->user)->post(route('business.monthly-figures.store', ['business' => $this->business]), [...[
-            'request_id' => (string) Str::uuid(), 'identity_context_revision' => $page['identity_context_revision'], 'money_in' => '12500000',
+            'request_id' => (string) Str::uuid(), 'identity_context_revision' => $page['identity_context_revision'], 'period' => $page['period'], 'money_in' => '12500000',
             'costs' => ['stock' => '4000000', 'staff' => '2000000', 'premises' => '800000', 'transport' => '300000', 'taxes' => '150000', 'other' => '50000'],
             'paid_to_owners' => '1000000', 'forecast' => '12000000', 'order' => null,
             'changes' => ['owners' => false, 'premises' => false, 'borrowing' => true, 'customers' => false]], ...$overrides]);
@@ -106,8 +106,19 @@ it('refuses figures that are not whole amounts, and anything once the window has
     $this->actingAs($this->user)->get(route('business.monthly-figures.show', ['business' => $this->business]))
         ->assertRedirect(route('business.show', ['business' => $this->business]));
     $this->actingAs($this->user)->post(route('business.monthly-figures.store', ['business' => $this->business]), ['request_id' => (string) Str::uuid(),
-        'identity_context_revision' => $page['identity_context_revision'], 'money_in' => '1', 'costs' => [], 'paid_to_owners' => '0', 'forecast' => '0',
+        'identity_context_revision' => $page['identity_context_revision'], 'period' => $page['period'], 'money_in' => '1', 'costs' => [], 'paid_to_owners' => '0', 'forecast' => '0',
         'changes' => []])->assertSessionHasErrors(['form' => 'The window for this month has closed, so the figures can no longer be sent.']);
+});
+
+it('refuses a form left open for an earlier month instead of recording it against the open one', function (): void {
+    $open = ($this->page)($this->user)['period'];
+    $earlier = CarbonImmutable::parse($open)->subMonth()->toDateString();
+
+    ($this->send)(['period' => $earlier])
+        ->assertSessionHasErrors(['form' => "This form was opened for an earlier month. Reload the page to send this month's figures."]);
+    expect(BusinessMonthlySubmission::query()->count())->toBe(0);
+    ($this->send)()->assertSessionHasNoErrors();
+    expect(BusinessMonthlySubmission::query()->sole()->period)->toBe(substr($open, 0, 7));
 });
 
 it('lets nobody without the Business authority read or send its figures', function (): void {
@@ -115,7 +126,7 @@ it('lets nobody without the Business authority read or send its figures', functi
 
     $this->actingAs($stranger)->get(route('business.monthly-figures.show', ['business' => $this->business]))->assertForbidden();
     $this->actingAs($stranger)->post(route('business.monthly-figures.store', ['business' => $this->business]), ['request_id' => (string) Str::uuid(),
-        'identity_context_revision' => 0, 'money_in' => '1', 'costs' => [], 'paid_to_owners' => '0', 'forecast' => '0', 'changes' => []])
+        'identity_context_revision' => 0, 'period' => '2026-10-01', 'money_in' => '1', 'costs' => [], 'paid_to_owners' => '0', 'forecast' => '0', 'changes' => []])
         ->assertNotFound();
     expect(BusinessMonthlySubmission::query()->count())->toBe(0);
 });
