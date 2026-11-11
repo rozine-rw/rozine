@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\BusinessMonthlyFiguresController::show
-* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:34
+* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:35
 * @route '/business/{business}/monthly-figures'
 */
 export const show = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessMonthlyFiguresController::show
-* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:34
+* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:35
 * @route '/business/{business}/monthly-figures'
 */
 show.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ show.url = (args: { business: string | number } | [business: string | number ] |
 
 /**
 * @see \App\Http\Controllers\BusinessMonthlyFiguresController::show
-* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:34
+* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:35
 * @route '/business/{business}/monthly-figures'
 */
 show.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -53,7 +53,7 @@ show.get = (args: { business: string | number } | [business: string | number ] |
 
 /**
 * @see \App\Http\Controllers\BusinessMonthlyFiguresController::show
-* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:34
+* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:35
 * @route '/business/{business}/monthly-figures'
 */
 show.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -63,7 +63,7 @@ show.head = (args: { business: string | number } | [business: string | number ] 
 
 /**
 * @see \App\Http\Controllers\BusinessMonthlyFiguresController::show
-* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:34
+* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:35
 * @route '/business/{business}/monthly-figures'
 */
 const showForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -73,7 +73,7 @@ const showForm = (args: { business: string | number } | [business: string | numb
 
 /**
 * @see \App\Http\Controllers\BusinessMonthlyFiguresController::show
-* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:34
+* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:35
 * @route '/business/{business}/monthly-figures'
 */
 showForm.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -83,7 +83,7 @@ showForm.get = (args: { business: string | number } | [business: string | number
 
 /**
 * @see \App\Http\Controllers\BusinessMonthlyFiguresController::show
-* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:34
+* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:35
 * @route '/business/{business}/monthly-figures'
 */
 showForm.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -100,7 +100,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\BusinessMonthlyFiguresController::store
-* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:47
+* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:48
 * @route '/business/{business}/monthly-figures'
 */
 export const store = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -115,7 +115,7 @@ store.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessMonthlyFiguresController::store
-* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:47
+* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:48
 * @route '/business/{business}/monthly-figures'
 */
 store.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -142,7 +142,7 @@ store.url = (args: { business: string | number } | [business: string | number ] 
 
 /**
 * @see \App\Http\Controllers\BusinessMonthlyFiguresController::store
-* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:47
+* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:48
 * @route '/business/{business}/monthly-figures'
 */
 store.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -152,7 +152,7 @@ store.post = (args: { business: string | number } | [business: string | number ]
 
 /**
 * @see \App\Http\Controllers\BusinessMonthlyFiguresController::store
-* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:47
+* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:48
 * @route '/business/{business}/monthly-figures'
 */
 const storeForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -162,7 +162,7 @@ const storeForm = (args: { business: string | number } | [business: string | num
 
 /**
 * @see \App\Http\Controllers\BusinessMonthlyFiguresController::store
-* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:47
+* @see app/Http/Controllers/BusinessMonthlyFiguresController.php:48
 * @route '/business/{business}/monthly-figures'
 */
 storeForm.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
