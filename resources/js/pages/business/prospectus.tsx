@@ -476,6 +476,13 @@ export default function BusinessProspectus({
                                 <input
                                     type="file"
                                     accept="application/pdf,image/png,image/jpeg"
+                                    aria-invalid={
+                                        uploading.errors.kind !== undefined ||
+                                        uploading.errors.file !== undefined
+                                            ? true
+                                            : undefined
+                                    }
+                                    aria-describedby="prospectus-evidence-error"
                                     aria-label={t(
                                         'business.prospectus.evidence.file',
                                     )}
@@ -545,6 +552,10 @@ export default function BusinessProspectus({
                                 onChange={(event) =>
                                     form.setData('purpose', event.target.value)
                                 }
+                                aria-invalid={
+                                    fieldErrors.purpose ? true : undefined
+                                }
+                                aria-describedby="prospectus-purpose-error"
                                 className={INPUT}
                             />
                             <FieldError id="prospectus-purpose-error">
@@ -867,6 +878,12 @@ export default function BusinessProspectus({
                                         digits === '' ? null : Number(digits),
                                     );
                                 }}
+                                aria-invalid={
+                                    fieldErrors.largest_customer_share_percent
+                                        ? true
+                                        : undefined
+                                }
+                                aria-describedby="prospectus-share-error"
                                 className={cn(INPUT, 'max-w-[8rem]')}
                             />
                             <FieldError id="prospectus-share-error">
@@ -977,6 +994,7 @@ export default function BusinessProspectus({
                                 form.isDirty ||
                                 signing.processing
                             }
+                            aria-describedby="prospectus-declaration-error"
                             className="h-[50px] w-full rounded-xl bg-rz-accent-fill text-[14.5px] font-semibold text-white disabled:opacity-50"
                         >
                             {signing.processing
