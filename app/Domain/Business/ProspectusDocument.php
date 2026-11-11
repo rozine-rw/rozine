@@ -11,6 +11,12 @@ use App\Domain\Operations\CommandRejection;
  * a large use-of-funds line, or the signed contract behind a forecast month outside the verified
  * range. Identified by its signature without decoding it; only PDF, PNG and JPEG are kept.
  *
+ * Acceptance limit: the gates establish that a cited document exists, belongs to this application
+ * and has the kind named, nothing more. Nobody reads its content: the kind is declared by the
+ * Business, only the file type's magic prefix is checked, and the quote amount is entered
+ * separately. Whether the file really is a quote for that amount, or a signed contract, is not
+ * verified here.
+ *
  * @phpstan-type Document array{filename: string, media_type: string, size_bytes: int, sha256: string}
  */
 final class ProspectusDocument
