@@ -4245,6 +4245,11 @@ const fr: Catalog = {
     'investor.cart.whole.band_basis':
         'Votre palier compte les titres que vous détenez plus ce panier, jamais le solde du portefeuille.',
     'investor.cart.whole.quoting': 'Calcul du prix de votre panier…',
+    'investor.cart.whole.holding': 'Réservation de vos titres…',
+    'investor.cart.whole.confirming': 'Confirmation…',
+    'investor.cart.whole.releasing': 'Libération…',
+    'investor.cart.whole.settling_wait':
+        'Cela prend généralement quelques minutes. Cette page se met à jour toute seule, puis vous pourrez payer à nouveau.',
     'investor.cart.whole.checkout': 'Tout payer · {amount}',
     'investor.cart.whole.fine_print':
         'Réserve chaque titre du panier pendant 5 minutes, le temps de confirmer. Rien n’est engagé avant votre confirmation.',
