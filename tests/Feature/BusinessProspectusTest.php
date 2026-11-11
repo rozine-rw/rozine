@@ -173,6 +173,9 @@ it('has no prospectus to judge before the application is accepted, nor for anoth
 
     expect(($this->read)($fixture))->toMatchArray(['facts' => null, 'evaluation' => null, 'unavailable' => 'PROSPECTUS_NOT_AVAILABLE'])
         ->and(app(SaveBusinessProspectus::class)->handle(($this->user)($fixture), 1, $fixture['audit']['business'], (string) Str::ulid(), 0, [], (string) Str::uuid()))
+        ->toMatchArray(['status' => 'rejected', 'code' => 'APPLICATION_NOT_FOUND'])
+        ->and(app(UploadProspectusDocument::class)->handle(($this->user)($fixture), 1, $fixture['audit']['business'], (string) Str::ulid(), 'quote',
+            'cold-room-quote.pdf', "%PDF-1.7\nSupplier quote\n", (string) Str::uuid()))
         ->toMatchArray(['status' => 'rejected', 'code' => 'APPLICATION_NOT_FOUND']);
 });
 
