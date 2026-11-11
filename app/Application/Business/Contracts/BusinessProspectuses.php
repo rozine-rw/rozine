@@ -6,8 +6,8 @@ namespace App\Application\Business\Contracts;
 
 /**
  * A Business's prospectus for one accepted application (BRS v3.0 PRO-R02 to PRO-R04). Drafts are
- * saved as numbered immutable versions under `application.save`; the official representative, a
- * required signatory holding `application.sign`, signs the latest draft once gates P-G01 to P-G11
+ * saved as numbered immutable versions under `application.save`; the official representative (the
+ * first required signatory, holding `application.sign`) alone signs the latest draft once gates P-G01 to P-G11
  * pass, which locks it as the signed version under the fingerprint of its canonical form.
  *
  * @phpstan-import-type Inputs from \App\Domain\Business\ProspectusGates
@@ -19,7 +19,11 @@ namespace App\Application\Business\Contracts;
  *     evaluation: array{policy_version: string, gates: list<Gate>, may_sign: bool, publishable: bool}|null,
  *     documents: list<array{id: string, kind: string, filename: string, media_type: string, size_bytes: int, uploaded_at: string}>, can_edit: bool, can_sign: bool}
  * @phpstan-type SignedSummary array{version: int, fingerprint: string, signed_at: string, signed_by: string}
- * @phpstan-type PublishedProspectus array{summary: SignedSummary, inputs: Inputs,
+ * @phpstan-type PublishedInputs array{purpose: string, use_of_funds: list<array{label: string, amount: string}>,
+ *     forecast: list<array{month: string, revenue: string, costs: string}>, assumptions: string, downside: string,
+ *     profiles: array<int, array{name: string, role: string, text: string}>, largest_customer_share_percent: int|null,
+ *     risks: array<int, array{text: string, concentration: bool}>}
+ * @phpstan-type PublishedProspectus array{summary: SignedSummary, inputs: PublishedInputs,
  *     facts: array{principal: string, term_months: int, instalment: string, verified_monthly_revenue: string, latest_sealed_report_at: string|null},
  *     quoted_lines: list<int>, contracted_months: list<string>}
  */
@@ -52,7 +56,8 @@ interface BusinessProspectuses
     /**
      * The signed prospectus behind a published campaign, as an Investor reads it (PRO-R04), or null
      * when that campaign's application has no signed version. It carries no document ids, filenames
-     * or registered names: only which lines cite a quote and which months cite a contract.
+     * or registered names: only which lines cite a quote and which months cite a contract. It names
+     * the person who signed, as recorded in the signed document.
      *
      * @return PublishedProspectus|null
      */

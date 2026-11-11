@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $kind
  * @property string $actor_party_id
  * @property string $operation_id
- * @property array{inputs: Inputs, document?: array{facts: Facts}&array<string, mixed>} $payload
+ * @property array{inputs: Inputs, document?: array{facts: Facts, signed_by_name: string}&array<string, mixed>} $payload
  * @property string $sha256
  * @property string|null $fingerprint
  * @property CarbonImmutable $created_at

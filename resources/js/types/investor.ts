@@ -2121,12 +2121,24 @@ export type C4InvestorPortfolioProps = InvestorServicingPageContract &
     };
 
 /** The signed prospectus behind one deal, read in the app before paying (BRS v3.0 PRO-R04). */
+/**
+ * The signed prospectus as an Investor may read it: the Business's own inputs without the ids of
+ * the private documents behind them (`quoted_lines` and `contracted_months` say which lines cite one).
+ */
+export type InvestorProspectusInputs = Omit<
+    ProspectusInputs,
+    'use_of_funds' | 'forecast'
+> & {
+    use_of_funds: { label: string; amount: string }[];
+    forecast: { month: string; revenue: string; costs: string }[];
+};
+
 export type InvestorProspectusProps = {
     contract_version: 'investor-prospectus-v1';
     server_time: string;
     deal: { campaign_id: string; name: string };
     prospectus: ProspectusSummary;
-    inputs: ProspectusInputs;
+    inputs: InvestorProspectusInputs;
     facts: {
         principal: string;
         term_months: number;

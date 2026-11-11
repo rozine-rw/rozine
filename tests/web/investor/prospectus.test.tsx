@@ -66,14 +66,10 @@ const reader = (
             {
                 label: 'Solar cold room',
                 amount: '8476000',
-                quote_amount: '8500000',
-                quote_document_id: 'q1',
             },
             {
                 label: 'Installation',
                 amount: '2000000',
-                quote_amount: null,
-                quote_document_id: null,
             },
         ],
         forecast: [
@@ -81,13 +77,11 @@ const reader = (
                 month: '2027-01',
                 revenue: '4000000',
                 costs: '1000000',
-                contract_document_id: null,
             },
             {
                 month: '2027-02',
                 revenue: '6000000',
                 costs: '1000000',
-                contract_document_id: 'c1',
             },
         ],
         assumptions: 'Sales hold.',

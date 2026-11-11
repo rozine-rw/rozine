@@ -14,7 +14,7 @@ use App\Domain\Operations\CommandRejection;
  * KYC-R05). Whoever may read the Deals deck may read it; it stays readable after the raise closes,
  * since the notes it describes outlive the campaign.
  *
- * @phpstan-import-type Inputs from \App\Domain\Business\ProspectusGates
+ * @phpstan-import-type PublishedInputs from BusinessProspectuses
  * @phpstan-import-type SignedSummary from BusinessProspectuses
  */
 final class GetInvestorProspectus
@@ -22,7 +22,7 @@ final class GetInvestorProspectus
     public function __construct(private GetInvestorViewer $viewer, private InvestorDealCatalogue $catalogue, private BusinessProspectuses $prospectuses) {}
 
     /**
-     * @return array{summary: SignedSummary, inputs: Inputs,
+     * @return array{summary: SignedSummary, inputs: PublishedInputs,
      *     facts: array{principal: string, term_months: int, instalment: string, verified_monthly_revenue: string, latest_sealed_report_at: string|null},
      *     quoted_lines: list<int>, contracted_months: list<string>, campaign_id: string, business_name: string}
      */

@@ -60,9 +60,9 @@ final class PrimaryReservationFixture
      * @param  (\Closure(array<string, mixed>): string)|null  $sealing
      * @param  (\Closure(array<string, mixed>): void)|null  $beforeRelease
      */
-    public static function campaign(bool $recordConsent = true, ?\Closure $sealing = null, ?\Closure $beforeRelease = null): BusinessCampaign
+    public static function campaign(bool $recordConsent = true, ?\Closure $sealing = null, ?\Closure $beforeRelease = null, int $signatories = 1, ?int $requiredSignatories = null): BusinessCampaign
     {
-        $fixture = AuditSealingFixture::ready(recordConsent: $recordConsent);
+        $fixture = AuditSealingFixture::ready($signatories, requiredSignatories: $requiredSignatories, recordConsent: $recordConsent);
         if ($sealing !== null) {
             $fixture['code'] = $sealing($fixture);
         }

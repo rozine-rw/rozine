@@ -136,16 +136,19 @@ final class EloquentBusinessProspectuses implements BusinessProspectuses
         $applicationId = BusinessCampaign::query()->whereKey($campaignId)->value('business_application_id');
         $signed = is_string($applicationId)
             ? BusinessProspectusVersion::query()->where('business_application_id', $applicationId)->where('kind', 'signed')->first() : null;
-        $facts = $signed?->payload['document']['facts'] ?? null;
-        if ($signed === null || $signed->fingerprint === null || $facts === null) {
+        $document = $signed?->payload['document'] ?? null;
+        if ($signed === null || $signed->fingerprint === null || $document === null) {
             return null;
         }
+        $facts = $document['facts'];
         $inputs = $signed->payload['inputs'];
-        $representative = array_values(array_filter($inputs['profiles'], fn (array $profile): bool => $profile['role'] === 'representative'))[0]['name'] ?? '';
         $cites = fn (?string $id, string $kind): bool => $id !== null && ($facts['evidence'][$id] ?? null) === $kind;
+        $published = [...$inputs,
+            'use_of_funds' => array_values(array_map(fn (array $line): array => ['label' => $line['label'], 'amount' => $line['amount']], $inputs['use_of_funds'])),
+            'forecast' => array_values(array_map(fn (array $month): array => ['month' => $month['month'], 'revenue' => $month['revenue'], 'costs' => $month['costs']], $inputs['forecast']))];
 
         return ['summary' => ['version' => $signed->version, 'fingerprint' => $signed->fingerprint, 'signed_at' => $signed->created_at->toIso8601String(),
-            'signed_by' => $representative], 'inputs' => $inputs,
+            'signed_by' => $document['signed_by_name']], 'inputs' => $published,
             'facts' => ['principal' => $facts['principal'], 'term_months' => $facts['term_months'], 'instalment' => $facts['instalment'],
                 'verified_monthly_revenue' => $facts['verified_monthly_revenue'], 'latest_sealed_report_at' => $facts['latest_sealed_report_at']],
             'quoted_lines' => array_keys(array_filter($inputs['use_of_funds'], fn (array $line): bool => $cites($line['quote_document_id'], 'quote'))),
