@@ -93,6 +93,50 @@ afterEach(() => {
     vi.useRealTimers();
 });
 
+describe('Checkout with the risk acknowledgement still due (BRS v3.0 KYC-R05)', () => {
+    it('opens over the gate without taking the keyboard, so the statements are answered first', async () => {
+        const user = userEvent.setup();
+        inertia.shared = {
+            risk_acknowledgement: {
+                version: 'brs-3.0-kyc-r05',
+                statements_sha256: 'a'.repeat(64),
+                statements: [
+                    {
+                        key: 'total_loss',
+                        text: 'I can lose all the money I invest.',
+                    },
+                ],
+                identity_context_revision: 7,
+                action: {
+                    url: '/investor/risk-statements/acknowledgements',
+                    method: 'post',
+                },
+            },
+        };
+        render(<InvestorCheckout {...props()} />);
+
+        const gate = screen.getByRole('dialog', { name: 'Before you invest' });
+        const checkout = screen.getByRole('dialog', { name: 'Checkout' });
+        const tick = within(gate).getByRole('checkbox');
+        expect(gate).toHaveClass('z-[95]');
+        expect(checkout).toHaveClass('z-[63]');
+        expect(gate).toHaveFocus();
+
+        /* Tab reaches the tick and the button, then wraps inside the gate, never into checkout. */
+        await user.tab();
+        expect(tick).toHaveFocus();
+        await user.keyboard(' ');
+        expect(tick).toBeChecked();
+        await user.tab();
+        expect(within(gate).getByRole('button')).toHaveFocus();
+        await user.tab();
+        expect(tick).toHaveFocus();
+        await user.tab({ shift: true });
+        expect(within(gate).getByRole('button')).toHaveFocus();
+        expect(within(checkout).getAllByRole('button')[0]).not.toHaveFocus();
+    });
+});
+
 describe('Checkout: the indicative step', () => {
     it('shows the Plus tier and locked rate the server quoted, with its fee as a server fact', () => {
         render(<InvestorCheckout {...props(silverFixture)} />);
