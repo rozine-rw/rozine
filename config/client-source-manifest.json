@@ -447,12 +447,17 @@
         "resources/js/components/auditor/audit/step-drawings.tsx",
         "resources/js/components/auditor/audit/step-expiries.tsx",
         "resources/js/components/auditor/audit/step-guide.tsx",
+        "resources/js/components/auditor/audit/step-history.tsx",
         "resources/js/components/auditor/audit/step-ledger.tsx",
         "resources/js/components/auditor/audit/step-loan-use.tsx",
         "resources/js/components/auditor/audit/step-loans.tsx",
+        "resources/js/components/auditor/audit/step-people.tsx",
         "resources/js/components/auditor/audit/step-photos.tsx",
+        "resources/js/components/auditor/audit/step-premises.tsx",
+        "resources/js/components/auditor/audit/step-registration.tsx",
         "resources/js/components/auditor/audit/step-staff.tsx",
         "resources/js/components/auditor/audit/step-statements.tsx",
+        "resources/js/components/auditor/audit/step-trading.tsx",
         "resources/js/components/auditor/audit/use-step-up.ts",
         "resources/js/components/auditor/auditor-shell.tsx",
         "resources/js/components/auditor/availability.tsx",
@@ -813,10 +818,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 785,
+        "totalTrackedSources": 790,
         "generated": 337,
         "declarationOnly": 20,
-        "authoredExecutable": 428
+        "authoredExecutable": 433
     },
-    "coverageSetSha256": "dba78a1548445bb304fca14f37a8e361a7a59b345c7ce0f1566a3c0087db5043"
+    "coverageSetSha256": "05d1c2c735b66eb87c2015eabd08a50cd556c1afa8ab74df3d18080f73d0c9bf"
 }
