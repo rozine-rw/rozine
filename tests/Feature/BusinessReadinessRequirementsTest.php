@@ -26,7 +26,7 @@ beforeEach(function (): void {
     $this->withoutVite();
     $fixture = AuditSealingFixture::ready(kind: 'monthly');
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     $this->business = BusinessProfile::query()->whereKey($fixture['audit']['business'])->sole();
     $this->user = $fixture['audit']['authority']['users'][0];
     /** Serves these published months for the entered business, newest first as the port answers. */
