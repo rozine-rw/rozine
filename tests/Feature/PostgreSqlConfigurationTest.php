@@ -171,6 +171,9 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     // The ledger-precision held release check rewrites check_primary_held_release, so it comes off first and goes back last.
     $heldReleasePrecision = require database_path('migrations/2026_10_30_190000_compare_held_release_cash_at_ledger_precision.php');
     $cartCheckouts = require database_path('migrations/2026_11_02_090000_create_investor_cart_checkouts.php');
+    // Recycling withdrawn commitment claims rewrites check_primary_held_release again, so it comes off before the precision check.
+    $withdrawnClaims = require database_path('migrations/2026_11_10_170000_recycle_withdrawn_commitment_claims.php');
+    $withdrawnClaims->down();
     $cartCheckouts->down();
     $cartQuotes = require database_path('migrations/2026_11_01_050000_create_investor_cart_quotes_table.php');
     $cartQuotes->down();
@@ -460,6 +463,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $cartRoots->up();
     $cartQuotes->up();
     $cartCheckouts->up();
+    $withdrawnClaims->up();
     expect(Schema::hasColumn('business_photos', 'url'))->toBeTrue();
     expect(Schema::hasTable('investor_cart_lines'))->toBeTrue()
         ->and(DB::scalar("SELECT count(*) FROM pg_constraint WHERE conname = 'investor_cart_line_units'"))->toBe(1);

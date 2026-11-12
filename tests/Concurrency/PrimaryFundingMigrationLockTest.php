@@ -20,7 +20,9 @@ it('installs funding behind in-flight command table locks without blocking their
     $automaticDisbursement = require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php');
     // The ledger-precision held release check rewrites check_primary_held_release, so it comes off before everything else.
     $heldReleasePrecision = require database_path('migrations/2026_10_30_190000_compare_held_release_cash_at_ledger_precision.php');
-    $dependants = [$heldReleasePrecision, $automaticDisbursement, $platformFee, $issuances, $terminalFailures, $heldGenerations, $completeness, $holdingIssue, $holdingBinding, $closures];
+    // Recycling withdrawn commitment claims rewrites it again, so it comes off before the precision check.
+    $withdrawnClaims = require database_path('migrations/2026_11_10_170000_recycle_withdrawn_commitment_claims.php');
+    $dependants = [$withdrawnClaims, $heldReleasePrecision, $automaticDisbursement, $platformFee, $issuances, $terminalFailures, $heldGenerations, $completeness, $holdingIssue, $holdingBinding, $closures];
     $shape = fn (): array => [
         DB::select("SELECT tgname, pg_get_triggerdef(oid) AS definition FROM pg_trigger WHERE NOT tgisinternal
             AND tgrelid IN ('primary_campaign_fundings'::regclass, 'primary_holdings'::regclass,
