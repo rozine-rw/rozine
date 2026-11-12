@@ -2507,6 +2507,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_11_10_220000_add_monthly_drawings_and_loans_steps.php |
 | 2026_11_11_090000_add_monthly_staff_expiries_loan_use_and_changes_steps.php |
 | 2026_11_12_070000_add_monthly_cash_sales_and_costs_steps.php |
+| 2026_11_12_080000_add_baseline_visit_steps.php |
 
 ## Routes
 
