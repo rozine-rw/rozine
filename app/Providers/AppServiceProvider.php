@@ -116,7 +116,11 @@ use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Application\Primary\Contracts\RetainedNoteSchedules;
 use App\Application\Primary\Contracts\RiskAcknowledgements;
 use App\Application\Pulse\Contracts\PulseSignupRepository;
+use App\Application\Secondary\Contracts\NoteUnitHolders;
+use App\Application\Secondary\Contracts\SecondaryLedger;
 use App\Application\Secondary\Contracts\SecondaryMarket;
+use App\Application\Secondary\Contracts\SecondaryMarketSweep;
+use App\Application\Secondary\Contracts\SecondaryNotes;
 use App\Application\Wallet\Contracts\BusinessPayoutAccounts;
 use App\Application\Wallet\Contracts\BusinessWalletStore;
 use App\Application\Wallet\Contracts\BusinessWithdrawals;
@@ -240,6 +244,9 @@ use App\Infrastructure\Primary\RetainedIssuedHoldings;
 use App\Infrastructure\Primary\RetainedPrimaryFunding;
 use App\Infrastructure\Primary\TransactionalRetainedNoteSchedules;
 use App\Infrastructure\Pulse\EloquentPulseSignupRepository;
+use App\Infrastructure\Secondary\EloquentNoteUnitHolders;
+use App\Infrastructure\Secondary\EloquentSecondaryMarket;
+use App\Infrastructure\Secondary\RetainedSecondaryNotes;
 use App\Infrastructure\Secondary\UnavailableSecondaryMarket;
 use App\Infrastructure\Wallet\EloquentBusinessPayoutAccounts;
 use App\Infrastructure\Wallet\EloquentBusinessWalletStore;
@@ -260,6 +267,7 @@ use App\Infrastructure\Wallet\SyntheticWithdrawalProvider;
 use App\Infrastructure\Wallet\UnavailableDepositProvider;
 use App\Infrastructure\Wallet\UnavailablePayoutAccountVerifier;
 use App\Infrastructure\Wallet\UnavailableWithdrawalProvider;
+use App\Infrastructure\Wallet\WalletSecondaryLedger;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -411,8 +419,13 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(SyntheticWalletTesters::class, EloquentSyntheticWalletTesters::class);
         $this->app->singleton(SyntheticSettlement::class, SyntheticDepositSettlement::class);
         $this->registerDisbursements();
-        // Secondary trading stays off until Phase 3 acceptance (BRS v2.0 §12).
-        $this->app->bind(SecondaryMarket::class, UnavailableSecondaryMarket::class);
+        // Secondary trading stays off until Erastus switches it on (BRS v3.0 §12, `app.secondary_trading`).
+        $this->app->bind(SecondaryNotes::class, RetainedSecondaryNotes::class);
+        $this->app->bind(NoteUnitHolders::class, EloquentNoteUnitHolders::class);
+        $this->app->bind(SecondaryLedger::class, WalletSecondaryLedger::class);
+        $this->app->bind(SecondaryMarketSweep::class, EloquentSecondaryMarket::class);
+        $this->app->bind(SecondaryMarket::class, fn (): SecondaryMarket => config('app.secondary_trading') === true
+            ? $this->app->make(EloquentSecondaryMarket::class) : $this->app->make(UnavailableSecondaryMarket::class));
     }
 
     /**

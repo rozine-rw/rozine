@@ -32,6 +32,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Secondary Trading
+    |--------------------------------------------------------------------------
+    |
+    | Off by default in every environment. While off, every secondary market
+    | command is refused before anything is read or written. Switching it on
+    | is Erastus's decision (BRS v3.0 §12).
+    |
+    */
+
+    'secondary_trading' => (bool) env('SECONDARY_TRADING', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Debug Mode
     |--------------------------------------------------------------------------
     |
