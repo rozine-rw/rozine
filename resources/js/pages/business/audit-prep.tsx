@@ -93,6 +93,23 @@ export default function BusinessAuditPrep({
                     )}
                 </div>
 
+                <Link
+                    href={links.figures.url}
+                    className="mt-4 flex items-center gap-3 rounded-2xl border border-rz-border bg-rz-surface p-4"
+                >
+                    <span className="min-w-0 flex-1">
+                        <span className="block text-[13.5px] font-semibold text-rz-ink">
+                            {t('business.audit_prep.figures.title')}
+                        </span>
+                        <span className="mt-[3px] block text-xs leading-normal text-rz-secondary">
+                            {t('business.audit_prep.figures.body')}
+                        </span>
+                    </span>
+                    <span aria-hidden className="text-lg text-rz-slate">
+                        →
+                    </span>
+                </Link>
+
                 <h2 className="mt-5 text-xs font-bold tracking-[.04em] text-rz-slate uppercase">
                     {t('business.audit_prep.ready')}
                 </h2>

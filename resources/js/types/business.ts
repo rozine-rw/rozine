@@ -277,6 +277,7 @@ export type BusinessApplications = {
 export type BusinessAppLinks = {
     home: RouteLink;
     reports: RouteLink;
+    readiness: RouteLink;
     market: RouteLink;
     profile: RouteLink;
     launcher: RouteLink;
@@ -290,6 +291,7 @@ export type BusinessShellLinks = {
     home: RouteLink;
     launcher: RouteLink;
     reports: RouteLink | null;
+    readiness: RouteLink | null;
     market: RouteLink | null;
     profile: RouteLink | null;
 };
@@ -300,6 +302,188 @@ export type BusinessShellLinks = {
  */
 export type BusinessMarketProps = {
     links: BusinessAppLinks;
+};
+
+/** A readiness stage: 1 Foundation, 2 Growth, 3 Scale, 4 Market; 0 is below Foundation. */
+export type ReadinessStageNumber = 0 | 1 | 2 | 3 | 4;
+
+/**
+ * Readiness (BRS v3.0 Section 20): the stage the business's verified monthly revenue (VMR, the
+ * average of its last 3 published monthly reports) has settled in, and its status line. The stage
+ * is null until 3 reports are published. It moves only after 3 readings in a row point to another
+ * stage; `pending` says how many already do. Ready is not measured yet, so the status is always
+ * `building`. Readiness is shown only to the business.
+ */
+export type BusinessReadiness = {
+    stage: ReadinessStageNumber | null;
+    status: 'building' | 'ready';
+    vmr: Money | null;
+    reports: number;
+    reports_needed: number;
+    /** Readings in a row, each a 3-report average, that move the stage. */
+    window: number;
+    /** The newest readings point to `stage`; `months` of them in a row so far. */
+    pending: {
+        direction: 'up' | 'down';
+        stage: ReadinessStageNumber;
+        months: number;
+    } | null;
+    next: { stage: ReadinessStageNumber; threshold: Money; gap: Money } | null;
+    thresholds: { stage: ReadinessStageNumber; from: Money }[];
+    /** The published reports the VMR averages, newest first; `period` is `YYYY-MM`. */
+    months: { period: string; revenue: Money }[];
+};
+
+export type ReadinessRequirementCode =
+    | 'C1'
+    | 'F1'
+    | 'F2'
+    | 'F3'
+    | 'F4'
+    | 'P1'
+    | 'P2'
+    | 'G1'
+    | 'G2';
+
+/**
+ * One RDY-R03 requirement, in BRS order. A triggered one carries its status and, while Due or
+ * Lapsed, the day its grace ends; one not triggered yet names the stage or headcount it applies
+ * from. The two that apply from entry read Met once the business has entered, and before that
+ * not triggered with `applies_from` of kind `entry`.
+ */
+export type ReadinessRequirement = {
+    code: ReadinessRequirementCode;
+} & (
+    | {
+          status: 'not_triggered';
+          due_on: null;
+          days_left: null;
+          met_on: null;
+          applies_from: {
+              kind: 'stage' | 'headcount' | 'entry';
+              value: number;
+          };
+      }
+    | {
+          status: 'met';
+          due_on: null;
+          days_left: null;
+          met_on: string | null;
+          applies_from: { kind: 'stage' | 'headcount'; value: number } | null;
+      }
+    | {
+          status: 'due' | 'overdue' | 'lapsed';
+          due_on: string;
+          days_left: number;
+          met_on: string | null;
+          applies_from: { kind: 'stage' | 'headcount'; value: number } | null;
+      }
+);
+
+/**
+ * One RDY-R06 guidance line: a signal's value and target in percent (as written, one decimal for
+ * the value), the verdict, how many months were averaged, whether forecasts ran over or under,
+ * and the one action to take.
+ */
+export type ReadinessGuidanceLine = {
+    signal: 'record_gap' | 'forecast_error';
+    value: string;
+    target: string;
+    on_target: boolean;
+    months: number;
+    bias: 'over' | 'under' | null;
+    action: `${'record_gap' | 'forecast_error'}.${'keep' | 'fix'}`;
+};
+
+/** One condition of an RDY-R08 milestone; `pending` while Rozine cannot measure it yet. */
+export type ReadinessMilestoneCondition = {
+    key:
+        | 'stage'
+        | 'ready_6_months'
+        | 'notes_on_time'
+        | 'audited_statements'
+        | 'limited_company'
+        | 'trading_3_years'
+        | 'no_proceedings'
+        | 'ready_12_months';
+    state: 'met' | 'not_met' | 'pending';
+};
+
+/** A milestone toward the capital market (RDY-R08), reached once every condition is met. */
+export type ReadinessMilestone = {
+    reached: boolean;
+    conditions: ReadinessMilestoneCondition[];
+};
+
+export type BusinessReadinessProps = {
+    readiness: BusinessReadiness;
+    requirements: ReadinessRequirement[];
+    guidance: ReadinessGuidanceLine[];
+    /** Core Academy modules of the stage passed, of all of them (RDY-R07). */
+    syllabus: { passed: number; total: number };
+    /** The bond track and the RSE Investment Clinic referral (RDY-R08). */
+    milestones: { bond: ReadinessMilestone; clinic: ReadinessMilestone };
+    links: BusinessAppLinks & { academy: RouteLink };
+};
+
+/** Where a Business stands on one Academy module's test (RDY-R07). */
+export type AcademyStatus = {
+    state: 'passed' | 'open' | 'waiting';
+    attempts: number;
+    best: number | null;
+    /** When a failed test reopens, ISO UTC; null unless waiting. */
+    retake_at: string | null;
+};
+
+export type AcademyModuleSummary = {
+    key: string;
+    title: string;
+    summary: string;
+    cards: number;
+    /** Null for a preview module, which has cards only. */
+    status: AcademyStatus | null;
+    link: RouteLink;
+};
+
+export type BusinessAcademyProps = {
+    stage: ReadinessStageNumber | null;
+    /** The stage whose core is studied: Foundation's while there is no stage yet. */
+    level: 1 | 2 | 3 | 4;
+    pass_mark: number;
+    questions: number;
+    core: AcademyModuleSummary[];
+    preview: AcademyModuleSummary[];
+    links: BusinessAppLinks & { close: RouteLink };
+};
+
+/** One drawn question: ids are places in the bank, never the answer. */
+export type AcademyQuestion = {
+    id: number;
+    question: string;
+    options: { id: number; text: string }[];
+};
+
+export type BusinessAcademyModuleProps = {
+    identity_context_revision: number;
+    key: string;
+    role: 'core' | 'preview';
+    level: 1 | 2 | 3 | 4;
+    title: string;
+    summary: string;
+    cards: { front: string; back: string }[];
+    status: AcademyStatus | null;
+    /** The attempt the drawn test is for; null while no test is open. */
+    attempt: number | null;
+    test: AcademyQuestion[] | null;
+    last: {
+        module: string;
+        attempt: number;
+        score: number;
+        passed: boolean;
+        submitted_at: string;
+    } | null;
+    pass_mark: number;
+    links: BusinessAppLinks & { submit: RouteAction; close: RouteLink };
 };
 
 /* ------------------------------------------------------------------------------------------ */
@@ -1560,7 +1744,59 @@ export type BusinessAuditPrepProps = {
         /** Set when a new Audit Partner took over the file. */
         reassigned: { from: string; to: string } | null;
     };
-    links: { close: RouteLink };
+    links: { close: RouteLink; figures: RouteLink };
+};
+
+/** The CPA's six cost categories (BRS v3.0 VIS-R04), in screen order. */
+export type MonthlyCostCategory =
+    | 'stock'
+    | 'staff'
+    | 'premises'
+    | 'transport'
+    | 'taxes'
+    | 'other';
+
+/** The four yes/no changes of the monthly submission, in screen order. */
+export type MonthlyChange = 'owners' | 'premises' | 'borrowing' | 'customers';
+
+/** Whole Rwandan francs as digits. */
+export type WholeRwf = string;
+
+export type MonthlyFigures = {
+    money_in: WholeRwf;
+    costs: Record<MonthlyCostCategory, WholeRwf>;
+    costs_total: WholeRwf;
+    paid_to_owners: WholeRwf;
+    forecast: WholeRwf;
+    /** The verified 3-month average the forecast was pre-filled with; null with no published report. */
+    forecast_basis: WholeRwf | null;
+    /** The signed order behind a forecast more than 25% away from the basis. */
+    order: string | null;
+    changes: Record<MonthlyChange, boolean>;
+};
+
+/** The monthly submission (BRS v3.0 VIS-R04) for the month the open monthly audit covers. */
+export type BusinessMonthlyFiguresProps = {
+    identity_context_revision: number;
+    /** First day of the audited month, ISO date. */
+    period: string;
+    seal_by: string;
+    /** First day of the forecast month, ISO date. */
+    forecast_period: string;
+    forecast_basis: WholeRwf | null;
+    cost_categories: MonthlyCostCategory[];
+    /** What was sent for this month; final once sent. */
+    sent: (MonthlyFigures & { submitted_at: string }) | null;
+    links: {
+        submit: RouteAction;
+        close: RouteLink;
+        home: RouteLink;
+        reports: RouteLink;
+        readiness: RouteLink;
+        market: RouteLink;
+        profile: RouteLink;
+        launcher: RouteLink;
+    };
 };
 
 /* ------------------------------------------------------------------------------------------ */
