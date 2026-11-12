@@ -1,9 +1,7 @@
 import { Link, router } from '@inertiajs/react';
-import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { DealStatusNotice } from '@/components/investor/deals/deal-status';
 import { CapNote } from '@/components/investor/deals/invest-bar';
-import { RiskStatementsStep } from '@/components/investor/deals/risk-statements';
 import { useTimeLeft } from '@/components/investor/deals/time-left';
 import { useQuotedUnits } from '@/components/investor/deals/use-quote';
 import { CommitmentCard } from '@/components/investor/primary/commitment';
@@ -136,17 +134,6 @@ export function CheckoutSheet({
         'wallet',
         'refusal',
     ]);
-    /*
-     * The acknowledgement belongs to the disclosure it was given for. A refresh keeps this sheet's
-     * state, so a new version or digest (after DISCLOSURE_STALE, say) must be acknowledged again.
-     */
-    const [acknowledgedDisclosure, setAcknowledgedDisclosure] = useState<
-        string | null
-    >(null);
-    const disclosureKey = `${disclosure.version}:${disclosure.sha256}`;
-    const acknowledged = acknowledgedDisclosure === disclosureKey;
-    const setAcknowledged = (checked: boolean) =>
-        setAcknowledgedDisclosure(checked ? disclosureKey : null);
     const command = useC3Command<InvestorAllowedAction>({
         actions: {
             'primary.reserve': actions.reserve,
@@ -420,10 +407,7 @@ export function CheckoutSheet({
                 expected_reservation_revision: held.revision,
             });
         const canConfirm =
-            offers('primary.confirm') &&
-            actions.confirm !== null &&
-            acknowledged &&
-            idle;
+            offers('primary.confirm') && actions.confirm !== null && idle;
         const canRelease =
             offers('primary.release') && actions.release !== null;
 
@@ -486,27 +470,11 @@ export function CheckoutSheet({
                 </div>
                 {footer(
                     <>
-                        <label className="mb-2.5 flex cursor-pointer items-start gap-2.5">
-                            <input
-                                type="checkbox"
-                                checked={acknowledged}
-                                onChange={(event) =>
-                                    setAcknowledged(event.target.checked)
-                                }
-                                className="peer sr-only"
-                            />
-                            <span
-                                aria-hidden
-                                className="mt-px flex size-5 shrink-0 items-center justify-center rounded-[8px] border-2 border-[#d3dae6] bg-rz-surface text-xs text-white peer-checked:border-rz-accent-fill peer-checked:bg-rz-accent-fill peer-focus-visible:ring-2 peer-focus-visible:ring-rz-focus-border dark:border-rz-border"
-                            >
-                                {acknowledged ? '✓' : ''}
-                            </span>
-                            <span className="text-[11.5px] leading-[1.45] text-rz-slate">
-                                {t('investor.checkout.acknowledge', {
-                                    version: disclosure.version,
-                                })}
-                            </span>
-                        </label>
+                        <p className="mb-2.5 text-[11.5px] leading-[1.45] text-rz-slate">
+                            {t('investor.checkout.acknowledge', {
+                                version: disclosure.version,
+                            })}
+                        </p>
                         {offers('primary.confirm') &&
                             actions.confirm !== null && (
                                 <button
@@ -564,13 +532,6 @@ export function CheckoutSheet({
             >
                 <C3Notice command={command} />
                 <DealStatusNotice deal={deal} className="mb-[11px]" />
-                {risks?.action && (
-                    <RiskStatementsStep
-                        risks={risks}
-                        action={risks.action}
-                        identityRevision={identityRevision}
-                    />
-                )}
                 {dealLine}
                 <div className="mt-[11px] flex items-center justify-between">
                     <span className={LABEL}>

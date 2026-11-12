@@ -24,7 +24,7 @@ it('requires a published report before an accepted application can be released',
 it('validates the retained acceptance without counting its own exposure twice', function (): void {
     $fixture = AuditSealingFixture::ready(2);
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     AuditSealingFixture::cosign($fixture, 1, 2);
     $input = app(AcceptedApplicationStore::class)->withReleaseInput($fixture['audit']['business'], $fixture['application']->id, fn (array $input): array => $input);
     expect($input['principal'])->toBe('10800000')->and($input['reservation_id'])->toBe(BusinessExposureReservation::query()->sole()->id)
@@ -34,7 +34,7 @@ it('validates the retained acceptance without counting its own exposure twice', 
 it('refuses a fresh restriction after the acceptance and report publication', function (): void {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     $facts = BusinessCreditFactsFixture::facts();
     $facts['restriction_active'] = true;
     BusinessCreditFactsFixture::record($fixture['audit']['staff'], $fixture['audit']['business'], 1, facts: $facts);

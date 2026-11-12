@@ -87,7 +87,7 @@ describe('Audit reports register', () => {
         render(<AdminAuditReports {...props()} />);
 
         const awaiting = rowOf('Musanze Agro Traders');
-        expect(awaiting).toHaveTextContent('Awaiting sign-off');
+        expect(awaiting).toHaveTextContent('In dispute window');
         expect(
             within(awaiting).getByRole('button', { name: 'Remind' }),
         ).toHaveAttribute('data-method', 'post');

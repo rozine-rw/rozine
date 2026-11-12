@@ -540,7 +540,7 @@ arch('funding sources are reached only through the disbursement and named Primar
 
 arch('the destination source is reached only through the disbursement adapter')
     ->expect(['App\Application\Disbursement\Contracts\PayoutDestinations'])
-    ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Providers\AppServiceProvider']);
+    ->toOnlyBeUsedIn(['App\Infrastructure\Disbursement', 'App\Infrastructure\Wallet\EloquentBusinessPayoutDestinations', 'App\Providers\AppServiceProvider']);
 
 arch('the payout provider is reached only through the disbursement actions and adapters')
     ->expect('App\Application\Disbursement\Contracts\PayoutProvider')

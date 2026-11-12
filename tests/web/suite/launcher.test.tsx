@@ -564,7 +564,7 @@ describe('Adding Investor access to a verified Business member', () => {
         link: { url: '/identity/investor-access', method: 'post' as const },
     };
 
-    it('asks for the Investor terms, then adds the role and opens the Investor app', async () => {
+    it('shows the Investor terms, agrees by continuing, then adds the role and opens the Investor app', async () => {
         mocks.command.submit
             .mockResolvedValueOnce({
                 data: {
@@ -593,12 +593,11 @@ describe('Adding Investor access to a verified Business member', () => {
         });
 
         expect(panel).toHaveTextContent('I accept the Rozine Investor Terms.');
-        expect(confirm).toBeDisabled();
-        await userEvent.click(
-            within(panel).getByRole('checkbox', {
-                name: 'I have read and accept these Investor terms.',
-            }),
+        expect(panel).toHaveTextContent(
+            'Continuing means you agree to these Investor terms.',
         );
+        expect(within(panel).queryByRole('checkbox')).not.toBeInTheDocument();
+        expect(confirm).toBeEnabled();
         await userEvent.click(confirm);
 
         expect(mocks.command.submit.mock.calls[0][0]).toEqual(offer.link);
@@ -619,15 +618,13 @@ describe('Adding Investor access to a verified Business member', () => {
         );
     });
 
-    it('asks again when the Investor terms change while the panel is open', async () => {
+    it('agrees to the terms on screen when they change while the panel is open', async () => {
         const { rerender } = render(
             <Launcher identity={businessMember} investor_access={offer} />,
         );
         await userEvent.click(
             screen.getByRole('button', { name: /Start investing →/u }),
         );
-        await userEvent.click(screen.getByRole('checkbox'));
-        expect(screen.getByRole('checkbox')).toBeChecked();
 
         rerender(
             <Launcher
@@ -650,10 +647,14 @@ describe('Adding Investor access to a verified Business member', () => {
         expect(panel).toHaveTextContent(
             'I accept the revised Rozine Investor Terms.',
         );
-        expect(within(panel).getByRole('checkbox')).not.toBeChecked();
-        expect(
+        await userEvent.click(
             within(panel).getByRole('button', { name: 'Add Investor access' }),
-        ).toBeDisabled();
+        );
+        expect(mocks.command.transform.mock.calls[0][0]()).toMatchObject({
+            terms_version: 'investor-access-2026-11-01',
+            terms_sha256: 'b'.repeat(64),
+            accepted: true,
+        });
     });
 
     it.each([
@@ -679,7 +680,6 @@ describe('Adding Investor access to a verified Business member', () => {
             await userEvent.click(
                 screen.getByRole('button', { name: /Start investing →/u }),
             );
-            await userEvent.click(screen.getByRole('checkbox'));
             await userEvent.click(
                 screen.getByRole('button', { name: 'Add Investor access' }),
             );
@@ -703,7 +703,6 @@ describe('Adding Investor access to a verified Business member', () => {
         await userEvent.click(
             screen.getByRole('button', { name: /Start investing →/u }),
         );
-        await userEvent.click(screen.getByRole('checkbox'));
         await userEvent.click(
             screen.getByRole('button', { name: 'Add Investor access' }),
         );
@@ -725,7 +724,6 @@ describe('Adding Investor access to a verified Business member', () => {
         await userEvent.click(
             screen.getByRole('button', { name: /Start investing →/u }),
         );
-        await userEvent.click(screen.getByRole('checkbox'));
 
         const confirm = screen.getByRole('button', {
             name: 'Add Investor access',

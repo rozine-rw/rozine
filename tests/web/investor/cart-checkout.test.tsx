@@ -595,9 +595,7 @@ describe('Cart: whole-cart quote', () => {
         await flush();
 
         expect(
-            screen.getByText(
-                /Confirm the risk statements on a deal’s checkout first/u,
-            ),
+            screen.getByText(/Confirm the risk statements first/u),
         ).toBeInTheDocument();
         expect(
             screen.getByRole('link', { name: 'Open checkout' }),
@@ -841,7 +839,7 @@ describe('Cart band', () => {
 });
 
 describe('Cart: the held checkout', () => {
-    it('shows every held line, the hold clock and the band, and confirms only once acknowledged', async () => {
+    it('shows every held line, the hold clock and the band, and pays with no tick box', async () => {
         inertia.queue.push(completed('CART_REQUOTED'));
         render(<InvestorCart {...heldPage()} />);
 
@@ -874,15 +872,14 @@ describe('Cart: the held checkout', () => {
         ).not.toBeInTheDocument();
 
         const confirm = screen.getByRole('button', {
-            name: 'Confirm all · RWF 70,000',
+            name: 'Pay RWF 70,000',
         });
-        expect(confirm).toBeDisabled();
-
-        fireEvent.click(
-            screen.getByRole('checkbox', {
-                name: 'I have read these terms and confirm every note in this cart.',
-            }),
-        );
+        expect(confirm).toBeEnabled();
+        expect(
+            within(panel).getByText(
+                'Paying confirms you have read the prospectus for each note.',
+            ),
+        ).toBeInTheDocument();
         fireEvent.click(confirm);
         await flush();
 
@@ -903,44 +900,32 @@ describe('Cart: the held checkout', () => {
         );
     });
 
-    it('asks for the acknowledgement again once the terms change', () => {
+    it('has no tick box to redo when the terms or one held line change: paying sends the new terms', async () => {
         const props = heldPage();
         const { rerender } = render(<InvestorCart {...props} />);
 
-        fireEvent.click(screen.getByRole('checkbox'));
-        expect(screen.getByRole('checkbox')).toBeChecked();
+        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
 
-        const requoted = structuredClone(props);
-        requoted.checkout!.revision = 2;
-        rerender(<InvestorCart {...requoted} />);
-
-        expect(screen.getByRole('checkbox')).not.toBeChecked();
-
-        fireEvent.click(screen.getByRole('checkbox'));
-        fireEvent.click(screen.getByRole('checkbox'));
-        expect(screen.getByRole('checkbox')).not.toBeChecked();
-    });
-
-    it('asks for the acknowledgement again when the reserved terms of one held line change', () => {
-        const props = heldPage();
-        const { rerender } = render(<InvestorCart {...props} />);
-
-        fireEvent.click(screen.getByRole('checkbox'));
         const changed = structuredClone(props);
+        changed.checkout!.revision = 2;
         changed.checkout!.lines[1].disclosure_sha256 = 'd'.repeat(64);
         rerender(<InvestorCart {...changed} />);
 
-        expect(screen.getByRole('checkbox')).not.toBeChecked();
+        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+        inertia.queue.push(completed('CART_REQUOTED'));
+        fireEvent.click(screen.getByRole('button', { name: 'Pay RWF 70,000' }));
+        await flush();
+
+        expect(inertia.calls[0]).toMatchObject({
+            body: { expected_revision: 2, acknowledged: true },
+        });
     });
 
     it('names the held line a refused confirmation stopped on', async () => {
         inertia.queue.push(fails(409, refusedBody('CART_LINES_REFUSED')));
         render(<InvestorCart {...heldPage()} />);
 
-        fireEvent.click(screen.getByRole('checkbox'));
-        fireEvent.click(
-            screen.getByRole('button', { name: 'Confirm all · RWF 70,000' }),
-        );
+        fireEvent.click(screen.getByRole('button', { name: 'Pay RWF 70,000' }));
         await flush();
 
         expect(
@@ -977,10 +962,7 @@ describe('Cart: the held checkout', () => {
         inertia.queue.push(() => new Promise(() => undefined));
         render(<InvestorCart {...heldPage()} />);
 
-        fireEvent.click(screen.getByRole('checkbox'));
-        fireEvent.click(
-            screen.getByRole('button', { name: 'Confirm all · RWF 70,000' }),
-        );
+        fireEvent.click(screen.getByRole('button', { name: 'Pay RWF 70,000' }));
         await flush();
 
         expect(
@@ -1004,7 +986,7 @@ describe('Cart: the held checkout', () => {
             screen.getByRole('button', { name: 'Releasing…' }),
         ).toHaveAttribute('aria-busy', 'true');
         expect(
-            screen.getByRole('button', { name: 'Confirm all · RWF 70,000' }),
+            screen.getByRole('button', { name: 'Pay RWF 70,000' }),
         ).toBeDisabled();
     });
 
@@ -1027,7 +1009,7 @@ describe('Cart: the held checkout', () => {
             ),
         ).toBeInTheDocument();
         expect(
-            screen.queryByRole('button', { name: /Confirm all/u }),
+            screen.queryByRole('button', { name: /^Pay RWF/u }),
         ).not.toBeInTheDocument();
         expect(
             screen.queryByRole('button', { name: 'Release all notes' }),
@@ -1061,7 +1043,7 @@ describe('Cart: the held checkout', () => {
         expect(screen.getByText('cmp_unknown')).toBeInTheDocument();
         expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
         expect(
-            screen.queryByRole('button', { name: /Confirm all/u }),
+            screen.queryByRole('button', { name: /^Pay RWF/u }),
         ).not.toBeInTheDocument();
         expect(
             screen.queryByRole('button', { name: 'Release all notes' }),
@@ -1094,10 +1076,7 @@ describe('Cart: the held checkout', () => {
         const props = heldPage();
         const { rerender } = render(<InvestorCart {...props} />);
 
-        fireEvent.click(screen.getByRole('checkbox'));
-        fireEvent.click(
-            screen.getByRole('button', { name: 'Confirm all · RWF 70,000' }),
-        );
+        fireEvent.click(screen.getByRole('button', { name: 'Pay RWF 70,000' }));
         await flush();
 
         const after = structuredClone(props);

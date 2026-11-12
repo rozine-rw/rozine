@@ -1,3 +1,4 @@
+import type { ProspectusInputs, ReadinessRequirementCode } from './business';
 import type { Money } from './money';
 import type { RouteAction, RouteLink } from './routing';
 import type {
@@ -1238,7 +1239,17 @@ export type C3DealCard = {
     story: string;
     rate_pct: string;
     term_months: number;
-    links: { detail: RouteLink };
+    /** `prospectus` is set on the focused deal when its business signed a prospectus. */
+    links: { detail: RouteLink; prospectus?: RouteLink | null };
+};
+
+/** The signed prospectus's identity as the deal shows it (BRS v3.0 PRO-R04). */
+export type ProspectusSummary = {
+    version: number;
+    fingerprint: string;
+    signed_at: string;
+    /** The official representative's name, as their profile gives it. */
+    signed_by: string;
 };
 
 /** Allowlisted aggregates only (H9). EBITDA is unavailable unless it was sourced as EBITDA. */
@@ -1278,6 +1289,8 @@ export type MonthlyUpdateSummary = Omit<MonthlyUpdate, 'photos'> & {
 };
 
 export type C3DealDetail = C3DealCard & {
+    /** Null until the business signs its prospectus. */
+    prospectus?: ProspectusSummary | null;
     use_of_funds: UseOfFunds[];
     financials: C3DealFinancials;
     /** The engine's published rating basis; null until the engine publishes one. */
@@ -1562,6 +1575,15 @@ export type Commitment = {
  * server's exact wording is shown, because the acknowledgement binds its version and digest.
  * `action` is null once they are acknowledged.
  */
+/** The shared `risk_acknowledgement` prop: statements still to acknowledge at app open (KYC-R05). */
+export type InvestorRiskAcknowledgementDue = {
+    version: string;
+    statements_sha256: string;
+    statements: { key: string; text: string }[];
+    identity_context_revision: number;
+    action: RouteAction;
+};
+
 export type InvestorRiskStatements = {
     version: string;
     statements_sha256: string;
@@ -1689,6 +1711,18 @@ export type InvestorNotice = {
     | {
           kind: 'business.reporting_window_open';
           facts: { period: string; closes_at: string };
+      }
+    | {
+          kind: 'business.readiness_stage_changed';
+          /** Stages as '0'–'4'; `period` is the report month (YYYY-MM) that moved it. */
+          facts: { stage: string; previous: string; period: string };
+      }
+    | {
+          kind:
+              | 'business.readiness_requirement_due'
+              | 'business.readiness_requirement_closing'
+              | 'business.readiness_requirement_overdue';
+          facts: { code: ReadinessRequirementCode; due_on: string };
       }
     | {
           kind: 'business.raise_funded';
@@ -2106,3 +2140,38 @@ export type C4InvestorPortfolioProps = InvestorServicingPageContract &
             Record<'invested' | 'realised' | 'outstanding_principal', RouteLink>
         >;
     };
+
+/** The signed prospectus behind one deal, read in the app before paying (BRS v3.0 PRO-R04). */
+/**
+ * The signed prospectus as an Investor may read it: the Business's own inputs without the ids of
+ * the private documents behind them (`quoted_lines` and `contracted_months` say which lines cite one).
+ */
+export type InvestorProspectusInputs = Omit<
+    ProspectusInputs,
+    'use_of_funds' | 'forecast'
+> & {
+    use_of_funds: { label: string; amount: string }[];
+    forecast: { month: string; revenue: string; costs: string }[];
+};
+
+export type InvestorProspectusProps = {
+    contract_version: 'investor-prospectus-v1';
+    server_time: string;
+    deal: { campaign_id: string; name: string };
+    prospectus: ProspectusSummary;
+    inputs: InvestorProspectusInputs;
+    facts: {
+        principal: string;
+        term_months: number;
+        instalment: string;
+        verified_monthly_revenue: string;
+        latest_sealed_report_at: string | null;
+        platform_fee: string;
+        net_of_fee: string;
+    };
+    /** Indexes of the use-of-funds lines that cite an uploaded quote or invoice. */
+    quoted_lines: number[];
+    /** The forecast months that cite an uploaded signed contract. */
+    contracted_months: string[];
+    links: C3InvestorShellLinks & { back: RouteLink };
+};

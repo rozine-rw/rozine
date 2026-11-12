@@ -19,7 +19,7 @@ interface AuditReportPublicationStore
      * sealed report's navigation metadata, with when its 24-hour review closes (null under the
      * legacy policy); the destination rechecks publication authority.
      *
-     * @return array{id: string, kind: string, status: string, due_at: string|null}|null
+     * @return array{id: string, kind: string, status: string, due_at: string|null, cosign: bool}|null
      */
     public function latestForBusiness(string $businessId): ?array;
 
