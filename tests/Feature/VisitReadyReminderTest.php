@@ -90,7 +90,7 @@ it('sends no reminder when every item is ticked', function (): void {
 it('skips a Business with no entity party to tell', function (): void {
     ['at' => $at] = visitReadyIssued();
     $audience = Mockery::mock(BusinessNoticeAudience::class);
-    $audience->shouldReceive('findEntityParty')->andReturnNull();
+    $audience->shouldReceive('findEntityParty')->andReturn(null);
     $this->app->instance(BusinessNoticeAudience::class, $audience);
 
     $this->travelTo($at(14));
