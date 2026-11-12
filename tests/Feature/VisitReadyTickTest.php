@@ -10,6 +10,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\PrimaryIssuanceFixture;
+use Tests\TestCase;
 
 /*
  * BRS v3 VIS-R03: the Business ticks visit-ready checklist items as ready. Each tick is saved,
@@ -23,7 +24,7 @@ beforeEach(function (): void {
 });
 
 /** @return array{business: string, user: User, due_on: string} */
-function visitReadyOpen(object $test): array
+function visitReadyOpen(TestCase $test): array
 {
     ['campaign' => $campaign, 'instruction' => $instruction] = PrimaryIssuanceFixture::close(effectiveAt: now()->toIso8601String());
     $user = User::query()->findOrFail(BusinessCampaign::query()->findOrFail($campaign->campaignId)->actor_user_id);

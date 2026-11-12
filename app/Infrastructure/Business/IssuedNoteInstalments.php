@@ -12,6 +12,7 @@ final class IssuedNoteInstalments implements UpcomingInstalments
 {
     public function between(string $from, string $to): array
     {
+        /** @var list<object{business_id: string, due_on: string}> $rows */
         $rows = DB::select(<<<'SQL'
             SELECT DISTINCT disbursements.business_id, due.due_on
             FROM disbursement_closings closing
