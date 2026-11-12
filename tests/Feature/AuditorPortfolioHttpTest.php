@@ -40,7 +40,7 @@ function auditorPortfolioProps(User $user, array $query = []): array
             return $page->component('auditor/portfolio');
         });
 
-    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count', 'checkout_holds']));
+    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count', 'checkout_holds', 'risk_acknowledgement']));
 }
 
 /**
