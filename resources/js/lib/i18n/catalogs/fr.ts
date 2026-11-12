@@ -293,8 +293,205 @@ const fr: Catalog = {
         "Vous êtes hors ligne. Ce qui s'affiche peut ne plus être à jour, et rien ne peut être envoyé avant le retour de la connexion.",
     'business.nav.home': 'Accueil',
     'business.nav.reports': 'Rapports',
+    'business.nav.readiness': 'Préparation',
     'business.nav.market': 'Marché',
     'business.nav.profile': 'Profil',
+    'business.readiness.title': 'Préparation',
+    'business.readiness.subtitle':
+        'Comment votre entreprise progresse vers le marché des capitaux, au rythme de sa taille. Vous seul voyez cette page.',
+    'business.readiness.stage.0': 'Avant Fondation',
+    'business.readiness.stage.1': 'Étape 1 · Fondation',
+    'business.readiness.stage.2': 'Étape 2 · Croissance',
+    'business.readiness.stage.3': 'Étape 3 · Expansion',
+    'business.readiness.stage.4': 'Étape 4 · Marché',
+    'business.readiness.stage_pending': 'Étape pas encore fixée',
+    'business.readiness.status.building': 'En construction',
+    'business.readiness.status.ready': 'Prête',
+    'business.readiness.vmr': 'Revenu mensuel vérifié',
+    'business.readiness.vmr_basis':
+        'La moyenne de vos 3 derniers rapports mensuels publiés.',
+    'business.readiness.reports_needed': {
+        one: 'Votre étape est fixée dès que 3 rapports mensuels sont publiés. Encore {count}.',
+        other: 'Votre étape est fixée dès que 3 rapports mensuels sont publiés. Encore {count}.',
+    },
+    'business.readiness.pending.up': {
+        one: '{count} mesure indique déjà {stage}. L’étape monte après {needed} mesures d’affilée, avec 2 des 3 derniers mois au même niveau.',
+        other: 'Vos {count} dernières mesures indiquent {stage}. L’étape monte après {needed} mesures d’affilée, avec 2 des 3 derniers mois au même niveau.',
+    },
+    'business.readiness.pending.down': {
+        one: '{count} mesure indique déjà {stage}. L’étape ne descend qu’après {needed} mesures d’affilée, avec 2 des 3 derniers mois au même niveau.',
+        other: 'Vos {count} dernières mesures indiquent {stage}. L’étape ne descend qu’après {needed} mesures d’affilée, avec 2 des 3 derniers mois au même niveau.',
+    },
+    'business.readiness.next':
+        '{stage} commence à {threshold} par mois : encore {gap}.',
+    'business.readiness.next_reached':
+        '{stage} commence à {threshold} par mois. Votre moyenne y est : maintenez-la {needed} mesures d’affilée.',
+    'business.readiness.top': 'Vous êtes à l’étape la plus haute.',
+    'business.readiness.ready_rule':
+        'Vous êtes prête quand chaque exigence due est remplie, que vos trois indicateurs restent dans la cible 3 rapports d’affilée et que vous réussissez les modules essentiels de l’Académie pour votre étape.',
+    'business.readiness.guidance.title': 'Conseils du mois',
+    'business.readiness.guidance.rule':
+        'Après chaque rapport publié, chaque indicateur est comparé à l’objectif de votre étape, avec une action.',
+    'business.readiness.guidance.empty':
+        'Vos conseils commencent dès qu’un mois pour lequel vous avez envoyé vos chiffres est vérifié dans un rapport publié.',
+    'business.readiness.guidance.record_gap': 'Écart de tenue',
+    'business.readiness.guidance.forecast_error': 'Erreur de prévision',
+    'business.readiness.guidance.on_target': 'Dans l’objectif',
+    'business.readiness.guidance.off_target': 'Hors objectif',
+    'business.readiness.guidance.value': {
+        one: '{value} % sur le {count} dernier mois. Objectif : {target} % au plus.',
+        other: '{value} % sur les {count} derniers mois. Objectif : {target} % au plus.',
+    },
+    'business.readiness.guidance.bias.over':
+        'Vos prévisions ont dépassé l’argent réellement reçu.',
+    'business.readiness.guidance.bias.under':
+        'Vos prévisions sont restées sous l’argent réellement reçu.',
+    'business.readiness.guidance.record_gap.keep':
+        'Continuez à noter chaque vente et chaque paiement dans vos livres le jour même.',
+    'business.readiness.guidance.record_gap.fix':
+        'Notez chaque vente en espèces et chaque paiement dans vos livres le jour même, et gardez chaque reçu.',
+    'business.readiness.guidance.forecast_error.keep':
+        'Continuez à partir de votre moyenne vérifiée et des commandes que vous détenez par écrit.',
+    'business.readiness.guidance.forecast_error.fix':
+        'Partez de votre moyenne vérifiée pour la prévision du mois prochain, et n’ajoutez que les commandes que vous détenez par écrit.',
+    'business.academy.title': 'Académie',
+    'business.academy.intro':
+        'Des leçons courtes pour votre étape. Chaque module est une série de cartes, puis un test de {questions} questions. {pass} bonnes réponses suffisent.',
+    'business.academy.core_title': 'Modules de base pour {stage}',
+    'business.academy.preview_title': 'Aperçu de {stage}',
+    'business.academy.preview_body':
+        'Cartes seulement. Le test s’ouvre quand vous atteignez cette étape.',
+    'business.academy.cards': {
+        one: '{count} carte',
+        other: '{count} cartes',
+    },
+    'business.academy.state.open': 'Test ouvert',
+    'business.academy.state.passed': 'Réussi',
+    'business.academy.state.waiting': 'Nouvel essai dès le {date}',
+    'business.academy.state.preview': 'Aperçu',
+    'business.academy.best': 'Meilleur score : {score} sur {total}',
+    'business.academy.syllabus':
+        'Académie : {passed} modules de base réussis sur {total} pour votre étape.',
+    'business.academy.open': 'Ouvrir l’Académie',
+    'business.academy.back': 'Retour',
+    'business.academy.flashcards': 'Cartes',
+    'business.academy.card_progress': 'Carte {current} sur {total}',
+    'business.academy.show_back': 'Voir la réponse',
+    'business.academy.show_front': 'Voir la carte',
+    'business.academy.previous': 'Précédente',
+    'business.academy.next': 'Suivante',
+    'business.academy.start_test': 'Commencer le test',
+    'business.academy.test_title': 'Test',
+    'business.academy.test_intro':
+        'Répondez aux {count} questions. {pass} bonnes réponses suffisent.',
+    'business.academy.question': 'Question {current} sur {total}',
+    'business.academy.left': {
+        one: 'Il reste {count} question.',
+        other: 'Il reste {count} questions.',
+    },
+    'business.academy.send': 'Envoyer les réponses',
+    'business.academy.sending': 'Envoi…',
+    'business.academy.result.passed': 'Réussi avec {score} sur {total}.',
+    'business.academy.result.waiting':
+        'Non réussi : {score} sur {total}. Le test rouvre le {date} avec de nouvelles questions.',
+    'business.academy.result.open':
+        'Non réussi : {score} sur {total}. Votre prochain test est prêt ci-dessous.',
+    'business.academy.note.passed':
+        'Vous avez réussi ce module. Ses cartes restent ici pour réviser.',
+    'business.academy.note.preview':
+        'Ce module fait partie de l’étape suivante. Son test s’ouvre quand vous l’atteignez.',
+    'business.readiness.milestones.title': 'Étapes vers le marché des capitaux',
+    'business.readiness.milestones.rule':
+        'Chaque étape est franchie automatiquement dès que toutes ses conditions sont remplies. Les conditions que Rozine ne mesure pas encore sont indiquées en attente.',
+    'business.readiness.milestones.bond.title': 'Parcours obligataire',
+    'business.readiness.milestones.bond.summary':
+        'Remplissez toutes les conditions et Rozine prépare votre dossier de préparation obligataire.',
+    'business.readiness.milestones.bond.reached':
+        'Toutes les conditions sont remplies. Rozine prépare votre dossier de préparation obligataire.',
+    'business.readiness.milestones.clinic.title':
+        'Orientation vers l’Investment Clinic de la RSE',
+    'business.readiness.milestones.clinic.summary':
+        'Remplissez toutes les conditions et Rozine peut vous orienter vers l’Investment Clinic de la Bourse du Rwanda, avec votre accord. Les orientations commencent une fois l’accord entre Rozine et la RSE signé.',
+    'business.readiness.milestones.clinic.reached':
+        'Toutes les conditions sont remplies. Rozine vous oriente, avec votre accord, une fois son accord avec la RSE signé.',
+    'business.readiness.milestones.condition.stage': 'Étape 3 ou 4',
+    'business.readiness.milestones.condition.ready_6_months':
+        'Prête pendant 6 mois consécutifs',
+    'business.readiness.milestones.condition.ready_12_months':
+        'Prête pendant 12 mois consécutifs',
+    'business.readiness.milestones.condition.notes_on_time':
+        '3 billets Rozine ou plus, chaque échéance encaissée à sa date',
+    'business.readiness.milestones.condition.audited_statements':
+        'États financiers annuels audités déposés',
+    'business.readiness.milestones.condition.limited_company':
+        'Une société à responsabilité limitée',
+    'business.readiness.milestones.condition.trading_3_years':
+        '3 ans d’activité ou plus',
+    'business.readiness.milestones.condition.no_proceedings':
+        'Aucune procédure judiciaire majeure',
+    'business.readiness.milestones.state.met': 'Remplie',
+    'business.readiness.milestones.state.not_met': 'Non remplie',
+    'business.readiness.milestones.state.pending': 'En attente',
+    'business.readiness.stages': 'Les quatre étapes',
+    'business.readiness.stage_from': 'À partir de {amount} par mois',
+    'business.readiness.current': 'Actuelle',
+    'business.readiness.months': 'Mois pris en compte',
+    'business.readiness.months_empty':
+        'Aucun rapport mensuel publié pour l’instant.',
+    'business.readiness.requirements': 'Exigences',
+    'business.readiness.requirements_rule':
+        'Votre taille fixe ces exigences. Votre CPA confirme chacune lors de la visite mensuelle.',
+    'business.readiness.requirement.status.not_triggered': 'Pas encore',
+    'business.readiness.requirement.status.due': 'Due',
+    'business.readiness.requirement.status.overdue': 'En retard',
+    'business.readiness.requirement.status.met': 'Remplie',
+    'business.readiness.requirement.status.lapsed': 'Expirée',
+    'business.readiness.requirement.due_by': {
+        one: 'À remplir d’ici le {date} · {count} jour restant',
+        other: 'À remplir d’ici le {date} · {count} jours restants',
+    },
+    'business.readiness.requirement.lapsed_by': {
+        one: 'À remplir de nouveau d’ici le {date} · {count} jour restant',
+        other: 'À remplir de nouveau d’ici le {date} · {count} jours restants',
+    },
+    'business.readiness.requirement.overdue_line':
+        'En retard depuis le {date}. Votre prochaine levée attend qu’elle soit remplie.',
+    'business.readiness.requirement.met_on': 'Confirmée le {date}',
+    'business.readiness.requirement.met_entry':
+        'Vérifiée à votre arrivée sur Rozine',
+    'business.readiness.requirement.applies_entry':
+        'S’applique dès la publication de votre audit d’entrée',
+    'business.readiness.requirement.applies_stage': 'S’applique dès {stage}',
+    'business.readiness.requirement.applies_headcount':
+        'S’applique dès {count} employés',
+    'business.readiness.requirement.C1.title': 'Impôts et RSSB à jour',
+    'business.readiness.requirement.C1.detail':
+        'Attestation fiscale et cotisations RSSB à jour.',
+    'business.readiness.requirement.F1.title':
+        'Argent de l’entreprise sur ses comptes',
+    'business.readiness.requirement.F1.detail':
+        'Tout l’argent de l’entreprise passe par des comptes à son nom, et au moins 90 % du revenu vérifié y est traçable.',
+    'business.readiness.requirement.F2.title': 'Comptable qualifié',
+    'business.readiness.requirement.F2.detail':
+        'Un comptable qualifié, salarié ou sous contrat, et un logiciel comptable utilisé.',
+    'business.readiness.requirement.F3.title': 'Responsable financier',
+    'business.readiness.requirement.F3.detail':
+        'Un responsable financier qualifié à temps plein (CPA, ACCA ou équivalent, au moins 3 ans) et des comptes de gestion mensuels.',
+    'business.readiness.requirement.F4.title': 'Audit externe',
+    'business.readiness.requirement.F4.detail':
+        'Un audit annuel selon l’IFRS pour les PME par un auditeur ICPAR autre que votre CPA Rozine, et des paiements préparés et approuvés par des personnes différentes.',
+    'business.readiness.requirement.P1.title': 'Contrat pour chaque employé',
+    'business.readiness.requirement.P1.detail':
+        'Un contrat écrit et une immatriculation RSSB pour chaque employé.',
+    'business.readiness.requirement.P2.title': 'Responsable RH et politique',
+    'business.readiness.requirement.P2.detail':
+        'Un responsable RH désigné ou un prestataire RH sous contrat, et une politique RH écrite.',
+    'business.readiness.requirement.G1.title': 'Conseil d’administration',
+    'business.readiness.requirement.G1.detail':
+        'Un conseil d’au moins 2 administrateurs se réunissant chaque trimestre avec procès-verbal, et une délégation de paiement écrite.',
+    'business.readiness.requirement.G2.title': 'Administrateur indépendant',
+    'business.readiness.requirement.G2.detail':
+        'Au moins un administrateur indépendant, un code de gouvernance et un registre des parties liées.',
     'business.market.title': 'Aperçu du marché',
     'business.market.subtitle':
         'Comment vos notes se comportent sur le marché secondaire.',
@@ -1477,6 +1674,14 @@ const fr: Catalog = {
         'Le délai pour cosigner ou contester un rapport se termine',
     'admin.messaging.trigger.business.reporting_window_open':
         'Un audit mensuel s’ouvre pour une entreprise ayant une note active',
+    'admin.messaging.trigger.business.readiness_stage_changed':
+        'Une entreprise change d’étape de préparation',
+    'admin.messaging.trigger.business.readiness_requirement_due':
+        'Une exigence de préparation devient due',
+    'admin.messaging.trigger.business.readiness_requirement_closing':
+        'Il reste 14 jours pour une exigence de préparation',
+    'admin.messaging.trigger.business.readiness_requirement_overdue':
+        'Une exigence de préparation passe en retard',
     'admin.messaging.trigger.auditor.accreditation_approved':
         'L’accréditation est approuvée',
     'admin.messaging.trigger.auditor.accreditation_rejected':
@@ -4034,6 +4239,64 @@ const fr: Catalog = {
     'business.servicing.repay.ladder_version':
         'Politique de frais de retard {version}.',
     'business.audit_prep.title': 'Préparez votre audit',
+    'business.monthly_figures.title': 'Chiffres du mois',
+    'business.monthly_figures.intro':
+        'Envoyez ce qui est entré et sorti en {month}. Votre partenaire d’audit vérifie ces chiffres lors de la visite, avant le {date}.',
+    'business.monthly_figures.step': 'Étape {current} sur {total}',
+    'business.monthly_figures.money_in.title': 'Entrées de {month}',
+    'business.monthly_figures.money_in.body':
+        'Tout l’argent reçu par l’entreprise pendant le mois, sur chaque compte et en espèces, en francs rwandais.',
+    'business.monthly_figures.money_in.label': 'Entrées',
+    'business.monthly_figures.costs.title': 'Dépenses de {month}',
+    'business.monthly_figures.costs.body':
+        'Ce que l’entreprise a dépensé pendant le mois, dans chacune des six catégories. Saisissez 0 s’il n’y en a pas eu.',
+    'business.monthly_figures.costs.stock': 'Stock et matières',
+    'business.monthly_figures.costs.staff': 'Salaires',
+    'business.monthly_figures.costs.premises': 'Loyer et charges',
+    'business.monthly_figures.costs.transport': 'Transport',
+    'business.monthly_figures.costs.taxes': 'Impôts et frais',
+    'business.monthly_figures.costs.other': 'Autres dépenses',
+    'business.monthly_figures.costs.total': 'Total des dépenses',
+    'business.monthly_figures.costs.total_line':
+        'Total des dépenses : {amount}',
+    'business.monthly_figures.paid.title': 'Versé aux propriétaires en {month}',
+    'business.monthly_figures.paid.body':
+        'L’argent que les propriétaires ont retiré de l’entreprise pour eux-mêmes. Saisissez 0 s’il n’y en a pas eu.',
+    'business.monthly_figures.paid.label': 'Versé aux propriétaires',
+    'business.monthly_figures.forecast.title': 'Prévision pour {forecast}',
+    'business.monthly_figures.forecast.basis':
+        'Prérempli avec votre moyenne vérifiée des trois derniers mois : {amount}.',
+    'business.monthly_figures.forecast.no_basis':
+        'Saisissez les entrées que vous attendez. Il n’y a pas encore de moyenne vérifiée.',
+    'business.monthly_figures.forecast.label': 'Entrées attendues en {month}',
+    'business.monthly_figures.forecast.order': 'Commande signée',
+    'business.monthly_figures.forecast.order_hint':
+        'Cette prévision s’écarte de plus de 25 % de votre moyenne vérifiée. Indiquez la commande signée qui la justifie, par exemple « Commande 114 de Simba Supermarket ». Votre partenaire d’audit la voit lors de la visite.',
+    'business.monthly_figures.changes.title': 'Changements en {month}',
+    'business.monthly_figures.changes.owners':
+        'Les propriétaires ou les administrateurs ont changé',
+    'business.monthly_figures.changes.premises':
+        'Déménagement, ou ouverture ou fermeture d’un site',
+    'business.monthly_figures.changes.borrowing': 'Nouveau prêt ou crédit',
+    'business.monthly_figures.changes.customers':
+        'Perte d’un client ou d’un fournisseur principal',
+    'business.monthly_figures.changes.yes': 'Oui',
+    'business.monthly_figures.changes.no': 'Non',
+    'business.monthly_figures.summary.title': 'Vérifier et envoyer',
+    'business.monthly_figures.summary.line':
+        '{month} : entrées {money_in}, dépenses {costs}, versé aux propriétaires {paid}. Prévision pour {forecast_month} : {forecast}.',
+    'business.monthly_figures.summary.final':
+        'Une fois envoyés, ces chiffres sont définitifs pour le mois.',
+    'business.monthly_figures.sent.title': 'Chiffres de {month}',
+    'business.monthly_figures.sent.body':
+        'Envoyés le {date}. Votre partenaire d’audit les vérifie lors de la visite.',
+    'business.monthly_figures.back': 'Retour',
+    'business.monthly_figures.next': 'Suivant',
+    'business.monthly_figures.send': 'Envoyer les chiffres',
+    'business.monthly_figures.sending': 'Envoi…',
+    'business.audit_prep.figures.title': 'Envoyez vos chiffres du mois',
+    'business.audit_prep.figures.body':
+        'Six écrans courts, environ 3 minutes. Votre partenaire d’audit les vérifie lors de la visite.',
     'business.audit_prep.window_open': "Fenêtre d'audit ouverte",
     'business.audit_prep.next': 'Prochain audit',
     'business.audit_prep.first': 'Votre premier audit',
@@ -6955,6 +7218,22 @@ const fr: Catalog = {
         'Audit mensuel ouvert',
     'investor.notices.business.reporting_window_open.body':
         "Votre audit de {month} a commencé. Préparez les relevés et registres du mois pour que votre partenaire d'audit les vérifie et scelle le rapport d'ici le {date}. Vous le cosignez ensuite ou le contestez.",
+    'investor.notices.business.readiness_stage_changed.title':
+        'Étape de préparation modifiée',
+    'investor.notices.business.readiness_stage_changed.body':
+        'Votre rapport de {month} vous fait passer de {previous} à {stage}.',
+    'investor.notices.business.readiness_requirement_due.title':
+        'Nouvelle exigence',
+    'investor.notices.business.readiness_requirement_due.body':
+        '{requirement} s’applique désormais à votre entreprise. À remplir d’ici le {date}.',
+    'investor.notices.business.readiness_requirement_closing.title':
+        'Exigence bientôt due',
+    'investor.notices.business.readiness_requirement_closing.body':
+        '{requirement} est à remplir d’ici le {date}. Votre CPA la confirme lors de la prochaine visite.',
+    'investor.notices.business.readiness_requirement_overdue.title':
+        'Exigence en retard',
+    'investor.notices.business.readiness_requirement_overdue.body':
+        '{requirement} était due le {date}. Votre prochaine levée attend qu’elle soit remplie.',
     'investor.notices.business.raise_expired.title':
         'Levée clôturée sans financement complet',
     'investor.notices.business.raise_expired.body':

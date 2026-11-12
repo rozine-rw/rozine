@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "833714c13414b73f8bebcca70dfb086ebe10c13b72754fd9453a8ef37ef71076",
-    "coverageSetSha256": "05d1c2c735b66eb87c2015eabd08a50cd556c1afa8ab74df3d18080f73d0c9bf",
+    "sourceManifestSha256": "c68ae47bb795450a21011f20858c93a3e81ebd5d4c54160ce2fb25c2f8bd04da",
+    "coverageSetSha256": "3aa5dda5b7a8bb605a71e12afda150560a6404a51f98b68fdbb01e311a169cb8",
     "thresholds": {
         "critical": {
             "global": {
@@ -441,6 +441,8 @@
         "resources/js/pages/auth/reset-password.tsx",
         "resources/js/pages/auth/two-factor-challenge.tsx",
         "resources/js/pages/auth/verify-email.tsx",
+        "resources/js/pages/business/academy-module.tsx",
+        "resources/js/pages/business/academy.tsx",
         "resources/js/pages/business/apply.tsx",
         "resources/js/pages/business/audit-cosign.tsx",
         "resources/js/pages/business/audit-prep.tsx",
@@ -449,11 +451,13 @@
         "resources/js/pages/business/campaign.tsx",
         "resources/js/pages/business/home.tsx",
         "resources/js/pages/business/market.tsx",
+        "resources/js/pages/business/monthly-figures.tsx",
         "resources/js/pages/business/note.tsx",
         "resources/js/pages/business/onboarding.tsx",
         "resources/js/pages/business/profile.tsx",
         "resources/js/pages/business/publish.tsx",
         "resources/js/pages/business/rating.tsx",
+        "resources/js/pages/business/readiness.tsx",
         "resources/js/pages/business/repayments.tsx",
         "resources/js/pages/business/reports.tsx",
         "resources/js/pages/business/statement-transcription.tsx",

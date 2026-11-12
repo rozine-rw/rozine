@@ -45,11 +45,13 @@
         "resources/js/actions/App/Http/Controllers/AuditorProcedureController.ts",
         "resources/js/actions/App/Http/Controllers/AuditorProfileController.ts",
         "resources/js/actions/App/Http/Controllers/AuditorStatementVerificationController.ts",
+        "resources/js/actions/App/Http/Controllers/BusinessAcademyController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessApplicationController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessAuditReportController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessComplaintController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessContactController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessHomeController.ts",
+        "resources/js/actions/App/Http/Controllers/BusinessMonthlyFiguresController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessNoticesController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessPayoutAccountController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessPublicationController.ts",
@@ -260,6 +262,7 @@
         "resources/js/routes/auditor/reports/operations/index.ts",
         "resources/js/routes/auditor/reports/statements/index.ts",
         "resources/js/routes/boost/index.ts",
+        "resources/js/routes/business/academy/index.ts",
         "resources/js/routes/business/applications/index.ts",
         "resources/js/routes/business/applications/operations/index.ts",
         "resources/js/routes/business/applications/publish/index.ts",
@@ -270,6 +273,7 @@
         "resources/js/routes/business/campaigns/index.ts",
         "resources/js/routes/business/complaints/index.ts",
         "resources/js/routes/business/index.ts",
+        "resources/js/routes/business/monthly-figures/index.ts",
         "resources/js/routes/business/notices/index.ts",
         "resources/js/routes/business/profile/index.ts",
         "resources/js/routes/business/repayments/index.ts",
@@ -776,6 +780,8 @@
         "resources/js/pages/auth/reset-password.tsx",
         "resources/js/pages/auth/two-factor-challenge.tsx",
         "resources/js/pages/auth/verify-email.tsx",
+        "resources/js/pages/business/academy-module.tsx",
+        "resources/js/pages/business/academy.tsx",
         "resources/js/pages/business/apply.tsx",
         "resources/js/pages/business/audit-cosign.tsx",
         "resources/js/pages/business/audit-prep.tsx",
@@ -784,11 +790,13 @@
         "resources/js/pages/business/campaign.tsx",
         "resources/js/pages/business/home.tsx",
         "resources/js/pages/business/market.tsx",
+        "resources/js/pages/business/monthly-figures.tsx",
         "resources/js/pages/business/note.tsx",
         "resources/js/pages/business/onboarding.tsx",
         "resources/js/pages/business/profile.tsx",
         "resources/js/pages/business/publish.tsx",
         "resources/js/pages/business/rating.tsx",
+        "resources/js/pages/business/readiness.tsx",
         "resources/js/pages/business/repayments.tsx",
         "resources/js/pages/business/reports.tsx",
         "resources/js/pages/business/statement-transcription.tsx",
@@ -818,10 +826,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 790,
-        "generated": 337,
+        "totalTrackedSources": 798,
+        "generated": 341,
         "declarationOnly": 20,
-        "authoredExecutable": 433
+        "authoredExecutable": 437
     },
-    "coverageSetSha256": "05d1c2c735b66eb87c2015eabd08a50cd556c1afa8ab74df3d18080f73d0c9bf"
+    "coverageSetSha256": "3aa5dda5b7a8bb605a71e12afda150560a6404a51f98b68fdbb01e311a169cb8"
 }
