@@ -282,6 +282,7 @@
         "resources/js/routes/business/profile/index.ts",
         "resources/js/routes/business/repayments/index.ts",
         "resources/js/routes/business/repayments/operations/index.ts",
+        "resources/js/routes/business/repayments/visit-ready/index.ts",
         "resources/js/routes/business/statements/index.ts",
         "resources/js/routes/business/statements/transcription/index.ts",
         "resources/js/routes/business/wallet/index.ts",
@@ -836,8 +837,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 818,
-        "generated": 345,
+        "totalTrackedSources": 809,
+        "generated": 346,
         "declarationOnly": 20,
         "authoredExecutable": 443
     },
