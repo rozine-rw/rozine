@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Auditor\Contracts\PublishedMonthlyReports;
+use App\Application\Business\Contracts\ReadinessRequirementStore;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -106,4 +107,19 @@ it('names the top stage with nothing above it', function (): void {
     ($this->published)(['2026-04' => '90000000', '2026-05' => '90000000', '2026-06' => '90000000']);
 
     expect(($this->readiness)($user, $business)['readiness'])->toMatchArray(['stage' => 4, 'vmr' => ($this->money)('90000000'), 'pending' => null, 'next' => null]);
+});
+
+it('lists the bond-track and RSE clinic conditions from the stage, the profile, the notes and the audit requirement', function (): void {
+    [$user, $business] = ($this->business)();
+    ($this->published)(['2026-04' => '40000000', '2026-05' => '40000000', '2026-06' => '40000000']);
+    $states = fn (array $track): array => array_column($track['conditions'], 'state', 'key');
+
+    $milestones = ($this->readiness)($user, $business)['milestones'];
+    expect($states($milestones['bond']))->toBe(['stage' => 'met', 'ready_6_months' => 'pending', 'notes_on_time' => 'not_met', 'audited_statements' => 'not_met'])
+        ->and($states($milestones['clinic']))->toBe(['limited_company' => 'met', 'trading_3_years' => 'met', 'no_proceedings' => 'pending',
+            'stage' => 'met', 'ready_12_months' => 'pending'])
+        ->and($milestones['bond']['reached'])->toBeFalse();
+
+    app(ReadinessRequirementStore::class)->trigger($business, 'F4', 'met', null, '2026-11-10');
+    expect($states(($this->readiness)($user, $business)['milestones']['bond'])['audited_statements'])->toBe('met');
 });

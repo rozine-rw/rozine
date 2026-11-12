@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Application\Business;
 
 use App\Application\Auditor\Contracts\PublishedMonthlyReports;
+use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Business\Contracts\EnteredBusinesses;
 use App\Application\Business\Contracts\MonthlySubmissionStore;
 use App\Application\Business\Contracts\ReadinessRequirementStore;
+use App\Domain\Business\ReadinessMilestones;
 use App\Domain\Business\ReadinessRequirements;
 use App\Domain\Business\ReadinessSignals;
 use App\Domain\Business\ReadinessStage;
@@ -25,23 +27,29 @@ use Brick\Math\BigInteger;
  * F1 read Met from entry only once the Business has entered (a published audit report). Its
  * guidance lines (RDY-R06) compare the monthly figures the Business sent with what its published
  * reports verified, held to the targets of its stage. Its syllabus counts the core Academy
- * modules of its stage passed (RDY-R07).
+ * modules of its stage passed (RDY-R07). Its milestones (RDY-R08) read the stage, the business's
+ * own profile, its funded notes and requirement F4.
  *
  * @phpstan-import-type Stage from ReadinessStage
  * @phpstan-import-type Listed from ReadinessRequirements
  * @phpstan-import-type Line from ReadinessSignals
+ * @phpstan-import-type Track from ReadinessMilestones
  */
 final class GetBusinessReadiness
 {
     public function __construct(private WithBusinessAuthority $authority, private PublishedMonthlyReports $reports, private ReadinessStage $stage,
         private ReadinessRequirementStore $requirements, private ReadinessRequirements $rules, private MonthlySubmissionStore $submissions,
-        private ReadinessSignals $signals, private BusinessAcademySyllabus $academy, private EnteredBusinesses $entered) {}
+        private ReadinessSignals $signals, private BusinessAcademySyllabus $academy, private BusinessCampaignStore $campaigns, private EnteredBusinesses $entered) {}
 
     /** @return array{identity_context_revision: int, business_id: string, readiness: Stage, requirements: list<Listed>, guidance: list<Line>,
-     *     syllabus: array{passed: int, total: int}} */
+     *     syllabus: array{passed: int, total: int}, milestones: array{bond: Track, clinic: Track}} */
     public function handle(int $userId, int $contextRevision, string $businessId): array
     {
-        $id = $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null, fn (array $business): string => (string) $business['id']);
+        $business = $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null, fn (array $business): array => $business);
+        $id = $business['id'];
+        $requirements = $this->requirements->forBusiness($id);
+        /** @var list<array{status: string}> $notes */
+        $notes = $this->campaigns->home($userId, $contextRevision, $id)['notes'];
         $reports = $this->reports->forBusiness($id);
         $core = $this->academy->forBusiness($id)['core'];
         $readiness = $this->stage->assess(ReadinessStage::months($reports));
@@ -50,8 +58,14 @@ final class GetBusinessReadiness
             'forecast_period' => $sent['forecast_period'], 'forecast' => $sent['figures']['forecast']], $this->submissions->forBusiness($id));
 
         return ['identity_context_revision' => $contextRevision, 'business_id' => $id, 'readiness' => $readiness,
-            'requirements' => $this->rules->listed($this->requirements->forBusiness($id), now('Africa/Kigali')->toDateString(), $this->entered->has($id)),
+            'requirements' => $this->rules->listed($requirements, now('Africa/Kigali')->toDateString(), $this->entered->has($id)),
             'guidance' => $this->signals->guidance(ReadinessSignals::verified($reports), $declared, $readiness['stage']),
-            'syllabus' => ['passed' => count(array_filter($core, fn (array $entry): bool => $entry['status']['state'] === 'passed')), 'total' => count($core)]];
+            'syllabus' => ['passed' => count(array_filter($core, fn (array $entry): bool => $entry['status']['state'] === 'passed')), 'total' => count($core)],
+            'milestones' => ReadinessMilestones::assess(['stage' => $readiness['stage'],
+                'company' => $business['entity_kind'] === 'organization' && $business['profile']['company_code'] !== null,
+                'established_year' => $business['profile']['established_year'],
+                'notes' => count(array_filter($notes, fn (array $note): bool => $note['status'] === 'funded')),
+                'audited' => in_array('F4', array_column(array_filter($requirements, fn (array $row): bool => $row['status'] === 'met'), 'code'), true)],
+                now('Africa/Kigali')->toDateTimeImmutable())];
     }
 }

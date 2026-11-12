@@ -220,6 +220,47 @@ describe('Readiness', () => {
         ).toBeInTheDocument();
     });
 
+    it('lists both milestones with each condition met, not met or pending', () => {
+        render(<BusinessReadiness {...props(readinessFixture)} />);
+
+        const milestones = within(
+            screen.getByRole('list', {
+                name: 'Milestones toward the capital market',
+            }),
+        );
+        expect(milestones.getByText('Bond track')).toBeInTheDocument();
+        expect(
+            milestones.getByText(
+                'Meet every condition and Rozine prepares your bond-readiness file.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            milestones.getByText('RSE Investment Clinic referral'),
+        ).toBeInTheDocument();
+        expect(lines()).toContain('Stage 3 or 4Not met');
+        expect(lines()).toContain('Ready for 12 months in a rowPending');
+        expect(lines()).toContain('A limited companyMet');
+    });
+
+    it('says when every condition of a milestone is met', () => {
+        const reached = props(marketFixture);
+        reached.milestones.bond = {
+            reached: true,
+            conditions: reached.milestones.bond.conditions.map((condition) => ({
+                ...condition,
+                state: 'met' as const,
+            })),
+        };
+        render(<BusinessReadiness {...reached} />);
+
+        expect(
+            screen.getByText(
+                'Every condition is met. Rozine prepares your bond-readiness file.',
+            ),
+        ).toBeInTheDocument();
+        expect(lines()).toContain('Audited annual statements uploadedMet');
+    });
+
     it('shows the entry checks as applying from entry before the entry audit is published', () => {
         const before = props(newFixture);
         before.requirements[0] = {

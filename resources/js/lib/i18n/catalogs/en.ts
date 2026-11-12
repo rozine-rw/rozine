@@ -390,6 +390,39 @@ const en = {
         'You have passed this module. Its cards stay here to revise.',
     'business.academy.note.preview':
         'This module belongs to the next stage. Its test opens when you reach it.',
+    'business.readiness.milestones.title':
+        'Milestones toward the capital market',
+    'business.readiness.milestones.rule':
+        'Each milestone is reached automatically once every condition is met. Conditions Rozine cannot measure yet are shown as pending.',
+    'business.readiness.milestones.bond.title': 'Bond track',
+    'business.readiness.milestones.bond.summary':
+        'Meet every condition and Rozine prepares your bond-readiness file.',
+    'business.readiness.milestones.bond.reached':
+        'Every condition is met. Rozine prepares your bond-readiness file.',
+    'business.readiness.milestones.clinic.title':
+        'RSE Investment Clinic referral',
+    'business.readiness.milestones.clinic.summary':
+        'Meet every condition and Rozine can refer you to the Rwanda Stock Exchange Investment Clinic, with your consent. Referrals start once Rozine’s agreement with the RSE is signed.',
+    'business.readiness.milestones.clinic.reached':
+        'Every condition is met. Rozine refers you, with your consent, once its agreement with the RSE is signed.',
+    'business.readiness.milestones.condition.stage': 'Stage 3 or 4',
+    'business.readiness.milestones.condition.ready_6_months':
+        'Ready for 6 months in a row',
+    'business.readiness.milestones.condition.ready_12_months':
+        'Ready for 12 months in a row',
+    'business.readiness.milestones.condition.notes_on_time':
+        '3 or more Rozine notes, every instalment collected on its due day',
+    'business.readiness.milestones.condition.audited_statements':
+        'Audited annual statements uploaded',
+    'business.readiness.milestones.condition.limited_company':
+        'A limited company',
+    'business.readiness.milestones.condition.trading_3_years':
+        '3 or more years trading',
+    'business.readiness.milestones.condition.no_proceedings':
+        'No major legal proceedings',
+    'business.readiness.milestones.state.met': 'Met',
+    'business.readiness.milestones.state.not_met': 'Not met',
+    'business.readiness.milestones.state.pending': 'Pending',
     'business.readiness.stages': 'The four stages',
     'business.readiness.stage_from': 'From {amount} a month',
     'business.readiness.current': 'Current',

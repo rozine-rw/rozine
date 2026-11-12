@@ -186,6 +186,54 @@
             "passed": 2,
             "total": 2
         },
+        "milestones": {
+            "bond": {
+                "reached": false,
+                "conditions": [
+                    {
+                        "key": "stage",
+                        "state": "met"
+                    },
+                    {
+                        "key": "ready_6_months",
+                        "state": "pending"
+                    },
+                    {
+                        "key": "notes_on_time",
+                        "state": "pending"
+                    },
+                    {
+                        "key": "audited_statements",
+                        "state": "met"
+                    }
+                ]
+            },
+            "clinic": {
+                "reached": false,
+                "conditions": [
+                    {
+                        "key": "limited_company",
+                        "state": "met"
+                    },
+                    {
+                        "key": "trading_3_years",
+                        "state": "met"
+                    },
+                    {
+                        "key": "no_proceedings",
+                        "state": "pending"
+                    },
+                    {
+                        "key": "stage",
+                        "state": "met"
+                    },
+                    {
+                        "key": "ready_12_months",
+                        "state": "pending"
+                    }
+                ]
+            }
+        },
         "links": {
             "home": {
                 "url": "/preview/business-home",
