@@ -195,7 +195,7 @@ const fr: Catalog = {
     'suite.add_investor.body':
         'Votre identité est déjà vérifiée pour votre compte Entreprise : elle ne vous sera pas redemandée. Lisez et acceptez les conditions Investisseur pour commencer à investir.',
     'suite.add_investor.accept':
-        "J'ai lu et j'accepte ces conditions Investisseur.",
+        'Continuer vaut acceptation de ces conditions Investisseur.',
     'suite.add_investor.confirm': "Ajouter l'accès Investisseur",
     'suite.add_investor.cancel': 'Annuler',
     'suite.add_investor.network_error':
@@ -4443,7 +4443,7 @@ const fr: Catalog = {
         other: 'Ajuster à {count} titres',
     },
     'investor.cart.whole.risks_first':
-        'Confirmez d’abord les déclarations de risque dans le paiement d’une offre, puis payez tout le panier.',
+        'Confirmez d’abord les déclarations de risque, puis payez tout le panier.',
     'investor.cart.whole.open_checkout': 'Ouvrir le paiement',
     'investor.cart.whole.held_title': 'Confirmez votre panier',
     'investor.cart.whole.held_lead':
@@ -4455,8 +4455,8 @@ const fr: Catalog = {
     'investor.cart.whole.line_return': 'Rendement {return} · frais {fee}',
     'investor.cart.whole.net_return': 'Rendement attendu après frais',
     'investor.cart.whole.acknowledge':
-        'J’ai lu ces conditions et je confirme chaque titre de ce panier.',
-    'investor.cart.whole.confirm': 'Tout confirmer · {amount}',
+        'Payer confirme que vous avez lu le prospectus de chaque titre.',
+    'investor.cart.whole.confirm': 'Payer {amount}',
     'investor.cart.whole.release': 'Libérer tous les titres',
     'investor.cart.whole.requoted':
         'Les conditions ont changé avant votre confirmation. Vérifiez le nouveau total et le palier, puis confirmez à nouveau.',
@@ -4641,7 +4641,7 @@ const fr: Catalog = {
     'investor.checkout.deposit': 'Déposer',
     'investor.checkout.disclosure': 'COÛTS ET RISQUES',
     'investor.checkout.acknowledge':
-        "J'ai lu l'information sur les coûts et les risques ({version}).",
+        'Payer confirme que vous avez lu le prospectus de ce titre ({version}).',
     'investor.checkout.refusal.TRADE_BELOW_MINIMUM':
         'Investissez au moins un titre.',
     'investor.checkout.refusal.INSUFFICIENT_AVAILABLE_FUNDS':
@@ -4657,7 +4657,7 @@ const fr: Catalog = {
     'investor.checkout.refusal.VERSION_CONFLICT':
         'Les conditions ont changé pendant votre lecture. Relisez-les et confirmez à nouveau.',
     'investor.checkout.processing': 'Confirmation…',
-    'investor.checkout.confirm': 'Confirmer l’investissement · {amount}',
+    'investor.checkout.confirm': 'Payer {amount}',
     'investor.checkout.fine_print':
         'Fonds engagés immédiatement · Rendements projetés, non garantis',
     'investor.checkout.confirmed': 'Investissement confirmé',
@@ -4872,10 +4872,9 @@ const fr: Catalog = {
         '✓ OTP envoyé · saisissez le code à 6 chiffres',
     'investor.signup.agree.head_title': 'Vérifier et accepter',
     'investor.signup.agree.title': 'Vérifier et accepter',
-    'investor.signup.agree.terms_before': "J'accepte les",
+    'investor.signup.agree.terms_before': 'En continuant, vous acceptez les',
     'investor.signup.agree.terms': 'Conditions générales de Rozine',
-    'investor.signup.agree.terms_after': '.',
-    'investor.signup.agree.privacy_before': "J'ai lu la",
+    'investor.signup.agree.privacy_before': 'et la',
     'investor.signup.agree.privacy': 'Note de confidentialité',
     'investor.signup.agree.privacy_after': '.',
     'investor.kyc.progress': 'Progression de la vérification',
@@ -7122,7 +7121,7 @@ const fr: Catalog = {
     'investor.checkout.c3.held_amount': 'Réservé sur le disponible',
     'investor.checkout.c3.release': 'Libérer ces titres',
     'investor.checkout.c3.confirm_fine_print':
-        "Confirmer engage le montant réservé. Un engagement confirmé est définitif et ne peut pas être annulé. Si la levée n'est pas complète, votre argent revient dans votre portefeuille.",
+        "Payer engage le montant réservé. Vous pouvez vous retirer, avec un remboursement complet, tant que la levée n'a pas atteint 100 %. Si la levée n'est pas complète, votre argent revient dans votre portefeuille.",
     'investor.checkout.c3.at_maturity': {
         one: 'Retour sur {count} mois',
         other: 'Retour sur {count} mois',
@@ -7297,14 +7296,15 @@ const fr: Catalog = {
         "Vos informations d'identité doivent être revues",
     'investor.notices.verification.rejected.body':
         "La conformité n'a pas pu vérifier vos informations : {reason}",
-    'investor.checkout.risks.title': 'Avant votre premier investissement',
+    'investor.checkout.risks.title': 'Avant d’investir',
     'investor.checkout.risks.lead':
-        'Cochez chaque déclaration pour confirmer que vous la comprenez.',
-    'investor.checkout.risks.accept': 'Je comprends ces risques',
+        'Lisez ces cinq déclarations. Vous les confirmez une seule fois ; le paiement ne vous demandera rien de plus.',
+    'investor.checkout.risks.understood': 'Je comprends tout ce qui précède',
+    'investor.checkout.risks.accept': 'Continuer',
     'investor.checkout.risks.failed':
         "Nous n'avons pas pu enregistrer votre réponse. Réessayez.",
     'investor.checkout.c3.reserve_after_risks':
-        'Confirmez les déclarations de risque ci-dessus pour réserver.',
+        'Confirmez d’abord les déclarations de risque pour réserver.',
     'investor.checkout.c3.reserve_unavailable':
         "La réservation n'est pas disponible pour le moment.",
     'investor.checkout.c3.reserve_fine_print':

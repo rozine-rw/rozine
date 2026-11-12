@@ -496,7 +496,6 @@ function AddInvestorAccess({
         { data: IdentityContext }
     >();
     const [requestId] = useState(() => crypto.randomUUID());
-    const [accepted, setAccepted] = useState(false);
     const [failure, setFailure] = useState<string | null>(null);
 
     async function add() {
@@ -506,7 +505,7 @@ function AddInvestorAccess({
             expected_revision: expectedRevision,
             terms_version: offer.terms.version,
             terms_sha256: offer.terms.sha256,
-            accepted,
+            accepted: true,
             request_id: requestId,
         }));
 
@@ -558,15 +557,9 @@ function AddInvestorAccess({
             <p className="rounded-xl bg-rz-accent-tint p-3 text-[13px] leading-normal text-rz-ink">
                 {offer.terms.text}
             </p>
-            <label className="flex items-start gap-2.5 text-sm text-rz-ink">
-                <input
-                    type="checkbox"
-                    checked={accepted}
-                    onChange={(event) => setAccepted(event.target.checked)}
-                    className="mt-0.5 size-4 shrink-0"
-                />
+            <p className="text-[12.5px] leading-normal text-rz-body">
                 {t('suite.add_investor.accept')}
-            </label>
+            </p>
             {failure && (
                 <p role="alert" className="text-sm text-rz-danger-text">
                     {t(
@@ -588,7 +581,7 @@ function AddInvestorAccess({
                 </button>
                 <button
                     type="button"
-                    disabled={!accepted || command.processing}
+                    disabled={command.processing}
                     aria-busy={command.processing || undefined}
                     onClick={() => void add()}
                     className="h-10 flex-1 rounded-[11px] bg-rz-accent px-4 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"

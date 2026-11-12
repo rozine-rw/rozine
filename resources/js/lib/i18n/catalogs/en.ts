@@ -187,7 +187,8 @@ const en = {
     'suite.add_investor.title': 'Add Investor access',
     'suite.add_investor.body':
         'Your identity is already verified for your Business account, so you will not be asked to verify it again. Read and accept the Investor terms to start investing.',
-    'suite.add_investor.accept': 'I have read and accept these Investor terms.',
+    'suite.add_investor.accept':
+        'Continuing means you agree to these Investor terms.',
     'suite.add_investor.confirm': 'Add Investor access',
     'suite.add_investor.cancel': 'Cancel',
     'suite.add_investor.network_error':
@@ -4261,7 +4262,7 @@ const en = {
         other: 'Fit to {count} notes',
     },
     'investor.cart.whole.risks_first':
-        'Confirm the risk statements on a deal’s checkout first, then check out the whole cart.',
+        'Confirm the risk statements first, then check out the whole cart.',
     'investor.cart.whole.open_checkout': 'Open checkout',
     'investor.cart.whole.held_title': 'Confirm your cart',
     'investor.cart.whole.held_lead':
@@ -4273,8 +4274,8 @@ const en = {
     'investor.cart.whole.line_return': 'Return {return} · fee {fee}',
     'investor.cart.whole.net_return': 'Expected return after fee',
     'investor.cart.whole.acknowledge':
-        'I have read these terms and confirm every note in this cart.',
-    'investor.cart.whole.confirm': 'Confirm all · {amount}',
+        'Paying confirms you have read the prospectus for each note.',
+    'investor.cart.whole.confirm': 'Pay {amount}',
     'investor.cart.whole.release': 'Release all notes',
     'investor.cart.whole.requoted':
         'The terms changed before you confirmed. Check the new total and band, then confirm again.',
@@ -4457,7 +4458,7 @@ const en = {
     'investor.checkout.deposit': 'Deposit',
     'investor.checkout.disclosure': 'COST AND RISK',
     'investor.checkout.acknowledge':
-        'I have read the cost and risk disclosure ({version}).',
+        'Paying confirms you have read the prospectus for this note ({version}).',
     'investor.checkout.refusal.TRADE_BELOW_MINIMUM':
         'Invest at least one note.',
     'investor.checkout.refusal.INSUFFICIENT_AVAILABLE_FUNDS':
@@ -4473,7 +4474,7 @@ const en = {
     'investor.checkout.refusal.VERSION_CONFLICT':
         'The terms changed while you were reading. Review them and confirm again.',
     'investor.checkout.processing': 'Confirming…',
-    'investor.checkout.confirm': 'Confirm investment · {amount}',
+    'investor.checkout.confirm': 'Pay {amount}',
     'investor.checkout.fine_print':
         'Funds committed instantly · Returns are projected, not guaranteed',
     'investor.checkout.confirmed': 'Investment confirmed',
@@ -4684,10 +4685,9 @@ const en = {
         '✓ OTP sent · enter the 6-digit code to verify',
     'investor.signup.agree.head_title': 'Review & agree',
     'investor.signup.agree.title': 'Review & agree',
-    'investor.signup.agree.terms_before': 'I accept the Rozine',
+    'investor.signup.agree.terms_before': 'Continuing means you agree to the',
     'investor.signup.agree.terms': 'Terms & Conditions',
-    'investor.signup.agree.terms_after': '.',
-    'investor.signup.agree.privacy_before': 'I have read the',
+    'investor.signup.agree.privacy_before': 'and the',
     'investor.signup.agree.privacy': 'Privacy Note',
     'investor.signup.agree.privacy_after': '.',
     'investor.kyc.progress': 'Verification progress',
@@ -6806,7 +6806,7 @@ const en = {
     'investor.checkout.c3.held_amount': 'Held from Available',
     'investor.checkout.c3.release': 'Release these notes',
     'investor.checkout.c3.confirm_fine_print':
-        "Confirming commits your held amount. A confirmed commitment is final and can't be cancelled. If the raise doesn't fill, your money comes back to your wallet.",
+        "Paying commits your held amount. You can withdraw it for a full refund until the raise reaches 100%. If the raise doesn't fill, your money comes back to your wallet.",
     'investor.checkout.c3.at_maturity': {
         one: 'Back over {count} month',
         other: 'Back over {count} months',
@@ -6981,14 +6981,15 @@ const en = {
         'Your identity details need another look',
     'investor.notices.verification.rejected.body':
         'Compliance could not verify your details: {reason}',
-    'investor.checkout.risks.title': 'Before your first investment',
+    'investor.checkout.risks.title': 'Before you invest',
     'investor.checkout.risks.lead':
-        'Tick each statement to confirm you understand it.',
-    'investor.checkout.risks.accept': 'I understand these risks',
+        'Please read these five statements. You confirm them once; checkout then has nothing extra to ask.',
+    'investor.checkout.risks.understood': 'I understand all of the above',
+    'investor.checkout.risks.accept': 'Continue',
     'investor.checkout.risks.failed':
         "We couldn't record your answer. Try again.",
     'investor.checkout.c3.reserve_after_risks':
-        'Confirm the risk statements above to reserve.',
+        'Confirm the risk statements first to reserve.',
     'investor.checkout.c3.reserve_unavailable':
         "Reserving isn't available right now.",
     'investor.checkout.c3.reserve_fine_print':
