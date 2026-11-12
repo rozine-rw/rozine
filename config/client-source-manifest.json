@@ -54,6 +54,7 @@
         "resources/js/actions/App/Http/Controllers/BusinessMonthlyFiguresController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessNoticesController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessPayoutAccountController.ts",
+        "resources/js/actions/App/Http/Controllers/BusinessProspectusController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessPublicationController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessRepaymentController.ts",
         "resources/js/actions/App/Http/Controllers/BusinessStatementController.ts",
@@ -74,6 +75,7 @@
         "resources/js/actions/App/Http/Controllers/InvestorPortfolioController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorPrimaryController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorProfileController.ts",
+        "resources/js/actions/App/Http/Controllers/InvestorProspectusController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorRiskAcknowledgementController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorVerificationController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorWalletController.ts",
@@ -265,6 +267,8 @@
         "resources/js/routes/business/academy/index.ts",
         "resources/js/routes/business/applications/index.ts",
         "resources/js/routes/business/applications/operations/index.ts",
+        "resources/js/routes/business/applications/prospectus/documents/index.ts",
+        "resources/js/routes/business/applications/prospectus/index.ts",
         "resources/js/routes/business/applications/publish/index.ts",
         "resources/js/routes/business/audit-reports/disputes/index.ts",
         "resources/js/routes/business/audit-reports/disputes/proofs/index.ts",
@@ -795,6 +799,7 @@
         "resources/js/pages/business/note.tsx",
         "resources/js/pages/business/onboarding.tsx",
         "resources/js/pages/business/profile.tsx",
+        "resources/js/pages/business/prospectus.tsx",
         "resources/js/pages/business/publish.tsx",
         "resources/js/pages/business/rating.tsx",
         "resources/js/pages/business/readiness.tsx",
@@ -817,6 +822,7 @@
         "resources/js/pages/investor/market.tsx",
         "resources/js/pages/investor/portfolio.tsx",
         "resources/js/pages/investor/profile.tsx",
+        "resources/js/pages/investor/prospectus.tsx",
         "resources/js/pages/investor/verification.tsx",
         "resources/js/pages/investor/verified.tsx",
         "resources/js/pages/investor/wallet.tsx",
@@ -827,10 +833,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 799,
-        "generated": 341,
+        "totalTrackedSources": 805,
+        "generated": 345,
         "declarationOnly": 20,
-        "authoredExecutable": 438
+        "authoredExecutable": 440
     },
-    "coverageSetSha256": "ada53b04a26e12da4223eabbb62b0b0577cb85123b3370dae7fb4ce55631a8f6"
+    "coverageSetSha256": "a9b86354553a7ee316287fa9bc0b77c48d30e9ee0cd564005386da7145bc8267"
 }

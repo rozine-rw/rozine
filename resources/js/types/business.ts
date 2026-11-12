@@ -2035,3 +2035,98 @@ export type BusinessCampaignV2Props = Omit<
         progress: CampaignProgressV2;
     };
 };
+
+/** One use-of-funds line (PRO-R02): whole RWF; a line of 20% or more of principal carries its quote. */
+export type ProspectusFundsLine = {
+    label: string;
+    amount: string;
+    quote_amount: string | null;
+    /** An uploaded quote or invoice for this application; P-G05 counts only these. */
+    quote_document_id: string | null;
+};
+
+export type ProspectusForecastMonth = {
+    month: string;
+    revenue: string;
+    costs: string;
+    /** An uploaded signed contract for this application; P-G06 counts only these. */
+    contract_document_id: string | null;
+};
+
+/** A quote, invoice or signed contract the Business uploaded as prospectus evidence. */
+export type ProspectusDocument = {
+    id: string;
+    kind: 'quote' | 'contract';
+    filename: string;
+    media_type: string;
+    size_bytes: number;
+    uploaded_at: string;
+};
+
+export type ProspectusProfile = {
+    name: string;
+    role: 'director' | 'owner' | 'representative' | '';
+    text: string;
+};
+
+export type ProspectusRisk = { text: string; concentration: boolean };
+
+export type ProspectusInputs = {
+    purpose: string;
+    use_of_funds: ProspectusFundsLine[];
+    forecast: ProspectusForecastMonth[];
+    assumptions: string;
+    downside: string;
+    profiles: ProspectusProfile[];
+    largest_customer_share_percent: number | null;
+    risks: ProspectusRisk[];
+};
+
+/** A PRO-R03 gate as the server judged it; `fix` names the exact change when it fails. */
+export type ProspectusGate = {
+    id: string;
+    section: string;
+    passed: boolean;
+    fix: string | null;
+};
+
+/** The Listing Builder (BRS v3.0 §19): the prospectus, the facts it is judged against and its gates. */
+export type BusinessProspectusProps = {
+    contract_version: 'business-prospectus-v1';
+    server_time: string;
+    sections: string[];
+    shell_links: BusinessShellLinks;
+    application: { id: string; title: string };
+    /** The latest saved version; 0 before the first save. */
+    version: number;
+    inputs: ProspectusInputs;
+    signed: { version: number; fingerprint: string; signed_at: string } | null;
+    /** Why the facts cannot be read now (for example a report that is not current). */
+    unavailable: string | null;
+    facts: {
+        principal: string;
+        term_months: number;
+        instalment: string;
+        verified_monthly_revenue: string;
+        latest_sealed_report_at: string | null;
+        registered_names: string[];
+        required_people: { name: string; role: string }[];
+        evidence: Record<string, string>;
+        signed: boolean;
+        platform_fee: string;
+        net_of_fee: string;
+    } | null;
+    evaluation: {
+        policy_version: string;
+        gates: ProspectusGate[];
+        may_sign: boolean;
+        publishable: boolean;
+    } | null;
+    documents: ProspectusDocument[];
+    actions: {
+        save: { url: string; method: 'put' } | null;
+        upload: RouteAction | null;
+        sign: RouteAction | null;
+    };
+    links: { close: RouteLink };
+};

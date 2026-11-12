@@ -54,18 +54,23 @@ final class PrimaryReservationFixture
 
     /**
      * A sealed, co-signed, released and listed raise. `$sealing` may replace the authenticator code
-     * the seal is confirmed with, as a pack whose partners have their own secrets needs.
+     * the seal is confirmed with, as a pack whose partners have their own secrets needs. `$beforeRelease`
+     * runs on the accepted application before it is released, as a signed prospectus needs.
      *
      * @param  (\Closure(array<string, mixed>): string)|null  $sealing
+     * @param  (\Closure(array<string, mixed>): void)|null  $beforeRelease
      */
-    public static function campaign(bool $recordConsent = true, ?\Closure $sealing = null): BusinessCampaign
+    public static function campaign(bool $recordConsent = true, ?\Closure $sealing = null, ?\Closure $beforeRelease = null, int $signatories = 1, ?int $requiredSignatories = null): BusinessCampaign
     {
-        $fixture = AuditSealingFixture::ready(recordConsent: $recordConsent);
+        $fixture = AuditSealingFixture::ready($signatories, requiredSignatories: $requiredSignatories, recordConsent: $recordConsent);
         if ($sealing !== null) {
             $fixture['code'] = $sealing($fixture);
         }
         AuditSealingFixture::seal($fixture);
         AuditSealingFixture::publish($fixture);
+        if ($beforeRelease !== null) {
+            $beforeRelease($fixture);
+        }
         $campaigns = app(BusinessCampaignStore::class);
         $campaigns->release($fixture['audit']['staff']->id, $fixture['application']->id, 0, 'Verified release.', (string) Str::uuid());
         $campaigns->publish($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'],

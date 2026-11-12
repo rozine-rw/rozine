@@ -4546,6 +4546,49 @@ const rw: Catalog = {
     'investor.deal.notes_of': "{sold} kuri {total} z'impapuro",
     'investor.deal.details': 'IBISOBANURO',
     'investor.deal.photos': 'Amafoto',
+    'investor.deal.prospectus.title': 'Prosipegitusi · verisiyo {version}',
+    'investor.deal.prospectus.signed': 'Yasinywe',
+    'investor.deal.prospectus.signed_by': 'Yasinywe na {name} ku wa {date}',
+    'investor.deal.prospectus.fingerprint': 'Ikimenyetso {fingerprint}…',
+    'investor.deal.prospectus.read': 'Soma',
+    'investor.prospectus.title': 'Prosipegitusi ya {name}',
+    'investor.prospectus.back': 'Subira ku ishoramari',
+    'investor.prospectus.signed':
+        'Verisiyo {version}, yasinywe na {name} ku wa {date}',
+    'investor.prospectus.fingerprint': 'Ikimenyetso {fingerprint}',
+    'investor.prospectus.purpose': 'Icyo amafaranga agenewe',
+    'investor.prospectus.terms': 'Ibisabwa n’amafaranga ya serivisi',
+    'investor.prospectus.principal': 'Amafaranga akusanywa',
+    'investor.prospectus.fee': 'Amafaranga ya Rozine (3%)',
+    'investor.prospectus.net': 'Asigaye ikigo kizakoresha',
+    'investor.prospectus.term': 'Igihe',
+    'investor.prospectus.instalment': 'Ubwishyu bwa buri kwezi',
+    'investor.prospectus.funds': 'Imikoreshereze y’amafaranga',
+    'investor.prospectus.quoted': 'Igiciro kirahari',
+    'investor.prospectus.financials':
+        'Imari yemejwe n’umucungamari w’umwuga n’iteganyagihe',
+    'investor.prospectus.verified_revenue':
+        'Impuzandengo y’amafaranga yinjira buri kwezi yemejwe',
+    'investor.prospectus.sealed': 'Raporo iheruka y’umucungamari',
+    'investor.prospectus.forecast': 'Iteganyagihe ry’ikigo',
+    'investor.prospectus.month': 'Ukwezi',
+    'investor.prospectus.revenue': 'Amafaranga yinjira',
+    'investor.prospectus.costs': 'Amafaranga asohoka',
+    'investor.prospectus.contracted': 'Amasezerano yasinywe arahari',
+    'investor.prospectus.assumptions': 'Ibyo ushingiyeho',
+    'investor.prospectus.downside': 'Igihe ibicuruzwa bigabanutse',
+    'investor.prospectus.management': 'Ubuyobozi',
+    'investor.prospectus.role.representative': 'Uhagarariye ikigo',
+    'investor.prospectus.role.director': 'Umuyobozi',
+    'investor.prospectus.role.owner': 'Nyir’ikigo',
+    'investor.prospectus.risks': 'Ingaruka',
+    'investor.prospectus.largest_customer':
+        'Umukiriya munini azana {percent}% by’amafaranga yinjira.',
+    'investor.prospectus.concentration': 'Kwishingikiriza ku mukiriya umwe',
+    'investor.prospectus.months': {
+        one: 'Ukwezi {count}',
+        other: 'Amezi {count}',
+    },
     'investor.deal.reported_by_business': "Byatanzwe n'ikigo",
     'investor.deal.use_of_funds': 'Icyo amafaranga azakoreshwa',
     'investor.deal.use.inventory': 'Ibicuruzwa',
@@ -8587,6 +8630,89 @@ const rw: Catalog = {
         "Imibare y'ikigo ntigihura n'inyandiko zacyo. Ikigo kigomba kongera kuyibika.",
     'auditor.verify.refused.STATEMENT_TRANSCRIPTION_STALE':
         'Ikigo cyabitse imibare mishya kuva ufunguye dosiye. Ongera uyifungure uyisuzume.',
+    'business.prospectus.title': 'Gutegura itangazo',
+    'business.prospectus.back': 'Subira Ahabanza',
+    'business.prospectus.draft': 'Umushinga · verisiyo {version}',
+    'business.prospectus.signed': 'Byasinywe · verisiyo {version}',
+    'business.prospectus.locked':
+        'Byasinywe ku wa {date} birafungwa. Igikumwe {fingerprint}…',
+    'business.prospectus.unavailable':
+        'Ntidushobora kugenzura itangazo ryawe ugereranyije n’amasezerano yemejwe ubu ({code}). Imishinga yawe iracyabikwa.',
+    'business.prospectus.facts.title': 'Amasezerano yawe yemejwe',
+    'business.prospectus.facts.note':
+        'Biva ku cyifuzo wemeye no ku nyandiko z’imari zagenzuwe. Ntushobora kubihindura hano.',
+    'business.prospectus.facts.principal': 'Amafaranga yakusanyijwe',
+    'business.prospectus.facts.fee': 'Amafaranga y’urubuga (3%)',
+    'business.prospectus.facts.net': 'Ayo gukoresha muri gahunda yawe',
+    'business.prospectus.facts.term': 'Igihe',
+    'business.prospectus.facts.instalment': 'Igice cya buri kwezi',
+    'business.prospectus.facts.revenue':
+        'Impuzandengo y’amafaranga yinjira buri kwezi yagenzuwe',
+    'business.prospectus.checks.title':
+        'Igenzura · {passed} kuri {total} byatsinze',
+    'business.prospectus.checks.passed': 'Byatsinze',
+    'business.prospectus.purpose.title': 'Intego n’imikoreshereze y’amafaranga',
+    'business.prospectus.purpose.label': 'Icyo amafaranga azakoreshwa',
+    'business.prospectus.funds.title': 'Imikoreshereze y’amafaranga',
+    'business.prospectus.funds.label': 'Icyo bizagura',
+    'business.prospectus.funds.amount': 'Amafaranga (RWF)',
+    'business.prospectus.funds.quote':
+        'Igiciro cyatanzwe cyangwa fagitire (RWF)',
+    'business.prospectus.funds.add': 'Ongeraho umurongo',
+    'business.prospectus.remove': 'Kuraho',
+    'business.prospectus.funds.quote_document': 'Inyandiko y’igiciro',
+    'business.prospectus.evidence.title': 'Ibiciro n’amasezerano',
+    'business.prospectus.evidence.note':
+        'Shyiraho igiciro cyangwa fagitire y’uwo muguzi kuri buri murongo ungana na 20% cyangwa birenga by’inguzanyo, n’amasezerano yasinywe ku kwezi kurenga 25% by’amafaranga yinjiye yemejwe. Hanyuma uhitemo buri nyandiko iruhande rw’umurongo cyangwa ukwezi kwayo. PDF, PNG cyangwa JPEG, kugeza kuri 10 MiB. Inyandiko yashyizweho ntishobora guhindurwa.',
+    'business.prospectus.evidence.empty': 'Nta nyandiko irashyirwaho.',
+    'business.prospectus.evidence.none': 'Nta nyandiko',
+    'business.prospectus.evidence.kind': 'Ubwoko bw’inyandiko',
+    'business.prospectus.evidence.kind_quote': 'Igiciro cyangwa fagitire',
+    'business.prospectus.evidence.kind_contract': 'Amasezerano yasinywe',
+    'business.prospectus.evidence.file': 'Dosiye',
+    'business.prospectus.evidence.upload': 'Shyiraho',
+    'business.prospectus.evidence.uploading': 'Birashyirwaho…',
+    'business.prospectus.forecast.title': 'Iteganyagihe ry’imari',
+    'business.prospectus.forecast.revenue':
+        'Amafaranga yinjira muri {month} (RWF)',
+    'business.prospectus.forecast.costs':
+        'Amafaranga asohoka muri {month} (RWF)',
+    'business.prospectus.forecast.contract': 'Amasezerano yasinywe ya {month}',
+    'business.prospectus.forecast.assumptions': 'Ibyo ushingiyeho',
+    'business.prospectus.forecast.downside': 'Igihe ibicuruzwa bigabanutse',
+    'business.prospectus.management.title': 'Ubuyobozi',
+    'business.prospectus.management.name': 'Izina nk’uko ryanditswe',
+    'business.prospectus.management.role': 'Inshingano',
+    'business.prospectus.management.text': 'Ibyerekeye {name}',
+    'business.prospectus.management.add': 'Ongeraho umuntu',
+    'business.prospectus.management.roles.representative':
+        'Uhagarariye ikigo ku mugaragaro',
+    'business.prospectus.management.roles.director': 'Umuyobozi',
+    'business.prospectus.management.roles.owner':
+        'Nyir’ikigo (10% cyangwa birenga)',
+    'business.prospectus.risks.title': 'Ibishobora guteza igihombo',
+    'business.prospectus.risks.share':
+        'Umugabane w’umukiriya munini mu byinjira (%)',
+    'business.prospectus.risks.text': 'Ingorane ya {number}',
+    'business.prospectus.risks.concentration': 'Gushingira ku mukiriya umwe',
+    'business.prospectus.risks.add': 'Ongeraho ingorane',
+    'business.prospectus.save': 'Bika umushinga',
+    'business.prospectus.saving': 'Birabikwa…',
+    'business.prospectus.declaration.title': 'Itangazo ry’ukuri',
+    'business.prospectus.declaration.text':
+        'Ndemeza ko iri tangazo ari ukuri kandi ryuzuye, kandi ko abashoramari bashobora kuryizera. Rimaze gusinywa rirafungwa rigatangazwa uko ryanditse.',
+    'business.prospectus.declaration.ready':
+        'Igenzura ryose ryatsinze. Uhagarariye ikigo ashobora gusinya ubu.',
+    'business.prospectus.declaration.save_first':
+        'Bika impinduka mbere yo gusinya.',
+    'business.prospectus.declaration.waiting':
+        'Gusinya bifungukira uhagarariye ikigo igihe igenzura ryose ritsinze.',
+    'business.prospectus.sign': 'Sinya kandi ufunge',
+    'business.prospectus.signing': 'Birasinywa…',
+    'business.prospectus.facts.months': {
+        one: 'Ukwezi {count}',
+        other: 'Amezi {count}',
+    },
 };
 
 export default rw;
