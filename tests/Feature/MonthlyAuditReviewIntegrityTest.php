@@ -178,8 +178,8 @@ it('denies stale review stages and invalid staff decisions without publishing', 
 });
 
 it('returns the retained signature for a second UUID without recording another signature', function (): void {
-    $fixture = Fixture::ready(kind: 'monthly');
-    Fixture::seal($fixture);
+    $fixture = Fixture::ready();
+    Fixture::sealLegacy($fixture);
     $result = Fixture::cosign($fixture);
     $retry = Fixture::cosign($fixture, revision: 2);
     expect($retry['code'])->toBe('REPORT_PUBLISHED')->and($retry['data'])->toBe($result['data']);

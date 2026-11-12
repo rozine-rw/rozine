@@ -39,6 +39,10 @@ enum PartyNoticeKind: string
     case BusinessReportSealed = 'business.report_sealed';
     case BusinessReportReviewClosing = 'business.report_review_closing';
     case BusinessReportingWindowOpen = 'business.reporting_window_open';
+    case BusinessReadinessStageChanged = 'business.readiness_stage_changed';
+    case BusinessReadinessRequirementDue = 'business.readiness_requirement_due';
+    case BusinessReadinessRequirementClosing = 'business.readiness_requirement_closing';
+    case BusinessReadinessRequirementOverdue = 'business.readiness_requirement_overdue';
     case BusinessVisitReadyOpen = 'business.visit_ready_open';
     case BusinessVisitReadyReminder = 'business.visit_ready_reminder';
     case AuditorAccreditationApproved = 'auditor.accreditation_approved';
@@ -89,6 +93,7 @@ enum PartyNoticeKind: string
             self::RaiseRefunded, self::RaiseFunded, self::BusinessRaiseExpired, self::BusinessRaiseFunded => 'fundraising',
             self::CommitmentConfirmed, self::HoldingIssued => 'portfolio',
             self::ReportPublished, self::BusinessReportSealed, self::BusinessReportReviewClosing, self::BusinessReportingWindowOpen,
+            self::BusinessReadinessStageChanged, self::BusinessReadinessRequirementDue, self::BusinessReadinessRequirementClosing, self::BusinessReadinessRequirementOverdue => 'reporting',
             self::BusinessVisitReadyOpen, self::BusinessVisitReadyReminder => 'reporting',
             self::PasswordChanged, self::PayoutAccountLinked, self::PayoutAccountUnlinked, self::NewDevice => 'security',
             self::BusinessApplicationApproved => 'underwriting',

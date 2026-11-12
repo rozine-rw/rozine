@@ -112,6 +112,7 @@
                 "method": "get"
             },
             "reports": null,
+            "readiness": null,
             "market": null,
             "profile": null
         },

@@ -88,7 +88,7 @@ it('serializes distinct mandated signatures and publishes only after the losing 
 it('holds signing-key validity through the actual seal or Business signature write', function (bool $cosign): void {
     $fixture = Fixture::ready();
     if ($cosign) {
-        Fixture::seal($fixture);
+        Fixture::sealLegacy($fixture);
     }
     $default = DB::getDefaultConnection();
     $event = 'eloquent.creating: '.($cosign ? AuditReportSignature::class : AuditReportSeal::class);
@@ -118,7 +118,7 @@ it('holds signing-key validity through the actual seal or Business signature wri
 
 it('serializes amendment and co-sign commands so only a pre-amendment signature can publish the parent', function (): void {
     $fixture = Fixture::ready();
-    Fixture::seal($fixture);
+    Fixture::sealLegacy($fixture);
     $amendRequest = (string) Str::uuid();
     $signRequest = (string) Str::uuid();
     expect(auditSigningContenders([
@@ -139,7 +139,7 @@ it('serializes amendment and co-sign commands so only a pre-amendment signature 
 
 it('holds the same parent lock against direct competing amendment or signature inserts', function (bool $amendFirst): void {
     $fixture = Fixture::ready();
-    Fixture::seal($fixture);
+    Fixture::sealLegacy($fixture);
     $parent = $fixture['report']->fresh();
     $publication = AuditReportPublication::query()->firstOrFail();
     $default = DB::getDefaultConnection();
@@ -181,13 +181,13 @@ it('holds the same parent lock against direct competing amendment or signature i
     }
 })->with([false, true]);
 
-it('serializes monthly signers so only one independently attributed signature publishes', function (): void {
+it('refuses simultaneous monthly Business signatures without recording or publishing anything', function (): void {
     $fixture = Fixture::ready(2, 'monthly');
     Fixture::seal($fixture);
     expect(auditSigningContenders(array_map(fn (int $signer): Closure => function () use ($fixture, $signer): void {
-        expect(Fixture::cosign($fixture, $signer)['code'])->toBeIn(['REPORT_PUBLISHED', 'VERSION_CONFLICT']);
-    }, [0, 1])))->toBe([0, 0])->and(AuditReportSignature::query()->count())->toBe(1)
-        ->and(AuditReportPublication::query()->firstOrFail()->published_reason)->toBe('signed');
+        expect(Fixture::cosign($fixture, $signer)['code'])->toBe('REPORT_COSIGN_NOT_REQUIRED');
+    }, [0, 1])))->toBe([0, 0])->and(AuditReportSignature::query()->count())->toBe(0)
+        ->and(AuditReportPublication::query()->firstOrFail()->status)->toBe('pending');
 });
 
 it('serializes a monthly dispute with the due worker without publishing a disputed report', function (): void {

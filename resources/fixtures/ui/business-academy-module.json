@@ -1,0 +1,274 @@
+{
+    "component": "business/academy-module",
+    "props": {
+        "identity_context_revision": 3,
+        "key": "bookkeeping",
+        "role": "core",
+        "level": 1,
+        "title": "Keeping your books",
+        "summary": "Record every sale and every payment on the day it happens.",
+        "cards": [
+            {
+                "front": "Books",
+                "back": "Your books are the record of every franc that comes in and goes out of the business, written in one place."
+            },
+            {
+                "front": "Same day",
+                "back": "Write each sale and each payment on the day it happens. Records written later are where gaps begin."
+            },
+            {
+                "front": "Cash sales",
+                "back": "Cash sales are the easiest to forget. Count the till at the close of each day and record the total."
+            },
+            {
+                "front": "Receipts",
+                "back": "Keep a receipt or invoice for every cost. A cost without a receipt is hard for your Audit Partner to verify."
+            },
+            {
+                "front": "One record per transaction",
+                "back": "Each line says the date, the amount, who paid or was paid, and what it was for."
+            },
+            {
+                "front": "Business and personal",
+                "back": "Money you take for yourself is \"paid to owners\". Record it as its own line, never as a business cost."
+            },
+            {
+                "front": "Monthly close",
+                "back": "At the end of each month, add up money in, costs by category and money paid to owners."
+            },
+            {
+                "front": "Your Record Gap",
+                "back": "Each month your Audit Partner compares your figures with what they verify. The difference is your Record Gap."
+            },
+            {
+                "front": "Templates",
+                "back": "You do not need software to keep good books. A notebook or a spreadsheet kept every day is enough."
+            }
+        ],
+        "status": {
+            "state": "open",
+            "attempts": 0,
+            "best": null,
+            "retake_at": null
+        },
+        "attempt": 1,
+        "test": [
+            {
+                "id": 9,
+                "question": "Which records are most often forgotten?",
+                "options": [
+                    {
+                        "id": 1,
+                        "text": "Cash sales"
+                    },
+                    {
+                        "id": 0,
+                        "text": "Bank transfers"
+                    },
+                    {
+                        "id": 2,
+                        "text": "Loan repayments"
+                    }
+                ]
+            },
+            {
+                "id": 10,
+                "question": "Your books are…",
+                "options": [
+                    {
+                        "id": 0,
+                        "text": "A record of every franc in and out"
+                    },
+                    {
+                        "id": 1,
+                        "text": "Only your bank statement"
+                    },
+                    {
+                        "id": 2,
+                        "text": "Your tax return"
+                    }
+                ]
+            },
+            {
+                "id": 2,
+                "question": "Money an owner takes for personal use is recorded as…",
+                "options": [
+                    {
+                        "id": 0,
+                        "text": "A staff cost"
+                    },
+                    {
+                        "id": 1,
+                        "text": "Paid to owners"
+                    },
+                    {
+                        "id": 2,
+                        "text": "Stock"
+                    }
+                ]
+            },
+            {
+                "id": 1,
+                "question": "A cost has no receipt. What is the result?",
+                "options": [
+                    {
+                        "id": 0,
+                        "text": "It is hard to verify"
+                    },
+                    {
+                        "id": 2,
+                        "text": "It becomes paid to owners"
+                    },
+                    {
+                        "id": 1,
+                        "text": "It is always accepted"
+                    }
+                ]
+            },
+            {
+                "id": 8,
+                "question": "A supplier is paid in cash. You should…",
+                "options": [
+                    {
+                        "id": 2,
+                        "text": "Record it next month"
+                    },
+                    {
+                        "id": 0,
+                        "text": "Skip it, it is cash"
+                    },
+                    {
+                        "id": 1,
+                        "text": "Record it with its receipt that day"
+                    }
+                ]
+            },
+            {
+                "id": 11,
+                "question": "Mixing personal spending with business costs…",
+                "options": [
+                    {
+                        "id": 0,
+                        "text": "Lowers your Record Gap"
+                    },
+                    {
+                        "id": 2,
+                        "text": "Has no effect"
+                    },
+                    {
+                        "id": 1,
+                        "text": "Makes your costs wrong"
+                    }
+                ]
+            },
+            {
+                "id": 7,
+                "question": "At the monthly close you add up…",
+                "options": [
+                    {
+                        "id": 1,
+                        "text": "Only money in"
+                    },
+                    {
+                        "id": 0,
+                        "text": "Money in, costs by category and paid to owners"
+                    },
+                    {
+                        "id": 2,
+                        "text": "Only the bank balance"
+                    }
+                ]
+            },
+            {
+                "id": 5,
+                "question": "Your Record Gap compares your figures with…",
+                "options": [
+                    {
+                        "id": 0,
+                        "text": "Last year's figures"
+                    },
+                    {
+                        "id": 2,
+                        "text": "Your competitor's figures"
+                    },
+                    {
+                        "id": 1,
+                        "text": "What your Audit Partner verifies"
+                    }
+                ]
+            },
+            {
+                "id": 3,
+                "question": "What should each record show?",
+                "options": [
+                    {
+                        "id": 2,
+                        "text": "Only the customer name"
+                    },
+                    {
+                        "id": 1,
+                        "text": "Date, amount, who and what for"
+                    },
+                    {
+                        "id": 0,
+                        "text": "Only the amount"
+                    }
+                ]
+            },
+            {
+                "id": 6,
+                "question": "Do you need accounting software at this stage?",
+                "options": [
+                    {
+                        "id": 1,
+                        "text": "No, books kept daily are enough"
+                    },
+                    {
+                        "id": 0,
+                        "text": "Yes, always"
+                    },
+                    {
+                        "id": 2,
+                        "text": "Only for cash sales"
+                    }
+                ]
+            }
+        ],
+        "last": null,
+        "pass_mark": 8,
+        "links": {
+            "submit": {
+                "url": "/preview/business-academy-module",
+                "method": "post"
+            },
+            "close": {
+                "url": "/preview/business-academy",
+                "method": "get"
+            },
+            "home": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/business-reports",
+                "method": "get"
+            },
+            "readiness": {
+                "url": "/preview/business-readiness",
+                "method": "get"
+            },
+            "market": {
+                "url": "/preview/business-market",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/business-profile",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        }
+    }
+}

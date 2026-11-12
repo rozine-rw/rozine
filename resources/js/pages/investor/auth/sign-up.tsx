@@ -76,36 +76,6 @@ function Field({
     );
 }
 
-function Check({
-    checked,
-    onChange,
-    children,
-}: {
-    checked: boolean;
-    onChange: (checked: boolean) => void;
-    children: ReactNode;
-}) {
-    return (
-        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-rz-border bg-rz-surface p-[15px]">
-            <input
-                type="checkbox"
-                checked={checked}
-                onChange={(event) => onChange(event.target.checked)}
-                className="peer sr-only"
-            />
-            <span
-                aria-hidden
-                className="mt-px flex size-[22px] shrink-0 items-center justify-center rounded-[10px] border-2 border-[#d3dae6] bg-rz-surface text-[13px] text-white peer-checked:border-rz-accent-fill peer-checked:bg-rz-accent-fill peer-focus-visible:ring-2 peer-focus-visible:ring-rz-focus-border dark:border-rz-border"
-            >
-                {checked ? '✓' : ''}
-            </span>
-            <span className="text-[13px] leading-normal text-rz-slate">
-                {children}
-            </span>
-        </label>
-    );
-}
-
 /**
  * Investor sign-up (design L3361–3440): six steps — identity, address, contact, security, payment
  * method and agreement. Each step is saved to the server, which answers with the next one, so a
@@ -128,8 +98,8 @@ export default function InvestorSignUp({
         pin: '',
         password: '',
         otp: '',
-        terms: false,
-        privacy: false,
+        terms: true,
+        privacy: true,
     });
     const failure = Object.values(form.errors)[0];
     const percent = Math.round((index / 5) * 100);
@@ -743,27 +713,14 @@ export default function InvestorSignUp({
 
                     {step === 'agree' && (
                         <div className="mt-[18px] flex flex-col gap-3">
-                            <Check
-                                checked={form.data.terms}
-                                onChange={(checked) =>
-                                    form.setData('terms', checked)
-                                }
-                            >
+                            <p className="text-[13px] leading-normal text-rz-slate">
                                 {t('investor.signup.agree.terms_before')}{' '}
                                 <a
                                     href={documents.terms.url}
                                     className="font-semibold text-rz-accent-app-text"
                                 >
                                     {t('investor.signup.agree.terms')}
-                                </a>
-                                {t('investor.signup.agree.terms_after')}
-                            </Check>
-                            <Check
-                                checked={form.data.privacy}
-                                onChange={(checked) =>
-                                    form.setData('privacy', checked)
-                                }
-                            >
+                                </a>{' '}
                                 {t('investor.signup.agree.privacy_before')}{' '}
                                 <a
                                     href={documents.privacy.url}
@@ -772,7 +729,7 @@ export default function InvestorSignUp({
                                     {t('investor.signup.agree.privacy')}
                                 </a>
                                 {t('investor.signup.agree.privacy_after')}
-                            </Check>
+                            </p>
                         </div>
                     )}
 

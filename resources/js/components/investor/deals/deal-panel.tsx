@@ -4,6 +4,7 @@ import { AboutCard, EbitdaValue } from '@/components/investor/deals/deal-facts';
 import {
     FundingProgress,
     PhotosRow,
+    ProspectusCard,
     Section,
     SourceBadge,
     UseOfFundsChips,
@@ -113,6 +114,7 @@ export function DealPanel({
                         {t('investor.deal.details')}
                     </p>
 
+                    <ProspectusCard deal={deal} variant="desk" />
                     <PhotosRow deal={deal} variant="desk" />
                     <UseOfFundsChips deal={deal} variant="desk" />
 

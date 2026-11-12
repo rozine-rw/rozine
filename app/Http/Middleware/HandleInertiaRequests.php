@@ -5,8 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Application\Environment\EnvironmentIsolation;
+use App\Application\Identity\GetIdentityContext;
+use App\Application\Primary\AcknowledgeInvestorRisks;
 use App\Application\Primary\Contracts\PrimaryPurchaseIndex;
+use App\Application\Primary\Contracts\RiskAcknowledgements;
 use App\Application\Primary\GetInvestorCart;
+use App\Domain\Identity\IdentityViolation;
+use App\Domain\Operations\CommandRejection;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Middleware;
@@ -55,6 +60,8 @@ class HandleInertiaRequests extends Middleware
             // The floating "Held for checkout" countdown on every Investor page but the checkout itself,
             // sent on partial reloads too so a change beacon drops a hold released or confirmed elsewhere.
             'checkout_holds' => Inertia::always(fn (): ?array => $this->checkoutHolds($request)),
+            // KYC-R05: the risk statements still to acknowledge, asked once at app open, never inside checkout.
+            'risk_acknowledgement' => fn (): ?array => $this->riskAcknowledgement($request),
             'nonLiveEnvironment' => Inertia::always(fn (): ?string => app(EnvironmentIsolation::class)->isIsolated()
                 ? app(EnvironmentIsolation::class)->profile()
                 : null),
@@ -81,5 +88,32 @@ class HandleInertiaRequests extends Middleware
             'expires_at' => $hold['expires_at'],
             'link' => ['url' => route('investor.checkout', ['campaign' => $hold['campaign_id'], 'reservation' => $hold['reservation_id']], false), 'method' => 'get'],
         ], $holds)];
+    }
+
+    /**
+     * The five risk statements a verified Investor has not yet acknowledged in their current wording
+     * (BRS v3.0 KYC-R05), with the command that acknowledges them all with one tick. Null off the
+     * Investor app, once acknowledged, and for anyone who is not an active, verified Investor.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function riskAcknowledgement(Request $request): ?array
+    {
+        if (! $request->routeIs('investor.*') || $request->user() === null) {
+            return null;
+        }
+        $partyId = $request->user()->getAttribute('party_id');
+        if (is_string($partyId) && app(RiskAcknowledgements::class)->current($partyId)) {
+            return null;
+        }
+        $userId = (int) $request->user()->getAuthIdentifier();
+        try {
+            $risks = app(AcknowledgeInvestorRisks::class)->read($userId, null);
+        } catch (IdentityViolation|CommandRejection) {
+            return null;
+        }
+
+        return [...$risks, 'identity_context_revision' => (int) app(GetIdentityContext::class)->handle($userId)['context_revision'],
+            'action' => ['url' => route('investor.risks.acknowledge', absolute: false), 'method' => 'post']];
     }
 }

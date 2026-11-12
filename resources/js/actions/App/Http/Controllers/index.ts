@@ -15,6 +15,7 @@ import AuditorNoticesController from './AuditorNoticesController'
 import StaffApplicationReleaseController from './StaffApplicationReleaseController'
 import BusinessPublicationController from './BusinessPublicationController'
 import InvestorDealsController from './InvestorDealsController'
+import InvestorProspectusController from './InvestorProspectusController'
 import InvestorMarketController from './InvestorMarketController'
 import InvestorCartCheckoutController from './InvestorCartCheckoutController'
 import InvestorWalletController from './InvestorWalletController'
@@ -62,7 +63,10 @@ import AuditorStatementVerificationController from './AuditorStatementVerificati
 import BusinessContactController from './BusinessContactController'
 import BusinessPayoutAccountController from './BusinessPayoutAccountController'
 import BusinessComplaintController from './BusinessComplaintController'
+import BusinessMonthlyFiguresController from './BusinessMonthlyFiguresController'
+import BusinessAcademyController from './BusinessAcademyController'
 import BusinessApplicationController from './BusinessApplicationController'
+import BusinessProspectusController from './BusinessProspectusController'
 import IdentityManagementController from './IdentityManagementController'
 import RoleBookmarkController from './RoleBookmarkController'
 import Settings from './Settings'
@@ -90,6 +94,7 @@ const Controllers = {
     StaffApplicationReleaseController: Object.assign(StaffApplicationReleaseController, StaffApplicationReleaseController),
     BusinessPublicationController: Object.assign(BusinessPublicationController, BusinessPublicationController),
     InvestorDealsController: Object.assign(InvestorDealsController, InvestorDealsController),
+    InvestorProspectusController: Object.assign(InvestorProspectusController, InvestorProspectusController),
     InvestorMarketController: Object.assign(InvestorMarketController, InvestorMarketController),
     InvestorCartCheckoutController: Object.assign(InvestorCartCheckoutController, InvestorCartCheckoutController),
     InvestorWalletController: Object.assign(InvestorWalletController, InvestorWalletController),
@@ -137,7 +142,10 @@ const Controllers = {
     BusinessContactController: Object.assign(BusinessContactController, BusinessContactController),
     BusinessPayoutAccountController: Object.assign(BusinessPayoutAccountController, BusinessPayoutAccountController),
     BusinessComplaintController: Object.assign(BusinessComplaintController, BusinessComplaintController),
+    BusinessMonthlyFiguresController: Object.assign(BusinessMonthlyFiguresController, BusinessMonthlyFiguresController),
+    BusinessAcademyController: Object.assign(BusinessAcademyController, BusinessAcademyController),
     BusinessApplicationController: Object.assign(BusinessApplicationController, BusinessApplicationController),
+    BusinessProspectusController: Object.assign(BusinessProspectusController, BusinessProspectusController),
     IdentityManagementController: Object.assign(IdentityManagementController, IdentityManagementController),
     RoleBookmarkController: Object.assign(RoleBookmarkController, RoleBookmarkController),
     Settings: Object.assign(Settings, Settings),

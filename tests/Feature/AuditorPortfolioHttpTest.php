@@ -119,7 +119,7 @@ it('lists sealed reports as awaiting co-sign until published, with exact filter 
     expect(auditorPortfolioProps($fixture['user'], ['filter' => 'published']))->toMatchArray(['filter' => 'published', 'reports' => [],
         'filters' => auditorPortfolioFilters(1, 1, 0), 'reports_complete' => false]);
     $this->get($report['link']['url'])->assertOk()->assertInertia(fn (Assert $page): Assert => $page->component('auditor/audit'));
-    expect(AuditSealingFixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
+    expect(AuditSealingFixture::publish($fixture)['code'])->toBe('REPORT_PUBLISHED');
     $published = [...$report, 'status' => 'published'];
     expect(auditorPortfolioProps($fixture['user'], ['filter' => 'published']))->toMatchArray(['reports' => [$published], 'reports_complete' => false])
         ->and(auditorPortfolioProps($fixture['user'], ['filter' => 'awaiting_cosign']))->toMatchArray(['filter' => 'awaiting_cosign', 'reports' => [], 'reports_complete' => false])
