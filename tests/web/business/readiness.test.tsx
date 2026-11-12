@@ -205,6 +205,21 @@ describe('Readiness', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('opens the Academy with how much of the core syllabus is passed', () => {
+        render(<BusinessReadiness {...props(readinessFixture)} />);
+
+        expect(
+            screen.getByRole('link', {
+                name: /^Open the Academy/u,
+            }),
+        ).toHaveAttribute('href', '/preview/business-academy');
+        expect(
+            screen.getByText(
+                'Academy: 1 of 2 core modules passed for your stage.',
+            ),
+        ).toBeInTheDocument();
+    });
+
     it('shows the entry checks as applying from entry before the entry audit is published', () => {
         const before = props(newFixture);
         before.requirements[0] = {

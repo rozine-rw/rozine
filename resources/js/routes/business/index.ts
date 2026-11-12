@@ -4,6 +4,7 @@ import repayments from './repayments'
 import profile937a89 from './profile'
 import complaints from './complaints'
 import monthlyFigures from './monthly-figures'
+import academyBf9709 from './academy'
 import statements from './statements'
 import notices from './notices'
 import wallet from './wallet'
@@ -786,6 +787,105 @@ auditPrepForm.head = (args: { business: string | number } | [business: string | 
 
 auditPrep.form = auditPrepForm
 
+/**
+* @see \App\Http\Controllers\BusinessAcademyController::academy
+* @see app/Http/Controllers/BusinessAcademyController.php:36
+* @route '/business/{business}/academy'
+*/
+export const academy = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: academy.url(args, options),
+    method: 'get',
+})
+
+academy.definition = {
+    methods: ["get","head"],
+    url: '/business/{business}/academy',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\BusinessAcademyController::academy
+* @see app/Http/Controllers/BusinessAcademyController.php:36
+* @route '/business/{business}/academy'
+*/
+academy.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { business: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            business: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        business: args.business,
+    }
+
+    return academy.definition.url
+            .replace('{business}', parsedArgs.business.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\BusinessAcademyController::academy
+* @see app/Http/Controllers/BusinessAcademyController.php:36
+* @route '/business/{business}/academy'
+*/
+academy.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: academy.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessAcademyController::academy
+* @see app/Http/Controllers/BusinessAcademyController.php:36
+* @route '/business/{business}/academy'
+*/
+academy.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: academy.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessAcademyController::academy
+* @see app/Http/Controllers/BusinessAcademyController.php:36
+* @route '/business/{business}/academy'
+*/
+const academyForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: academy.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessAcademyController::academy
+* @see app/Http/Controllers/BusinessAcademyController.php:36
+* @route '/business/{business}/academy'
+*/
+academyForm.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: academy.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\BusinessAcademyController::academy
+* @see app/Http/Controllers/BusinessAcademyController.php:36
+* @route '/business/{business}/academy'
+*/
+academyForm.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: academy.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+academy.form = academyForm
+
 const business = {
     auditReports: Object.assign(auditReports, auditReports),
     home: Object.assign(home, home),
@@ -799,6 +899,7 @@ const business = {
     rating: Object.assign(rating, rating),
     auditPrep: Object.assign(auditPrep, auditPrep),
     monthlyFigures: Object.assign(monthlyFigures, monthlyFigures),
+    academy: Object.assign(academy, academyBf9709),
     statements: Object.assign(statements, statements),
     notices: Object.assign(notices, notices),
     wallet: Object.assign(wallet, wallet),

@@ -146,6 +146,10 @@
             }
         ],
         "guidance": [],
+        "syllabus": {
+            "passed": 0,
+            "total": 2
+        },
         "links": {
             "home": {
                 "url": "/preview/business-home",
@@ -169,6 +173,10 @@
             },
             "launcher": {
                 "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "academy": {
+                "url": "/preview/business-academy",
                 "method": "get"
             }
         }

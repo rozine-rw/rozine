@@ -78,7 +78,8 @@ it('names no stage before 3 published reports, counting a real published monthly
         ->and($props['links'])->toBe(['home' => ['url' => "/business/{$business}", 'method' => 'get'],
             'reports' => ['url' => "/business/{$business}/reports", 'method' => 'get'], 'readiness' => ['url' => "/business/{$business}/readiness", 'method' => 'get'],
             'market' => ['url' => "/business/{$business}/market", 'method' => 'get'], 'profile' => ['url' => "/business/{$business}/profile", 'method' => 'get'],
-            'launcher' => ['url' => '/dashboard', 'method' => 'get']]);
+            'launcher' => ['url' => '/dashboard', 'method' => 'get'], 'academy' => ['url' => "/business/{$business}/academy", 'method' => 'get']])
+        ->and($props['syllabus'])->toBe(['passed' => 0, 'total' => 2]);
 });
 
 it('settles the stage from the 3-month average and says which way the newest readings point', function (): void {

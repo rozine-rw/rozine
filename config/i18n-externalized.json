@@ -210,6 +210,8 @@
         "resources/js/pages/auditor/profile.tsx",
         "resources/js/pages/auth/forgot-password.tsx",
         "resources/js/pages/auth/login.tsx",
+        "resources/js/pages/business/academy-module.tsx",
+        "resources/js/pages/business/academy.tsx",
         "resources/js/pages/business/apply.tsx",
         "resources/js/pages/business/audit-cosign.tsx",
         "resources/js/pages/business/audit-prep.tsx",

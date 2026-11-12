@@ -399,7 +399,69 @@ export type BusinessReadinessProps = {
     readiness: BusinessReadiness;
     requirements: ReadinessRequirement[];
     guidance: ReadinessGuidanceLine[];
-    links: BusinessAppLinks;
+    /** Core Academy modules of the stage passed, of all of them (RDY-R07). */
+    syllabus: { passed: number; total: number };
+    links: BusinessAppLinks & { academy: RouteLink };
+};
+
+/** Where a Business stands on one Academy module's test (RDY-R07). */
+export type AcademyStatus = {
+    state: 'passed' | 'open' | 'waiting';
+    attempts: number;
+    best: number | null;
+    /** When a failed test reopens, ISO UTC; null unless waiting. */
+    retake_at: string | null;
+};
+
+export type AcademyModuleSummary = {
+    key: string;
+    title: string;
+    summary: string;
+    cards: number;
+    /** Null for a preview module, which has cards only. */
+    status: AcademyStatus | null;
+    link: RouteLink;
+};
+
+export type BusinessAcademyProps = {
+    stage: ReadinessStageNumber | null;
+    /** The stage whose core is studied: Foundation's while there is no stage yet. */
+    level: 1 | 2 | 3 | 4;
+    pass_mark: number;
+    questions: number;
+    core: AcademyModuleSummary[];
+    preview: AcademyModuleSummary[];
+    links: BusinessAppLinks & { close: RouteLink };
+};
+
+/** One drawn question: ids are places in the bank, never the answer. */
+export type AcademyQuestion = {
+    id: number;
+    question: string;
+    options: { id: number; text: string }[];
+};
+
+export type BusinessAcademyModuleProps = {
+    identity_context_revision: number;
+    key: string;
+    role: 'core' | 'preview';
+    level: 1 | 2 | 3 | 4;
+    title: string;
+    summary: string;
+    cards: { front: string; back: string }[];
+    status: AcademyStatus | null;
+    /** The attempt the drawn test is for; null while no test is open. */
+    attempt: number | null;
+    test: AcademyQuestion[] | null;
+    last: {
+        module: string;
+        attempt: number;
+        score: number;
+        passed: boolean;
+        submitted_at: string;
+    } | null;
+    pass_mark: number;
+    links: BusinessAppLinks & { submit: RouteAction; close: RouteLink };
 };
 
 /* ------------------------------------------------------------------------------------------ */

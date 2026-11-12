@@ -24,7 +24,8 @@ use Brick\Math\BigInteger;
  * Its requirements are the ones triggered so far, as the hourly readiness sweep keeps them. C1 and
  * F1 read Met from entry only once the Business has entered (a published audit report). Its
  * guidance lines (RDY-R06) compare the monthly figures the Business sent with what its published
- * reports verified, held to the targets of its stage.
+ * reports verified, held to the targets of its stage. Its syllabus counts the core Academy
+ * modules of its stage passed (RDY-R07).
  *
  * @phpstan-import-type Stage from ReadinessStage
  * @phpstan-import-type Listed from ReadinessRequirements
@@ -34,13 +35,15 @@ final class GetBusinessReadiness
 {
     public function __construct(private WithBusinessAuthority $authority, private PublishedMonthlyReports $reports, private ReadinessStage $stage,
         private ReadinessRequirementStore $requirements, private ReadinessRequirements $rules, private MonthlySubmissionStore $submissions,
-        private ReadinessSignals $signals, private EnteredBusinesses $entered) {}
+        private ReadinessSignals $signals, private BusinessAcademySyllabus $academy, private EnteredBusinesses $entered) {}
 
-    /** @return array{identity_context_revision: int, business_id: string, readiness: Stage, requirements: list<Listed>, guidance: list<Line>} */
+    /** @return array{identity_context_revision: int, business_id: string, readiness: Stage, requirements: list<Listed>, guidance: list<Line>,
+     *     syllabus: array{passed: int, total: int}} */
     public function handle(int $userId, int $contextRevision, string $businessId): array
     {
         $id = $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null, fn (array $business): string => (string) $business['id']);
         $reports = $this->reports->forBusiness($id);
+        $core = $this->academy->forBusiness($id)['core'];
         $readiness = $this->stage->assess(ReadinessStage::months($reports));
         $declared = array_map(fn (array $sent): array => ['period' => $sent['period'], 'money_in' => $sent['figures']['money_in'],
             'money_out' => (string) BigInteger::of($sent['figures']['costs_total'])->plus(BigInteger::of($sent['figures']['paid_to_owners'])),
@@ -48,6 +51,7 @@ final class GetBusinessReadiness
 
         return ['identity_context_revision' => $contextRevision, 'business_id' => $id, 'readiness' => $readiness,
             'requirements' => $this->rules->listed($this->requirements->forBusiness($id), now('Africa/Kigali')->toDateString(), $this->entered->has($id)),
-            'guidance' => $this->signals->guidance(ReadinessSignals::verified($reports), $declared, $readiness['stage'])];
+            'guidance' => $this->signals->guidance(ReadinessSignals::verified($reports), $declared, $readiness['stage']),
+            'syllabus' => ['passed' => count(array_filter($core, fn (array $entry): bool => $entry['status']['state'] === 'passed')), 'total' => count($core)]];
     }
 }

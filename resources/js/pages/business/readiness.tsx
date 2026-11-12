@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import { BusinessShell } from '@/components/business/business-shell';
 import { useTranslation } from '@/hooks/use-translation';
 import {
@@ -86,6 +87,7 @@ export default function BusinessReadiness({
     readiness,
     requirements,
     guidance,
+    syllabus,
     links,
 }: BusinessReadinessProps) {
     const { t, locale } = useTranslation();
@@ -306,6 +308,20 @@ export default function BusinessReadiness({
                             ))}
                         </ul>
                     )}
+                    <Link
+                        href={links.academy}
+                        className="mt-4 block rounded-2xl border border-rz-border bg-rz-surface p-3.5"
+                    >
+                        <span className="block text-[14px] font-semibold text-rz-ink">
+                            {t('business.academy.open')}
+                        </span>
+                        <span className="mt-1 block text-[12.5px] text-rz-secondary">
+                            {t('business.academy.syllabus', {
+                                passed: syllabus.passed,
+                                total: syllabus.total,
+                            })}
+                        </span>
+                    </Link>
                     <h2
                         id="readiness-stages-title"
                         className="mt-6 text-base font-semibold text-rz-ink"
