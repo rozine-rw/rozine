@@ -25,6 +25,7 @@ FULL_JOBS = [
     "Board sync offline tests", "PHP 8.5 quality gate", "TypeScript/React quality gate",
     "PostgreSQL concurrency lane", "PHP gate negative controls", "Deployment admission negative controls",
     *[f"PHP 8.5 tests (shard {shard}/4)" for shard in range(1, 5)],
+    *[f"PostgreSQL concurrency lane (shard {shard}/4)" for shard in range(1, 5)],
     *[f"PHP negative controls ({group})" for group in ["architecture", "business", "auditor", "coverage"]],
 ]
 REUSE_JOBS = ["Select CI scope", "Board sync offline tests", "Reuse POC validation evidence"]
