@@ -33,6 +33,20 @@ final class ReadinessStage
     public const array THRESHOLDS = [1 => '2500000', 2 => '10000000', 3 => '30000000', 4 => '80000000'];
 
     /**
+     * The months a VMR reads from published monthly reports, listed newest first by the port, oldest first here:
+     * each period once, at its newest report, with its verified inflow as revenue.
+     *
+     * @param  list<array{period: string, inflow: string}>  $reports
+     * @return list<Month>
+     */
+    public static function months(array $reports): array
+    {
+        $months = array_map(fn (array $report): array => ['period' => $report['period'], 'revenue' => $report['inflow']], $reports);
+
+        return array_values(array_column(array_reverse($months), null, 'period'));
+    }
+
+    /**
      * @param  list<Month>  $reports  sealed monthly reports in any order, one per period
      * @return Stage
      */

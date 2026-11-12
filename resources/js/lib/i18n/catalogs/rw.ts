@@ -331,6 +331,62 @@ const rw: Catalog = {
     'business.readiness.current': 'Icy’ubu',
     'business.readiness.months': 'Amezi abarwa',
     'business.readiness.months_empty': 'Nta raporo ya buri kwezi iratangazwa.',
+    'business.readiness.requirements': 'Ibisabwa',
+    'business.readiness.requirements_rule':
+        'Ingano y’ubucuruzi bwawe ni yo igena ibi bisabwa. CPA wawe yemeza buri kimwe mu isura ya buri kwezi.',
+    'business.readiness.requirement.status.not_triggered': 'Ntibirasabwa',
+    'business.readiness.requirement.status.due': 'Birasabwa',
+    'business.readiness.requirement.status.overdue': 'Byarengeje igihe',
+    'business.readiness.requirement.status.met': 'Byujujwe',
+    'business.readiness.requirement.status.lapsed': 'Byataye agaciro',
+    'business.readiness.requirement.due_by': {
+        one: 'Bigomba kuzuzwa bitarenze {date} · hasigaye umunsi {count}',
+        other: 'Bigomba kuzuzwa bitarenze {date} · hasigaye iminsi {count}',
+    },
+    'business.readiness.requirement.lapsed_by': {
+        one: 'Bigomba kongera kuzuzwa bitarenze {date} · hasigaye umunsi {count}',
+        other: 'Bigomba kongera kuzuzwa bitarenze {date} · hasigaye iminsi {count}',
+    },
+    'business.readiness.requirement.overdue_line':
+        'Byarengeje igihe kuva {date}. Ubusabe bwawe bukurikira butegereza ko byuzuzwa.',
+    'business.readiness.requirement.met_on': 'Byemejwe ku wa {date}',
+    'business.readiness.requirement.met_entry':
+        'Byagenzuwe igihe winjiraga kuri Rozine',
+    'business.readiness.requirement.applies_entry':
+        'Bitangira gusabwa igenzura ryawe ryo kwinjira rimaze gutangazwa',
+    'business.readiness.requirement.applies_stage':
+        'Bitangira gusabwa kuva {stage}',
+    'business.readiness.requirement.applies_headcount':
+        'Bitangira gusabwa kuva ku bakozi {count}',
+    'business.readiness.requirement.C1.title':
+        'Imisoro na RSSB bitarimo ibirarane',
+    'business.readiness.requirement.C1.detail':
+        'Icyemezo cy’imisoro n’imisanzu ya RSSB byishyuwe ku gihe.',
+    'business.readiness.requirement.F1.title':
+        'Amafaranga y’ubucuruzi kuri konti zabwo',
+    'business.readiness.requirement.F1.detail':
+        'Amafaranga yose y’ubucuruzi anyura kuri konti ziri mu izina ryabwo, kandi nibura 90% by’amafaranga yinjira yemejwe agaragara kuri zo.',
+    'business.readiness.requirement.F2.title': 'Umucungamari wabigize umwuga',
+    'business.readiness.requirement.F2.detail':
+        'Umucungamari wabigize umwuga, ukoreshwa cyangwa ufite amasezerano, na porogaramu y’ibaruramari ikoreshwa.',
+    'business.readiness.requirement.F3.title': 'Umuyobozi w’imari',
+    'business.readiness.requirement.F3.detail':
+        'Umuyobozi w’imari wabigize umwuga ukora igihe cyose (CPA, ACCA cyangwa bihwanye, nibura imyaka 3) na raporo z’imicungire za buri kwezi.',
+    'business.readiness.requirement.F4.title': 'Igenzura ryo hanze',
+    'business.readiness.requirement.F4.detail':
+        'Igenzura rya buri mwaka rikurikije IFRS for SMEs rikozwe n’umugenzuzi wa ICPAR utari CPA wawe wa Rozine, kandi kwishyura bitegurwa kandi byemezwa n’abantu batandukanye.',
+    'business.readiness.requirement.P1.title': 'Amasezerano kuri buri mukozi',
+    'business.readiness.requirement.P1.detail':
+        'Amasezerano yanditse no kwandikishwa muri RSSB kuri buri mukozi.',
+    'business.readiness.requirement.P2.title': 'Ushinzwe abakozi na politiki',
+    'business.readiness.requirement.P2.detail':
+        'Ushinzwe abakozi uzwi cyangwa utanga serivisi z’abakozi ufite amasezerano, na politiki y’abakozi yanditse.',
+    'business.readiness.requirement.G1.title': 'Inama y’ubuyobozi',
+    'business.readiness.requirement.G1.detail':
+        'Inama y’ubuyobozi y’abayobozi nibura 2 iterana buri gihembwe ifite inyandiko-mvugo, n’uburenganzira bwo kwishyura bwanditse.',
+    'business.readiness.requirement.G2.title': 'Umuyobozi wigenga',
+    'business.readiness.requirement.G2.detail':
+        'Nibura umuyobozi umwe wigenga, amategeko agenga imiyoborere n’igitabo cy’abafitanye isano.',
     'business.market.title': "Incamake y'isoko",
     'business.market.subtitle': 'Uko noti zawe zihagaze ku isoko rya kabiri.',
     'business.market.tile.demand': 'UBUSHAKE',
@@ -1502,6 +1558,14 @@ const rw: Catalog = {
         'Igihe cyo gusinya cyangwa kujuririra raporo kirarangiye',
     'admin.messaging.trigger.business.reporting_window_open':
         'Igenzura ry’ukwezi ritangiye ku kigo gifite inoti ikora',
+    'admin.messaging.trigger.business.readiness_stage_changed':
+        'Ubucuruzi bwimukiye mu kindi cyiciro cyo kwitegura',
+    'admin.messaging.trigger.business.readiness_requirement_due':
+        'Igisabwa cyo kwitegura gitangiye gusabwa',
+    'admin.messaging.trigger.business.readiness_requirement_closing':
+        'Igisabwa cyo kwitegura gisigaje iminsi 14',
+    'admin.messaging.trigger.business.readiness_requirement_overdue':
+        'Igisabwa cyo kwitegura cyarengeje igihe',
     'admin.messaging.trigger.auditor.accreditation_approved':
         'Uruhushya rwemejwe',
     'admin.messaging.trigger.auditor.accreditation_rejected':
@@ -6652,6 +6716,22 @@ const rw: Catalog = {
         "Igenzura ry'ukwezi ryatangiye",
     'investor.notices.business.reporting_window_open.body':
         "Igenzura rya {month} ryatangiye. Tegura inyandiko za konti n'ibitabo by'ukwezi kugira ngo umugenzuzi wawe abisuzume kandi ashyire kashe kuri raporo bitarenze {date}. Hanyuma uyisinye cyangwa uyijurire.",
+    'investor.notices.business.readiness_stage_changed.title':
+        'Icyiciro cyo kwitegura cyahindutse',
+    'investor.notices.business.readiness_stage_changed.body':
+        'Raporo yawe ya {month} yakuvanye kuri {previous} ikugeza kuri {stage}.',
+    'investor.notices.business.readiness_requirement_due.title':
+        'Igisabwa gishya',
+    'investor.notices.business.readiness_requirement_due.body':
+        '{requirement} ubu kirasabwa ubucuruzi bwawe. Cyuzuze bitarenze {date}.',
+    'investor.notices.business.readiness_requirement_closing.title':
+        'Igisabwa kiri hafi kurangira',
+    'investor.notices.business.readiness_requirement_closing.body':
+        '{requirement} kigomba kuzuzwa bitarenze {date}. CPA wawe akemeza mu isura ikurikira.',
+    'investor.notices.business.readiness_requirement_overdue.title':
+        'Igisabwa cyarengeje igihe',
+    'investor.notices.business.readiness_requirement_overdue.body':
+        '{requirement} cyagombaga kuzuzwa ku wa {date}. Ubusabe bwawe bukurikira butegereza ko cyuzuzwa.',
     'investor.notices.business.raise_expired.title':
         'Ubukangurambaga bwarangiye budashyitse',
     'investor.notices.business.raise_expired.body':

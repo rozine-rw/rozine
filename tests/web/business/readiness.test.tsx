@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vite-plus/test';
 import BusinessReadiness from '@/pages/business/readiness';
@@ -113,5 +113,66 @@ describe('Readiness', () => {
         expect(
             screen.getByText('No monthly report is published yet.'),
         ).toBeInTheDocument();
+    });
+
+    it('lists every requirement with its status and the line that matters for it', () => {
+        const order = ['C1', 'F1', 'F2', 'F3', 'F4', 'P1', 'P2', 'G1', 'G2'];
+        const items = () =>
+            within(
+                screen.getByRole('list', { name: 'Requirements' }),
+            ).getAllByRole('listitem');
+        const requirement = (code: string) =>
+            items()[order.indexOf(code)].textContent;
+        const { unmount } = render(
+            <BusinessReadiness {...props(readinessFixture)} />,
+        );
+
+        expect(
+            screen.getByRole('heading', { level: 2, name: 'Requirements' }),
+        ).toBeInTheDocument();
+        expect(items().length).toBe(9);
+        expect(requirement('C1')).toContain('Met');
+        expect(requirement('C1')).toContain('Checked when you joined Rozine');
+        expect(requirement('F2')).toContain(
+            'Due by 20 November 2026 · 10 days left',
+        );
+        expect(requirement('F3')).toContain('Applies from Stage 3 · Scale');
+        expect(requirement('P1')).toContain('Applies from 10 employees');
+        unmount();
+
+        const view = render(<BusinessReadiness {...props(growthFixture)} />);
+        expect(requirement('C1')).toContain('Confirmed on 14 October 2026');
+        expect(requirement('F2')).toContain(
+            'Overdue since 1 October 2026. Your next raise waits until it is met.',
+        );
+        view.unmount();
+
+        render(<BusinessReadiness {...props(marketFixture)} />);
+        expect(requirement('F3')).toContain('Lapsed');
+        expect(requirement('F3')).toContain(
+            'Meet it again by 20 December 2026 · 40 days left',
+        );
+        expect(requirement('G2')).toContain('Due by 30 March 2027');
+    });
+
+    it('shows the entry checks as applying from entry before the entry audit is published', () => {
+        const before = props(newFixture);
+        before.requirements[0] = {
+            code: 'C1',
+            status: 'not_triggered',
+            due_on: null,
+            days_left: null,
+            met_on: null,
+            applies_from: { kind: 'entry', value: 0 },
+        };
+        render(<BusinessReadiness {...before} />);
+
+        const [first] = within(
+            screen.getByRole('list', { name: 'Requirements' }),
+        ).getAllByRole('listitem');
+        expect(first).toHaveTextContent('Not yet');
+        expect(first).toHaveTextContent(
+            'Applies once your entry audit is published',
+        );
     });
 });

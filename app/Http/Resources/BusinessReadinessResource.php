@@ -17,14 +17,19 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * (`window` readings in a row move it), and `next` how far the stage above is. The months are the
  * published reports the VMR averages, newest first. Readiness is shown only inside the Business app.
  *
+ * Every requirement of RDY-R03 is listed in BRS order: a triggered one with its status, the day
+ * its grace ends and the days left, and one not yet triggered with the stage or headcount it
+ * applies from. Ready is lost while any requirement is Overdue.
+ *
  * @phpstan-import-type Stage from \App\Domain\Business\ReadinessStage
+ * @phpstan-import-type Listed from \App\Domain\Business\ReadinessRequirements
  */
 class BusinessReadinessResource extends JsonResource
 {
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        /** @var array{business_id: string, readiness: Stage} $data */
+        /** @var array{business_id: string, readiness: Stage, requirements: list<Listed>} $data */
         $data = $this->resource;
         $business = $data['business_id'];
         $readiness = $data['readiness'];
@@ -41,6 +46,7 @@ class BusinessReadinessResource extends JsonResource
                 'gap' => self::money((string) BigInteger::max(BigInteger::of($next['threshold'])->minus($vmr), BigInteger::zero()))],
             'thresholds' => array_map(fn (array $row): array => ['stage' => $row['stage'], 'from' => self::money($row['from'])], $readiness['thresholds']),
             'months' => array_map(fn (array $month): array => ['period' => $month['period'], 'revenue' => self::money($month['revenue'])], $readiness['months'])],
+            'requirements' => $data['requirements'],
             'links' => ['home' => BusinessHomeResource::link($request, 'business.show', ['business' => $business]), ...BusinessHomeResource::tabs($request, $business),
                 'launcher' => ['url' => route('dashboard', [], false), 'method' => 'get']]];
     }
