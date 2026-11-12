@@ -22,7 +22,7 @@ beforeEach(function (): void {
 it('serves the same authorized release and publication receipts on web and API', function (bool $api): void {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     $prefix = $api ? 'api.v1.' : '';
     $parameters = ['business' => $fixture['audit']['business'], 'application' => $fixture['application']->id];
     if ($api) {
@@ -96,7 +96,7 @@ it('tells the Business its application is approved, in-app and by e-mail to each
     Notification::fake();
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     $business = $fixture['audit']['business'];
     $parameters = ['business' => $business, 'application' => $fixture['application']->id];
     $release = ['application_id' => $fixture['application']->id, 'request_id' => (string) Str::uuid(), 'expected_revision' => 0, 'reason' => 'Current review completed.'];

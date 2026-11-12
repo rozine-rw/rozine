@@ -450,6 +450,83 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
         );
     });
 
+    it('words readiness notices with the stage moved and the requirement and its day', async () => {
+        const user = userEvent.setup();
+        const inbox = notices();
+        const [first] = inbox.notices;
+        const requirement = {
+            business_id: 'b',
+            code: 'F2',
+            due_on: '2027-01-08',
+        };
+
+        inbox.notices = [
+            {
+                ...first,
+                id: 'stage',
+                kind: 'business.readiness_stage_changed',
+                facts: {
+                    business_id: 'b',
+                    stage: '3',
+                    previous: '2',
+                    period: '2026-10',
+                },
+            },
+            {
+                ...first,
+                id: 'due',
+                kind: 'business.readiness_requirement_due',
+                facts: requirement,
+            },
+            {
+                ...first,
+                id: 'closing',
+                kind: 'business.readiness_requirement_closing',
+                facts: requirement,
+            },
+            {
+                ...first,
+                id: 'overdue',
+                kind: 'business.readiness_requirement_overdue',
+                facts: requirement,
+            },
+        ] as InvestorNotices['notices'];
+        render(<InvestorDeals {...deals()} />);
+        const panel = await openBell(user);
+
+        inertia.queue.push(answers({ data: inbox }));
+        await user.click(
+            screen.getByRole('button', { name: 'Notifications, 2 unread' }),
+        );
+
+        expect(
+            await within(panel).findByRole('button', {
+                name: /Readiness stage changed/u,
+            }),
+        ).toHaveTextContent(
+            'Your October 2026 report moved you from Stage 2 · Growth to Stage 3 · Scale.',
+        );
+        expect(
+            within(panel).getByRole('button', {
+                name: /New readiness requirement/u,
+            }),
+        ).toHaveTextContent(
+            'Qualified accountant now applies to your business. Meet it by 8 Jan 2027.',
+        );
+        expect(
+            within(panel).getByRole('button', {
+                name: /Requirement due soon/u,
+            }),
+        ).toHaveTextContent(
+            'Qualified accountant is due by 8 Jan 2027. Your CPA confirms it at the next visit.',
+        );
+        expect(
+            within(panel).getByRole('button', { name: /Requirement overdue/u }),
+        ).toHaveTextContent(
+            'Qualified accountant was due on 8 Jan 2027. Your next raise waits until it is met.',
+        );
+    });
+
     it('words a linked and an unlinked payout account as security notices', async () => {
         const user = userEvent.setup();
         const inbox = notices();

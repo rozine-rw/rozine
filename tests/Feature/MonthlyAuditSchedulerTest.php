@@ -51,7 +51,7 @@ it('dispatches each funded business its monthly audit once, in the report window
         ->and(AuditAssignment::query()->where('business_id', $business)->count())->toBe(1);
 
     Fixture::seal($fixture);
-    Fixture::cosign($fixture);
+    Fixture::publish($fixture);
     $this->travelTo(CarbonImmutable::now('Africa/Kigali')->addMonthNoOverflow()->startOfMonth()->addHours(6));
     AuditorFixture::recheck($fixture['audit']['partners'][0]);
     expect(Artisan::call('audits:request-monthly'))->toBe(0)->and(Artisan::output())->toContain('Requested 1 monthly audits.');
@@ -80,7 +80,7 @@ it('dispatches each funded business its monthly audit once, in the report window
 it('dispatches nothing more in a month that already has a routine audit', function (): void {
     $fixture = Fixture::ready();
     Fixture::seal($fixture);
-    Fixture::cosign($fixture);
+    Fixture::publish($fixture);
     dueBusinesses([$fixture['audit']['business']]);
     $this->travelTo(CarbonImmutable::now('Africa/Kigali')->addMonthNoOverflow()->startOfMonth()->addHours(6));
     AuditorFixture::recheck($fixture['audit']['partners'][0]);

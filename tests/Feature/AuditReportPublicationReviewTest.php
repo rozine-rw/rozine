@@ -6,6 +6,7 @@ use App\Application\Auditor\AmendAuditReport;
 use App\Application\Auditor\FindAuditCosignOperation;
 use App\Application\Auditor\GetBusinessAuditReport;
 use App\Application\Auditor\SaveAuditReportStep;
+use App\Domain\Auditor\AuditReportWindow;
 use App\Domain\Operations\CommandRejection;
 use App\Models\AuditReport;
 use App\Models\AuditReportPublication;
@@ -13,6 +14,7 @@ use App\Models\AuditReportSeal;
 use App\Models\AuditReportSignature;
 use App\Models\AuditStepUpProof;
 use App\Models\RoleMembership;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -77,7 +79,7 @@ it('publishes only the amendment while retaining an already published parent as 
     $childFixture = Fixture::prepare([...$fixture, 'report' => $child]);
     $childFixture['user']->forceFill(['two_factor_secret' => encrypt('JBSWY3DPEHPK3PXQ')])->save();
     $childFixture['code'] = (new Google2FA)->getCurrentOtp('JBSWY3DPEHPK3PXQ');
-    expect(Fixture::seal($childFixture)['code'])->toBe('AUDIT_SEALED')->and(Fixture::cosign($childFixture)['code'])->toBe('REPORT_PUBLISHED')
+    expect(Fixture::seal($childFixture)['code'])->toBe('AUDIT_SEALED')->and(Fixture::publish($childFixture)['code'])->toBe('REPORT_PUBLISHED')
         ->and($parent->refresh()->getAttributes())->toBe($before)
         ->and(AuditReportPublication::query()->where('status', 'published')->count())->toBe($publishParent ? 2 : 1);
     foreach ([false, true] as $api) {
@@ -97,10 +99,10 @@ it('does not mark a published monthly report overdue on a later cold read', func
     $this->travelTo(now('UTC')->startOfMonth()->addDays(4)->setTime(10, 0));
     $fixture = Fixture::ready(kind: 'monthly');
     Fixture::seal($fixture);
-    expect(Fixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
+    expect(Fixture::publish($fixture)['code'])->toBe('REPORT_PUBLISHED');
     $this->travel(3)->days();
     $page = app(GetBusinessAuditReport::class)->handle($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'], $fixture['report']->id);
-    expect($page['cosign']['state'])->toBe('signed')->and($page['cosign']['overdue'])->toBeFalse()->and($page['report']['published_at'])->not->toBeNull();
+    expect($page['cosign']['state'])->toBe('pending')->and($page['cosign']['overdue'])->toBeFalse()->and($page['report']['published_at'])->not->toBeNull();
 });
 
 it('renders identity refusals as pages for the new web reads and JSON for the API', function (string $pageRoute, bool $api): void {
@@ -125,8 +127,9 @@ it('renders identity refusals as pages for the new web reads and JSON for the AP
 it('uses one accepted instant for the publication window and all retained signature times', function (bool $closed): void {
     $this->travelTo(now('UTC')->startOfMonth()->addDays(6)->setTime(21, 59, 59, 999999));
     $fixture = Fixture::ready(kind: 'monthly');
-    Fixture::seal($fixture);
-    $accepted = AuditReportPublication::query()->firstOrFail()->due_at->subMicrosecond();
+    Fixture::sealLegacy($fixture);
+    $period = AuditReportSeal::query()->firstOrFail()->payload['report']['period'];
+    $accepted = CarbonImmutable::parse(app(AuditReportWindow::class)->dueAt($period))->addSecond()->subMicrosecond();
     $this->travelTo($accepted);
     if ($closed) {
         $this->travelTo($accepted->addMicrosecond());
@@ -251,7 +254,7 @@ it('withdraws outstanding seal proofs and pending publication when the Auditor d
     if ($sealed) {
         $page = app(GetBusinessAuditReport::class)->handle($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'], $fixture['report']->id);
         expect($page['can_cosign'])->toBeFalse()->and($page['cosign']['state'])->toBe('unavailable')
-            ->and(Fixture::cosign($fixture)['code'])->toBe('AUDIT_PUBLICATION_UNAVAILABLE');
+            ->and(Fixture::cosign($fixture)['code'])->toBe('REPORT_COSIGN_NOT_REQUIRED');
     } else {
         expect(fn () => Fixture::seal($fixture, $proof))->toThrow(CommandRejection::class, 'AUDIT_REPORT_NOT_FOUND')
             ->and(AuditStepUpProof::query()->firstOrFail()->consumed_at)->toBeNull();

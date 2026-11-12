@@ -5,6 +5,7 @@ import { AboutCard, EbitdaValue } from '@/components/investor/deals/deal-facts';
 import {
     FundingProgress,
     PhotosRow,
+    ProspectusCard,
     RatingWord,
     Section,
     SourceBadge,
@@ -173,6 +174,7 @@ export function DealDetailPage({
                 <span className="h-px flex-1 bg-rz-border" />
             </div>
 
+            <ProspectusCard deal={deal} variant="phone" />
             <PhotosRow deal={deal} variant="phone" />
             <UseOfFundsChips deal={deal} variant="phone" />
 

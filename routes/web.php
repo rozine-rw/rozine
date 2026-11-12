@@ -14,13 +14,16 @@ use App\Http\Controllers\AuditorProcedureController;
 use App\Http\Controllers\AuditorProfileController;
 use App\Http\Controllers\AuditorStatementVerificationController;
 use App\Http\Controllers\AuditSealVerificationController;
+use App\Http\Controllers\BusinessAcademyController;
 use App\Http\Controllers\BusinessApplicationController;
 use App\Http\Controllers\BusinessAuditReportController;
 use App\Http\Controllers\BusinessComplaintController;
 use App\Http\Controllers\BusinessContactController;
 use App\Http\Controllers\BusinessHomeController;
+use App\Http\Controllers\BusinessMonthlyFiguresController;
 use App\Http\Controllers\BusinessNoticesController;
 use App\Http\Controllers\BusinessPayoutAccountController;
+use App\Http\Controllers\BusinessProspectusController;
 use App\Http\Controllers\BusinessPublicationController;
 use App\Http\Controllers\BusinessRepaymentController;
 use App\Http\Controllers\BusinessStatementController;
@@ -41,6 +44,7 @@ use App\Http\Controllers\InvestorNoticesController;
 use App\Http\Controllers\InvestorPortfolioController;
 use App\Http\Controllers\InvestorPrimaryController;
 use App\Http\Controllers\InvestorProfileController;
+use App\Http\Controllers\InvestorProspectusController;
 use App\Http\Controllers\InvestorRiskAcknowledgementController;
 use App\Http\Controllers\InvestorVerificationController;
 use App\Http\Controllers\InvestorWalletController;
@@ -148,6 +152,7 @@ Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;n
     Route::get('cart/operations/{request_id}', [InvestorCartCheckoutController::class, 'operation'])->whereUuid('request_id')->name('cart_operation');
     Route::get('deals/{campaign}', [InvestorDealsController::class, 'show'])->whereUlid('campaign')->name('deals.show');
     Route::get('deals/{campaign}/checkout', [InvestorDealsController::class, 'checkout'])->whereUlid('campaign')->name('checkout');
+    Route::get('deals/{campaign}/prospectus', InvestorProspectusController::class)->whereUlid('campaign')->name('deals.prospectus');
     Route::get('wallet', [InvestorWalletController::class, 'show'])->name('wallet');
     Route::get('wallet/statement.{format}', [InvestorWalletController::class, 'statement'])->whereIn('format', ['csv', 'pdf'])->name('wallet.statement');
     Route::post('wallet/deposits', [InvestorWalletController::class, 'deposit'])->name('wallet.deposit');
@@ -225,6 +230,7 @@ Route::get('business/{business}', [BusinessHomeController::class, 'show'])->midd
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('business')->name('business.')->group(function (): void {
     Route::get('{business}/reports', [BusinessHomeController::class, 'reports'])->whereUlid('business')->name('reports');
+    Route::get('{business}/readiness', [BusinessHomeController::class, 'readiness'])->whereUlid('business')->name('readiness');
     Route::get('{business}/market', [BusinessHomeController::class, 'market'])->whereUlid('business')->name('market');
     Route::get('{business}/profile/{section?}', [BusinessHomeController::class, 'profile'])->whereUlid('business')
         ->whereIn('section', GetBusinessProfile::SECTIONS)->name('profile');
@@ -237,6 +243,11 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
         ->name('complaints.reply');
     Route::get('{business}/rating', [BusinessHomeController::class, 'rating'])->whereUlid('business')->name('rating');
     Route::get('{business}/audit-prep', [BusinessHomeController::class, 'auditPrep'])->whereUlid('business')->name('audit-prep');
+    Route::get('{business}/monthly-figures', [BusinessMonthlyFiguresController::class, 'show'])->whereUlid('business')->name('monthly-figures.show');
+    Route::post('{business}/monthly-figures', [BusinessMonthlyFiguresController::class, 'store'])->whereUlid('business')->name('monthly-figures.store');
+    Route::get('{business}/academy', [BusinessAcademyController::class, 'index'])->whereUlid('business')->name('academy');
+    Route::get('{business}/academy/{module}', [BusinessAcademyController::class, 'show'])->whereUlid('business')->where('module', '[a-z_]{1,40}')->name('academy.module');
+    Route::post('{business}/academy/{module}', [BusinessAcademyController::class, 'store'])->whereUlid('business')->where('module', '[a-z_]{1,40}')->name('academy.submit');
     Route::post('{business}/statements', [BusinessStatementController::class, 'upload'])->whereUlid('business')->name('statements.upload');
     Route::get('{business}/statements/transcription', [BusinessStatementTranscriptionController::class, 'page'])->whereUlid('business')->name('statements.transcription.show');
     Route::post('{business}/statements/transcription', [BusinessStatementTranscriptionController::class, 'save'])->whereUlid('business')->name('statements.transcription.save');
@@ -264,6 +275,10 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     foreach (['save', 'evaluate', 'submit'] as $command) {
         Route::post('{business}/applications/{application}/'.$command, [BusinessApplicationController::class, $command])->whereUlid(['business', 'application'])->name($command);
     }
+    Route::get('{business}/applications/{application}/prospectus', [BusinessProspectusController::class, 'show'])->whereUlid(['business', 'application'])->name('prospectus.show');
+    Route::put('{business}/applications/{application}/prospectus', [BusinessProspectusController::class, 'save'])->whereUlid(['business', 'application'])->name('prospectus.save');
+    Route::post('{business}/applications/{application}/prospectus/documents', [BusinessProspectusController::class, 'upload'])->whereUlid(['business', 'application'])->name('prospectus.documents.store');
+    Route::post('{business}/applications/{application}/prospectus/sign', [BusinessProspectusController::class, 'sign'])->whereUlid(['business', 'application'])->name('prospectus.sign');
 });
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/audit-assignments')->name('staff.audit.')->group(function (): void {
