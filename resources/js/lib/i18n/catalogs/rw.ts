@@ -2975,6 +2975,13 @@ const rw: Catalog = {
         'Kongera kurekura ibyo mu gakapu byahagamye',
     'admin.permission_detail.cart.releases.resolve':
         'Kurekura ibyafashwe byose byo mu gakapu igihe kurangira kwabyo kwanze, imirongo yose icyarimwe.',
+    'admin.permission.secondary.halt': 'Guhagarika isoko ryo kongera kugurisha',
+    'admin.permission_detail.secondary.halt':
+        'Guhagarika cyangwa gufungura isoko ryo kongera kugurisha cyangwa inoti imwe, hatanzwe impamvu yanditswe.',
+    'admin.permission.secondary.listings.cancel':
+        'Guhagarika ibyashyizwe ku isoko',
+    'admin.permission_detail.secondary.listings.cancel':
+        'Guhagarika ikintu kimwe cyashyizwe ku isoko ryo kongera kugurisha, hatanzwe impamvu igaragarira ugurisha.',
     'admin.parties.you': 'Wowe',
     'admin.parties.drawer_label': "{name}, amakuru y'uruhande",
     'admin.parties.type.business': 'Ikigo',
