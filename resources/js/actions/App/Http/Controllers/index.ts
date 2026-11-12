@@ -63,6 +63,8 @@ import AuditorStatementVerificationController from './AuditorStatementVerificati
 import BusinessContactController from './BusinessContactController'
 import BusinessPayoutAccountController from './BusinessPayoutAccountController'
 import BusinessComplaintController from './BusinessComplaintController'
+import BusinessMonthlyFiguresController from './BusinessMonthlyFiguresController'
+import BusinessAcademyController from './BusinessAcademyController'
 import BusinessApplicationController from './BusinessApplicationController'
 import BusinessProspectusController from './BusinessProspectusController'
 import IdentityManagementController from './IdentityManagementController'
@@ -140,6 +142,8 @@ const Controllers = {
     BusinessContactController: Object.assign(BusinessContactController, BusinessContactController),
     BusinessPayoutAccountController: Object.assign(BusinessPayoutAccountController, BusinessPayoutAccountController),
     BusinessComplaintController: Object.assign(BusinessComplaintController, BusinessComplaintController),
+    BusinessMonthlyFiguresController: Object.assign(BusinessMonthlyFiguresController, BusinessMonthlyFiguresController),
+    BusinessAcademyController: Object.assign(BusinessAcademyController, BusinessAcademyController),
     BusinessApplicationController: Object.assign(BusinessApplicationController, BusinessApplicationController),
     BusinessProspectusController: Object.assign(BusinessProspectusController, BusinessProspectusController),
     IdentityManagementController: Object.assign(IdentityManagementController, IdentityManagementController),

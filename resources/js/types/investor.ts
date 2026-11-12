@@ -1,4 +1,4 @@
-import type { ProspectusInputs } from './business';
+import type { ProspectusInputs, ReadinessRequirementCode } from './business';
 import type { Money } from './money';
 import type { RouteAction, RouteLink } from './routing';
 import type {
@@ -1702,6 +1702,18 @@ export type InvestorNotice = {
     | {
           kind: 'business.reporting_window_open';
           facts: { period: string; closes_at: string };
+      }
+    | {
+          kind: 'business.readiness_stage_changed';
+          /** Stages as '0'–'4'; `period` is the report month (YYYY-MM) that moved it. */
+          facts: { stage: string; previous: string; period: string };
+      }
+    | {
+          kind:
+              | 'business.readiness_requirement_due'
+              | 'business.readiness_requirement_closing'
+              | 'business.readiness_requirement_overdue';
+          facts: { code: ReadinessRequirementCode; due_on: string };
       }
     | {
           kind: 'business.raise_funded';
