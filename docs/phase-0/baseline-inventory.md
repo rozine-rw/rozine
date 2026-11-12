@@ -1837,6 +1837,8 @@ facts that would differ between machines, so they are excluded deliberately.
 | `wallet_id` | `bpchar` | no | — |
 | `sha256` | `bpchar` | no | — |
 | `created_at` | `timestamptz` | no | — |
+| `commit_entry_id` | `bpchar` | yes | — |
+| `commit_sha256` | `bpchar` | yes | — |
 
 **Indexes:** `primary_held_claim_releases_pkey` on (primary_reservation_id) — unique
 
@@ -2503,6 +2505,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_11_01_160000_allow_withdrawn_audit_assignments.php |
 | 2026_11_02_090000_create_investor_cart_checkouts.php |
 | 2026_11_02_120000_create_investor_cart_settlement_failures.php |
+| 2026_11_10_170000_recycle_withdrawn_commitment_claims.php |
 
 ## Routes
 
