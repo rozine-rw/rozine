@@ -378,6 +378,7 @@ it('refuses a staff count, expiry date, loan use or change it cannot record exac
     'staff RSSB not checked' => ['staff', ['staff_count' => '6', 'rssb_checked' => false], 'rssb_checked', 'Check the staff count against the RSSB total page before continuing.'],
     'tax date not a date' => ['expiries', ['tax_clearance_expires_on' => '31/03/2027', 'rssb_clearance_expires_on' => '2027-06-30'], 'tax_clearance_expires_on', 'Use the date on the certificate, as YYYY-MM-DD.'],
     'RSSB date impossible' => ['expiries', ['tax_clearance_expires_on' => '2027-03-31', 'rssb_clearance_expires_on' => '2027-02-30'], 'rssb_clearance_expires_on', 'Use the date on the certificate, as YYYY-MM-DD.'],
+    'tax certificate said absent on a monthly visit' => ['expiries', ['tax_clearance_expires_on' => AuditProcedure::NO_TAX_CLEARANCE, 'rssb_clearance_expires_on' => '2027-06-30'], 'tax_clearance_expires_on', 'Use the date on the certificate, as YYYY-MM-DD.'],
     'RSSB date missing' => ['expiries', ['tax_clearance_expires_on' => '2027-03-31', 'rssb_clearance_expires_on' => null], 'rssb_clearance_expires_on', 'Use the date on the certificate, as YYYY-MM-DD.'],
     'loan use unknown' => ['loan_use', ['loan_use' => 'unknown', 'loan_use_note' => ''], 'loan_use', 'Say how the loan money was used.'],
     'loan use unexplained' => ['loan_use', ['loan_use' => 'not_as_planned', 'loan_use_note' => '  '], 'loan_use_note', 'Use plain text of at most 200 characters.'],
@@ -450,6 +451,10 @@ it('adds the history, premises, people, registration and trading steps to a base
     $registration = $procedure->save('baseline', 'registration', $people['draft'], 'registration', ['registration_confirmed' => true, 'tax_clearance_expires_on' => '2024-02-29'], procedureSources());
     expect($registration['step'])->toBe('trading')->and($registration['draft']['fields']['registration'])->toBe(['registration_confirmed' => true, 'tax_clearance_expires_on' => '2024-02-29']);
 
+    // A business with no tax clearance certificate is said so explicitly and records no expiry.
+    $uncertified = $procedure->save('baseline', 'registration', $people['draft'], 'registration', ['registration_confirmed' => true, 'tax_clearance_expires_on' => AuditProcedure::NO_TAX_CLEARANCE], procedureSources());
+    expect($uncertified['step'])->toBe('trading')->and($uncertified['draft']['fields']['registration'])->toBe(['registration_confirmed' => true, 'tax_clearance_expires_on' => null]);
+
     $trading = $procedure->save('baseline', 'trading', $registration['draft'], 'trading', ['trading_since' => '2019-12'], procedureSources());
     expect($trading['step'])->toBe('photos')->and($trading['draft']['fields']['trading'])->toBe(['trading_since' => '2019-12']);
 
@@ -489,6 +494,9 @@ it('refuses a baseline step it cannot record exactly', function (string $step, a
     'management not confirmed' => ['people', ['owners_confirmed' => true, 'management_confirmed' => null], 'management_confirmed', 'Confirm the management profiles before continuing.'],
     'registration not checked' => ['registration', ['registration_confirmed' => false, 'tax_clearance_expires_on' => '2027-03-31'], 'registration_confirmed', 'Check the registration certificate before continuing.'],
     'tax date impossible' => ['registration', ['registration_confirmed' => true, 'tax_clearance_expires_on' => '2027-02-30'], 'tax_clearance_expires_on', 'Use the date on the certificate, as YYYY-MM-DD.'],
+    'tax date malformed' => ['registration', ['registration_confirmed' => true, 'tax_clearance_expires_on' => '31/03/2027'], 'tax_clearance_expires_on', 'Use the date on the certificate, as YYYY-MM-DD.'],
+    'tax date blank' => ['registration', ['registration_confirmed' => true, 'tax_clearance_expires_on' => ''], 'tax_clearance_expires_on', 'Use the date on the certificate, as YYYY-MM-DD.'],
+    'tax date missing' => ['registration', ['registration_confirmed' => true, 'tax_clearance_expires_on' => null], 'tax_clearance_expires_on', 'Use the date on the certificate, as YYYY-MM-DD.'],
     'trading as a date' => ['trading', ['trading_since' => '2021-06-01'], 'trading_since', 'Use the month trading started, as YYYY-MM.'],
     'trading month 13' => ['trading', ['trading_since' => '2021-13'], 'trading_since', 'Use the month trading started, as YYYY-MM.'],
     'trading missing' => ['trading', ['trading_since' => null], 'trading_since', 'Use the month trading started, as YYYY-MM.'],

@@ -10,7 +10,9 @@ import type { RegistrationStage } from '@/types/auditor';
 
 /**
  * Registration and tax (BRS v3 VIS-R02 baseline): the CPA checks the RDB certificate against the
- * business's record and enters the tax clearance expiry date as written on the certificate.
+ * business's record and enters the tax clearance expiry date as written on the certificate, or says
+ * the business has no certificate, which posts the explicit marker `none` (saved as no date, null)
+ * so that a blank date is still refused rather than read as "no certificate".
  */
 export function StepRegistration({
     stage,
@@ -23,12 +25,26 @@ export function StepRegistration({
     const { form, submit, errors } = useStepForm(context, {
         registration_confirmed: stage.registration_confirmed,
         tax_clearance_expires_on: stage.tax_clearance_expires_on ?? '',
+        no_tax_clearance:
+            stage.registration_confirmed &&
+            stage.tax_clearance_expires_on === null,
     });
     const confirmed = errors.registration_confirmed;
     const tax = errors.tax_clearance_expires_on;
 
     return (
-        <form id={STEP_FORM} onSubmit={submit} noValidate>
+        <form
+            id={STEP_FORM}
+            onSubmit={(event) =>
+                submit(event, {
+                    registration_confirmed: form.data.registration_confirmed,
+                    tax_clearance_expires_on: form.data.no_tax_clearance
+                        ? 'none'
+                        : form.data.tax_clearance_expires_on,
+                })
+            }
+            noValidate
+        >
             <StepHeading
                 title={t('auditor.registration.title')}
                 lead={t('auditor.registration.lead')}
@@ -58,6 +74,7 @@ export function StepRegistration({
                 </span>
                 <input
                     type="date"
+                    disabled={form.data.no_tax_clearance}
                     aria-invalid={tax ? true : undefined}
                     aria-describedby={
                         tax ? 'auditor-registration-tax-error' : undefined
@@ -71,6 +88,16 @@ export function StepRegistration({
                     }
                     className="rounded-lg border border-rz-border bg-rz-page px-2 py-1.5 text-[13px] font-bold text-rz-ink"
                 />
+            </label>
+            <label className="mt-2 flex items-center gap-2.5 text-[12px] text-rz-ink">
+                <input
+                    type="checkbox"
+                    checked={form.data.no_tax_clearance}
+                    onChange={(event) =>
+                        form.setData('no_tax_clearance', event.target.checked)
+                    }
+                />
+                <span>{t('auditor.registration.no_tax')}</span>
             </label>
             <FieldError id="auditor-registration-tax-error">{tax}</FieldError>
         </form>

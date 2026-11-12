@@ -28,6 +28,9 @@ final class AuditProcedure
      */
     public const array COST_CATEGORIES = ['stock', 'staff', 'premises', 'transport', 'taxes', 'other'];
 
+    /** Posted on a baseline registration step when the business holds no tax clearance certificate; saved as null. */
+    public const string NO_TAX_CLEARANCE = 'none';
+
     /** Who holds the premises the business trades from (BRS v3 VIS-R02 baseline: premises and assets). */
     public const array PREMISES_TENURES = ['owned', 'rented', 'shared'];
 
@@ -251,7 +254,9 @@ final class AuditProcedure
         }
         if ($step === 'registration') {
             return ['registration_confirmed' => $this->confirmed($input['registration_confirmed'], 'registration_confirmed', 'Check the registration certificate before continuing.'),
-                'tax_clearance_expires_on' => $this->date($input['tax_clearance_expires_on'], 'tax_clearance_expires_on')];
+                // The auditor says explicitly that the business holds no tax clearance certificate (stored as null).
+                // A missing or empty value is refused, so a blank date never silently means "no certificate".
+                'tax_clearance_expires_on' => $input['tax_clearance_expires_on'] === self::NO_TAX_CLEARANCE ? null : $this->date($input['tax_clearance_expires_on'], 'tax_clearance_expires_on')];
         }
         if ($step === 'trading') {
             if (! is_string($input['trading_since']) || preg_match('/^(\d{4})-(0[1-9]|1[0-2])$/', $input['trading_since']) !== 1) {

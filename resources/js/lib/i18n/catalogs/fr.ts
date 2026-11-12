@@ -5862,6 +5862,8 @@ const fr: Catalog = {
         'Le certificat RDB et l’attestation fiscale de la RRA, tels que vous les avez vus.',
     'auditor.registration.confirmed':
         'Le certificat RDB correspond au nom et au code de l’entreprise.',
+    'auditor.registration.no_tax':
+        'L’entreprise n’a pas d’attestation de régularité fiscale',
     'auditor.registration.tax': 'Expiration de l’attestation fiscale',
     'auditor.trading.title': 'Date de début d’activité',
     'auditor.trading.lead':

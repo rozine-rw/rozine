@@ -5844,6 +5844,8 @@ const rw: Catalog = {
         'Icyemezo cya RDB n’icyemezo cy’imisoro cya RRA, nk’uko wabibonye.',
     'auditor.registration.confirmed':
         'Icyemezo cya RDB gihura n’izina n’umubare by’ubucuruzi.',
+    'auditor.registration.no_tax':
+        'Ubucuruzi nta cyemezo cyo kwishyura imisoro bufite',
     'auditor.registration.tax': 'Icyemezo cy’imisoro kirangira',
     'auditor.trading.title': 'Itariki ubucuruzi bwatangiye',
     'auditor.trading.lead':

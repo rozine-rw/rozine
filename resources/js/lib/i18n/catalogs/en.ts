@@ -5637,6 +5637,8 @@ const en = {
         'The RDB certificate and the RRA tax clearance, as you saw them.',
     'auditor.registration.confirmed':
         'The RDB certificate matches the business’s name and code.',
+    'auditor.registration.no_tax':
+        'The business has no tax clearance certificate',
     'auditor.registration.tax': 'Tax clearance expires',
     'auditor.trading.title': 'Date trading started',
     'auditor.trading.lead':
