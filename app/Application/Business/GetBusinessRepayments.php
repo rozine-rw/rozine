@@ -6,6 +6,8 @@ namespace App\Application\Business;
 
 use App\Application\Primary\Contracts\RetainedNoteSchedules;
 use App\Application\Primary\RetainedNoteInstalment;
+use App\Domain\Auditor\VisitReadyChecklist;
+use Carbon\CarbonImmutable;
 
 /**
  * Repayments over Business Home. No servicing domain is bound yet, so nothing is due or payable;
@@ -14,13 +16,16 @@ use App\Application\Primary\RetainedNoteInstalment;
  * glossary, "Instalment"). It carries no paid amounts, late fees or current claim. The Notes are
  * the Business's own funded raises from Home, read under its current authority.
  *
+ * From D−14 before the next instalment falls due, the reminder carries the visit-ready checklist
+ * (BRS v3 VIS-R03): what the CPA will ask for on the monthly visit, generated from its steps.
+ *
  * @phpstan-type Money array{currency: 'RWF', amount: string}
  * @phpstan-type IssuedInstalment array{index: int, due_on: string, principal: Money, return: Money, total: Money}
  * @phpstan-type IssuedSchedule array{note_id: string, title: string, effective_date: string|null, principal: Money, return: Money, total: Money, instalments: list<IssuedInstalment>}
  */
 final readonly class GetBusinessRepayments
 {
-    public function __construct(private GetBusinessHome $home, private RetainedNoteSchedules $schedules) {}
+    public function __construct(private GetBusinessHome $home, private RetainedNoteSchedules $schedules, private VisitReadyChecklist $checklist) {}
 
     /** @return array<string, mixed> */
     public function handle(int $userId, int $contextRevision, string $businessId): array
@@ -38,7 +43,12 @@ final readonly class GetBusinessRepayments
                     'principal' => self::money($row->principal), 'return' => self::money($row->contractualReturn), 'total' => self::money($row->gross)], $schedule->instalments)];
         }
 
-        return [...$home, 'issued' => $issued];
+        $today = CarbonImmutable::now('Africa/Kigali')->toDateString();
+        $upcoming = array_filter(array_merge([], ...array_map(fn (array $schedule): array => array_column($schedule['instalments'], 'due_on'), $issued)),
+            fn (string $dueOn): bool => $dueOn >= $today);
+        $visitReady = $upcoming === [] ? null : $this->checklist->forInstalment(min($upcoming), $today);
+
+        return [...$home, 'issued' => $issued, 'visit_ready' => $visitReady];
     }
 
     /** @return array{currency: 'RWF', amount: string} */

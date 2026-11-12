@@ -35,6 +35,7 @@ import repaidFixture from '../../../resources/fixtures/ui/business-repayments-re
 import shortFixture from '../../../resources/fixtures/ui/business-repayments-short.json';
 import unconfirmedFixture from '../../../resources/fixtures/ui/business-repayments-unconfirmed.json';
 import conflictFixture from '../../../resources/fixtures/ui/business-repayments-version-conflict.json';
+import visitReadyFixture from '../../../resources/fixtures/ui/business-repayments-visit-ready.json';
 import repaymentsFixture from '../../../resources/fixtures/ui/business-repayments.json';
 import { answers, fails, inertia, operation } from '../auditor/inertia';
 
@@ -560,6 +561,57 @@ describe('Business repayments (business-servicing-v1)', () => {
         ).not.toBeInTheDocument();
         expect(within(sheet()).queryByRole('button')).not.toBeInTheDocument();
         expect(screen.queryByText(/overdue|paid/iu)).not.toBeInTheDocument();
+    });
+
+    it('opens the reminder with the visit-ready checklist from D−14, in the visit order (BRS v3 VIS-R03)', () => {
+        const page = structuredClone(
+            visitReadyFixture.props,
+        ) as BusinessRepaymentsEmptyProps;
+
+        render(<BusinessRepayments {...page} />);
+
+        const checklist = within(
+            within(sheet()).getByRole('region', {
+                name: 'Get ready for this month’s visit',
+            }),
+        );
+
+        expect(
+            checklist.getByText(
+                'Your next repayment is due on 28 Feb. Your CPA visits between 18 Feb and 25 Feb, and will ask for the items below. Tick each one when it is ready.',
+            ),
+        ).toBeInTheDocument();
+        const items = checklist.getAllByRole('checkbox');
+
+        expect(items).toHaveLength(12);
+        expect(items[0]).toHaveAccessibleName(
+            'Bank and mobile money statements',
+        );
+        expect(items[0]).toHaveAccessibleDescription(
+            'Must show: every account’s money in and out for last month Where to get it: your bank or mobile money app (download the monthly statement)',
+        );
+        expect(items[11]).toHaveTextContent('Access for photos');
+        expect(checklist.getByRole('status')).toHaveTextContent(
+            '0 of 12 ready',
+        );
+
+        fireEvent.click(items[7]);
+        expect(items[7]).toBeChecked();
+        expect(checklist.getByRole('status')).toHaveTextContent(
+            '1 of 12 ready',
+        );
+        fireEvent.click(items[7]);
+        expect(items[7]).not.toBeChecked();
+        expect(
+            checklist.getByText(/shown here 3 days before the visit/u),
+        ).toBeInTheDocument();
+        expect(inertia.calls).toHaveLength(0);
+        // The issued schedule still follows the checklist.
+        expect(
+            within(sheet()).getByRole('region', {
+                name: 'Repayment schedule · Kigali Fresh Produce expansion',
+            }),
+        ).toBeInTheDocument();
     });
 
     it('draws the empty sheet over the real Home when the server sends it', () => {

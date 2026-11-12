@@ -153,6 +153,7 @@
         "resources/js/components/business/repayments/progress-card.tsx",
         "resources/js/components/business/repayments/receipt.tsx",
         "resources/js/components/business/repayments/schedule-list.tsx",
+        "resources/js/components/business/repayments/visit-ready-checklist.tsx",
         "resources/js/components/business/reports/audit-guide.tsx",
         "resources/js/components/business/reports/period-label.ts",
         "resources/js/components/business/reports/report-sheet.tsx",
