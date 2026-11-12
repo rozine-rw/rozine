@@ -221,6 +221,7 @@ function Test({
                 type="submit"
                 disabled={left > 0 || processing}
                 aria-busy={processing || undefined}
+                aria-describedby="academy-form-error"
                 className="mt-4 h-[50px] w-full rounded-xl bg-rz-accent-fill text-[14.5px] font-semibold text-white disabled:opacity-50"
             >
                 {processing
