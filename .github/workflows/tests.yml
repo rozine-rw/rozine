@@ -678,7 +678,7 @@ jobs:
           tools: composer:v2
           # Only the isolated coverage probes need instrumentation.
           extensions: pdo_pgsql, pgsql, pcntl, posix
-          coverage: ${{ matrix.group == 'coverage' && 'xdebug' || 'none' }}
+          coverage: ${{ matrix.group == 'coverage' && 'pcov' || 'none' }}
 
       - name: Cache Composer downloads
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4

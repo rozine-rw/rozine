@@ -248,7 +248,7 @@ it('pins original POC provenance and budgets reuse before staging admission', fu
         ->and($steps[4]['run'])->toBe('python3 .github/scripts/check-poc-budget.py');
 });
 
-it('keeps full runs short with PCOV shards and a sharded PostgreSQL lane behind one admission name', function (): void {
+it('keeps full runs short with PCOV shards, PCOV negative controls and a sharded PostgreSQL lane behind one admission name', function (): void {
     $workflow = Yaml::parseFile($this->root.'/.github/workflows/tests.yml');
     $step = function (string $job, string $name) use ($workflow): array {
         foreach ($workflow['jobs'][$job]['steps'] as $candidate) {
@@ -265,6 +265,7 @@ it('keeps full runs short with PCOV shards and a sharded PostgreSQL lane behind 
     expect($setup('php-shards')['coverage'])->toBe('pcov')
         ->and($setup('php-shards')['ini-values'])->toBe('pcov.directory=app')
         ->and($setup('concurrency')['coverage'])->toBe('none')
+        ->and($setup('negative-control-groups')['coverage'])->toBe("\${{ matrix.group == 'coverage' && 'pcov' || 'none' }}")
         ->and($workflow['jobs']['concurrency']['strategy']['matrix']['shard'])->toBe([1, 2, 3, 4])
         ->and($workflow['jobs']['concurrency']['timeout-minutes'])->toBe(60)
         ->and($lane['run'])->toBe('php vendor/bin/pest -c phpunit.pgsql.xml --ci --no-tia --compact --shard="$SHARD/4"')
