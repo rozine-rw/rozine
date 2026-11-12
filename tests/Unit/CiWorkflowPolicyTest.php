@@ -250,8 +250,17 @@ it('pins original POC provenance and budgets reuse before staging admission', fu
 
 it('keeps full runs short with PCOV shards and a sharded PostgreSQL lane behind one admission name', function (): void {
     $workflow = Yaml::parseFile($this->root.'/.github/workflows/tests.yml');
-    $setup = fn (string $job): array => collect($workflow['jobs'][$job]['steps'])->firstWhere('name', 'Setup PHP')['with'];
-    $lane = collect($workflow['jobs']['concurrency']['steps'])->firstWhere('name', 'Run the suite and the concurrency evidence against PostgreSQL');
+    $step = function (string $job, string $name) use ($workflow): array {
+        foreach ($workflow['jobs'][$job]['steps'] as $candidate) {
+            if (($candidate['name'] ?? null) === $name) {
+                return $candidate;
+            }
+        }
+
+        throw new RuntimeException('Missing workflow step: '.$job.' / '.$name);
+    };
+    $setup = fn (string $job): array => $step($job, 'Setup PHP')['with'];
+    $lane = $step('concurrency', 'Run the suite and the concurrency evidence against PostgreSQL');
 
     expect($setup('php-shards')['coverage'])->toBe('pcov')
         ->and($setup('php-shards')['ini-values'])->toBe('pcov.directory=app')
