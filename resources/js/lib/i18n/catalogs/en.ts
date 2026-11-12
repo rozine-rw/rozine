@@ -3784,6 +3784,8 @@ const en = {
     'business.visit_ready.progress': '{done} of {total} ready',
     'business.visit_ready.shows': 'Must show: {text}',
     'business.visit_ready.where': 'Where to get it: {text}',
+    'business.visit_ready.failed':
+        'We couldn’t save that tick. Check your connection and try again.',
     'business.visit_ready.footer':
         'The CPA sees these on the visit; investors only ever see the sealed report. The 10 transactions the CPA will check are shown here 3 days before the visit. Uploading early is optional.',
     'business.visit_ready.item.bank_statements.title':

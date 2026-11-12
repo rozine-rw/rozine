@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Business;
 
+use App\Application\Business\Contracts\VisitReadyTicks;
 use App\Application\Primary\Contracts\RetainedNoteSchedules;
 use App\Application\Primary\RetainedNoteInstalment;
 use App\Domain\Auditor\VisitReadyChecklist;
@@ -17,7 +18,8 @@ use Carbon\CarbonImmutable;
  * the Business's own funded raises from Home, read under its current authority.
  *
  * From D−14 before the next instalment falls due, the reminder carries the visit-ready checklist
- * (BRS v3 VIS-R03): what the CPA will ask for on the monthly visit, generated from its steps.
+ * (BRS v3 VIS-R03): what the CPA will ask for on the monthly visit, generated from its steps,
+ * with the items the Business has ticked as ready.
  *
  * @phpstan-type Money array{currency: 'RWF', amount: string}
  * @phpstan-type IssuedInstalment array{index: int, due_on: string, principal: Money, return: Money, total: Money}
@@ -25,7 +27,7 @@ use Carbon\CarbonImmutable;
  */
 final readonly class GetBusinessRepayments
 {
-    public function __construct(private GetBusinessHome $home, private RetainedNoteSchedules $schedules, private VisitReadyChecklist $checklist) {}
+    public function __construct(private GetBusinessHome $home, private RetainedNoteSchedules $schedules, private VisitReadyChecklist $checklist, private VisitReadyTicks $ticks) {}
 
     /** @return array<string, mixed> */
     public function handle(int $userId, int $contextRevision, string $businessId): array
@@ -47,6 +49,9 @@ final readonly class GetBusinessRepayments
         $upcoming = array_filter(array_merge([], ...array_map(fn (array $schedule): array => array_column($schedule['instalments'], 'due_on'), $issued)),
             fn (string $dueOn): bool => $dueOn >= $today);
         $visitReady = $upcoming === [] ? null : $this->checklist->forInstalment(min($upcoming), $today);
+        if ($visitReady !== null) {
+            $visitReady['ticked'] = $this->ticks->ticked((string) $home['entry']['business_id'], $visitReady['due_on']);
+        }
 
         return [...$home, 'issued' => $issued, 'visit_ready' => $visitReady];
     }
