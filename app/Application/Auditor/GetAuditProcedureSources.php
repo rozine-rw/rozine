@@ -15,7 +15,7 @@ use App\Domain\Auditor\AuditMonthlyFacts;
  * @phpstan-import-type AcceptedAssignment from \App\Application\Auditor\Contracts\AuditAssignmentStore
  * @phpstan-import-type SourceFacts from \App\Application\Auditor\Contracts\AuditSourceFactsStore
  *
- * @phpstan-type Projection array{verification: Source|null, check_in: Source|null, photos: Source|null, declaration: Source|null, reported_stock: string|null, reported_cash: string|null, reported_units: string|null, financial_proofs: list<string>, inventory_proofs: list<string>, extra_photos: list<string>, documents: list<Document>, ledger_documents?: list<Document>, ledger_sources?: array<string, Source>, monthly: Monthly|null, licence: string, source_facts: SourceFacts|null, authority: array{mandate_version: int, mandate_sha256: string, profile_revision: int, engagement_id: string}}
+ * @phpstan-type Projection array{verification: Source|null, check_in: Source|null, photos: Source|null, declaration: Source|null, reported_stock: string|null, reported_cash: string|null, reported_units: string|null, financial_proofs: list<string>, inventory_proofs: list<string>, extra_photos: list<string>, documents: list<Document>, ledger_documents?: list<Document>, ledger_sources?: array<string, Source>, monthly: Monthly|null, history: list<array{month: string, inflow: string, outflow: string}>, licence: string, source_facts: SourceFacts|null, authority: array{mandate_version: int, mandate_sha256: string, profile_revision: int, engagement_id: string}}
  */
 final class GetAuditProcedureSources
 {
@@ -45,6 +45,13 @@ final class GetAuditProcedureSources
         $monthly = $current && $file['transcription'] !== null
             ? $this->monthly->project($period, $verification['payload']['observations'], $file['transcription']['payload']['statements']) : null;
 
+        // The verified history the baseline visit checks month by month (BRS v3 VIS-R02), newest first.
+        $history = [];
+        foreach ($current ? $verification['payload']['observations'] : [] as $observation) {
+            $history[] = ['month' => (string) $observation['month'], 'inflow' => (string) $observation['operating_inflow'], 'outflow' => (string) $observation['operating_outflow']];
+        }
+        usort($history, fn (array $a, array $b): int => strcmp($b['month'], $a['month']));
+
         return ['verification' => $current && ($kind !== 'monthly' || $monthly !== null)
             ? ['id' => $verification['id'], 'revision' => $verification['revision'], 'sha256' => $verification['sha256']] : null,
             'check_in' => $checkIn ? $pin : null, 'photos' => $photosReady ? $pin : null, 'declaration' => $declaration ? $pin : null,
@@ -54,6 +61,6 @@ final class GetAuditProcedureSources
             'extra_photos' => array_column($facts['photos']['extra'] ?? [], 'id'),
             'authority' => ['mandate_version' => $assignment['mandate_version'], 'mandate_sha256' => $assignment['mandate_sha256'],
                 'profile_revision' => $assignment['accreditation']['profile_revision'], 'engagement_id' => $assignment['engagement']['id']],
-            'documents' => $file['evidence']['documents'], 'monthly' => $monthly, 'licence' => $file['assignment']['accreditation']['licence'], 'source_facts' => $facts];
+            'documents' => $file['evidence']['documents'], 'monthly' => $monthly, 'history' => array_slice($history, 0, 36), 'licence' => $file['assignment']['accreditation']['licence'], 'source_facts' => $facts];
     }
 }

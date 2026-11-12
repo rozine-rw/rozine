@@ -187,7 +187,7 @@ describe('Auditor sealed report — the Business dispute', () => {
 
         expect(stageOf(page).published_reason).toBe('staff_resolved');
         expect(sheet()).toHaveTextContent(
-            `Published by Rozine staff on ${formatDate(stageOf(page).published_at!, 'en')}. The business did not co-sign it.`,
+            `Published by Rozine staff on ${formatDate(stageOf(page).published_at!, 'en')}.`,
         );
         expect(sheet()).not.toHaveTextContent(/and co-signed/u);
         expect(within(sheet()).getByText('Not co-signed')).toBeInTheDocument();
@@ -361,7 +361,7 @@ describe('Auditor sealed report — publication under N6', () => {
             cosign: { state: 'pending', signed_at: null },
         });
         expect(sheet()).toHaveTextContent(
-            `Published automatically after the 24-hour window, on ${formatDate(stageOf(page).published_at!, 'en')}. The business did not co-sign it.`,
+            `Published after the 24-hour window with no dispute, on ${formatDate(stageOf(page).published_at!, 'en')}.`,
         );
         expect(sheet()).not.toHaveTextContent(/and co-signed|Waiting/u);
         expect(within(sheet()).getByText('Not co-signed')).toBeInTheDocument();
@@ -402,7 +402,9 @@ describe('Auditor sealed report — publication under N6', () => {
 
         expect(screen.getByText('Non cosigné')).toBeInTheDocument();
         expect(
-            screen.getByText(/^Publié automatiquement après la fenêtre/u),
+            screen.getByText(
+                /^Publié après la fenêtre de 24 heures, sans contestation/u,
+            ),
         ).toBeInTheDocument();
         unmount();
 

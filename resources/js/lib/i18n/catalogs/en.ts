@@ -187,7 +187,8 @@ const en = {
     'suite.add_investor.title': 'Add Investor access',
     'suite.add_investor.body':
         'Your identity is already verified for your Business account, so you will not be asked to verify it again. Read and accept the Investor terms to start investing.',
-    'suite.add_investor.accept': 'I have read and accept these Investor terms.',
+    'suite.add_investor.accept':
+        'Continuing means you agree to these Investor terms.',
     'suite.add_investor.confirm': 'Add Investor access',
     'suite.add_investor.cancel': 'Cancel',
     'suite.add_investor.network_error':
@@ -283,8 +284,205 @@ const en = {
         "You're offline. What you see may be out of date, and nothing can be sent until you're back online.",
     'business.nav.home': 'Home',
     'business.nav.reports': 'Reports',
+    'business.nav.readiness': 'Readiness',
     'business.nav.market': 'Market',
     'business.nav.profile': 'Profile',
+    'business.readiness.title': 'Readiness',
+    'business.readiness.subtitle':
+        'How your business grows toward the capital market, in step with its size. Only you see this page.',
+    'business.readiness.stage.0': 'Below Foundation',
+    'business.readiness.stage.1': 'Stage 1 · Foundation',
+    'business.readiness.stage.2': 'Stage 2 · Growth',
+    'business.readiness.stage.3': 'Stage 3 · Scale',
+    'business.readiness.stage.4': 'Stage 4 · Market',
+    'business.readiness.stage_pending': 'Stage not set yet',
+    'business.readiness.status.building': 'Building',
+    'business.readiness.status.ready': 'Ready',
+    'business.readiness.vmr': 'Verified monthly revenue',
+    'business.readiness.vmr_basis':
+        'The average of your last 3 published monthly reports.',
+    'business.readiness.reports_needed': {
+        one: 'Your stage is set once 3 monthly reports are published. {count} more to go.',
+        other: 'Your stage is set once 3 monthly reports are published. {count} more to go.',
+    },
+    'business.readiness.pending.up': {
+        one: '{count} reading so far points to {stage}. The stage moves up after {needed} readings in a row, with 2 of the last 3 months there too.',
+        other: '{count} readings in a row point to {stage}. The stage moves up after {needed} readings in a row, with 2 of the last 3 months there too.',
+    },
+    'business.readiness.pending.down': {
+        one: '{count} reading so far points to {stage}. The stage moves down only after {needed} readings in a row, with 2 of the last 3 months there too.',
+        other: '{count} readings in a row point to {stage}. The stage moves down only after {needed} readings in a row, with 2 of the last 3 months there too.',
+    },
+    'business.readiness.next':
+        '{stage} starts at {threshold} a month: {gap} to go.',
+    'business.readiness.next_reached':
+        '{stage} starts at {threshold} a month. Your average is there: hold it for {needed} readings in a row.',
+    'business.readiness.top': 'You are in the top stage.',
+    'business.readiness.ready_rule':
+        'Ready comes when every requirement due is met, your three signals stay on target for 3 reports in a row, and you pass your stage’s core Academy modules.',
+    'business.readiness.guidance.title': 'Monthly guidance',
+    'business.readiness.guidance.rule':
+        'After each published report, each signal is measured against the target for your stage, with one action.',
+    'business.readiness.guidance.empty':
+        'Your guidance starts once a month you sent figures for is verified in a published report.',
+    'business.readiness.guidance.record_gap': 'Record Gap',
+    'business.readiness.guidance.forecast_error': 'Forecast Error',
+    'business.readiness.guidance.on_target': 'On target',
+    'business.readiness.guidance.off_target': 'Off target',
+    'business.readiness.guidance.value': {
+        one: '{value}% over the last {count} month. Target: {target}% or less.',
+        other: '{value}% over the last {count} months. Target: {target}% or less.',
+    },
+    'business.readiness.guidance.bias.over':
+        'Your forecasts were above the money that came in.',
+    'business.readiness.guidance.bias.under':
+        'Your forecasts were below the money that came in.',
+    'business.readiness.guidance.record_gap.keep':
+        'Keep recording every sale and every payment in your books on the day it happens.',
+    'business.readiness.guidance.record_gap.fix':
+        'Record every cash sale and every payment in your books on the same day, and keep each receipt.',
+    'business.readiness.guidance.forecast_error.keep':
+        'Keep starting each forecast from your verified average and the orders you hold in writing.',
+    'business.readiness.guidance.forecast_error.fix':
+        "Start next month's forecast from your verified average, and add only orders you hold in writing.",
+    'business.academy.title': 'Academy',
+    'business.academy.intro':
+        'Short lessons for your stage. Each module is a set of flashcards, then a test of {questions} questions. {pass} correct answers pass.',
+    'business.academy.core_title': 'Core modules for {stage}',
+    'business.academy.preview_title': 'Preview of {stage}',
+    'business.academy.preview_body':
+        'Cards only. The test opens when you reach this stage.',
+    'business.academy.cards': {
+        one: '{count} card',
+        other: '{count} cards',
+    },
+    'business.academy.state.open': 'Test open',
+    'business.academy.state.passed': 'Passed',
+    'business.academy.state.waiting': 'Retake from {date}',
+    'business.academy.state.preview': 'Preview',
+    'business.academy.best': 'Best score: {score} of {total}',
+    'business.academy.syllabus':
+        'Academy: {passed} of {total} core modules passed for your stage.',
+    'business.academy.open': 'Open the Academy',
+    'business.academy.back': 'Back',
+    'business.academy.flashcards': 'Flashcards',
+    'business.academy.card_progress': 'Card {current} of {total}',
+    'business.academy.show_back': 'Show answer',
+    'business.academy.show_front': 'Show card',
+    'business.academy.previous': 'Previous',
+    'business.academy.next': 'Next',
+    'business.academy.start_test': 'Start the test',
+    'business.academy.test_title': 'Test',
+    'business.academy.test_intro':
+        'Answer all {count} questions. {pass} correct answers pass.',
+    'business.academy.question': 'Question {current} of {total}',
+    'business.academy.left': {
+        one: '{count} question left to answer.',
+        other: '{count} questions left to answer.',
+    },
+    'business.academy.send': 'Send answers',
+    'business.academy.sending': 'Sending…',
+    'business.academy.result.passed': 'Passed with {score} of {total}.',
+    'business.academy.result.waiting':
+        'Not passed: {score} of {total}. The test reopens on {date} with new questions.',
+    'business.academy.result.open':
+        'Not passed: {score} of {total}. Your next test is ready below.',
+    'business.academy.note.passed':
+        'You have passed this module. Its cards stay here to revise.',
+    'business.academy.note.preview':
+        'This module belongs to the next stage. Its test opens when you reach it.',
+    'business.readiness.milestones.title':
+        'Milestones toward the capital market',
+    'business.readiness.milestones.rule':
+        'Each milestone is reached automatically once every condition is met. Conditions Rozine cannot measure yet are shown as pending.',
+    'business.readiness.milestones.bond.title': 'Bond track',
+    'business.readiness.milestones.bond.summary':
+        'Meet every condition and Rozine prepares your bond-readiness file.',
+    'business.readiness.milestones.bond.reached':
+        'Every condition is met. Rozine prepares your bond-readiness file.',
+    'business.readiness.milestones.clinic.title':
+        'RSE Investment Clinic referral',
+    'business.readiness.milestones.clinic.summary':
+        'Meet every condition and Rozine can refer you to the Rwanda Stock Exchange Investment Clinic, with your consent. Referrals start once Rozine’s agreement with the RSE is signed.',
+    'business.readiness.milestones.clinic.reached':
+        'Every condition is met. Rozine refers you, with your consent, once its agreement with the RSE is signed.',
+    'business.readiness.milestones.condition.stage': 'Stage 3 or 4',
+    'business.readiness.milestones.condition.ready_6_months':
+        'Ready for 6 months in a row',
+    'business.readiness.milestones.condition.ready_12_months':
+        'Ready for 12 months in a row',
+    'business.readiness.milestones.condition.notes_on_time':
+        '3 or more Rozine notes, every instalment collected on its due day',
+    'business.readiness.milestones.condition.audited_statements':
+        'Audited annual statements uploaded',
+    'business.readiness.milestones.condition.limited_company':
+        'A limited company',
+    'business.readiness.milestones.condition.trading_3_years':
+        '3 or more years trading',
+    'business.readiness.milestones.condition.no_proceedings':
+        'No major legal proceedings',
+    'business.readiness.milestones.state.met': 'Met',
+    'business.readiness.milestones.state.not_met': 'Not met',
+    'business.readiness.milestones.state.pending': 'Pending',
+    'business.readiness.stages': 'The four stages',
+    'business.readiness.stage_from': 'From {amount} a month',
+    'business.readiness.current': 'Current',
+    'business.readiness.months': 'Months counted',
+    'business.readiness.months_empty': 'No monthly report is published yet.',
+    'business.readiness.requirements': 'Requirements',
+    'business.readiness.requirements_rule':
+        'Your size sets these requirements. Your CPA confirms each one at the monthly visit.',
+    'business.readiness.requirement.status.not_triggered': 'Not yet',
+    'business.readiness.requirement.status.due': 'Due',
+    'business.readiness.requirement.status.overdue': 'Overdue',
+    'business.readiness.requirement.status.met': 'Met',
+    'business.readiness.requirement.status.lapsed': 'Lapsed',
+    'business.readiness.requirement.due_by': {
+        one: 'Due by {date} · {count} day left',
+        other: 'Due by {date} · {count} days left',
+    },
+    'business.readiness.requirement.lapsed_by': {
+        one: 'Meet it again by {date} · {count} day left',
+        other: 'Meet it again by {date} · {count} days left',
+    },
+    'business.readiness.requirement.overdue_line':
+        'Overdue since {date}. Your next raise waits until it is met.',
+    'business.readiness.requirement.met_on': 'Confirmed on {date}',
+    'business.readiness.requirement.met_entry':
+        'Checked when you joined Rozine',
+    'business.readiness.requirement.applies_entry':
+        'Applies once your entry audit is published',
+    'business.readiness.requirement.applies_stage': 'Applies from {stage}',
+    'business.readiness.requirement.applies_headcount':
+        'Applies from {count} employees',
+    'business.readiness.requirement.C1.title': 'Tax and RSSB up to date',
+    'business.readiness.requirement.C1.detail':
+        'Tax clearance and RSSB contributions current.',
+    'business.readiness.requirement.F1.title':
+        'Business money in business accounts',
+    'business.readiness.requirement.F1.detail':
+        'All business money goes through business-named accounts, with at least 90% of verified revenue traceable to them.',
+    'business.readiness.requirement.F2.title': 'Qualified accountant',
+    'business.readiness.requirement.F2.detail':
+        'A qualified accountant, employed or contracted, and accounting software in use.',
+    'business.readiness.requirement.F3.title': 'Finance manager',
+    'business.readiness.requirement.F3.detail':
+        'A full-time qualified finance manager (CPA, ACCA or equivalent, at least 3 years) and monthly management accounts.',
+    'business.readiness.requirement.F4.title': 'External audit',
+    'business.readiness.requirement.F4.detail':
+        'An annual audit under IFRS for SMEs by an ICPAR auditor other than your Rozine CPA, and payments prepared and approved by different people.',
+    'business.readiness.requirement.P1.title': 'Contracts for every employee',
+    'business.readiness.requirement.P1.detail':
+        'Written contracts and RSSB registration for every employee.',
+    'business.readiness.requirement.P2.title': 'HR lead and policy',
+    'business.readiness.requirement.P2.detail':
+        'A named HR lead or contracted HR provider, and a written HR policy.',
+    'business.readiness.requirement.G1.title': 'Board of directors',
+    'business.readiness.requirement.G1.detail':
+        'A board of at least 2 directors meeting quarterly with minutes, and a written payment delegation.',
+    'business.readiness.requirement.G2.title': 'Independent director',
+    'business.readiness.requirement.G2.detail':
+        'At least one independent director, a governance code and a related-party register.',
     'business.market.title': 'Market Overview',
     'business.market.subtitle':
         'How your notes are performing on the secondary market.',
@@ -332,10 +530,12 @@ const en = {
     'business.today.approved.cta_free': 'Publish',
     'business.today.cosign.kicker': 'Audit report ready',
     'business.today.cosign.sub':
+        'Your CPA sealed it. Read the findings. There is nothing to sign.',
+    'business.today.cosign.cta': 'Review report',
+    'business.today.cosign.due': 'Dispute by {date} · {hours} h left',
+    'business.today.cosign.sign_sub':
         'Your CPA sealed it. Read the findings before you co-sign.',
-    'business.today.cosign.cta': 'Review & co-sign',
-    'business.today.cosign.due':
-        'Co-sign or dispute by {date} · {hours} h left',
+    'business.today.cosign.sign_cta': 'Review & co-sign',
     'business.today.signature.kicker': 'Signature needed',
     'business.today.signature.sub':
         'Your signature is needed before this application can be submitted.',
@@ -739,7 +939,7 @@ const en = {
     'business.reports.guide.title': 'How audits work',
     'business.reports.guide.flash.title': 'A Flash audit, when Rozine asks',
     'business.reports.guide.flash.body':
-        'Before you raise, or whenever Rozine needs a fresh check, an Audit Partner visits unannounced and seals a Flash report within 24 hours. You co-sign it just like a monthly report.',
+        'Before you raise, or whenever Rozine needs a fresh check, an Audit Partner visits unannounced and seals a Flash report within 24 hours. You review it just like a monthly report.',
     'business.reports.guide.opens.title': 'Every month, gather your records',
     'business.reports.guide.opens.body':
         'Between the 20th and month-end, gather all physical and digital financial records for your scheduled CPA in-person audit.',
@@ -747,22 +947,22 @@ const en = {
     'business.reports.guide.visit.body_before':
         'Your assigned CPA visits your premises to review records and reconcile cash flows, then seals the report before the',
     'business.reports.guide.visit.body_after': '.',
-    'business.reports.guide.cosign.title': 'Co-sign, or dispute',
+    'business.reports.guide.cosign.title': 'Review, or dispute',
     'business.reports.guide.cosign.body':
-        'When the audit is sealed you have 24 hours to review it and co-sign it, or raise a dispute with counter-proof. If you do neither within 24 hours, the report counts as approved. Because you never touch the figures, the report is independent — which is exactly what investors pay for.',
+        'When the audit is sealed you have 24 hours to review it and, if something is wrong, raise a dispute with counter-proof. You do not sign it: with no dispute, the report stands. Because you never touch the figures, the report is independent — which is exactly what investors pay for.',
     'business.reports.guide.visit.body_undated':
         'Your assigned CPA visits your premises to review records and reconcile cash flows, then seals the report.',
     'business.reports.tabs': 'Report status',
     'business.reports.tab.verified': 'Published',
     'business.reports.tab.in_audit': 'In audit',
     'business.reports.tab.in_audit_cosign': {
-        one: 'In audit · {count} to co-sign',
-        other: 'In audit · {count} to co-sign',
+        one: 'In audit · {count} to review',
+        other: 'In audit · {count} to review',
     },
     'business.reports.tab.archived': 'Archived',
     'business.reports.status.verified': 'Verified',
     'business.reports.status.in_audit': 'In audit',
-    'business.reports.status.awaiting': 'Co-sign now',
+    'business.reports.status.awaiting': 'Review now',
     'business.reports.status.archived': 'Archived',
     'business.reports.health.healthy': 'Healthy',
     'business.reports.health.watch': 'Watch',
@@ -770,12 +970,12 @@ const en = {
     'business.reports.row.filed':
         'Inflow {inflow} · {health} · audited by {auditor}',
     'business.reports.row.in_audit': 'With {auditor} · sealed by {date}',
-    'business.reports.row.awaiting': 'Needs your co-signature',
+    'business.reports.row.awaiting': 'Ready for your review',
     'business.reports.row.hours_left': {
         one: '{date} · {count} hour left',
         other: '{date} · {count} hours left',
     },
-    'business.reports.row.awaiting_by': 'Co-sign or dispute by {date}',
+    'business.reports.row.awaiting_by': 'Dispute by {date}',
     'business.reports.row.annual': 'Full year summary',
     'business.reports.annual': '{year} Annual',
     'business.reports.empty': 'No reports here yet.',
@@ -1388,9 +1588,17 @@ const en = {
     'admin.messaging.trigger.business.report_sealed':
         'The Audit Partner seals the monthly report',
     'admin.messaging.trigger.business.report_review_closing':
-        'The window to co-sign or dispute a report is closing',
+        'The window to dispute a report is closing',
     'admin.messaging.trigger.business.reporting_window_open':
         'A monthly audit opens for a business with a live note',
+    'admin.messaging.trigger.business.readiness_stage_changed':
+        'A business moves to another readiness stage',
+    'admin.messaging.trigger.business.readiness_requirement_due':
+        'A readiness requirement becomes due',
+    'admin.messaging.trigger.business.readiness_requirement_closing':
+        'A readiness requirement has 14 days left',
+    'admin.messaging.trigger.business.readiness_requirement_overdue':
+        'A readiness requirement turns overdue',
     'admin.messaging.trigger.auditor.accreditation_approved':
         'Accreditation is approved',
     'admin.messaging.trigger.auditor.accreditation_rejected':
@@ -2294,7 +2502,7 @@ const en = {
     'admin.parties.filter': 'Filter by status',
     'admin.audit_reports.title': 'Audit report tracker',
     'admin.audit_reports.caption':
-        'Every audit with the state of its report. Monthly audits are verified on site by the 7th; the business then has 24 hours to co-sign or dispute.',
+        'Every audit with the state of its report. Monthly audits are verified on site by the 7th; the business then has 24 hours to dispute.',
     'admin.audit_reports.field.title': 'Field Flash Audit operations',
     'admin.audit_reports.field.caption':
         'Each field audit shows its CPA and licence, report state and weighted variance, with the retained seal digest and report PDF when available.',
@@ -2314,23 +2522,23 @@ const en = {
     'admin.audit_reports.due': 'Due {date}',
     'admin.audit_reports.sealed_on': 'Sealed {date}',
     'admin.audit_reports.period_flash': 'On demand',
-    'admin.audit_reports.cosign_by': 'Co-sign by {date}',
+    'admin.audit_reports.cosign_by': 'Dispute window ends {date}',
     'admin.audit_reports.remind': 'Remind',
     'admin.audit_reports.remind_auditor':
         'Remind the Audit Partner about {business}',
     'admin.audit_reports.remind_business':
-        'Remind {business} to co-sign or dispute',
+        'Remind {business} to review the report',
     'admin.audit_reports.reminded': 'Reminded {date}',
     'admin.audit_reports.pdf': 'Generate PDF',
     'admin.audit_reports.pdf_named':
         'Download the sealed report for {business} (PDF)',
     'admin.audit_reports.stats.published': 'Audited & published',
-    'admin.audit_reports.stats.awaiting_cosign': 'Awaiting sign-off',
+    'admin.audit_reports.stats.awaiting_cosign': 'In dispute window',
     'admin.audit_reports.stats.overdue': 'Overdue reports',
     'admin.audit_reports.stats.on_time': 'On-time audit rate',
     'admin.audit_reports.chip.all': 'All',
     'admin.audit_reports.chip.owed': 'Owed by a partner',
-    'admin.audit_reports.chip.awaiting_cosign': 'Awaiting sign-off',
+    'admin.audit_reports.chip.awaiting_cosign': 'In dispute window',
     'admin.audit_reports.chip.published': 'Published',
     'admin.audit_reports.chip.disputed': 'In dispute',
     'admin.audit_reports.col.business': 'Business',
@@ -2344,7 +2552,7 @@ const en = {
     'admin.audit_reports.status.overdue': 'Overdue',
     'admin.audit_reports.status.returned': 'Returned',
     'admin.audit_reports.status.sealed': 'Sealed',
-    'admin.audit_reports.status.awaiting_cosign': 'Awaiting sign-off',
+    'admin.audit_reports.status.awaiting_cosign': 'In dispute window',
     'admin.audit_reports.status.published': 'Published',
     'admin.audit_reports.status.disputed': 'Disputed',
     'admin.audit_reports.status.escalated': 'Escalated',
@@ -3098,7 +3306,7 @@ const en = {
     'auditor.home.in_progress': 'In progress',
     'auditor.job.step_of': 'Step {step} of {steps}',
     'auditor.job.status.overdue': 'Overdue',
-    'auditor.job.status.awaiting_cosign': 'Awaiting co-signature',
+    'auditor.job.status.awaiting_cosign': 'In dispute window',
     'auditor.job.reassigned': 'Reassigned to you',
     'auditor.standing.title': 'Your standing',
     'auditor.standing.on_time': 'On-time close',
@@ -3160,7 +3368,7 @@ const en = {
         "No open jobs in your area. We'll ping you the moment a Tier 2 deal needs a field check within {radius}km.",
     'auditor.monthly.title': 'Monthly reports',
     'auditor.monthly.lead':
-        "You open each month's audit file for the businesses you manage. Audit on site and seal before the 7th — the business co-signs after.",
+        "You open each month's audit file for the businesses you manage. Audit on site and seal before the 7th — the business then has 24 hours to dispute.",
     'auditor.monthly.to_open': 'Audits to open',
     'auditor.monthly.waiting': '{count} waiting',
     'auditor.monthly.not_opened': '{month} · audit file not opened yet',
@@ -3185,7 +3393,7 @@ const en = {
     'auditor.monthly.status.in_progress': 'In progress',
     'auditor.monthly.status.overdue': 'Overdue',
     'auditor.monthly.status.changes_requested': 'Sent back',
-    'auditor.monthly.status.awaiting_cosign': 'Awaiting co-sign',
+    'auditor.monthly.status.awaiting_cosign': 'In dispute window',
     'auditor.monthly.inflow': 'Inflow',
     'auditor.monthly.outflow': 'Outflow',
     'auditor.monthly.cover': 'Cover',
@@ -3220,9 +3428,9 @@ const en = {
         '{business} is back with dispatch and your reason is on the record.',
     'auditor.outcome.sealed.title': 'Audit sealed and filed',
     'auditor.outcome.sealed.flash':
-        'The field report for {business} is sealed. {business} co-signs by {date}; the engine rates the business from your findings.',
+        'The field report for {business} is sealed. {business} can dispute it until {date}; the engine rates the business from your findings.',
     'auditor.outcome.sealed.monthly':
-        'The {month} report for {business} — its uploaded statements and your factual findings — is sealed. {business} co-signs by {date}.',
+        'The {month} report for {business} — its uploaded statements and your factual findings — is sealed. {business} can dispute it until {date}.',
     'auditor.outcome.suggested.title': 'Changes requested',
     'auditor.outcome.suggested.body':
         'The business has your reason and explanation, and can resubmit the filing for your audit.',
@@ -3324,10 +3532,25 @@ const en = {
     'auditor.audit.step.seal': 'Seal',
     'auditor.audit.step.statements': 'Statements',
     'auditor.audit.step.count': 'Count & cash',
+    'auditor.audit.step.cash_sales': 'Cash sales',
+    'auditor.audit.step.costs': 'Costs',
+    'auditor.audit.step.history': 'History',
+    'auditor.audit.step.premises': 'Premises',
+    'auditor.audit.step.people': 'People',
+    'auditor.audit.step.registration': 'Registration',
+    'auditor.audit.step.trading': 'Trading start',
+    'auditor.audit.step.drawings': 'Drawings',
+    'auditor.audit.step.loans': 'Other loans',
+    'auditor.audit.step.differences': 'Differences',
+    'auditor.audit.step.staff': 'Staff',
+    'auditor.audit.step.expiries': 'Expiry dates',
+    'auditor.audit.step.loan_use': 'Loan money',
+    'auditor.audit.step.changes': 'Changes',
     'auditor.audit.continue': 'Continue',
     'auditor.audit.to_seal': 'Review & seal',
     'auditor.audit.start_count': 'Start the count',
     'auditor.audit.to_photos': 'Continue to photos',
+    'auditor.audit.explain_differences': 'Explain the difference',
     'auditor.audit.back': 'Back',
     'auditor.audit.back_to_jobs': 'Back to jobs',
     'auditor.audit.offline':
@@ -3441,7 +3664,7 @@ const en = {
     'auditor.count.status.restricted': 'Restricted',
     'auditor.seal.title': 'Sign off & seal',
     'auditor.seal.lead':
-        'Your findings are attributed to your ICPAR licence and published to holders after the business signs off.',
+        'Your findings are attributed to your ICPAR licence and published to holders once the business has had 24 hours to dispute them.',
     'auditor.seal.note': 'Assessment note',
     'auditor.seal.note_optional': 'Optional',
     'auditor.seal.note_required': 'Required',
@@ -3469,7 +3692,7 @@ const en = {
     'auditor.seal.submit': 'Apply ICPAR licence seal',
     'auditor.sealed.title': 'Sealed and filed',
     'auditor.sealed.body':
-        'The report is sealed and can no longer be edited. {party} co-signs by {date}; it publishes to holders after that.',
+        'The report is sealed and can no longer be edited. {party} can dispute it until {date}; it publishes to holders after that.',
     'auditor.sealed.timeline': 'Filing progress',
     'auditor.sealed.stage.sealed': 'Sealed by you',
     'auditor.sealed.stage.cosigned': 'Business co-signature',
@@ -3577,7 +3800,7 @@ const en = {
     'auditor.conflicts.empty': 'You have not declared any conflicts.',
     'auditor.conflicts.page_empty':
         'Nothing to show on this page. Earlier declarations may follow.',
-    'auditor.reports.status.awaiting_cosign': 'Awaiting co-sign',
+    'auditor.reports.status.awaiting_cosign': 'In dispute window',
     'auditor.reports.status.published': 'Published',
     'auditor.reports.status.late': 'Late',
     'auditor.reports.status.rejected': 'Rejected',
@@ -3852,6 +4075,62 @@ const en = {
         "The late-fee policy isn't available right now, so no late fee is shown.",
     'business.servicing.repay.ladder_version': 'Late-fee policy {version}.',
     'business.audit_prep.title': 'Get ready for your audit',
+    'business.monthly_figures.title': 'Monthly figures',
+    'business.monthly_figures.intro':
+        'Send what came in and went out in {month}. Your Audit Partner checks these figures at the visit, before {date}.',
+    'business.monthly_figures.step': 'Step {current} of {total}',
+    'business.monthly_figures.money_in.title': 'Money in for {month}',
+    'business.monthly_figures.money_in.body':
+        'All the money the business received in the month, in every account and in cash, in Rwandan francs.',
+    'business.monthly_figures.money_in.label': 'Money in',
+    'business.monthly_figures.costs.title': 'Costs for {month}',
+    'business.monthly_figures.costs.body':
+        'What the business spent in the month, in each of the six categories. Enter 0 where there was none.',
+    'business.monthly_figures.costs.stock': 'Stock and materials',
+    'business.monthly_figures.costs.staff': 'Staff pay',
+    'business.monthly_figures.costs.premises': 'Rent and utilities',
+    'business.monthly_figures.costs.transport': 'Transport',
+    'business.monthly_figures.costs.taxes': 'Taxes and fees',
+    'business.monthly_figures.costs.other': 'Other costs',
+    'business.monthly_figures.costs.total': 'Total costs',
+    'business.monthly_figures.costs.total_line': 'Total costs: {amount}',
+    'business.monthly_figures.paid.title': 'Paid to owners in {month}',
+    'business.monthly_figures.paid.body':
+        'Money the owners took out of the business for themselves. Enter 0 if there was none.',
+    'business.monthly_figures.paid.label': 'Paid to owners',
+    'business.monthly_figures.forecast.title': 'Forecast for {forecast}',
+    'business.monthly_figures.forecast.basis':
+        'Pre-filled with your verified average for the last three months: {amount}.',
+    'business.monthly_figures.forecast.no_basis':
+        'Enter the money you expect to come in. There is no verified average yet.',
+    'business.monthly_figures.forecast.label': 'Money in expected in {month}',
+    'business.monthly_figures.forecast.order': 'Signed order',
+    'business.monthly_figures.forecast.order_hint':
+        'This forecast is more than 25% away from your verified average. Name the signed order behind it, for example "Order 114 from Simba Supermarket". Your Audit Partner sees it at the visit.',
+    'business.monthly_figures.changes.title': 'Changes in {month}',
+    'business.monthly_figures.changes.owners': 'Owners or directors changed',
+    'business.monthly_figures.changes.premises':
+        'Moved premises, or opened or closed a location',
+    'business.monthly_figures.changes.borrowing': 'Took a new loan or credit',
+    'business.monthly_figures.changes.customers':
+        'Lost a main customer or supplier',
+    'business.monthly_figures.changes.yes': 'Yes',
+    'business.monthly_figures.changes.no': 'No',
+    'business.monthly_figures.summary.title': 'Check and send',
+    'business.monthly_figures.summary.line':
+        '{month}: money in {money_in}, costs {costs}, paid to owners {paid}. Forecast for {forecast_month}: {forecast}.',
+    'business.monthly_figures.summary.final':
+        'Once sent, these figures are final for the month.',
+    'business.monthly_figures.sent.title': 'Figures for {month}',
+    'business.monthly_figures.sent.body':
+        'Sent {date}. Your Audit Partner checks them at the visit.',
+    'business.monthly_figures.back': 'Back',
+    'business.monthly_figures.next': 'Next',
+    'business.monthly_figures.send': 'Send figures',
+    'business.monthly_figures.sending': 'Sending…',
+    'business.audit_prep.figures.title': 'Send your monthly figures',
+    'business.audit_prep.figures.body':
+        'Six short screens, about 3 minutes. Your Audit Partner checks them at the visit.',
     'business.audit_prep.window_open': 'Audit window open',
     'business.audit_prep.next': 'Next audit',
     'business.audit_prep.first': 'Your first audit',
@@ -3891,11 +4170,11 @@ const en = {
     'business.audit_prep.flow.sealed.title': 'Sealed',
     'business.audit_prep.flow.sealed.body':
         'The factual findings and variances are sealed under their ICPAR licence.',
-    'business.audit_prep.flow.cosign.title': 'You co-sign',
+    'business.audit_prep.flow.cosign.title': 'You review',
     'business.audit_prep.flow.cosign.body':
-        'You add a recap and co-sign by {date}, or dispute with counter-proof.',
+        'You read the findings and, if something is wrong, dispute with counter-proof by {date}.',
     'business.audit_prep.closing':
-        'You never file the monthly report yourself. Your CPA visits, reviews your records on site and seals the report — your part is being ready, then co-signing or disputing what they found.',
+        'You never file the monthly report yourself. Your CPA visits, reviews your records on site and seals the report — your part is being ready, then reviewing what they found and disputing it if something is wrong.',
     'investor.nav.deals': 'Deals',
     'investor.nav.portfolio': 'Portfolio',
     'investor.nav.profile': 'Profile',
@@ -3989,7 +4268,7 @@ const en = {
         other: 'Fit to {count} notes',
     },
     'investor.cart.whole.risks_first':
-        'Confirm the risk statements on a deal’s checkout first, then check out the whole cart.',
+        'Confirm the risk statements first, then check out the whole cart.',
     'investor.cart.whole.open_checkout': 'Open checkout',
     'investor.cart.whole.held_title': 'Confirm your cart',
     'investor.cart.whole.held_lead':
@@ -4001,8 +4280,8 @@ const en = {
     'investor.cart.whole.line_return': 'Return {return} · fee {fee}',
     'investor.cart.whole.net_return': 'Expected return after fee',
     'investor.cart.whole.acknowledge':
-        'I have read these terms and confirm every note in this cart.',
-    'investor.cart.whole.confirm': 'Confirm all · {amount}',
+        'Paying confirms you have read the prospectus for each note.',
+    'investor.cart.whole.confirm': 'Pay {amount}',
     'investor.cart.whole.release': 'Release all notes',
     'investor.cart.whole.requoted':
         'The terms changed before you confirmed. Check the new total and band, then confirm again.',
@@ -4099,6 +4378,47 @@ const en = {
     'investor.deal.notes_of': '{sold} of {total} notes',
     'investor.deal.details': 'DETAILS',
     'investor.deal.photos': 'Photos',
+    'investor.deal.prospectus.title': 'Prospectus · version {version}',
+    'investor.deal.prospectus.signed': 'Signed',
+    'investor.deal.prospectus.signed_by': 'Signed by {name} on {date}',
+    'investor.deal.prospectus.fingerprint': 'Fingerprint {fingerprint}…',
+    'investor.deal.prospectus.read': 'Read',
+    'investor.prospectus.title': '{name} prospectus',
+    'investor.prospectus.back': 'Back to the deal',
+    'investor.prospectus.signed':
+        'Version {version}, signed by {name} on {date}',
+    'investor.prospectus.fingerprint': 'Fingerprint {fingerprint}',
+    'investor.prospectus.purpose': 'Purpose',
+    'investor.prospectus.terms': 'Terms and fees',
+    'investor.prospectus.principal': 'Amount raised',
+    'investor.prospectus.fee': 'Rozine platform fee (3%)',
+    'investor.prospectus.net': 'Left for the business to spend',
+    'investor.prospectus.term': 'Term',
+    'investor.prospectus.instalment': 'Monthly instalment',
+    'investor.prospectus.funds': 'Use of funds',
+    'investor.prospectus.quoted': 'Quote on file',
+    'investor.prospectus.financials': 'CPA-verified financials and forecast',
+    'investor.prospectus.verified_revenue': 'Verified average monthly revenue',
+    'investor.prospectus.sealed': 'Latest sealed CPA report',
+    'investor.prospectus.forecast': 'The business’s forecast',
+    'investor.prospectus.month': 'Month',
+    'investor.prospectus.revenue': 'Revenue',
+    'investor.prospectus.costs': 'Costs',
+    'investor.prospectus.contracted': 'Signed contract on file',
+    'investor.prospectus.assumptions': 'Assumptions',
+    'investor.prospectus.downside': 'If sales fall short',
+    'investor.prospectus.management': 'Management',
+    'investor.prospectus.role.representative': 'Official representative',
+    'investor.prospectus.role.director': 'Director',
+    'investor.prospectus.role.owner': 'Owner',
+    'investor.prospectus.risks': 'Risks',
+    'investor.prospectus.largest_customer':
+        'The largest customer brings {percent}% of revenue.',
+    'investor.prospectus.concentration': 'Customer concentration',
+    'investor.prospectus.months': {
+        one: '{count} month',
+        other: '{count} months',
+    },
     'investor.deal.reported_by_business': 'Reported by business',
     'investor.deal.use_of_funds': 'Use of funds',
     'investor.deal.use.inventory': 'Inventory',
@@ -4185,7 +4505,7 @@ const en = {
     'investor.checkout.deposit': 'Deposit',
     'investor.checkout.disclosure': 'COST AND RISK',
     'investor.checkout.acknowledge':
-        'I have read the cost and risk disclosure ({version}).',
+        'Paying confirms you have read the prospectus for this note ({version}).',
     'investor.checkout.refusal.TRADE_BELOW_MINIMUM':
         'Invest at least one note.',
     'investor.checkout.refusal.INSUFFICIENT_AVAILABLE_FUNDS':
@@ -4201,7 +4521,7 @@ const en = {
     'investor.checkout.refusal.VERSION_CONFLICT':
         'The terms changed while you were reading. Review them and confirm again.',
     'investor.checkout.processing': 'Confirming…',
-    'investor.checkout.confirm': 'Confirm investment · {amount}',
+    'investor.checkout.confirm': 'Pay {amount}',
     'investor.checkout.fine_print':
         'Funds committed instantly · Returns are projected, not guaranteed',
     'investor.checkout.confirmed': 'Investment confirmed',
@@ -4412,10 +4732,9 @@ const en = {
         '✓ OTP sent · enter the 6-digit code to verify',
     'investor.signup.agree.head_title': 'Review & agree',
     'investor.signup.agree.title': 'Review & agree',
-    'investor.signup.agree.terms_before': 'I accept the Rozine',
+    'investor.signup.agree.terms_before': 'Continuing means you agree to the',
     'investor.signup.agree.terms': 'Terms & Conditions',
-    'investor.signup.agree.terms_after': '.',
-    'investor.signup.agree.privacy_before': 'I have read the',
+    'investor.signup.agree.privacy_before': 'and the',
     'investor.signup.agree.privacy': 'Privacy Note',
     'investor.signup.agree.privacy_after': '.',
     'investor.kyc.progress': 'Verification progress',
@@ -5426,6 +5745,298 @@ const en = {
     'auditor.audit.amends':
         'This is a linked amendment of report {report}. That report remains unchanged.',
     'auditor.audit.open_original': 'Open the original',
+    'auditor.audit.guide.label': 'How to do this step',
+    'auditor.audit.guide.how_to': 'How to',
+    'auditor.audit.guide.part.do': 'Do',
+    'auditor.audit.guide.part.enter': 'Enter',
+    'auditor.audit.guide.part.upload': 'Upload',
+    'auditor.audit.guide.part.done': 'Done when',
+    'auditor.audit.guide.uploads_rule':
+        'Collect only what proves a figure: statements, invoices, receipts, contracts, loan agreements, certificates, minutes, audit reports, and premises and asset photos. Never collect staff names or personal details (the RSSB total page only, names covered), passwords or PINs, medical records, or anything about your other clients. Uploads are encrypted and seen only by you, the business and Rozine.',
+    'auditor.audit.guide.review.do':
+        'Read the business file before you go on site.',
+    'auditor.audit.guide.review.done':
+        'You have read the file. Continue to check in.',
+    'auditor.audit.guide.review.how':
+        'Open each document in the file and note what you need to see on site. Nothing is recorded in this step.',
+    'auditor.audit.guide.check_in.do':
+        'Check in at the business premises with the capture app.',
+    'auditor.audit.guide.check_in.enter':
+        'Nothing to type. Your position and the time come from your phone.',
+    'auditor.audit.guide.check_in.done':
+        'Your check-in has arrived and shows here.',
+    'auditor.audit.guide.check_in.how':
+        'Stand inside the premises, open the capture app, allow location and check in. A check-in far from the registered premises, or with a weak location, goes to review; carry on.',
+    'auditor.audit.guide.photos.do':
+        'Take every required site photo live in the capture app.',
+    'auditor.audit.guide.photos.upload':
+        'Live photos only. Gallery uploads are refused.',
+    'auditor.audit.guide.photos.done':
+        'Every required photo has arrived and has a title.',
+    'auditor.audit.guide.photos.how':
+        'Photograph the premises and the stock as the list asks. Each photo carries its own time and place. Add more photos only where they prove a figure.',
+    'auditor.audit.guide.ledger.do':
+        'Count the stock and enter the inventory value you counted.',
+    'auditor.audit.guide.ledger.enter':
+        'Inventory value in whole francs, for example 1250000.',
+    'auditor.audit.guide.ledger.upload':
+        'The original ledger as a PDF or CSV, up to 10 MB.',
+    'auditor.audit.guide.ledger.done':
+        'The ledger is attached and the difference from the reported figure is shown.',
+    'auditor.audit.guide.ledger.how':
+        'Count what is on the shelves, add up its value and type the total. Then attach the ledger the business keeps. A scan without text is marked for manual review.',
+    'auditor.audit.guide.statements.do':
+        'Read what the bank, MoMo and POS statements on file report for the month.',
+    'auditor.audit.guide.statements.done':
+        'You have read money in, money out and the net for the month.',
+    'auditor.audit.guide.statements.how':
+        'Open each statement to see where a figure comes from. Nothing is typed here; the figures come from the statements.',
+    'auditor.audit.guide.count.do':
+        'Tick the proof you actually saw, then enter what you observed.',
+    'auditor.audit.guide.count.enter':
+        'Cash on hand in whole francs and the stock units you counted. For example 450000 and 120.',
+    'auditor.audit.guide.count.done':
+        'Every figure is entered and every listed proof is ticked.',
+    'auditor.audit.guide.count.how':
+        'Count the cash and the stock yourself. Each figure is compared to the statements on file; nothing here comes from the business.',
+    'auditor.audit.guide.cash_sales.do':
+        'Record the cash sales this month that were never paid into a bank or mobile-money account.',
+    'auditor.audit.guide.cash_sales.enter':
+        'One amount in whole francs. For example 15000. Enter 0 if every sale was deposited.',
+    'auditor.audit.guide.cash_sales.done':
+        'An amount is entered, even if it is 0.',
+    'auditor.audit.guide.cash_sales.how':
+        'Compare the sales book and receipts with the deposits on the statements. Cash kept back for change or spent before banking counts as not deposited.',
+    'auditor.audit.guide.costs.do':
+        'Sort this month’s costs into the six categories.',
+    'auditor.audit.guide.costs.enter':
+        'An amount in whole francs for each category: stock, staff, premises, transport, taxes and other. For example stock 400000. Enter 0 where there was no cost.',
+    'auditor.audit.guide.costs.done':
+        'Every category has an amount, even if it is 0.',
+    'auditor.audit.guide.costs.how':
+        'Use the invoices, receipts and statement payments for the month. Put each cost in one category only; anything that fits none goes under Other.',
+    'auditor.audit.guide.history.do':
+        'Compare each month of the verified history with the business’s statements.',
+    'auditor.audit.guide.history.done':
+        'You ticked that every month matches the statements.',
+    'auditor.audit.guide.history.how':
+        'Open the statements for a month, check the money in and out against the row, and move on. Raise anything that does not match with the business before you tick.',
+    'auditor.audit.guide.premises.do':
+        'Say who holds the premises and list the business’s main assets.',
+    'auditor.audit.guide.premises.enter':
+        'Owned, rented or shared, then each main asset with an estimated value in whole francs. For example Delivery motorbike, 1800000.',
+    'auditor.audit.guide.premises.done':
+        'Who holds the premises is chosen. Assets are optional; list at most 10.',
+    'auditor.audit.guide.premises.how':
+        'Ask for the title deed or the lease. Walk the premises and list only what the business uses to trade, such as vehicles, machines and cold rooms.',
+    'auditor.audit.guide.people.do':
+        'Check the identity of every director and owner, and confirm the management profiles.',
+    'auditor.audit.guide.people.done': 'Both checks are ticked.',
+    'auditor.audit.guide.people.how':
+        'Compare each person’s ID with the RDB register extract. Confirm that the management profiles the business gave match the people you met.',
+    'auditor.audit.guide.registration.do':
+        'Check the registration certificate and record the tax clearance expiry date.',
+    'auditor.audit.guide.registration.enter':
+        'The tax clearance expiry date as written on the certificate. For example 31 March 2027.',
+    'auditor.audit.guide.registration.done':
+        'The certificate is ticked as checked and a date is entered.',
+    'auditor.audit.guide.registration.how':
+        'The company name and code on the RDB certificate must match the business’s record. Read the expiry from the RRA tax clearance certificate.',
+    'auditor.audit.guide.trading.do':
+        'Record the month the business started trading.',
+    'auditor.audit.guide.trading.enter':
+        'A month and year. For example June 2021.',
+    'auditor.audit.guide.trading.done': 'A month is entered.',
+    'auditor.audit.guide.trading.how':
+        'Use the earliest invoice, statement or trading licence you can see, not the registration date if trading began later.',
+    'auditor.audit.guide.drawings.do':
+        'Record what the owners took out of the business this month.',
+    'auditor.audit.guide.drawings.enter':
+        'One amount in whole francs. For example 150000. Enter 0 if nothing was taken.',
+    'auditor.audit.guide.drawings.done':
+        'An amount is entered, even if it is 0.',
+    'auditor.audit.guide.drawings.how':
+        'Look for transfers and cash taken by the owners in the statements and the cash book. Count salaries paid to owners only if they are not on the payroll.',
+    'auditor.audit.guide.loans.do':
+        'List every loan the business owes anyone other than Rozine.',
+    'auditor.audit.guide.loans.enter':
+        'For each loan: who lent it, what is still owed and the monthly payment, in whole francs. For example Bank of Kigali, 2400000 and 200000.',
+    'auditor.audit.guide.loans.done':
+        'Each loan has a lender and the amount still owed. A business with no other loans continues with an empty list.',
+    'auditor.audit.guide.loans.how':
+        'Ask the owner and check the statements for regular repayments. Read the figures from the loan agreement or the lender’s latest statement.',
+    'auditor.audit.guide.differences.do':
+        'Give each cause of the cash difference an amount until nothing is left to explain.',
+    'auditor.audit.guide.differences.enter':
+        'Whole francs per cause. For example 20000 for personal spending and 6000 for an entry error.',
+    'auditor.audit.guide.differences.done':
+        'The amounts add up to the whole difference, to the franc. A month with no difference has nothing to explain.',
+    'auditor.audit.guide.differences.how':
+        'Ask the owner about each gap and check it against the ledger or receipts. Use only the causes listed; the amounts are sealed with the cash finding.',
+    'auditor.differences.title': 'Explain the difference',
+    'auditor.differences.lead':
+        'Split the gap between the cash counted and what the statements report across its causes, to the franc.',
+    'auditor.differences.lead_none':
+        'The cash counted matches the statements, so there is nothing to explain.',
+    'auditor.differences.reported': 'Statements',
+    'auditor.differences.observed': 'Counted',
+    'auditor.differences.difference': 'Difference',
+    'auditor.differences.unavailable': 'Unavailable',
+    'auditor.differences.causes': 'Causes',
+    'auditor.differences.amount': 'Amount for {cause}',
+    'auditor.differences.balanced': 'The whole difference is explained.',
+    'auditor.differences.left': '{amount} still to explain.',
+    'auditor.differences.over':
+        '{amount} more than the difference. Lower an amount.',
+    'auditor.differences.cause.unrecorded_sales': 'Sales not recorded',
+    'auditor.differences.cause.unproven_expense': 'Expense without proof',
+    'auditor.differences.cause.personal_spending':
+        'Personal spending from the business',
+    'auditor.differences.cause.wrong_month': 'Recorded in the wrong month',
+    'auditor.differences.cause.entry_error': 'Entry error',
+    'auditor.differences.cause.counted_twice': 'Counted twice',
+    'auditor.cash_sales.title': 'Cash sales not deposited',
+    'auditor.cash_sales.lead':
+        'Cash taken this month that never reached a bank or mobile-money account, from the sales book and receipts.',
+    'auditor.cash_sales.amount': 'Not deposited this month',
+    'auditor.cash_sales.hint': 'Enter 0 if every cash sale was deposited.',
+    'auditor.costs.title': 'Costs',
+    'auditor.costs.lead':
+        'This month’s costs in the six categories the business also uses for its monthly figures.',
+    'auditor.costs.category.stock': 'Stock and supplies',
+    'auditor.costs.category.staff': 'Staff',
+    'auditor.costs.category.premises': 'Premises',
+    'auditor.costs.category.transport': 'Transport',
+    'auditor.costs.category.taxes': 'Taxes and fees',
+    'auditor.costs.category.other': 'Other',
+    'auditor.costs.total': 'Total costs',
+    'auditor.costs.hint': 'Enter 0 for a category with no cost this month.',
+    'auditor.history.title': 'Trading history',
+    'auditor.history.lead':
+        'The verified money in and out for the last {count} months, newest first.',
+    'auditor.history.none': 'No verified history is on file yet.',
+    'auditor.history.month': 'Month',
+    'auditor.history.in': 'Money in (RWF)',
+    'auditor.history.out': 'Money out (RWF)',
+    'auditor.history.checked':
+        'I compared every month with the statements and they match.',
+    'auditor.premises.title': 'Premises and assets',
+    'auditor.premises.lead':
+        'Who holds the premises, and the main assets the business trades with.',
+    'auditor.premises.tenure': 'The premises are',
+    'auditor.premises.tenure.owned': 'Owned by the business',
+    'auditor.premises.tenure.rented': 'Rented',
+    'auditor.premises.tenure.shared': 'Shared with another business',
+    'auditor.premises.assets': 'Main assets',
+    'auditor.premises.none':
+        'No assets listed. Continue if the business trades without any.',
+    'auditor.premises.item': 'Asset {number}',
+    'auditor.premises.asset': 'What it is',
+    'auditor.premises.value': 'Estimated value (RWF)',
+    'auditor.premises.remove': 'Remove asset {number}',
+    'auditor.premises.add': 'Add an asset',
+    'auditor.people.title': 'Directors, owners and managers',
+    'auditor.people.lead':
+        'Check who owns and runs the business before it lists for the first time.',
+    'auditor.people.owners_confirmed':
+        'I checked the ID of every director and owner against the RDB register.',
+    'auditor.people.management_confirmed':
+        'The management profiles match the people I met.',
+    'auditor.registration.title': 'Registration and tax',
+    'auditor.registration.lead':
+        'The RDB certificate and the RRA tax clearance, as you saw them.',
+    'auditor.registration.confirmed':
+        'The RDB certificate matches the business’s name and code.',
+    'auditor.registration.no_tax':
+        'The business has no tax clearance certificate',
+    'auditor.registration.tax': 'Tax clearance expires',
+    'auditor.trading.title': 'Date trading started',
+    'auditor.trading.lead':
+        'The month the business began trading, from its earliest records.',
+    'auditor.trading.since': 'Trading since',
+    'auditor.drawings.title': 'Owner drawings',
+    'auditor.drawings.lead':
+        'What the owners took out of the business this month, from the statements and the cash book.',
+    'auditor.drawings.amount': 'Taken by the owners this month',
+    'auditor.drawings.hint': 'Enter 0 if the owners took nothing.',
+    'auditor.loans.title': 'Other loans',
+    'auditor.loans.lead':
+        'Every loan the business owes anyone other than Rozine, from the agreement or the lender’s statement.',
+    'auditor.loans.none':
+        'No other loans recorded. Continue if the business owes no one else.',
+    'auditor.loans.item': 'Loan {number}',
+    'auditor.loans.lender': 'Lender',
+    'auditor.loans.outstanding': 'Still owed (RWF)',
+    'auditor.loans.monthly_payment': 'Monthly payment (RWF)',
+    'auditor.loans.remove': 'Remove loan {number}',
+    'auditor.loans.add': 'Add a loan',
+    'auditor.audit.guide.staff.do':
+        'Record how many people the business employs, from the RSSB declaration.',
+    'auditor.audit.guide.staff.enter':
+        'One whole number. For example 6. Enter 0 if no one is employed.',
+    'auditor.audit.guide.staff.done':
+        'A number is entered and the RSSB total page is checked.',
+    'auditor.audit.guide.staff.how':
+        'Ask for the latest RSSB declaration and read the total from its summary page. Ask the owner to cover the names; Rozine never collects employee details.',
+    'auditor.audit.guide.expiries.do':
+        'Record when the tax and RSSB clearance certificates expire.',
+    'auditor.audit.guide.expiries.enter':
+        'Two dates, as printed on each certificate. For example 31/03/2027.',
+    'auditor.audit.guide.expiries.done':
+        'Both dates are entered, even if one has already passed.',
+    'auditor.audit.guide.expiries.how':
+        'Read each date from the certificate itself, not from what the owner says. An expired certificate is recorded as you saw it.',
+    'auditor.audit.guide.loan_use.do':
+        'Say how the Rozine loan money was used this month.',
+    'auditor.audit.guide.loan_use.enter':
+        'Choose as planned, partly or not as planned. Anything but as planned needs one line, for example: Part paid the October rent.',
+    'auditor.audit.guide.loan_use.done':
+        'An answer is chosen, with a line saying where the money went if it was not as planned.',
+    'auditor.audit.guide.loan_use.how':
+        'Compare what the money paid for with the use stated in the prospectus. Check receipts or statements for the larger payments.',
+    'auditor.audit.guide.changes.do':
+        'Ask about four changes since the last visit.',
+    'auditor.audit.guide.changes.enter':
+        'Yes or no for each: a new loan, a director change, an ownership change, a legal claim.',
+    'auditor.audit.guide.changes.done': 'Every question has a yes or no.',
+    'auditor.audit.guide.changes.how':
+        'Ask the owner each question plainly and check the registry extract or loan papers where you can. A yes is sealed with the report.',
+    'auditor.staff.title': 'Staff count',
+    'auditor.staff.lead':
+        'How many people the business employs, read from the RSSB total page.',
+    'auditor.staff.count': 'People employed',
+    'auditor.staff.rssb_checked':
+        'I checked this against the RSSB total page, with the names covered.',
+    'auditor.expiries.title': 'Tax and RSSB expiry dates',
+    'auditor.expiries.lead':
+        'The expiry date printed on each clearance certificate.',
+    'auditor.expiries.tax': 'Tax clearance expires',
+    'auditor.expiries.rssb': 'RSSB clearance expires',
+    'auditor.loan_use.title': 'Use of the loan money',
+    'auditor.loan_use.lead':
+        'Whether the Rozine loan money went where the prospectus said.',
+    'auditor.loan_use.option.as_planned': 'As planned',
+    'auditor.loan_use.option.partly': 'Partly as planned',
+    'auditor.loan_use.option.not_as_planned': 'Not as planned',
+    'auditor.loan_use.note': 'Note (optional)',
+    'auditor.loan_use.note_required': 'Where did the money go?',
+    'auditor.changes.title': 'Changes',
+    'auditor.changes.lead': 'Has any of these changed since the last visit?',
+    'auditor.changes.kind.new_debt': 'A new loan or debt',
+    'auditor.changes.kind.director_change': 'A change of director',
+    'auditor.changes.kind.ownership_change':
+        'A change of owners or shareholders',
+    'auditor.changes.kind.legal_claim': 'A legal claim against the business',
+    'auditor.changes.yes': 'Yes',
+    'auditor.changes.no': 'No',
+    'auditor.audit.guide.seal.do':
+        'Check the result, then seal with your authenticator code.',
+    'auditor.audit.guide.seal.enter':
+        'The six-digit code from your authenticator app.',
+    'auditor.audit.guide.seal.done':
+        'Every earlier step is complete. Seal stays off until then.',
+    'auditor.audit.guide.seal.how':
+        'Read the findings once more. When you seal, the report is fixed under your licence and the business has 24 hours to dispute it.',
     'auditor.receipt.title': 'Conflict recorded',
     'auditor.receipt.body.reassignment_pending':
         'Your conflict has been recorded. Work on this assignment is stopped while Audit Operations arranges reassignment.',
@@ -6242,7 +6853,7 @@ const en = {
     'investor.checkout.c3.held_amount': 'Held from Available',
     'investor.checkout.c3.release': 'Release these notes',
     'investor.checkout.c3.confirm_fine_print':
-        "Confirming commits your held amount. A confirmed commitment is final and can't be cancelled. If the raise doesn't fill, your money comes back to your wallet.",
+        "Paying commits your held amount. You can withdraw it for a full refund until the raise reaches 100%. If the raise doesn't fill, your money comes back to your wallet.",
     'investor.checkout.c3.at_maturity': {
         one: 'Back over {count} month',
         other: 'Back over {count} months',
@@ -6329,19 +6940,35 @@ const en = {
     'investor.notices.auditor.job_offered.body_routine':
         'Routine audit at {business}, {location}. Accept by {time}.',
     'investor.notices.business.report_sealed.title':
-        'Audit report ready for your approval',
+        'Audit report ready for review',
     'investor.notices.business.report_sealed.body':
-        '{auditor} sealed your audit report. Review it, then co-sign or dispute it.',
+        '{auditor} sealed your audit report. Review it, and dispute it if something is wrong.',
     'investor.notices.business.report_sealed.body_due':
-        '{auditor} sealed your audit report. Co-sign or dispute it by {time}.',
+        '{auditor} sealed your audit report. Dispute it by {time} if something is wrong.',
     'investor.notices.business.report_review_closing.title':
         'Review window closing',
     'investor.notices.business.report_review_closing.body':
-        'Your window to co-sign or dispute the audit report closes at {time}. If you do nothing, it is published as sealed.',
+        'Your window to dispute the audit report closes at {time}. If you do nothing, it is published as sealed.',
     'investor.notices.business.reporting_window_open.title':
         'Monthly audit open',
     'investor.notices.business.reporting_window_open.body':
-        "Your {month} audit has started. Have the month's statements and records ready so your Audit Partner can verify them and seal the audit report by {date}. You then co-sign it or raise a dispute.",
+        "Your {month} audit has started. Have the month's statements and records ready so your Audit Partner can verify them and seal the audit report by {date}. You then review it and can raise a dispute.",
+    'investor.notices.business.readiness_stage_changed.title':
+        'Readiness stage changed',
+    'investor.notices.business.readiness_stage_changed.body':
+        'Your {month} report moved you from {previous} to {stage}.',
+    'investor.notices.business.readiness_requirement_due.title':
+        'New readiness requirement',
+    'investor.notices.business.readiness_requirement_due.body':
+        '{requirement} now applies to your business. Meet it by {date}.',
+    'investor.notices.business.readiness_requirement_closing.title':
+        'Requirement due soon',
+    'investor.notices.business.readiness_requirement_closing.body':
+        '{requirement} is due by {date}. Your CPA confirms it at the next visit.',
+    'investor.notices.business.readiness_requirement_overdue.title':
+        'Requirement overdue',
+    'investor.notices.business.readiness_requirement_overdue.body':
+        '{requirement} was due on {date}. Your next raise waits until it is met.',
     'investor.notices.business.raise_expired.title':
         'Raise closed without full funding',
     'investor.notices.business.raise_expired.body':
@@ -6401,14 +7028,15 @@ const en = {
         'Your identity details need another look',
     'investor.notices.verification.rejected.body':
         'Compliance could not verify your details: {reason}',
-    'investor.checkout.risks.title': 'Before your first investment',
+    'investor.checkout.risks.title': 'Before you invest',
     'investor.checkout.risks.lead':
-        'Tick each statement to confirm you understand it.',
-    'investor.checkout.risks.accept': 'I understand these risks',
+        'Please read these five statements. You confirm them once; checkout then has nothing extra to ask.',
+    'investor.checkout.risks.understood': 'I understand all of the above',
+    'investor.checkout.risks.accept': 'Continue',
     'investor.checkout.risks.failed':
         "We couldn't record your answer. Try again.",
     'investor.checkout.c3.reserve_after_risks':
-        'Confirm the risk statements above to reserve.',
+        'Confirm the risk statements first to reserve.',
     'investor.checkout.c3.reserve_unavailable':
         "Reserving isn't available right now.",
     'investor.checkout.c3.reserve_fine_print':
@@ -6537,10 +7165,14 @@ const en = {
         other: '{count} recovery codes remaining',
     },
     'business.audit_cosign.head_title': 'Co-sign audit report',
+    'business.audit_cosign.head_title_review': 'Review audit report',
     'business.audit_cosign.title': 'Co-sign the audit report',
+    'business.audit_cosign.title_review': 'Review the audit report',
     'business.audit_cosign.back': 'Back',
     'business.audit_cosign.lead':
         'Your CPA sealed this report after the on-site audit. Read the factual findings before you co-sign.',
+    'business.audit_cosign.lead_review':
+        "Your CPA sealed this report after the on-site audit. Read the factual findings. You don't need to sign it.",
     'business.audit_cosign.kind.monthly': 'Monthly audit report',
     'business.audit_cosign.kind.flash': 'Flash audit report',
     'business.audit_cosign.period': 'Period',
@@ -6565,6 +7197,7 @@ const en = {
     'business.audit_cosign.sealed_note':
         'This report is sealed. Nothing on this page changes it.',
     'business.audit_cosign.status.title': 'Co-signatures',
+    'business.audit_cosign.status.title_review': 'Review',
     'business.audit_cosign.status.count': '{signed} of {required} signatures',
     'business.audit_cosign.status.signers': 'Signatories',
     'business.audit_cosign.status.you': 'You',
@@ -6576,6 +7209,7 @@ const en = {
     'business.audit_cosign.overdue': 'Overdue — co-signing was due by {date}',
     'business.audit_cosign.published': 'Published {date}',
     'business.audit_cosign.yours.title': 'Your co-signature',
+    'business.audit_cosign.yours.title_review': 'Your response',
     'business.audit_cosign.yours.accept':
         'I have reviewed the audit findings and co-sign this report.',
     'business.audit_cosign.yours.note': 'Your recap (optional)',
@@ -6596,6 +7230,8 @@ const en = {
     'business.audit_cosign.yours.unavailable':
         "This report isn't open for co-signing right now.",
     'business.audit_cosign.yours.cannot': "You can't co-sign this report.",
+    'business.audit_cosign.yours.not_needed':
+        'Nothing to sign. If you agree, there is nothing to do: the report is published when the 24-hour window ends. If something is wrong, dispute it before then.',
     'business.audit_cosign.refused.with_code': '{reason} ({code})',
     'business.audit_cosign.refused.VERSION_CONFLICT':
         "This report's signatures changed while you were working on it. We've loaded the latest — check it and try again.",
@@ -6652,18 +7288,18 @@ const en = {
     'common.proof_file.download_short': 'Download',
     'business.audit_cosign.published_staff': 'Published by Rozine staff {date}',
     'business.audit_cosign.yours.published_auto':
-        'Published automatically after the 24-hour window: no one signed off or disputed it in time. No signature was recorded for it.',
+        'Published at the end of the 24-hour window with no dispute. No signature is needed.',
     'business.audit_cosign.yours.published_staff':
         'Rozine staff resolved the dispute and published the report. No signature was recorded for it.',
     'business.audit_cosign.window.title': '24-hour review window',
     'business.audit_cosign.window.left': '{time} left',
     'business.audit_cosign.window.body':
-        'Once the audit report is sealed in your app, you have 24 hours to sign off or submit a dispute with supporting proof.',
+        "Your CPA sealed this report. You don't sign it. If something is wrong, dispute it with supporting proof within 24 hours.",
     'business.audit_cosign.window.delivered': 'Arrived in your app {date}',
-    'business.audit_cosign.window.due': 'Sign off or dispute by {date}',
+    'business.audit_cosign.window.due': 'Dispute by {date}',
     'business.audit_cosign.window.ended': 'The 24-hour window has ended.',
     'business.audit_cosign.window.auto':
-        'Unsigned reports are automatically approved at the end of the window.',
+        'With no dispute, the report stands and is published when the window ends.',
     'business.audit_cosign.dispute.intro':
         'Show what you dispute in the findings and your proof. Your dispute does not change the sealed report, and it pauses the 24-hour window while the CPA reviews it.',
     'business.audit_cosign.dispute.proof_rule':
@@ -6736,9 +7372,9 @@ const en = {
     'business.audit_cosign.refused.REPORT_REVIEW_CLOSED':
         "This report is already disputed, with Rozine staff or published, so it can't be signed off or disputed again. We've loaded it as it stands now.",
     'auditor.sealed.body_published_auto':
-        'Published automatically after the 24-hour window, on {date}. The business did not co-sign it.',
+        'Published after the 24-hour window with no dispute, on {date}.',
     'auditor.sealed.body_published_staff':
-        'Published by Rozine staff on {date}. The business did not co-sign it.',
+        'Published by Rozine staff on {date}.',
     'auditor.sealed.cosign.not_signed': 'Not co-signed',
     'business.audit_cosign.head_title_read': 'Audit report',
     'business.audit_cosign.lead_read':
@@ -7710,6 +8346,83 @@ const en = {
         "The business's figures no longer reconcile with its statements. The business needs to save them again.",
     'auditor.verify.refused.STATEMENT_TRANSCRIPTION_STALE':
         'The business saved new figures since you opened the file. Reload it and review them.',
+    'business.prospectus.title': 'Listing Builder',
+    'business.prospectus.back': 'Back to Home',
+    'business.prospectus.draft': 'Draft · version {version}',
+    'business.prospectus.signed': 'Signed · version {version}',
+    'business.prospectus.locked':
+        'Signed on {date} and locked. Fingerprint {fingerprint}…',
+    'business.prospectus.unavailable':
+        'We can’t check your prospectus against your approved terms right now ({code}). Your drafts still save.',
+    'business.prospectus.facts.title': 'Your approved terms',
+    'business.prospectus.facts.note':
+        'These come from your accepted offer and verified statements. You can’t edit them here.',
+    'business.prospectus.facts.principal': 'Amount raised',
+    'business.prospectus.facts.fee': 'Platform fee (3%)',
+    'business.prospectus.facts.net': 'To spend on your plan',
+    'business.prospectus.facts.term': 'Term',
+    'business.prospectus.facts.instalment': 'Monthly instalment',
+    'business.prospectus.facts.revenue': 'Verified average monthly revenue',
+    'business.prospectus.checks.title': 'Checks · {passed} of {total} passed',
+    'business.prospectus.checks.passed': 'Passed',
+    'business.prospectus.purpose.title': 'Purpose and use of funds',
+    'business.prospectus.purpose.label': 'What the money is for',
+    'business.prospectus.funds.title': 'Use of funds',
+    'business.prospectus.funds.label': 'Item',
+    'business.prospectus.funds.amount': 'Amount (RWF)',
+    'business.prospectus.funds.quote': 'Quote or invoice (RWF)',
+    'business.prospectus.funds.add': 'Add a line',
+    'business.prospectus.remove': 'Remove',
+    'business.prospectus.funds.quote_document': 'Quote document',
+    'business.prospectus.evidence.title': 'Quotes and contracts',
+    'business.prospectus.evidence.note':
+        'Upload the supplier quote or invoice for each line of 20% or more of the principal, and the signed contract for any month more than 25% from your verified revenue. Then choose each document beside its line or month. PDF, PNG or JPEG, up to 10 MiB. An uploaded document cannot be changed.',
+    'business.prospectus.evidence.empty': 'No documents uploaded yet.',
+    'business.prospectus.evidence.none': 'No document',
+    'business.prospectus.evidence.kind': 'Document type',
+    'business.prospectus.evidence.kind_quote': 'Quote or invoice',
+    'business.prospectus.evidence.kind_contract': 'Signed contract',
+    'business.prospectus.evidence.file': 'File',
+    'business.prospectus.evidence.upload': 'Upload',
+    'business.prospectus.evidence.uploading': 'Uploading…',
+    'business.prospectus.forecast.title': 'Forecast',
+    'business.prospectus.forecast.revenue': 'Revenue in {month} (RWF)',
+    'business.prospectus.forecast.costs': 'Costs in {month} (RWF)',
+    'business.prospectus.forecast.contract': 'Signed contract for {month}',
+    'business.prospectus.forecast.assumptions': 'Assumptions',
+    'business.prospectus.forecast.downside': 'If sales fall short',
+    'business.prospectus.management.title': 'Management',
+    'business.prospectus.management.name': 'Name as registered',
+    'business.prospectus.management.role': 'Role',
+    'business.prospectus.management.text': 'About {name}',
+    'business.prospectus.management.add': 'Add a person',
+    'business.prospectus.management.roles.representative':
+        'Official representative',
+    'business.prospectus.management.roles.director': 'Director',
+    'business.prospectus.management.roles.owner': 'Owner (10% or more)',
+    'business.prospectus.risks.title': 'Risk factors',
+    'business.prospectus.risks.share':
+        'Largest customer’s share of revenue (%)',
+    'business.prospectus.risks.text': 'Risk {number}',
+    'business.prospectus.risks.concentration': 'Customer concentration',
+    'business.prospectus.risks.add': 'Add a risk',
+    'business.prospectus.save': 'Save draft',
+    'business.prospectus.saving': 'Saving…',
+    'business.prospectus.declaration.title': 'Declaration',
+    'business.prospectus.declaration.text':
+        'I confirm this prospectus is true and complete, and that investors may rely on it. Once signed it is locked and published as written.',
+    'business.prospectus.declaration.ready':
+        'Every check passes. The official representative can sign now.',
+    'business.prospectus.declaration.save_first':
+        'Save your changes before signing.',
+    'business.prospectus.declaration.waiting':
+        'Signing opens for the official representative once every check passes.',
+    'business.prospectus.sign': 'Sign and lock',
+    'business.prospectus.signing': 'Signing…',
+    'business.prospectus.facts.months': {
+        one: '{count} month',
+        other: '{count} months',
+    },
 } as const;
 
 export default en;
