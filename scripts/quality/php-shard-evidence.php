@@ -96,11 +96,11 @@ try {
         'php' => PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION,
         'config_hash' => hash_file('sha256', $root.'/phpunit.xml'),
         'source_hashes' => shardSourceHashes($root),
-        'total' => 4,
+        'total' => 8,
     ];
 
     if ($mode === 'record') {
-        $shard = filter_var($argv[4], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 4]]);
+        $shard = filter_var($argv[4], FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 8]]);
         $head = new Process(['git', 'rev-parse', 'HEAD'], $root);
         $head->mustRun();
         if ($shard === false || trim($head->getOutput()) !== $identity['sha']) {
@@ -115,12 +115,12 @@ try {
 
     $expected = shardExpectedTests($argv[4]);
     $directories = glob($directory.'/shard-*', GLOB_ONLYDIR);
-    if ($directories === false || count($directories) !== 4) {
-        throw new RuntimeException('Exactly four shard artifacts are required.');
+    if ($directories === false || count($directories) !== 8) {
+        throw new RuntimeException('Exactly eight shard artifacts are required.');
     }
     $merged = null;
     $seen = [];
-    for ($shard = 1; $shard <= 4; $shard++) {
+    for ($shard = 1; $shard <= 8; $shard++) {
         $path = $directory.'/shard-'.$shard;
         $metadataJson = file_get_contents($path.'/identity.json');
         if ($metadataJson === false) {
@@ -193,7 +193,7 @@ try {
         'executable_lines' => $summary->numberOfExecutableLines(),
         'covered_lines' => $summary->numberOfExecutedLines(),
     ], JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR)."\n");
-    printf("All %d tests accounted for exactly once across four shards. Combined coverage: 100%% (%d/%d lines).\n", count($actual), $summary->numberOfExecutedLines(), $summary->numberOfExecutableLines());
+    printf("All %d tests accounted for exactly once across eight shards. Combined coverage: 100%% (%d/%d lines).\n", count($actual), $summary->numberOfExecutedLines(), $summary->numberOfExecutableLines());
 } catch (Throwable $exception) {
     fwrite(STDERR, $exception->getMessage()."\n");
     exit(1);

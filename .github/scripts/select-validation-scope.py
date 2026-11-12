@@ -24,7 +24,7 @@ from poc_validation import POC_JOBS, POC_STEPS, STATIC_JOB, static_evidence, cat
 FULL_JOBS = [
     "Board sync offline tests", "PHP 8.5 quality gate", "TypeScript/React quality gate",
     "PostgreSQL concurrency lane", "PHP gate negative controls", "Deployment admission negative controls",
-    *[f"PHP 8.5 tests (shard {shard}/4)" for shard in range(1, 5)],
+    *[f"PHP 8.5 tests (shard {shard}/8)" for shard in range(1, 9)],
     *[f"PostgreSQL concurrency lane (shard {shard}/4)" for shard in range(1, 5)],
     *[f"PHP negative controls ({group})" for group in ["architecture", "business", "auditor", "coverage"]],
 ]

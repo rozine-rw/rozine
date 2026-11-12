@@ -151,9 +151,9 @@ jobs:
   php-shards:
     needs: plan
     if: ${{ needs.plan.outputs.full == 'true' }}
-    name: PHP 8.5 tests (shard ${{ matrix.shard }}/4)
+    name: PHP 8.5 tests (shard ${{ matrix.shard }}/8)
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 45
 
     services:
       postgres:
@@ -173,7 +173,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        shard: [1, 2, 3, 4, 5, 6, 7, 8]
 
     steps:
       - name: Checkout code
@@ -198,7 +198,8 @@ jobs:
           tools: composer:v2
           extensions: pdo_pgsql, pgsql, pcntl, posix
           # PCOV records the same line coverage as Xdebug at a fraction of the
-          # cost; Xdebug kept full-run shards at 60-90 minutes each.
+          # cost; Xdebug kept full-run shards at 60-90 minutes each. Eight
+          # time-balanced shards keep each one near 30 minutes.
           coverage: pcov
           ini-values: pcov.directory=app
 
@@ -361,7 +362,7 @@ jobs:
           mkdir -p coverage/php
           php vendor/bin/pest --bootstrap=scripts/quality/php-shard-bootstrap.php --ci --no-tia --list-tests > /dev/null
 
-      - name: Download this run's four shard artifacts
+      - name: Download this run's shard artifacts
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
           pattern: php-shard-*-${{ github.run_id }}-${{ github.run_attempt }}
@@ -369,7 +370,7 @@ jobs:
 
       - name: Collect shard directories
         run: |
-          for shard in 1 2 3 4; do
+          for shard in 1 2 3 4 5 6 7 8; do
             mv "coverage/shards/php-shard-$shard-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" "coverage/php/shard-$shard"
           done
 
