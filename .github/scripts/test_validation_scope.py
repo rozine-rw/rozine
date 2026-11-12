@@ -2024,7 +2024,7 @@ class CanonicalCoordinationTests(NativeCoordinationFixture):
 
     def test_publication_deadlines_preserve_native_caps_and_combined_budget(self):
         lines = Path(__file__).resolve().parents[1].joinpath("workflows/tests.yml").read_text().splitlines()
-        for job, minutes in [("plan", 5), ("reuse-poc", 10)]:
+        for job, minutes in [("plan", 5), ("reuse-poc", 10), ("php-shards", 120)]:
             start = lines.index(f"  {job}:")
             end = next((index for index in range(start + 1, len(lines)) if lines[index].startswith("  ") and not lines[index].startswith("   ") and lines[index].strip()), len(lines))
             self.assertIn(f"    timeout-minutes: {minutes}", lines[start:end])
