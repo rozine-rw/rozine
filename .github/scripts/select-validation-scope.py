@@ -39,6 +39,10 @@ MAX_EVIDENCE_BYTES = 1024 * 1024
 # Maximum wait only: the current native job and combined POC budget can shorten it.
 FOLLOWER_PUBLICATION_WAIT_SECONDS = 300
 FOLLOWER_PUBLICATION_CLEANUP_SECONDS = 60
+# Failed peers older than this are not scanned for a matching tree. Every scanned
+# peer costs an identity download plus native reads, and the workflow token's
+# hourly API budget fits only about one 30-day scan once ~340 runs have failed.
+FAILED_PEER_WINDOW = datetime.timedelta(days=3)
 _follower_read_deadline = contextvars.ContextVar("follower_read_deadline", default=None)
 _recovery_read_deadline = contextvars.ContextVar("recovery_read_deadline", default=None)
 _follower_publication_deadlines = {}
@@ -859,11 +863,16 @@ def select_canonical_candidate(env):
         revalidate_historical_inventory(repository, inventory, relevant_names)
         refreshed_sources.add((str(source["id"]), str(source["run_attempt"])))
 
+    peer_scan_started = datetime.datetime.now(datetime.timezone.utc)
     for run in runs:
         if (run["status"] != "completed" or run["conclusion"] == "success"
                 or retry and attempt_order(run)[0] < retry_started):
             continue
         if run["id"] in covered and terminal_failure_pin(run) == covered[run["id"]]:
+            continue
+        created = datetime.datetime.fromisoformat(run["created_at"].replace("Z", "+00:00"))
+        if peer_scan_started - created > FAILED_PEER_WINDOW:
+            count_lookup("failed_peers_outside_window")
             continue
         name = f"ci-coordination-identity-{run['id']}-{run['run_attempt']}"
         relevant_names.add(name)
