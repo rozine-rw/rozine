@@ -187,7 +187,7 @@ it('reopens a changed source through the previous-step link and explicitly inval
     Sanctum::actingAs($user, ['auditor:read', 'auditor:command']);
     $id = $this->postJson(route('api.v1.auditor.reports.start', ['assignment' => $fixture['assignment']->id]), procedureStartPayload($fixture))->assertOk()->json('data.audit_id');
     $revision = 1;
-    foreach (['review' => [], 'check_in' => [], ...AuditSealingFixture::baseline(AuditReport::query()->findOrFail($id)), 'photos' => ['titles' => ['extra-1' => 'Rear stock room']],
+    foreach (['review' => [], 'check_in' => [], ...AuditSealingFixture::baseline(AuditReport::query()->whereKey($id)->firstOrFail()), 'photos' => ['titles' => ['extra-1' => 'Rear stock room']],
         'ledger' => ['observed_stock' => '37000000', 'reconciled' => true], 'seal' => ['note' => 'Prior factual explanation.']] as $step => $fields) {
         $this->postJson(route('api.v1.auditor.reports.save', ['report' => $id]), [...$fields, 'audit_id' => $id, 'step' => $step,
             'identity_context_revision' => 1, 'expected_revision' => $revision++, 'request_id' => (string) Str::uuid()])->assertOk();
@@ -234,7 +234,7 @@ it('completes the isolated factual procedure and previews only the persisted rep
             ->assertOk()->assertJsonPath('code', 'AUDIT_STEP_SAVED')->assertJsonPath('revision', ++$revision);
     };
     $steps = $kind === 'flash'
-        ? ['review' => [], 'check_in' => [], ...AuditSealingFixture::baseline(AuditReport::query()->findOrFail($id)), 'photos' => ['titles' => ['extra-1' => 'Rear stock room']],
+        ? ['review' => [], 'check_in' => [], ...AuditSealingFixture::baseline(AuditReport::query()->whereKey($id)->firstOrFail()), 'photos' => ['titles' => ['extra-1' => 'Rear stock room']],
             'ledger' => ['observed_stock' => '37000000', 'reconciled' => true]]
         : ['statements' => [], 'count' => ['cash' => '108000001', 'stock_units' => '189', 'operational_status' => 'restricted',
             'financial_proofs' => ['bank', 'momo'], 'inventory_proofs' => ['photo']],
@@ -356,7 +356,7 @@ it('keeps incomplete or review-required source packages blocked with truthful nu
     $photoCase = in_array($case, ['missing photo', 'unknown extras', 'too many photos'], true);
     $revision = 2;
     if ($photoCase) {
-        foreach (['check_in' => [], ...AuditSealingFixture::baseline(AuditReport::query()->findOrFail($id))] as $step => $fields) {
+        foreach (['check_in' => [], ...AuditSealingFixture::baseline(AuditReport::query()->whereKey($id)->firstOrFail())] as $step => $fields) {
             $this->postJson(route('api.v1.auditor.reports.save', ['report' => $id]), [...$body, ...$fields,
                 'expected_revision' => $revision++, 'step' => $step, 'request_id' => (string) Str::uuid()])->assertOk();
         }

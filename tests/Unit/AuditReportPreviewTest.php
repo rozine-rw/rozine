@@ -15,10 +15,10 @@ it('binds persisted observations, notes, licence and source revisions into the p
     $sources = ['verification' => $pin, 'declaration' => [...$pin, 'id' => 'declaration'], 'check_in' => [...$pin, 'id' => 'check-in'],
         'photos' => [...$pin, 'id' => 'photos'], 'reported_stock' => $reported, 'reported_cash' => $reported, 'reported_units' => $reported,
         'financial_proofs' => ['original-b'], 'inventory_proofs' => ['photo'], 'extra_photos' => [],
-        'documents' => [$document, [...$document, 'id' => 'original-a']], 'monthly' => null, 'licence' => 'SYNTHETIC-CPA', 'source_facts' => null,
+        'documents' => [$document, [...$document, 'id' => 'original-a']], 'monthly' => null, 'history' => [], 'licence' => 'SYNTHETIC-CPA', 'source_facts' => null,
         'authority' => ['mandate_version' => 1, 'mandate_sha256' => str_repeat('a', 64), 'profile_revision' => 1, 'engagement_id' => 'engagement']];
     $report = ['id' => 'report', 'assignment_id' => 'assignment', 'business_id' => 'business', 'application_id' => 'application',
-        'application_revision' => 4, 'revision' => 8, 'kind' => $kind, 'status' => 'draft', 'step' => 'seal', 'period' => $kind === 'monthly' ? '2026-08' : null,
+        'application_revision' => 4, 'revision' => 8, 'kind' => $kind, 'procedure' => $kind, 'status' => 'draft', 'step' => 'seal', 'period' => $kind === 'monthly' ? '2026-08' : null,
         'amends_id' => null, 'amendment_id' => null, 'binding_sha256' => str_repeat('c', 64), 'version' => ['id' => 'version', 'sha256' => str_repeat('d', 64)],
         'draft' => ['note' => $note, 'completed_steps' => [], 'fields' => ['ledger' => ['observed_stock' => $observed],
             'count' => ['cash' => $observed, 'stock_units' => $observed, 'operational_status' => $status]]]];
@@ -59,11 +59,11 @@ it('seals the cause codes that explain a monthly cash difference on its cash fin
     $pin = ['id' => 'source', 'revision' => 1, 'sha256' => str_repeat('a', 64)];
     $sources = ['verification' => $pin, 'declaration' => [...$pin, 'id' => 'declaration'], 'check_in' => null, 'photos' => null,
         'reported_stock' => null, 'reported_cash' => '100', 'reported_units' => '10', 'financial_proofs' => [], 'inventory_proofs' => [], 'extra_photos' => [],
-        'documents' => [], 'monthly' => null, 'licence' => 'SYNTHETIC-CPA', 'source_facts' => null,
+        'documents' => [], 'monthly' => null, 'history' => [], 'licence' => 'SYNTHETIC-CPA', 'source_facts' => null,
         'authority' => ['mandate_version' => 1, 'mandate_sha256' => str_repeat('a', 64), 'profile_revision' => 1, 'engagement_id' => 'engagement']];
     $explanations = [['cause' => 'unrecorded_sales', 'amount' => '4'], ['cause' => 'entry_error', 'amount' => '6']];
     $report = ['id' => 'report', 'assignment_id' => 'assignment', 'business_id' => 'business', 'application_id' => 'application',
-        'application_revision' => 4, 'revision' => 3, 'kind' => 'monthly', 'status' => 'draft', 'step' => 'seal', 'period' => '2026-08',
+        'application_revision' => 4, 'revision' => 3, 'kind' => 'monthly', 'procedure' => 'monthly', 'status' => 'draft', 'step' => 'seal', 'period' => '2026-08',
         'amends_id' => null, 'amendment_id' => null, 'binding_sha256' => str_repeat('c', 64), 'version' => ['id' => 'version', 'sha256' => str_repeat('d', 64)], 'draft' => ['note' => 'Recorded.', 'completed_steps' => [],
             'fields' => ['count' => ['cash' => '90', 'stock_units' => '9', 'operational_status' => 'active'], 'differences' => ['explanations' => $explanations]]]];
 
