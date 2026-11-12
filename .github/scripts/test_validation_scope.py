@@ -2369,6 +2369,18 @@ class CanonicalCoordinationTests(NativeCoordinationFixture):
         with self.server(), self.assertRaisesRegex(policy.CoordinationRefusal, "canonical_peer_unsuccessful_no_takeover"):
             policy.canonical_selection(self.env())
 
+    def test_matching_failed_rerun_of_an_old_run_inside_the_scan_window_still_refuses(self):
+        now = datetime.datetime.now(datetime.timezone.utc)
+        old = (now - policy.FAILED_PEER_WINDOW - datetime.timedelta(days=1)).isoformat()
+        for key in ("run_started_at", "updated_at"):
+            with self.subTest(recent=key):
+                self.setUp()
+                self.failed_peer(307, matching=True)
+                self.runs[307].update(created_at=old, run_started_at=old, updated_at=old)
+                self.runs[307][key] = (now - datetime.timedelta(minutes=5)).isoformat()
+                with self.server(), self.assertRaisesRegex(policy.CoordinationRefusal, "canonical_peer_unsuccessful_no_takeover"):
+                    policy.canonical_selection(self.env())
+
     def test_parallel_historical_reads_still_refuse_a_matching_failed_peer(self):
         for number in range(300, 308):
             self.failed_peer(number, matching=number == 307)

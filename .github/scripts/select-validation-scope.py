@@ -870,8 +870,8 @@ def select_canonical_candidate(env):
             continue
         if run["id"] in covered and terminal_failure_pin(run) == covered[run["id"]]:
             continue
-        created = datetime.datetime.fromisoformat(run["created_at"].replace("Z", "+00:00"))
-        if peer_scan_started - created > FAILED_PEER_WINDOW:
+        # A rerun of an old run ID is as recent as its latest attempt activity.
+        if peer_scan_started - attempt_order(run)[0] > FAILED_PEER_WINDOW:
             count_lookup("failed_peers_outside_window")
             continue
         name = f"ci-coordination-identity-{run['id']}-{run['run_attempt']}"
