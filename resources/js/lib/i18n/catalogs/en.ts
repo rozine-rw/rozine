@@ -3947,6 +3947,62 @@ const en = {
         "The late-fee policy isn't available right now, so no late fee is shown.",
     'business.servicing.repay.ladder_version': 'Late-fee policy {version}.',
     'business.audit_prep.title': 'Get ready for your audit',
+    'business.monthly_figures.title': 'Monthly figures',
+    'business.monthly_figures.intro':
+        'Send what came in and went out in {month}. Your Audit Partner checks these figures at the visit, before {date}.',
+    'business.monthly_figures.step': 'Step {current} of {total}',
+    'business.monthly_figures.money_in.title': 'Money in for {month}',
+    'business.monthly_figures.money_in.body':
+        'All the money the business received in the month, in every account and in cash, in Rwandan francs.',
+    'business.monthly_figures.money_in.label': 'Money in',
+    'business.monthly_figures.costs.title': 'Costs for {month}',
+    'business.monthly_figures.costs.body':
+        'What the business spent in the month, in each of the six categories. Enter 0 where there was none.',
+    'business.monthly_figures.costs.stock': 'Stock and materials',
+    'business.monthly_figures.costs.staff': 'Staff pay',
+    'business.monthly_figures.costs.premises': 'Rent and utilities',
+    'business.monthly_figures.costs.transport': 'Transport',
+    'business.monthly_figures.costs.taxes': 'Taxes and fees',
+    'business.monthly_figures.costs.other': 'Other costs',
+    'business.monthly_figures.costs.total': 'Total costs',
+    'business.monthly_figures.costs.total_line': 'Total costs: {amount}',
+    'business.monthly_figures.paid.title': 'Paid to owners in {month}',
+    'business.monthly_figures.paid.body':
+        'Money the owners took out of the business for themselves. Enter 0 if there was none.',
+    'business.monthly_figures.paid.label': 'Paid to owners',
+    'business.monthly_figures.forecast.title': 'Forecast for {forecast}',
+    'business.monthly_figures.forecast.basis':
+        'Pre-filled with your verified average for the last three months: {amount}.',
+    'business.monthly_figures.forecast.no_basis':
+        'Enter the money you expect to come in. There is no verified average yet.',
+    'business.monthly_figures.forecast.label': 'Money in expected in {month}',
+    'business.monthly_figures.forecast.order': 'Signed order',
+    'business.monthly_figures.forecast.order_hint':
+        'This forecast is more than 25% away from your verified average. Name the signed order behind it, for example "Order 114 from Simba Supermarket". Your Audit Partner sees it at the visit.',
+    'business.monthly_figures.changes.title': 'Changes in {month}',
+    'business.monthly_figures.changes.owners': 'Owners or directors changed',
+    'business.monthly_figures.changes.premises':
+        'Moved premises, or opened or closed a location',
+    'business.monthly_figures.changes.borrowing': 'Took a new loan or credit',
+    'business.monthly_figures.changes.customers':
+        'Lost a main customer or supplier',
+    'business.monthly_figures.changes.yes': 'Yes',
+    'business.monthly_figures.changes.no': 'No',
+    'business.monthly_figures.summary.title': 'Check and send',
+    'business.monthly_figures.summary.line':
+        '{month}: money in {money_in}, costs {costs}, paid to owners {paid}. Forecast for {forecast_month}: {forecast}.',
+    'business.monthly_figures.summary.final':
+        'Once sent, these figures are final for the month.',
+    'business.monthly_figures.sent.title': 'Figures for {month}',
+    'business.monthly_figures.sent.body':
+        'Sent {date}. Your Audit Partner checks them at the visit.',
+    'business.monthly_figures.back': 'Back',
+    'business.monthly_figures.next': 'Next',
+    'business.monthly_figures.send': 'Send figures',
+    'business.monthly_figures.sending': 'Sending…',
+    'business.audit_prep.figures.title': 'Send your monthly figures',
+    'business.audit_prep.figures.body':
+        'Six short screens, about 3 minutes. Your Audit Partner checks them at the visit.',
     'business.audit_prep.window_open': 'Audit window open',
     'business.audit_prep.next': 'Next audit',
     'business.audit_prep.first': 'Your first audit',

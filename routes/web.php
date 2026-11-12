@@ -19,6 +19,7 @@ use App\Http\Controllers\BusinessAuditReportController;
 use App\Http\Controllers\BusinessComplaintController;
 use App\Http\Controllers\BusinessContactController;
 use App\Http\Controllers\BusinessHomeController;
+use App\Http\Controllers\BusinessMonthlyFiguresController;
 use App\Http\Controllers\BusinessNoticesController;
 use App\Http\Controllers\BusinessPayoutAccountController;
 use App\Http\Controllers\BusinessPublicationController;
@@ -237,6 +238,8 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
         ->name('complaints.reply');
     Route::get('{business}/rating', [BusinessHomeController::class, 'rating'])->whereUlid('business')->name('rating');
     Route::get('{business}/audit-prep', [BusinessHomeController::class, 'auditPrep'])->whereUlid('business')->name('audit-prep');
+    Route::get('{business}/monthly-figures', [BusinessMonthlyFiguresController::class, 'show'])->whereUlid('business')->name('monthly-figures.show');
+    Route::post('{business}/monthly-figures', [BusinessMonthlyFiguresController::class, 'store'])->whereUlid('business')->name('monthly-figures.store');
     Route::post('{business}/statements', [BusinessStatementController::class, 'upload'])->whereUlid('business')->name('statements.upload');
     Route::get('{business}/statements/transcription', [BusinessStatementTranscriptionController::class, 'page'])->whereUlid('business')->name('statements.transcription.show');
     Route::post('{business}/statements/transcription', [BusinessStatementTranscriptionController::class, 'save'])->whereUlid('business')->name('statements.transcription.save');

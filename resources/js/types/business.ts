@@ -1644,7 +1644,59 @@ export type BusinessAuditPrepProps = {
         /** Set when a new Audit Partner took over the file. */
         reassigned: { from: string; to: string } | null;
     };
-    links: { close: RouteLink };
+    links: { close: RouteLink; figures: RouteLink };
+};
+
+/** The CPA's six cost categories (BRS v3.0 VIS-R04), in screen order. */
+export type MonthlyCostCategory =
+    | 'stock'
+    | 'staff'
+    | 'premises'
+    | 'transport'
+    | 'taxes'
+    | 'other';
+
+/** The four yes/no changes of the monthly submission, in screen order. */
+export type MonthlyChange = 'owners' | 'premises' | 'borrowing' | 'customers';
+
+/** Whole Rwandan francs as digits. */
+export type WholeRwf = string;
+
+export type MonthlyFigures = {
+    money_in: WholeRwf;
+    costs: Record<MonthlyCostCategory, WholeRwf>;
+    costs_total: WholeRwf;
+    paid_to_owners: WholeRwf;
+    forecast: WholeRwf;
+    /** The verified 3-month average the forecast was pre-filled with; null with no published report. */
+    forecast_basis: WholeRwf | null;
+    /** The signed order behind a forecast more than 25% away from the basis. */
+    order: string | null;
+    changes: Record<MonthlyChange, boolean>;
+};
+
+/** The monthly submission (BRS v3.0 VIS-R04) for the month the open monthly audit covers. */
+export type BusinessMonthlyFiguresProps = {
+    identity_context_revision: number;
+    /** First day of the audited month, ISO date. */
+    period: string;
+    seal_by: string;
+    /** First day of the forecast month, ISO date. */
+    forecast_period: string;
+    forecast_basis: WholeRwf | null;
+    cost_categories: MonthlyCostCategory[];
+    /** What was sent for this month; final once sent. */
+    sent: (MonthlyFigures & { submitted_at: string }) | null;
+    links: {
+        submit: RouteAction;
+        close: RouteLink;
+        home: RouteLink;
+        reports: RouteLink;
+        readiness: RouteLink;
+        market: RouteLink;
+        profile: RouteLink;
+        launcher: RouteLink;
+    };
 };
 
 /* ------------------------------------------------------------------------------------------ */
