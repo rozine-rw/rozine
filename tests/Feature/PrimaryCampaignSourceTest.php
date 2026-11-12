@@ -23,7 +23,7 @@ beforeEach(function (): void {
     $this->freezeSecond();
     $this->fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($this->fixture);
-    AuditSealingFixture::cosign($this->fixture);
+    AuditSealingFixture::publish($this->fixture);
     $this->campaigns = app(BusinessCampaignStore::class);
     $this->campaigns->release($this->fixture['audit']['staff']->id, $this->fixture['application']->id, 0, 'Verified release.', (string) Str::uuid());
     $this->campaigns->publish($this->fixture['audit']['authority']['users'][0]->id, 1, $this->fixture['audit']['business'],

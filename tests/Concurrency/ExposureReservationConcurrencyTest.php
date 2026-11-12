@@ -109,7 +109,7 @@ it('holds the Business exposure lock through the final reservation write', funct
 it('releases and publishes only once when concurrent staff and Business requests race', function (bool $sameRequest): void {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     $releaseRequest = (string) Str::uuid();
     $release = fn (string $id): Closure => function () use ($fixture, $id): void {
         expect(app(BusinessCampaignStore::class)->release($fixture['audit']['staff']->id,
@@ -137,7 +137,7 @@ it('serializes cancellation expiry and retries against a single exposure release
     $this->freezeSecond();
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     $store = app(BusinessCampaignStore::class);
     $user = $fixture['audit']['authority']['users'][0];
     $business = $fixture['audit']['business'];

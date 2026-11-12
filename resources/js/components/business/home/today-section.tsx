@@ -184,9 +184,18 @@ export function TodaySection({ items }: { items: BusinessTodo[] }) {
                                       date: formatDateTime(item.due_at, locale),
                                       hours: item.hours_left,
                                   })
-                                : t('business.today.cosign.sub')
+                                : t(
+                                      /* Only a report sealed under the legacy policy is co-signed; a reviewed one is dispute-only (AUD-R04). */
+                                      item.cosign
+                                          ? 'business.today.cosign.sign_sub'
+                                          : 'business.today.cosign.sub',
+                                  )
                         }
-                        cta={t('business.today.cosign.cta')}
+                        cta={t(
+                            item.cosign
+                                ? 'business.today.cosign.sign_cta'
+                                : 'business.today.cosign.cta',
+                        )}
                         ctaTone={GREEN_TEXT}
                     />
                 );

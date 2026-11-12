@@ -956,10 +956,10 @@ describe('Business audit co-sign — N6 review window copy', () => {
             expect(reviewWindow).toHaveTextContent(
                 '24-hour review window' +
                     '06:45:00 left' +
-                    'Once the audit report is sealed in your app, you have 24 hours to sign off or submit a dispute with supporting proof.' +
+                    "Your CPA sealed this report. You don't sign it. If something is wrong, dispute it with supporting proof within 24 hours." +
                     `Arrived in your app ${formatDateTime(page.cosign.delivered_at!, 'en')}` +
-                    `Sign off or dispute by ${formatDateTime(page.cosign.due_at!, 'en')}` +
-                    'Unsigned reports are automatically approved at the end of the window.',
+                    `Dispute by ${formatDateTime(page.cosign.due_at!, 'en')}` +
+                    'With no dispute, the report stands and is published when the window ends.',
             );
 
             act(() => {
@@ -970,8 +970,19 @@ describe('Business audit co-sign — N6 review window copy', () => {
             expect(
                 screen.queryByText(/Co-sign by|Overdue/u),
             ).not.toBeInTheDocument();
-            expect(screen.getByText('0 of 1 signatures')).toBeInTheDocument();
-            expect(acceptBox()).toBeInTheDocument();
+            /* BRS v3.0 AUD-R04: nothing to sign, no signature count, only the dispute. */
+            expect(
+                screen.queryByText('0 of 1 signatures'),
+            ).not.toBeInTheDocument();
+            expect(
+                screen.queryByRole('list', { name: 'Signatories' }),
+            ).not.toBeInTheDocument();
+            expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    /^Nothing to sign\. If you agree, there is nothing to do/u,
+                ),
+            ).toBeInTheDocument();
             expect(
                 screen.getByRole('button', { name: 'Submit a dispute' }),
             ).toBeEnabled();
@@ -991,7 +1002,7 @@ describe('Business audit co-sign — N6 review window copy', () => {
         expect(
             screen.getByRole('note', { name: '24-hour review window' }),
         ).toHaveTextContent(
-            `Sign off or dispute by ${formatDateTime(page.cosign.due_at!, 'en')}`,
+            `Dispute by ${formatDateTime(page.cosign.due_at!, 'en')}`,
         );
         expect(
             screen.getByRole('button', { name: 'Submit a dispute' }),
@@ -1055,7 +1066,7 @@ describe('Business audit co-sign — N6 review window copy', () => {
 
         expect(
             screen.getByText(
-                "Une fois le rapport d'audit scellé dans votre application, vous avez 24 heures pour l'approuver ou soumettre une contestation avec des justificatifs.",
+                'Votre expert-comptable a scellé ce rapport. Vous ne le signez pas. Si quelque chose est inexact, contestez-le avec des justificatifs dans les 24 heures.',
             ),
         ).toBeInTheDocument();
         unmount();
@@ -1068,7 +1079,7 @@ describe('Business audit co-sign — N6 review window copy', () => {
 
         expect(
             screen.getByText(
-                'Raporo zitasinywe zemezwa mu buryo bwikora iyo igihe kirangiye.',
+                'Iyo nta bujurire, raporo iremerwa igatangazwa igihe kirangiye.',
             ),
         ).toBeInTheDocument();
     });
@@ -1084,13 +1095,13 @@ describe('Business audit co-sign — N6 publication', () => {
             ),
         ).toBeInTheDocument();
         expect(screen.getByRole('status')).toHaveTextContent(
-            'Published automatically after the 24-hour window: no one signed off or disputed it in time. No signature was recorded for it.',
+            'Published at the end of the 24-hour window with no dispute. No signature is needed.',
         );
-        expect(screen.getByText('0 of 1 signatures')).toBeInTheDocument();
-        /* An unsigned signatory on a published report is not still waiting (#506). */
+        /* A reviewed report never asks for a signature, so none is counted or listed (BRS v3.0 AUD-R04). */
+        expect(screen.queryByText('0 of 1 signatures')).not.toBeInTheDocument();
         expect(
-            screen.getByRole('list', { name: 'Signatories' }),
-        ).toHaveTextContent(/Not signed$/u);
+            screen.queryByRole('list', { name: 'Signatories' }),
+        ).not.toBeInTheDocument();
         expect(screen.queryByText('Waiting')).not.toBeInTheDocument();
         expect(
             screen.queryByRole('note', { name: '24-hour review window' }),
@@ -1112,6 +1123,28 @@ describe('Business audit co-sign — N6 publication', () => {
         expect(screen.getByRole('status')).toHaveTextContent(
             'Every required signature is in and the report is published.',
         );
+    });
+
+    it('marks a signer who never signed a retained signed publication as not signed', () => {
+        const page = props(n6SignedFixture);
+
+        page.cosign.signers = [
+            ...page.cosign.signers,
+            {
+                ...page.cosign.signers[0],
+                name: 'Second signatory',
+                is_you: false,
+                state: 'pending',
+                signed_at: null,
+            },
+        ];
+        setup(page);
+
+        expect(
+            within(screen.getByRole('list', { name: 'Signatories' })).getByText(
+                'Not signed',
+            ),
+        ).toBeInTheDocument();
     });
 
     it('reads a publication without a reason as signed', () => {
@@ -1302,7 +1335,7 @@ describe('Business audit co-sign — N6 dispute states', () => {
         expect(
             screen.getByText(page.cosign.dispute!.resolution_note!),
         ).toBeInTheDocument();
-        expect(screen.getByText('0 of 1 signatures')).toBeInTheDocument();
+        expect(screen.queryByText('0 of 1 signatures')).not.toBeInTheDocument();
         expectProof(page);
         expectNoActions();
     });
@@ -1373,20 +1406,22 @@ describe('Business audit co-sign — heading by publication and dispute state', 
         expect(screen.queryByText(CO_SIGN_WORDING)).not.toBeInTheDocument();
     };
 
-    it('keeps the co-sign heading and lead only while co-signing is open', () => {
+    it('asks the Business to review, never to co-sign, while the 24-hour window is open', () => {
         setup(props(n6OpenFixture));
 
         expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-            'Co-sign the audit report',
+            'Review the audit report',
         );
         expect(
             screen.getByText(
-                'Your CPA sealed this report after the on-site audit. Read the factual findings before you co-sign.',
+                "Your CPA sealed this report after the on-site audit. Read the factual findings. You don't need to sign it.",
             ),
         ).toBeInTheDocument();
         expect(screen.getByTestId('head')).toHaveTextContent(
-            'Co-sign audit report',
+            'Review audit report',
         );
+        expect(screen.getByText('Your response')).toBeInTheDocument();
+        expect(screen.queryByText(CO_SIGN_WORDING)).not.toBeInTheDocument();
     });
 
     it.each([
@@ -1601,18 +1636,18 @@ describe('Business audit co-sign — N6 dispute sheet', () => {
 
         const notAllowed = props(n6OpenFixture);
 
-        notAllowed.allowed_actions = ['report.cosign'];
+        notAllowed.allowed_actions = [];
         setup(notAllowed);
 
         expect(disputeButton()).not.toBeInTheDocument();
-        expect(acceptBox()).toBeInTheDocument();
+        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
     });
 
-    it('offers a dispute beside the sign-off, and alone when signing is not allowed', () => {
+    it('offers the dispute alone: there is no sign-off beside it (BRS v3.0 AUD-R04)', () => {
         const first = setup(props(n6OpenFixture));
 
         expect(disputeButton()).toBeEnabled();
-        expect(acceptBox()).toBeInTheDocument();
+        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
         first.unmount();
 
         const disputeOnly = props(n6OpenFixture);

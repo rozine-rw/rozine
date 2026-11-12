@@ -34,7 +34,7 @@ beforeEach(function (): void {
     $this->withoutVite();
     $this->fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($this->fixture);
-    AuditSealingFixture::cosign($this->fixture);
+    AuditSealingFixture::publish($this->fixture);
     $this->store = app(BusinessCampaignStore::class);
     $this->release = fn (): array => $this->store->release($this->fixture['audit']['staff']->id, $this->fixture['application']->id, 0, 'Reviewed.', (string) Str::uuid());
     $this->publish = fn (int $revision = 5): array => $this->store->publish($this->fixture['audit']['authority']['users'][0]->id, 1,

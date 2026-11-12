@@ -11,7 +11,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * `BusinessAuditPrepProps`: "Get ready for your audit" drawn over the Business's real Home, for
  * the monthly audit its open routine assignment states. The window is open for as long as that
  * audit is, so `window_open` is always true here. The checklist is the page's own and nothing on
- * it is a command: the Audit Partner runs the audit.
+ * it is a command: the Audit Partner runs the audit. `figures` opens the month's submission
+ * (BRS v3.0 VIS-R04).
  *
  * @phpstan-import-type AuditWindow from \App\Application\Business\Contracts\BusinessAuditWindows
  */
@@ -25,9 +26,12 @@ class BusinessAuditPrepResource extends JsonResource
         /** @var AuditWindow $audit */
         $audit = $data['audit_window'];
         $home = (new BusinessHomeResource($data))->toArray($request);
+        /** @var array{business_id: string} $entry */
+        $entry = $data['entry'];
 
         return ['home' => $home, 'audit' => ['period' => $audit['period'], 'window_open' => true, 'days_left' => $audit['days_left'],
             'seal_by' => $audit['seal_by'], 'cosign_by' => $audit['cosign_by'], 'first' => $audit['first'], 'reassigned' => $audit['reassigned']],
-            'links' => ['close' => $home['links']['home']]];
+            'links' => ['close' => $home['links']['home'],
+                'figures' => BusinessHomeResource::link($request, 'business.monthly-figures.show', ['business' => $entry['business_id']])]];
     }
 }

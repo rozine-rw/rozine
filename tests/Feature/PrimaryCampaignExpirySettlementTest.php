@@ -45,7 +45,7 @@ beforeEach(function (): void {
     $this->store = app(BusinessCampaignStore::class);
     $fixture = AuditSealingFixture::ready(signatories: 2, requiredSignatories: 1);
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     $this->store->release($fixture['audit']['staff']->id, $fixture['application']->id, 0, 'Verified release.', (string) Str::uuid());
     $this->store->publish($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'],
         $fixture['application']->id, $fixture['application']->refresh()->revision, 'listing-fee-waiver-1', (string) Str::uuid());

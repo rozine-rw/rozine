@@ -76,7 +76,7 @@ it('rechecks newly declared connections before confirmation and funding evidence
     InvestorWalletFixture::policy(maximum: null);
     $fixture = AuditSealingFixture::ready(signatories: 2, requiredSignatories: 1);
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     $campaigns = app(BusinessCampaignStore::class);
     $campaigns->release($fixture['audit']['staff']->id, $fixture['application']->id, 0, 'Verified release.', (string) Str::uuid());
     $campaigns->publish($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'],
