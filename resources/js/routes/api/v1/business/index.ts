@@ -89,7 +89,7 @@ index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\BusinessHomeController::show
-* @see app/Http/Controllers/BusinessHomeController.php:33
+* @see app/Http/Controllers/BusinessHomeController.php:35
 * @route '/api/v1/business/{business}'
 */
 export const show = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -104,7 +104,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessHomeController::show
-* @see app/Http/Controllers/BusinessHomeController.php:33
+* @see app/Http/Controllers/BusinessHomeController.php:35
 * @route '/api/v1/business/{business}'
 */
 show.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -131,7 +131,7 @@ show.url = (args: { business: string | number } | [business: string | number ] |
 
 /**
 * @see \App\Http\Controllers\BusinessHomeController::show
-* @see app/Http/Controllers/BusinessHomeController.php:33
+* @see app/Http/Controllers/BusinessHomeController.php:35
 * @route '/api/v1/business/{business}'
 */
 show.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -141,7 +141,7 @@ show.get = (args: { business: string | number } | [business: string | number ] |
 
 /**
 * @see \App\Http\Controllers\BusinessHomeController::show
-* @see app/Http/Controllers/BusinessHomeController.php:33
+* @see app/Http/Controllers/BusinessHomeController.php:35
 * @route '/api/v1/business/{business}'
 */
 show.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -151,7 +151,7 @@ show.head = (args: { business: string | number } | [business: string | number ] 
 
 /**
 * @see \App\Http\Controllers\BusinessHomeController::show
-* @see app/Http/Controllers/BusinessHomeController.php:33
+* @see app/Http/Controllers/BusinessHomeController.php:35
 * @route '/api/v1/business/{business}'
 */
 const showForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -161,7 +161,7 @@ const showForm = (args: { business: string | number } | [business: string | numb
 
 /**
 * @see \App\Http\Controllers\BusinessHomeController::show
-* @see app/Http/Controllers/BusinessHomeController.php:33
+* @see app/Http/Controllers/BusinessHomeController.php:35
 * @route '/api/v1/business/{business}'
 */
 showForm.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -171,7 +171,7 @@ showForm.get = (args: { business: string | number } | [business: string | number
 
 /**
 * @see \App\Http\Controllers\BusinessHomeController::show
-* @see app/Http/Controllers/BusinessHomeController.php:33
+* @see app/Http/Controllers/BusinessHomeController.php:35
 * @route '/api/v1/business/{business}'
 */
 showForm.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

@@ -172,6 +172,7 @@ export default function BusinessAuditCosign(
         home: links.close,
         launcher: links.close,
         reports: null,
+        readiness: null,
         market: null,
         profile: null,
     };

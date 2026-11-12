@@ -76,15 +76,16 @@ class BusinessHomeResource extends JsonResource
     }
 
     /**
-     * The Business shell's Reports and Profile tabs for one business, for every Business page to
-     * share. Both are web pages only, so on the bearer transport they stay null and hidden.
+     * The Business shell's Reports, Readiness, Market and Profile tabs for one business, for every
+     * Business page to share. All are web pages only, so on the bearer transport they stay null and hidden.
      *
-     * @return array{reports: array{url: string, method: 'get'}|null, profile: array{url: string, method: 'get'}|null}
+     * @return array{reports: array{url: string, method: 'get'}|null, readiness: array{url: string, method: 'get'}|null, market: array{url: string, method: 'get'}|null, profile: array{url: string, method: 'get'}|null}
      */
     public static function tabs(Request $request, string $business): array
     {
-        return $request->routeIs('api.*') ? ['reports' => null, 'market' => null, 'profile' => null]
-            : ['reports' => self::link($request, 'business.reports', ['business' => $business]), 'market' => self::link($request, 'business.market', ['business' => $business]),
+        return $request->routeIs('api.*') ? ['reports' => null, 'readiness' => null, 'market' => null, 'profile' => null]
+            : ['reports' => self::link($request, 'business.reports', ['business' => $business]), 'readiness' => self::link($request, 'business.readiness', ['business' => $business]),
+                'market' => self::link($request, 'business.market', ['business' => $business]),
                 'profile' => self::link($request, 'business.profile', ['business' => $business])];
     }
 
