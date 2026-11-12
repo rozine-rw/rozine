@@ -86,11 +86,16 @@ final readonly class SecondaryListing
         return $this->with(state: $state, reservation: $reservation);
     }
 
+    /**
+     * Reserves units for a buyer at the listed price, which must still be within the note's current
+     * cap: a payout lowers the cap, so a price set before it may no longer trade (SEC-R03).
+     */
     public function reserve(string $reservationId, string $buyerPartyId, string $units, string $raiseUnits, string $heldUnits,
-        TradingWindow $window, DateTimeImmutable $at): self
+        BigInteger $cap, TradingWindow $window, DateTimeImmutable $at): self
     {
         $current = $this->requireOpen($at);
         $window->requireOpen($at);
+        PriceCap::requireWithin($current->price, $cap);
         if ($current->reservation !== null) {
             throw new SecondaryViolation('LISTING_RESERVED');
         }
@@ -105,17 +110,19 @@ final readonly class SecondaryListing
 
     /**
      * Settles the open reservation in one step, returning the listing that remains and what the
-     * settlement moves. A lapsed reservation can no longer settle.
+     * settlement moves. A lapsed reservation can no longer settle, and nor can one whose price a
+     * payout has since put above the note's current cap.
      *
      * @return array{listing: self, quote: SettlementQuote}
      */
-    public function settle(string $reservationId, TradingWindow $window, DateTimeImmutable $at): array
+    public function settle(string $reservationId, BigInteger $cap, TradingWindow $window, DateTimeImmutable $at): array
     {
         $current = $this->at($at);
         if ($current->reservation === null || $current->reservation['id'] !== $reservationId) {
             throw new SecondaryViolation('RESERVATION_NOT_OPEN');
         }
         $window->requireOpen($at);
+        PriceCap::requireWithin($current->price, $cap);
         $quote = SettlementQuote::of($current->reservation['units'], $current->price);
         $remaining = BigInteger::of($current->remainingUnits)->minus($quote->units);
 

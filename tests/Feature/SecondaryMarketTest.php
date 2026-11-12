@@ -242,6 +242,72 @@ it('expires a listing after seven days at no cost (SEC-R02)', function (): void 
         ->and(($this->list)('10', '2700')['code'])->toBe('SECONDARY_LISTED');
 });
 
+it('keeps a listing reserved just before its seven days end open until that reservation lapses (SEC-R02, SEC-R05)', function (): void {
+    $listing = ($this->list)('1080', '2700')['data']['listing'];
+    $this->travelTo(CarbonImmutable::parse('2026-10-17 09:58:00', 'Africa/Kigali'));
+    ($this->reserve)($listing['listing_id'], '4');
+    $this->travelTo(CarbonImmutable::parse('2026-10-17 10:01:00', 'Africa/Kigali'));
+
+    expect($this->market->sweep(now('UTC')->toDateTimeImmutable()))->toBe(['released' => 0, 'expired' => 0])
+        ->and(SecondaryListingRecord::query()->sole()->state)->toBe('open')
+        ->and(($this->list)('1', '2700'))->toMatchArray(['code' => 'UNITS_NOT_HELD', 'data' => ['free_units' => '0']]);
+
+    $this->travelTo(CarbonImmutable::parse('2026-10-17 10:04:00', 'Africa/Kigali'));
+
+    expect($this->market->sweep(now('UTC')->toDateTimeImmutable()))->toBe(['released' => 1, 'expired' => 1])
+        ->and(SecondaryListingRecord::query()->sole()->state)->toBe('expired')
+        ->and(($this->list)('1080', '2700')['code'])->toBe('SECONDARY_LISTED');
+});
+
+it('settles a reservation made before the listing\'s seven days ended, then lets the listing expire', function (): void {
+    $listing = ($this->list)('10', '2700')['data']['listing'];
+    $this->travelTo(CarbonImmutable::parse('2026-10-17 09:58:00', 'Africa/Kigali'));
+    $reservation = ($this->reserve)($listing['listing_id'], '4')['data']['reservation'];
+    $this->travelTo(CarbonImmutable::parse('2026-10-17 10:01:00', 'Africa/Kigali'));
+
+    $settled = $this->market->settle($this->buyer['user']->id, 1, $listing['listing_id'], $reservation['reservation_id'], (string) Str::uuid());
+
+    expect($settled)->toMatchArray(['code' => 'SECONDARY_SETTLED'])
+        ->and($settled['data']['listing'])->toMatchArray(['remaining_units' => '6', 'state' => 'expired']);
+});
+
+it('rechecks the cap when reserving and settling once a payout has lowered it (SEC-R03)', function (): void {
+    $notes = new class(app(SecondaryNotes::class)) implements SecondaryNotes
+    {
+        public ?string $postedThrough = null;
+
+        public function __construct(private readonly SecondaryNotes $notes) {}
+
+        public function find(string $noteId): ?array
+        {
+            $note = $this->notes->find($noteId);
+
+            return $note === null ? null : [...$note, 'posted_through' => $this->postedThrough];
+        }
+    };
+    app()->instance(SecondaryNotes::class, $notes);
+    $this->market = app(EloquentSecondaryMarket::class);
+    $note = DB::transaction(fn (): ?array => app(SecondaryNotes::class)->find($this->noteId));
+    $after = array_slice($note['instalments'], 1);
+    $lowered = (string) intdiv(array_sum(array_map(fn (array $instalment): int => (int) $instalment['principal'] + (int) $instalment['return'], $after)), 2160);
+    $before = (string) intdiv(array_sum(array_map(fn (array $instalment): int => (int) $instalment['principal'] + (int) $instalment['return'], $note['instalments'])), 2160);
+    $this->travelTo(CarbonImmutable::parse('2026-11-10 22:50:00', 'Africa/Kigali'));
+    $listing = ($this->list)('10', $before)['data']['listing'];
+    $reservation = ($this->reserve)($listing['listing_id'], '4')['data']['reservation'];
+    $notes->postedThrough = '2026-11-10';
+
+    $settle = $this->market->settle($this->buyer['user']->id, 1, $listing['listing_id'], $reservation['reservation_id'], (string) Str::uuid());
+
+    expect($settle)->toMatchArray(['code' => 'PRICE_ABOVE_CAP', 'data' => ['cap' => ['currency' => 'RWF', 'amount' => $lowered]]])
+        ->and(SecondaryTransfer::query()->count())->toBe(0);
+
+    $this->travelTo(CarbonImmutable::parse('2026-11-11 10:00:00', 'Africa/Kigali'));
+
+    expect(($this->reserve)($listing['listing_id'], '4'))->toMatchArray(['code' => 'PRICE_ABOVE_CAP', 'data' => ['cap' => ['currency' => 'RWF', 'amount' => $lowered]]])
+        ->and($this->market->amend($this->seller->id, 1, $listing['listing_id'], $lowered, (string) Str::uuid())['code'])->toBe('SECONDARY_REPRICED')
+        ->and(($this->reserve)($listing['listing_id'], '4')['code'])->toBe('SECONDARY_RESERVED');
+});
+
 it('lets the seller cancel when nobody is buying, and staff only with a reason shown to the seller (SEC-R09)', function (): void {
     $staff = ($this->compliance)();
     $mine = ($this->list)('10', '2700')['data']['listing'];
