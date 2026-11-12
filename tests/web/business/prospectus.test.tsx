@@ -130,6 +130,7 @@ const page = (
         home: LINK('/business/home'),
         launcher: LINK('/launcher'),
         reports: null,
+        readiness: null,
         market: null,
         profile: null,
     },
