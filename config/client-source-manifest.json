@@ -438,8 +438,10 @@
         "resources/js/components/auditor/audit/seal-flow.tsx",
         "resources/js/components/auditor/audit/sealed-status.tsx",
         "resources/js/components/auditor/audit/step-bar.tsx",
+        "resources/js/components/auditor/audit/step-cash-sales.tsx",
         "resources/js/components/auditor/audit/step-changes.tsx",
         "resources/js/components/auditor/audit/step-check-in.tsx",
+        "resources/js/components/auditor/audit/step-costs.tsx",
         "resources/js/components/auditor/audit/step-count.tsx",
         "resources/js/components/auditor/audit/step-differences.tsx",
         "resources/js/components/auditor/audit/step-drawings.tsx",
@@ -811,10 +813,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 783,
+        "totalTrackedSources": 785,
         "generated": 337,
         "declarationOnly": 20,
-        "authoredExecutable": 426
+        "authoredExecutable": 428
     },
-    "coverageSetSha256": "a0b96ad97bb41bcaa0cb7a84b324dd072cf5ffd23a09a8dc4460644560e4fdc1"
+    "coverageSetSha256": "dba78a1548445bb304fca14f37a8e361a7a59b345c7ce0f1566a3c0087db5043"
 }

@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "01867312c2071014acf9864639de0a9843ef2973574077c5c649216164b2d2f5",
-    "coverageSetSha256": "a0b96ad97bb41bcaa0cb7a84b324dd072cf5ffd23a09a8dc4460644560e4fdc1",
+    "sourceManifestSha256": "b293ee619bdc79cb9fd597512bb07b26ad8e2af96c4b5ef5b22a36123306afc5",
+    "coverageSetSha256": "dba78a1548445bb304fca14f37a8e361a7a59b345c7ce0f1566a3c0087db5043",
     "thresholds": {
         "critical": {
             "global": {
@@ -103,8 +103,10 @@
         "resources/js/components/auditor/audit/seal-flow.tsx",
         "resources/js/components/auditor/audit/sealed-status.tsx",
         "resources/js/components/auditor/audit/step-bar.tsx",
+        "resources/js/components/auditor/audit/step-cash-sales.tsx",
         "resources/js/components/auditor/audit/step-changes.tsx",
         "resources/js/components/auditor/audit/step-check-in.tsx",
+        "resources/js/components/auditor/audit/step-costs.tsx",
         "resources/js/components/auditor/audit/step-count.tsx",
         "resources/js/components/auditor/audit/step-differences.tsx",
         "resources/js/components/auditor/audit/step-drawings.tsx",
