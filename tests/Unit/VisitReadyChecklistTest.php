@@ -35,3 +35,12 @@ it('opens at D−14 and closes after the due date, with the D−10 to D−3 visi
     'due day' => ['2026-12-18', true],
     'day after' => ['2026-12-19', false],
 ]);
+
+it('leaves out the documents the CPA already holds, and names the day the visit is sealed by', function (): void {
+    $checklist = new VisitReadyChecklist;
+    $ready = $checklist->forInstalment('2026-12-15', '2026-12-01', ['tax_clearance', 'rssb_clearance']);
+
+    expect(array_column($ready['items'] ?? [], 'key'))->not->toContain('tax_clearance')->not->toContain('rssb_clearance')
+        ->and($ready['items'] ?? [])->toHaveCount(count($checklist->items()) - 2)
+        ->and(VisitReadyChecklist::visitBy('2026-12-15'))->toBe('2026-12-12');
+});
