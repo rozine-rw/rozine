@@ -559,22 +559,14 @@ export function HeldCart({
         command.send(name, payload);
     };
     const { quote } = checkout;
-    /* The acknowledgement binds the exact reserved terms: each line's own disclosure too. */
-    const key = [
-        checkout.revision,
-        quote.disclosure_sha256,
-        ...checkout.lines.map((line) => line.disclosure_sha256),
-    ].join(':');
     const quotedLines: Record<string, CartQuoteLine> = Object.fromEntries(
         quote.lines.map((line) => [line.cart_line_id, line]),
     );
-    const [acknowledgedKey, setAcknowledgedKey] = useState<string | null>(null);
-    const acknowledged = acknowledgedKey === key;
     const sending = command.busy || command.settling;
     const idle = !sending && !command.unresolved;
     const confirm = ended ? null : checkout.actions.confirm;
     const release = ended ? null : checkout.actions.release;
-    const canConfirm = confirm !== null && acknowledged && idle;
+    const canConfirm = confirm !== null && idle;
 
     return (
         <section
@@ -677,19 +669,9 @@ export function HeldCart({
             </div>
             <CartBand band={quote.fee_band} next={null} className="mt-3" />
             {confirm !== null && (
-                <label className="mt-3 flex items-start gap-2.5 text-[12px] leading-[1.45] text-rz-ink">
-                    <input
-                        type="checkbox"
-                        checked={acknowledged}
-                        onChange={(event) =>
-                            setAcknowledgedKey(
-                                event.target.checked ? key : null,
-                            )
-                        }
-                        className="mt-0.5 size-4 shrink-0 accent-rz-accent-fill"
-                    />
-                    <span>{t('investor.cart.whole.acknowledge')}</span>
-                </label>
+                <p className="mt-3 text-[12px] leading-[1.45] text-rz-slate">
+                    {t('investor.cart.whole.acknowledge')}
+                </p>
             )}
             {confirm !== null && (
                 <button

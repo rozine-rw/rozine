@@ -22,7 +22,7 @@ beforeEach(function (): void {
     $this->withoutVite();
     $this->fixture = AuditSealingFixture::ready(2, requiredSignatories: 1);
     AuditSealingFixture::seal($this->fixture);
-    AuditSealingFixture::cosign($this->fixture);
+    AuditSealingFixture::publish($this->fixture);
     $this->store = app(BusinessCampaignStore::class);
     $this->user = $this->fixture['audit']['authority']['users'][0];
     $this->business = $this->fixture['audit']['business'];

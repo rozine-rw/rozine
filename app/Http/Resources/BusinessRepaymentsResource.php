@@ -34,7 +34,7 @@ class BusinessRepaymentsResource extends JsonResource
             'allowed_actions' => [], 'note' => null, 'servicing' => null, 'schedule' => [], 'ladder' => null, 'pay' => null, 'receipt' => null, 'recent' => [],
             'issued' => $data['issued'] ?? [], 'visit_ready' => isset($data['visit_ready'])
                 ? [...$data['visit_ready'], 'tick' => ['url' => route('business.repayments.visit-ready.tick', ['business' => $business], false), 'method' => 'post']] : null, 'bases' => (object) [], 'home' => $home,
-            'shell_links' => ['home' => $home['links']['home'], 'launcher' => $home['links']['launcher'], 'reports' => $home['links']['reports'], 'market' => $home['links']['market'], 'profile' => $home['links']['profile']],
+            'shell_links' => ['home' => $home['links']['home'], 'launcher' => $home['links']['launcher'], 'reports' => $home['links']['reports'], 'readiness' => $home['links']['readiness'], 'market' => $home['links']['market'], 'profile' => $home['links']['profile']],
             'links' => ['close' => $home['links']['home'], 'top_up' => $home['links']['deposit'], 'operation' => ['url' => str_replace($placeholder, '{request_id}', $operation), 'method' => 'get']],
             'actions' => ['pay' => null]];
     }

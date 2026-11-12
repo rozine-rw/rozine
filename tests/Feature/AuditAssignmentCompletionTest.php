@@ -26,7 +26,7 @@ beforeEach(function (): void {
 it('completes a published engagement on the next request so the business can be audited again', function (): void {
     $fixture = Fixture::ready();
     expect(Fixture::seal($fixture)['code'])->toBe('AUDIT_SEALED')
-        ->and(Fixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
+        ->and(Fixture::publish($fixture)['code'])->toBe('REPORT_PUBLISHED');
     $flash = $fixture['assignment']->refresh();
     $accepted = $flash->revision;
 
@@ -107,7 +107,7 @@ it('uses post-completion rotation facts when the published engagement is the thi
             'party_id' => $partyId, 'state' => $state, 'status' => 'completed', 'completed_at' => $at, 'created_at' => $at]);
     }
     expect(Fixture::seal($fixture)['code'])->toBe('AUDIT_SEALED')
-        ->and(Fixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
+        ->and(Fixture::publish($fixture)['code'])->toBe('REPORT_PUBLISHED');
 
     $next = requestAfterPublishedCompletion($this, $fixture, $monthly);
 
@@ -122,7 +122,7 @@ it('uses post-completion capacity facts when the published engagement frees the 
     AuditAssignmentFixture::engagement($partyId);
     AuditAssignmentFixture::engagement($partyId);
     expect(Fixture::seal($fixture)['code'])->toBe('AUDIT_SEALED')
-        ->and(Fixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
+        ->and(Fixture::publish($fixture)['code'])->toBe('REPORT_PUBLISHED');
 
     $next = requestAfterPublishedCompletion($this, $fixture, $monthly);
 

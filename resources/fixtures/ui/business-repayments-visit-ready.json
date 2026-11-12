@@ -185,9 +185,7 @@
                     "step": "photos"
                 }
             ],
-            "ticked": [
-                "bank_statements"
-            ],
+            "ticked": ["bank_statements"],
             "tick": {
                 "url": "/business/01JBUSINESS0000000000000000/repayments/visit-ready",
                 "method": "post"
@@ -205,6 +203,7 @@
                 "method": "get"
             },
             "reports": null,
+            "readiness": null,
             "market": null,
             "profile": null
         },
