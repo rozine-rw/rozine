@@ -3669,10 +3669,25 @@ const rw: Catalog = {
     'auditor.audit.step.seal': 'Kashe',
     'auditor.audit.step.statements': 'Inyandiko za konti',
     'auditor.audit.step.count': 'Kubara',
+    'auditor.audit.step.cash_sales': 'Ibyagurishijwe mu ntoki',
+    'auditor.audit.step.costs': 'Amafaranga yakoreshejwe',
+    'auditor.audit.step.history': 'Amateka',
+    'auditor.audit.step.premises': 'Aho ikorera',
+    'auditor.audit.step.people': 'Abantu',
+    'auditor.audit.step.registration': 'Iyandikwa',
+    'auditor.audit.step.trading': 'Itangira ry’ubucuruzi',
+    'auditor.audit.step.drawings': 'Ibyafashwe na ba nyirabwo',
+    'auditor.audit.step.loans': 'Indi myenda',
+    'auditor.audit.step.differences': 'Itandukaniro',
+    'auditor.audit.step.staff': 'Abakozi',
+    'auditor.audit.step.expiries': 'Amatariki y’irangira',
+    'auditor.audit.step.loan_use': 'Amafaranga y’inguzanyo',
+    'auditor.audit.step.changes': 'Impinduka',
     'auditor.audit.continue': 'Komeza',
     'auditor.audit.to_seal': 'Suzuma ushyireho kashe',
     'auditor.audit.start_count': 'Tangira kubara',
     'auditor.audit.to_photos': 'Komeza ku mafoto',
+    'auditor.audit.explain_differences': 'Sobanura itandukaniro',
     'auditor.audit.back': 'Inyuma',
     'auditor.audit.back_to_jobs': 'Subira ku mirimo',
     'auditor.audit.offline':
@@ -5896,6 +5911,300 @@ const rw: Catalog = {
     'auditor.audit.amends':
         'Iyi ni ikosora rifitanye isano na raporo {report}. Iyo raporo iguma idahindutse.',
     'auditor.audit.open_original': "Fungura iy'umwimerere",
+    'auditor.audit.guide.label': 'Uko iyi ntambwe ikorwa',
+    'auditor.audit.guide.how_to': 'Uko bikorwa',
+    'auditor.audit.guide.part.do': 'Kora',
+    'auditor.audit.guide.part.enter': 'Andika',
+    'auditor.audit.guide.part.upload': 'Ohereza',
+    'auditor.audit.guide.part.done': 'Birarangira iyo',
+    'auditor.audit.guide.uploads_rule':
+        'Fata gusa ibigaragaza umubare: raporo za konti, fagitire, inyemezabwishyu, amasezerano, amasezerano y’inguzanyo, impamyabumenyi, inyandiko-mvugo, raporo z’igenzura, n’amafoto y’aho ikorera n’imitungo. Ntuzigere ufata amazina cyangwa amakuru bwite y’abakozi (urupapuro rwa RSSB rugaragaza igiteranyo gusa, amazina apfutse), ijambobanga cyangwa PIN, amakuru y’ubuvuzi, cyangwa ikindi cyose kijyanye n’abandi bakiriya bawe. Ibyoherejwe birabitswe mu ibanga kandi bibonwa nawe, ubucuruzi na Rozine gusa.',
+    'auditor.audit.guide.review.do':
+        'Soma dosiye y’ubucuruzi mbere yo kujya aho bukorera.',
+    'auditor.audit.guide.review.done':
+        'Wasomye dosiye. Komeza ujye kwiyandikisha ko wahageze.',
+    'auditor.audit.guide.review.how':
+        'Fungura buri nyandiko iri muri dosiye maze wandike ibyo ukeneye kureba aho bukorera. Nta kintu cyandikwa muri iyi ntambwe.',
+    'auditor.audit.guide.check_in.do':
+        'Iyandikishe ko wageze aho ubucuruzi bukorera ukoresheje porogaramu yo gufata ibimenyetso.',
+    'auditor.audit.guide.check_in.enter':
+        'Nta cyo kwandika. Aho uri n’isaha bituruka kuri telefoni yawe.',
+    'auditor.audit.guide.check_in.done':
+        'Kwiyandikisha kwawe kwageze kandi kugaragara hano.',
+    'auditor.audit.guide.check_in.how':
+        'Hagarara imbere aho bukorera, fungura porogaramu yo gufata ibimenyetso, wemere ko ibona aho uri maze wiyandikishe. Kwiyandikisha kure y’aho bwanditse, cyangwa aho uri hatagaragara neza, bijya kugenzurwa; komeza.',
+    'auditor.audit.guide.photos.do':
+        'Fata buri foto isabwa ako kanya muri porogaramu yo gufata ibimenyetso.',
+    'auditor.audit.guide.photos.upload':
+        'Amafoto afashwe ako kanya gusa. Ayaturutse mu bubiko bw’amafoto ntiyemerwa.',
+    'auditor.audit.guide.photos.done':
+        'Buri foto isabwa yageze kandi ifite umutwe.',
+    'auditor.audit.guide.photos.how':
+        'Fotora aho bukorera n’ibicuruzwa nk’uko urutonde rubisaba. Buri foto ifite isaha yayo n’aho yafatiwe. Ongeraho amafoto gusa iyo agaragaza umubare.',
+    'auditor.audit.guide.ledger.do':
+        'Bara ibicuruzwa maze wandike agaciro k’ibyo wabaze.',
+    'auditor.audit.guide.ledger.enter':
+        'Agaciro k’ibicuruzwa mu mafaranga yuzuye, urugero 1250000.',
+    'auditor.audit.guide.ledger.upload':
+        'Igitabo cy’ibaruramari cy’umwimerere muri PDF cyangwa CSV, kitarenze MB 10.',
+    'auditor.audit.guide.ledger.done':
+        'Igitabo cyometseho kandi ikinyuranyo n’umubare watanzwe kigaragara.',
+    'auditor.audit.guide.ledger.how':
+        'Bara ibiri ku bubiko, ubare agaciro kabyo maze wandike igiteranyo. Hanyuma ometseho igitabo ubucuruzi bubika. Inyandiko yasikanwe idafite inyuguti ishyirwa ku igenzura ry’intoki.',
+    'auditor.audit.guide.statements.do':
+        'Soma ibyo raporo za banki, MoMo na POS ziri muri dosiye zivuga ku kwezi.',
+    'auditor.audit.guide.statements.done':
+        'Wasomye amafaranga yinjiye, ayasohotse n’asigaye mu kwezi.',
+    'auditor.audit.guide.statements.how':
+        'Fungura buri raporo urebe aho umubare uturuka. Nta cyandikwa hano; imibare ituruka kuri raporo.',
+    'auditor.audit.guide.count.do':
+        'Hitamo ibimenyetso wabonye koko, hanyuma wandike ibyo wabonye.',
+    'auditor.audit.guide.count.enter':
+        'Amafaranga ari mu kigega mu mafaranga yuzuye n’umubare w’ibicuruzwa wabaze. Urugero 450000 na 120.',
+    'auditor.audit.guide.count.done':
+        'Buri mubare wanditswe kandi buri kimenyetso kiri ku rutonde cyahiswemo.',
+    'auditor.audit.guide.count.how':
+        'Bara ubwawe amafaranga n’ibicuruzwa. Buri mubare ugereranywa na raporo ziri muri dosiye; nta na kimwe hano gituruka ku bucuruzi.',
+    'auditor.audit.guide.cash_sales.do':
+        'Andika ibyagurishijwe mu ntoki uku kwezi bitigeze bishyirwa kuri konti ya banki cyangwa mobile money.',
+    'auditor.audit.guide.cash_sales.enter':
+        'Umubare umwe w’amafaranga yuzuye. Urugero 15000. Andika 0 niba ibyagurishijwe byose byashyizwe kuri konti.',
+    'auditor.audit.guide.cash_sales.done':
+        'Hari umubare wanditse, n’iyo waba 0.',
+    'auditor.audit.guide.cash_sales.how':
+        'Gereranya igitabo cy’ibyagurishijwe n’inyemezabwishyu n’ibyashyizwe kuri konti biri kuri raporo. Amafaranga yagumishijwe yo kugarura cyangwa yakoreshejwe mbere yo kujya kuri banki abarwa nk’atashyizwe kuri konti.',
+    'auditor.audit.guide.costs.do':
+        'Shyira amafaranga yakoreshejwe uku kwezi mu byiciro bitandatu.',
+    'auditor.audit.guide.costs.enter':
+        'Umubare w’amafaranga yuzuye kuri buri cyiciro: ibicuruzwa, abakozi, aho bakorera, ingendo, imisoro n’ibindi. Urugero ibicuruzwa 400000. Andika 0 aho nta mafaranga yakoreshejwe.',
+    'auditor.audit.guide.costs.done':
+        'Buri cyiciro gifite umubare, n’iyo waba 0.',
+    'auditor.audit.guide.costs.how':
+        'Koresha inyemezabuguzi, inyemezabwishyu n’ibyishyuwe biri kuri raporo z’uku kwezi. Shyira buri gikoreshwa mu cyiciro kimwe gusa; ikitajya mu cyiciro na kimwe gishyirwa mu Bindi.',
+    'auditor.audit.guide.history.do':
+        'Gereranya buri kwezi kw’amateka yagenzuwe na raporo za konti z’ubucuruzi.',
+    'auditor.audit.guide.history.done':
+        'Washyizeho akamenyetso ko buri kwezi guhura na raporo.',
+    'auditor.audit.guide.history.how':
+        'Fungura raporo z’ukwezi, ugenzure amafaranga yinjiye n’ayasohotse ugereranyije n’umurongo, hanyuma ukomeze. Ikintu kidahura ukibaze ubucuruzi mbere yo gushyiraho akamenyetso.',
+    'auditor.audit.guide.premises.do':
+        'Vuga ufite aho ubucuruzi bukorera kandi ushyireho urutonde rw’imitungo yabwo y’ingenzi.',
+    'auditor.audit.guide.premises.enter':
+        'Ni ibyabwo, ni ubukode cyangwa babisangiye, hanyuma buri mutungo w’ingenzi n’agaciro kawo kagereranyijwe mu mafaranga yuzuye. Urugero Moto yo gutwara ibicuruzwa, 1800000.',
+    'auditor.audit.guide.premises.done':
+        'Hahiswemo ufite aho bakorera. Imitungo si itegeko; ntirenga 10.',
+    'auditor.audit.guide.premises.how':
+        'Saba icyangombwa cy’ubutaka cyangwa amasezerano y’ubukode. Zenguruka aho bakorera wandike gusa ibikoreshwa mu bucuruzi, nk’imodoka, imashini n’ibyumba bikonjesha.',
+    'auditor.audit.guide.people.do':
+        'Genzura umwirondoro wa buri muyobozi na buri nyirabwo, kandi wemeze imyirondoro y’abayobozi.',
+    'auditor.audit.guide.people.done':
+        'Igenzura ryombi ryashyizweho akamenyetso.',
+    'auditor.audit.guide.people.how':
+        'Gereranya indangamuntu ya buri muntu n’icyemezo cyo mu gitabo cya RDB. Emeza ko imyirondoro y’abayobozi yatanzwe ihura n’abantu wahuye na bo.',
+    'auditor.audit.guide.registration.do':
+        'Genzura icyemezo cy’iyandikwa kandi wandike itariki icyemezo cy’imisoro kizarangiriraho.',
+    'auditor.audit.guide.registration.enter':
+        'Itariki icyemezo cy’imisoro kizarangiriraho nk’uko yanditse ku cyemezo. Urugero 31 Werurwe 2027.',
+    'auditor.audit.guide.registration.done':
+        'Icyemezo cyashyizweho akamenyetso ko cyagenzuwe kandi itariki yanditswe.',
+    'auditor.audit.guide.registration.how':
+        'Izina n’umubare by’ikigo biri ku cyemezo cya RDB bigomba guhura n’ibiri muri dosiye. Soma itariki irangiriraho ku cyemezo cy’imisoro cya RRA.',
+    'auditor.audit.guide.trading.do':
+        'Andika ukwezi ubucuruzi bwatangiriyeho gukora.',
+    'auditor.audit.guide.trading.enter':
+        'Ukwezi n’umwaka. Urugero Kamena 2021.',
+    'auditor.audit.guide.trading.done': 'Ukwezi kwanditswe.',
+    'auditor.audit.guide.trading.how':
+        'Koresha inyemezabuguzi, raporo ya konti cyangwa uruhushya rw’ubucuruzi rwa kera ubona, aho kuba itariki y’iyandikwa niba ubucuruzi bwaratangiye nyuma.',
+    'auditor.audit.guide.drawings.do':
+        'Andika ibyo ba nyir’ubucuruzi bakuyemo muri uku kwezi.',
+    'auditor.audit.guide.drawings.enter':
+        'Umubare umwe mu mafaranga yuzuye. Urugero 150000. Andika 0 niba nta cyakuwemo.',
+    'auditor.audit.guide.drawings.done': 'Umubare wanditswe, n’iyo waba 0.',
+    'auditor.audit.guide.drawings.how':
+        'Shakisha amafaranga yoherejwe cyangwa yafashwe na ba nyirabwo muri raporo no mu gitabo cy’amafaranga. Bara imishahara ya ba nyirabwo gusa niba itari ku rutonde rw’abakozi.',
+    'auditor.audit.guide.loans.do':
+        'Andika buri mwenda ubucuruzi bufitiye undi utari Rozine.',
+    'auditor.audit.guide.loans.enter':
+        'Kuri buri mwenda: uwawutanze, ayasigaye kwishyurwa n’ayishyurwa buri kwezi, mu mafaranga yuzuye. Urugero Bank of Kigali, 2400000 na 200000.',
+    'auditor.audit.guide.loans.done':
+        'Buri mwenda ufite uwawutanze n’ayasigaye. Ubucuruzi butagira indi myenda bukomeza nta mwenda wanditswe.',
+    'auditor.audit.guide.loans.how':
+        'Baza nyir’ubucuruzi kandi urebe muri raporo niba hari ubwishyu buhoraho. Soma imibare mu masezerano y’inguzanyo cyangwa muri raporo iheruka y’uwatanze umwenda.',
+    'auditor.audit.guide.differences.do':
+        'Ha buri mpamvu y’itandukaniro ry’amafaranga umubare kugeza ntacyo gisigaye cyo gusobanura.',
+    'auditor.audit.guide.differences.enter':
+        'Amafaranga yuzuye kuri buri mpamvu. Urugero 20000 ku mafaranga yakoreshejwe ku giti cye na 6000 ku ikosa ryo kwandika.',
+    'auditor.audit.guide.differences.done':
+        'Imibare iteranyijwe ingana n’itandukaniro ryose, ku ifaranga. Ukwezi kudafite itandukaniro nta cyo gusobanura.',
+    'auditor.audit.guide.differences.how':
+        'Baza nyir’ubucuruzi kuri buri cyuho kandi ubigenzure mu gitabo cy’ibaruramari cyangwa inyemezabuguzi. Koresha impamvu ziri ku rutonde gusa; imibare ifungiranwa hamwe n’ibyagaragaye ku mafaranga.',
+    'auditor.differences.title': 'Sobanura itandukaniro',
+    'auditor.differences.lead':
+        'Gabanya icyuho kiri hagati y’amafaranga wabaze n’ibyo raporo zivuga ukurikije impamvu zacyo, ku ifaranga.',
+    'auditor.differences.lead_none':
+        'Amafaranga wabaze ahura n’ibyo raporo zivuga, nta cyo gusobanura.',
+    'auditor.differences.reported': 'Raporo',
+    'auditor.differences.observed': 'Ibyabazwe',
+    'auditor.differences.difference': 'Itandukaniro',
+    'auditor.differences.unavailable': 'Ntibihari',
+    'auditor.differences.causes': 'Impamvu',
+    'auditor.differences.amount': 'Umubare kuri {cause}',
+    'auditor.differences.balanced': 'Itandukaniro ryose ryasobanuwe.',
+    'auditor.differences.left': 'Hasigaye {amount} byo gusobanura.',
+    'auditor.differences.over':
+        '{amount} birenze itandukaniro. Gabanya umubare.',
+    'auditor.differences.cause.unrecorded_sales': 'Ibyagurishijwe bitanditswe',
+    'auditor.differences.cause.unproven_expense': 'Ikiguzi kidafite gihamya',
+    'auditor.differences.cause.personal_spending':
+        'Amafaranga y’ubucuruzi yakoreshejwe ku giti cye',
+    'auditor.differences.cause.wrong_month': 'Byanditswe mu kwezi kutari ko',
+    'auditor.differences.cause.entry_error': 'Ikosa ryo kwandika',
+    'auditor.differences.cause.counted_twice': 'Byabazwe kabiri',
+    'auditor.cash_sales.title':
+        'Ibyagurishijwe mu ntoki bitashyizwe kuri konti',
+    'auditor.cash_sales.lead':
+        'Amafaranga yinjiye mu ntoki uku kwezi atigeze agera kuri konti ya banki cyangwa mobile money, bikurikijwe igitabo cy’ibyagurishijwe n’inyemezabwishyu.',
+    'auditor.cash_sales.amount': 'Atashyizwe kuri konti uku kwezi',
+    'auditor.cash_sales.hint':
+        'Andika 0 niba ibyagurishijwe mu ntoki byose byashyizwe kuri konti.',
+    'auditor.costs.title': 'Amafaranga yakoreshejwe',
+    'auditor.costs.lead':
+        'Amafaranga yakoreshejwe uku kwezi mu byiciro bitandatu ubucuruzi nabwo bukoresha mu mibare yabwo ya buri kwezi.',
+    'auditor.costs.category.stock': 'Ibicuruzwa n’ibikoresho',
+    'auditor.costs.category.staff': 'Abakozi',
+    'auditor.costs.category.premises': 'Aho bakorera',
+    'auditor.costs.category.transport': 'Ingendo',
+    'auditor.costs.category.taxes': 'Imisoro n’amahoro',
+    'auditor.costs.category.other': 'Ibindi',
+    'auditor.costs.total': 'Igiteranyo cy’amafaranga yakoreshejwe',
+    'auditor.costs.hint':
+        'Andika 0 ku cyiciro kitagize amafaranga yakoreshejwe uku kwezi.',
+    'auditor.history.title': 'Amateka y’ubucuruzi',
+    'auditor.history.lead':
+        'Amafaranga yinjiye n’ayasohotse yagenzuwe mu mezi {count} ashize, uhereye ku vuba.',
+    'auditor.history.none': 'Nta mateka yagenzuwe arashyirwa muri dosiye.',
+    'auditor.history.month': 'Ukwezi',
+    'auditor.history.in': 'Ayinjiye (RWF)',
+    'auditor.history.out': 'Ayasohotse (RWF)',
+    'auditor.history.checked':
+        'Nagereranyije buri kwezi na raporo za konti kandi birahura.',
+    'auditor.premises.title': 'Aho ikorera n’imitungo',
+    'auditor.premises.lead':
+        'Ufite aho ubucuruzi bukorera, n’imitungo y’ingenzi bukoresha.',
+    'auditor.premises.tenure': 'Aho bakorera ni',
+    'auditor.premises.tenure.owned': 'Iby’ubucuruzi',
+    'auditor.premises.tenure.rented': 'Ubukode',
+    'auditor.premises.tenure.shared': 'Babisangiye n’ubundi bucuruzi',
+    'auditor.premises.assets': 'Imitungo y’ingenzi',
+    'auditor.premises.none':
+        'Nta mutungo wanditswe. Komeza niba ubucuruzi budafite na umwe.',
+    'auditor.premises.item': 'Umutungo wa {number}',
+    'auditor.premises.asset': 'Icyo ari cyo',
+    'auditor.premises.value': 'Agaciro kagereranyijwe (RWF)',
+    'auditor.premises.remove': 'Kuraho umutungo wa {number}',
+    'auditor.premises.add': 'Ongeraho umutungo',
+    'auditor.people.title': 'Abayobozi, ba nyirabwo n’abacunga',
+    'auditor.people.lead':
+        'Genzura abafite n’abayobora ubucuruzi mbere y’uko bushyirwa ku isoko bwa mbere.',
+    'auditor.people.owners_confirmed':
+        'Nagenzuye indangamuntu ya buri muyobozi na buri nyirabwo mu gitabo cya RDB.',
+    'auditor.people.management_confirmed':
+        'Imyirondoro y’abayobozi ihura n’abantu nahuye na bo.',
+    'auditor.registration.title': 'Iyandikwa n’imisoro',
+    'auditor.registration.lead':
+        'Icyemezo cya RDB n’icyemezo cy’imisoro cya RRA, nk’uko wabibonye.',
+    'auditor.registration.confirmed':
+        'Icyemezo cya RDB gihura n’izina n’umubare by’ubucuruzi.',
+    'auditor.registration.no_tax':
+        'Ubucuruzi nta cyemezo cyo kwishyura imisoro bufite',
+    'auditor.registration.tax': 'Icyemezo cy’imisoro kirangira',
+    'auditor.trading.title': 'Itariki ubucuruzi bwatangiye',
+    'auditor.trading.lead':
+        'Ukwezi ubucuruzi bwatangiriyeho gukora, bikurikijwe inyandiko zabwo za mbere.',
+    'auditor.trading.since': 'Bukora kuva',
+    'auditor.drawings.title': 'Ibyafashwe na ba nyirabwo',
+    'auditor.drawings.lead':
+        'Ibyo ba nyir’ubucuruzi bakuyemo muri uku kwezi, ukurikije raporo n’igitabo cy’amafaranga.',
+    'auditor.drawings.amount': 'Ibyakuwemo na ba nyirabwo muri uku kwezi',
+    'auditor.drawings.hint': 'Andika 0 niba ba nyirabwo nta cyo bakuyemo.',
+    'auditor.loans.title': 'Indi myenda',
+    'auditor.loans.lead':
+        'Buri mwenda ubucuruzi bufitiye undi utari Rozine, ukurikije amasezerano cyangwa raporo y’uwatanze umwenda.',
+    'auditor.loans.none':
+        'Nta yindi myenda yanditswe. Komeza niba ubucuruzi nta wundi bubereyemo umwenda.',
+    'auditor.loans.item': 'Umwenda wa {number}',
+    'auditor.loans.lender': 'Uwatanze umwenda',
+    'auditor.loans.outstanding': 'Ayasigaye (RWF)',
+    'auditor.loans.monthly_payment': 'Ayishyurwa buri kwezi (RWF)',
+    'auditor.loans.remove': 'Kuraho umwenda wa {number}',
+    'auditor.loans.add': 'Ongeraho umwenda',
+    'auditor.audit.guide.staff.do':
+        'Andika umubare w’abakozi b’ubucuruzi, ukurikije imenyekanisha rya RSSB.',
+    'auditor.audit.guide.staff.enter':
+        'Umubare wuzuye umwe. Urugero 6. Andika 0 niba nta mukozi uhari.',
+    'auditor.audit.guide.staff.done':
+        'Umubare wanditswe kandi urupapuro rw’igiteranyo rwa RSSB rwagenzuwe.',
+    'auditor.audit.guide.staff.how':
+        'Saba imenyekanisha rya RSSB riheruka usome igiteranyo ku rupapuro rw’incamake. Saba nyir’ubucuruzi gupfuka amazina; Rozine ntiyakira amakuru y’abakozi.',
+    'auditor.audit.guide.expiries.do':
+        'Andika igihe ibyemezo by’imisoro na RSSB birangirira.',
+    'auditor.audit.guide.expiries.enter':
+        'Amatariki abiri, nk’uko yanditse kuri buri cyemezo. Urugero 31/03/2027.',
+    'auditor.audit.guide.expiries.done':
+        'Amatariki yombi yanditswe, n’iyo imwe yaba yararenze.',
+    'auditor.audit.guide.expiries.how':
+        'Soma buri tariki ku cyemezo ubwacyo, si ku byo nyir’ubucuruzi avuga. Icyemezo cyarangiye cyandikwa uko wakibonye.',
+    'auditor.audit.guide.loan_use.do':
+        'Vuga uko amafaranga y’inguzanyo ya Rozine yakoreshejwe uku kwezi.',
+    'auditor.audit.guide.loan_use.enter':
+        'Hitamo uko byateganyijwe, igice cyangwa si uko byateganyijwe. Ibitari uko byateganyijwe bisaba umurongo umwe, urugero: igice cyishyuye ubukode bw’Ukwakira.',
+    'auditor.audit.guide.loan_use.done':
+        'Igisubizo cyahiswemo, hamwe n’umurongo uvuga aho amafaranga yagiye niba atakoreshejwe uko byateganyijwe.',
+    'auditor.audit.guide.loan_use.how':
+        'Gereranya ibyo amafaranga yishyuye n’icyo prospectus yavuze. Genzura inyemezabuguzi cyangwa raporo z’ibyishyuwe binini.',
+    'auditor.audit.guide.changes.do':
+        'Baza ku mpinduka enye kuva igenzura riheruka.',
+    'auditor.audit.guide.changes.enter':
+        'Yego cyangwa oya kuri buri imwe: inguzanyo nshya, guhindura umuyobozi, guhindura ba nyir’ubucuruzi, ikirego mu rukiko.',
+    'auditor.audit.guide.changes.done': 'Buri kibazo gifite yego cyangwa oya.',
+    'auditor.audit.guide.changes.how':
+        'Baza nyir’ubucuruzi buri kibazo mu magambo yoroshye kandi ugenzure icyemezo cy’iyandikwa cyangwa amasezerano y’inguzanyo aho bishoboka. Yego ifungiranwa hamwe na raporo.',
+    'auditor.staff.title': 'Umubare w’abakozi',
+    'auditor.staff.lead':
+        'Umubare w’abakozi b’ubucuruzi, usomwe ku rupapuro rw’igiteranyo rwa RSSB.',
+    'auditor.staff.count': 'Abakozi',
+    'auditor.staff.rssb_checked':
+        'Nabigenzuye ku rupapuro rw’igiteranyo rwa RSSB, amazina apfutse.',
+    'auditor.expiries.title': 'Amatariki y’irangira ry’imisoro na RSSB',
+    'auditor.expiries.lead': 'Itariki y’irangira yanditse kuri buri cyemezo.',
+    'auditor.expiries.tax': 'Icyemezo cy’imisoro kirangira',
+    'auditor.expiries.rssb': 'Icyemezo cya RSSB kirangira',
+    'auditor.loan_use.title': 'Ikoreshwa ry’amafaranga y’inguzanyo',
+    'auditor.loan_use.lead':
+        'Niba amafaranga y’inguzanyo ya Rozine yarakoreshejwe nk’uko prospectus yabivuze.',
+    'auditor.loan_use.option.as_planned': 'Uko byateganyijwe',
+    'auditor.loan_use.option.partly': 'Igice uko byateganyijwe',
+    'auditor.loan_use.option.not_as_planned': 'Si uko byateganyijwe',
+    'auditor.loan_use.note': 'Icyitonderwa (si ngombwa)',
+    'auditor.loan_use.note_required': 'Amafaranga yagiye he?',
+    'auditor.changes.title': 'Impinduka',
+    'auditor.changes.lead': 'Hari muri ibi cyahindutse kuva igenzura riheruka?',
+    'auditor.changes.kind.new_debt': 'Inguzanyo cyangwa umwenda mushya',
+    'auditor.changes.kind.director_change': 'Guhindura umuyobozi',
+    'auditor.changes.kind.ownership_change':
+        'Guhindura ba nyir’ubucuruzi cyangwa abanyamigabane',
+    'auditor.changes.kind.legal_claim': 'Ikirego mu rukiko ku bucuruzi',
+    'auditor.changes.yes': 'Yego',
+    'auditor.changes.no': 'Oya',
+    'auditor.audit.guide.seal.do':
+        'Genzura ibyavuyemo, hanyuma ushyireho kashe ukoresheje kode yawe.',
+    'auditor.audit.guide.seal.enter':
+        'Kode y’imibare itandatu iva muri porogaramu yawe yo kwemeza.',
+    'auditor.audit.guide.seal.done':
+        'Intambwe zose zabanje zarangiye. Gushyiraho kashe ntibikora mbere y’aho.',
+    'auditor.audit.guide.seal.how':
+        'Ongera usome ibyagaragaye. Iyo ushyizeho kashe, raporo iba ntakuka mu izina ry’uruhushya rwawe kandi ubucuruzi bugira amasaha 24 yo kuyijuririra.',
     'auditor.receipt.title': 'Inyungu yanditswe',
     'auditor.receipt.body.reassignment_pending':
         "Inyungu wagaragaje yanditswe. Akazi kuri uyu murimo karahagaze mu gihe Ishami ry'Igenzura ritegura kuwuha undi.",

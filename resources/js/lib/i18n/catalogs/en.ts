@@ -3525,10 +3525,25 @@ const en = {
     'auditor.audit.step.seal': 'Seal',
     'auditor.audit.step.statements': 'Statements',
     'auditor.audit.step.count': 'Count & cash',
+    'auditor.audit.step.cash_sales': 'Cash sales',
+    'auditor.audit.step.costs': 'Costs',
+    'auditor.audit.step.history': 'History',
+    'auditor.audit.step.premises': 'Premises',
+    'auditor.audit.step.people': 'People',
+    'auditor.audit.step.registration': 'Registration',
+    'auditor.audit.step.trading': 'Trading start',
+    'auditor.audit.step.drawings': 'Drawings',
+    'auditor.audit.step.loans': 'Other loans',
+    'auditor.audit.step.differences': 'Differences',
+    'auditor.audit.step.staff': 'Staff',
+    'auditor.audit.step.expiries': 'Expiry dates',
+    'auditor.audit.step.loan_use': 'Loan money',
+    'auditor.audit.step.changes': 'Changes',
     'auditor.audit.continue': 'Continue',
     'auditor.audit.to_seal': 'Review & seal',
     'auditor.audit.start_count': 'Start the count',
     'auditor.audit.to_photos': 'Continue to photos',
+    'auditor.audit.explain_differences': 'Explain the difference',
     'auditor.audit.back': 'Back',
     'auditor.audit.back_to_jobs': 'Back to jobs',
     'auditor.audit.offline':
@@ -5683,6 +5698,298 @@ const en = {
     'auditor.audit.amends':
         'This is a linked amendment of report {report}. That report remains unchanged.',
     'auditor.audit.open_original': 'Open the original',
+    'auditor.audit.guide.label': 'How to do this step',
+    'auditor.audit.guide.how_to': 'How to',
+    'auditor.audit.guide.part.do': 'Do',
+    'auditor.audit.guide.part.enter': 'Enter',
+    'auditor.audit.guide.part.upload': 'Upload',
+    'auditor.audit.guide.part.done': 'Done when',
+    'auditor.audit.guide.uploads_rule':
+        'Collect only what proves a figure: statements, invoices, receipts, contracts, loan agreements, certificates, minutes, audit reports, and premises and asset photos. Never collect staff names or personal details (the RSSB total page only, names covered), passwords or PINs, medical records, or anything about your other clients. Uploads are encrypted and seen only by you, the business and Rozine.',
+    'auditor.audit.guide.review.do':
+        'Read the business file before you go on site.',
+    'auditor.audit.guide.review.done':
+        'You have read the file. Continue to check in.',
+    'auditor.audit.guide.review.how':
+        'Open each document in the file and note what you need to see on site. Nothing is recorded in this step.',
+    'auditor.audit.guide.check_in.do':
+        'Check in at the business premises with the capture app.',
+    'auditor.audit.guide.check_in.enter':
+        'Nothing to type. Your position and the time come from your phone.',
+    'auditor.audit.guide.check_in.done':
+        'Your check-in has arrived and shows here.',
+    'auditor.audit.guide.check_in.how':
+        'Stand inside the premises, open the capture app, allow location and check in. A check-in far from the registered premises, or with a weak location, goes to review; carry on.',
+    'auditor.audit.guide.photos.do':
+        'Take every required site photo live in the capture app.',
+    'auditor.audit.guide.photos.upload':
+        'Live photos only. Gallery uploads are refused.',
+    'auditor.audit.guide.photos.done':
+        'Every required photo has arrived and has a title.',
+    'auditor.audit.guide.photos.how':
+        'Photograph the premises and the stock as the list asks. Each photo carries its own time and place. Add more photos only where they prove a figure.',
+    'auditor.audit.guide.ledger.do':
+        'Count the stock and enter the inventory value you counted.',
+    'auditor.audit.guide.ledger.enter':
+        'Inventory value in whole francs, for example 1250000.',
+    'auditor.audit.guide.ledger.upload':
+        'The original ledger as a PDF or CSV, up to 10 MB.',
+    'auditor.audit.guide.ledger.done':
+        'The ledger is attached and the difference from the reported figure is shown.',
+    'auditor.audit.guide.ledger.how':
+        'Count what is on the shelves, add up its value and type the total. Then attach the ledger the business keeps. A scan without text is marked for manual review.',
+    'auditor.audit.guide.statements.do':
+        'Read what the bank, MoMo and POS statements on file report for the month.',
+    'auditor.audit.guide.statements.done':
+        'You have read money in, money out and the net for the month.',
+    'auditor.audit.guide.statements.how':
+        'Open each statement to see where a figure comes from. Nothing is typed here; the figures come from the statements.',
+    'auditor.audit.guide.count.do':
+        'Tick the proof you actually saw, then enter what you observed.',
+    'auditor.audit.guide.count.enter':
+        'Cash on hand in whole francs and the stock units you counted. For example 450000 and 120.',
+    'auditor.audit.guide.count.done':
+        'Every figure is entered and every listed proof is ticked.',
+    'auditor.audit.guide.count.how':
+        'Count the cash and the stock yourself. Each figure is compared to the statements on file; nothing here comes from the business.',
+    'auditor.audit.guide.cash_sales.do':
+        'Record the cash sales this month that were never paid into a bank or mobile-money account.',
+    'auditor.audit.guide.cash_sales.enter':
+        'One amount in whole francs. For example 15000. Enter 0 if every sale was deposited.',
+    'auditor.audit.guide.cash_sales.done':
+        'An amount is entered, even if it is 0.',
+    'auditor.audit.guide.cash_sales.how':
+        'Compare the sales book and receipts with the deposits on the statements. Cash kept back for change or spent before banking counts as not deposited.',
+    'auditor.audit.guide.costs.do':
+        'Sort this month’s costs into the six categories.',
+    'auditor.audit.guide.costs.enter':
+        'An amount in whole francs for each category: stock, staff, premises, transport, taxes and other. For example stock 400000. Enter 0 where there was no cost.',
+    'auditor.audit.guide.costs.done':
+        'Every category has an amount, even if it is 0.',
+    'auditor.audit.guide.costs.how':
+        'Use the invoices, receipts and statement payments for the month. Put each cost in one category only; anything that fits none goes under Other.',
+    'auditor.audit.guide.history.do':
+        'Compare each month of the verified history with the business’s statements.',
+    'auditor.audit.guide.history.done':
+        'You ticked that every month matches the statements.',
+    'auditor.audit.guide.history.how':
+        'Open the statements for a month, check the money in and out against the row, and move on. Raise anything that does not match with the business before you tick.',
+    'auditor.audit.guide.premises.do':
+        'Say who holds the premises and list the business’s main assets.',
+    'auditor.audit.guide.premises.enter':
+        'Owned, rented or shared, then each main asset with an estimated value in whole francs. For example Delivery motorbike, 1800000.',
+    'auditor.audit.guide.premises.done':
+        'Who holds the premises is chosen. Assets are optional; list at most 10.',
+    'auditor.audit.guide.premises.how':
+        'Ask for the title deed or the lease. Walk the premises and list only what the business uses to trade, such as vehicles, machines and cold rooms.',
+    'auditor.audit.guide.people.do':
+        'Check the identity of every director and owner, and confirm the management profiles.',
+    'auditor.audit.guide.people.done': 'Both checks are ticked.',
+    'auditor.audit.guide.people.how':
+        'Compare each person’s ID with the RDB register extract. Confirm that the management profiles the business gave match the people you met.',
+    'auditor.audit.guide.registration.do':
+        'Check the registration certificate and record the tax clearance expiry date.',
+    'auditor.audit.guide.registration.enter':
+        'The tax clearance expiry date as written on the certificate. For example 31 March 2027.',
+    'auditor.audit.guide.registration.done':
+        'The certificate is ticked as checked and a date is entered.',
+    'auditor.audit.guide.registration.how':
+        'The company name and code on the RDB certificate must match the business’s record. Read the expiry from the RRA tax clearance certificate.',
+    'auditor.audit.guide.trading.do':
+        'Record the month the business started trading.',
+    'auditor.audit.guide.trading.enter':
+        'A month and year. For example June 2021.',
+    'auditor.audit.guide.trading.done': 'A month is entered.',
+    'auditor.audit.guide.trading.how':
+        'Use the earliest invoice, statement or trading licence you can see, not the registration date if trading began later.',
+    'auditor.audit.guide.drawings.do':
+        'Record what the owners took out of the business this month.',
+    'auditor.audit.guide.drawings.enter':
+        'One amount in whole francs. For example 150000. Enter 0 if nothing was taken.',
+    'auditor.audit.guide.drawings.done':
+        'An amount is entered, even if it is 0.',
+    'auditor.audit.guide.drawings.how':
+        'Look for transfers and cash taken by the owners in the statements and the cash book. Count salaries paid to owners only if they are not on the payroll.',
+    'auditor.audit.guide.loans.do':
+        'List every loan the business owes anyone other than Rozine.',
+    'auditor.audit.guide.loans.enter':
+        'For each loan: who lent it, what is still owed and the monthly payment, in whole francs. For example Bank of Kigali, 2400000 and 200000.',
+    'auditor.audit.guide.loans.done':
+        'Each loan has a lender and the amount still owed. A business with no other loans continues with an empty list.',
+    'auditor.audit.guide.loans.how':
+        'Ask the owner and check the statements for regular repayments. Read the figures from the loan agreement or the lender’s latest statement.',
+    'auditor.audit.guide.differences.do':
+        'Give each cause of the cash difference an amount until nothing is left to explain.',
+    'auditor.audit.guide.differences.enter':
+        'Whole francs per cause. For example 20000 for personal spending and 6000 for an entry error.',
+    'auditor.audit.guide.differences.done':
+        'The amounts add up to the whole difference, to the franc. A month with no difference has nothing to explain.',
+    'auditor.audit.guide.differences.how':
+        'Ask the owner about each gap and check it against the ledger or receipts. Use only the causes listed; the amounts are sealed with the cash finding.',
+    'auditor.differences.title': 'Explain the difference',
+    'auditor.differences.lead':
+        'Split the gap between the cash counted and what the statements report across its causes, to the franc.',
+    'auditor.differences.lead_none':
+        'The cash counted matches the statements, so there is nothing to explain.',
+    'auditor.differences.reported': 'Statements',
+    'auditor.differences.observed': 'Counted',
+    'auditor.differences.difference': 'Difference',
+    'auditor.differences.unavailable': 'Unavailable',
+    'auditor.differences.causes': 'Causes',
+    'auditor.differences.amount': 'Amount for {cause}',
+    'auditor.differences.balanced': 'The whole difference is explained.',
+    'auditor.differences.left': '{amount} still to explain.',
+    'auditor.differences.over':
+        '{amount} more than the difference. Lower an amount.',
+    'auditor.differences.cause.unrecorded_sales': 'Sales not recorded',
+    'auditor.differences.cause.unproven_expense': 'Expense without proof',
+    'auditor.differences.cause.personal_spending':
+        'Personal spending from the business',
+    'auditor.differences.cause.wrong_month': 'Recorded in the wrong month',
+    'auditor.differences.cause.entry_error': 'Entry error',
+    'auditor.differences.cause.counted_twice': 'Counted twice',
+    'auditor.cash_sales.title': 'Cash sales not deposited',
+    'auditor.cash_sales.lead':
+        'Cash taken this month that never reached a bank or mobile-money account, from the sales book and receipts.',
+    'auditor.cash_sales.amount': 'Not deposited this month',
+    'auditor.cash_sales.hint': 'Enter 0 if every cash sale was deposited.',
+    'auditor.costs.title': 'Costs',
+    'auditor.costs.lead':
+        'This month’s costs in the six categories the business also uses for its monthly figures.',
+    'auditor.costs.category.stock': 'Stock and supplies',
+    'auditor.costs.category.staff': 'Staff',
+    'auditor.costs.category.premises': 'Premises',
+    'auditor.costs.category.transport': 'Transport',
+    'auditor.costs.category.taxes': 'Taxes and fees',
+    'auditor.costs.category.other': 'Other',
+    'auditor.costs.total': 'Total costs',
+    'auditor.costs.hint': 'Enter 0 for a category with no cost this month.',
+    'auditor.history.title': 'Trading history',
+    'auditor.history.lead':
+        'The verified money in and out for the last {count} months, newest first.',
+    'auditor.history.none': 'No verified history is on file yet.',
+    'auditor.history.month': 'Month',
+    'auditor.history.in': 'Money in (RWF)',
+    'auditor.history.out': 'Money out (RWF)',
+    'auditor.history.checked':
+        'I compared every month with the statements and they match.',
+    'auditor.premises.title': 'Premises and assets',
+    'auditor.premises.lead':
+        'Who holds the premises, and the main assets the business trades with.',
+    'auditor.premises.tenure': 'The premises are',
+    'auditor.premises.tenure.owned': 'Owned by the business',
+    'auditor.premises.tenure.rented': 'Rented',
+    'auditor.premises.tenure.shared': 'Shared with another business',
+    'auditor.premises.assets': 'Main assets',
+    'auditor.premises.none':
+        'No assets listed. Continue if the business trades without any.',
+    'auditor.premises.item': 'Asset {number}',
+    'auditor.premises.asset': 'What it is',
+    'auditor.premises.value': 'Estimated value (RWF)',
+    'auditor.premises.remove': 'Remove asset {number}',
+    'auditor.premises.add': 'Add an asset',
+    'auditor.people.title': 'Directors, owners and managers',
+    'auditor.people.lead':
+        'Check who owns and runs the business before it lists for the first time.',
+    'auditor.people.owners_confirmed':
+        'I checked the ID of every director and owner against the RDB register.',
+    'auditor.people.management_confirmed':
+        'The management profiles match the people I met.',
+    'auditor.registration.title': 'Registration and tax',
+    'auditor.registration.lead':
+        'The RDB certificate and the RRA tax clearance, as you saw them.',
+    'auditor.registration.confirmed':
+        'The RDB certificate matches the business’s name and code.',
+    'auditor.registration.no_tax':
+        'The business has no tax clearance certificate',
+    'auditor.registration.tax': 'Tax clearance expires',
+    'auditor.trading.title': 'Date trading started',
+    'auditor.trading.lead':
+        'The month the business began trading, from its earliest records.',
+    'auditor.trading.since': 'Trading since',
+    'auditor.drawings.title': 'Owner drawings',
+    'auditor.drawings.lead':
+        'What the owners took out of the business this month, from the statements and the cash book.',
+    'auditor.drawings.amount': 'Taken by the owners this month',
+    'auditor.drawings.hint': 'Enter 0 if the owners took nothing.',
+    'auditor.loans.title': 'Other loans',
+    'auditor.loans.lead':
+        'Every loan the business owes anyone other than Rozine, from the agreement or the lender’s statement.',
+    'auditor.loans.none':
+        'No other loans recorded. Continue if the business owes no one else.',
+    'auditor.loans.item': 'Loan {number}',
+    'auditor.loans.lender': 'Lender',
+    'auditor.loans.outstanding': 'Still owed (RWF)',
+    'auditor.loans.monthly_payment': 'Monthly payment (RWF)',
+    'auditor.loans.remove': 'Remove loan {number}',
+    'auditor.loans.add': 'Add a loan',
+    'auditor.audit.guide.staff.do':
+        'Record how many people the business employs, from the RSSB declaration.',
+    'auditor.audit.guide.staff.enter':
+        'One whole number. For example 6. Enter 0 if no one is employed.',
+    'auditor.audit.guide.staff.done':
+        'A number is entered and the RSSB total page is checked.',
+    'auditor.audit.guide.staff.how':
+        'Ask for the latest RSSB declaration and read the total from its summary page. Ask the owner to cover the names; Rozine never collects employee details.',
+    'auditor.audit.guide.expiries.do':
+        'Record when the tax and RSSB clearance certificates expire.',
+    'auditor.audit.guide.expiries.enter':
+        'Two dates, as printed on each certificate. For example 31/03/2027.',
+    'auditor.audit.guide.expiries.done':
+        'Both dates are entered, even if one has already passed.',
+    'auditor.audit.guide.expiries.how':
+        'Read each date from the certificate itself, not from what the owner says. An expired certificate is recorded as you saw it.',
+    'auditor.audit.guide.loan_use.do':
+        'Say how the Rozine loan money was used this month.',
+    'auditor.audit.guide.loan_use.enter':
+        'Choose as planned, partly or not as planned. Anything but as planned needs one line, for example: Part paid the October rent.',
+    'auditor.audit.guide.loan_use.done':
+        'An answer is chosen, with a line saying where the money went if it was not as planned.',
+    'auditor.audit.guide.loan_use.how':
+        'Compare what the money paid for with the use stated in the prospectus. Check receipts or statements for the larger payments.',
+    'auditor.audit.guide.changes.do':
+        'Ask about four changes since the last visit.',
+    'auditor.audit.guide.changes.enter':
+        'Yes or no for each: a new loan, a director change, an ownership change, a legal claim.',
+    'auditor.audit.guide.changes.done': 'Every question has a yes or no.',
+    'auditor.audit.guide.changes.how':
+        'Ask the owner each question plainly and check the registry extract or loan papers where you can. A yes is sealed with the report.',
+    'auditor.staff.title': 'Staff count',
+    'auditor.staff.lead':
+        'How many people the business employs, read from the RSSB total page.',
+    'auditor.staff.count': 'People employed',
+    'auditor.staff.rssb_checked':
+        'I checked this against the RSSB total page, with the names covered.',
+    'auditor.expiries.title': 'Tax and RSSB expiry dates',
+    'auditor.expiries.lead':
+        'The expiry date printed on each clearance certificate.',
+    'auditor.expiries.tax': 'Tax clearance expires',
+    'auditor.expiries.rssb': 'RSSB clearance expires',
+    'auditor.loan_use.title': 'Use of the loan money',
+    'auditor.loan_use.lead':
+        'Whether the Rozine loan money went where the prospectus said.',
+    'auditor.loan_use.option.as_planned': 'As planned',
+    'auditor.loan_use.option.partly': 'Partly as planned',
+    'auditor.loan_use.option.not_as_planned': 'Not as planned',
+    'auditor.loan_use.note': 'Note (optional)',
+    'auditor.loan_use.note_required': 'Where did the money go?',
+    'auditor.changes.title': 'Changes',
+    'auditor.changes.lead': 'Has any of these changed since the last visit?',
+    'auditor.changes.kind.new_debt': 'A new loan or debt',
+    'auditor.changes.kind.director_change': 'A change of director',
+    'auditor.changes.kind.ownership_change':
+        'A change of owners or shareholders',
+    'auditor.changes.kind.legal_claim': 'A legal claim against the business',
+    'auditor.changes.yes': 'Yes',
+    'auditor.changes.no': 'No',
+    'auditor.audit.guide.seal.do':
+        'Check the result, then seal with your authenticator code.',
+    'auditor.audit.guide.seal.enter':
+        'The six-digit code from your authenticator app.',
+    'auditor.audit.guide.seal.done':
+        'Every earlier step is complete. Seal stays off until then.',
+    'auditor.audit.guide.seal.how':
+        'Read the findings once more. When you seal, the report is fixed under your licence and the business has 24 hours to dispute it.',
     'auditor.receipt.title': 'Conflict recorded',
     'auditor.receipt.body.reassignment_pending':
         'Your conflict has been recorded. Work on this assignment is stopped while Audit Operations arranges reassignment.',

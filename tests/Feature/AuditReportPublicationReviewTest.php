@@ -71,7 +71,7 @@ it('publishes only the amendment while retaining an already published parent as 
     $receipt = app(AmendAuditReport::class)->handle($fixture['user']->id, 1, $fixture['report']->id,
         $fixture['report']->revision + 1, (string) Str::uuid());
     $child = AuditReport::query()->whereKey($receipt['data']['audit_id'])->firstOrFail();
-    foreach (['review' => [], 'check_in' => [], 'photos' => ['titles' => ['extra-1' => 'Stock room']],
+    foreach (['review' => [], 'check_in' => [], ...Fixture::baseline($child), 'photos' => ['titles' => ['extra-1' => 'Stock room']],
         'ledger' => ['observed_stock' => '38000000', 'reconciled' => true]] as $step => $fields) {
         expect(app(SaveAuditReportStep::class)->handle($fixture['user']->id, 1, $child->id, $child->refresh()->revision, $step, $fields, (string) Str::uuid())['code'])
             ->toBe('AUDIT_STEP_SAVED');

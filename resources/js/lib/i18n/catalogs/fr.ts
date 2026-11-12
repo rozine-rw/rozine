@@ -3686,10 +3686,25 @@ const fr: Catalog = {
     'auditor.audit.step.seal': 'Sceau',
     'auditor.audit.step.statements': 'Relevés',
     'auditor.audit.step.count': 'Comptage',
+    'auditor.audit.step.cash_sales': 'Ventes en espèces',
+    'auditor.audit.step.costs': 'Charges',
+    'auditor.audit.step.history': 'Historique',
+    'auditor.audit.step.premises': 'Locaux',
+    'auditor.audit.step.people': 'Personnes',
+    'auditor.audit.step.registration': 'Immatriculation',
+    'auditor.audit.step.trading': 'Début d’activité',
+    'auditor.audit.step.drawings': 'Prélèvements',
+    'auditor.audit.step.loans': 'Autres prêts',
+    'auditor.audit.step.differences': 'Écarts',
+    'auditor.audit.step.staff': 'Personnel',
+    'auditor.audit.step.expiries': 'Échéances',
+    'auditor.audit.step.loan_use': 'Fonds du prêt',
+    'auditor.audit.step.changes': 'Changements',
     'auditor.audit.continue': 'Continuer',
     'auditor.audit.to_seal': 'Examiner et sceller',
     'auditor.audit.start_count': 'Commencer le comptage',
     'auditor.audit.to_photos': 'Continuer vers les photos',
+    'auditor.audit.explain_differences': 'Expliquer l’écart',
     'auditor.audit.back': 'Retour',
     'auditor.audit.back_to_jobs': 'Retour aux missions',
     'auditor.audit.offline':
@@ -5909,6 +5924,303 @@ const fr: Catalog = {
     'auditor.audit.amends':
         'Ceci est une modification liée du rapport {report}. Ce rapport reste inchangé.',
     'auditor.audit.open_original': "Ouvrir l'original",
+    'auditor.audit.guide.label': 'Comment faire cette étape',
+    'auditor.audit.guide.how_to': 'Comment faire',
+    'auditor.audit.guide.part.do': 'À faire',
+    'auditor.audit.guide.part.enter': 'À saisir',
+    'auditor.audit.guide.part.upload': 'À joindre',
+    'auditor.audit.guide.part.done': 'Terminé quand',
+    'auditor.audit.guide.uploads_rule':
+        'Ne recueillez que ce qui prouve un montant : relevés, factures, reçus, contrats, contrats de prêt, certificats, procès-verbaux, rapports d’audit, et photos des locaux et des actifs. Ne recueillez jamais les noms ou données personnelles du personnel (seule la page de total RSSB, noms masqués), ni mots de passe ou codes PIN, ni dossiers médicaux, ni rien sur vos autres clients. Les fichiers sont chiffrés et visibles uniquement par vous, l’entreprise et Rozine.',
+    'auditor.audit.guide.review.do':
+        'Lisez le dossier de l’entreprise avant d’aller sur place.',
+    'auditor.audit.guide.review.done':
+        'Vous avez lu le dossier. Passez à l’enregistrement sur place.',
+    'auditor.audit.guide.review.how':
+        'Ouvrez chaque document du dossier et notez ce que vous devez voir sur place. Rien n’est enregistré à cette étape.',
+    'auditor.audit.guide.check_in.do':
+        'Enregistrez votre arrivée dans les locaux avec l’application de capture.',
+    'auditor.audit.guide.check_in.enter':
+        'Rien à saisir. Votre position et l’heure viennent de votre téléphone.',
+    'auditor.audit.guide.check_in.done':
+        'Votre arrivée est reçue et s’affiche ici.',
+    'auditor.audit.guide.check_in.how':
+        'Placez-vous dans les locaux, ouvrez l’application de capture, autorisez la localisation et enregistrez-vous. Une arrivée loin des locaux enregistrés, ou avec une localisation faible, part en revue ; continuez.',
+    'auditor.audit.guide.photos.do':
+        'Prenez chaque photo requise en direct dans l’application de capture.',
+    'auditor.audit.guide.photos.upload':
+        'Photos en direct uniquement. Les imports depuis la galerie sont refusés.',
+    'auditor.audit.guide.photos.done':
+        'Chaque photo requise est reçue et porte un titre.',
+    'auditor.audit.guide.photos.how':
+        'Photographiez les locaux et le stock comme la liste le demande. Chaque photo porte sa propre heure et son lieu. N’ajoutez des photos que si elles prouvent un montant.',
+    'auditor.audit.guide.ledger.do':
+        'Comptez le stock et saisissez la valeur d’inventaire comptée.',
+    'auditor.audit.guide.ledger.enter':
+        'Valeur d’inventaire en francs entiers, par exemple 1250000.',
+    'auditor.audit.guide.ledger.upload':
+        'Le registre original en PDF ou CSV, jusqu’à 10 Mo.',
+    'auditor.audit.guide.ledger.done':
+        'Le registre est joint et l’écart avec le montant déclaré s’affiche.',
+    'auditor.audit.guide.ledger.how':
+        'Comptez ce qui est en rayon, calculez sa valeur et saisissez le total. Joignez ensuite le registre tenu par l’entreprise. Un scan sans texte est marqué pour revue manuelle.',
+    'auditor.audit.guide.statements.do':
+        'Lisez ce que les relevés bancaires, MoMo et TPE au dossier indiquent pour le mois.',
+    'auditor.audit.guide.statements.done':
+        'Vous avez lu les entrées, les sorties et le net du mois.',
+    'auditor.audit.guide.statements.how':
+        'Ouvrez chaque relevé pour voir d’où vient un montant. Rien n’est saisi ici ; les montants viennent des relevés.',
+    'auditor.audit.guide.count.do':
+        'Cochez les preuves que vous avez vues, puis saisissez ce que vous avez constaté.',
+    'auditor.audit.guide.count.enter':
+        'Espèces en caisse en francs entiers et unités de stock comptées. Par exemple 450000 et 120.',
+    'auditor.audit.guide.count.done':
+        'Chaque montant est saisi et chaque preuve listée est cochée.',
+    'auditor.audit.guide.count.how':
+        'Comptez vous-même les espèces et le stock. Chaque montant est comparé aux relevés au dossier ; rien ici ne vient de l’entreprise.',
+    'auditor.audit.guide.cash_sales.do':
+        'Notez les ventes en espèces du mois qui n’ont jamais été versées sur un compte bancaire ou mobile money.',
+    'auditor.audit.guide.cash_sales.enter':
+        'Un montant en francs entiers. Par exemple 15000. Saisissez 0 si toutes les ventes ont été versées.',
+    'auditor.audit.guide.cash_sales.done':
+        'Un montant est saisi, même s’il vaut 0.',
+    'auditor.audit.guide.cash_sales.how':
+        'Comparez le cahier des ventes et les reçus aux dépôts sur les relevés. Les espèces gardées pour la monnaie ou dépensées avant le dépôt comptent comme non versées.',
+    'auditor.audit.guide.costs.do':
+        'Classez les charges du mois dans les six catégories.',
+    'auditor.audit.guide.costs.enter':
+        'Un montant en francs entiers pour chaque catégorie : stock, personnel, locaux, transport, impôts et autres. Par exemple stock 400000. Saisissez 0 s’il n’y a pas eu de charge.',
+    'auditor.audit.guide.costs.done':
+        'Chaque catégorie a un montant, même s’il vaut 0.',
+    'auditor.audit.guide.costs.how':
+        'Utilisez les factures, les reçus et les paiements des relevés du mois. Placez chaque charge dans une seule catégorie ; ce qui n’entre dans aucune va dans Autres.',
+    'auditor.audit.guide.history.do':
+        'Comparez chaque mois de l’historique vérifié aux relevés de l’entreprise.',
+    'auditor.audit.guide.history.done':
+        'Vous avez coché que chaque mois correspond aux relevés.',
+    'auditor.audit.guide.history.how':
+        'Ouvrez les relevés d’un mois, vérifiez les entrées et sorties par rapport à la ligne, puis passez au suivant. Signalez tout écart à l’entreprise avant de cocher.',
+    'auditor.audit.guide.premises.do':
+        'Indiquez qui détient les locaux et listez les principaux actifs de l’entreprise.',
+    'auditor.audit.guide.premises.enter':
+        'Propriété, location ou partage, puis chaque actif principal avec une valeur estimée en francs entiers. Par exemple Moto de livraison, 1800000.',
+    'auditor.audit.guide.premises.done':
+        'Le statut des locaux est choisi. Les actifs sont facultatifs ; 10 au maximum.',
+    'auditor.audit.guide.premises.how':
+        'Demandez le titre de propriété ou le bail. Parcourez les locaux et ne listez que ce qui sert à l’activité, comme les véhicules, les machines et les chambres froides.',
+    'auditor.audit.guide.people.do':
+        'Vérifiez l’identité de chaque administrateur et propriétaire, et confirmez les profils de la direction.',
+    'auditor.audit.guide.people.done': 'Les deux vérifications sont cochées.',
+    'auditor.audit.guide.people.how':
+        'Comparez la pièce d’identité de chaque personne à l’extrait du registre RDB. Confirmez que les profils de direction fournis correspondent aux personnes rencontrées.',
+    'auditor.audit.guide.registration.do':
+        'Vérifiez le certificat d’immatriculation et notez la date d’expiration de l’attestation fiscale.',
+    'auditor.audit.guide.registration.enter':
+        'La date d’expiration de l’attestation fiscale telle qu’écrite sur le certificat. Par exemple 31 mars 2027.',
+    'auditor.audit.guide.registration.done':
+        'Le certificat est coché comme vérifié et une date est saisie.',
+    'auditor.audit.guide.registration.how':
+        'Le nom et le code de la société sur le certificat RDB doivent correspondre au dossier. Lisez l’expiration sur l’attestation fiscale de la RRA.',
+    'auditor.audit.guide.trading.do':
+        'Notez le mois où l’entreprise a commencé son activité.',
+    'auditor.audit.guide.trading.enter':
+        'Un mois et une année. Par exemple juin 2021.',
+    'auditor.audit.guide.trading.done': 'Un mois est saisi.',
+    'auditor.audit.guide.trading.how':
+        'Utilisez la facture, le relevé ou la licence commerciale la plus ancienne que vous voyez, pas la date d’immatriculation si l’activité a commencé plus tard.',
+    'auditor.audit.guide.drawings.do':
+        'Notez ce que les propriétaires ont retiré de l’entreprise ce mois-ci.',
+    'auditor.audit.guide.drawings.enter':
+        'Un montant en francs entiers. Par exemple 150000. Saisissez 0 si rien n’a été retiré.',
+    'auditor.audit.guide.drawings.done':
+        'Un montant est saisi, même s’il vaut 0.',
+    'auditor.audit.guide.drawings.how':
+        'Cherchez les virements et les espèces pris par les propriétaires dans les relevés et le livre de caisse. Comptez les salaires des propriétaires seulement s’ils ne sont pas sur la paie.',
+    'auditor.audit.guide.loans.do':
+        'Listez chaque prêt que l’entreprise doit à quelqu’un d’autre que Rozine.',
+    'auditor.audit.guide.loans.enter':
+        'Pour chaque prêt : le prêteur, le montant restant dû et la mensualité, en francs entiers. Par exemple Bank of Kigali, 2400000 et 200000.',
+    'auditor.audit.guide.loans.done':
+        'Chaque prêt a un prêteur et un montant restant dû. Une entreprise sans autre prêt continue avec une liste vide.',
+    'auditor.audit.guide.loans.how':
+        'Interrogez le propriétaire et cherchez des remboursements réguliers dans les relevés. Lisez les montants dans le contrat de prêt ou le dernier relevé du prêteur.',
+    'auditor.audit.guide.differences.do':
+        'Attribuez un montant à chaque cause de l’écart d’espèces jusqu’à ce qu’il ne reste rien à expliquer.',
+    'auditor.audit.guide.differences.enter':
+        'Des francs entiers par cause. Par exemple 20000 pour des dépenses personnelles et 6000 pour une erreur de saisie.',
+    'auditor.audit.guide.differences.done':
+        'Les montants égalent l’écart entier, au franc près. Un mois sans écart n’a rien à expliquer.',
+    'auditor.audit.guide.differences.how':
+        'Interrogez le propriétaire sur chaque écart et vérifiez-le dans le registre ou les reçus. Utilisez seulement les causes listées ; les montants sont scellés avec le constat sur les espèces.',
+    'auditor.differences.title': 'Expliquer l’écart',
+    'auditor.differences.lead':
+        'Répartissez l’écart entre les espèces comptées et les relevés selon ses causes, au franc près.',
+    'auditor.differences.lead_none':
+        'Les espèces comptées correspondent aux relevés : il n’y a rien à expliquer.',
+    'auditor.differences.reported': 'Relevés',
+    'auditor.differences.observed': 'Compté',
+    'auditor.differences.difference': 'Écart',
+    'auditor.differences.unavailable': 'Indisponible',
+    'auditor.differences.causes': 'Causes',
+    'auditor.differences.amount': 'Montant pour {cause}',
+    'auditor.differences.balanced': 'L’écart entier est expliqué.',
+    'auditor.differences.left': 'Reste {amount} à expliquer.',
+    'auditor.differences.over':
+        '{amount} de plus que l’écart. Réduisez un montant.',
+    'auditor.differences.cause.unrecorded_sales': 'Ventes non enregistrées',
+    'auditor.differences.cause.unproven_expense': 'Dépense sans justificatif',
+    'auditor.differences.cause.personal_spending':
+        'Dépenses personnelles sur l’entreprise',
+    'auditor.differences.cause.wrong_month': 'Enregistré dans le mauvais mois',
+    'auditor.differences.cause.entry_error': 'Erreur de saisie',
+    'auditor.differences.cause.counted_twice': 'Compté deux fois',
+    'auditor.cash_sales.title': 'Ventes en espèces non versées',
+    'auditor.cash_sales.lead':
+        'Les espèces encaissées ce mois-ci qui n’ont jamais atteint un compte bancaire ou mobile money, d’après le cahier des ventes et les reçus.',
+    'auditor.cash_sales.amount': 'Non versé ce mois-ci',
+    'auditor.cash_sales.hint':
+        'Saisissez 0 si toutes les ventes en espèces ont été versées.',
+    'auditor.costs.title': 'Charges',
+    'auditor.costs.lead':
+        'Les charges du mois dans les six catégories que l’entreprise utilise aussi pour ses chiffres mensuels.',
+    'auditor.costs.category.stock': 'Stock et fournitures',
+    'auditor.costs.category.staff': 'Personnel',
+    'auditor.costs.category.premises': 'Locaux',
+    'auditor.costs.category.transport': 'Transport',
+    'auditor.costs.category.taxes': 'Impôts et frais',
+    'auditor.costs.category.other': 'Autres',
+    'auditor.costs.total': 'Total des charges',
+    'auditor.costs.hint':
+        'Saisissez 0 pour une catégorie sans charge ce mois-ci.',
+    'auditor.history.title': 'Historique d’activité',
+    'auditor.history.lead':
+        'Les entrées et sorties vérifiées des {count} derniers mois, du plus récent au plus ancien.',
+    'auditor.history.none': 'Aucun historique vérifié n’est encore au dossier.',
+    'auditor.history.month': 'Mois',
+    'auditor.history.in': 'Entrées (RWF)',
+    'auditor.history.out': 'Sorties (RWF)',
+    'auditor.history.checked':
+        'J’ai comparé chaque mois aux relevés et ils correspondent.',
+    'auditor.premises.title': 'Locaux et actifs',
+    'auditor.premises.lead':
+        'Qui détient les locaux, et les principaux actifs utilisés pour l’activité.',
+    'auditor.premises.tenure': 'Les locaux sont',
+    'auditor.premises.tenure.owned': 'Propriété de l’entreprise',
+    'auditor.premises.tenure.rented': 'Loués',
+    'auditor.premises.tenure.shared': 'Partagés avec une autre entreprise',
+    'auditor.premises.assets': 'Principaux actifs',
+    'auditor.premises.none':
+        'Aucun actif listé. Continuez si l’entreprise n’en utilise aucun.',
+    'auditor.premises.item': 'Actif {number}',
+    'auditor.premises.asset': 'Description',
+    'auditor.premises.value': 'Valeur estimée (RWF)',
+    'auditor.premises.remove': 'Retirer l’actif {number}',
+    'auditor.premises.add': 'Ajouter un actif',
+    'auditor.people.title': 'Administrateurs, propriétaires et direction',
+    'auditor.people.lead':
+        'Vérifiez qui possède et dirige l’entreprise avant sa première mise en ligne.',
+    'auditor.people.owners_confirmed':
+        'J’ai vérifié la pièce d’identité de chaque administrateur et propriétaire auprès du registre RDB.',
+    'auditor.people.management_confirmed':
+        'Les profils de direction correspondent aux personnes rencontrées.',
+    'auditor.registration.title': 'Immatriculation et fiscalité',
+    'auditor.registration.lead':
+        'Le certificat RDB et l’attestation fiscale de la RRA, tels que vous les avez vus.',
+    'auditor.registration.confirmed':
+        'Le certificat RDB correspond au nom et au code de l’entreprise.',
+    'auditor.registration.no_tax':
+        'L’entreprise n’a pas d’attestation de régularité fiscale',
+    'auditor.registration.tax': 'Expiration de l’attestation fiscale',
+    'auditor.trading.title': 'Date de début d’activité',
+    'auditor.trading.lead':
+        'Le mois où l’entreprise a commencé son activité, d’après ses plus anciens documents.',
+    'auditor.trading.since': 'En activité depuis',
+    'auditor.drawings.title': 'Prélèvements des propriétaires',
+    'auditor.drawings.lead':
+        'Ce que les propriétaires ont retiré de l’entreprise ce mois-ci, d’après les relevés et le livre de caisse.',
+    'auditor.drawings.amount': 'Retiré par les propriétaires ce mois-ci',
+    'auditor.drawings.hint':
+        'Saisissez 0 si les propriétaires n’ont rien retiré.',
+    'auditor.loans.title': 'Autres prêts',
+    'auditor.loans.lead':
+        'Chaque prêt que l’entreprise doit à quelqu’un d’autre que Rozine, d’après le contrat ou le relevé du prêteur.',
+    'auditor.loans.none':
+        'Aucun autre prêt noté. Continuez si l’entreprise ne doit rien à personne d’autre.',
+    'auditor.loans.item': 'Prêt {number}',
+    'auditor.loans.lender': 'Prêteur',
+    'auditor.loans.outstanding': 'Restant dû (RWF)',
+    'auditor.loans.monthly_payment': 'Mensualité (RWF)',
+    'auditor.loans.remove': 'Retirer le prêt {number}',
+    'auditor.loans.add': 'Ajouter un prêt',
+    'auditor.audit.guide.staff.do':
+        'Notez combien de personnes l’entreprise emploie, d’après la déclaration RSSB.',
+    'auditor.audit.guide.staff.enter':
+        'Un nombre entier. Par exemple 6. Saisissez 0 si personne n’est employé.',
+    'auditor.audit.guide.staff.done':
+        'Un nombre est saisi et la page de totaux RSSB est vérifiée.',
+    'auditor.audit.guide.staff.how':
+        'Demandez la dernière déclaration RSSB et lisez le total sur sa page récapitulative. Demandez au propriétaire de masquer les noms ; Rozine ne collecte jamais de données sur les employés.',
+    'auditor.audit.guide.expiries.do':
+        'Notez quand expirent les attestations de quitus fiscal et RSSB.',
+    'auditor.audit.guide.expiries.enter':
+        'Deux dates, telles qu’imprimées sur chaque attestation. Par exemple 31/03/2027.',
+    'auditor.audit.guide.expiries.done':
+        'Les deux dates sont saisies, même si l’une est déjà passée.',
+    'auditor.audit.guide.expiries.how':
+        'Lisez chaque date sur l’attestation elle-même, pas d’après le propriétaire. Une attestation expirée est notée telle que vous l’avez vue.',
+    'auditor.audit.guide.loan_use.do':
+        'Indiquez comment les fonds du prêt Rozine ont été utilisés ce mois-ci.',
+    'auditor.audit.guide.loan_use.enter':
+        'Choisissez comme prévu, en partie ou pas comme prévu. Sauf « comme prévu », ajoutez une ligne, par exemple : une partie a payé le loyer d’octobre.',
+    'auditor.audit.guide.loan_use.done':
+        'Une réponse est choisie, avec une ligne indiquant où sont allés les fonds s’ils n’ont pas servi comme prévu.',
+    'auditor.audit.guide.loan_use.how':
+        'Comparez ce que les fonds ont payé avec l’usage annoncé dans le prospectus. Vérifiez les reçus ou relevés des paiements les plus importants.',
+    'auditor.audit.guide.changes.do':
+        'Posez quatre questions sur les changements depuis la dernière visite.',
+    'auditor.audit.guide.changes.enter':
+        'Oui ou non pour chacun : un nouveau prêt, un changement de dirigeant, un changement de propriétaires, une action en justice.',
+    'auditor.audit.guide.changes.done': 'Chaque question a un oui ou un non.',
+    'auditor.audit.guide.changes.how':
+        'Posez simplement chaque question au propriétaire et vérifiez l’extrait du registre ou les contrats de prêt quand c’est possible. Un oui est scellé avec le rapport.',
+    'auditor.staff.title': 'Effectif',
+    'auditor.staff.lead':
+        'Combien de personnes l’entreprise emploie, d’après la page de totaux RSSB.',
+    'auditor.staff.count': 'Personnes employées',
+    'auditor.staff.rssb_checked':
+        'J’ai vérifié ce nombre sur la page de totaux RSSB, noms masqués.',
+    'auditor.expiries.title': 'Échéances fiscales et RSSB',
+    'auditor.expiries.lead':
+        'La date d’expiration imprimée sur chaque attestation.',
+    'auditor.expiries.tax': 'Quitus fiscal expire le',
+    'auditor.expiries.rssb': 'Attestation RSSB expire le',
+    'auditor.loan_use.title': 'Usage des fonds du prêt',
+    'auditor.loan_use.lead':
+        'Les fonds du prêt Rozine ont-ils servi à ce que prévoyait le prospectus ?',
+    'auditor.loan_use.option.as_planned': 'Comme prévu',
+    'auditor.loan_use.option.partly': 'En partie comme prévu',
+    'auditor.loan_use.option.not_as_planned': 'Pas comme prévu',
+    'auditor.loan_use.note': 'Note (facultative)',
+    'auditor.loan_use.note_required': 'Où sont allés les fonds ?',
+    'auditor.changes.title': 'Changements',
+    'auditor.changes.lead':
+        'L’un de ces points a-t-il changé depuis la dernière visite ?',
+    'auditor.changes.kind.new_debt': 'Un nouveau prêt ou une nouvelle dette',
+    'auditor.changes.kind.director_change': 'Un changement de dirigeant',
+    'auditor.changes.kind.ownership_change':
+        'Un changement de propriétaires ou d’actionnaires',
+    'auditor.changes.kind.legal_claim':
+        'Une action en justice contre l’entreprise',
+    'auditor.changes.yes': 'Oui',
+    'auditor.changes.no': 'Non',
+    'auditor.audit.guide.seal.do':
+        'Vérifiez le résultat, puis scellez avec votre code d’authentification.',
+    'auditor.audit.guide.seal.enter':
+        'Le code à six chiffres de votre application d’authentification.',
+    'auditor.audit.guide.seal.done':
+        'Toutes les étapes précédentes sont terminées. Le scellement reste désactivé jusque-là.',
+    'auditor.audit.guide.seal.how':
+        'Relisez les constats. Une fois scellé, le rapport est figé sous votre licence et l’entreprise a 24 heures pour le contester.',
     'auditor.receipt.title': 'Conflit enregistré',
     'auditor.receipt.body.reassignment_pending':
         "Votre conflit a été enregistré. Le travail sur cette mission est arrêté pendant que les Opérations d'audit organisent la réattribution.",
