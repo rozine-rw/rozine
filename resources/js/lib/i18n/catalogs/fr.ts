@@ -1477,6 +1477,10 @@ const fr: Catalog = {
         'Le délai pour cosigner ou contester un rapport se termine',
     'admin.messaging.trigger.business.reporting_window_open':
         'Un audit mensuel s’ouvre pour une entreprise ayant une note active',
+    'admin.messaging.trigger.business.visit_ready_open':
+        'La liste de préparation de la visite s’ouvre 14 jours avant une échéance',
+    'admin.messaging.trigger.business.visit_ready_reminder':
+        'Des éléments de la liste ne sont pas cochés 11 jours avant une échéance',
     'admin.messaging.trigger.auditor.accreditation_approved':
         'L’accréditation est approuvée',
     'admin.messaging.trigger.auditor.accreditation_rejected':
@@ -7068,6 +7072,14 @@ const fr: Catalog = {
         'Audit mensuel ouvert',
     'investor.notices.business.reporting_window_open.body':
         "Votre audit de {month} a commencé. Préparez les relevés et registres du mois pour que votre partenaire d'audit les vérifie et scelle le rapport d'ici le {date}. Vous le cosignez ensuite ou le contestez.",
+    'investor.notices.business.visit_ready_open.title':
+        'Préparez la visite de ce mois',
+    'investor.notices.business.visit_ready_open.body':
+        'Votre remboursement est dû le {date}. Votre Audit Partner demandera {items} éléments lors de la visite de ce mois ; la liste sur votre page Remboursements indique ce qu’est chacun et où l’obtenir.',
+    'investor.notices.business.visit_ready_reminder.title':
+        'Liste de visite incomplète',
+    'investor.notices.business.visit_ready_reminder.body':
+        '{open} éléments sur {items} ne sont pas encore cochés pour le remboursement dû le {date}. Cochez chacun dès qu’il est prêt pour la visite de votre Audit Partner.',
     'investor.notices.business.raise_expired.title':
         'Levée clôturée sans financement complet',
     'investor.notices.business.raise_expired.body':

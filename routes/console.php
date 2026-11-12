@@ -18,6 +18,8 @@ Schedule::command('audits:request-flash')->hourly()->withoutOverlapping(30);
 
 Schedule::command('auditors:remind-renewals')->hourly()->withoutOverlapping(30);
 
+Schedule::command('business:remind-visit-ready')->hourly()->withoutOverlapping(30);
+
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');

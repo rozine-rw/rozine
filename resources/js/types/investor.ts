@@ -1691,6 +1691,14 @@ export type InvestorNotice = {
           facts: { period: string; closes_at: string };
       }
     | {
+          kind: 'business.visit_ready_open';
+          facts: { due_on: string; items: string };
+      }
+    | {
+          kind: 'business.visit_ready_reminder';
+          facts: { due_on: string; open: string; items: string };
+      }
+    | {
           kind: 'business.raise_funded';
           facts: {
               currency: 'RWF';

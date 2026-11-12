@@ -91,6 +91,20 @@ describe('Business Home', () => {
         expect(items[10]).toHaveTextContent(
             "Monthly audit openYour September 2026 audit has started. Have the month's statements and records ready so your Audit Partner can verify them and seal the audit report by",
         );
+        expect(
+            within(panel).getByRole('button', {
+                name: /Visit checklist not finished/u,
+            }),
+        ).toHaveTextContent(
+            'Visit checklist not finished3 of 12 checklist items are still not ticked for the repayment due on 15 Sept 2026. Tick each one off when it is ready for your Audit Partner’s visit.',
+        );
+        expect(
+            within(panel).getByRole('button', {
+                name: /Get ready for this month’s visit/u,
+            }),
+        ).toHaveTextContent(
+            'Get ready for this month’s visitYour repayment is due on 15 Sept 2026. Your Audit Partner will ask for 12 things on this month’s visit; the checklist on your Repayments page says what each one is and where to get it.',
+        );
 
         await user.click(
             within(panel).getByRole('button', { name: 'Close notifications' }),

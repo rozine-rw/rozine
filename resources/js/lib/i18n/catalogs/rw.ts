@@ -1463,6 +1463,10 @@ const rw: Catalog = {
         'Igihe cyo gusinya cyangwa kujuririra raporo kirarangiye',
     'admin.messaging.trigger.business.reporting_window_open':
         'Igenzura ry’ukwezi ritangiye ku kigo gifite inoti ikora',
+    'admin.messaging.trigger.business.visit_ready_open':
+        'Urutonde rwo kwitegura isura rufunguka iminsi 14 mbere y’igice cyo kwishyura',
+    'admin.messaging.trigger.business.visit_ready_reminder':
+        'Ibintu by’urutonde bitarashyirwaho akamenyetso iminsi 11 mbere y’igice cyo kwishyura',
     'admin.messaging.trigger.auditor.accreditation_approved':
         'Uruhushya rwemejwe',
     'admin.messaging.trigger.auditor.accreditation_rejected':
@@ -7036,6 +7040,14 @@ const rw: Catalog = {
         "Igenzura ry'ukwezi ryatangiye",
     'investor.notices.business.reporting_window_open.body':
         "Igenzura rya {month} ryatangiye. Tegura inyandiko za konti n'ibitabo by'ukwezi kugira ngo umugenzuzi wawe abisuzume kandi ashyire kashe kuri raporo bitarenze {date}. Hanyuma uyisinye cyangwa uyijurire.",
+    'investor.notices.business.visit_ready_open.title':
+        'Itegure isura y’uku kwezi',
+    'investor.notices.business.visit_ready_open.body':
+        'Kwishyura kwawe kugomba kuba ku wa {date}. Audit Partner wawe azasaba ibintu {items} mu isura y’uku kwezi; urutonde ruri ku rupapuro rwawe rwo Kwishyura rusobanura buri kimwe n’aho wakibona.',
+    'investor.notices.business.visit_ready_reminder.title':
+        'Urutonde rw’isura ntirurarangira',
+    'investor.notices.business.visit_ready_reminder.body':
+        'Ibintu {open} kuri {items} by’urutonde ntibirashyirwaho akamenyetso ku kwishyura kugomba kuba ku wa {date}. Shyira akamenyetso kuri buri kimwe nikimara kwitegura isura ya Audit Partner wawe.',
     'investor.notices.business.raise_expired.title':
         'Ubukangurambaga bwarangiye budashyitse',
     'investor.notices.business.raise_expired.body':

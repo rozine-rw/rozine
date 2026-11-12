@@ -1391,6 +1391,10 @@ const en = {
         'The window to co-sign or dispute a report is closing',
     'admin.messaging.trigger.business.reporting_window_open':
         'A monthly audit opens for a business with a live note',
+    'admin.messaging.trigger.business.visit_ready_open':
+        'The visit-ready checklist opens 14 days before an instalment',
+    'admin.messaging.trigger.business.visit_ready_reminder':
+        'Checklist items are still not ticked 11 days before an instalment',
     'admin.messaging.trigger.auditor.accreditation_approved':
         'Accreditation is approved',
     'admin.messaging.trigger.auditor.accreditation_rejected':
@@ -6755,6 +6759,14 @@ const en = {
         'Monthly audit open',
     'investor.notices.business.reporting_window_open.body':
         "Your {month} audit has started. Have the month's statements and records ready so your Audit Partner can verify them and seal the audit report by {date}. You then co-sign it or raise a dispute.",
+    'investor.notices.business.visit_ready_open.title':
+        'Get ready for this month’s visit',
+    'investor.notices.business.visit_ready_open.body':
+        'Your repayment is due on {date}. Your Audit Partner will ask for {items} things on this month’s visit; the checklist on your Repayments page says what each one is and where to get it.',
+    'investor.notices.business.visit_ready_reminder.title':
+        'Visit checklist not finished',
+    'investor.notices.business.visit_ready_reminder.body':
+        '{open} of {items} checklist items are still not ticked for the repayment due on {date}. Tick each one off when it is ready for your Audit Partner’s visit.',
     'investor.notices.business.raise_expired.title':
         'Raise closed without full funding',
     'investor.notices.business.raise_expired.body':
