@@ -3325,6 +3325,8 @@ const en = {
     'auditor.audit.step.people': 'People',
     'auditor.audit.step.registration': 'Registration',
     'auditor.audit.step.trading': 'Trading start',
+    'auditor.audit.step.available': 'Money now',
+    'auditor.audit.step.reason': 'Reason',
     'auditor.audit.step.drawings': 'Drawings',
     'auditor.audit.step.loans': 'Other loans',
     'auditor.audit.step.differences': 'Differences',
@@ -5539,6 +5541,21 @@ const en = {
     'auditor.audit.guide.trading.done': 'A month is entered.',
     'auditor.audit.guide.trading.how':
         'Use the earliest invoice, statement or trading licence you can see, not the registration date if trading began later.',
+    'auditor.audit.guide.available.do':
+        'Ask to see every cash box, bank and mobile-money balance the business could pay from today.',
+    'auditor.audit.guide.available.enter':
+        'The total available now, in whole francs.',
+    'auditor.audit.guide.available.done':
+        'Every proof you saw is ticked and the total is entered.',
+    'auditor.audit.guide.available.how':
+        'Count cash yourself and read balances on the live app or a same-day statement, not a printout from earlier.',
+    'auditor.audit.guide.reason.do':
+        'Ask why the repayment is late and pick the one reason that fits best.',
+    'auditor.audit.guide.reason.enter':
+        'One reason from the list, and a short note if it is Other.',
+    'auditor.audit.guide.reason.done': 'A reason is chosen.',
+    'auditor.audit.guide.reason.how':
+        'Record what you were told and saw. Do not agree a plan, a new date or any discount: nothing is negotiated on this visit.',
     'auditor.audit.guide.drawings.do':
         'Record what the owners took out of the business this month.',
     'auditor.audit.guide.drawings.enter':
@@ -5642,6 +5659,24 @@ const en = {
     'auditor.trading.lead':
         'The month the business began trading, from its earliest records.',
     'auditor.trading.since': 'Trading since',
+    'auditor.available.title': 'Money available now',
+    'auditor.available.lead':
+        'The repayment is 7 days late. Record what the business could pay with today.',
+    'auditor.available.amount': 'Available now',
+    'auditor.available.hint':
+        'Cash on hand plus bank and mobile-money balances. Enter 0 if there is none.',
+    'auditor.late_reason.title': 'Why it is late',
+    'auditor.late_reason.lead':
+        'Choose the reason that fits best. Nothing is negotiated on this visit.',
+    'auditor.late_reason.option.sales_fell': 'Sales fell',
+    'auditor.late_reason.option.customers_owe': 'Customers have not paid',
+    'auditor.late_reason.option.unexpected_cost': 'An unexpected cost',
+    'auditor.late_reason.option.stock_bought': 'Money went on stock',
+    'auditor.late_reason.option.owner_away': 'Owner away or unwell',
+    'auditor.late_reason.option.trading_stopped': 'Trading has stopped',
+    'auditor.late_reason.option.other': 'Other',
+    'auditor.late_reason.note': 'Note (optional)',
+    'auditor.late_reason.note_required': 'Say what happened',
     'auditor.drawings.title': 'Owner drawings',
     'auditor.drawings.lead':
         'What the owners took out of the business this month, from the statements and the cash book.',

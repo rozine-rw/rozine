@@ -629,6 +629,25 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         });
     }
 
+    public function requestArrears(string $businessId, string $instalmentId): ?string
+    {
+        return $this->scope(null, null, $businessId, true, function (array $context, array $candidates) use ($businessId, $instalmentId): ?string {
+            $existing = AuditAssignment::query()->where('business_id', $businessId)->orderByDesc('id')->lockForUpdate()->first();
+            $candidates = $this->finish($existing, null, $candidates, $context);
+            $visited = AuditAssignment::query()->where('business_id', $businessId)->get(['id', 'state'])
+                ->contains(fn (AuditAssignment $record): bool => ($record->state['arrears_instalment'] ?? null) === $instalmentId);
+            if (($existing !== null && ! self::finished($existing)) || $visited) {
+                return null;
+            }
+            $record = new AuditAssignment;
+            $record->forceFill(['business_id' => $businessId, 'revision' => 0]);
+            $state = [...$this->states->start('flash', now()->toDateTimeImmutable(), AuditEngagementState::PURPOSE_ARREARS), 'arrears_instalment' => $instalmentId];
+            $this->persist($record, $this->offer($state, $context, $candidates), null, 'audit.assignment.schedule', 'Late visit: a repayment is 7 days overdue.', $candidates, $context);
+
+            return $record->id;
+        });
+    }
+
     /** @return array<string, mixed> */
     public function advance(int $actorId, string $assignmentId, int $expectedRevision, string $requestId): array
     {

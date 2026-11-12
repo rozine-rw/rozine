@@ -835,6 +835,8 @@ export type FlashStep =
     | 'people'
     | 'registration'
     | 'trading'
+    | 'available'
+    | 'reason'
     | 'photos'
     | 'ledger'
     | 'seal';
@@ -1095,6 +1097,30 @@ export type TradingStage = {
     trading_since: string | null;
 };
 
+/** The money a late business could pay with now, and the financial proof seen (BRS v3 VIS-R02). */
+export type AvailableStage = {
+    step: 'available';
+    cash_available: Money | null;
+    financial_proofs: ProofItem[];
+};
+
+/** Why a repayment is late, from the fixed list of a late visit (BRS v3 VIS-R02). */
+export type LateReason =
+    | 'sales_fell'
+    | 'customers_owe'
+    | 'unexpected_cost'
+    | 'stock_bought'
+    | 'owner_away'
+    | 'trading_stopped'
+    | 'other';
+
+export type LateReasonStage = {
+    step: 'reason';
+    reasons: LateReason[];
+    late_reason: LateReason | null;
+    late_reason_note: string;
+};
+
 /** The month's cash sales that were never deposited (BRS v3 VIS-R01 step 4). */
 export type CashSalesStage = {
     step: 'cash_sales';
@@ -1305,6 +1331,8 @@ export type AuditStage =
     | PeopleStage
     | RegistrationStage
     | TradingStage
+    | AvailableStage
+    | LateReasonStage
     | CashSalesStage
     | CostsStage
     | DrawingsStage

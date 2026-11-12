@@ -3467,6 +3467,8 @@ const rw: Catalog = {
     'auditor.audit.step.people': 'Abantu',
     'auditor.audit.step.registration': 'Iyandikwa',
     'auditor.audit.step.trading': 'Itangira ry’ubucuruzi',
+    'auditor.audit.step.available': 'Amafaranga ahari',
+    'auditor.audit.step.reason': 'Impamvu',
     'auditor.audit.step.drawings': 'Ibyafashwe na ba nyirabwo',
     'auditor.audit.step.loans': 'Indi myenda',
     'auditor.audit.step.differences': 'Itandukaniro',
@@ -5744,6 +5746,21 @@ const rw: Catalog = {
     'auditor.audit.guide.trading.done': 'Ukwezi kwanditswe.',
     'auditor.audit.guide.trading.how':
         'Koresha inyemezabuguzi, raporo ya konti cyangwa uruhushya rw’ubucuruzi rwa kera ubona, aho kuba itariki y’iyandikwa niba ubucuruzi bwaratangiye nyuma.',
+    'auditor.audit.guide.available.do':
+        'Saba kureba buri sanduku y’amafaranga na buri konti ya banki cyangwa mobile money ubucuruzi bwakwishyuramo uyu munsi.',
+    'auditor.audit.guide.available.enter':
+        'Igiteranyo gihari ubu, mu mafaranga yuzuye.',
+    'auditor.audit.guide.available.done':
+        'Buri gihamya wabonye cyashyizweho akamenyetso kandi igiteranyo cyanditswe.',
+    'auditor.audit.guide.available.how':
+        'Bara amafaranga ubwawe kandi usome amafaranga ari kuri konti muri porogaramu cyangwa kuri raporo y’uwo munsi, si ku mpapuro zacapwe mbere.',
+    'auditor.audit.guide.reason.do':
+        'Baza impamvu kwishyura byatinze uhitemo impamvu imwe ihuye neza.',
+    'auditor.audit.guide.reason.enter':
+        'Impamvu imwe yo ku rutonde, n’inyandiko ngufi niba ari Ibindi.',
+    'auditor.audit.guide.reason.done': 'Impamvu yatoranyijwe.',
+    'auditor.audit.guide.reason.how':
+        'Andika ibyo wabwiwe n’ibyo wabonye. Ntukemere gahunda, itariki nshya cyangwa igabanywa: nta mishyikirano ibera muri uru ruzinduko.',
     'auditor.audit.guide.drawings.do':
         'Andika ibyo ba nyir’ubucuruzi bakuyemo muri uku kwezi.',
     'auditor.audit.guide.drawings.enter':
@@ -5849,6 +5866,25 @@ const rw: Catalog = {
     'auditor.trading.lead':
         'Ukwezi ubucuruzi bwatangiriyeho gukora, bikurikijwe inyandiko zabwo za mbere.',
     'auditor.trading.since': 'Bukora kuva',
+    'auditor.available.title': 'Amafaranga ahari ubu',
+    'auditor.available.lead':
+        'Kwishyura byatinze iminsi 7. Andika ibyo ubucuruzi bwakwishyuza uyu munsi.',
+    'auditor.available.amount': 'Ahari ubu',
+    'auditor.available.hint':
+        'Amafaranga mu ntoki hiyongereyeho ari kuri banki na mobile money. Andika 0 niba nta yo.',
+    'auditor.late_reason.title': 'Impamvu byatinze',
+    'auditor.late_reason.lead':
+        'Hitamo impamvu ihuye neza. Nta mishyikirano ibera muri uru ruzinduko.',
+    'auditor.late_reason.option.sales_fell': 'Ibicuruzwa byagabanutse',
+    'auditor.late_reason.option.customers_owe': 'Abakiriya ntibarishyura',
+    'auditor.late_reason.option.unexpected_cost': 'Ikiguzi kitari giteganyijwe',
+    'auditor.late_reason.option.stock_bought':
+        'Amafaranga yaguzwemo ibicuruzwa',
+    'auditor.late_reason.option.owner_away': 'Nyirabwo ntahari cyangwa arwaye',
+    'auditor.late_reason.option.trading_stopped': 'Ubucuruzi bwarahagaze',
+    'auditor.late_reason.option.other': 'Ibindi',
+    'auditor.late_reason.note': 'Inyandiko (si ngombwa)',
+    'auditor.late_reason.note_required': 'Vuga ibyabaye',
     'auditor.drawings.title': 'Ibyafashwe na ba nyirabwo',
     'auditor.drawings.lead':
         'Ibyo ba nyir’ubucuruzi bakuyemo muri uku kwezi, ukurikije raporo n’igitabo cy’amafaranga.',

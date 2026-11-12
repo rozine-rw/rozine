@@ -27,7 +27,9 @@ final class AuditSealingFixture
     /** @return array<string, mixed> */
     public static function ready(int $signatories = 1, string $kind = 'flash', bool $findings = false, ?int $requiredSignatories = null, bool $recordConsent = true): array
     {
-        $fixture = BusinessQuoteFixture::ready($signatories, $kind === 'flash' ? 'flash' : 'routine', $requiredSignatories, $recordConsent);
+        $fixture = BusinessQuoteFixture::ready($signatories, match ($kind) {
+            'flash' => 'flash', 'late' => 'arrears', default => 'routine',
+        }, $requiredSignatories, $recordConsent);
         $acceptance = BusinessQuoteFixture::acceptance($fixture);
         for ($index = 0; $index < ($requiredSignatories ?? $signatories); $index++) {
             BusinessQuoteFixture::submit($fixture, $acceptance, $index);
@@ -40,17 +42,20 @@ final class AuditSealingFixture
         $started = app(StartAuditReport::class)->handle($user->id, 1, $fixture['assignment']->id, $fixture['assignment']->refresh()->revision,
             $fixture['application']->id, $fixture['application']->refresh()->revision, (string) Str::uuid());
         $report = AuditReport::query()->whereKey($started['data']['audit_id'])->firstOrFail();
-        $steps = $kind === 'flash'
-            ? ['review' => [], 'check_in' => [], ...self::baseline($report), 'photos' => ['titles' => ['extra-1' => 'Stock room']],
-                'ledger' => ['observed_stock' => $findings ? '37000000' : '38000000', 'reconciled' => true]]
-            : ['statements' => [], 'count' => ['cash' => $findings ? '108000001' : '108000000', 'stock_units' => '190',
+        $steps = match ($kind) {
+            'late' => ['review' => [], 'check_in' => [], 'available' => ['cash_available' => $findings ? '0' : '450000', 'financial_proofs' => ['bank', 'momo']],
+                'reason' => ['late_reason' => 'customers_owe', 'late_reason_note' => '']],
+            'flash' => ['review' => [], 'check_in' => [], ...self::baseline($report), 'photos' => ['titles' => ['extra-1' => 'Stock room']],
+                'ledger' => ['observed_stock' => $findings ? '37000000' : '38000000', 'reconciled' => true]],
+            default => ['statements' => [], 'count' => ['cash' => $findings ? '108000001' : '108000000', 'stock_units' => '190',
                 'operational_status' => 'active', 'financial_proofs' => ['bank', 'momo'], 'inventory_proofs' => ['photo']],
                 'cash_sales' => ['undeposited_cash_sales' => '15000'], 'costs' => ['costs' => ['stock' => '400000', 'staff' => '250000', 'premises' => '80000', 'transport' => '30000', 'taxes' => '20000', 'other' => '0']],
                 'drawings' => ['owner_drawings' => '0'], 'loans' => ['loans' => []],
                 'differences' => ['explanations' => $findings ? [['cause' => 'entry_error', 'amount' => '1']] : []],
                 'staff' => ['staff_count' => '6', 'rssb_checked' => true], 'expiries' => ['tax_clearance_expires_on' => '2027-03-31', 'rssb_clearance_expires_on' => '2027-06-30'],
                 'loan_use' => ['loan_use' => 'as_planned', 'loan_use_note' => ''], 'changes' => ['changes' => ['new_debt' => false, 'director_change' => false, 'ownership_change' => false, 'legal_claim' => false]],
-                'photos' => ['titles' => ['extra-1' => 'Stock room']]];
+                'photos' => ['titles' => ['extra-1' => 'Stock room']]],
+        };
         if ($findings) {
             $steps['seal'] = ['note' => 'Observed difference retained for review.'];
         }

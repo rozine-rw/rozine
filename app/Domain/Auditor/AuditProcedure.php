@@ -34,6 +34,12 @@ final class AuditProcedure
     /** At most this many business assets are recorded on a baseline visit. */
     public const int MAX_ASSETS = 10;
 
+    /**
+     * Why a repayment is a week late, from a fixed list (BRS v3 VIS-R02 late visit). Nothing is
+     * negotiated on the visit, so there is no plan or promise field; "other" needs a short note.
+     */
+    public const array LATE_REASONS = ['sales_fell', 'customers_owe', 'unexpected_cost', 'stock_bought', 'owner_away', 'trading_stopped', 'other'];
+
     /** At most this many other loans are recorded on one monthly visit (BRS v3 VIS-R01 step 8). */
     public const int MAX_OTHER_LOANS = 10;
 
@@ -49,7 +55,8 @@ final class AuditProcedure
     /**
      * The steps of a procedure, in fixed order. A baseline is the Flash visit a business gets before
      * its first listing (BRS v3 AUD-R03): the same visit, with the history, premises, people,
-     * registration and trading-start steps VIS-R02 adds.
+     * registration and trading-start steps VIS-R02 adds. A late visit is the Flash visit day 7 of
+     * arrears sends (AUD-R08): check in, the money available now with its proof, the reason, seal.
      *
      * @return list<string>
      */
@@ -58,6 +65,7 @@ final class AuditProcedure
         return match ($kind) {
             'flash' => ['review', 'check_in', 'photos', 'ledger', 'seal'],
             'baseline' => ['review', 'check_in', 'history', 'premises', 'people', 'registration', 'trading', 'photos', 'ledger', 'seal'],
+            'late' => ['review', 'check_in', 'available', 'reason', 'seal'],
             'monthly' => ['statements', 'count', 'cash_sales', 'costs', 'drawings', 'loans', 'differences', 'staff', 'expiries', 'loan_use', 'changes', 'photos', 'seal'],
             default => throw new CommandRejection('AUDIT_PROCEDURE_INVALID', 422),
         };
@@ -103,7 +111,8 @@ final class AuditProcedure
                 || (in_array($step, ['count', 'differences'], true) && ($sources['reported_cash'] === null || $sources['reported_units'] === null))) {
                 return 'AUDIT_DECLARATION_REQUIRED';
             }
-            if ($step === 'count' && ($sources['financial_proofs'] === [] || $sources['inventory_proofs'] === [])) {
+            if (($step === 'count' && ($sources['financial_proofs'] === [] || $sources['inventory_proofs'] === []))
+                || ($step === 'available' && $sources['financial_proofs'] === [])) {
                 return 'AUDIT_PROOFS_REQUIRED';
             }
         } catch (CommandRejection $failure) {
@@ -144,7 +153,8 @@ final class AuditProcedure
         $draft['fields'] = array_intersect_key($draft['fields'], $retained);
         $draft['sources'] = array_intersect_key($draft['sources'] ?? [], $retained);
         $draft['completed_steps'] = $completed;
-        if ($kind !== 'monthly' && $index < array_search('ledger', $steps, true)) {
+        $ledger = array_search('ledger', $steps, true);
+        if ($ledger !== false && $index < $ledger) {
             unset($draft['documents']);
         }
         if ($step === 'seal') {
@@ -192,6 +202,8 @@ final class AuditProcedure
             'people' => ['owners_confirmed', 'management_confirmed'],
             'registration' => ['registration_confirmed', 'tax_clearance_expires_on'],
             'trading' => ['trading_since'],
+            'available' => ['cash_available', 'financial_proofs'],
+            'reason' => ['late_reason', 'late_reason_note'],
             'cash_sales' => ['undeposited_cash_sales'],
             'costs' => ['costs'],
             'drawings' => ['owner_drawings'],
@@ -260,6 +272,18 @@ final class AuditProcedure
 
             return ['trading_since' => $input['trading_since']];
         }
+        if ($step === 'available') {
+            return ['cash_available' => $this->amount($input['cash_available'], 'cash_available'),
+                'financial_proofs' => $this->proofs($input['financial_proofs'], $sources['financial_proofs'], 'financial_proofs')];
+        }
+        if ($step === 'reason') {
+            if (! in_array($input['late_reason'], self::LATE_REASONS, true)) {
+                throw new CommandRejection('AUDIT_STEP_INPUT_INVALID', 422, fieldErrors: ['late_reason' => ['Choose why the repayment is late.']]);
+            }
+
+            return ['late_reason' => $input['late_reason'],
+                'late_reason_note' => trim($this->text($input['late_reason_note'], 'late_reason_note', 200, $input['late_reason'] === 'other'))];
+        }
         if ($step === 'cash_sales') {
             return ['undeposited_cash_sales' => $this->amount($input['undeposited_cash_sales'], 'undeposited_cash_sales')];
         }
@@ -325,7 +349,7 @@ final class AuditProcedure
     private function pins(string $step, array $sources): array
     {
         $required = match ($step) {
-            'check_in', 'premises', 'people', 'registration', 'trading' => ['check_in'],
+            'check_in', 'premises', 'people', 'registration', 'trading', 'available', 'reason' => ['check_in'],
             'photos' => ['photos'],
             'statements', 'history' => ['verification'],
             'ledger', 'count', 'cash_sales', 'costs', 'drawings', 'loans', 'differences', 'staff', 'expiries', 'loan_use', 'changes' => ['verification', 'declaration'],

@@ -68,6 +68,8 @@
         "resources/js/components/auditor/audit/step-staff.tsx",
         "resources/js/components/auditor/audit/step-statements.tsx",
         "resources/js/components/auditor/audit/step-trading.tsx",
+        "resources/js/components/auditor/audit/step-available.tsx",
+        "resources/js/components/auditor/audit/step-late-reason.tsx",
         "resources/js/components/auditor/auditor-shell.tsx",
         "resources/js/components/auditor/availability.tsx",
         "resources/js/components/auditor/clock.tsx",

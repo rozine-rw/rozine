@@ -54,6 +54,7 @@ final class GetAuditProcedure
             'monthly' => ['difference' => $this->procedure->cashDifference($draft, $page['sources']), 'causes' => AuditProcedure::DIFFERENCE_CAUSES,
                 'loans_max' => AuditProcedure::MAX_OTHER_LOANS, 'cost_categories' => AuditProcedure::COST_CATEGORIES, 'loan_uses' => AuditProcedure::LOAN_USES, 'change_kinds' => AuditProcedure::CHANGE_KINDS],
             'baseline' => ['premises_tenures' => AuditProcedure::PREMISES_TENURES, 'assets_max' => AuditProcedure::MAX_ASSETS],
+            'late' => ['late_reasons' => AuditProcedure::LATE_REASONS],
             'unavailable' => $unavailable, 'steps' => array_map(fn (string $step): array => ['key' => $step,
                 'state' => $step === $report['step'] ? 'current' : (in_array($step, $draft['completed_steps'], true) ? 'done' : 'todo')], $steps)];
     }

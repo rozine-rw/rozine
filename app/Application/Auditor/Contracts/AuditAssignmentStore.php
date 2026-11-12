@@ -136,6 +136,13 @@ interface AuditAssignmentStore
      */
     public function requestFlash(string $businessId): ?string;
 
+    /**
+     * Trusted servicing only: dispatches the late visit for an instalment at day 7 of arrears (BRS v3
+     * AUD-R08) and returns the new assignment, or null when an engagement is still open or was closed,
+     * or this instalment already had its visit.
+     */
+    public function requestArrears(string $businessId, string $instalmentId): ?string;
+
     /** @return array<string, mixed> */
     public function advance(int $actorId, string $assignmentId, int $expectedRevision, string $requestId): array;
 
