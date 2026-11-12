@@ -119,24 +119,22 @@ describe('Business Reports', () => {
         now.mockRestore();
 
         expect(
-            screen.getByRole('tab', { name: 'In audit · 2 to co-sign' }),
+            screen.getByRole('tab', { name: 'In audit · 2 to review' }),
         ).toHaveAttribute('aria-selected', 'true');
         const list = within(screen.getByRole('tabpanel', { name: 'In audit' }));
 
         expect(
             list.getByRole('link', { name: /^Flash audit report/ }),
         ).toHaveAttribute('href', '/business/b1/audit-reports/f1');
-        expect(list.getByText('Needs your co-signature')).toBeInTheDocument();
+        expect(list.getByText('Ready for your review')).toBeInTheDocument();
         expect(
             list.getByRole('link', { name: /^September 2026/ }),
         ).toHaveAttribute('href', '/business/b1/audit-reports/m1');
         expect(
-            list.getByText(
-                /^Co-sign or dispute by 26 Oct 2026 · 09:15 · 21 hours left$/u,
-            ),
+            list.getByText(/^Dispute by 26 Oct 2026 · 09:15 · 21 hours left$/u),
         ).toBeInTheDocument();
         /* The pill asks for the co-signature; the report is sealed, not still in audit. */
-        expect(list.getAllByText('Co-sign now')).toHaveLength(2);
+        expect(list.getAllByText('Review now')).toHaveLength(2);
         expect(list.queryByText('In audit')).not.toBeInTheDocument();
     });
 
@@ -164,10 +162,10 @@ describe('Business Reports', () => {
         now.mockRestore();
 
         expect(
-            screen.getByText(/^Co-sign or dispute by 26 Oct 2026 · 09:15$/u),
+            screen.getByText(/^Dispute by 26 Oct 2026 · 09:15$/u),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole('tab', { name: 'In audit · 1 to co-sign' }),
+            screen.getByRole('tab', { name: 'In audit · 1 to review' }),
         ).toBeInTheDocument();
     });
 
@@ -192,7 +190,7 @@ describe('Business Reports', () => {
         render(<BusinessReports {...page} />);
         expect(
             screen.getByText(
-                /^Co-sign or dispute by 26 Oct 2026 · 09:15 · 2 hours left$/u,
+                /^Dispute by 26 Oct 2026 · 09:15 · 2 hours left$/u,
             ),
         ).toBeInTheDocument();
 
@@ -200,16 +198,14 @@ describe('Business Reports', () => {
             vi.advanceTimersByTime(60 * 60_000);
         });
         expect(
-            screen.getByText(
-                /^Co-sign or dispute by 26 Oct 2026 · 09:15 · 1 hour left$/u,
-            ),
+            screen.getByText(/^Dispute by 26 Oct 2026 · 09:15 · 1 hour left$/u),
         ).toBeInTheDocument();
 
         act(() => {
             vi.advanceTimersByTime(60 * 60_000);
         });
         expect(
-            screen.getByText(/^Co-sign or dispute by 26 Oct 2026 · 09:15$/u),
+            screen.getByText(/^Dispute by 26 Oct 2026 · 09:15$/u),
         ).toBeInTheDocument();
         expect(vi.getTimerCount()).toBe(0);
         vi.useRealTimers();
@@ -289,7 +285,7 @@ describe('Business Reports', () => {
         expect(guide.getByText('7th')).toBeInTheDocument();
         expect(
             guide.getByText(
-                /you have 24 hours to review it and co-sign it, or raise a dispute.*If you do neither within 24 hours, the report counts as approved/,
+                /you have 24 hours to review it and, if something is wrong, raise a dispute.*You do not sign it: with no dispute, the report stands/,
             ),
         ).toBeInTheDocument();
     });
@@ -321,7 +317,7 @@ describe('Business Reports', () => {
         ).toBeInTheDocument();
         expect(
             guide.getByText(
-                /you have 24 hours to review it and co-sign it, or raise a dispute/,
+                /you have 24 hours to review it and, if something is wrong, raise a dispute/,
             ),
         ).toBeInTheDocument();
         expect(guide.queryByText(/7th/u)).not.toBeInTheDocument();

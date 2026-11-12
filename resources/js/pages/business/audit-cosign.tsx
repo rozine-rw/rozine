@@ -19,6 +19,7 @@ import {
     ReportSummary,
     SectionLabel,
 } from '@/components/business/audit-cosign/report-summary';
+import { underReviewWindow } from '@/components/business/audit-cosign/review-window';
 import { BusinessShell } from '@/components/business/business-shell';
 import { ErrorBanner } from '@/components/rozine/form';
 import { Icon } from '@/components/rozine/icon';
@@ -336,6 +337,12 @@ export default function BusinessAuditCosign(
                 {t(PUBLISHED_COPY[cosign.published_reason ?? 'signed'])}
             </StateCard>
         );
+    } else if (underReviewWindow(cosign)) {
+        yours = (
+            <StateCard icon="hourglass">
+                {t('business.audit_cosign.yours.not_needed')}
+            </StateCard>
+        );
     } else if (you?.state === 'signed') {
         yours = (
             <StateCard icon="hourglass">
@@ -362,13 +369,17 @@ export default function BusinessAuditCosign(
     }
 
     const heading = pageHeading(props);
+    /* BRS v3.0 AUD-R04: under a 24-hour review the Business reads and may dispute, but never co-signs. */
+    const review = underReviewWindow(cosign);
 
     return (
         <BusinessShell
             title={t(
-                heading === 'open'
-                    ? 'business.audit_cosign.head_title'
-                    : 'business.audit_cosign.head_title_read',
+                heading !== 'open'
+                    ? 'business.audit_cosign.head_title_read'
+                    : review
+                      ? 'business.audit_cosign.head_title_review'
+                      : 'business.audit_cosign.head_title',
             )}
             tab="reports"
             links={shellLinks}
@@ -392,14 +403,20 @@ export default function BusinessAuditCosign(
                             id="audit-cosign-title"
                             className="text-xl font-semibold text-rz-ink"
                         >
-                            {t(HEADING_TITLE[heading])}
+                            {t(
+                                heading === 'open' && review
+                                    ? 'business.audit_cosign.title_review'
+                                    : HEADING_TITLE[heading],
+                            )}
                         </h1>
                     </div>
                     <p className="mt-3 text-[12.5px] leading-[1.55] text-rz-secondary">
                         {t(
-                            heading === 'open'
-                                ? 'business.audit_cosign.lead'
-                                : 'business.audit_cosign.lead_read',
+                            heading !== 'open'
+                                ? 'business.audit_cosign.lead_read'
+                                : review
+                                  ? 'business.audit_cosign.lead_review'
+                                  : 'business.audit_cosign.lead',
                         )}
                     </p>
                     <ReportSummary
@@ -419,7 +436,11 @@ export default function BusinessAuditCosign(
                         serverTime={props.server_time}
                     />
                     <SectionLabel>
-                        {t('business.audit_cosign.yours.title')}
+                        {t(
+                            review
+                                ? 'business.audit_cosign.yours.title_review'
+                                : 'business.audit_cosign.yours.title',
+                        )}
                     </SectionLabel>
                     {unshownError !== undefined && !disputing && (
                         <div className="mt-[11px]">

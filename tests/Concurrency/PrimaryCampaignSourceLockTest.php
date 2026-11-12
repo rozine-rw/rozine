@@ -20,7 +20,7 @@ it('retains both Business and campaign locks through the callers outer transacti
     $this->freezeSecond();
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     $campaigns = app(BusinessCampaignStore::class);
     $campaigns->release($fixture['audit']['staff']->id, $fixture['application']->id, 0, 'Verified release.', (string) Str::uuid());
     $campaigns->publish($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'],

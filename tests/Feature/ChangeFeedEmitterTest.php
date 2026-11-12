@@ -33,7 +33,7 @@ function liveCampaign(): array
 {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     $user = $fixture['audit']['authority']['users'][0];
     app(BusinessCampaignStore::class)->release($fixture['audit']['staff']->id, $fixture['application']->id, 0, 'Reviewed.', (string) Str::uuid());
     app(BusinessCampaignStore::class)->publish($user->id, 1, $fixture['audit']['business'], $fixture['application']->id,
@@ -138,7 +138,7 @@ it('emits a staff queue change when an application is submitted and when staff r
     expect(feedRows())->toBe([$queue.'@1']);
 
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     $cursor = app(ReadChanges::class)->cursor($fixture['audit']['staff']->id);
     $release = fn (int $revision, string $request): array => app(BusinessCampaignStore::class)->release($fixture['audit']['staff']->id, $fixture['application']->id, $revision, 'Reviewed.', $request);
 

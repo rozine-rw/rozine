@@ -73,12 +73,9 @@
             "published_reason": null,
             "dispute": null
         },
-        "allowed_actions": ["report.cosign", "report.dispute"],
+        "allowed_actions": ["report.dispute"],
         "actions": {
-            "cosign": {
-                "url": "/preview/business-audit-cosign-signatures",
-                "method": "post"
-            },
+            "cosign": null,
             "dispute": {
                 "url": "/preview/business-audit-cosign-disputes",
                 "method": "post"

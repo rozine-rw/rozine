@@ -541,10 +541,13 @@ const fr: Catalog = {
     'business.today.approved.cta_free': 'Publier',
     'business.today.cosign.kicker': 'Rapport d’audit prêt',
     'business.today.cosign.sub':
+        "Votre expert-comptable l'a scellé. Lisez les constats. Il n'y a rien à signer.",
+    'business.today.cosign.cta': 'Examiner le rapport',
+    'business.today.cosign.sign_sub':
         "Votre expert-comptable l'a scellé. Lisez les constats avant de cosigner.",
-    'business.today.cosign.cta': 'Examiner et cosigner',
+    'business.today.cosign.sign_cta': 'Examiner et cosigner',
     'business.today.cosign.due':
-        'Cosignez ou contestez avant le {date} · {hours} h restantes',
+        'Contestez avant le {date} · {hours} h restantes',
     'business.today.signature.kicker': 'Signature requise',
     'business.today.signature.sub':
         'Votre signature est requise avant que cette demande puisse être soumise.',
@@ -963,7 +966,7 @@ const fr: Catalog = {
     'business.reports.guide.flash.title':
         'Un audit Flash, à la demande de Rozine',
     'business.reports.guide.flash.body':
-        "Avant une levée de fonds, ou chaque fois que Rozine a besoin d'une vérification récente, un Audit Partner passe sans prévenir et scelle un rapport Flash dans les 24 heures. Vous le cosignez comme un rapport mensuel.",
+        "Avant une levée, ou dès que Rozine a besoin d'une vérification récente, un Audit Partner passe sans prévenir et scelle un rapport Flash sous 24 heures. Vous l'examinez comme un rapport mensuel.",
     'business.reports.guide.opens.title':
         'Chaque mois, rassemblez vos documents',
     'business.reports.guide.opens.body':
@@ -972,22 +975,22 @@ const fr: Catalog = {
     'business.reports.guide.visit.body_before':
         "L'expert-comptable qui vous est attribué se rend dans vos locaux pour examiner vos documents et rapprocher vos flux de trésorerie, puis scelle le rapport avant le",
     'business.reports.guide.visit.body_after': '.',
-    'business.reports.guide.cosign.title': 'Cosignez ou contestez',
+    'business.reports.guide.cosign.title': 'Examiner, ou contester',
     'business.reports.guide.cosign.body':
-        "Une fois l'audit scellé, vous avez 24 heures pour l'examiner et le cosigner, ou le contester avec une contre-preuve. Sans réponse de votre part dans les 24 heures, le rapport est considéré comme approuvé. Comme vous ne touchez jamais aux chiffres, le rapport est indépendant — c'est exactement ce que paient les investisseurs.",
+        "Une fois l'audit scellé, vous avez 24 heures pour l'examiner et, si quelque chose est inexact, déposer une contestation avec des contre-preuves. Vous ne le signez pas : sans contestation, le rapport est maintenu. Comme vous ne touchez jamais aux chiffres, le rapport est indépendant — c'est précisément ce que paient les investisseurs.",
     'business.reports.guide.visit.body_undated':
         "L'expert-comptable qui vous est attribué se rend dans vos locaux pour examiner vos documents et rapprocher vos flux de trésorerie, puis scelle le rapport.",
     'business.reports.tabs': 'Statut des rapports',
     'business.reports.tab.verified': 'Publiés',
     'business.reports.tab.in_audit': 'En audit',
     'business.reports.tab.in_audit_cosign': {
-        one: 'En audit · {count} à cosigner',
-        other: 'En audit · {count} à cosigner',
+        one: 'En audit · {count} à examiner',
+        other: 'En audit · {count} à examiner',
     },
     'business.reports.tab.archived': 'Archivés',
     'business.reports.status.verified': 'Vérifié',
     'business.reports.status.in_audit': 'En audit',
-    'business.reports.status.awaiting': 'À cosigner',
+    'business.reports.status.awaiting': 'Examiner maintenant',
     'business.reports.status.archived': 'Archivé',
     'business.reports.health.healthy': 'Sain',
     'business.reports.health.watch': 'À surveiller',
@@ -995,12 +998,12 @@ const fr: Catalog = {
     'business.reports.row.filed':
         'Entrées {inflow} · {health} · audité par {auditor}',
     'business.reports.row.in_audit': 'Chez {auditor} · scellé avant le {date}',
-    'business.reports.row.awaiting': 'Votre cosignature est requise',
+    'business.reports.row.awaiting': 'Prêt pour votre examen',
     'business.reports.row.hours_left': {
         one: '{date} · {count} heure restante',
         other: '{date} · {count} heures restantes',
     },
-    'business.reports.row.awaiting_by': 'Cosignez ou contestez avant le {date}',
+    'business.reports.row.awaiting_by': 'Contestez avant le {date}',
     'business.reports.row.annual': "Synthèse de l'année",
     'business.reports.annual': 'Annuel {year}',
     'business.reports.empty': "Aucun rapport pour l'instant.",
@@ -1671,7 +1674,7 @@ const fr: Catalog = {
     'admin.messaging.trigger.business.report_sealed':
         'Le partenaire d’audit scelle le rapport mensuel',
     'admin.messaging.trigger.business.report_review_closing':
-        'Le délai pour cosigner ou contester un rapport se termine',
+        'La fenêtre pour contester un rapport se ferme',
     'admin.messaging.trigger.business.reporting_window_open':
         'Un audit mensuel s’ouvre pour une entreprise ayant une note active',
     'admin.messaging.trigger.business.readiness_stage_changed':
@@ -2631,7 +2634,7 @@ const fr: Catalog = {
     'admin.parties.filter': 'Filtrer par statut',
     'admin.audit_reports.title': "Suivi des rapports d'audit",
     'admin.audit_reports.caption':
-        "Chaque audit avec l'état de son rapport. Les audits mensuels sont vérifiés sur place avant le 7 ; l'entreprise dispose ensuite de 24 heures pour cosigner ou contester.",
+        "Chaque audit avec l'état de son rapport. Les audits mensuels sont vérifiés sur place avant le 7 ; l'entreprise dispose ensuite de 24 heures pour contester.",
     'admin.audit_reports.field.title':
         "Opérations d'audit flash sur le terrain",
     'admin.audit_reports.field.caption':
@@ -2654,23 +2657,23 @@ const fr: Catalog = {
     'admin.audit_reports.due': 'Échéance {date}',
     'admin.audit_reports.sealed_on': 'Scellé le {date}',
     'admin.audit_reports.period_flash': 'Sur demande',
-    'admin.audit_reports.cosign_by': 'À cosigner avant {date}',
+    'admin.audit_reports.cosign_by': 'Fenêtre de contestation jusqu’au {date}',
     'admin.audit_reports.remind': 'Relancer',
     'admin.audit_reports.remind_auditor':
         "Relancer le partenaire d'audit pour {business}",
     'admin.audit_reports.remind_business':
-        'Relancer {business} pour cosigner ou contester',
+        'Rappeler à {business} d’examiner le rapport',
     'admin.audit_reports.reminded': 'Relancé le {date}',
     'admin.audit_reports.pdf': 'Générer le PDF',
     'admin.audit_reports.pdf_named':
         'Télécharger le rapport scellé de {business} (PDF)',
     'admin.audit_reports.stats.published': 'Audités et publiés',
-    'admin.audit_reports.stats.awaiting_cosign': 'En attente de validation',
+    'admin.audit_reports.stats.awaiting_cosign': 'Fenêtre de contestation',
     'admin.audit_reports.stats.overdue': 'Rapports en retard',
     'admin.audit_reports.stats.on_time': "Taux d'audits à temps",
     'admin.audit_reports.chip.all': 'Tous',
     'admin.audit_reports.chip.owed': 'Dus par un partenaire',
-    'admin.audit_reports.chip.awaiting_cosign': 'En attente de validation',
+    'admin.audit_reports.chip.awaiting_cosign': 'Fenêtre de contestation',
     'admin.audit_reports.chip.published': 'Publiés',
     'admin.audit_reports.chip.disputed': 'Contestés',
     'admin.audit_reports.col.business': 'Entreprise',
@@ -2684,7 +2687,7 @@ const fr: Catalog = {
     'admin.audit_reports.status.overdue': 'En retard',
     'admin.audit_reports.status.returned': 'Renvoyé',
     'admin.audit_reports.status.sealed': 'Scellé',
-    'admin.audit_reports.status.awaiting_cosign': 'En attente de validation',
+    'admin.audit_reports.status.awaiting_cosign': 'Fenêtre de contestation',
     'admin.audit_reports.status.published': 'Publié',
     'admin.audit_reports.status.disputed': 'Contesté',
     'admin.audit_reports.status.escalated': 'Transmis',
@@ -3452,7 +3455,7 @@ const fr: Catalog = {
     'auditor.home.in_progress': 'En cours',
     'auditor.job.step_of': 'Étape {step} sur {steps}',
     'auditor.job.status.overdue': 'En retard',
-    'auditor.job.status.awaiting_cosign': 'En attente de cosignature',
+    'auditor.job.status.awaiting_cosign': 'Fenêtre de contestation',
     'auditor.job.reassigned': 'Vous a été réattribué',
     'auditor.standing.title': 'Votre situation',
     'auditor.standing.on_time': 'Clôture à temps',
@@ -3515,7 +3518,7 @@ const fr: Catalog = {
         "Aucune mission ouverte dans votre zone. Nous vous préviendrons dès qu'un dossier de niveau 2 nécessitera un contrôle sur site dans un rayon de {radius} km.",
     'auditor.monthly.title': 'Rapports mensuels',
     'auditor.monthly.lead':
-        "Vous ouvrez chaque mois le dossier d'audit des entreprises que vous suivez. Auditez sur site et scellez avant le 7 — l'entreprise cosigne ensuite.",
+        "Vous ouvrez chaque mois le dossier d'audit des entreprises que vous suivez. Auditez sur place et scellez avant le 7 — l'entreprise dispose ensuite de 24 heures pour contester.",
     'auditor.monthly.to_open': 'Audits à ouvrir',
     'auditor.monthly.waiting': '{count} en attente',
     'auditor.monthly.not_opened': "{month} · dossier d'audit pas encore ouvert",
@@ -3540,7 +3543,7 @@ const fr: Catalog = {
     'auditor.monthly.status.in_progress': 'En cours',
     'auditor.monthly.status.overdue': 'En retard',
     'auditor.monthly.status.changes_requested': 'Renvoyé',
-    'auditor.monthly.status.awaiting_cosign': 'Attente de cosignature',
+    'auditor.monthly.status.awaiting_cosign': 'Fenêtre de contestation',
     'auditor.monthly.inflow': 'Entrées',
     'auditor.monthly.outflow': 'Sorties',
     'auditor.monthly.cover': 'Couverture',
@@ -3578,9 +3581,9 @@ const fr: Catalog = {
         "{business} est retourné à l'affectation et votre motif est consigné.",
     'auditor.outcome.sealed.title': 'Audit scellé et déposé',
     'auditor.outcome.sealed.flash':
-        "Le rapport de terrain de {business} est scellé. {business} cosigne d'ici le {date} ; le moteur note l'entreprise à partir de vos constats.",
+        "Le rapport de terrain de {business} est scellé. {business} peut le contester jusqu'au {date} ; le moteur note l'entreprise à partir de vos constats.",
     'auditor.outcome.sealed.monthly':
-        'Le rapport de {month} pour {business} — ses relevés téléversés et vos constats factuels — est scellé. {business} contresigne avant le {date}.',
+        "Le rapport de {month} de {business} — ses relevés téléversés et vos constats factuels — est scellé. {business} peut le contester jusqu'au {date}.",
     'auditor.outcome.suggested.title': 'Modifications demandées',
     'auditor.outcome.suggested.body':
         "L'entreprise a reçu votre motif et votre explication, et peut soumettre à nouveau le dépôt pour votre audit.",
@@ -3800,7 +3803,7 @@ const fr: Catalog = {
     'auditor.count.status.restricted': 'Restreint',
     'auditor.seal.title': 'Valider et sceller',
     'auditor.seal.lead':
-        "Vos constats sont attribués à votre licence ICPAR et publiés aux porteurs après la validation de l'entreprise.",
+        "Vos constats sont attribués à votre licence ICPAR et publiés aux porteurs à la fin du délai de contestation de 24 heures de l'entreprise.",
     'auditor.seal.note': "Note d'évaluation",
     'auditor.seal.note_optional': 'Facultatif',
     'auditor.seal.note_required': 'Obligatoire',
@@ -3828,7 +3831,7 @@ const fr: Catalog = {
     'auditor.seal.submit': 'Apposer le sceau de licence ICPAR',
     'auditor.sealed.title': 'Scellé et déposé',
     'auditor.sealed.body':
-        "Le rapport est scellé et ne peut plus être modifié. {party} cosigne d'ici le {date} ; il est ensuite publié aux porteurs.",
+        "Le rapport est scellé et ne peut plus être modifié. {party} peut le contester jusqu'au {date} ; il est ensuite publié aux détenteurs.",
     'auditor.sealed.timeline': 'Avancement du dépôt',
     'auditor.sealed.stage.sealed': 'Scellé par vous',
     'auditor.sealed.stage.cosigned': "Cosignature de l'entreprise",
@@ -3938,7 +3941,7 @@ const fr: Catalog = {
     'auditor.conflicts.empty': "Vous n'avez déclaré aucun conflit.",
     'auditor.conflicts.page_empty':
         'Rien à afficher sur cette page. Des déclarations plus anciennes peuvent suivre.',
-    'auditor.reports.status.awaiting_cosign': 'Attente de cosignature',
+    'auditor.reports.status.awaiting_cosign': 'Fenêtre de contestation',
     'auditor.reports.status.published': 'Publié',
     'auditor.reports.status.late': 'En retard',
     'auditor.reports.status.rejected': 'Rejeté',
@@ -4321,11 +4324,11 @@ const fr: Catalog = {
     'business.audit_prep.flow.sealed.title': 'Scellé',
     'business.audit_prep.flow.sealed.body':
         'Les constats factuels et les écarts sont scellés sous sa licence ICPAR.',
-    'business.audit_prep.flow.cosign.title': 'Vous cosignez',
+    'business.audit_prep.flow.cosign.title': 'Vous examinez',
     'business.audit_prep.flow.cosign.body':
-        'Vous ajoutez un résumé et cosignez avant le {date}, ou vous contestez avec une contre-preuve.',
+        'Vous lisez les constats et, si quelque chose est inexact, vous contestez avec des contre-preuves avant le {date}.',
     'business.audit_prep.closing':
-        "Vous ne déposez jamais le rapport mensuel vous-même. Votre expert-comptable se déplace, examine vos documents sur place et scelle le rapport — votre rôle est d'être prêt, puis de cosigner ou contester ses constats.",
+        "Vous ne déposez jamais vous-même le rapport mensuel. Votre expert-comptable passe, examine vos registres sur place et scelle le rapport — votre rôle est d'être prêt, puis d'examiner ses constats et de les contester en cas d'erreur.",
 
     'investor.nav.deals': 'Offres',
     'investor.nav.portfolio': 'Portefeuille',
@@ -6893,19 +6896,19 @@ const fr: Catalog = {
     'investor.notices.auditor.job_offered.body_routine':
         'Audit de routine chez {business}, {location}. Acceptez avant {time}.',
     'investor.notices.business.report_sealed.title':
-        "Rapport d'audit prêt pour votre approbation",
+        "Rapport d'audit prêt à examiner",
     'investor.notices.business.report_sealed.body':
-        "{auditor} a scellé votre rapport d'audit. Consultez-le, puis cosignez-le ou contestez-le.",
+        "{auditor} a scellé votre rapport d'audit. Examinez-le et contestez-le en cas d'erreur.",
     'investor.notices.business.report_sealed.body_due':
-        "{auditor} a scellé votre rapport d'audit. Cosignez-le ou contestez-le avant {time}.",
+        "{auditor} a scellé votre rapport d'audit. Contestez-le avant {time} en cas d'erreur.",
     'investor.notices.business.report_review_closing.title':
         'Fin du délai de revue',
     'investor.notices.business.report_review_closing.body':
-        "Votre délai pour cosigner ou contester le rapport d'audit se termine à {time}. Sans action de votre part, il est publié tel que scellé.",
+        "Votre fenêtre pour contester le rapport d'audit se ferme à {time}. Sans action de votre part, il est publié tel que scellé.",
     'investor.notices.business.reporting_window_open.title':
         'Audit mensuel ouvert',
     'investor.notices.business.reporting_window_open.body':
-        "Votre audit de {month} a commencé. Préparez les relevés et registres du mois pour que votre partenaire d'audit les vérifie et scelle le rapport d'ici le {date}. Vous le cosignez ensuite ou le contestez.",
+        "Votre audit de {month} a commencé. Préparez les relevés et registres du mois pour que votre Audit Partner les vérifie et scelle le rapport d'audit avant le {date}. Vous l'examinez ensuite et pouvez le contester.",
     'investor.notices.business.readiness_stage_changed.title':
         'Étape de préparation modifiée',
     'investor.notices.business.readiness_stage_changed.body':
@@ -7074,10 +7077,14 @@ const fr: Catalog = {
         other: '{count} codes de récupération restants',
     },
     'business.audit_cosign.head_title': "Cosigner le rapport d'audit",
+    'business.audit_cosign.head_title_review': "Examiner le rapport d'audit",
     'business.audit_cosign.title': "Cosigner le rapport d'audit",
+    'business.audit_cosign.title_review': "Examiner le rapport d'audit",
     'business.audit_cosign.back': 'Retour',
     'business.audit_cosign.lead':
         "Votre expert-comptable a scellé ce rapport après l'audit sur place. Lisez les constats factuels avant de cosigner.",
+    'business.audit_cosign.lead_review':
+        "Votre expert-comptable a scellé ce rapport après l'audit sur place. Lisez les constats factuels. Vous n'avez pas à le signer.",
     'business.audit_cosign.kind.monthly': "Rapport d'audit mensuel",
     'business.audit_cosign.kind.flash': "Rapport d'audit flash",
     'business.audit_cosign.period': 'Période',
@@ -7102,6 +7109,7 @@ const fr: Catalog = {
     'business.audit_cosign.sealed_note':
         'Ce rapport est scellé. Rien sur cette page ne le modifie.',
     'business.audit_cosign.status.title': 'Cosignatures',
+    'business.audit_cosign.status.title_review': 'Examen',
     'business.audit_cosign.status.count':
         '{signed} signature(s) sur {required}',
     'business.audit_cosign.status.signers': 'Signataires',
@@ -7115,6 +7123,7 @@ const fr: Catalog = {
         'En retard — la cosignature était due avant le {date}',
     'business.audit_cosign.published': 'Publié le {date}',
     'business.audit_cosign.yours.title': 'Votre cosignature',
+    'business.audit_cosign.yours.title_review': 'Votre réponse',
     'business.audit_cosign.yours.accept':
         "J'ai examiné les constats d'audit et je cosigne ce rapport.",
     'business.audit_cosign.yours.note': 'Votre résumé (facultatif)',
@@ -7136,6 +7145,8 @@ const fr: Catalog = {
         "Ce rapport n'est pas ouvert à la cosignature pour le moment.",
     'business.audit_cosign.yours.cannot':
         'Vous ne pouvez pas cosigner ce rapport.',
+    'business.audit_cosign.yours.not_needed':
+        "Rien à signer. Si vous êtes d'accord, vous n'avez rien à faire : le rapport est publié à la fin de la fenêtre de 24 heures. Si quelque chose est inexact, contestez-le avant.",
     'business.audit_cosign.refused.with_code': '{reason} ({code})',
     'business.audit_cosign.refused.VERSION_CONFLICT':
         'Les signatures de ce rapport ont changé pendant que vous y travailliez. Nous avons chargé la dernière version — vérifiez-la et réessayez.',
@@ -7195,21 +7206,20 @@ const fr: Catalog = {
     'business.audit_cosign.published_staff':
         'Publié par le personnel Rozine le {date}',
     'business.audit_cosign.yours.published_auto':
-        "Publié automatiquement après la fenêtre de 24 heures : personne ne l'a approuvé ni contesté à temps. Aucune signature n'a été enregistrée.",
+        "Publié à la fin de la fenêtre de 24 heures, sans contestation. Aucune signature n'est nécessaire.",
     'business.audit_cosign.yours.published_staff':
         "Le personnel Rozine a tranché la contestation et publié le rapport. Aucune signature n'a été enregistrée.",
     'business.audit_cosign.window.title': "Fenêtre d'examen de 24 heures",
     'business.audit_cosign.window.left': '{time} restantes',
     'business.audit_cosign.window.body':
-        "Une fois le rapport d'audit scellé dans votre application, vous avez 24 heures pour l'approuver ou soumettre une contestation avec des justificatifs.",
+        'Votre expert-comptable a scellé ce rapport. Vous ne le signez pas. Si quelque chose est inexact, contestez-le avec des justificatifs dans les 24 heures.',
     'business.audit_cosign.window.delivered':
         'Reçu dans votre application le {date}',
-    'business.audit_cosign.window.due':
-        'Approuvez ou contestez avant le {date}',
+    'business.audit_cosign.window.due': 'Contestez avant le {date}',
     'business.audit_cosign.window.ended':
         'La fenêtre de 24 heures est terminée.',
     'business.audit_cosign.window.auto':
-        'Les rapports non signés sont approuvés automatiquement à la fin de la fenêtre.',
+        'Sans contestation, le rapport est maintenu et publié à la fin de la fenêtre.',
     'business.audit_cosign.dispute.intro':
         "Indiquez ce que vous contestez dans les constats et vos justificatifs. Votre contestation ne modifie pas le rapport scellé et suspend la fenêtre de 24 heures pendant l'examen par le CPA.",
     'business.audit_cosign.dispute.proof_rule':
@@ -7287,9 +7297,9 @@ const fr: Catalog = {
     'business.audit_cosign.refused.REPORT_REVIEW_CLOSED':
         "Ce rapport est déjà contesté, examiné par le personnel Rozine ou publié : il ne peut plus être approuvé ni contesté. Nous l'avons rechargé tel qu'il est maintenant.",
     'auditor.sealed.body_published_auto':
-        "Publié automatiquement après la fenêtre de 24 heures, le {date}. L'entreprise ne l'a pas cosigné.",
+        'Publié après la fenêtre de 24 heures, sans contestation, le {date}.',
     'auditor.sealed.body_published_staff':
-        "Publié par le personnel Rozine le {date}. L'entreprise ne l'a pas cosigné.",
+        'Publié par l’équipe Rozine le {date}.',
     'auditor.sealed.cosign.not_signed': 'Non cosigné',
     'business.audit_cosign.head_title_read': "Rapport d'audit",
     'business.audit_cosign.lead_read':
