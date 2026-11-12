@@ -31,7 +31,7 @@ beforeEach(function (): void {
         $fixture = AuditSealingFixture::ready($signatories, requiredSignatories: $required);
         if ($sealed) {
             AuditSealingFixture::seal($fixture);
-            AuditSealingFixture::cosign($fixture);
+            AuditSealingFixture::publish($fixture);
         }
 
         return $fixture;
