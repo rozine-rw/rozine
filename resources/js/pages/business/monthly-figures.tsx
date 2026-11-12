@@ -590,6 +590,11 @@ export default function BusinessMonthlyFigures({
                                 type="submit"
                                 disabled={!complete[step] || processing}
                                 aria-busy={processing || undefined}
+                                aria-describedby={
+                                    step === 'summary'
+                                        ? 'monthly-form-error'
+                                        : undefined
+                                }
                                 className="flex-1 rounded-xl bg-rz-accent-fill px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
                             >
                                 {step !== 'summary'
