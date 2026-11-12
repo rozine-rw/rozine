@@ -33,7 +33,7 @@ it('serves and recovers file-only disputes, CPA review and staff decisions acros
     $authenticate($fixture['audit']['authority']['users'][0], ['business:read', 'business:command']);
     $response = $this->get(route($prefix.'business.audit-reports.show', $business))->assertOk();
     $page = $api ? $response->json('data') : $response->viewData('page')['props'];
-    expect($page['allowed_actions'])->toBe(['report.cosign', 'report.dispute'])->and($page['cosign']['required_signatures'])->toBe(1);
+    expect($page['allowed_actions'])->toBe(['report.dispute'])->and($page['cosign']['required_signatures'])->toBe(1);
     $input = ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, 'expected_revision' => 1,
         'report_revision' => $fixture['report']->revision + 1, 'mandate_version' => 1, 'digest' => $fixture['fields']['digest']];
     $content = "%PDF-1.4\nSynthetic monthly proof\n%%EOF";
