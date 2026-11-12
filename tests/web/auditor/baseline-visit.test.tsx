@@ -366,6 +366,49 @@ describe('Baseline visit — registration and tax', () => {
     });
 });
 
+describe('Baseline visit — no tax clearance', () => {
+    it('posts no expiry when the business has no certificate, and reopens that way', () => {
+        render(<AuditorAudit {...page(registration)} />);
+        const none = within(sheet()).getByRole('checkbox', {
+            name: 'The business has no tax clearance certificate',
+        });
+        const tax = within(sheet()).getByLabelText('Tax clearance expires');
+
+        expect(none).not.toBeChecked();
+        expect(tax).toBeEnabled();
+        fireEvent.click(none);
+        expect(tax).toBeDisabled();
+        proceed();
+
+        expect(inertia.calls[0].body).toEqual({
+            registration_confirmed: true,
+            tax_clearance_expires_on: 'none',
+            step: 'registration',
+            ...command,
+        });
+    });
+
+    it('opens a saved step without a certificate with the box ticked', () => {
+        render(
+            <AuditorAudit
+                {...page<RegistrationStage>(registration, (stage) => ({
+                    ...stage,
+                    tax_clearance_expires_on: null,
+                }))}
+            />,
+        );
+
+        expect(
+            within(sheet()).getByRole('checkbox', {
+                name: 'The business has no tax clearance certificate',
+            }),
+        ).toBeChecked();
+        expect(
+            within(sheet()).getByLabelText('Tax clearance expires'),
+        ).toBeDisabled();
+    });
+});
+
 describe('Baseline visit — trading start', () => {
     it('posts the month trading started and moves on to photos', () => {
         render(<AuditorAudit {...page(trading)} />);

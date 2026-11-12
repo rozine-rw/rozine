@@ -11,6 +11,7 @@ use App\Models\AuditReport;
 use App\Models\RoleMembership;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
+use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\AuditSealingFixture;
@@ -208,6 +209,42 @@ it('reopens a changed source through the previous-step link and explicitly inval
         ->and($report->draft['completed_steps'])->toBe(['review', 'check_in'])
         ->and($report->draft['fields'])->not->toHaveKeys(['history', 'premises', 'people', 'registration', 'trading', 'photos', 'ledger']);
 });
+
+it('records a baseline business without a tax clearance certificate only when said explicitly', function (bool $api): void {
+    $fixture = procedureHttpFixture();
+    AuditSourceFactsFixture::record($fixture['audit']['staff'], $fixture['assignment']->refresh(), facts: completeProcedureFacts());
+    $user = $fixture['audit']['partners'][0]['user'];
+    $prefix = $api ? 'api.v1.auditor.' : 'auditor.';
+    if ($api) {
+        Sanctum::actingAs($user, ['auditor:read', 'auditor:command']);
+    } else {
+        $this->actingAs($user);
+    }
+    $id = $this->postJson(route($prefix.'reports.start', ['assignment' => $fixture['assignment']->id]), procedureStartPayload($fixture))->assertOk()->json('data.audit_id');
+    $revision = 1;
+    $post = function (string $step, array $fields) use ($id, $prefix, &$revision): TestResponse {
+        return $this->postJson(route($prefix.'reports.save', ['report' => $id]), [...$fields, 'audit_id' => $id, 'step' => $step,
+            'identity_context_revision' => 1, 'expected_revision' => $revision, 'request_id' => (string) Str::uuid()]);
+    };
+    $baseline = AuditSealingFixture::baseline(AuditReport::query()->whereKey($id)->firstOrFail());
+    foreach (['review' => [], 'check_in' => [], 'history' => $baseline['history'], 'premises' => $baseline['premises'], 'people' => $baseline['people']] as $step => $fields) {
+        $post($step, $fields)->assertOk();
+        $revision++;
+    }
+
+    // A blank date (turned into null by the request) or a malformed one is refused; it never means "no certificate".
+    foreach (['', '2027-02-30', '31/03/2027'] as $date) {
+        $post('registration', ['registration_confirmed' => true, 'tax_clearance_expires_on' => $date])->assertUnprocessable()
+            ->assertJsonPath('code', 'AUDIT_STEP_INPUT_INVALID')->assertJsonValidationErrors('tax_clearance_expires_on');
+    }
+    // Leaving the field out is refused too: every registration save names a date or says there is none.
+    $post('registration', ['registration_confirmed' => true])->assertUnprocessable()->assertJsonPath('code', 'AUDIT_STEP_INPUT_INVALID')->assertJsonValidationErrors('step');
+    expect(AuditReport::query()->whereKey($id)->firstOrFail()->revision)->toBe($revision);
+
+    $post('registration', ['registration_confirmed' => true, 'tax_clearance_expires_on' => AuditProcedure::NO_TAX_CLEARANCE])->assertOk()->assertJsonPath('code', 'AUDIT_STEP_SAVED');
+    $report = AuditReport::query()->whereKey($id)->firstOrFail();
+    expect($report->step)->toBe('trading')->and($report->draft['fields']['registration'])->toBe(['registration_confirmed' => true, 'tax_clearance_expires_on' => null]);
+})->with([false, true]);
 
 it('completes the isolated factual procedure and previews only the persisted report on both transports', function (string $kind, bool $api): void {
     $fixture = procedureHttpFixture($kind);
