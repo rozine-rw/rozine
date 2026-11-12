@@ -8,7 +8,7 @@ use App\Application\Secondary\Contracts\SecondaryMarket;
 use App\Domain\Operations\CommandRejection;
 
 /**
- * Secondary trading is switched off until Phase 3 acceptance: every command is refused with
+ * Secondary trading is switched off (`app.secondary_trading`): every command is refused with
  * `SECONDARY_TRADING_DISABLED` before anything is read or written.
  */
 final class UnavailableSecondaryMarket implements SecondaryMarket
@@ -34,6 +34,16 @@ final class UnavailableSecondaryMarket implements SecondaryMarket
     }
 
     public function halt(int $staffUserId, ?string $noteId, string $reason, string $requestId): array
+    {
+        throw self::disabled();
+    }
+
+    public function lift(int $staffUserId, ?string $noteId, string $reason, string $requestId): array
+    {
+        throw self::disabled();
+    }
+
+    public function cancelListing(int $staffUserId, string $listingId, string $reason, string $requestId): array
     {
         throw self::disabled();
     }
