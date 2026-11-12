@@ -8,6 +8,7 @@ import {
 import { cn } from '@/lib/utils';
 import type {
     BusinessReadinessProps,
+    ReadinessGuidanceLine,
     ReadinessRequirement,
     ReadinessStageNumber,
 } from '@/types/business';
@@ -31,15 +32,60 @@ const REQUIREMENT_TONE = {
     lapsed: 'bg-[rgba(194,102,31,.12)] text-[#8a4710] dark:text-[#f0b27a]',
 } as const satisfies Record<ReadinessRequirement['status'], string>;
 
+/** One RDY-R06 line: the signal and its verdict, the value against the target, then the one action. */
+function GuidanceLine({ line }: { line: ReadinessGuidanceLine }) {
+    const { t } = useTranslation();
+
+    return (
+        <li className="rounded-2xl border border-rz-border bg-rz-surface p-3.5">
+            <div className="flex items-start justify-between gap-3">
+                <p className="text-[14px] font-semibold text-rz-ink">
+                    {t(`business.readiness.guidance.${line.signal}`)}
+                </p>
+                <span
+                    className={cn(
+                        'shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold',
+                        line.on_target
+                            ? REQUIREMENT_TONE.met
+                            : REQUIREMENT_TONE.overdue,
+                    )}
+                >
+                    {t(
+                        line.on_target
+                            ? 'business.readiness.guidance.on_target'
+                            : 'business.readiness.guidance.off_target',
+                    )}
+                </span>
+            </div>
+            <p className="mt-1 text-[12.5px] text-rz-secondary">
+                {t('business.readiness.guidance.value', {
+                    value: line.value,
+                    target: line.target,
+                    count: line.months,
+                })}
+            </p>
+            {line.bias !== null && (
+                <p className="mt-1 text-[12.5px] text-rz-secondary">
+                    {t(`business.readiness.guidance.bias.${line.bias}`)}
+                </p>
+            )}
+            <p className="mt-1.5 text-[12.5px] font-medium text-rz-ink">
+                {t(`business.readiness.guidance.${line.action}`)}
+            </p>
+        </li>
+    );
+}
+
 /**
  * Readiness (BRS v3.0 Section 20, APP-B01): the stage the business's verified monthly revenue has
  * settled in, with the RDY-R05 status line beside it, what is still pending, how far the next
- * stage is, the four stages and the months counted. Every line states a fact; none asks a
- * question. Readiness is shown only inside the Business app.
+ * stage is, the monthly guidance (RDY-R06), the four stages and the months counted. Every line
+ * states a fact; none asks a question. Readiness is shown only inside the Business app.
  */
 export default function BusinessReadiness({
     readiness,
     requirements,
+    guidance,
     links,
 }: BusinessReadinessProps) {
     const { t, locale } = useTranslation();
@@ -236,12 +282,33 @@ export default function BusinessReadiness({
                 </section>
                 <section
                     data-rzcol
-                    aria-labelledby="readiness-stages-title"
+                    aria-labelledby="readiness-guidance-title"
                     className={cn(COLUMN, 'rz-scroll mt-6 lg:mt-0 lg:p-[18px]')}
                 >
                     <h2
-                        id="readiness-stages-title"
+                        id="readiness-guidance-title"
                         className="text-base font-semibold text-rz-ink"
+                    >
+                        {t('business.readiness.guidance.title')}
+                    </h2>
+                    <p className="mt-1 text-[12.5px] text-rz-secondary">
+                        {guidance.length === 0
+                            ? t('business.readiness.guidance.empty')
+                            : t('business.readiness.guidance.rule')}
+                    </p>
+                    {guidance.length > 0 && (
+                        <ul
+                            aria-labelledby="readiness-guidance-title"
+                            className="mt-3 space-y-2"
+                        >
+                            {guidance.map((line) => (
+                                <GuidanceLine key={line.signal} line={line} />
+                            ))}
+                        </ul>
+                    )}
+                    <h2
+                        id="readiness-stages-title"
+                        className="mt-6 text-base font-semibold text-rz-ink"
                     >
                         {t('business.readiness.stages')}
                     </h2>

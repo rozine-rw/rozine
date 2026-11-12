@@ -326,6 +326,31 @@ const rw: Catalog = {
     'business.readiness.top': 'Uri mu cyiciro cyo hejuru.',
     'business.readiness.ready_rule':
         'Uba witeguye iyo buri gisabwa kigeze cyujujwe, ibimenyetso byawe bitatu bikaguma ku ntego muri raporo 3 zikurikiranye, kandi ugatsinda amasomo y’ibanze y’Ishuri y’icyiciro cyawe.',
+    'business.readiness.guidance.title': 'Inama z’ukwezi',
+    'business.readiness.guidance.rule':
+        'Nyuma ya buri raporo itangajwe, buri kipimo kigereranywa n’intego y’icyiciro cyawe, hamwe n’igikorwa kimwe.',
+    'business.readiness.guidance.empty':
+        'Inama zawe zitangira ukwezi wohereje imibare yako kumaze kugenzurwa muri raporo yatangajwe.',
+    'business.readiness.guidance.record_gap': 'Itandukaniro ry’inyandiko',
+    'business.readiness.guidance.forecast_error': 'Ikosa ry’iteganyamibare',
+    'business.readiness.guidance.on_target': 'Biri ku ntego',
+    'business.readiness.guidance.off_target': 'Ntibiri ku ntego',
+    'business.readiness.guidance.value': {
+        one: '{value}% mu kwezi {count} gushize. Intego: {target}% cyangwa munsi.',
+        other: '{value}% mu mezi {count} ashize. Intego: {target}% cyangwa munsi.',
+    },
+    'business.readiness.guidance.bias.over':
+        'Ibyo wateganyije byarenze amafaranga yinjiye.',
+    'business.readiness.guidance.bias.under':
+        'Ibyo wateganyije byari munsi y’amafaranga yinjiye.',
+    'business.readiness.guidance.record_gap.keep':
+        'Komeza kwandika buri igurisha na buri yishyurwa mu bitabo byawe ku munsi bibereyeho.',
+    'business.readiness.guidance.record_gap.fix':
+        'Andika buri igurisha ry’amafaranga mu ntoki na buri yishyurwa mu bitabo byawe uwo munsi, kandi ubike buri nyemezabwishyu.',
+    'business.readiness.guidance.forecast_error.keep':
+        'Komeza guhera ku mpuzandengo yawe yagenzuwe n’ibyo wasabwe mu nyandiko.',
+    'business.readiness.guidance.forecast_error.fix':
+        'Teganya ukwezi gutaha uhereye ku mpuzandengo yawe yagenzuwe, wongereho gusa ibyo wasabwe mu nyandiko.',
     'business.readiness.stages': 'Ibyiciro bine',
     'business.readiness.stage_from': 'Guhera kuri {amount} ku kwezi',
     'business.readiness.current': 'Icy’ubu',

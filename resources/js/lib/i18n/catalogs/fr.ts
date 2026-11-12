@@ -329,6 +329,31 @@ const fr: Catalog = {
     'business.readiness.top': 'Vous êtes à l’étape la plus haute.',
     'business.readiness.ready_rule':
         'Vous êtes prête quand chaque exigence due est remplie, que vos trois indicateurs restent dans la cible 3 rapports d’affilée et que vous réussissez les modules essentiels de l’Académie pour votre étape.',
+    'business.readiness.guidance.title': 'Conseils du mois',
+    'business.readiness.guidance.rule':
+        'Après chaque rapport publié, chaque indicateur est comparé à l’objectif de votre étape, avec une action.',
+    'business.readiness.guidance.empty':
+        'Vos conseils commencent dès qu’un mois pour lequel vous avez envoyé vos chiffres est vérifié dans un rapport publié.',
+    'business.readiness.guidance.record_gap': 'Écart de tenue',
+    'business.readiness.guidance.forecast_error': 'Erreur de prévision',
+    'business.readiness.guidance.on_target': 'Dans l’objectif',
+    'business.readiness.guidance.off_target': 'Hors objectif',
+    'business.readiness.guidance.value': {
+        one: '{value} % sur le {count} dernier mois. Objectif : {target} % au plus.',
+        other: '{value} % sur les {count} derniers mois. Objectif : {target} % au plus.',
+    },
+    'business.readiness.guidance.bias.over':
+        'Vos prévisions ont dépassé l’argent réellement reçu.',
+    'business.readiness.guidance.bias.under':
+        'Vos prévisions sont restées sous l’argent réellement reçu.',
+    'business.readiness.guidance.record_gap.keep':
+        'Continuez à noter chaque vente et chaque paiement dans vos livres le jour même.',
+    'business.readiness.guidance.record_gap.fix':
+        'Notez chaque vente en espèces et chaque paiement dans vos livres le jour même, et gardez chaque reçu.',
+    'business.readiness.guidance.forecast_error.keep':
+        'Continuez à partir de votre moyenne vérifiée et des commandes que vous détenez par écrit.',
+    'business.readiness.guidance.forecast_error.fix':
+        'Partez de votre moyenne vérifiée pour la prévision du mois prochain, et n’ajoutez que les commandes que vous détenez par écrit.',
     'business.readiness.stages': 'Les quatre étapes',
     'business.readiness.stage_from': 'À partir de {amount} par mois',
     'business.readiness.current': 'Actuelle',
