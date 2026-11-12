@@ -59,7 +59,7 @@ it('opens the month the monthly audit covers with nothing sent and no pre-fill b
     $business = $this->business;
     $props = ($this->page)($this->user);
 
-    expect(array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count', 'checkout_holds'])))
+    expect(array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count', 'checkout_holds', 'risk_acknowledgement'])))
         ->toBe(['identity_context_revision' => $props['identity_context_revision'], 'period' => '2026-09-01', 'seal_by' => '2026-10-07T21:59:59Z',
             'forecast_period' => '2026-10-01', 'forecast_basis' => null, 'cost_categories' => ['stock', 'staff', 'premises', 'transport', 'taxes', 'other'],
             'sent' => null, 'links' => ['submit' => ['url' => "/business/{$business}/monthly-figures", 'method' => 'post'],
