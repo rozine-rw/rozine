@@ -831,6 +831,8 @@ export type FlashStep = 'review' | 'check_in' | 'photos' | 'ledger' | 'seal';
 export type MonthlyStep =
     | 'statements'
     | 'count'
+    | 'cash_sales'
+    | 'costs'
     | 'drawings'
     | 'loans'
     | 'differences'
@@ -1037,6 +1039,26 @@ export type LoansStage = {
     loans: OtherLoan[];
 };
 
+/** The month's cash sales that were never deposited (BRS v3 VIS-R01 step 4). */
+export type CashSalesStage = {
+    step: 'cash_sales';
+    undeposited_cash_sales: Money | null;
+};
+
+/** The six categories the CPA sorts the month's costs into (BRS v3 VIS-R01 step 5). */
+export type CostCategory =
+    | 'stock'
+    | 'staff'
+    | 'premises'
+    | 'transport'
+    | 'taxes'
+    | 'other';
+
+export type CostsStage = {
+    step: 'costs';
+    categories: { key: CostCategory; amount: Money | null }[];
+};
+
 /** The staff count as the CPA checked it on the RSSB total page (BRS v3 VIS-R01 step 10). */
 export type StaffStage = {
     step: 'staff';
@@ -1222,6 +1244,8 @@ export type AuditStage =
     | LedgerStage
     | StatementsStage
     | CountStage
+    | CashSalesStage
+    | CostsStage
     | DrawingsStage
     | LoansStage
     | DifferencesStage

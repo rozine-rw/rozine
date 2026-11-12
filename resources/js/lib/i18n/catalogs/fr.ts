@@ -3478,6 +3478,8 @@ const fr: Catalog = {
     'auditor.audit.step.seal': 'Sceau',
     'auditor.audit.step.statements': 'Relevés',
     'auditor.audit.step.count': 'Comptage',
+    'auditor.audit.step.cash_sales': 'Ventes en espèces',
+    'auditor.audit.step.costs': 'Charges',
     'auditor.audit.step.drawings': 'Prélèvements',
     'auditor.audit.step.loans': 'Autres prêts',
     'auditor.audit.step.differences': 'Écarts',
@@ -5705,6 +5707,22 @@ const fr: Catalog = {
         'Chaque montant est saisi et chaque preuve listée est cochée.',
     'auditor.audit.guide.count.how':
         'Comptez vous-même les espèces et le stock. Chaque montant est comparé aux relevés au dossier ; rien ici ne vient de l’entreprise.',
+    'auditor.audit.guide.cash_sales.do':
+        'Notez les ventes en espèces du mois qui n’ont jamais été versées sur un compte bancaire ou mobile money.',
+    'auditor.audit.guide.cash_sales.enter':
+        'Un montant en francs entiers. Par exemple 15000. Saisissez 0 si toutes les ventes ont été versées.',
+    'auditor.audit.guide.cash_sales.done':
+        'Un montant est saisi, même s’il vaut 0.',
+    'auditor.audit.guide.cash_sales.how':
+        'Comparez le cahier des ventes et les reçus aux dépôts sur les relevés. Les espèces gardées pour la monnaie ou dépensées avant le dépôt comptent comme non versées.',
+    'auditor.audit.guide.costs.do':
+        'Classez les charges du mois dans les six catégories.',
+    'auditor.audit.guide.costs.enter':
+        'Un montant en francs entiers pour chaque catégorie : stock, personnel, locaux, transport, impôts et autres. Par exemple stock 400000. Saisissez 0 s’il n’y a pas eu de charge.',
+    'auditor.audit.guide.costs.done':
+        'Chaque catégorie a un montant, même s’il vaut 0.',
+    'auditor.audit.guide.costs.how':
+        'Utilisez les factures, les reçus et les paiements des relevés du mois. Placez chaque charge dans une seule catégorie ; ce qui n’entre dans aucune va dans Autres.',
     'auditor.audit.guide.drawings.do':
         'Notez ce que les propriétaires ont retiré de l’entreprise ce mois-ci.',
     'auditor.audit.guide.drawings.enter':
@@ -5751,6 +5769,24 @@ const fr: Catalog = {
     'auditor.differences.cause.wrong_month': 'Enregistré dans le mauvais mois',
     'auditor.differences.cause.entry_error': 'Erreur de saisie',
     'auditor.differences.cause.counted_twice': 'Compté deux fois',
+    'auditor.cash_sales.title': 'Ventes en espèces non versées',
+    'auditor.cash_sales.lead':
+        'Les espèces encaissées ce mois-ci qui n’ont jamais atteint un compte bancaire ou mobile money, d’après le cahier des ventes et les reçus.',
+    'auditor.cash_sales.amount': 'Non versé ce mois-ci',
+    'auditor.cash_sales.hint':
+        'Saisissez 0 si toutes les ventes en espèces ont été versées.',
+    'auditor.costs.title': 'Charges',
+    'auditor.costs.lead':
+        'Les charges du mois dans les six catégories que l’entreprise utilise aussi pour ses chiffres mensuels.',
+    'auditor.costs.category.stock': 'Stock et fournitures',
+    'auditor.costs.category.staff': 'Personnel',
+    'auditor.costs.category.premises': 'Locaux',
+    'auditor.costs.category.transport': 'Transport',
+    'auditor.costs.category.taxes': 'Impôts et frais',
+    'auditor.costs.category.other': 'Autres',
+    'auditor.costs.total': 'Total des charges',
+    'auditor.costs.hint':
+        'Saisissez 0 pour une catégorie sans charge ce mois-ci.',
     'auditor.drawings.title': 'Prélèvements des propriétaires',
     'auditor.drawings.lead':
         'Ce que les propriétaires ont retiré de l’entreprise ce mois-ci, d’après les relevés et le livre de caisse.',

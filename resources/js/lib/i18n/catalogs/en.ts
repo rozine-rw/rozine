@@ -3318,6 +3318,8 @@ const en = {
     'auditor.audit.step.seal': 'Seal',
     'auditor.audit.step.statements': 'Statements',
     'auditor.audit.step.count': 'Count & cash',
+    'auditor.audit.step.cash_sales': 'Cash sales',
+    'auditor.audit.step.costs': 'Costs',
     'auditor.audit.step.drawings': 'Drawings',
     'auditor.audit.step.loans': 'Other loans',
     'auditor.audit.step.differences': 'Differences',
@@ -5482,6 +5484,22 @@ const en = {
         'Every figure is entered and every listed proof is ticked.',
     'auditor.audit.guide.count.how':
         'Count the cash and the stock yourself. Each figure is compared to the statements on file; nothing here comes from the business.',
+    'auditor.audit.guide.cash_sales.do':
+        'Record the cash sales this month that were never paid into a bank or mobile-money account.',
+    'auditor.audit.guide.cash_sales.enter':
+        'One amount in whole francs. For example 15000. Enter 0 if every sale was deposited.',
+    'auditor.audit.guide.cash_sales.done':
+        'An amount is entered, even if it is 0.',
+    'auditor.audit.guide.cash_sales.how':
+        'Compare the sales book and receipts with the deposits on the statements. Cash kept back for change or spent before banking counts as not deposited.',
+    'auditor.audit.guide.costs.do':
+        'Sort this month’s costs into the six categories.',
+    'auditor.audit.guide.costs.enter':
+        'An amount in whole francs for each category: stock, staff, premises, transport, taxes and other. For example stock 400000. Enter 0 where there was no cost.',
+    'auditor.audit.guide.costs.done':
+        'Every category has an amount, even if it is 0.',
+    'auditor.audit.guide.costs.how':
+        'Use the invoices, receipts and statement payments for the month. Put each cost in one category only; anything that fits none goes under Other.',
     'auditor.audit.guide.drawings.do':
         'Record what the owners took out of the business this month.',
     'auditor.audit.guide.drawings.enter':
@@ -5528,6 +5546,22 @@ const en = {
     'auditor.differences.cause.wrong_month': 'Recorded in the wrong month',
     'auditor.differences.cause.entry_error': 'Entry error',
     'auditor.differences.cause.counted_twice': 'Counted twice',
+    'auditor.cash_sales.title': 'Cash sales not deposited',
+    'auditor.cash_sales.lead':
+        'Cash taken this month that never reached a bank or mobile-money account, from the sales book and receipts.',
+    'auditor.cash_sales.amount': 'Not deposited this month',
+    'auditor.cash_sales.hint': 'Enter 0 if every cash sale was deposited.',
+    'auditor.costs.title': 'Costs',
+    'auditor.costs.lead':
+        'This month’s costs in the six categories the business also uses for its monthly figures.',
+    'auditor.costs.category.stock': 'Stock and supplies',
+    'auditor.costs.category.staff': 'Staff',
+    'auditor.costs.category.premises': 'Premises',
+    'auditor.costs.category.transport': 'Transport',
+    'auditor.costs.category.taxes': 'Taxes and fees',
+    'auditor.costs.category.other': 'Other',
+    'auditor.costs.total': 'Total costs',
+    'auditor.costs.hint': 'Enter 0 for a category with no cost this month.',
     'auditor.drawings.title': 'Owner drawings',
     'auditor.drawings.lead':
         'What the owners took out of the business this month, from the statements and the cash book.',

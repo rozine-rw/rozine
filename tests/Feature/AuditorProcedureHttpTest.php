@@ -237,6 +237,8 @@ it('completes the isolated factual procedure and previews only the persisted rep
             'ledger' => ['observed_stock' => '37000000', 'reconciled' => true]]
         : ['statements' => [], 'count' => ['cash' => '108000001', 'stock_units' => '189', 'operational_status' => 'restricted',
             'financial_proofs' => ['bank', 'momo'], 'inventory_proofs' => ['photo']],
+            'cash_sales' => ['undeposited_cash_sales' => '15000'],
+            'costs' => ['costs' => ['stock' => '400000', 'staff' => '250000', 'premises' => '80000', 'transport' => '30000', 'taxes' => '20000', 'other' => '0']],
             'drawings' => ['owner_drawings' => '150000'],
             'loans' => ['loans' => [['lender' => 'Equity Bank', 'outstanding' => '2400000', 'monthly_payment' => '200000']]],
             'differences' => ['explanations' => [['amount' => '1', 'cause' => 'unrecorded_sales']]],
@@ -255,6 +257,10 @@ it('completes the isolated factual procedure and previews only the persisted rep
                 ->and($current['stage']['slots'][2]['thumbnail_url'])->toBeNull()->and($current['stage']['package']['handoff'])->toBeNull();
         } elseif ($step === 'ledger') {
             expect($current['stage']['reported_stock']['amount'])->toBe('38000000');
+        } elseif ($step === 'cash_sales') {
+            expect($current['stage'])->toBe(['step' => 'cash_sales', 'undeposited_cash_sales' => null]);
+        } elseif ($step === 'costs') {
+            expect($current['stage'])->toBe(['step' => 'costs', 'categories' => array_map(fn (string $category): array => ['key' => $category, 'amount' => null], AuditProcedure::COST_CATEGORIES)]);
         } elseif ($step === 'drawings') {
             expect($current['stage'])->toBe(['step' => 'drawings', 'owner_drawings' => null]);
         } elseif ($step === 'loans') {

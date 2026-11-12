@@ -81,7 +81,7 @@ class AuditorProcedureResource extends JsonResource
      * @param  array<string, mixed>  $sources
      * @param  array<string, mixed>  $file
      * @param  array<string, mixed>  $variance
-     * @param  array{difference: string|null, causes: list<string>, loans_max: int, loan_uses: list<string>, change_kinds: list<string>}  $monthly
+     * @param  array{difference: string|null, causes: list<string>, loans_max: int, cost_categories: list<string>, loan_uses: list<string>, change_kinds: list<string>}  $monthly
      * @param  array<string, mixed>|null  $seal
      * @param  array<string, mixed>|null  $reasonOptions
      * @param  array{url: string, method: string}|null  $upload
@@ -119,6 +119,9 @@ class AuditorProcedureResource extends JsonResource
                 'sector' => ['label' => $sources['source_facts']['declared_sector_label'] ?? __('Unavailable'),
                     'definition' => $sources['source_facts']['declared_unit_label'] ?? __('A declared inventory unit definition is required.')],
                 'operational_status' => $fields['operational_status'] ?? null],
+            'cash_sales' => ['step' => 'cash_sales', 'undeposited_cash_sales' => AuditorJobsResource::money($fields['undeposited_cash_sales'] ?? null)],
+            'costs' => ['step' => 'costs', 'categories' => array_map(fn (string $category): array => ['key' => $category,
+                'amount' => AuditorJobsResource::money(is_array($fields['costs'] ?? null) ? $fields['costs'][$category] ?? null : null)], $monthly['cost_categories'])],
             'drawings' => ['step' => 'drawings', 'owner_drawings' => AuditorJobsResource::money($fields['owner_drawings'] ?? null)],
             'loans' => ['step' => 'loans', 'max' => $monthly['loans_max'], 'loans' => array_map(fn (array $loan): array => ['lender' => $loan['lender'],
                 'outstanding' => AuditorJobsResource::money($loan['outstanding']), 'monthly_payment' => AuditorJobsResource::money($loan['monthly_payment'])], $fields['loans'] ?? [])],

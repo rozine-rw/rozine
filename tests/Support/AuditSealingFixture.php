@@ -45,6 +45,7 @@ final class AuditSealingFixture
                 'ledger' => ['observed_stock' => $findings ? '37000000' : '38000000', 'reconciled' => true]]
             : ['statements' => [], 'count' => ['cash' => $findings ? '108000001' : '108000000', 'stock_units' => '190',
                 'operational_status' => 'active', 'financial_proofs' => ['bank', 'momo'], 'inventory_proofs' => ['photo']],
+                'cash_sales' => ['undeposited_cash_sales' => '15000'], 'costs' => ['costs' => ['stock' => '400000', 'staff' => '250000', 'premises' => '80000', 'transport' => '30000', 'taxes' => '20000', 'other' => '0']],
                 'drawings' => ['owner_drawings' => '0'], 'loans' => ['loans' => []],
                 'differences' => ['explanations' => $findings ? [['cause' => 'entry_error', 'amount' => '1']] : []],
                 'staff' => ['staff_count' => '6', 'rssb_checked' => true], 'expiries' => ['tax_clearance_expires_on' => '2027-03-31', 'rssb_clearance_expires_on' => '2027-06-30'],

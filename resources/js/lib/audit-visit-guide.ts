@@ -57,6 +57,18 @@ export const VISIT_GUIDE: Record<
         done: 'auditor.audit.guide.count.done',
         how: 'auditor.audit.guide.count.how',
     },
+    cash_sales: {
+        do: 'auditor.audit.guide.cash_sales.do',
+        enter: 'auditor.audit.guide.cash_sales.enter',
+        done: 'auditor.audit.guide.cash_sales.done',
+        how: 'auditor.audit.guide.cash_sales.how',
+    },
+    costs: {
+        do: 'auditor.audit.guide.costs.do',
+        enter: 'auditor.audit.guide.costs.enter',
+        done: 'auditor.audit.guide.costs.done',
+        how: 'auditor.audit.guide.costs.how',
+    },
     drawings: {
         do: 'auditor.audit.guide.drawings.do',
         enter: 'auditor.audit.guide.drawings.enter',

@@ -8,16 +8,19 @@ use Illuminate\Support\Facades\DB;
 use Tests\Support\AuditSealingFixture as Fixture;
 
 /*
- * BRS v3 VIS-R01 steps 10, 12, 13 and 14: after the differences the monthly visit records the staff
+ * BRS v3 VIS-R01 steps 4, 5, 10, 12, 13 and 14: after the count the monthly visit records the cash
+ * sales not deposited and the costs in six categories; after the differences it records the staff
  * count from RSSB, the tax and RSSB expiry dates, the use of the loan money and the four yes/no
  * changes, and all of them are sealed with the rest of the draft.
  */
 
-it('seals the staff count, expiry dates, use of the loan money and changes the visit recorded', function (): void {
+it('seals the cash sales, costs, staff count, expiry dates, use of the loan money and changes the visit recorded', function (): void {
     $fixture = Fixture::ready(kind: 'monthly');
     $fields = $fixture['report']->refresh()->draft['fields'];
 
-    expect($fields['staff'])->toBe(['staff_count' => '6', 'rssb_checked' => true])
+    expect($fields['cash_sales'])->toBe(['undeposited_cash_sales' => '15000'])
+        ->and($fields['costs'])->toBe(['costs' => ['stock' => '400000', 'staff' => '250000', 'premises' => '80000', 'transport' => '30000', 'taxes' => '20000', 'other' => '0']])
+        ->and($fields['staff'])->toBe(['staff_count' => '6', 'rssb_checked' => true])
         ->and($fields['expiries'])->toBe(['tax_clearance_expires_on' => '2027-03-31', 'rssb_clearance_expires_on' => '2027-06-30'])
         ->and($fields['loan_use'])->toBe(['loan_use' => 'as_planned', 'loan_use_note' => ''])
         ->and($fields['changes'])->toBe(['changes' => ['new_debt' => false, 'director_change' => false, 'ownership_change' => false, 'legal_claim' => false]])
@@ -40,3 +43,20 @@ it('allows a monthly report at the new steps only while the constraint does, and
     $move($step);
     expect(AuditReport::query()->whereKey($fixture['report']->id)->value('step'))->toBe($step);
 })->with(['staff', 'expiries', 'loan_use', 'changes']);
+
+it('allows a monthly report at the cash sales or costs step only while the constraint does, and refuses rollback once one stands there', function (string $step): void {
+    $fixture = Fixture::ready(kind: 'monthly');
+    $move = fn (string $to) => DB::table('audit_reports')->where('id', $fixture['report']->id)->update(['step' => $to, 'revision' => DB::raw('revision + 1')]);
+    $move($step);
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    $migration = require database_path('migrations/2026_11_12_070000_add_monthly_cash_sales_and_costs_steps.php');
+
+    expect(fn () => $migration->down())->toThrow(QueryException::class, 'Monthly reports at the cash sales or costs step require a forward migration');
+
+    $move('photos');
+    $migration->down();
+    expect(fn () => DB::transaction(fn () => $move($step)))->toThrow(QueryException::class, 'audit_report_step');
+    $migration->up();
+    $move($step);
+    expect(AuditReport::query()->whereKey($fixture['report']->id)->value('step'))->toBe($step);
+})->with(['cash_sales', 'costs']);

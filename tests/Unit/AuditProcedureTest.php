@@ -28,6 +28,8 @@ function procedureFields(string $step): array
     return match ($step) {
         'ledger' => ['observed_stock' => '36400000', 'reconciled' => true],
         'count' => ['cash' => '1184000', 'stock_units' => '184', 'operational_status' => 'active', 'financial_proofs' => ['cash', 'bank'], 'inventory_proofs' => ['photo']],
+        'cash_sales' => ['undeposited_cash_sales' => '15000'],
+        'costs' => ['costs' => ['stock' => '400000', 'staff' => '250000', 'premises' => '80000', 'transport' => '30000', 'taxes' => '20000', 'other' => '0']],
         'drawings' => ['owner_drawings' => '150000'],
         'loans' => ['loans' => [['lender' => 'Bank of Kigali', 'outstanding' => '2400000', 'monthly_payment' => '200000']]],
         'differences' => ['explanations' => [['cause' => 'entry_error', 'amount' => '6000'], ['cause' => 'personal_spending', 'amount' => '20000']]],
@@ -290,7 +292,7 @@ it('withholds the difference step until the statements and declaration it explai
 
 it('records owner drawings and other loans after the count, before the differences (BRS v3 VIS-R01 steps 7 and 8)', function (): void {
     $procedure = new AuditProcedure;
-    expect(array_slice($procedure->steps('monthly'), 0, 5))->toBe(['statements', 'count', 'drawings', 'loans', 'differences']);
+    expect(array_slice($procedure->steps('monthly'), 0, 7))->toBe(['statements', 'count', 'cash_sales', 'costs', 'drawings', 'loans', 'differences']);
 
     $state = procedureBefore('monthly', 'drawings');
     $drawn = $procedure->save('monthly', 'drawings', $state['draft'], 'drawings', ['owner_drawings' => '0'], procedureSources());
@@ -334,7 +336,7 @@ it('refuses owner drawings and loans it cannot record exactly', function (string
 
 it('records the staff count, expiry dates, use of the loan money and changes after the differences (BRS v3 VIS-R01 steps 10, 12, 13 and 14)', function (): void {
     $procedure = new AuditProcedure;
-    expect($procedure->steps('monthly'))->toBe(['statements', 'count', 'drawings', 'loans', 'differences', 'staff', 'expiries', 'loan_use', 'changes', 'photos', 'seal']);
+    expect($procedure->steps('monthly'))->toBe(['statements', 'count', 'cash_sales', 'costs', 'drawings', 'loans', 'differences', 'staff', 'expiries', 'loan_use', 'changes', 'photos', 'seal']);
 
     $state = procedureBefore('monthly', 'staff');
     $staff = $procedure->save('monthly', 'staff', $state['draft'], 'staff', ['rssb_checked' => true, 'staff_count' => '0'], procedureSources());
@@ -379,4 +381,42 @@ it('refuses a staff count, expiry date, loan use or change it cannot record exac
     'changes missing one' => ['changes', ['changes' => ['new_debt' => false, 'director_change' => false, 'ownership_change' => false]], 'changes', 'Answer yes or no for each change.'],
     'changes with another' => ['changes', ['changes' => ['new_debt' => false, 'director_change' => false, 'ownership_change' => false, 'other' => false]], 'changes', 'Answer yes or no for each change.'],
     'change not yes or no' => ['changes', ['changes' => ['new_debt' => 'no', 'director_change' => false, 'ownership_change' => false, 'legal_claim' => false]], 'changes', 'Answer yes or no for each change.'],
+]);
+
+it('records the cash sales not deposited and the costs in six categories after the count (BRS v3 VIS-R01 steps 4 and 5)', function (): void {
+    $procedure = new AuditProcedure;
+    expect(array_slice($procedure->steps('monthly'), 1, 4))->toBe(['count', 'cash_sales', 'costs', 'drawings']);
+
+    $state = procedureBefore('monthly', 'cash_sales');
+    $sales = $procedure->save('monthly', 'cash_sales', $state['draft'], 'cash_sales', ['undeposited_cash_sales' => '0'], procedureSources());
+    expect($sales['step'])->toBe('costs')->and($sales['draft']['fields']['cash_sales'])->toBe(['undeposited_cash_sales' => '0'])
+        ->and($sales['draft']['sources']['cash_sales'] ?? null)->toBe(['verification' => procedureSource('verification'), 'declaration' => procedureSource('declaration')]);
+
+    // Sent in any order, the six categories are stored in their listed order.
+    $costs = $procedure->save('monthly', 'costs', $sales['draft'], 'costs', ['costs' => ['other' => '0', 'taxes' => '20000', 'transport' => '0',
+        'premises' => '80000', 'staff' => '250000', 'stock' => '400000']], procedureSources());
+    expect($costs['step'])->toBe('drawings')
+        ->and($costs['draft']['fields']['costs'])->toBe(['costs' => ['stock' => '400000', 'staff' => '250000', 'premises' => '80000', 'transport' => '0', 'taxes' => '20000', 'other' => '0']])
+        ->and(AuditProcedure::COST_CATEGORIES)->toBe(['stock', 'staff', 'premises', 'transport', 'taxes', 'other']);
+});
+
+it('refuses cash sales or costs it cannot record exactly', function (string $step, array $input, string $field, string $message): void {
+    $procedure = new AuditProcedure;
+    $state = procedureBefore('monthly', $step);
+
+    try {
+        $procedure->save('monthly', $step, $state['draft'], $step, $input, procedureSources());
+        $this->fail('The step was accepted.');
+    } catch (CommandRejection $rejection) {
+        expect($rejection->reason)->toBe('AUDIT_STEP_INPUT_INVALID')->and($rejection->fieldErrors)->toBe([$field => [$message]]);
+    }
+})->with([
+    'cash sales not whole' => ['cash_sales', ['undeposited_cash_sales' => '1500.50'], 'undeposited_cash_sales', 'Use a non-negative whole-number amount.'],
+    'cash sales negative' => ['cash_sales', ['undeposited_cash_sales' => '-1'], 'undeposited_cash_sales', 'Use a non-negative whole-number amount.'],
+    'cash sales missing' => ['cash_sales', [], 'step', 'Send only the fields for this procedure step.'],
+    'costs not a map' => ['costs', ['costs' => '700000'], 'costs', 'Enter an amount for each of the six cost categories.'],
+    'costs missing one' => ['costs', ['costs' => ['stock' => '1', 'staff' => '1', 'premises' => '1', 'transport' => '1', 'taxes' => '1']], 'costs', 'Enter an amount for each of the six cost categories.'],
+    'costs with another' => ['costs', ['costs' => ['stock' => '1', 'staff' => '1', 'premises' => '1', 'transport' => '1', 'taxes' => '1', 'rent' => '1']], 'costs', 'Enter an amount for each of the six cost categories.'],
+    'cost not whole' => ['costs', ['costs' => ['stock' => '1', 'staff' => '1', 'premises' => '1', 'transport' => '1', 'taxes' => '1', 'other' => '2.5']], 'costs', 'Use a non-negative whole-number amount.'],
+    'cost blank' => ['costs', ['costs' => ['stock' => '1', 'staff' => '1', 'premises' => '1', 'transport' => '1', 'taxes' => '1', 'other' => null]], 'costs', 'Use a non-negative whole-number amount.'],
 ]);

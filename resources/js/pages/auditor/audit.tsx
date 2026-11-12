@@ -8,8 +8,10 @@ import { ReturnedStatus } from '@/components/auditor/audit/returned-status';
 import { useSealFlow } from '@/components/auditor/audit/seal-flow';
 import { SealedStatus } from '@/components/auditor/audit/sealed-status';
 import { StepBar } from '@/components/auditor/audit/step-bar';
+import { StepCashSales } from '@/components/auditor/audit/step-cash-sales';
 import { StepChanges } from '@/components/auditor/audit/step-changes';
 import { StepCheckIn } from '@/components/auditor/audit/step-check-in';
+import { StepCosts } from '@/components/auditor/audit/step-costs';
 import { StepCount } from '@/components/auditor/audit/step-count';
 import { StepDifferences } from '@/components/auditor/audit/step-differences';
 import { StepDrawings } from '@/components/auditor/audit/step-drawings';
@@ -53,6 +55,8 @@ import type {
  */
 const SHOWN_FIELDS: Partial<Record<AuditStage['step'], string[]>> = {
     ledger: ['observed_stock', 'document', 'replaces'],
+    cash_sales: ['undeposited_cash_sales'],
+    costs: ['costs'],
     drawings: ['owner_drawings'],
     loans: ['loans'],
     differences: ['explanations'],
@@ -74,6 +78,8 @@ const CONTINUE: Record<
     ledger: 'auditor.audit.to_seal',
     statements: 'auditor.audit.start_count',
     count: 'auditor.audit.continue',
+    cash_sales: 'auditor.audit.continue',
+    costs: 'auditor.audit.continue',
     drawings: 'auditor.audit.continue',
     loans: 'auditor.audit.explain_differences',
     differences: 'auditor.audit.continue',
@@ -143,6 +149,10 @@ function StageBody({
             return <StepCount stage={stage} context={context} />;
         case 'drawings':
             return <StepDrawings stage={stage} context={context} />;
+        case 'cash_sales':
+            return <StepCashSales stage={stage} context={context} />;
+        case 'costs':
+            return <StepCosts stage={stage} context={context} />;
         case 'loans':
             return <StepLoans stage={stage} context={context} />;
         case 'differences':

@@ -22,6 +22,12 @@ final class AuditProcedure
     /** The cause codes a monthly difference is explained by (BRS v3 VIS-R01 step 9), in their listed order. */
     public const array DIFFERENCE_CAUSES = ['unrecorded_sales', 'unproven_expense', 'personal_spending', 'wrong_month', 'entry_error', 'counted_twice'];
 
+    /**
+     * The six categories the CPA sorts the month's costs into (BRS v3 VIS-R01 step 5), the same six the
+     * Business uses in its monthly submission (VIS-R04), in their listed order.
+     */
+    public const array COST_CATEGORIES = ['stock', 'staff', 'premises', 'transport', 'taxes', 'other'];
+
     /** At most this many other loans are recorded on one monthly visit (BRS v3 VIS-R01 step 8). */
     public const int MAX_OTHER_LOANS = 10;
 
@@ -39,7 +45,7 @@ final class AuditProcedure
     {
         return match ($kind) {
             'flash' => ['review', 'check_in', 'photos', 'ledger', 'seal'],
-            'monthly' => ['statements', 'count', 'drawings', 'loans', 'differences', 'staff', 'expiries', 'loan_use', 'changes', 'photos', 'seal'],
+            'monthly' => ['statements', 'count', 'cash_sales', 'costs', 'drawings', 'loans', 'differences', 'staff', 'expiries', 'loan_use', 'changes', 'photos', 'seal'],
             default => throw new CommandRejection('AUDIT_PROCEDURE_INVALID', 422),
         };
     }
@@ -168,6 +174,8 @@ final class AuditProcedure
             'ledger' => ['observed_stock', 'reconciled'],
             'count' => ['financial_proofs', 'inventory_proofs', 'cash', 'stock_units', 'operational_status'],
             'photos' => ['titles'],
+            'cash_sales' => ['undeposited_cash_sales'],
+            'costs' => ['costs'],
             'drawings' => ['owner_drawings'],
             'loans' => ['loans'],
             'differences' => ['explanations'],
@@ -208,6 +216,12 @@ final class AuditProcedure
             return ['cash' => $cash, 'stock_units' => $units, 'operational_status' => $input['operational_status'],
                 'financial_proofs' => $this->proofs($input['financial_proofs'], $sources['financial_proofs'], 'financial_proofs'),
                 'inventory_proofs' => $this->proofs($input['inventory_proofs'], $sources['inventory_proofs'], 'inventory_proofs')];
+        }
+        if ($step === 'cash_sales') {
+            return ['undeposited_cash_sales' => $this->amount($input['undeposited_cash_sales'], 'undeposited_cash_sales')];
+        }
+        if ($step === 'costs') {
+            return ['costs' => $this->costs($input['costs'])];
         }
         if ($step === 'drawings') {
             return ['owner_drawings' => $this->amount($input['owner_drawings'], 'owner_drawings')];
@@ -271,7 +285,7 @@ final class AuditProcedure
             'check_in' => ['check_in'],
             'photos' => ['photos'],
             'statements' => ['verification'],
-            'ledger', 'count', 'drawings', 'loans', 'differences', 'staff', 'expiries', 'loan_use', 'changes' => ['verification', 'declaration'],
+            'ledger', 'count', 'cash_sales', 'costs', 'drawings', 'loans', 'differences', 'staff', 'expiries', 'loan_use', 'changes' => ['verification', 'declaration'],
             default => [],
         };
         $pins = [];
@@ -361,6 +375,28 @@ final class AuditProcedure
         }
 
         return $loans;
+    }
+
+    /**
+     * A whole-franc amount for each of the six cost categories, in the listed order; a category with no
+     * cost this month is recorded as zero, never left out.
+     *
+     * @return array<string, string>
+     */
+    private function costs(mixed $values): array
+    {
+        if (! is_array($values) || count($values) !== count(self::COST_CATEGORIES)) {
+            throw new CommandRejection('AUDIT_STEP_INPUT_INVALID', 422, fieldErrors: ['costs' => ['Enter an amount for each of the six cost categories.']]);
+        }
+        $costs = [];
+        foreach (self::COST_CATEGORIES as $category) {
+            if (! array_key_exists($category, $values)) {
+                throw new CommandRejection('AUDIT_STEP_INPUT_INVALID', 422, fieldErrors: ['costs' => ['Enter an amount for each of the six cost categories.']]);
+            }
+            $costs[$category] = $this->amount($values[$category], 'costs');
+        }
+
+        return $costs;
     }
 
     /**

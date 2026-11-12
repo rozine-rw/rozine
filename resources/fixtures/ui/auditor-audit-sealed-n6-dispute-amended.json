@@ -29,6 +29,14 @@
                 "state": "done"
             },
             {
+                "key": "cash_sales",
+                "state": "done"
+            },
+            {
+                "key": "costs",
+                "state": "done"
+            },
+            {
                 "key": "drawings",
                 "state": "done"
             },

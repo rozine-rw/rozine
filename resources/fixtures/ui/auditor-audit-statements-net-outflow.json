@@ -34,6 +34,14 @@
                 "state": "todo"
             },
             {
+                "key": "cash_sales",
+                "state": "todo"
+            },
+            {
+                "key": "costs",
+                "state": "todo"
+            },
+            {
                 "key": "drawings",
                 "state": "todo"
             },

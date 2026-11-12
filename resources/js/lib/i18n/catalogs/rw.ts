@@ -3460,6 +3460,8 @@ const rw: Catalog = {
     'auditor.audit.step.seal': 'Kashe',
     'auditor.audit.step.statements': 'Inyandiko za konti',
     'auditor.audit.step.count': 'Kubara',
+    'auditor.audit.step.cash_sales': 'Ibyagurishijwe mu ntoki',
+    'auditor.audit.step.costs': 'Amafaranga yakoreshejwe',
     'auditor.audit.step.drawings': 'Ibyafashwe na ba nyirabwo',
     'auditor.audit.step.loans': 'Indi myenda',
     'auditor.audit.step.differences': 'Itandukaniro',
@@ -5686,6 +5688,22 @@ const rw: Catalog = {
         'Buri mubare wanditswe kandi buri kimenyetso kiri ku rutonde cyahiswemo.',
     'auditor.audit.guide.count.how':
         'Bara ubwawe amafaranga n’ibicuruzwa. Buri mubare ugereranywa na raporo ziri muri dosiye; nta na kimwe hano gituruka ku bucuruzi.',
+    'auditor.audit.guide.cash_sales.do':
+        'Andika ibyagurishijwe mu ntoki uku kwezi bitigeze bishyirwa kuri konti ya banki cyangwa mobile money.',
+    'auditor.audit.guide.cash_sales.enter':
+        'Umubare umwe w’amafaranga yuzuye. Urugero 15000. Andika 0 niba ibyagurishijwe byose byashyizwe kuri konti.',
+    'auditor.audit.guide.cash_sales.done':
+        'Hari umubare wanditse, n’iyo waba 0.',
+    'auditor.audit.guide.cash_sales.how':
+        'Gereranya igitabo cy’ibyagurishijwe n’inyemezabwishyu n’ibyashyizwe kuri konti biri kuri raporo. Amafaranga yagumishijwe yo kugarura cyangwa yakoreshejwe mbere yo kujya kuri banki abarwa nk’atashyizwe kuri konti.',
+    'auditor.audit.guide.costs.do':
+        'Shyira amafaranga yakoreshejwe uku kwezi mu byiciro bitandatu.',
+    'auditor.audit.guide.costs.enter':
+        'Umubare w’amafaranga yuzuye kuri buri cyiciro: ibicuruzwa, abakozi, aho bakorera, ingendo, imisoro n’ibindi. Urugero ibicuruzwa 400000. Andika 0 aho nta mafaranga yakoreshejwe.',
+    'auditor.audit.guide.costs.done':
+        'Buri cyiciro gifite umubare, n’iyo waba 0.',
+    'auditor.audit.guide.costs.how':
+        'Koresha inyemezabuguzi, inyemezabwishyu n’ibyishyuwe biri kuri raporo z’uku kwezi. Shyira buri gikoreshwa mu cyiciro kimwe gusa; ikitajya mu cyiciro na kimwe gishyirwa mu Bindi.',
     'auditor.audit.guide.drawings.do':
         'Andika ibyo ba nyir’ubucuruzi bakuyemo muri uku kwezi.',
     'auditor.audit.guide.drawings.enter':
@@ -5731,6 +5749,25 @@ const rw: Catalog = {
     'auditor.differences.cause.wrong_month': 'Byanditswe mu kwezi kutari ko',
     'auditor.differences.cause.entry_error': 'Ikosa ryo kwandika',
     'auditor.differences.cause.counted_twice': 'Byabazwe kabiri',
+    'auditor.cash_sales.title':
+        'Ibyagurishijwe mu ntoki bitashyizwe kuri konti',
+    'auditor.cash_sales.lead':
+        'Amafaranga yinjiye mu ntoki uku kwezi atigeze agera kuri konti ya banki cyangwa mobile money, bikurikijwe igitabo cy’ibyagurishijwe n’inyemezabwishyu.',
+    'auditor.cash_sales.amount': 'Atashyizwe kuri konti uku kwezi',
+    'auditor.cash_sales.hint':
+        'Andika 0 niba ibyagurishijwe mu ntoki byose byashyizwe kuri konti.',
+    'auditor.costs.title': 'Amafaranga yakoreshejwe',
+    'auditor.costs.lead':
+        'Amafaranga yakoreshejwe uku kwezi mu byiciro bitandatu ubucuruzi nabwo bukoresha mu mibare yabwo ya buri kwezi.',
+    'auditor.costs.category.stock': 'Ibicuruzwa n’ibikoresho',
+    'auditor.costs.category.staff': 'Abakozi',
+    'auditor.costs.category.premises': 'Aho bakorera',
+    'auditor.costs.category.transport': 'Ingendo',
+    'auditor.costs.category.taxes': 'Imisoro n’amahoro',
+    'auditor.costs.category.other': 'Ibindi',
+    'auditor.costs.total': 'Igiteranyo cy’amafaranga yakoreshejwe',
+    'auditor.costs.hint':
+        'Andika 0 ku cyiciro kitagize amafaranga yakoreshejwe uku kwezi.',
     'auditor.drawings.title': 'Ibyafashwe na ba nyirabwo',
     'auditor.drawings.lead':
         'Ibyo ba nyir’ubucuruzi bakuyemo muri uku kwezi, ukurikije raporo n’igitabo cy’amafaranga.',
