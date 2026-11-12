@@ -12,7 +12,6 @@ use App\Application\Identity\Contracts\PartyNotices;
 use App\Domain\Auditor\VisitReadyChecklist;
 use App\Domain\Identity\PartyNoticeKind;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\DB;
 
 /**
  * The visit-ready checklist notices (BRS v3 VIS-R03, AUD-R04), once per Business and instalment:
@@ -44,16 +43,16 @@ final readonly class RemindVisitReady
             }
             $items = array_column($this->checklist->items($this->held->held($business, VisitReadyChecklist::visitBy($due))), 'key');
             if ($days > self::REMIND_DAYS_BEFORE) {
-                DB::transaction(fn () => $this->notices->record($party, PartyNoticeKind::BusinessVisitReadyOpen,
-                    ['business_id' => $business, 'due_on' => $due, 'items' => (string) count($items)], 'business-visit-ready-open:'.$business.':'.$due));
+                $this->notices->record($party, PartyNoticeKind::BusinessVisitReadyOpen,
+                    ['business_id' => $business, 'due_on' => $due, 'items' => (string) count($items)], 'business-visit-ready-open:'.$business.':'.$due);
                 $sent['opened']++;
 
                 continue;
             }
             $open = count(array_diff($items, $this->ticks->ticked($business, $due)));
             if ($open > 0) {
-                DB::transaction(fn () => $this->notices->record($party, PartyNoticeKind::BusinessVisitReadyReminder,
-                    ['business_id' => $business, 'due_on' => $due, 'open' => (string) $open, 'items' => (string) count($items)], 'business-visit-ready-reminder:'.$business.':'.$due));
+                $this->notices->record($party, PartyNoticeKind::BusinessVisitReadyReminder,
+                    ['business_id' => $business, 'due_on' => $due, 'open' => (string) $open, 'items' => (string) count($items)], 'business-visit-ready-reminder:'.$business.':'.$due);
                 $sent['reminded']++;
             }
         }
