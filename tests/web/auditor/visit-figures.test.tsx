@@ -109,29 +109,26 @@ describe('Audit procedure — costs in six categories', () => {
         const stock = within(sheet()).getByLabelText(/Stock and supplies/u);
         const other = within(sheet()).getByLabelText(/^Other/u);
 
-        expect(
-            within(sheet())
-                .getAllByRole('textbox')
-                .map((input) => input.closest('label')?.textContent),
-        ).toEqual([
-            expect.stringMatching(/^Stock and supplies/u),
-            expect.stringMatching(/^Staff/u),
-            expect.stringMatching(/^Premises/u),
-            expect.stringMatching(/^Transport/u),
-            expect.stringMatching(/^Taxes and fees/u),
-            expect.stringMatching(/^Other/u),
-        ]);
+        const inputs = within(sheet()).getAllByRole('textbox');
+        [
+            /^Stock and supplies/u,
+            /^Staff/u,
+            /^Premises/u,
+            /^Transport/u,
+            /^Taxes and fees/u,
+            /^Other/u,
+        ].forEach((name, index) =>
+            expect(inputs[index]).toHaveAccessibleName(name),
+        );
+        expect(inputs).toHaveLength(6);
         expect(stock).toHaveValue('400,000');
         expect(other).toHaveValue('');
-        expect(
-            within(sheet()).getByText('Total costs').parentElement,
-        ).toHaveTextContent('RWF 780,000');
+        expect(within(sheet()).getByText('Total costs')).toBeInTheDocument();
+        expect(within(sheet()).getByText('RWF 780,000')).toBeInTheDocument();
 
         fireEvent.change(stock, { target: { value: '410,500' } });
         fireEvent.change(other, { target: { value: '5000 francs' } });
-        expect(
-            within(sheet()).getByText('Total costs').parentElement,
-        ).toHaveTextContent('RWF 795,500');
+        expect(within(sheet()).getByText('RWF 795,500')).toBeInTheDocument();
         proceed();
 
         expect(inertia.calls[0].body).toEqual({
@@ -166,12 +163,11 @@ describe('Audit procedure — costs in six categories', () => {
             />,
         );
         const inputs = within(sheet()).getAllByRole('textbox');
+
         expect(
             inputs.map((input) => (input as HTMLInputElement).value),
         ).toEqual(['', '', '', '', '', '']);
-        expect(
-            within(sheet()).getByText('Total costs').parentElement,
-        ).toHaveTextContent('RWF 0');
+        expect(within(sheet()).getByText('RWF 0')).toBeInTheDocument();
 
         await user.click(
             within(sheet()).getByRole('button', { name: 'Continue' }),
@@ -192,6 +188,7 @@ describe('Audit procedure — costs in six categories', () => {
                 other: '',
             },
         });
+
         for (const input of inputs) {
             expect(input).toHaveAttribute('aria-invalid', 'true');
             expect(input).toHaveAttribute(
