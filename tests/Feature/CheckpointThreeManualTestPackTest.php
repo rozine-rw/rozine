@@ -48,7 +48,7 @@ it('stages a listed raise, a paid-out note and a monthly report in its window, a
         ->assertInertia(fn (Assert $page): Assert => $page->component('business/home')->whereNot('rating', null));
     $monthly = User::query()->where('email', 'business-monthly@c3.rozine.invalid')->sole();
     $this->actingAs($monthly)->get($pack['scenarios']['monthly']['business_path'])->assertOk()
-        ->assertInertia(fn (Assert $page): Assert => $page->component('business/audit-cosign')->where('allowed_actions', ['report.cosign', 'report.dispute']));
+        ->assertInertia(fn (Assert $page): Assert => $page->component('business/audit-cosign')->where('allowed_actions', ['report.dispute']));
 
     $holder = User::query()->where('email', 'investor-funded-1@c3.rozine.invalid')->sole();
     $this->actingAs($holder)->get(route('investor.portfolio'))->assertOk();
