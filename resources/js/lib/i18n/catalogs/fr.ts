@@ -5887,6 +5887,7 @@ const fr: Catalog = {
     'auditor.available.title': 'Fonds disponibles maintenant',
     'auditor.available.lead':
         'Le remboursement a 7 jours de retard. Notez ce avec quoi l’entreprise pourrait payer aujourd’hui.',
+    'auditor.available.proofs': 'Justificatifs vus',
     'auditor.available.amount': 'Disponible maintenant',
     'auditor.available.hint':
         'Espèces en caisse plus soldes bancaires et mobile money. Saisissez 0 s’il n’y en a pas.',

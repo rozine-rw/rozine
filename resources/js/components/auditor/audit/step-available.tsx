@@ -46,7 +46,16 @@ export function StepAvailable({
                 title={t('auditor.available.title')}
                 lead={t('auditor.available.lead')}
             />
-            <div className="mt-4 flex flex-col gap-[7px]">
+            <div
+                role="group"
+                aria-label={t('auditor.available.proofs')}
+                aria-describedby={
+                    errors.financial_proofs
+                        ? 'auditor-available-proofs-error'
+                        : undefined
+                }
+                className="mt-4 flex flex-col gap-[7px]"
+            >
                 {stage.financial_proofs.map((proof) => (
                     <ProofToggle
                         key={proof.key}

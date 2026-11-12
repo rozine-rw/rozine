@@ -124,10 +124,10 @@ describe('Late visit — money available now', () => {
             ),
         ).toBeInTheDocument();
         expect(
-            within(sheet()).getByText(
-                'Inspect every required proof before continuing.',
-            ),
-        ).toBeInTheDocument();
+            within(sheet()).getByRole('group', { name: 'Proof seen' }),
+        ).toHaveAccessibleDescription(
+            'Inspect every required proof before continuing.',
+        );
     });
 });
 

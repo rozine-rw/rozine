@@ -5662,6 +5662,7 @@ const en = {
     'auditor.available.title': 'Money available now',
     'auditor.available.lead':
         'The repayment is 7 days late. Record what the business could pay with today.',
+    'auditor.available.proofs': 'Proof seen',
     'auditor.available.amount': 'Available now',
     'auditor.available.hint':
         'Cash on hand plus bank and mobile-money balances. Enter 0 if there is none.',

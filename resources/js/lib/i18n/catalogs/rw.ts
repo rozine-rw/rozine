@@ -5869,6 +5869,7 @@ const rw: Catalog = {
     'auditor.available.title': 'Amafaranga ahari ubu',
     'auditor.available.lead':
         'Kwishyura byatinze iminsi 7. Andika ibyo ubucuruzi bwakwishyuza uyu munsi.',
+    'auditor.available.proofs': 'Ibihamya byabonetse',
     'auditor.available.amount': 'Ahari ubu',
     'auditor.available.hint':
         'Amafaranga mu ntoki hiyongereyeho ari kuri banki na mobile money. Andika 0 niba nta yo.',
