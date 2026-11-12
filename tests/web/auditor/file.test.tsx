@@ -332,7 +332,7 @@ describe('Auditor business file on the live S-C projection', () => {
     const liveSheet = () => sheetFor('Gikondo Metal Works');
 
     it.each([
-        ['awaiting_cosign', 'Awaiting co-signature'],
+        ['awaiting_cosign', 'In dispute window'],
         ['disputed', 'Under desk review'],
         ['escalated', 'Escalated'],
         ['published', 'Published'],
@@ -355,7 +355,7 @@ describe('Auditor business file on the live S-C projection', () => {
 
         expect(within(liveSheet()).getByRole('timer')).toBeInTheDocument();
         expect(
-            within(liveSheet()).queryByText('Awaiting co-signature'),
+            within(liveSheet()).queryByText('In dispute window'),
         ).not.toBeInTheDocument();
     });
 

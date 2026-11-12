@@ -30,16 +30,16 @@ function monthlyReviewInput(array $fixture, int $revision = 1): array
         'digest' => $fixture['fields']['digest'], 'supporting_text' => 'The stock count excludes the retained delivery receipt.'];
 }
 
-it('pins a monthly delivery window and accepts one real signature without altering Flash', function (): void {
+it('pins a monthly delivery window and refuses a Business signature without altering Flash', function (): void {
     $fixture = Fixture::ready(2, 'monthly');
     expect(Fixture::seal($fixture)['code'])->toBe('AUDIT_SEALED');
     $publication = AuditReportPublication::query()->firstOrFail();
     expect($publication->policy_version)->toBe(MonthlyReportReview::POLICY)
         ->and($publication->due_at->diffInHours($publication->delivered_at, true))->toBe(24.0)
-        ->and(Fixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
+        ->and(Fixture::cosign($fixture)['code'])->toBe('REPORT_COSIGN_NOT_REQUIRED');
     $publication->refresh();
-    expect($publication->published_reason)->toBe('signed')->and($publication->revision)->toBe(2)
-        ->and(AuditReportSignature::query()->count())->toBe(1)->and(AuditPublicationEvent::query()->count())->toBe(2);
+    expect($publication->status)->toBe('pending')->and($publication->revision)->toBe(1)
+        ->and(AuditReportSignature::query()->count())->toBe(0)->and(AuditPublicationEvent::query()->count())->toBe(1);
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
 });
 
@@ -52,7 +52,7 @@ it('publishes exactly at the due instant without fabricating a signature and ret
     $this->travelTo($due->subSecond());
     expect($store->advanceDue()['published'])->toBe(0);
     $this->travelTo($due);
-    expect(Fixture::cosign($fixture)['code'])->toBe('REPORT_WINDOW_CLOSED')
+    expect(Fixture::cosign($fixture)['code'])->toBe('REPORT_COSIGN_NOT_REQUIRED')
         ->and($store->advanceDue()['published'])->toBe(1)->and($store->advanceDue()['published'])->toBe(0);
     $page = app(GetBusinessAuditReport::class)->handle($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'], $fixture['report']->id);
     expect($page['cosign']['published_reason'])->toBe('auto_approved')->and($page['cosign']['signed_count'])->toBe(0)

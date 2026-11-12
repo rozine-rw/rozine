@@ -1,6 +1,7 @@
 import { Head, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { FloatingHold } from '@/components/investor/floating-hold';
+import { RiskGate } from '@/components/investor/risk-gate';
 import { AppFrame } from '@/components/rozine/app-frame';
 import { useChangeBeacon } from '@/hooks/use-change-beacon';
 import type { ChangeBeacon } from '@/hooks/use-change-beacon';
@@ -113,6 +114,7 @@ export function InvestorShell({
             <Head title={title} />
             {children}
             <FloatingHold wallet={links.wallet} raised={showTabBar ?? true} />
+            <RiskGate />
         </AppFrame>
     );
 }

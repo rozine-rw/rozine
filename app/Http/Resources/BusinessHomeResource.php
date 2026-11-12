@@ -42,7 +42,7 @@ class BusinessHomeResource extends JsonResource
         $placeholder = '00000000-0000-0000-0000-000000000000';
         $wallet = fn (array $query = []): array => self::link($request, 'business.wallet.show', ['business' => $business, ...$query]);
         $report = $entry['audit_report'] ?? null;
-        $cosign = $report === null || $report['status'] !== 'pending' || $request->routeIs('api.*') ? [] : [['kind' => 'audit_cosign', 'report_kind' => $report['kind'], 'due_at' => $report['due_at'] ?? null,
+        $cosign = $report === null || $report['status'] !== 'pending' || $request->routeIs('api.*') ? [] : [['kind' => 'audit_cosign', 'report_kind' => $report['kind'], 'cosign' => $report['cosign'] ?? false, 'due_at' => $report['due_at'] ?? null,
             'hours_left' => ($report['due_at'] ?? null) === null ? null : max(0, (int) ceil((strtotime($report['due_at']) - now()->getTimestamp()) / 3600)),
             'link' => self::link($request, 'business.audit-reports.show', ['business' => $business, 'report' => $report['id']])]];
         $signing = $entry['draft_signatures'] ?? null;
@@ -76,15 +76,16 @@ class BusinessHomeResource extends JsonResource
     }
 
     /**
-     * The Business shell's Reports and Profile tabs for one business, for every Business page to
-     * share. Both are web pages only, so on the bearer transport they stay null and hidden.
+     * The Business shell's Reports, Readiness, Market and Profile tabs for one business, for every
+     * Business page to share. All are web pages only, so on the bearer transport they stay null and hidden.
      *
-     * @return array{reports: array{url: string, method: 'get'}|null, profile: array{url: string, method: 'get'}|null}
+     * @return array{reports: array{url: string, method: 'get'}|null, readiness: array{url: string, method: 'get'}|null, market: array{url: string, method: 'get'}|null, profile: array{url: string, method: 'get'}|null}
      */
     public static function tabs(Request $request, string $business): array
     {
-        return $request->routeIs('api.*') ? ['reports' => null, 'market' => null, 'profile' => null]
-            : ['reports' => self::link($request, 'business.reports', ['business' => $business]), 'market' => self::link($request, 'business.market', ['business' => $business]),
+        return $request->routeIs('api.*') ? ['reports' => null, 'readiness' => null, 'market' => null, 'profile' => null]
+            : ['reports' => self::link($request, 'business.reports', ['business' => $business]), 'readiness' => self::link($request, 'business.readiness', ['business' => $business]),
+                'market' => self::link($request, 'business.market', ['business' => $business]),
                 'profile' => self::link($request, 'business.profile', ['business' => $business])];
     }
 
