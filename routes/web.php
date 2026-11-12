@@ -14,11 +14,13 @@ use App\Http\Controllers\AuditorProcedureController;
 use App\Http\Controllers\AuditorProfileController;
 use App\Http\Controllers\AuditorStatementVerificationController;
 use App\Http\Controllers\AuditSealVerificationController;
+use App\Http\Controllers\BusinessAcademyController;
 use App\Http\Controllers\BusinessApplicationController;
 use App\Http\Controllers\BusinessAuditReportController;
 use App\Http\Controllers\BusinessComplaintController;
 use App\Http\Controllers\BusinessContactController;
 use App\Http\Controllers\BusinessHomeController;
+use App\Http\Controllers\BusinessMonthlyFiguresController;
 use App\Http\Controllers\BusinessNoticesController;
 use App\Http\Controllers\BusinessPayoutAccountController;
 use App\Http\Controllers\BusinessPublicationController;
@@ -224,6 +226,7 @@ Route::get('business/{business}', [BusinessHomeController::class, 'show'])->midd
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('business')->name('business.')->group(function (): void {
     Route::get('{business}/reports', [BusinessHomeController::class, 'reports'])->whereUlid('business')->name('reports');
+    Route::get('{business}/readiness', [BusinessHomeController::class, 'readiness'])->whereUlid('business')->name('readiness');
     Route::get('{business}/market', [BusinessHomeController::class, 'market'])->whereUlid('business')->name('market');
     Route::get('{business}/profile/{section?}', [BusinessHomeController::class, 'profile'])->whereUlid('business')
         ->whereIn('section', GetBusinessProfile::SECTIONS)->name('profile');
@@ -236,6 +239,11 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
         ->name('complaints.reply');
     Route::get('{business}/rating', [BusinessHomeController::class, 'rating'])->whereUlid('business')->name('rating');
     Route::get('{business}/audit-prep', [BusinessHomeController::class, 'auditPrep'])->whereUlid('business')->name('audit-prep');
+    Route::get('{business}/monthly-figures', [BusinessMonthlyFiguresController::class, 'show'])->whereUlid('business')->name('monthly-figures.show');
+    Route::post('{business}/monthly-figures', [BusinessMonthlyFiguresController::class, 'store'])->whereUlid('business')->name('monthly-figures.store');
+    Route::get('{business}/academy', [BusinessAcademyController::class, 'index'])->whereUlid('business')->name('academy');
+    Route::get('{business}/academy/{module}', [BusinessAcademyController::class, 'show'])->whereUlid('business')->where('module', '[a-z_]{1,40}')->name('academy.module');
+    Route::post('{business}/academy/{module}', [BusinessAcademyController::class, 'store'])->whereUlid('business')->where('module', '[a-z_]{1,40}')->name('academy.submit');
     Route::post('{business}/statements', [BusinessStatementController::class, 'upload'])->whereUlid('business')->name('statements.upload');
     Route::get('{business}/statements/transcription', [BusinessStatementTranscriptionController::class, 'page'])->whereUlid('business')->name('statements.transcription.show');
     Route::post('{business}/statements/transcription', [BusinessStatementTranscriptionController::class, 'save'])->whereUlid('business')->name('statements.transcription.save');

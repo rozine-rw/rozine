@@ -284,8 +284,205 @@ const en = {
         "You're offline. What you see may be out of date, and nothing can be sent until you're back online.",
     'business.nav.home': 'Home',
     'business.nav.reports': 'Reports',
+    'business.nav.readiness': 'Readiness',
     'business.nav.market': 'Market',
     'business.nav.profile': 'Profile',
+    'business.readiness.title': 'Readiness',
+    'business.readiness.subtitle':
+        'How your business grows toward the capital market, in step with its size. Only you see this page.',
+    'business.readiness.stage.0': 'Below Foundation',
+    'business.readiness.stage.1': 'Stage 1 · Foundation',
+    'business.readiness.stage.2': 'Stage 2 · Growth',
+    'business.readiness.stage.3': 'Stage 3 · Scale',
+    'business.readiness.stage.4': 'Stage 4 · Market',
+    'business.readiness.stage_pending': 'Stage not set yet',
+    'business.readiness.status.building': 'Building',
+    'business.readiness.status.ready': 'Ready',
+    'business.readiness.vmr': 'Verified monthly revenue',
+    'business.readiness.vmr_basis':
+        'The average of your last 3 published monthly reports.',
+    'business.readiness.reports_needed': {
+        one: 'Your stage is set once 3 monthly reports are published. {count} more to go.',
+        other: 'Your stage is set once 3 monthly reports are published. {count} more to go.',
+    },
+    'business.readiness.pending.up': {
+        one: '{count} reading so far points to {stage}. The stage moves up after {needed} readings in a row, with 2 of the last 3 months there too.',
+        other: '{count} readings in a row point to {stage}. The stage moves up after {needed} readings in a row, with 2 of the last 3 months there too.',
+    },
+    'business.readiness.pending.down': {
+        one: '{count} reading so far points to {stage}. The stage moves down only after {needed} readings in a row, with 2 of the last 3 months there too.',
+        other: '{count} readings in a row point to {stage}. The stage moves down only after {needed} readings in a row, with 2 of the last 3 months there too.',
+    },
+    'business.readiness.next':
+        '{stage} starts at {threshold} a month: {gap} to go.',
+    'business.readiness.next_reached':
+        '{stage} starts at {threshold} a month. Your average is there: hold it for {needed} readings in a row.',
+    'business.readiness.top': 'You are in the top stage.',
+    'business.readiness.ready_rule':
+        'Ready comes when every requirement due is met, your three signals stay on target for 3 reports in a row, and you pass your stage’s core Academy modules.',
+    'business.readiness.guidance.title': 'Monthly guidance',
+    'business.readiness.guidance.rule':
+        'After each published report, each signal is measured against the target for your stage, with one action.',
+    'business.readiness.guidance.empty':
+        'Your guidance starts once a month you sent figures for is verified in a published report.',
+    'business.readiness.guidance.record_gap': 'Record Gap',
+    'business.readiness.guidance.forecast_error': 'Forecast Error',
+    'business.readiness.guidance.on_target': 'On target',
+    'business.readiness.guidance.off_target': 'Off target',
+    'business.readiness.guidance.value': {
+        one: '{value}% over the last {count} month. Target: {target}% or less.',
+        other: '{value}% over the last {count} months. Target: {target}% or less.',
+    },
+    'business.readiness.guidance.bias.over':
+        'Your forecasts were above the money that came in.',
+    'business.readiness.guidance.bias.under':
+        'Your forecasts were below the money that came in.',
+    'business.readiness.guidance.record_gap.keep':
+        'Keep recording every sale and every payment in your books on the day it happens.',
+    'business.readiness.guidance.record_gap.fix':
+        'Record every cash sale and every payment in your books on the same day, and keep each receipt.',
+    'business.readiness.guidance.forecast_error.keep':
+        'Keep starting each forecast from your verified average and the orders you hold in writing.',
+    'business.readiness.guidance.forecast_error.fix':
+        "Start next month's forecast from your verified average, and add only orders you hold in writing.",
+    'business.academy.title': 'Academy',
+    'business.academy.intro':
+        'Short lessons for your stage. Each module is a set of flashcards, then a test of {questions} questions. {pass} correct answers pass.',
+    'business.academy.core_title': 'Core modules for {stage}',
+    'business.academy.preview_title': 'Preview of {stage}',
+    'business.academy.preview_body':
+        'Cards only. The test opens when you reach this stage.',
+    'business.academy.cards': {
+        one: '{count} card',
+        other: '{count} cards',
+    },
+    'business.academy.state.open': 'Test open',
+    'business.academy.state.passed': 'Passed',
+    'business.academy.state.waiting': 'Retake from {date}',
+    'business.academy.state.preview': 'Preview',
+    'business.academy.best': 'Best score: {score} of {total}',
+    'business.academy.syllabus':
+        'Academy: {passed} of {total} core modules passed for your stage.',
+    'business.academy.open': 'Open the Academy',
+    'business.academy.back': 'Back',
+    'business.academy.flashcards': 'Flashcards',
+    'business.academy.card_progress': 'Card {current} of {total}',
+    'business.academy.show_back': 'Show answer',
+    'business.academy.show_front': 'Show card',
+    'business.academy.previous': 'Previous',
+    'business.academy.next': 'Next',
+    'business.academy.start_test': 'Start the test',
+    'business.academy.test_title': 'Test',
+    'business.academy.test_intro':
+        'Answer all {count} questions. {pass} correct answers pass.',
+    'business.academy.question': 'Question {current} of {total}',
+    'business.academy.left': {
+        one: '{count} question left to answer.',
+        other: '{count} questions left to answer.',
+    },
+    'business.academy.send': 'Send answers',
+    'business.academy.sending': 'Sending…',
+    'business.academy.result.passed': 'Passed with {score} of {total}.',
+    'business.academy.result.waiting':
+        'Not passed: {score} of {total}. The test reopens on {date} with new questions.',
+    'business.academy.result.open':
+        'Not passed: {score} of {total}. Your next test is ready below.',
+    'business.academy.note.passed':
+        'You have passed this module. Its cards stay here to revise.',
+    'business.academy.note.preview':
+        'This module belongs to the next stage. Its test opens when you reach it.',
+    'business.readiness.milestones.title':
+        'Milestones toward the capital market',
+    'business.readiness.milestones.rule':
+        'Each milestone is reached automatically once every condition is met. Conditions Rozine cannot measure yet are shown as pending.',
+    'business.readiness.milestones.bond.title': 'Bond track',
+    'business.readiness.milestones.bond.summary':
+        'Meet every condition and Rozine prepares your bond-readiness file.',
+    'business.readiness.milestones.bond.reached':
+        'Every condition is met. Rozine prepares your bond-readiness file.',
+    'business.readiness.milestones.clinic.title':
+        'RSE Investment Clinic referral',
+    'business.readiness.milestones.clinic.summary':
+        'Meet every condition and Rozine can refer you to the Rwanda Stock Exchange Investment Clinic, with your consent. Referrals start once Rozine’s agreement with the RSE is signed.',
+    'business.readiness.milestones.clinic.reached':
+        'Every condition is met. Rozine refers you, with your consent, once its agreement with the RSE is signed.',
+    'business.readiness.milestones.condition.stage': 'Stage 3 or 4',
+    'business.readiness.milestones.condition.ready_6_months':
+        'Ready for 6 months in a row',
+    'business.readiness.milestones.condition.ready_12_months':
+        'Ready for 12 months in a row',
+    'business.readiness.milestones.condition.notes_on_time':
+        '3 or more Rozine notes, every instalment collected on its due day',
+    'business.readiness.milestones.condition.audited_statements':
+        'Audited annual statements uploaded',
+    'business.readiness.milestones.condition.limited_company':
+        'A limited company',
+    'business.readiness.milestones.condition.trading_3_years':
+        '3 or more years trading',
+    'business.readiness.milestones.condition.no_proceedings':
+        'No major legal proceedings',
+    'business.readiness.milestones.state.met': 'Met',
+    'business.readiness.milestones.state.not_met': 'Not met',
+    'business.readiness.milestones.state.pending': 'Pending',
+    'business.readiness.stages': 'The four stages',
+    'business.readiness.stage_from': 'From {amount} a month',
+    'business.readiness.current': 'Current',
+    'business.readiness.months': 'Months counted',
+    'business.readiness.months_empty': 'No monthly report is published yet.',
+    'business.readiness.requirements': 'Requirements',
+    'business.readiness.requirements_rule':
+        'Your size sets these requirements. Your CPA confirms each one at the monthly visit.',
+    'business.readiness.requirement.status.not_triggered': 'Not yet',
+    'business.readiness.requirement.status.due': 'Due',
+    'business.readiness.requirement.status.overdue': 'Overdue',
+    'business.readiness.requirement.status.met': 'Met',
+    'business.readiness.requirement.status.lapsed': 'Lapsed',
+    'business.readiness.requirement.due_by': {
+        one: 'Due by {date} · {count} day left',
+        other: 'Due by {date} · {count} days left',
+    },
+    'business.readiness.requirement.lapsed_by': {
+        one: 'Meet it again by {date} · {count} day left',
+        other: 'Meet it again by {date} · {count} days left',
+    },
+    'business.readiness.requirement.overdue_line':
+        'Overdue since {date}. Your next raise waits until it is met.',
+    'business.readiness.requirement.met_on': 'Confirmed on {date}',
+    'business.readiness.requirement.met_entry':
+        'Checked when you joined Rozine',
+    'business.readiness.requirement.applies_entry':
+        'Applies once your entry audit is published',
+    'business.readiness.requirement.applies_stage': 'Applies from {stage}',
+    'business.readiness.requirement.applies_headcount':
+        'Applies from {count} employees',
+    'business.readiness.requirement.C1.title': 'Tax and RSSB up to date',
+    'business.readiness.requirement.C1.detail':
+        'Tax clearance and RSSB contributions current.',
+    'business.readiness.requirement.F1.title':
+        'Business money in business accounts',
+    'business.readiness.requirement.F1.detail':
+        'All business money goes through business-named accounts, with at least 90% of verified revenue traceable to them.',
+    'business.readiness.requirement.F2.title': 'Qualified accountant',
+    'business.readiness.requirement.F2.detail':
+        'A qualified accountant, employed or contracted, and accounting software in use.',
+    'business.readiness.requirement.F3.title': 'Finance manager',
+    'business.readiness.requirement.F3.detail':
+        'A full-time qualified finance manager (CPA, ACCA or equivalent, at least 3 years) and monthly management accounts.',
+    'business.readiness.requirement.F4.title': 'External audit',
+    'business.readiness.requirement.F4.detail':
+        'An annual audit under IFRS for SMEs by an ICPAR auditor other than your Rozine CPA, and payments prepared and approved by different people.',
+    'business.readiness.requirement.P1.title': 'Contracts for every employee',
+    'business.readiness.requirement.P1.detail':
+        'Written contracts and RSSB registration for every employee.',
+    'business.readiness.requirement.P2.title': 'HR lead and policy',
+    'business.readiness.requirement.P2.detail':
+        'A named HR lead or contracted HR provider, and a written HR policy.',
+    'business.readiness.requirement.G1.title': 'Board of directors',
+    'business.readiness.requirement.G1.detail':
+        'A board of at least 2 directors meeting quarterly with minutes, and a written payment delegation.',
+    'business.readiness.requirement.G2.title': 'Independent director',
+    'business.readiness.requirement.G2.detail':
+        'At least one independent director, a governance code and a related-party register.',
     'business.market.title': 'Market Overview',
     'business.market.subtitle':
         'How your notes are performing on the secondary market.',
@@ -1392,6 +1589,14 @@ const en = {
         'The window to co-sign or dispute a report is closing',
     'admin.messaging.trigger.business.reporting_window_open':
         'A monthly audit opens for a business with a live note',
+    'admin.messaging.trigger.business.readiness_stage_changed':
+        'A business moves to another readiness stage',
+    'admin.messaging.trigger.business.readiness_requirement_due':
+        'A readiness requirement becomes due',
+    'admin.messaging.trigger.business.readiness_requirement_closing':
+        'A readiness requirement has 14 days left',
+    'admin.messaging.trigger.business.readiness_requirement_overdue':
+        'A readiness requirement turns overdue',
     'admin.messaging.trigger.auditor.accreditation_approved':
         'Accreditation is approved',
     'admin.messaging.trigger.auditor.accreditation_rejected':
@@ -3847,6 +4052,62 @@ const en = {
         "The late-fee policy isn't available right now, so no late fee is shown.",
     'business.servicing.repay.ladder_version': 'Late-fee policy {version}.',
     'business.audit_prep.title': 'Get ready for your audit',
+    'business.monthly_figures.title': 'Monthly figures',
+    'business.monthly_figures.intro':
+        'Send what came in and went out in {month}. Your Audit Partner checks these figures at the visit, before {date}.',
+    'business.monthly_figures.step': 'Step {current} of {total}',
+    'business.monthly_figures.money_in.title': 'Money in for {month}',
+    'business.monthly_figures.money_in.body':
+        'All the money the business received in the month, in every account and in cash, in Rwandan francs.',
+    'business.monthly_figures.money_in.label': 'Money in',
+    'business.monthly_figures.costs.title': 'Costs for {month}',
+    'business.monthly_figures.costs.body':
+        'What the business spent in the month, in each of the six categories. Enter 0 where there was none.',
+    'business.monthly_figures.costs.stock': 'Stock and materials',
+    'business.monthly_figures.costs.staff': 'Staff pay',
+    'business.monthly_figures.costs.premises': 'Rent and utilities',
+    'business.monthly_figures.costs.transport': 'Transport',
+    'business.monthly_figures.costs.taxes': 'Taxes and fees',
+    'business.monthly_figures.costs.other': 'Other costs',
+    'business.monthly_figures.costs.total': 'Total costs',
+    'business.monthly_figures.costs.total_line': 'Total costs: {amount}',
+    'business.monthly_figures.paid.title': 'Paid to owners in {month}',
+    'business.monthly_figures.paid.body':
+        'Money the owners took out of the business for themselves. Enter 0 if there was none.',
+    'business.monthly_figures.paid.label': 'Paid to owners',
+    'business.monthly_figures.forecast.title': 'Forecast for {forecast}',
+    'business.monthly_figures.forecast.basis':
+        'Pre-filled with your verified average for the last three months: {amount}.',
+    'business.monthly_figures.forecast.no_basis':
+        'Enter the money you expect to come in. There is no verified average yet.',
+    'business.monthly_figures.forecast.label': 'Money in expected in {month}',
+    'business.monthly_figures.forecast.order': 'Signed order',
+    'business.monthly_figures.forecast.order_hint':
+        'This forecast is more than 25% away from your verified average. Name the signed order behind it, for example "Order 114 from Simba Supermarket". Your Audit Partner sees it at the visit.',
+    'business.monthly_figures.changes.title': 'Changes in {month}',
+    'business.monthly_figures.changes.owners': 'Owners or directors changed',
+    'business.monthly_figures.changes.premises':
+        'Moved premises, or opened or closed a location',
+    'business.monthly_figures.changes.borrowing': 'Took a new loan or credit',
+    'business.monthly_figures.changes.customers':
+        'Lost a main customer or supplier',
+    'business.monthly_figures.changes.yes': 'Yes',
+    'business.monthly_figures.changes.no': 'No',
+    'business.monthly_figures.summary.title': 'Check and send',
+    'business.monthly_figures.summary.line':
+        '{month}: money in {money_in}, costs {costs}, paid to owners {paid}. Forecast for {forecast_month}: {forecast}.',
+    'business.monthly_figures.summary.final':
+        'Once sent, these figures are final for the month.',
+    'business.monthly_figures.sent.title': 'Figures for {month}',
+    'business.monthly_figures.sent.body':
+        'Sent {date}. Your Audit Partner checks them at the visit.',
+    'business.monthly_figures.back': 'Back',
+    'business.monthly_figures.next': 'Next',
+    'business.monthly_figures.send': 'Send figures',
+    'business.monthly_figures.sending': 'Sending…',
+    'business.audit_prep.figures.title': 'Send your monthly figures',
+    'business.audit_prep.figures.body':
+        'Six short screens, about 3 minutes. Your Audit Partner checks them at the visit.',
     'business.audit_prep.window_open': 'Audit window open',
     'business.audit_prep.next': 'Next audit',
     'business.audit_prep.first': 'Your first audit',
@@ -6336,6 +6597,22 @@ const en = {
         'Monthly audit open',
     'investor.notices.business.reporting_window_open.body':
         "Your {month} audit has started. Have the month's statements and records ready so your Audit Partner can verify them and seal the audit report by {date}. You then co-sign it or raise a dispute.",
+    'investor.notices.business.readiness_stage_changed.title':
+        'Readiness stage changed',
+    'investor.notices.business.readiness_stage_changed.body':
+        'Your {month} report moved you from {previous} to {stage}.',
+    'investor.notices.business.readiness_requirement_due.title':
+        'New readiness requirement',
+    'investor.notices.business.readiness_requirement_due.body':
+        '{requirement} now applies to your business. Meet it by {date}.',
+    'investor.notices.business.readiness_requirement_closing.title':
+        'Requirement due soon',
+    'investor.notices.business.readiness_requirement_closing.body':
+        '{requirement} is due by {date}. Your CPA confirms it at the next visit.',
+    'investor.notices.business.readiness_requirement_overdue.title':
+        'Requirement overdue',
+    'investor.notices.business.readiness_requirement_overdue.body':
+        '{requirement} was due on {date}. Your next raise waits until it is met.',
     'investor.notices.business.raise_expired.title':
         'Raise closed without full funding',
     'investor.notices.business.raise_expired.body':
