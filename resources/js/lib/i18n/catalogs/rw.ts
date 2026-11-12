@@ -290,8 +290,47 @@ const rw: Catalog = {
         'Nta murandasi ufite. Ibyo ubona bishobora kuba bitagezweho, kandi nta kintu gishobora koherezwa kugeza ongeye kubona umurandasi.',
     'business.nav.home': 'Ahabanza',
     'business.nav.reports': 'Raporo',
+    'business.nav.readiness': 'Kwitegura',
     'business.nav.market': 'Isoko',
     'business.nav.profile': 'Umwirondoro',
+    'business.readiness.title': 'Kwitegura',
+    'business.readiness.subtitle':
+        'Uko ubucuruzi bwawe butera imbere bugana ku isoko ry’imari n’imigabane, bijyanye n’ingano yabwo. Ni wowe wenyine ubona uru rupapuro.',
+    'business.readiness.stage.0': 'Munsi y’Umusingi',
+    'business.readiness.stage.1': 'Icyiciro cya 1 · Umusingi',
+    'business.readiness.stage.2': 'Icyiciro cya 2 · Gukura',
+    'business.readiness.stage.3': 'Icyiciro cya 3 · Kwaguka',
+    'business.readiness.stage.4': 'Icyiciro cya 4 · Isoko',
+    'business.readiness.stage_pending': 'Icyiciro ntikiragenwa',
+    'business.readiness.status.building': 'Biracyubakwa',
+    'business.readiness.status.ready': 'Biteguye',
+    'business.readiness.vmr': 'Amafaranga yinjira buri kwezi yemejwe',
+    'business.readiness.vmr_basis':
+        'Impuzandengo ya raporo zawe 3 za buri kwezi ziheruka gutangazwa.',
+    'business.readiness.reports_needed': {
+        one: 'Icyiciro cyawe kigenwa raporo 3 za buri kwezi zimaze gutangazwa. Hasigaye {count}.',
+        other: 'Icyiciro cyawe kigenwa raporo 3 za buri kwezi zimaze gutangazwa. Hasigaye {count}.',
+    },
+    'business.readiness.pending.up': {
+        one: 'Igipimo {count} kimaze kugaragaza {stage}. Icyiciro kizamuka nyuma y’ibipimo {needed} bikurikiranye, kandi amezi 2 muri 3 aheruka nayo ari kuri urwo rwego.',
+        other: 'Ibipimo byawe {count} biheruka bigaragaza {stage}. Icyiciro kizamuka nyuma y’ibipimo {needed} bikurikiranye, kandi amezi 2 muri 3 aheruka nayo ari kuri urwo rwego.',
+    },
+    'business.readiness.pending.down': {
+        one: 'Igipimo {count} kimaze kugaragaza {stage}. Icyiciro kimanuka gusa nyuma y’ibipimo {needed} bikurikiranye, kandi amezi 2 muri 3 aheruka nayo ari kuri urwo rwego.',
+        other: 'Ibipimo byawe {count} biheruka bigaragaza {stage}. Icyiciro kimanuka gusa nyuma y’ibipimo {needed} bikurikiranye, kandi amezi 2 muri 3 aheruka nayo ari kuri urwo rwego.',
+    },
+    'business.readiness.next':
+        '{stage} gitangirira kuri {threshold} ku kwezi: hasigaye {gap}.',
+    'business.readiness.next_reached':
+        '{stage} gitangirira kuri {threshold} ku kwezi. Impuzandengo yawe irahageze: yigumane mu bipimo {needed} bikurikiranye.',
+    'business.readiness.top': 'Uri mu cyiciro cyo hejuru.',
+    'business.readiness.ready_rule':
+        'Uba witeguye iyo buri gisabwa kigeze cyujujwe, ibimenyetso byawe bitatu bikaguma ku ntego muri raporo 3 zikurikiranye, kandi ugatsinda amasomo y’ibanze y’Ishuri y’icyiciro cyawe.',
+    'business.readiness.stages': 'Ibyiciro bine',
+    'business.readiness.stage_from': 'Guhera kuri {amount} ku kwezi',
+    'business.readiness.current': 'Icy’ubu',
+    'business.readiness.months': 'Amezi abarwa',
+    'business.readiness.months_empty': 'Nta raporo ya buri kwezi iratangazwa.',
     'business.market.title': "Incamake y'isoko",
     'business.market.subtitle': 'Uko noti zawe zihagaze ku isoko rya kabiri.',
     'business.market.tile.demand': 'UBUSHAKE',

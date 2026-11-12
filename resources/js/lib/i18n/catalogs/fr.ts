@@ -293,8 +293,48 @@ const fr: Catalog = {
         "Vous êtes hors ligne. Ce qui s'affiche peut ne plus être à jour, et rien ne peut être envoyé avant le retour de la connexion.",
     'business.nav.home': 'Accueil',
     'business.nav.reports': 'Rapports',
+    'business.nav.readiness': 'Préparation',
     'business.nav.market': 'Marché',
     'business.nav.profile': 'Profil',
+    'business.readiness.title': 'Préparation',
+    'business.readiness.subtitle':
+        'Comment votre entreprise progresse vers le marché des capitaux, au rythme de sa taille. Vous seul voyez cette page.',
+    'business.readiness.stage.0': 'Avant Fondation',
+    'business.readiness.stage.1': 'Étape 1 · Fondation',
+    'business.readiness.stage.2': 'Étape 2 · Croissance',
+    'business.readiness.stage.3': 'Étape 3 · Expansion',
+    'business.readiness.stage.4': 'Étape 4 · Marché',
+    'business.readiness.stage_pending': 'Étape pas encore fixée',
+    'business.readiness.status.building': 'En construction',
+    'business.readiness.status.ready': 'Prête',
+    'business.readiness.vmr': 'Revenu mensuel vérifié',
+    'business.readiness.vmr_basis':
+        'La moyenne de vos 3 derniers rapports mensuels publiés.',
+    'business.readiness.reports_needed': {
+        one: 'Votre étape est fixée dès que 3 rapports mensuels sont publiés. Encore {count}.',
+        other: 'Votre étape est fixée dès que 3 rapports mensuels sont publiés. Encore {count}.',
+    },
+    'business.readiness.pending.up': {
+        one: '{count} mesure indique déjà {stage}. L’étape monte après {needed} mesures d’affilée, avec 2 des 3 derniers mois au même niveau.',
+        other: 'Vos {count} dernières mesures indiquent {stage}. L’étape monte après {needed} mesures d’affilée, avec 2 des 3 derniers mois au même niveau.',
+    },
+    'business.readiness.pending.down': {
+        one: '{count} mesure indique déjà {stage}. L’étape ne descend qu’après {needed} mesures d’affilée, avec 2 des 3 derniers mois au même niveau.',
+        other: 'Vos {count} dernières mesures indiquent {stage}. L’étape ne descend qu’après {needed} mesures d’affilée, avec 2 des 3 derniers mois au même niveau.',
+    },
+    'business.readiness.next':
+        '{stage} commence à {threshold} par mois : encore {gap}.',
+    'business.readiness.next_reached':
+        '{stage} commence à {threshold} par mois. Votre moyenne y est : maintenez-la {needed} mesures d’affilée.',
+    'business.readiness.top': 'Vous êtes à l’étape la plus haute.',
+    'business.readiness.ready_rule':
+        'Vous êtes prête quand chaque exigence due est remplie, que vos trois indicateurs restent dans la cible 3 rapports d’affilée et que vous réussissez les modules essentiels de l’Académie pour votre étape.',
+    'business.readiness.stages': 'Les quatre étapes',
+    'business.readiness.stage_from': 'À partir de {amount} par mois',
+    'business.readiness.current': 'Actuelle',
+    'business.readiness.months': 'Mois pris en compte',
+    'business.readiness.months_empty':
+        'Aucun rapport mensuel publié pour l’instant.',
     'business.market.title': 'Aperçu du marché',
     'business.market.subtitle':
         'Comment vos notes se comportent sur le marché secondaire.',

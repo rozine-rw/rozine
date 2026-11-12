@@ -160,7 +160,7 @@ describe('Business Home', () => {
         expect(screen.queryByText(/^RDB/u)).not.toBeInTheDocument();
     });
 
-    it("marks the Home tab current in both the sidebar and the tab bar, with the design's four tabs", () => {
+    it("marks the Home tab current in both the sidebar and the tab bar, with the design's four tabs and Readiness", () => {
         render(<BusinessHome {...fixture} />);
 
         const navs = screen.getAllByRole('navigation', {
@@ -180,10 +180,13 @@ describe('Business Home', () => {
                 within(nav)
                     .getAllByRole('link')
                     .map((link) => link.textContent),
-            ).toEqual(['Home', 'Reports', 'Market', 'Profile']);
+            ).toEqual(['Home', 'Reports', 'Readiness', 'Market', 'Profile']);
             expect(
                 within(nav).getByRole('link', { name: 'Market' }),
             ).toHaveAttribute('href', '/preview/business-market');
+            expect(
+                within(nav).getByRole('link', { name: 'Readiness' }),
+            ).toHaveAttribute('href', '/preview/business-readiness');
         }
     });
 
