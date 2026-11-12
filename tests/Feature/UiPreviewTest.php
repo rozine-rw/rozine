@@ -362,8 +362,9 @@ test('the Investor bell previews its notices and a read that changes nothing', f
 
 test('the Business bell previews its notices and a read that changes nothing', function () {
     $this->get('/preview/business-notices')->assertOk()
-        ->assertJsonPath('data.unread', 1)->assertJsonCount(11, 'data.notices')
-        ->assertJsonPath('data.notices.0.kind', 'business.raise_expired')->assertJsonPath('data.notices.4.kind', 'business.withdrawal_sent');
+        ->assertJsonPath('data.unread', 1)->assertJsonCount(13, 'data.notices')
+        ->assertJsonPath('data.notices.0.kind', 'business.raise_expired')->assertJsonPath('data.notices.4.kind', 'business.withdrawal_sent')
+        ->assertJsonPath('data.notices.11.kind', 'business.visit_ready_reminder')->assertJsonPath('data.notices.12.kind', 'business.visit_ready_open');
     $this->post('/preview/business-notices/read')->assertOk()->assertJsonPath('data.unread', 0);
 });
 
