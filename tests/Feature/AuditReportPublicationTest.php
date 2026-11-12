@@ -54,7 +54,7 @@ it('requires every independently attributed Party signature before publication a
 
 it('records co-sign refusals under their UUID and never advances publication', function (array $overrides, string $code): void {
     $fixture = Fixture::ready();
-    Fixture::seal($fixture);
+    Fixture::sealLegacy($fixture);
     $request = (string) Str::uuid();
     $receipt = Fixture::cosign($fixture, overrides: [...$overrides, 'requestId' => $request]);
     expect($receipt['code'])->toBe($code)->and($receipt['status'])->toBe('rejected')
@@ -70,7 +70,7 @@ it('records co-sign refusals under their UUID and never advances publication', f
 
 it('withdraws current signing readiness after key revocation while retaining the sealed report', function (): void {
     $fixture = Fixture::ready();
-    Fixture::seal($fixture);
+    Fixture::sealLegacy($fixture);
     AuditSigningKeyRevocation::factory()->create(['audit_signing_key_id' => $fixture['key']->id]);
     $page = app(GetBusinessAuditReport::class)->handle($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'], $fixture['report']->id);
     expect($page['report']['seal']['status'])->toBe('unavailable')->and($page['cosign']['state'])->toBe('unavailable')
@@ -81,7 +81,7 @@ it('withdraws current signing readiness after key revocation while retaining the
 
 it('does not expose signer or Business facts on public verification', function (bool $api): void {
     $fixture = Fixture::ready(findings: true);
-    Fixture::seal($fixture);
+    Fixture::sealLegacy($fixture);
     $seal = ['report_id' => $fixture['report']->id, 'digest' => $fixture['fields']['digest'],
         'seal_status' => 'valid', 'amends_id' => null, 'amended_by' => null];
     $response = $this->get(route($api ? 'api.v1.audit.seals.verify' : 'audit.seals.verify', ['report' => $fixture['report']->id]))
@@ -97,7 +97,7 @@ it('does not expose signer or Business facts on public verification', function (
 
 it('serves the co-sign contract and one-signature publication through both transports', function (bool $api): void {
     $fixture = Fixture::ready(findings: true);
-    Fixture::seal($fixture);
+    Fixture::sealLegacy($fixture);
     $user = $fixture['audit']['authority']['users'][0];
     $this->actingAs($user);
     if ($api) {
@@ -107,7 +107,7 @@ it('serves the co-sign contract and one-signature publication through both trans
     $parameters = ['business' => $fixture['audit']['business'], 'report' => $fixture['report']->id];
     $response = $this->get(route($prefix.'show', $parameters))->assertOk();
     $page = $api ? $response->json('data') : $response->viewData('page')['props'];
-    expect($page['contract_version'])->toBe('business-audit-report-v1')->and($page['allowed_actions'])->toBe(['report.cosign', 'report.dispute'])
+    expect($page['contract_version'])->toBe('business-audit-report-v1')->and($page['allowed_actions'])->toBe(['report.cosign'])
         ->and($page['report']['findings'][0])->toHaveKeys(['code', 'title', 'body', 'evidence_ids'])
         ->and($page['report']['findings'][0]['body'])->toBe('Reported: 38,000,000. Observed: 37,000,000. Difference: -1,000,000.')
         ->and($page['report']['auditor_note'])->toBe('Observed difference retained for review.');
@@ -127,7 +127,7 @@ it('serves the co-sign contract and one-signature publication through both trans
 
 it('rolls back a signature and its receipt when publication cannot advance', function (): void {
     $fixture = Fixture::ready();
-    Fixture::seal($fixture);
+    Fixture::sealLegacy($fixture);
     Event::listen('eloquent.updating: '.AuditReportPublication::class, function (): never {
         throw new RuntimeException('synthetic publication failure');
     });
@@ -160,13 +160,28 @@ it('opens a full 24 hour monthly review window even after the legacy seventh cut
     expect(Fixture::seal($fixture)['code'])->toBe('AUDIT_SEALED');
     $page = app(GetBusinessAuditReport::class)->handle($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'], $fixture['report']->id);
     expect($page['cosign']['overdue'])->toBeFalse()->and($page['cosign']['due_at'])->toBe(now('UTC')->addHours(24)->toIso8601String())
-        ->and($page['can_cosign'])->toBeTrue()
-        ->and(Fixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
+        ->and($page['can_cosign'])->toBeFalse()
+        ->and(Fixture::publish($fixture)['published_at'])->toBe(now('UTC')->addHours(24)->toIso8601String());
 })->with([false, true]);
+
+it('never asks the Business to co-sign a report under a 24-hour review: one CPA seal publishes it (BRS v3.0 AUD-R04)', function (string $kind): void {
+    $fixture = Fixture::ready(kind: $kind);
+    Fixture::seal($fixture);
+    $page = app(GetBusinessAuditReport::class)->handle($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'], $fixture['report']->id);
+    expect($page['can_cosign'])->toBeFalse()->and($page['can_dispute'])->toBeTrue();
+    $request = (string) Str::uuid();
+    $receipt = Fixture::cosign($fixture, overrides: ['requestId' => $request]);
+    expect($receipt['status'])->toBe('rejected')->and($receipt['code'])->toBe('REPORT_COSIGN_NOT_REQUIRED')
+        ->and(app(FindAuditCosignOperation::class)->handle($fixture['audit']['authority']['users'][0]->id, 1, $request))->toBe($receipt)
+        ->and(AuditReportPublication::query()->firstOrFail()->status)->toBe('pending');
+    $this->assertDatabaseCount('audit_report_signatures', 0);
+    expect(Fixture::publish($fixture)['code'])->toBe('REPORT_PUBLISHED')
+        ->and(AuditReportPublication::query()->firstOrFail()->published_reason)->toBe('auto_approved');
+})->with(['flash', 'monthly']);
 
 it('retains signatures and current-authority receipt recovery without accepting a second signature from the same Party', function (): void {
     $fixture = Fixture::ready(2);
-    Fixture::seal($fixture);
+    Fixture::sealLegacy($fixture);
     $request = (string) Str::uuid();
     $first = Fixture::cosign($fixture, overrides: ['requestId' => $request]);
     $again = Fixture::cosign($fixture, revision: 2);
@@ -178,7 +193,7 @@ it('retains signatures and current-authority receipt recovery without accepting 
 
 it('withdraws publication readiness when current mandate or source facts change', function (string $change): void {
     $fixture = Fixture::ready();
-    Fixture::seal($fixture);
+    Fixture::sealLegacy($fixture);
     if ($change === 'mandate') {
         $authority = $fixture['audit']['authority'];
         $authority['profile']['name'] = 'Verified renamed business';
@@ -193,7 +208,7 @@ it('withdraws publication readiness when current mandate or source facts change'
 
 it('refuses foreign and unmandated accounts for signature effects and receipt recovery', function (): void {
     $fixture = Fixture::ready();
-    Fixture::seal($fixture);
+    Fixture::sealLegacy($fixture);
     $other = BusinessAuthorityFixture::make(companyCode: 'ANOTHER-SYNTHETIC-BUSINESS');
     BusinessAuthorityFixture::configure($other);
     expect(fn () => Fixture::cosign($fixture, overrides: ['userId' => $other['users'][0]->id]))->toThrow(CommandRejection::class, 'BUSINESS_NOT_FOUND');
@@ -204,7 +219,7 @@ it('refuses foreign and unmandated accounts for signature effects and receipt re
 
 it('refuses a signature attributed to a different account Party and protects published history', function (): void {
     $fixture = Fixture::ready();
-    Fixture::seal($fixture);
+    Fixture::sealLegacy($fixture);
     $publication = AuditReportPublication::query()->firstOrFail();
     $user = $fixture['audit']['authority']['users'][0];
     expect(fn () => DB::transaction(fn () => AuditReportSignature::factory()->forPublication($publication, $user)
@@ -216,7 +231,7 @@ it('refuses a signature attributed to a different account Party and protects pub
 
 it('fails closed on a corrupted sealed package or signature history', function (string $record): void {
     $fixture = Fixture::ready(2);
-    Fixture::seal($fixture);
+    Fixture::sealLegacy($fixture);
     if ($record === 'signature') {
         Fixture::cosign($fixture);
         DB::statement('ALTER TABLE audit_report_signatures DISABLE TRIGGER audit_report_signatures_immutable');
@@ -246,7 +261,7 @@ it('scopes absent report and operation targets without revealing another busines
 
 it('allows a current Business reader to view but not sign when the mandate does not require their signature', function (): void {
     $fixture = Fixture::ready(2, requiredSignatories: 1);
-    Fixture::seal($fixture);
+    Fixture::sealLegacy($fixture);
     $reader = $fixture['audit']['authority']['users'][1];
     $page = app(GetBusinessAuditReport::class)->handle($reader->id, 1, $fixture['audit']['business'], $fixture['report']->id);
     expect($page['cosign']['signers'])->toHaveCount(1)->and($page['can_cosign'])->toBeFalse();
@@ -256,7 +271,7 @@ it('allows a current Business reader to view but not sign when the mandate does 
 
 it('requires a current professional-standing check even when the historical verification remains valid', function (): void {
     $fixture = Fixture::ready();
-    Fixture::seal($fixture);
+    Fixture::sealLegacy($fixture);
     $this->travel(31)->days();
     expect(Fixture::cosign($fixture)['code'])->toBe('AUDIT_PUBLICATION_UNAVAILABLE');
     $this->assertDatabaseCount('audit_report_signatures', 0);
@@ -264,7 +279,7 @@ it('requires a current professional-standing check even when the historical veri
 
 it('refuses receipt recovery when the captured Party and locked Business identity no longer match', function (): void {
     $fixture = Fixture::ready(2);
-    Fixture::seal($fixture);
+    Fixture::sealLegacy($fixture);
     $user = $fixture['audit']['authority']['users'][0];
     $other = $fixture['audit']['authority']['users'][1];
     $request = (string) Str::uuid();

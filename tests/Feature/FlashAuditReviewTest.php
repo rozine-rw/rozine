@@ -18,7 +18,7 @@ beforeEach(function (): void {
     $this->withoutVite();
 });
 
-it('seals a Flash report under the 24-hour window, where one signatory publishes it', function (): void {
+it('seals a Flash report under the 24-hour window, which publishes it without a Business signature', function (): void {
     $fixture = Fixture::ready(2);
     expect(Fixture::seal($fixture)['code'])->toBe('AUDIT_SEALED');
     $publication = AuditReportPublication::query()->sole();
@@ -33,9 +33,10 @@ it('seals a Flash report under the 24-hour window, where one signatory publishes
         ->and($page['cosign']['due_at'])->toBe($publication->due_at->toIso8601String())
         ->and($page['can_dispute'])->toBeTrue();
 
-    expect(Fixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
-    expect($publication->refresh()->published_reason)->toBe('signed')
-        ->and(AuditReportSignature::query()->count())->toBe(1);
+    expect(Fixture::cosign($fixture)['code'])->toBe('REPORT_COSIGN_NOT_REQUIRED')
+        ->and(Fixture::publish($fixture)['code'])->toBe('REPORT_PUBLISHED');
+    expect($publication->refresh()->published_reason)->toBe('auto_approved')
+        ->and(AuditReportSignature::query()->count())->toBe(0);
     DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
 });
 
@@ -48,7 +49,7 @@ it('approves an unanswered Flash report at the end of its window, without a sign
     $this->travelTo($publication->due_at->subSecond());
     expect($store->advanceDue()['published'])->toBe(0);
     $this->travelTo($publication->due_at);
-    expect(Fixture::cosign($fixture)['code'])->toBe('REPORT_WINDOW_CLOSED')
+    expect(Fixture::cosign($fixture)['code'])->toBe('REPORT_COSIGN_NOT_REQUIRED')
         ->and($store->advanceDue()['published'])->toBe(1);
     expect($publication->refresh()->status)->toBe('published')->and($publication->published_reason)->toBe('auto_approved')
         ->and(AuditReportSignature::query()->count())->toBe(0);
@@ -94,5 +95,5 @@ it('round trips the Flash review migration while only legacy and monthly history
     $migration->down();
     $migration->up();
     DB::statement('SET CONSTRAINTS ALL DEFERRED');
-    expect(Fixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
+    expect(Fixture::publish($fixture)['code'])->toBe('REPORT_PUBLISHED');
 });

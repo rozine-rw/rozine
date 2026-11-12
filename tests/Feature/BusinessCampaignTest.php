@@ -15,7 +15,7 @@ beforeEach(function (): void {
     $this->freezeSecond();
     $this->fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($this->fixture);
-    AuditSealingFixture::cosign($this->fixture);
+    AuditSealingFixture::publish($this->fixture);
     $this->store = app(BusinessCampaignStore::class);
     $this->release = fn (?string $request = null): array => $this->store->release($this->fixture['audit']['staff']->id,
         $this->fixture['application']->id, 0, 'Verified current release gates.', $request ?? (string) Str::uuid());

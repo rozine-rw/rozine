@@ -80,13 +80,13 @@ describe('Business Home', () => {
             'Application approvedSolar Dryer Expansion is approved for RWF 12,000,000 over 12 months. Review and sign to publish the raise.',
         );
         expect(items[7]).toHaveTextContent(
-            'Review window closingYour window to co-sign or dispute the audit report closes at',
+            'Review window closingYour window to dispute the audit report closes at',
         );
         expect(items[8]).toHaveTextContent(
-            'Audit report ready for your approvalAline Uwase sealed your audit report. Co-sign or dispute it by',
+            'Audit report ready for reviewAline Uwase sealed your audit report. Dispute it by',
         );
         expect(items[9]).toHaveTextContent(
-            'Audit report ready for your approvalAline Uwase sealed your audit report. Review it, then co-sign or dispute it.',
+            'Audit report ready for reviewAline Uwase sealed your audit report. Review it, and dispute it if something is wrong.',
         );
         expect(items[10]).toHaveTextContent(
             "Monthly audit openYour September 2026 audit has started. Have the month's statements and records ready so your Audit Partner can verify them and seal the audit report by",
@@ -241,7 +241,7 @@ describe('Business Home', () => {
         );
     });
 
-    it('says by when a sealed report must be co-signed or disputed, and how many hours are left', () => {
+    it('gives a current-policy Flash report its dispute deadline and review-only instructions, never a co-sign', () => {
         render(
             <BusinessHome
                 {...fixture}
@@ -249,6 +249,7 @@ describe('Business Home', () => {
                     {
                         kind: 'audit_cosign',
                         report_kind: 'flash',
+                        cosign: false,
                         due_at: '2026-10-27T13:00:00Z',
                         hours_left: 5,
                         link: link('/business/b1/audit-reports/r1'),
@@ -258,13 +259,62 @@ describe('Business Home', () => {
         );
 
         expect(
-            screen.getByText(/^Co-sign or dispute by .+ · 5 h left$/u),
+            screen.getByText(/^Dispute by .+ · 5 h left$/u),
         ).toBeInTheDocument();
         expect(
+            screen.getByRole('link', { name: /Review report/ }),
+        ).toHaveAttribute('href', '/business/b1/audit-reports/r1');
+        expect(
+            screen.queryByRole('link', { name: /co-sign/ }),
+        ).not.toBeInTheDocument();
+        expect(
             screen.queryByText(
-                'Your CPA sealed it. Read the findings before you co-sign.',
+                'Your CPA sealed it. Read the findings. There is nothing to sign.',
             ),
         ).not.toBeInTheDocument();
+    });
+
+    it('tells a reviewed Flash report past its window that there is nothing to sign, and a legacy Flash report to co-sign', () => {
+        render(
+            <BusinessHome
+                {...fixture}
+                today={[
+                    {
+                        kind: 'audit_cosign',
+                        report_kind: 'flash',
+                        cosign: false,
+                        due_at: '2026-10-27T13:00:00Z',
+                        hours_left: 0,
+                        link: link('/business/b1/audit-reports/m1'),
+                    },
+                    {
+                        kind: 'audit_cosign',
+                        report_kind: 'flash',
+                        cosign: true,
+                        due_at: null,
+                        hours_left: null,
+                        link: link('/business/b1/audit-reports/f1'),
+                    },
+                ]}
+            />,
+        );
+
+        expect(
+            screen.getByText(
+                'Your CPA sealed it. Read the findings. There is nothing to sign.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /Review report/ }),
+        ).toHaveAttribute('href', '/business/b1/audit-reports/m1');
+        expect(
+            screen.getByText(
+                'Your CPA sealed it. Read the findings before you co-sign.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /Review & co-sign/ }),
+        ).toHaveAttribute('href', '/business/b1/audit-reports/f1');
     });
 
     it('renders every kind of Today item with its call to act', () => {
@@ -272,6 +322,7 @@ describe('Business Home', () => {
             {
                 kind: 'audit_cosign',
                 report_kind: 'flash',
+                cosign: true,
                 due_at: null,
                 hours_left: null,
                 link: link('/business/b1/audit-reports/r1'),
@@ -320,6 +371,7 @@ describe('Business Home', () => {
 
         expect(screen.getByText('Audit report ready')).toBeInTheDocument();
         expect(screen.getByText('Flash audit report')).toBeInTheDocument();
+        /* A legacy Flash report has no dispute deadline and still needs the business's co-signature. */
         expect(
             screen.getByText(
                 'Your CPA sealed it. Read the findings before you co-sign.',
