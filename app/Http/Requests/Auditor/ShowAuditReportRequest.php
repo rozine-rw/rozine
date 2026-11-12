@@ -15,7 +15,7 @@ class ShowAuditReportRequest extends FormRequest
         return $this->user() !== null && (! $this->routeIs('api.*') || $this->user()->tokenCan('auditor:read'));
     }
 
-    /** @return array<string, list<string>> */
+    /** @return array<string, list<mixed>> */
     public function rules(): array
     {
         $procedure = new AuditProcedure;
