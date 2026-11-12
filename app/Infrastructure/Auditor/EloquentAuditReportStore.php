@@ -149,7 +149,7 @@ final class EloquentAuditReportStore implements AuditReportStore
         $sources = $this->procedureSources($record, $userId, $contextRevision, $assignment);
         /** @var Draft $draft */
         $draft = $record->draft;
-        $unavailable = $this->procedure->unavailable($record->kind, $record->step, $draft, 'seal', $sources);
+        $unavailable = $this->procedure->unavailable(self::procedureOf($record), $record->step, $draft, 'seal', $sources);
         if ($unavailable !== null) {
             throw new CommandRejection($unavailable, revision: $record->revision);
         }
@@ -203,6 +203,11 @@ final class EloquentAuditReportStore implements AuditReportStore
                                     ? CarbonImmutable::parse($current['original_dispatch_at'])->setTimezone('Africa/Kigali')->startOfMonth()->subMonth()->format('Y-m') : null;
                                 $binding = ['assignment' => ['id' => $current['id'], 'revision' => $current['revision'], 'party_id' => $current['party_id']],
                                     'engagement' => $current['engagement'], 'application' => $application, 'period' => $period];
+                                // The first Flash visit before any sealed report is the business's baseline (BRS v3 AUD-R03).
+                                if ($current['kind'] !== 'routine' && ! AuditReport::query()->where('business_id', $current['business_id'])
+                                    ->whereIn('id', AuditReportSeal::query()->select('audit_report_id'))->exists()) {
+                                    $binding['baseline'] = true;
+                                }
                                 $report = new AuditReport;
                                 $report->forceFill(['assignment_id' => $current['id'], 'business_id' => $current['business_id'],
                                     'assignment_revision' => $current['revision'], 'author_party_id' => $current['party_id'],
@@ -248,7 +253,7 @@ final class EloquentAuditReportStore implements AuditReportStore
                         }
                         /** @var Draft $draft */
                         $draft = $record->draft;
-                        $next = $this->procedure->save($record->kind, $record->step, $draft, $step, $fields,
+                        $next = $this->procedure->save(self::procedureOf($record), $record->step, $draft, $step, $fields,
                             $this->procedureSources($record, $userId, $contextRevision, $assignment));
                         $record->forceFill(['revision' => $record->revision + 1, 'step' => $next['step'], 'draft' => $next['draft']])->save();
                         $this->append($record, $assignment['party_id'], $userId, 'audit.save_step');
@@ -567,11 +572,20 @@ final class EloquentAuditReportStore implements AuditReportStore
 
         return ['id' => $record->id, 'assignment_id' => $record->assignment_id, 'business_id' => $record->business_id,
             'application_id' => $record->application_id, 'application_revision' => $record->application_revision,
-            'revision' => $record->revision, 'kind' => $record->kind, 'status' => $record->status, 'step' => $record->step,
+            'revision' => $record->revision, 'kind' => $record->kind, 'procedure' => self::procedureOf($record), 'status' => $record->status, 'step' => $record->step,
             'period' => $record->binding['period'] ?? null,
             'amends_id' => $record->amends_id, 'amendment_id' => AuditReport::query()->where('amends_id', $record->id)->value('id'),
             'binding_sha256' => $record->binding_sha256, 'draft' => $record->draft,
             'version' => ['id' => $version->id, 'sha256' => $version->sha256]];
+    }
+
+    /**
+     * The procedure a report follows: its kind, except that a Flash report bound as the business's
+     * baseline (BRS v3 AUD-R03, VIS-R02) follows the baseline steps. Fixed in the binding at start.
+     */
+    private static function procedureOf(AuditReport $record): string
+    {
+        return $record->kind === 'flash' && ($record->binding['baseline'] ?? false) === true ? 'baseline' : $record->kind;
     }
 
     /** @param Report $report */

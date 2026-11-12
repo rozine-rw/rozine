@@ -269,7 +269,7 @@ it('offers a new Flash audit once the accepted audit\'s report is published, and
         ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.status', 'accepted')->where('party.audit.request_flash', null)
             ->where('party.audit.statement_review.reasons', fn (Collection $reasons): bool => $reasons->contains('AUDIT_ENGAGEMENT_OPEN')));
 
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     // The published audit no longer holds back a statement review either (#522).
     $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement', null)
         ->where('party.audit.closed', false)->where('party.audit.request_flash.url', '/admin/businesses/'.$audit['business'].'/flash-audit')

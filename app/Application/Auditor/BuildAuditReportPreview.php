@@ -41,8 +41,14 @@ final class BuildAuditReportPreview
             }
             $difference = (string) ExactFinancialValue::amount($observed)->minus(ExactFinancialValue::amount($reported));
             $requiresNote = $requiresNote || $difference !== '0';
-            $findings[] = ['code' => strtoupper($measure).($difference === '0' ? '_MATCHED' : '_DIFFERENCE'),
+            $finding = ['code' => strtoupper($measure).($difference === '0' ? '_MATCHED' : '_DIFFERENCE'),
                 'measure' => $measure, 'reported' => $reported, 'observed' => $observed, 'difference' => $difference, 'evidence_ids' => [$sourceId]];
+            /* BRS v3 VIS-R01 step 9: a cash difference carries the cause codes that explain it to the franc. */
+            $explanations = $draft['fields']['differences']['explanations'] ?? [];
+            if ($measure === 'cash' && $explanations !== []) {
+                $finding['explained_by'] = $explanations;
+            }
+            $findings[] = $finding;
         }
         if ($report['kind'] === 'monthly' && isset($fields['operational_status'])) {
             $findings[] = ['code' => 'OPERATIONAL_STATUS_OBSERVED', 'measure' => 'operational_status',

@@ -442,11 +442,26 @@
         "resources/js/components/auditor/audit/seal-flow.tsx",
         "resources/js/components/auditor/audit/sealed-status.tsx",
         "resources/js/components/auditor/audit/step-bar.tsx",
+        "resources/js/components/auditor/audit/step-cash-sales.tsx",
+        "resources/js/components/auditor/audit/step-changes.tsx",
         "resources/js/components/auditor/audit/step-check-in.tsx",
+        "resources/js/components/auditor/audit/step-costs.tsx",
         "resources/js/components/auditor/audit/step-count.tsx",
+        "resources/js/components/auditor/audit/step-differences.tsx",
+        "resources/js/components/auditor/audit/step-drawings.tsx",
+        "resources/js/components/auditor/audit/step-expiries.tsx",
+        "resources/js/components/auditor/audit/step-guide.tsx",
+        "resources/js/components/auditor/audit/step-history.tsx",
         "resources/js/components/auditor/audit/step-ledger.tsx",
+        "resources/js/components/auditor/audit/step-loan-use.tsx",
+        "resources/js/components/auditor/audit/step-loans.tsx",
+        "resources/js/components/auditor/audit/step-people.tsx",
         "resources/js/components/auditor/audit/step-photos.tsx",
+        "resources/js/components/auditor/audit/step-premises.tsx",
+        "resources/js/components/auditor/audit/step-registration.tsx",
+        "resources/js/components/auditor/audit/step-staff.tsx",
         "resources/js/components/auditor/audit/step-statements.tsx",
+        "resources/js/components/auditor/audit/step-trading.tsx",
         "resources/js/components/auditor/audit/use-step-up.ts",
         "resources/js/components/auditor/auditor-shell.tsx",
         "resources/js/components/auditor/availability.tsx",
@@ -705,6 +720,7 @@
         "resources/js/layouts/auth/auth-split-layout.tsx",
         "resources/js/layouts/public-layout.tsx",
         "resources/js/layouts/settings/layout.tsx",
+        "resources/js/lib/audit-visit-guide.ts",
         "resources/js/lib/i18n/catalogs/en.ts",
         "resources/js/lib/i18n/catalogs/fr.ts",
         "resources/js/lib/i18n/catalogs/rw.ts",
@@ -811,10 +827,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 783,
+        "totalTrackedSources": 799,
         "generated": 341,
         "declarationOnly": 20,
-        "authoredExecutable": 422
+        "authoredExecutable": 438
     },
-    "coverageSetSha256": "e832ffad43bb5f908835dc04b488c871b09e078084ea27dba1bc7c5fc1a804db"
+    "coverageSetSha256": "ada53b04a26e12da4223eabbb62b0b0577cb85123b3370dae7fb4ce55631a8f6"
 }

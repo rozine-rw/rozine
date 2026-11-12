@@ -244,7 +244,7 @@ it('lists the pre-listing flash report awaiting signature in audit, then under P
         ->and(($this->props)($user, 'business.reports', ['business' => $business], 'business/reports')['reports'])
         ->toBe(['verified' => [], 'in_audit' => [$row], 'archived' => []]);
 
-    expect(AuditSealingFixture::cosign($fixture)['status'])->toBe('completed');
+    expect(AuditSealingFixture::publish($fixture)['status'])->toBe('completed');
 
     expect(($this->props)($user, 'business.reports', ['business' => $business], 'business/reports')['reports'])
         ->toBe(['verified' => [[...$row, 'status' => 'verified', 'awaiting_signature' => false, 'cosign_by' => null]], 'in_audit' => [], 'archived' => []]);
@@ -267,7 +267,7 @@ it('lists the latest sealed monthly report in audit until it is published, openi
         ->and(($this->props)($user, 'business.reports', ['business' => $business], 'business/reports')['reports'])
         ->toBe(['verified' => [], 'in_audit' => [$row], 'archived' => []]);
 
-    expect(AuditSealingFixture::cosign($fixture)['status'])->toBe('completed');
+    expect(AuditSealingFixture::publish($fixture)['status'])->toBe('completed');
 
     expect(($this->props)($user, 'business.reports', ['business' => $business], 'business/reports')['reports'])
         ->toBe(['verified' => [[...$row, 'status' => 'verified', 'awaiting_signature' => false, 'cosign_by' => null]], 'in_audit' => [], 'archived' => []]);

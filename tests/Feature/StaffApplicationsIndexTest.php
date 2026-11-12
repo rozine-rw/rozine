@@ -35,7 +35,7 @@ afterEach(function (): void {
 it('projects the same retained queue and current release gates through web and API', function (): void {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     $staff = $fixture['audit']['staff'];
     $id = $fixture['application']->id;
     $this->actingAs($staff);
@@ -74,7 +74,7 @@ it('projects the same retained queue and current release gates through web and A
 it('moves released applications to approved and preserves that history when current gates fail', function (): void {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     $staff = $fixture['audit']['staff'];
     $id = $fixture['application']->id;
     app(BusinessCampaignStore::class)->release($staff->id, $id, 0, 'Reviewed current evidence.', (string) Str::uuid());
@@ -232,7 +232,7 @@ it('fails closed for missing or corrupted submitted records', function (string $
 it('refuses a corrupt release in the approved queue', function (): void {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     app(BusinessCampaignStore::class)->release($fixture['audit']['staff']->id, $fixture['application']->id, 0, 'Reviewed.', (string) Str::uuid());
     BusinessApplicationRelease::retrieved(function (BusinessApplicationRelease $release): void {
         $release->sha256 = str_repeat('0', 64);

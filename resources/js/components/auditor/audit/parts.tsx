@@ -40,14 +40,18 @@ export function useStepForm<T extends FormDataType<T>>(
     const form = useForm<T>(`auditor:${context.rememberKey}`, initial);
     const center = useAuditorCommands();
 
-    const submit = (event: FormEvent) => {
+    /** Save the step; a step whose form shape differs from what it posts passes its own fields. */
+    const submit = (
+        event: FormEvent,
+        fields: Record<string, unknown> = form.data,
+    ) => {
         event.preventDefault();
         center.send({
             name: 'audit.save_step',
             business: context.business,
             route: context.save,
             payload: {
-                ...form.data,
+                ...fields,
                 audit_id: context.auditId,
                 step: context.step,
                 expected_revision: context.revision,
