@@ -102,6 +102,8 @@ export type BusinessTodo =
           /** The latest sealed audit report, waiting for the business's co-signatures. */
           kind: 'audit_cosign';
           report_kind: 'flash' | 'monthly';
+          /** True only for a report sealed before its kind had a review window, which still needs the business's co-signature. */
+          cosign: boolean;
           /** When the 24-hour window to co-sign or dispute closes; null when the report has none. */
           due_at: string | null;
           /** Whole hours left in that window, rounded up; null when there is none. */

@@ -446,11 +446,26 @@
         "resources/js/components/auditor/audit/seal-flow.tsx",
         "resources/js/components/auditor/audit/sealed-status.tsx",
         "resources/js/components/auditor/audit/step-bar.tsx",
+        "resources/js/components/auditor/audit/step-cash-sales.tsx",
+        "resources/js/components/auditor/audit/step-changes.tsx",
         "resources/js/components/auditor/audit/step-check-in.tsx",
+        "resources/js/components/auditor/audit/step-costs.tsx",
         "resources/js/components/auditor/audit/step-count.tsx",
+        "resources/js/components/auditor/audit/step-differences.tsx",
+        "resources/js/components/auditor/audit/step-drawings.tsx",
+        "resources/js/components/auditor/audit/step-expiries.tsx",
+        "resources/js/components/auditor/audit/step-guide.tsx",
+        "resources/js/components/auditor/audit/step-history.tsx",
         "resources/js/components/auditor/audit/step-ledger.tsx",
+        "resources/js/components/auditor/audit/step-loan-use.tsx",
+        "resources/js/components/auditor/audit/step-loans.tsx",
+        "resources/js/components/auditor/audit/step-people.tsx",
         "resources/js/components/auditor/audit/step-photos.tsx",
+        "resources/js/components/auditor/audit/step-premises.tsx",
+        "resources/js/components/auditor/audit/step-registration.tsx",
+        "resources/js/components/auditor/audit/step-staff.tsx",
         "resources/js/components/auditor/audit/step-statements.tsx",
+        "resources/js/components/auditor/audit/step-trading.tsx",
         "resources/js/components/auditor/audit/use-step-up.ts",
         "resources/js/components/auditor/auditor-shell.tsx",
         "resources/js/components/auditor/availability.tsx",
@@ -603,6 +618,7 @@
         "resources/js/components/investor/profile/academy.tsx",
         "resources/js/components/investor/profile/help-answers.ts",
         "resources/js/components/investor/profile/profile-parts.tsx",
+        "resources/js/components/investor/risk-gate.tsx",
         "resources/js/components/investor/tokens.ts",
         "resources/js/components/investor/wallet/funding.tsx",
         "resources/js/components/investor/wallet/history.tsx",
@@ -708,6 +724,7 @@
         "resources/js/layouts/auth/auth-split-layout.tsx",
         "resources/js/layouts/public-layout.tsx",
         "resources/js/layouts/settings/layout.tsx",
+        "resources/js/lib/audit-visit-guide.ts",
         "resources/js/lib/i18n/catalogs/en.ts",
         "resources/js/lib/i18n/catalogs/fr.ts",
         "resources/js/lib/i18n/catalogs/rw.ts",
@@ -816,10 +833,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 790,
+        "totalTrackedSources": 805,
         "generated": 345,
         "declarationOnly": 20,
-        "authoredExecutable": 423
+        "authoredExecutable": 440
     },
-    "coverageSetSha256": "131988dc1eed3840a17c8fb65a47cbe1afae424a0d731a4e229706daf98d348a"
+    "coverageSetSha256": "a9b86354553a7ee316287fa9bc0b77c48d30e9ee0cd564005386da7145bc8267"
 }

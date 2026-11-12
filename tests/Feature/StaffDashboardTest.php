@@ -192,7 +192,7 @@ test('the lifecycle places each published campaign where it sits now', function 
 test('the queues count applications waiting, submissions awaiting review and disbursements automatic payment has not queued', function (): void {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     $application = $fixture['application'];
     boardSubmission(User::factory()->create(['name' => 'Aline Uwase', 'party_id' => Party::factory()]));
     DisbursementFixture::funded();
@@ -255,7 +255,7 @@ test('the Payments badge counts ready, held and legacy awaiting disbursements, n
 test('the API mirror withholds pending application details from staff without applications.review', function (): void {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
 
     Sanctum::actingAs(boardStaff(['compliance']), ['staff:dashboard:read']);
     $this->getJson('/api/v1/staff/dashboard')->assertOk()

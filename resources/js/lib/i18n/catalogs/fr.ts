@@ -195,7 +195,7 @@ const fr: Catalog = {
     'suite.add_investor.body':
         'Votre identité est déjà vérifiée pour votre compte Entreprise : elle ne vous sera pas redemandée. Lisez et acceptez les conditions Investisseur pour commencer à investir.',
     'suite.add_investor.accept':
-        "J'ai lu et j'accepte ces conditions Investisseur.",
+        'Continuer vaut acceptation de ces conditions Investisseur.',
     'suite.add_investor.confirm': "Ajouter l'accès Investisseur",
     'suite.add_investor.cancel': 'Annuler',
     'suite.add_investor.network_error':
@@ -541,10 +541,13 @@ const fr: Catalog = {
     'business.today.approved.cta_free': 'Publier',
     'business.today.cosign.kicker': 'Rapport d’audit prêt',
     'business.today.cosign.sub':
+        "Votre expert-comptable l'a scellé. Lisez les constats. Il n'y a rien à signer.",
+    'business.today.cosign.cta': 'Examiner le rapport',
+    'business.today.cosign.sign_sub':
         "Votre expert-comptable l'a scellé. Lisez les constats avant de cosigner.",
-    'business.today.cosign.cta': 'Examiner et cosigner',
+    'business.today.cosign.sign_cta': 'Examiner et cosigner',
     'business.today.cosign.due':
-        'Cosignez ou contestez avant le {date} · {hours} h restantes',
+        'Contestez avant le {date} · {hours} h restantes',
     'business.today.signature.kicker': 'Signature requise',
     'business.today.signature.sub':
         'Votre signature est requise avant que cette demande puisse être soumise.',
@@ -963,7 +966,7 @@ const fr: Catalog = {
     'business.reports.guide.flash.title':
         'Un audit Flash, à la demande de Rozine',
     'business.reports.guide.flash.body':
-        "Avant une levée de fonds, ou chaque fois que Rozine a besoin d'une vérification récente, un Audit Partner passe sans prévenir et scelle un rapport Flash dans les 24 heures. Vous le cosignez comme un rapport mensuel.",
+        "Avant une levée, ou dès que Rozine a besoin d'une vérification récente, un Audit Partner passe sans prévenir et scelle un rapport Flash sous 24 heures. Vous l'examinez comme un rapport mensuel.",
     'business.reports.guide.opens.title':
         'Chaque mois, rassemblez vos documents',
     'business.reports.guide.opens.body':
@@ -972,22 +975,22 @@ const fr: Catalog = {
     'business.reports.guide.visit.body_before':
         "L'expert-comptable qui vous est attribué se rend dans vos locaux pour examiner vos documents et rapprocher vos flux de trésorerie, puis scelle le rapport avant le",
     'business.reports.guide.visit.body_after': '.',
-    'business.reports.guide.cosign.title': 'Cosignez ou contestez',
+    'business.reports.guide.cosign.title': 'Examiner, ou contester',
     'business.reports.guide.cosign.body':
-        "Une fois l'audit scellé, vous avez 24 heures pour l'examiner et le cosigner, ou le contester avec une contre-preuve. Sans réponse de votre part dans les 24 heures, le rapport est considéré comme approuvé. Comme vous ne touchez jamais aux chiffres, le rapport est indépendant — c'est exactement ce que paient les investisseurs.",
+        "Une fois l'audit scellé, vous avez 24 heures pour l'examiner et, si quelque chose est inexact, déposer une contestation avec des contre-preuves. Vous ne le signez pas : sans contestation, le rapport est maintenu. Comme vous ne touchez jamais aux chiffres, le rapport est indépendant — c'est précisément ce que paient les investisseurs.",
     'business.reports.guide.visit.body_undated':
         "L'expert-comptable qui vous est attribué se rend dans vos locaux pour examiner vos documents et rapprocher vos flux de trésorerie, puis scelle le rapport.",
     'business.reports.tabs': 'Statut des rapports',
     'business.reports.tab.verified': 'Publiés',
     'business.reports.tab.in_audit': 'En audit',
     'business.reports.tab.in_audit_cosign': {
-        one: 'En audit · {count} à cosigner',
-        other: 'En audit · {count} à cosigner',
+        one: 'En audit · {count} à examiner',
+        other: 'En audit · {count} à examiner',
     },
     'business.reports.tab.archived': 'Archivés',
     'business.reports.status.verified': 'Vérifié',
     'business.reports.status.in_audit': 'En audit',
-    'business.reports.status.awaiting': 'À cosigner',
+    'business.reports.status.awaiting': 'Examiner maintenant',
     'business.reports.status.archived': 'Archivé',
     'business.reports.health.healthy': 'Sain',
     'business.reports.health.watch': 'À surveiller',
@@ -995,12 +998,12 @@ const fr: Catalog = {
     'business.reports.row.filed':
         'Entrées {inflow} · {health} · audité par {auditor}',
     'business.reports.row.in_audit': 'Chez {auditor} · scellé avant le {date}',
-    'business.reports.row.awaiting': 'Votre cosignature est requise',
+    'business.reports.row.awaiting': 'Prêt pour votre examen',
     'business.reports.row.hours_left': {
         one: '{date} · {count} heure restante',
         other: '{date} · {count} heures restantes',
     },
-    'business.reports.row.awaiting_by': 'Cosignez ou contestez avant le {date}',
+    'business.reports.row.awaiting_by': 'Contestez avant le {date}',
     'business.reports.row.annual': "Synthèse de l'année",
     'business.reports.annual': 'Annuel {year}',
     'business.reports.empty': "Aucun rapport pour l'instant.",
@@ -1671,7 +1674,7 @@ const fr: Catalog = {
     'admin.messaging.trigger.business.report_sealed':
         'Le partenaire d’audit scelle le rapport mensuel',
     'admin.messaging.trigger.business.report_review_closing':
-        'Le délai pour cosigner ou contester un rapport se termine',
+        'La fenêtre pour contester un rapport se ferme',
     'admin.messaging.trigger.business.reporting_window_open':
         'Un audit mensuel s’ouvre pour une entreprise ayant une note active',
     'admin.messaging.trigger.business.readiness_stage_changed':
@@ -2631,7 +2634,7 @@ const fr: Catalog = {
     'admin.parties.filter': 'Filtrer par statut',
     'admin.audit_reports.title': "Suivi des rapports d'audit",
     'admin.audit_reports.caption':
-        "Chaque audit avec l'état de son rapport. Les audits mensuels sont vérifiés sur place avant le 7 ; l'entreprise dispose ensuite de 24 heures pour cosigner ou contester.",
+        "Chaque audit avec l'état de son rapport. Les audits mensuels sont vérifiés sur place avant le 7 ; l'entreprise dispose ensuite de 24 heures pour contester.",
     'admin.audit_reports.field.title':
         "Opérations d'audit flash sur le terrain",
     'admin.audit_reports.field.caption':
@@ -2654,23 +2657,23 @@ const fr: Catalog = {
     'admin.audit_reports.due': 'Échéance {date}',
     'admin.audit_reports.sealed_on': 'Scellé le {date}',
     'admin.audit_reports.period_flash': 'Sur demande',
-    'admin.audit_reports.cosign_by': 'À cosigner avant {date}',
+    'admin.audit_reports.cosign_by': 'Fenêtre de contestation jusqu’au {date}',
     'admin.audit_reports.remind': 'Relancer',
     'admin.audit_reports.remind_auditor':
         "Relancer le partenaire d'audit pour {business}",
     'admin.audit_reports.remind_business':
-        'Relancer {business} pour cosigner ou contester',
+        'Rappeler à {business} d’examiner le rapport',
     'admin.audit_reports.reminded': 'Relancé le {date}',
     'admin.audit_reports.pdf': 'Générer le PDF',
     'admin.audit_reports.pdf_named':
         'Télécharger le rapport scellé de {business} (PDF)',
     'admin.audit_reports.stats.published': 'Audités et publiés',
-    'admin.audit_reports.stats.awaiting_cosign': 'En attente de validation',
+    'admin.audit_reports.stats.awaiting_cosign': 'Fenêtre de contestation',
     'admin.audit_reports.stats.overdue': 'Rapports en retard',
     'admin.audit_reports.stats.on_time': "Taux d'audits à temps",
     'admin.audit_reports.chip.all': 'Tous',
     'admin.audit_reports.chip.owed': 'Dus par un partenaire',
-    'admin.audit_reports.chip.awaiting_cosign': 'En attente de validation',
+    'admin.audit_reports.chip.awaiting_cosign': 'Fenêtre de contestation',
     'admin.audit_reports.chip.published': 'Publiés',
     'admin.audit_reports.chip.disputed': 'Contestés',
     'admin.audit_reports.col.business': 'Entreprise',
@@ -2684,7 +2687,7 @@ const fr: Catalog = {
     'admin.audit_reports.status.overdue': 'En retard',
     'admin.audit_reports.status.returned': 'Renvoyé',
     'admin.audit_reports.status.sealed': 'Scellé',
-    'admin.audit_reports.status.awaiting_cosign': 'En attente de validation',
+    'admin.audit_reports.status.awaiting_cosign': 'Fenêtre de contestation',
     'admin.audit_reports.status.published': 'Publié',
     'admin.audit_reports.status.disputed': 'Contesté',
     'admin.audit_reports.status.escalated': 'Transmis',
@@ -3452,7 +3455,7 @@ const fr: Catalog = {
     'auditor.home.in_progress': 'En cours',
     'auditor.job.step_of': 'Étape {step} sur {steps}',
     'auditor.job.status.overdue': 'En retard',
-    'auditor.job.status.awaiting_cosign': 'En attente de cosignature',
+    'auditor.job.status.awaiting_cosign': 'Fenêtre de contestation',
     'auditor.job.reassigned': 'Vous a été réattribué',
     'auditor.standing.title': 'Votre situation',
     'auditor.standing.on_time': 'Clôture à temps',
@@ -3515,7 +3518,7 @@ const fr: Catalog = {
         "Aucune mission ouverte dans votre zone. Nous vous préviendrons dès qu'un dossier de niveau 2 nécessitera un contrôle sur site dans un rayon de {radius} km.",
     'auditor.monthly.title': 'Rapports mensuels',
     'auditor.monthly.lead':
-        "Vous ouvrez chaque mois le dossier d'audit des entreprises que vous suivez. Auditez sur site et scellez avant le 7 — l'entreprise cosigne ensuite.",
+        "Vous ouvrez chaque mois le dossier d'audit des entreprises que vous suivez. Auditez sur place et scellez avant le 7 — l'entreprise dispose ensuite de 24 heures pour contester.",
     'auditor.monthly.to_open': 'Audits à ouvrir',
     'auditor.monthly.waiting': '{count} en attente',
     'auditor.monthly.not_opened': "{month} · dossier d'audit pas encore ouvert",
@@ -3540,7 +3543,7 @@ const fr: Catalog = {
     'auditor.monthly.status.in_progress': 'En cours',
     'auditor.monthly.status.overdue': 'En retard',
     'auditor.monthly.status.changes_requested': 'Renvoyé',
-    'auditor.monthly.status.awaiting_cosign': 'Attente de cosignature',
+    'auditor.monthly.status.awaiting_cosign': 'Fenêtre de contestation',
     'auditor.monthly.inflow': 'Entrées',
     'auditor.monthly.outflow': 'Sorties',
     'auditor.monthly.cover': 'Couverture',
@@ -3578,9 +3581,9 @@ const fr: Catalog = {
         "{business} est retourné à l'affectation et votre motif est consigné.",
     'auditor.outcome.sealed.title': 'Audit scellé et déposé',
     'auditor.outcome.sealed.flash':
-        "Le rapport de terrain de {business} est scellé. {business} cosigne d'ici le {date} ; le moteur note l'entreprise à partir de vos constats.",
+        "Le rapport de terrain de {business} est scellé. {business} peut le contester jusqu'au {date} ; le moteur note l'entreprise à partir de vos constats.",
     'auditor.outcome.sealed.monthly':
-        'Le rapport de {month} pour {business} — ses relevés téléversés et vos constats factuels — est scellé. {business} contresigne avant le {date}.',
+        "Le rapport de {month} de {business} — ses relevés téléversés et vos constats factuels — est scellé. {business} peut le contester jusqu'au {date}.",
     'auditor.outcome.suggested.title': 'Modifications demandées',
     'auditor.outcome.suggested.body':
         "L'entreprise a reçu votre motif et votre explication, et peut soumettre à nouveau le dépôt pour votre audit.",
@@ -3683,10 +3686,25 @@ const fr: Catalog = {
     'auditor.audit.step.seal': 'Sceau',
     'auditor.audit.step.statements': 'Relevés',
     'auditor.audit.step.count': 'Comptage',
+    'auditor.audit.step.cash_sales': 'Ventes en espèces',
+    'auditor.audit.step.costs': 'Charges',
+    'auditor.audit.step.history': 'Historique',
+    'auditor.audit.step.premises': 'Locaux',
+    'auditor.audit.step.people': 'Personnes',
+    'auditor.audit.step.registration': 'Immatriculation',
+    'auditor.audit.step.trading': 'Début d’activité',
+    'auditor.audit.step.drawings': 'Prélèvements',
+    'auditor.audit.step.loans': 'Autres prêts',
+    'auditor.audit.step.differences': 'Écarts',
+    'auditor.audit.step.staff': 'Personnel',
+    'auditor.audit.step.expiries': 'Échéances',
+    'auditor.audit.step.loan_use': 'Fonds du prêt',
+    'auditor.audit.step.changes': 'Changements',
     'auditor.audit.continue': 'Continuer',
     'auditor.audit.to_seal': 'Examiner et sceller',
     'auditor.audit.start_count': 'Commencer le comptage',
     'auditor.audit.to_photos': 'Continuer vers les photos',
+    'auditor.audit.explain_differences': 'Expliquer l’écart',
     'auditor.audit.back': 'Retour',
     'auditor.audit.back_to_jobs': 'Retour aux missions',
     'auditor.audit.offline':
@@ -3800,7 +3818,7 @@ const fr: Catalog = {
     'auditor.count.status.restricted': 'Restreint',
     'auditor.seal.title': 'Valider et sceller',
     'auditor.seal.lead':
-        "Vos constats sont attribués à votre licence ICPAR et publiés aux porteurs après la validation de l'entreprise.",
+        "Vos constats sont attribués à votre licence ICPAR et publiés aux porteurs à la fin du délai de contestation de 24 heures de l'entreprise.",
     'auditor.seal.note': "Note d'évaluation",
     'auditor.seal.note_optional': 'Facultatif',
     'auditor.seal.note_required': 'Obligatoire',
@@ -3828,7 +3846,7 @@ const fr: Catalog = {
     'auditor.seal.submit': 'Apposer le sceau de licence ICPAR',
     'auditor.sealed.title': 'Scellé et déposé',
     'auditor.sealed.body':
-        "Le rapport est scellé et ne peut plus être modifié. {party} cosigne d'ici le {date} ; il est ensuite publié aux porteurs.",
+        "Le rapport est scellé et ne peut plus être modifié. {party} peut le contester jusqu'au {date} ; il est ensuite publié aux détenteurs.",
     'auditor.sealed.timeline': 'Avancement du dépôt',
     'auditor.sealed.stage.sealed': 'Scellé par vous',
     'auditor.sealed.stage.cosigned': "Cosignature de l'entreprise",
@@ -3938,7 +3956,7 @@ const fr: Catalog = {
     'auditor.conflicts.empty': "Vous n'avez déclaré aucun conflit.",
     'auditor.conflicts.page_empty':
         'Rien à afficher sur cette page. Des déclarations plus anciennes peuvent suivre.',
-    'auditor.reports.status.awaiting_cosign': 'Attente de cosignature',
+    'auditor.reports.status.awaiting_cosign': 'Fenêtre de contestation',
     'auditor.reports.status.published': 'Publié',
     'auditor.reports.status.late': 'En retard',
     'auditor.reports.status.rejected': 'Rejeté',
@@ -4321,11 +4339,11 @@ const fr: Catalog = {
     'business.audit_prep.flow.sealed.title': 'Scellé',
     'business.audit_prep.flow.sealed.body':
         'Les constats factuels et les écarts sont scellés sous sa licence ICPAR.',
-    'business.audit_prep.flow.cosign.title': 'Vous cosignez',
+    'business.audit_prep.flow.cosign.title': 'Vous examinez',
     'business.audit_prep.flow.cosign.body':
-        'Vous ajoutez un résumé et cosignez avant le {date}, ou vous contestez avec une contre-preuve.',
+        'Vous lisez les constats et, si quelque chose est inexact, vous contestez avec des contre-preuves avant le {date}.',
     'business.audit_prep.closing':
-        "Vous ne déposez jamais le rapport mensuel vous-même. Votre expert-comptable se déplace, examine vos documents sur place et scelle le rapport — votre rôle est d'être prêt, puis de cosigner ou contester ses constats.",
+        "Vous ne déposez jamais vous-même le rapport mensuel. Votre expert-comptable passe, examine vos registres sur place et scelle le rapport — votre rôle est d'être prêt, puis d'examiner ses constats et de les contester en cas d'erreur.",
 
     'investor.nav.deals': 'Offres',
     'investor.nav.portfolio': 'Portefeuille',
@@ -4425,7 +4443,7 @@ const fr: Catalog = {
         other: 'Ajuster à {count} titres',
     },
     'investor.cart.whole.risks_first':
-        'Confirmez d’abord les déclarations de risque dans le paiement d’une offre, puis payez tout le panier.',
+        'Confirmez d’abord les déclarations de risque, puis payez tout le panier.',
     'investor.cart.whole.open_checkout': 'Ouvrir le paiement',
     'investor.cart.whole.held_title': 'Confirmez votre panier',
     'investor.cart.whole.held_lead':
@@ -4437,8 +4455,8 @@ const fr: Catalog = {
     'investor.cart.whole.line_return': 'Rendement {return} · frais {fee}',
     'investor.cart.whole.net_return': 'Rendement attendu après frais',
     'investor.cart.whole.acknowledge':
-        'J’ai lu ces conditions et je confirme chaque titre de ce panier.',
-    'investor.cart.whole.confirm': 'Tout confirmer · {amount}',
+        'Payer confirme que vous avez lu le prospectus de chaque titre.',
+    'investor.cart.whole.confirm': 'Payer {amount}',
     'investor.cart.whole.release': 'Libérer tous les titres',
     'investor.cart.whole.requoted':
         'Les conditions ont changé avant votre confirmation. Vérifiez le nouveau total et le palier, puis confirmez à nouveau.',
@@ -4666,7 +4684,7 @@ const fr: Catalog = {
     'investor.checkout.deposit': 'Déposer',
     'investor.checkout.disclosure': 'COÛTS ET RISQUES',
     'investor.checkout.acknowledge':
-        "J'ai lu l'information sur les coûts et les risques ({version}).",
+        'Payer confirme que vous avez lu le prospectus de ce titre ({version}).',
     'investor.checkout.refusal.TRADE_BELOW_MINIMUM':
         'Investissez au moins un titre.',
     'investor.checkout.refusal.INSUFFICIENT_AVAILABLE_FUNDS':
@@ -4682,7 +4700,7 @@ const fr: Catalog = {
     'investor.checkout.refusal.VERSION_CONFLICT':
         'Les conditions ont changé pendant votre lecture. Relisez-les et confirmez à nouveau.',
     'investor.checkout.processing': 'Confirmation…',
-    'investor.checkout.confirm': 'Confirmer l’investissement · {amount}',
+    'investor.checkout.confirm': 'Payer {amount}',
     'investor.checkout.fine_print':
         'Fonds engagés immédiatement · Rendements projetés, non garantis',
     'investor.checkout.confirmed': 'Investissement confirmé',
@@ -4897,10 +4915,9 @@ const fr: Catalog = {
         '✓ OTP envoyé · saisissez le code à 6 chiffres',
     'investor.signup.agree.head_title': 'Vérifier et accepter',
     'investor.signup.agree.title': 'Vérifier et accepter',
-    'investor.signup.agree.terms_before': "J'accepte les",
+    'investor.signup.agree.terms_before': 'En continuant, vous acceptez les',
     'investor.signup.agree.terms': 'Conditions générales de Rozine',
-    'investor.signup.agree.terms_after': '.',
-    'investor.signup.agree.privacy_before': "J'ai lu la",
+    'investor.signup.agree.privacy_before': 'et la',
     'investor.signup.agree.privacy': 'Note de confidentialité',
     'investor.signup.agree.privacy_after': '.',
     'investor.kyc.progress': 'Progression de la vérification',
@@ -5949,6 +5966,303 @@ const fr: Catalog = {
     'auditor.audit.amends':
         'Ceci est une modification liée du rapport {report}. Ce rapport reste inchangé.',
     'auditor.audit.open_original': "Ouvrir l'original",
+    'auditor.audit.guide.label': 'Comment faire cette étape',
+    'auditor.audit.guide.how_to': 'Comment faire',
+    'auditor.audit.guide.part.do': 'À faire',
+    'auditor.audit.guide.part.enter': 'À saisir',
+    'auditor.audit.guide.part.upload': 'À joindre',
+    'auditor.audit.guide.part.done': 'Terminé quand',
+    'auditor.audit.guide.uploads_rule':
+        'Ne recueillez que ce qui prouve un montant : relevés, factures, reçus, contrats, contrats de prêt, certificats, procès-verbaux, rapports d’audit, et photos des locaux et des actifs. Ne recueillez jamais les noms ou données personnelles du personnel (seule la page de total RSSB, noms masqués), ni mots de passe ou codes PIN, ni dossiers médicaux, ni rien sur vos autres clients. Les fichiers sont chiffrés et visibles uniquement par vous, l’entreprise et Rozine.',
+    'auditor.audit.guide.review.do':
+        'Lisez le dossier de l’entreprise avant d’aller sur place.',
+    'auditor.audit.guide.review.done':
+        'Vous avez lu le dossier. Passez à l’enregistrement sur place.',
+    'auditor.audit.guide.review.how':
+        'Ouvrez chaque document du dossier et notez ce que vous devez voir sur place. Rien n’est enregistré à cette étape.',
+    'auditor.audit.guide.check_in.do':
+        'Enregistrez votre arrivée dans les locaux avec l’application de capture.',
+    'auditor.audit.guide.check_in.enter':
+        'Rien à saisir. Votre position et l’heure viennent de votre téléphone.',
+    'auditor.audit.guide.check_in.done':
+        'Votre arrivée est reçue et s’affiche ici.',
+    'auditor.audit.guide.check_in.how':
+        'Placez-vous dans les locaux, ouvrez l’application de capture, autorisez la localisation et enregistrez-vous. Une arrivée loin des locaux enregistrés, ou avec une localisation faible, part en revue ; continuez.',
+    'auditor.audit.guide.photos.do':
+        'Prenez chaque photo requise en direct dans l’application de capture.',
+    'auditor.audit.guide.photos.upload':
+        'Photos en direct uniquement. Les imports depuis la galerie sont refusés.',
+    'auditor.audit.guide.photos.done':
+        'Chaque photo requise est reçue et porte un titre.',
+    'auditor.audit.guide.photos.how':
+        'Photographiez les locaux et le stock comme la liste le demande. Chaque photo porte sa propre heure et son lieu. N’ajoutez des photos que si elles prouvent un montant.',
+    'auditor.audit.guide.ledger.do':
+        'Comptez le stock et saisissez la valeur d’inventaire comptée.',
+    'auditor.audit.guide.ledger.enter':
+        'Valeur d’inventaire en francs entiers, par exemple 1250000.',
+    'auditor.audit.guide.ledger.upload':
+        'Le registre original en PDF ou CSV, jusqu’à 10 Mo.',
+    'auditor.audit.guide.ledger.done':
+        'Le registre est joint et l’écart avec le montant déclaré s’affiche.',
+    'auditor.audit.guide.ledger.how':
+        'Comptez ce qui est en rayon, calculez sa valeur et saisissez le total. Joignez ensuite le registre tenu par l’entreprise. Un scan sans texte est marqué pour revue manuelle.',
+    'auditor.audit.guide.statements.do':
+        'Lisez ce que les relevés bancaires, MoMo et TPE au dossier indiquent pour le mois.',
+    'auditor.audit.guide.statements.done':
+        'Vous avez lu les entrées, les sorties et le net du mois.',
+    'auditor.audit.guide.statements.how':
+        'Ouvrez chaque relevé pour voir d’où vient un montant. Rien n’est saisi ici ; les montants viennent des relevés.',
+    'auditor.audit.guide.count.do':
+        'Cochez les preuves que vous avez vues, puis saisissez ce que vous avez constaté.',
+    'auditor.audit.guide.count.enter':
+        'Espèces en caisse en francs entiers et unités de stock comptées. Par exemple 450000 et 120.',
+    'auditor.audit.guide.count.done':
+        'Chaque montant est saisi et chaque preuve listée est cochée.',
+    'auditor.audit.guide.count.how':
+        'Comptez vous-même les espèces et le stock. Chaque montant est comparé aux relevés au dossier ; rien ici ne vient de l’entreprise.',
+    'auditor.audit.guide.cash_sales.do':
+        'Notez les ventes en espèces du mois qui n’ont jamais été versées sur un compte bancaire ou mobile money.',
+    'auditor.audit.guide.cash_sales.enter':
+        'Un montant en francs entiers. Par exemple 15000. Saisissez 0 si toutes les ventes ont été versées.',
+    'auditor.audit.guide.cash_sales.done':
+        'Un montant est saisi, même s’il vaut 0.',
+    'auditor.audit.guide.cash_sales.how':
+        'Comparez le cahier des ventes et les reçus aux dépôts sur les relevés. Les espèces gardées pour la monnaie ou dépensées avant le dépôt comptent comme non versées.',
+    'auditor.audit.guide.costs.do':
+        'Classez les charges du mois dans les six catégories.',
+    'auditor.audit.guide.costs.enter':
+        'Un montant en francs entiers pour chaque catégorie : stock, personnel, locaux, transport, impôts et autres. Par exemple stock 400000. Saisissez 0 s’il n’y a pas eu de charge.',
+    'auditor.audit.guide.costs.done':
+        'Chaque catégorie a un montant, même s’il vaut 0.',
+    'auditor.audit.guide.costs.how':
+        'Utilisez les factures, les reçus et les paiements des relevés du mois. Placez chaque charge dans une seule catégorie ; ce qui n’entre dans aucune va dans Autres.',
+    'auditor.audit.guide.history.do':
+        'Comparez chaque mois de l’historique vérifié aux relevés de l’entreprise.',
+    'auditor.audit.guide.history.done':
+        'Vous avez coché que chaque mois correspond aux relevés.',
+    'auditor.audit.guide.history.how':
+        'Ouvrez les relevés d’un mois, vérifiez les entrées et sorties par rapport à la ligne, puis passez au suivant. Signalez tout écart à l’entreprise avant de cocher.',
+    'auditor.audit.guide.premises.do':
+        'Indiquez qui détient les locaux et listez les principaux actifs de l’entreprise.',
+    'auditor.audit.guide.premises.enter':
+        'Propriété, location ou partage, puis chaque actif principal avec une valeur estimée en francs entiers. Par exemple Moto de livraison, 1800000.',
+    'auditor.audit.guide.premises.done':
+        'Le statut des locaux est choisi. Les actifs sont facultatifs ; 10 au maximum.',
+    'auditor.audit.guide.premises.how':
+        'Demandez le titre de propriété ou le bail. Parcourez les locaux et ne listez que ce qui sert à l’activité, comme les véhicules, les machines et les chambres froides.',
+    'auditor.audit.guide.people.do':
+        'Vérifiez l’identité de chaque administrateur et propriétaire, et confirmez les profils de la direction.',
+    'auditor.audit.guide.people.done': 'Les deux vérifications sont cochées.',
+    'auditor.audit.guide.people.how':
+        'Comparez la pièce d’identité de chaque personne à l’extrait du registre RDB. Confirmez que les profils de direction fournis correspondent aux personnes rencontrées.',
+    'auditor.audit.guide.registration.do':
+        'Vérifiez le certificat d’immatriculation et notez la date d’expiration de l’attestation fiscale.',
+    'auditor.audit.guide.registration.enter':
+        'La date d’expiration de l’attestation fiscale telle qu’écrite sur le certificat. Par exemple 31 mars 2027.',
+    'auditor.audit.guide.registration.done':
+        'Le certificat est coché comme vérifié et une date est saisie.',
+    'auditor.audit.guide.registration.how':
+        'Le nom et le code de la société sur le certificat RDB doivent correspondre au dossier. Lisez l’expiration sur l’attestation fiscale de la RRA.',
+    'auditor.audit.guide.trading.do':
+        'Notez le mois où l’entreprise a commencé son activité.',
+    'auditor.audit.guide.trading.enter':
+        'Un mois et une année. Par exemple juin 2021.',
+    'auditor.audit.guide.trading.done': 'Un mois est saisi.',
+    'auditor.audit.guide.trading.how':
+        'Utilisez la facture, le relevé ou la licence commerciale la plus ancienne que vous voyez, pas la date d’immatriculation si l’activité a commencé plus tard.',
+    'auditor.audit.guide.drawings.do':
+        'Notez ce que les propriétaires ont retiré de l’entreprise ce mois-ci.',
+    'auditor.audit.guide.drawings.enter':
+        'Un montant en francs entiers. Par exemple 150000. Saisissez 0 si rien n’a été retiré.',
+    'auditor.audit.guide.drawings.done':
+        'Un montant est saisi, même s’il vaut 0.',
+    'auditor.audit.guide.drawings.how':
+        'Cherchez les virements et les espèces pris par les propriétaires dans les relevés et le livre de caisse. Comptez les salaires des propriétaires seulement s’ils ne sont pas sur la paie.',
+    'auditor.audit.guide.loans.do':
+        'Listez chaque prêt que l’entreprise doit à quelqu’un d’autre que Rozine.',
+    'auditor.audit.guide.loans.enter':
+        'Pour chaque prêt : le prêteur, le montant restant dû et la mensualité, en francs entiers. Par exemple Bank of Kigali, 2400000 et 200000.',
+    'auditor.audit.guide.loans.done':
+        'Chaque prêt a un prêteur et un montant restant dû. Une entreprise sans autre prêt continue avec une liste vide.',
+    'auditor.audit.guide.loans.how':
+        'Interrogez le propriétaire et cherchez des remboursements réguliers dans les relevés. Lisez les montants dans le contrat de prêt ou le dernier relevé du prêteur.',
+    'auditor.audit.guide.differences.do':
+        'Attribuez un montant à chaque cause de l’écart d’espèces jusqu’à ce qu’il ne reste rien à expliquer.',
+    'auditor.audit.guide.differences.enter':
+        'Des francs entiers par cause. Par exemple 20000 pour des dépenses personnelles et 6000 pour une erreur de saisie.',
+    'auditor.audit.guide.differences.done':
+        'Les montants égalent l’écart entier, au franc près. Un mois sans écart n’a rien à expliquer.',
+    'auditor.audit.guide.differences.how':
+        'Interrogez le propriétaire sur chaque écart et vérifiez-le dans le registre ou les reçus. Utilisez seulement les causes listées ; les montants sont scellés avec le constat sur les espèces.',
+    'auditor.differences.title': 'Expliquer l’écart',
+    'auditor.differences.lead':
+        'Répartissez l’écart entre les espèces comptées et les relevés selon ses causes, au franc près.',
+    'auditor.differences.lead_none':
+        'Les espèces comptées correspondent aux relevés : il n’y a rien à expliquer.',
+    'auditor.differences.reported': 'Relevés',
+    'auditor.differences.observed': 'Compté',
+    'auditor.differences.difference': 'Écart',
+    'auditor.differences.unavailable': 'Indisponible',
+    'auditor.differences.causes': 'Causes',
+    'auditor.differences.amount': 'Montant pour {cause}',
+    'auditor.differences.balanced': 'L’écart entier est expliqué.',
+    'auditor.differences.left': 'Reste {amount} à expliquer.',
+    'auditor.differences.over':
+        '{amount} de plus que l’écart. Réduisez un montant.',
+    'auditor.differences.cause.unrecorded_sales': 'Ventes non enregistrées',
+    'auditor.differences.cause.unproven_expense': 'Dépense sans justificatif',
+    'auditor.differences.cause.personal_spending':
+        'Dépenses personnelles sur l’entreprise',
+    'auditor.differences.cause.wrong_month': 'Enregistré dans le mauvais mois',
+    'auditor.differences.cause.entry_error': 'Erreur de saisie',
+    'auditor.differences.cause.counted_twice': 'Compté deux fois',
+    'auditor.cash_sales.title': 'Ventes en espèces non versées',
+    'auditor.cash_sales.lead':
+        'Les espèces encaissées ce mois-ci qui n’ont jamais atteint un compte bancaire ou mobile money, d’après le cahier des ventes et les reçus.',
+    'auditor.cash_sales.amount': 'Non versé ce mois-ci',
+    'auditor.cash_sales.hint':
+        'Saisissez 0 si toutes les ventes en espèces ont été versées.',
+    'auditor.costs.title': 'Charges',
+    'auditor.costs.lead':
+        'Les charges du mois dans les six catégories que l’entreprise utilise aussi pour ses chiffres mensuels.',
+    'auditor.costs.category.stock': 'Stock et fournitures',
+    'auditor.costs.category.staff': 'Personnel',
+    'auditor.costs.category.premises': 'Locaux',
+    'auditor.costs.category.transport': 'Transport',
+    'auditor.costs.category.taxes': 'Impôts et frais',
+    'auditor.costs.category.other': 'Autres',
+    'auditor.costs.total': 'Total des charges',
+    'auditor.costs.hint':
+        'Saisissez 0 pour une catégorie sans charge ce mois-ci.',
+    'auditor.history.title': 'Historique d’activité',
+    'auditor.history.lead':
+        'Les entrées et sorties vérifiées des {count} derniers mois, du plus récent au plus ancien.',
+    'auditor.history.none': 'Aucun historique vérifié n’est encore au dossier.',
+    'auditor.history.month': 'Mois',
+    'auditor.history.in': 'Entrées (RWF)',
+    'auditor.history.out': 'Sorties (RWF)',
+    'auditor.history.checked':
+        'J’ai comparé chaque mois aux relevés et ils correspondent.',
+    'auditor.premises.title': 'Locaux et actifs',
+    'auditor.premises.lead':
+        'Qui détient les locaux, et les principaux actifs utilisés pour l’activité.',
+    'auditor.premises.tenure': 'Les locaux sont',
+    'auditor.premises.tenure.owned': 'Propriété de l’entreprise',
+    'auditor.premises.tenure.rented': 'Loués',
+    'auditor.premises.tenure.shared': 'Partagés avec une autre entreprise',
+    'auditor.premises.assets': 'Principaux actifs',
+    'auditor.premises.none':
+        'Aucun actif listé. Continuez si l’entreprise n’en utilise aucun.',
+    'auditor.premises.item': 'Actif {number}',
+    'auditor.premises.asset': 'Description',
+    'auditor.premises.value': 'Valeur estimée (RWF)',
+    'auditor.premises.remove': 'Retirer l’actif {number}',
+    'auditor.premises.add': 'Ajouter un actif',
+    'auditor.people.title': 'Administrateurs, propriétaires et direction',
+    'auditor.people.lead':
+        'Vérifiez qui possède et dirige l’entreprise avant sa première mise en ligne.',
+    'auditor.people.owners_confirmed':
+        'J’ai vérifié la pièce d’identité de chaque administrateur et propriétaire auprès du registre RDB.',
+    'auditor.people.management_confirmed':
+        'Les profils de direction correspondent aux personnes rencontrées.',
+    'auditor.registration.title': 'Immatriculation et fiscalité',
+    'auditor.registration.lead':
+        'Le certificat RDB et l’attestation fiscale de la RRA, tels que vous les avez vus.',
+    'auditor.registration.confirmed':
+        'Le certificat RDB correspond au nom et au code de l’entreprise.',
+    'auditor.registration.no_tax':
+        'L’entreprise n’a pas d’attestation de régularité fiscale',
+    'auditor.registration.tax': 'Expiration de l’attestation fiscale',
+    'auditor.trading.title': 'Date de début d’activité',
+    'auditor.trading.lead':
+        'Le mois où l’entreprise a commencé son activité, d’après ses plus anciens documents.',
+    'auditor.trading.since': 'En activité depuis',
+    'auditor.drawings.title': 'Prélèvements des propriétaires',
+    'auditor.drawings.lead':
+        'Ce que les propriétaires ont retiré de l’entreprise ce mois-ci, d’après les relevés et le livre de caisse.',
+    'auditor.drawings.amount': 'Retiré par les propriétaires ce mois-ci',
+    'auditor.drawings.hint':
+        'Saisissez 0 si les propriétaires n’ont rien retiré.',
+    'auditor.loans.title': 'Autres prêts',
+    'auditor.loans.lead':
+        'Chaque prêt que l’entreprise doit à quelqu’un d’autre que Rozine, d’après le contrat ou le relevé du prêteur.',
+    'auditor.loans.none':
+        'Aucun autre prêt noté. Continuez si l’entreprise ne doit rien à personne d’autre.',
+    'auditor.loans.item': 'Prêt {number}',
+    'auditor.loans.lender': 'Prêteur',
+    'auditor.loans.outstanding': 'Restant dû (RWF)',
+    'auditor.loans.monthly_payment': 'Mensualité (RWF)',
+    'auditor.loans.remove': 'Retirer le prêt {number}',
+    'auditor.loans.add': 'Ajouter un prêt',
+    'auditor.audit.guide.staff.do':
+        'Notez combien de personnes l’entreprise emploie, d’après la déclaration RSSB.',
+    'auditor.audit.guide.staff.enter':
+        'Un nombre entier. Par exemple 6. Saisissez 0 si personne n’est employé.',
+    'auditor.audit.guide.staff.done':
+        'Un nombre est saisi et la page de totaux RSSB est vérifiée.',
+    'auditor.audit.guide.staff.how':
+        'Demandez la dernière déclaration RSSB et lisez le total sur sa page récapitulative. Demandez au propriétaire de masquer les noms ; Rozine ne collecte jamais de données sur les employés.',
+    'auditor.audit.guide.expiries.do':
+        'Notez quand expirent les attestations de quitus fiscal et RSSB.',
+    'auditor.audit.guide.expiries.enter':
+        'Deux dates, telles qu’imprimées sur chaque attestation. Par exemple 31/03/2027.',
+    'auditor.audit.guide.expiries.done':
+        'Les deux dates sont saisies, même si l’une est déjà passée.',
+    'auditor.audit.guide.expiries.how':
+        'Lisez chaque date sur l’attestation elle-même, pas d’après le propriétaire. Une attestation expirée est notée telle que vous l’avez vue.',
+    'auditor.audit.guide.loan_use.do':
+        'Indiquez comment les fonds du prêt Rozine ont été utilisés ce mois-ci.',
+    'auditor.audit.guide.loan_use.enter':
+        'Choisissez comme prévu, en partie ou pas comme prévu. Sauf « comme prévu », ajoutez une ligne, par exemple : une partie a payé le loyer d’octobre.',
+    'auditor.audit.guide.loan_use.done':
+        'Une réponse est choisie, avec une ligne indiquant où sont allés les fonds s’ils n’ont pas servi comme prévu.',
+    'auditor.audit.guide.loan_use.how':
+        'Comparez ce que les fonds ont payé avec l’usage annoncé dans le prospectus. Vérifiez les reçus ou relevés des paiements les plus importants.',
+    'auditor.audit.guide.changes.do':
+        'Posez quatre questions sur les changements depuis la dernière visite.',
+    'auditor.audit.guide.changes.enter':
+        'Oui ou non pour chacun : un nouveau prêt, un changement de dirigeant, un changement de propriétaires, une action en justice.',
+    'auditor.audit.guide.changes.done': 'Chaque question a un oui ou un non.',
+    'auditor.audit.guide.changes.how':
+        'Posez simplement chaque question au propriétaire et vérifiez l’extrait du registre ou les contrats de prêt quand c’est possible. Un oui est scellé avec le rapport.',
+    'auditor.staff.title': 'Effectif',
+    'auditor.staff.lead':
+        'Combien de personnes l’entreprise emploie, d’après la page de totaux RSSB.',
+    'auditor.staff.count': 'Personnes employées',
+    'auditor.staff.rssb_checked':
+        'J’ai vérifié ce nombre sur la page de totaux RSSB, noms masqués.',
+    'auditor.expiries.title': 'Échéances fiscales et RSSB',
+    'auditor.expiries.lead':
+        'La date d’expiration imprimée sur chaque attestation.',
+    'auditor.expiries.tax': 'Quitus fiscal expire le',
+    'auditor.expiries.rssb': 'Attestation RSSB expire le',
+    'auditor.loan_use.title': 'Usage des fonds du prêt',
+    'auditor.loan_use.lead':
+        'Les fonds du prêt Rozine ont-ils servi à ce que prévoyait le prospectus ?',
+    'auditor.loan_use.option.as_planned': 'Comme prévu',
+    'auditor.loan_use.option.partly': 'En partie comme prévu',
+    'auditor.loan_use.option.not_as_planned': 'Pas comme prévu',
+    'auditor.loan_use.note': 'Note (facultative)',
+    'auditor.loan_use.note_required': 'Où sont allés les fonds ?',
+    'auditor.changes.title': 'Changements',
+    'auditor.changes.lead':
+        'L’un de ces points a-t-il changé depuis la dernière visite ?',
+    'auditor.changes.kind.new_debt': 'Un nouveau prêt ou une nouvelle dette',
+    'auditor.changes.kind.director_change': 'Un changement de dirigeant',
+    'auditor.changes.kind.ownership_change':
+        'Un changement de propriétaires ou d’actionnaires',
+    'auditor.changes.kind.legal_claim':
+        'Une action en justice contre l’entreprise',
+    'auditor.changes.yes': 'Oui',
+    'auditor.changes.no': 'Non',
+    'auditor.audit.guide.seal.do':
+        'Vérifiez le résultat, puis scellez avec votre code d’authentification.',
+    'auditor.audit.guide.seal.enter':
+        'Le code à six chiffres de votre application d’authentification.',
+    'auditor.audit.guide.seal.done':
+        'Toutes les étapes précédentes sont terminées. Le scellement reste désactivé jusque-là.',
+    'auditor.audit.guide.seal.how':
+        'Relisez les constats. Une fois scellé, le rapport est figé sous votre licence et l’entreprise a 24 heures pour le contester.',
     'auditor.receipt.title': 'Conflit enregistré',
     'auditor.receipt.body.reassignment_pending':
         "Votre conflit a été enregistré. Le travail sur cette mission est arrêté pendant que les Opérations d'audit organisent la réattribution.",
@@ -6850,7 +7164,7 @@ const fr: Catalog = {
     'investor.checkout.c3.held_amount': 'Réservé sur le disponible',
     'investor.checkout.c3.release': 'Libérer ces titres',
     'investor.checkout.c3.confirm_fine_print':
-        "Confirmer engage le montant réservé. Un engagement confirmé est définitif et ne peut pas être annulé. Si la levée n'est pas complète, votre argent revient dans votre portefeuille.",
+        "Payer engage le montant réservé. Vous pouvez vous retirer, avec un remboursement complet, tant que la levée n'a pas atteint 100 %. Si la levée n'est pas complète, votre argent revient dans votre portefeuille.",
     'investor.checkout.c3.at_maturity': {
         one: 'Retour sur {count} mois',
         other: 'Retour sur {count} mois',
@@ -6936,19 +7250,19 @@ const fr: Catalog = {
     'investor.notices.auditor.job_offered.body_routine':
         'Audit de routine chez {business}, {location}. Acceptez avant {time}.',
     'investor.notices.business.report_sealed.title':
-        "Rapport d'audit prêt pour votre approbation",
+        "Rapport d'audit prêt à examiner",
     'investor.notices.business.report_sealed.body':
-        "{auditor} a scellé votre rapport d'audit. Consultez-le, puis cosignez-le ou contestez-le.",
+        "{auditor} a scellé votre rapport d'audit. Examinez-le et contestez-le en cas d'erreur.",
     'investor.notices.business.report_sealed.body_due':
-        "{auditor} a scellé votre rapport d'audit. Cosignez-le ou contestez-le avant {time}.",
+        "{auditor} a scellé votre rapport d'audit. Contestez-le avant {time} en cas d'erreur.",
     'investor.notices.business.report_review_closing.title':
         'Fin du délai de revue',
     'investor.notices.business.report_review_closing.body':
-        "Votre délai pour cosigner ou contester le rapport d'audit se termine à {time}. Sans action de votre part, il est publié tel que scellé.",
+        "Votre fenêtre pour contester le rapport d'audit se ferme à {time}. Sans action de votre part, il est publié tel que scellé.",
     'investor.notices.business.reporting_window_open.title':
         'Audit mensuel ouvert',
     'investor.notices.business.reporting_window_open.body':
-        "Votre audit de {month} a commencé. Préparez les relevés et registres du mois pour que votre partenaire d'audit les vérifie et scelle le rapport d'ici le {date}. Vous le cosignez ensuite ou le contestez.",
+        "Votre audit de {month} a commencé. Préparez les relevés et registres du mois pour que votre Audit Partner les vérifie et scelle le rapport d'audit avant le {date}. Vous l'examinez ensuite et pouvez le contester.",
     'investor.notices.business.readiness_stage_changed.title':
         'Étape de préparation modifiée',
     'investor.notices.business.readiness_stage_changed.body':
@@ -7025,14 +7339,15 @@ const fr: Catalog = {
         "Vos informations d'identité doivent être revues",
     'investor.notices.verification.rejected.body':
         "La conformité n'a pas pu vérifier vos informations : {reason}",
-    'investor.checkout.risks.title': 'Avant votre premier investissement',
+    'investor.checkout.risks.title': 'Avant d’investir',
     'investor.checkout.risks.lead':
-        'Cochez chaque déclaration pour confirmer que vous la comprenez.',
-    'investor.checkout.risks.accept': 'Je comprends ces risques',
+        'Lisez ces cinq déclarations. Vous les confirmez une seule fois ; le paiement ne vous demandera rien de plus.',
+    'investor.checkout.risks.understood': 'Je comprends tout ce qui précède',
+    'investor.checkout.risks.accept': 'Continuer',
     'investor.checkout.risks.failed':
         "Nous n'avons pas pu enregistrer votre réponse. Réessayez.",
     'investor.checkout.c3.reserve_after_risks':
-        'Confirmez les déclarations de risque ci-dessus pour réserver.',
+        'Confirmez d’abord les déclarations de risque pour réserver.',
     'investor.checkout.c3.reserve_unavailable':
         "La réservation n'est pas disponible pour le moment.",
     'investor.checkout.c3.reserve_fine_print':
@@ -7117,10 +7432,14 @@ const fr: Catalog = {
         other: '{count} codes de récupération restants',
     },
     'business.audit_cosign.head_title': "Cosigner le rapport d'audit",
+    'business.audit_cosign.head_title_review': "Examiner le rapport d'audit",
     'business.audit_cosign.title': "Cosigner le rapport d'audit",
+    'business.audit_cosign.title_review': "Examiner le rapport d'audit",
     'business.audit_cosign.back': 'Retour',
     'business.audit_cosign.lead':
         "Votre expert-comptable a scellé ce rapport après l'audit sur place. Lisez les constats factuels avant de cosigner.",
+    'business.audit_cosign.lead_review':
+        "Votre expert-comptable a scellé ce rapport après l'audit sur place. Lisez les constats factuels. Vous n'avez pas à le signer.",
     'business.audit_cosign.kind.monthly': "Rapport d'audit mensuel",
     'business.audit_cosign.kind.flash': "Rapport d'audit flash",
     'business.audit_cosign.period': 'Période',
@@ -7145,6 +7464,7 @@ const fr: Catalog = {
     'business.audit_cosign.sealed_note':
         'Ce rapport est scellé. Rien sur cette page ne le modifie.',
     'business.audit_cosign.status.title': 'Cosignatures',
+    'business.audit_cosign.status.title_review': 'Examen',
     'business.audit_cosign.status.count':
         '{signed} signature(s) sur {required}',
     'business.audit_cosign.status.signers': 'Signataires',
@@ -7158,6 +7478,7 @@ const fr: Catalog = {
         'En retard — la cosignature était due avant le {date}',
     'business.audit_cosign.published': 'Publié le {date}',
     'business.audit_cosign.yours.title': 'Votre cosignature',
+    'business.audit_cosign.yours.title_review': 'Votre réponse',
     'business.audit_cosign.yours.accept':
         "J'ai examiné les constats d'audit et je cosigne ce rapport.",
     'business.audit_cosign.yours.note': 'Votre résumé (facultatif)',
@@ -7179,6 +7500,8 @@ const fr: Catalog = {
         "Ce rapport n'est pas ouvert à la cosignature pour le moment.",
     'business.audit_cosign.yours.cannot':
         'Vous ne pouvez pas cosigner ce rapport.',
+    'business.audit_cosign.yours.not_needed':
+        "Rien à signer. Si vous êtes d'accord, vous n'avez rien à faire : le rapport est publié à la fin de la fenêtre de 24 heures. Si quelque chose est inexact, contestez-le avant.",
     'business.audit_cosign.refused.with_code': '{reason} ({code})',
     'business.audit_cosign.refused.VERSION_CONFLICT':
         'Les signatures de ce rapport ont changé pendant que vous y travailliez. Nous avons chargé la dernière version — vérifiez-la et réessayez.',
@@ -7238,21 +7561,20 @@ const fr: Catalog = {
     'business.audit_cosign.published_staff':
         'Publié par le personnel Rozine le {date}',
     'business.audit_cosign.yours.published_auto':
-        "Publié automatiquement après la fenêtre de 24 heures : personne ne l'a approuvé ni contesté à temps. Aucune signature n'a été enregistrée.",
+        "Publié à la fin de la fenêtre de 24 heures, sans contestation. Aucune signature n'est nécessaire.",
     'business.audit_cosign.yours.published_staff':
         "Le personnel Rozine a tranché la contestation et publié le rapport. Aucune signature n'a été enregistrée.",
     'business.audit_cosign.window.title': "Fenêtre d'examen de 24 heures",
     'business.audit_cosign.window.left': '{time} restantes',
     'business.audit_cosign.window.body':
-        "Une fois le rapport d'audit scellé dans votre application, vous avez 24 heures pour l'approuver ou soumettre une contestation avec des justificatifs.",
+        'Votre expert-comptable a scellé ce rapport. Vous ne le signez pas. Si quelque chose est inexact, contestez-le avec des justificatifs dans les 24 heures.',
     'business.audit_cosign.window.delivered':
         'Reçu dans votre application le {date}',
-    'business.audit_cosign.window.due':
-        'Approuvez ou contestez avant le {date}',
+    'business.audit_cosign.window.due': 'Contestez avant le {date}',
     'business.audit_cosign.window.ended':
         'La fenêtre de 24 heures est terminée.',
     'business.audit_cosign.window.auto':
-        'Les rapports non signés sont approuvés automatiquement à la fin de la fenêtre.',
+        'Sans contestation, le rapport est maintenu et publié à la fin de la fenêtre.',
     'business.audit_cosign.dispute.intro':
         "Indiquez ce que vous contestez dans les constats et vos justificatifs. Votre contestation ne modifie pas le rapport scellé et suspend la fenêtre de 24 heures pendant l'examen par le CPA.",
     'business.audit_cosign.dispute.proof_rule':
@@ -7330,9 +7652,9 @@ const fr: Catalog = {
     'business.audit_cosign.refused.REPORT_REVIEW_CLOSED':
         "Ce rapport est déjà contesté, examiné par le personnel Rozine ou publié : il ne peut plus être approuvé ni contesté. Nous l'avons rechargé tel qu'il est maintenant.",
     'auditor.sealed.body_published_auto':
-        "Publié automatiquement après la fenêtre de 24 heures, le {date}. L'entreprise ne l'a pas cosigné.",
+        'Publié après la fenêtre de 24 heures, sans contestation, le {date}.',
     'auditor.sealed.body_published_staff':
-        "Publié par le personnel Rozine le {date}. L'entreprise ne l'a pas cosigné.",
+        'Publié par l’équipe Rozine le {date}.',
     'auditor.sealed.cosign.not_signed': 'Non cosigné',
     'business.audit_cosign.head_title_read': "Rapport d'audit",
     'business.audit_cosign.lead_read':

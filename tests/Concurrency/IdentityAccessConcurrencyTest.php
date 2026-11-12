@@ -2143,7 +2143,7 @@ it('keeps Auditor ledger uploads independent of concurrent Business statement ch
     $version = $file['evidence']['revision'];
     $payload = $file['transcription']['payload'];
     $ledger = function () use ($user, $report): void {
-        $result = app(IngestAuditLedger::class)->handle($user->id, 1, $report->id, 4, 'ledger.csv', "amount\n38000000\n", null, (string) Str::uuid());
+        $result = app(IngestAuditLedger::class)->handle($user->id, 1, $report->id, 9, 'ledger.csv', "amount\n38000000\n", null, (string) Str::uuid());
         expect($result['code'])->toBe('INGESTED_NOT_AUDIT_APPROVED');
     };
     $business = function () use ($command, $businessUser, $businessId, $version, $payload): void {
@@ -2154,7 +2154,7 @@ it('keeps Auditor ledger uploads independent of concurrent Business statement ch
         expect($result['code'])->toBe($command === 'ingest' ? 'INGESTED_NOT_AUDIT_APPROVED' : 'STATEMENT_RECONCILED_UNVERIFIED');
     };
     expect(runIdentityContenders([$ledger, $business]))->toBe([0, 0])
-        ->and($report->refresh()->revision)->toBe(5)
+        ->and($report->refresh()->revision)->toBe(10)
         ->and(AuditLedgerOriginal::query()->where('audit_report_id', $report->id)->count())->toBe(1)
         ->and(app(GetAuditStatements::class)->handle($user->id, 1, $report->assignment_id)['evidence']['revision'])->toBe($version + 1);
 })->with(['ingest', 'reconcile']);
@@ -2166,12 +2166,12 @@ it('serializes same and competing UUID ledger uploads across canonical Party log
     $first = (string) Str::uuid();
     $second = $sameRequest ? $first : (string) Str::uuid();
     $upload = fn (User $actor, string $request): Closure => function () use ($actor, $request, $report): void {
-        $result = app(IngestAuditLedger::class)->handle($actor->id, 1, $report->id, 4, 'ledger.csv', "amount\n38000000\n", null, $request);
+        $result = app(IngestAuditLedger::class)->handle($actor->id, 1, $report->id, 9, 'ledger.csv', "amount\n38000000\n", null, $request);
         expect($result['code'])->toBeIn(['INGESTED_NOT_AUDIT_APPROVED', 'VERSION_CONFLICT']);
     };
     expect(runIdentityContenders([$upload($user, $first), $upload($other, $second)]))->toBe([0, 0])
-        ->and($report->refresh()->revision)->toBe(5)->and(AuditLedgerOriginal::query()->count())->toBe(1)
-        ->and(AuditReportVersion::query()->where('audit_report_id', $report->id)->count())->toBe(5);
+        ->and($report->refresh()->revision)->toBe(10)->and(AuditLedgerOriginal::query()->count())->toBe(1)
+        ->and(AuditReportVersion::query()->where('audit_report_id', $report->id)->count())->toBe(10);
     $codes = CommandOperation::query()->whereIn('request_id', [$first, $second])->get()->map(fn (CommandOperation $operation): string => $operation->result['code'])->sort()->values()->all();
     expect($codes)->toBe($sameRequest ? ['INGESTED_NOT_AUDIT_APPROVED'] : ['INGESTED_NOT_AUDIT_APPROVED', 'VERSION_CONFLICT']);
 })->with([false, true]);
@@ -2181,7 +2181,7 @@ it('holds the ledger insertion report state through commit against a direct comp
     $row = AuditLedgerOriginal::factory()->forReport($report, $user)->make(['id' => (string) Str::ulid(), 'created_at' => now()])->getAttributes();
     config(['database.connections.ledger_contender' => config('database.connections.pgsql')]);
     DB::connection('ledger_contender')->statement("SET lock_timeout = '500ms'");
-    $advance = fn (): int => DB::connection('ledger_contender')->table('audit_reports')->where('id', $report->id)->update(['revision' => 5, 'step' => 'seal']);
+    $advance = fn (): int => DB::connection('ledger_contender')->table('audit_reports')->where('id', $report->id)->update(['revision' => 10, 'step' => 'seal']);
     try {
         DB::transaction(function () use ($row, $advance): void {
             DB::table('audit_ledger_originals')->insert($row);

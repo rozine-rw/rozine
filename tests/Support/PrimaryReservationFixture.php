@@ -67,7 +67,7 @@ final class PrimaryReservationFixture
             $fixture['code'] = $sealing($fixture);
         }
         AuditSealingFixture::seal($fixture);
-        AuditSealingFixture::cosign($fixture);
+        AuditSealingFixture::publish($fixture);
         if ($beforeRelease !== null) {
             $beforeRelease($fixture);
         }

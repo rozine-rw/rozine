@@ -36,7 +36,7 @@ final class GetBusinessReports
     }
 
     /**
-     * @param  array{id: string, kind: string, status: string, due_at: string|null}  $latest
+     * @param  array{id: string, kind: string, status: string, due_at: string|null, cosign: bool}  $latest
      * @return Latest|null
      */
     private function latest(int $userId, int $contextRevision, string $businessId, array $latest): ?array

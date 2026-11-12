@@ -1575,6 +1575,15 @@ export type Commitment = {
  * server's exact wording is shown, because the acknowledgement binds its version and digest.
  * `action` is null once they are acknowledged.
  */
+/** The shared `risk_acknowledgement` prop: statements still to acknowledge at app open (KYC-R05). */
+export type InvestorRiskAcknowledgementDue = {
+    version: string;
+    statements_sha256: string;
+    statements: { key: string; text: string }[];
+    identity_context_revision: number;
+    action: RouteAction;
+};
+
 export type InvestorRiskStatements = {
     version: string;
     statements_sha256: string;
