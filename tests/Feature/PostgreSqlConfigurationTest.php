@@ -170,6 +170,9 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $repeatApplications = require database_path('migrations/2026_10_22_130000_allow_repeat_business_applications.php');
     // The ledger-precision held release check rewrites check_primary_held_release, so it comes off first and goes back last.
     $heldReleasePrecision = require database_path('migrations/2026_10_30_190000_compare_held_release_cash_at_ledger_precision.php');
+    // The secondary market rewrites the ledger's kind constraints and references command operations, so it comes off first and goes back last.
+    $secondaryMarket = require database_path('migrations/2026_11_11_060000_create_secondary_market_tables.php');
+    $secondaryMarket->down();
     // The readiness tables reference business profiles, which are rebuilt below, so they come off first and go back last.
     $academyAttempts = require database_path('migrations/2026_11_10_190000_create_business_academy_attempts.php');
     $academyAttempts->down();
@@ -489,6 +492,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     expect(Schema::hasTable('business_readiness_requirements'))->toBeTrue()
         ->and(Schema::hasTable('business_monthly_submissions'))->toBeTrue()
         ->and(Schema::hasTable('business_academy_attempts'))->toBeTrue();
+    $secondaryMarket->up();
     expect(Schema::hasColumn('business_photos', 'url'))->toBeTrue();
     expect(Schema::hasTable('investor_cart_lines'))->toBeTrue()
         ->and(DB::scalar("SELECT count(*) FROM pg_constraint WHERE conname = 'investor_cart_line_units'"))->toBe(1);

@@ -53,7 +53,7 @@ it('keeps a listing open for exactly seven days, then lets it expire at no cost 
     expect($listing->expiresAt->setTimezone(new DateTimeZone('Africa/Kigali'))->format('Y-m-d H:i'))->toBe('2026-10-08 10:00')
         ->and($listing->at(secondaryKigali('2026-10-08 09:59:59'))->state)->toBe('open')
         ->and($listing->at(secondaryKigali('2026-10-08 10:00'))->state)->toBe('expired')
-        ->and(fn () => $listing->reserve('r-1', 'buyer', '1', '2160', '0', openWindow(), secondaryKigali('2026-10-08 10:00')))
+        ->and(fn () => $listing->reserve('r-1', 'buyer', '1', '2160', '0', BigInteger::of(2777), openWindow(), secondaryKigali('2026-10-08 10:00')))
         ->toThrow(SecondaryViolation::class, 'LISTING_CLOSED');
 });
 
@@ -68,35 +68,52 @@ it('only lists units the seller holds free, within the cap, in an open window', 
 });
 
 it('reserves units for five minutes, refusing the seller a cancel or reprice meanwhile (SEC-R05, R09)', function (): void {
-    $reserved = tenUnitListing()->reserve('r-1', 'buyer', '4', '2160', '0', openWindow(), secondaryKigali('2026-10-02 12:00'));
+    $reserved = tenUnitListing()->reserve('r-1', 'buyer', '4', '2160', '0', BigInteger::of(2777), openWindow(), secondaryKigali('2026-10-02 12:00'));
 
     expect($reserved->reservation)->toMatchArray(['id' => 'r-1', 'buyer_party_id' => 'buyer', 'units' => '4'])
         ->and($reserved->reservation['expires_at']->setTimezone(new DateTimeZone('Africa/Kigali'))->format('H:i:s'))->toBe('12:05:00')
         ->and(fn () => $reserved->cancel(secondaryKigali('2026-10-02 12:04:59')))->toThrow(SecondaryViolation::class, 'LISTING_RESERVED')
         ->and(fn () => $reserved->reprice('2600', BigInteger::of(2777), openWindow(), secondaryKigali('2026-10-02 12:01')))->toThrow(SecondaryViolation::class, 'LISTING_RESERVED')
-        ->and(fn () => $reserved->reserve('r-2', 'other', '1', '2160', '0', openWindow(), secondaryKigali('2026-10-02 12:01')))->toThrow(SecondaryViolation::class, 'LISTING_RESERVED')
+        ->and(fn () => $reserved->reserve('r-2', 'other', '1', '2160', '0', BigInteger::of(2777), openWindow(), secondaryKigali('2026-10-02 12:01')))->toThrow(SecondaryViolation::class, 'LISTING_RESERVED')
         ->and($reserved->cancel(secondaryKigali('2026-10-02 12:05'))->cancellation)->toBe(['by' => 'seller', 'reason' => null])
-        ->and(fn () => $reserved->settle('r-1', openWindow(), secondaryKigali('2026-10-02 12:05')))->toThrow(SecondaryViolation::class, 'RESERVATION_NOT_OPEN');
+        ->and(fn () => $reserved->settle('r-1', BigInteger::of(2777), openWindow(), secondaryKigali('2026-10-02 12:05')))->toThrow(SecondaryViolation::class, 'RESERVATION_NOT_OPEN');
+});
+
+it('keeps a listing open past its seven days while a reservation made before then is live (SEC-R02, R05)', function (): void {
+    $reserved = tenUnitListing()->reserve('r-1', 'buyer', '4', '2160', '0', BigInteger::of(2777), openWindow(), secondaryKigali('2026-10-08 09:59'));
+
+    expect($reserved->at(secondaryKigali('2026-10-08 10:03'))->state)->toBe('open')
+        ->and($reserved->settle('r-1', BigInteger::of(2777), openWindow(), secondaryKigali('2026-10-08 10:03'))['listing']->state)->toBe('open')
+        ->and($reserved->at(secondaryKigali('2026-10-08 10:04'))->state)->toBe('expired');
+});
+
+it('refuses to reserve or settle at a price a payout has put above the current cap (SEC-R03)', function (): void {
+    $reserved = tenUnitListing()->reserve('r-1', 'buyer', '4', '2160', '0', BigInteger::of(2777), openWindow(), secondaryKigali('2026-10-02 12:00'));
+
+    expect(fn () => tenUnitListing()->reserve('r-1', 'buyer', '4', '2160', '0', BigInteger::of(1851), openWindow(), secondaryKigali('2026-10-02 12:00')))
+        ->toThrow(SecondaryViolation::class, 'PRICE_ABOVE_CAP')
+        ->and(fn () => $reserved->settle('r-1', BigInteger::of(1851), openWindow(), secondaryKigali('2026-10-02 12:01')))->toThrow(SecondaryViolation::class, 'PRICE_ABOVE_CAP')
+        ->and($reserved->settle('r-1', BigInteger::of(2700), openWindow(), secondaryKigali('2026-10-02 12:01'))['quote']->units->toInt())->toBe(4);
 });
 
 it('lets a buyer take part of a listing and leaves the rest listed until it sells (SEC-R04, R06)', function (): void {
-    $first = tenUnitListing()->reserve('r-1', 'buyer', '4', '2160', '0', openWindow(), secondaryKigali('2026-10-02 12:00'))
-        ->settle('r-1', openWindow(), secondaryKigali('2026-10-02 12:03'));
+    $first = tenUnitListing()->reserve('r-1', 'buyer', '4', '2160', '0', BigInteger::of(2777), openWindow(), secondaryKigali('2026-10-02 12:00'))
+        ->settle('r-1', BigInteger::of(2777), openWindow(), secondaryKigali('2026-10-02 12:03'));
 
     expect([$first['listing']->state, $first['listing']->remainingUnits, $first['listing']->reservation])->toBe(['open', '6', null])
         ->and($first['quote']->toArray())->toMatchArray(['gross' => '10800', 'seller_fee' => '216', 'seller_receives' => '10584'])
-        ->and(fn () => $first['listing']->settle('r-1', openWindow(), secondaryKigali('2026-10-02 12:04')))->toThrow(SecondaryViolation::class, 'RESERVATION_NOT_OPEN')
-        ->and(fn () => $first['listing']->reserve('r-2', 'buyer', '7', '2160', '4', openWindow(), secondaryKigali('2026-10-02 12:10')))
+        ->and(fn () => $first['listing']->settle('r-1', BigInteger::of(2777), openWindow(), secondaryKigali('2026-10-02 12:04')))->toThrow(SecondaryViolation::class, 'RESERVATION_NOT_OPEN')
+        ->and(fn () => $first['listing']->reserve('r-2', 'buyer', '7', '2160', '4', BigInteger::of(2777), openWindow(), secondaryKigali('2026-10-02 12:10')))
         ->toThrow(SecondaryViolation::class, 'UNITS_NOT_LISTED');
-    $rest = $first['listing']->reserve('r-2', 'other', '6', '2160', '0', openWindow(), secondaryKigali('2026-10-02 12:10'))
-        ->settle('r-2', openWindow(), secondaryKigali('2026-10-02 12:11'));
+    $rest = $first['listing']->reserve('r-2', 'other', '6', '2160', '0', BigInteger::of(2777), openWindow(), secondaryKigali('2026-10-02 12:10'))
+        ->settle('r-2', BigInteger::of(2777), openWindow(), secondaryKigali('2026-10-02 12:11'));
     expect([$rest['listing']->state, $rest['listing']->remainingUnits, (string) $rest['quote']->gross])->toBe(['sold', '0', '16200'])
         ->and(fn () => $rest['listing']->cancel(secondaryKigali('2026-10-02 12:12')))->toThrow(SecondaryViolation::class, 'LISTING_CLOSED');
 });
 
 it('refuses a seller buying their own listing and a buyer going past half the raise (SEC-R01, INV-R01)', function (): void {
     $listing = tenUnitListing();
-    $reserve = fn (string $buyer, string $held, string $units): SecondaryListing => $listing->reserve('r', $buyer, $units, '2160', $held, openWindow(),
+    $reserve = fn (string $buyer, string $held, string $units): SecondaryListing => $listing->reserve('r', $buyer, $units, '2160', $held, BigInteger::of(2777), openWindow(),
         secondaryKigali('2026-10-02 12:00'));
 
     expect(fn () => $reserve('seller', '0', '1'))->toThrow(SecondaryViolation::class, 'OWN_LISTING')
@@ -135,12 +152,12 @@ it('refuses an unknown note health', function (): void {
 });
 
 it('releases a reservation and cancels the listing for good on a halt, and needs a reason for staff action (SEC-R08, R09)', function (): void {
-    $reserved = tenUnitListing()->reserve('r-1', 'buyer', '4', '2160', '0', openWindow(), secondaryKigali('2026-10-02 12:00'));
+    $reserved = tenUnitListing()->reserve('r-1', 'buyer', '4', '2160', '0', BigInteger::of(2777), openWindow(), secondaryKigali('2026-10-02 12:00'));
     $halted = $reserved->halt('Suspected wash trading.', secondaryKigali('2026-10-02 12:01'));
 
     expect([$halted->state, $halted->reservation, $halted->cancellation])->toBe(['cancelled', null, ['by' => 'halt', 'reason' => 'Suspected wash trading.']])
         ->and($halted->at(secondaryKigali('2026-10-20 12:00'))->state)->toBe('cancelled')
-        ->and(fn () => $halted->settle('r-1', openWindow(), secondaryKigali('2026-10-02 12:02')))->toThrow(SecondaryViolation::class, 'RESERVATION_NOT_OPEN')
+        ->and(fn () => $halted->settle('r-1', BigInteger::of(2777), openWindow(), secondaryKigali('2026-10-02 12:02')))->toThrow(SecondaryViolation::class, 'RESERVATION_NOT_OPEN')
         ->and(fn () => $reserved->halt(' ', secondaryKigali('2026-10-02 12:01')))->toThrow(SecondaryViolation::class, 'REASON_REQUIRED')
         ->and(fn () => tenUnitListing()->cancelByStaff('', secondaryKigali('2026-10-02 12:00')))->toThrow(SecondaryViolation::class, 'REASON_REQUIRED')
         ->and(tenUnitListing()->cancelByStaff('Misleading price.', secondaryKigali('2026-10-02 12:00'))->cancellation)->toBe(['by' => 'staff', 'reason' => 'Misleading price.'])

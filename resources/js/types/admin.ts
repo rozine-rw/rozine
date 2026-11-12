@@ -773,6 +773,8 @@ export type StaffPermissionKey =
     | 'complaints.answer'
     | 'health.view'
     | 'cart.releases.resolve'
+    | 'secondary.halt'
+    | 'secondary.listings.cancel'
     | 'staff.manage'
     | 'accounts.freeze'
     | 'capacity.adjust'
