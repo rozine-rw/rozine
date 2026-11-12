@@ -28,6 +28,12 @@ final class AuditProcedure
      */
     public const array COST_CATEGORIES = ['stock', 'staff', 'premises', 'transport', 'taxes', 'other'];
 
+    /** Who holds the premises the business trades from (BRS v3 VIS-R02 baseline: premises and assets). */
+    public const array PREMISES_TENURES = ['owned', 'rented', 'shared'];
+
+    /** At most this many business assets are recorded on a baseline visit. */
+    public const int MAX_ASSETS = 10;
+
     /** At most this many other loans are recorded on one monthly visit (BRS v3 VIS-R01 step 8). */
     public const int MAX_OTHER_LOANS = 10;
 
@@ -40,11 +46,18 @@ final class AuditProcedure
      */
     public const array CHANGE_KINDS = ['new_debt', 'director_change', 'ownership_change', 'legal_claim'];
 
-    /** @return list<string> */
+    /**
+     * The steps of a procedure, in fixed order. A baseline is the Flash visit a business gets before
+     * its first listing (BRS v3 AUD-R03): the same visit, with the history, premises, people,
+     * registration and trading-start steps VIS-R02 adds.
+     *
+     * @return list<string>
+     */
     public function steps(string $kind): array
     {
         return match ($kind) {
             'flash' => ['review', 'check_in', 'photos', 'ledger', 'seal'],
+            'baseline' => ['review', 'check_in', 'history', 'premises', 'people', 'registration', 'trading', 'photos', 'ledger', 'seal'],
             'monthly' => ['statements', 'count', 'cash_sales', 'costs', 'drawings', 'loans', 'differences', 'staff', 'expiries', 'loan_use', 'changes', 'photos', 'seal'],
             default => throw new CommandRejection('AUDIT_PROCEDURE_INVALID', 422),
         };
@@ -131,7 +144,7 @@ final class AuditProcedure
         $draft['fields'] = array_intersect_key($draft['fields'], $retained);
         $draft['sources'] = array_intersect_key($draft['sources'] ?? [], $retained);
         $draft['completed_steps'] = $completed;
-        if ($kind === 'flash' && $index < array_search('ledger', $steps, true)) {
+        if ($kind !== 'monthly' && $index < array_search('ledger', $steps, true)) {
             unset($draft['documents']);
         }
         if ($step === 'seal') {
@@ -174,6 +187,11 @@ final class AuditProcedure
             'ledger' => ['observed_stock', 'reconciled'],
             'count' => ['financial_proofs', 'inventory_proofs', 'cash', 'stock_units', 'operational_status'],
             'photos' => ['titles'],
+            'history' => ['history_checked'],
+            'premises' => ['premises_tenure', 'assets'],
+            'people' => ['owners_confirmed', 'management_confirmed'],
+            'registration' => ['registration_confirmed', 'tax_clearance_expires_on'],
+            'trading' => ['trading_since'],
             'cash_sales' => ['undeposited_cash_sales'],
             'costs' => ['costs'],
             'drawings' => ['owner_drawings'],
@@ -216,6 +234,31 @@ final class AuditProcedure
             return ['cash' => $cash, 'stock_units' => $units, 'operational_status' => $input['operational_status'],
                 'financial_proofs' => $this->proofs($input['financial_proofs'], $sources['financial_proofs'], 'financial_proofs'),
                 'inventory_proofs' => $this->proofs($input['inventory_proofs'], $sources['inventory_proofs'], 'inventory_proofs')];
+        }
+        if ($step === 'history') {
+            return ['history_checked' => $this->confirmed($input['history_checked'], 'history_checked', 'Compare every month of the history with the statements before continuing.')];
+        }
+        if ($step === 'premises') {
+            if (! in_array($input['premises_tenure'], self::PREMISES_TENURES, true)) {
+                throw new CommandRejection('AUDIT_STEP_INPUT_INVALID', 422, fieldErrors: ['premises_tenure' => ['Say who holds the premises.']]);
+            }
+
+            return ['premises_tenure' => $input['premises_tenure'], 'assets' => $this->assets($input['assets'])];
+        }
+        if ($step === 'people') {
+            return ['owners_confirmed' => $this->confirmed($input['owners_confirmed'], 'owners_confirmed', 'Check the identity of every director and owner before continuing.'),
+                'management_confirmed' => $this->confirmed($input['management_confirmed'], 'management_confirmed', 'Confirm the management profiles before continuing.')];
+        }
+        if ($step === 'registration') {
+            return ['registration_confirmed' => $this->confirmed($input['registration_confirmed'], 'registration_confirmed', 'Check the registration certificate before continuing.'),
+                'tax_clearance_expires_on' => $this->date($input['tax_clearance_expires_on'], 'tax_clearance_expires_on')];
+        }
+        if ($step === 'trading') {
+            if (! is_string($input['trading_since']) || preg_match('/^(\d{4})-(0[1-9]|1[0-2])$/', $input['trading_since']) !== 1) {
+                throw new CommandRejection('AUDIT_STEP_INPUT_INVALID', 422, fieldErrors: ['trading_since' => ['Use the month trading started, as YYYY-MM.']]);
+            }
+
+            return ['trading_since' => $input['trading_since']];
         }
         if ($step === 'cash_sales') {
             return ['undeposited_cash_sales' => $this->amount($input['undeposited_cash_sales'], 'undeposited_cash_sales')];
@@ -282,9 +325,9 @@ final class AuditProcedure
     private function pins(string $step, array $sources): array
     {
         $required = match ($step) {
-            'check_in' => ['check_in'],
+            'check_in', 'premises', 'people', 'registration', 'trading' => ['check_in'],
             'photos' => ['photos'],
-            'statements' => ['verification'],
+            'statements', 'history' => ['verification'],
             'ledger', 'count', 'cash_sales', 'costs', 'drawings', 'loans', 'differences', 'staff', 'expiries', 'loan_use', 'changes' => ['verification', 'declaration'],
             default => [],
         };
@@ -375,6 +418,40 @@ final class AuditProcedure
         }
 
         return $loans;
+    }
+
+    /** A check the CPA must make before the step can close; only a tick is accepted. */
+    private function confirmed(mixed $value, string $field, string $message): bool
+    {
+        if ($value !== true) {
+            throw new CommandRejection('AUDIT_STEP_INPUT_INVALID', 422, fieldErrors: [$field => [$message]]);
+        }
+
+        return true;
+    }
+
+    /**
+     * The business's main assets as the CPA saw them on the premises, each with an estimated value.
+     *
+     * @return list<array{item: string, value: string}>
+     */
+    private function assets(mixed $values): array
+    {
+        if (! is_array($values) || ! array_is_list($values) || count($values) > self::MAX_ASSETS) {
+            throw new CommandRejection('AUDIT_STEP_INPUT_INVALID', 422, fieldErrors: ['assets' => ['List at most '.self::MAX_ASSETS.' assets.']]);
+        }
+        $assets = [];
+        foreach ($values as $value) {
+            $keys = is_array($value) ? array_keys($value) : [];
+            sort($keys);
+            if ($keys !== ['item', 'value']) {
+                throw new CommandRejection('AUDIT_STEP_INPUT_INVALID', 422, fieldErrors: ['assets' => ['Give each asset what it is and its estimated value.']]);
+            }
+            /** @var array{item: mixed, value: mixed} $value */
+            $assets[] = ['item' => trim($this->text($value['item'], 'assets', 100, true)), 'value' => $this->amount($value['value'], 'assets')];
+        }
+
+        return $assets;
     }
 
     /**

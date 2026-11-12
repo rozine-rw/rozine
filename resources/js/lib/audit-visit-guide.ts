@@ -33,6 +33,34 @@ export const VISIT_GUIDE: Record<
         done: 'auditor.audit.guide.check_in.done',
         how: 'auditor.audit.guide.check_in.how',
     },
+    history: {
+        do: 'auditor.audit.guide.history.do',
+        done: 'auditor.audit.guide.history.done',
+        how: 'auditor.audit.guide.history.how',
+    },
+    premises: {
+        do: 'auditor.audit.guide.premises.do',
+        enter: 'auditor.audit.guide.premises.enter',
+        done: 'auditor.audit.guide.premises.done',
+        how: 'auditor.audit.guide.premises.how',
+    },
+    people: {
+        do: 'auditor.audit.guide.people.do',
+        done: 'auditor.audit.guide.people.done',
+        how: 'auditor.audit.guide.people.how',
+    },
+    registration: {
+        do: 'auditor.audit.guide.registration.do',
+        enter: 'auditor.audit.guide.registration.enter',
+        done: 'auditor.audit.guide.registration.done',
+        how: 'auditor.audit.guide.registration.how',
+    },
+    trading: {
+        do: 'auditor.audit.guide.trading.do',
+        enter: 'auditor.audit.guide.trading.enter',
+        done: 'auditor.audit.guide.trading.done',
+        how: 'auditor.audit.guide.trading.how',
+    },
     photos: {
         do: 'auditor.audit.guide.photos.do',
         upload: 'auditor.audit.guide.photos.upload',

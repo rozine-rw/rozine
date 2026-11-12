@@ -57,7 +57,7 @@ class AuditorProcedureResource extends JsonResource
                     : ['report_id' => $report['amends_id'], 'link' => AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['amends_id']])]],
             'assignment' => ['id' => $report['assignment_id'], 'revision' => $job['revision']],
             'steps' => $page['steps'], 'stage' => $page['sealed'] === null || $report['step'] !== 'seal'
-                ? $this->stage($report, $page['sources'], $file['file'], $prefix, $page['variance'], $page['monthly'], $page['seal'], $reasonOptions, $upload, $page['mfa_confirmed'])
+                ? $this->stage($report, $page['sources'], $file['file'], $prefix, $page['variance'], [...$page['monthly'], ...$page['baseline']], $page['seal'], $reasonOptions, $upload, $page['mfa_confirmed'])
                 : [...array_diff_key($page['sealed'], ['sources' => true]), 'step' => 'sealed', 'verification' => AuditorJobsResource::link($request->routeIs('api.*') ? 'api.v1.audit.seals.verify' : 'audit.seals.verify', ['report' => $report['id']]), 'amended_by' => $report['amendment_id'] === null ? null
                     : ['report_id' => $report['amendment_id'], 'link' => AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['amendment_id']])]],
             'can_continue' => $page['can_continue'], 'hint' => $report['status'] === 'draft' ? $this->hint($page['unavailable']) : null,
@@ -81,7 +81,7 @@ class AuditorProcedureResource extends JsonResource
      * @param  array<string, mixed>  $sources
      * @param  array<string, mixed>  $file
      * @param  array<string, mixed>  $variance
-     * @param  array{difference: string|null, causes: list<string>, loans_max: int, cost_categories: list<string>, loan_uses: list<string>, change_kinds: list<string>}  $monthly
+     * @param  array{difference: string|null, causes: list<string>, loans_max: int, cost_categories: list<string>, loan_uses: list<string>, change_kinds: list<string>, premises_tenures: list<string>, assets_max: int}  $monthly
      * @param  array<string, mixed>|null  $seal
      * @param  array<string, mixed>|null  $reasonOptions
      * @param  array{url: string, method: string}|null  $upload
@@ -119,6 +119,16 @@ class AuditorProcedureResource extends JsonResource
                 'sector' => ['label' => $sources['source_facts']['declared_sector_label'] ?? __('Unavailable'),
                     'definition' => $sources['source_facts']['declared_unit_label'] ?? __('A declared inventory unit definition is required.')],
                 'operational_status' => $fields['operational_status'] ?? null],
+            'history' => ['step' => 'history', 'months' => array_map(fn (array $month): array => ['month' => $month['month'],
+                'inflow' => AuditorJobsResource::money($month['inflow']), 'outflow' => AuditorJobsResource::money($month['outflow'])], $sources['history'] ?? []),
+                'history_checked' => $fields['history_checked'] ?? false],
+            'premises' => ['step' => 'premises', 'tenures' => $monthly['premises_tenures'], 'premises_tenure' => $fields['premises_tenure'] ?? null,
+                'max' => $monthly['assets_max'], 'assets' => array_map(fn (array $asset): array => ['item' => $asset['item'],
+                    'value' => AuditorJobsResource::money($asset['value'])], $fields['assets'] ?? [])],
+            'people' => ['step' => 'people', 'owners_confirmed' => $fields['owners_confirmed'] ?? false, 'management_confirmed' => $fields['management_confirmed'] ?? false],
+            'registration' => ['step' => 'registration', 'registration_confirmed' => $fields['registration_confirmed'] ?? false,
+                'tax_clearance_expires_on' => $fields['tax_clearance_expires_on'] ?? null],
+            'trading' => ['step' => 'trading', 'trading_since' => $fields['trading_since'] ?? null],
             'cash_sales' => ['step' => 'cash_sales', 'undeposited_cash_sales' => AuditorJobsResource::money($fields['undeposited_cash_sales'] ?? null)],
             'costs' => ['step' => 'costs', 'categories' => array_map(fn (string $category): array => ['key' => $category,
                 'amount' => AuditorJobsResource::money(is_array($fields['costs'] ?? null) ? $fields['costs'][$category] ?? null : null)], $monthly['cost_categories'])],

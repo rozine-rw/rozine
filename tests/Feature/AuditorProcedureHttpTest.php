@@ -13,6 +13,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
+use Tests\Support\AuditSealingFixture;
 use Tests\Support\AuditSourceFactsFixture;
 use Tests\Support\BusinessQuoteFixture as Fixture;
 
@@ -186,7 +187,7 @@ it('reopens a changed source through the previous-step link and explicitly inval
     Sanctum::actingAs($user, ['auditor:read', 'auditor:command']);
     $id = $this->postJson(route('api.v1.auditor.reports.start', ['assignment' => $fixture['assignment']->id]), procedureStartPayload($fixture))->assertOk()->json('data.audit_id');
     $revision = 1;
-    foreach (['review' => [], 'check_in' => [], 'photos' => ['titles' => ['extra-1' => 'Rear stock room']],
+    foreach (['review' => [], 'check_in' => [], ...AuditSealingFixture::baseline(AuditReport::query()->findOrFail($id)), 'photos' => ['titles' => ['extra-1' => 'Rear stock room']],
         'ledger' => ['observed_stock' => '37000000', 'reconciled' => true], 'seal' => ['note' => 'Prior factual explanation.']] as $step => $fields) {
         $this->postJson(route('api.v1.auditor.reports.save', ['report' => $id]), [...$fields, 'audit_id' => $id, 'step' => $step,
             'identity_context_revision' => 1, 'expected_revision' => $revision++, 'request_id' => (string) Str::uuid()])->assertOk();
@@ -203,9 +204,9 @@ it('reopens a changed source through the previous-step link and explicitly inval
     $this->postJson(route('api.v1.auditor.reports.save', ['report' => $id]), ['audit_id' => $id, 'step' => 'check_in',
         'identity_context_revision' => 1, 'expected_revision' => $revision, 'request_id' => (string) Str::uuid()])->assertOk();
     $report = AuditReport::query()->whereKey($id)->firstOrFail();
-    expect($report->step)->toBe('photos')->and($report->draft['note'])->toBe('')
+    expect($report->step)->toBe('history')->and($report->draft['note'])->toBe('')
         ->and($report->draft['completed_steps'])->toBe(['review', 'check_in'])
-        ->and($report->draft['fields'])->not->toHaveKeys(['photos', 'ledger']);
+        ->and($report->draft['fields'])->not->toHaveKeys(['history', 'premises', 'people', 'registration', 'trading', 'photos', 'ledger']);
 });
 
 it('completes the isolated factual procedure and previews only the persisted report on both transports', function (string $kind, bool $api): void {
@@ -233,7 +234,7 @@ it('completes the isolated factual procedure and previews only the persisted rep
             ->assertOk()->assertJsonPath('code', 'AUDIT_STEP_SAVED')->assertJsonPath('revision', ++$revision);
     };
     $steps = $kind === 'flash'
-        ? ['review' => [], 'check_in' => [], 'photos' => ['titles' => ['extra-1' => 'Rear stock room']],
+        ? ['review' => [], 'check_in' => [], ...AuditSealingFixture::baseline(AuditReport::query()->findOrFail($id)), 'photos' => ['titles' => ['extra-1' => 'Rear stock room']],
             'ledger' => ['observed_stock' => '37000000', 'reconciled' => true]]
         : ['statements' => [], 'count' => ['cash' => '108000001', 'stock_units' => '189', 'operational_status' => 'restricted',
             'financial_proofs' => ['bank', 'momo'], 'inventory_proofs' => ['photo']],
@@ -257,6 +258,19 @@ it('completes the isolated factual procedure and previews only the persisted rep
                 ->and($current['stage']['slots'][2]['thumbnail_url'])->toBeNull()->and($current['stage']['package']['handoff'])->toBeNull();
         } elseif ($step === 'ledger') {
             expect($current['stage']['reported_stock']['amount'])->toBe('38000000');
+        } elseif ($step === 'history') {
+            expect($current['stage']['history_checked'])->toBeFalse()->and($current['stage']['months'])->not->toBeEmpty()
+                ->and($current['stage']['months'][0]['inflow']['currency'])->toBe('RWF')
+                ->and(array_column($current['stage']['months'], 'month'))->toEqual(collect(array_column($current['stage']['months'], 'month'))->sortDesc()->values()->all());
+        } elseif ($step === 'premises') {
+            expect($current['stage'])->toBe(['step' => 'premises', 'tenures' => AuditProcedure::PREMISES_TENURES, 'premises_tenure' => null,
+                'max' => AuditProcedure::MAX_ASSETS, 'assets' => []]);
+        } elseif ($step === 'people') {
+            expect($current['stage'])->toBe(['step' => 'people', 'owners_confirmed' => false, 'management_confirmed' => false]);
+        } elseif ($step === 'registration') {
+            expect($current['stage'])->toBe(['step' => 'registration', 'registration_confirmed' => false, 'tax_clearance_expires_on' => null]);
+        } elseif ($step === 'trading') {
+            expect($current['stage'])->toBe(['step' => 'trading', 'trading_since' => null]);
         } elseif ($step === 'cash_sales') {
             expect($current['stage'])->toBe(['step' => 'cash_sales', 'undeposited_cash_sales' => null]);
         } elseif ($step === 'costs') {
@@ -340,13 +354,16 @@ it('keeps incomplete or review-required source packages blocked with truthful nu
     $body = ['audit_id' => $id, 'identity_context_revision' => 1, 'expected_revision' => 1, 'step' => 'review', 'request_id' => (string) Str::uuid()];
     $this->postJson(route('api.v1.auditor.reports.save', ['report' => $id]), $body)->assertOk();
     $photoCase = in_array($case, ['missing photo', 'unknown extras', 'too many photos'], true);
+    $revision = 2;
     if ($photoCase) {
-        $this->postJson(route('api.v1.auditor.reports.save', ['report' => $id]), [...$body,
-            'expected_revision' => 2, 'step' => 'check_in', 'request_id' => (string) Str::uuid()])->assertOk();
+        foreach (['check_in' => [], ...AuditSealingFixture::baseline(AuditReport::query()->findOrFail($id))] as $step => $fields) {
+            $this->postJson(route('api.v1.auditor.reports.save', ['report' => $id]), [...$body, ...$fields,
+                'expected_revision' => $revision++, 'step' => $step, 'request_id' => (string) Str::uuid()])->assertOk();
+        }
     }
     $this->getJson(route('api.v1.auditor.reports.show', ['report' => $id]))->assertOk()->assertJsonPath('data.can_continue', false);
     $this->postJson(route('api.v1.auditor.reports.save', ['report' => $id]), [...$body,
-        'expected_revision' => $photoCase ? 3 : 2, 'step' => $photoCase ? 'photos' : 'check_in',
+        'expected_revision' => $revision, 'step' => $photoCase ? 'photos' : 'check_in',
         ...($photoCase ? ['titles' => array_fill_keys(array_column($facts['photos']['extra'] ?? [], 'id'), 'Extra stock photo')] : []),
         'request_id' => (string) Str::uuid()])->assertConflict()->assertJsonPath('code', 'AUDIT_CAPTURE_REQUIRED');
 })->with(['unknown review', 'review required', 'missing position', 'missing photo', 'unknown extras', 'too many photos']);

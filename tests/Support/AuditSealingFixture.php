@@ -41,7 +41,7 @@ final class AuditSealingFixture
             $fixture['application']->id, $fixture['application']->refresh()->revision, (string) Str::uuid());
         $report = AuditReport::query()->whereKey($started['data']['audit_id'])->firstOrFail();
         $steps = $kind === 'flash'
-            ? ['review' => [], 'check_in' => [], 'photos' => ['titles' => ['extra-1' => 'Stock room']],
+            ? ['review' => [], 'check_in' => [], ...self::baseline($report), 'photos' => ['titles' => ['extra-1' => 'Stock room']],
                 'ledger' => ['observed_stock' => $findings ? '37000000' : '38000000', 'reconciled' => true]]
             : ['statements' => [], 'count' => ['cash' => $findings ? '108000001' : '108000000', 'stock_units' => '190',
                 'operational_status' => 'active', 'financial_proofs' => ['bank', 'momo'], 'inventory_proofs' => ['photo']],
@@ -62,6 +62,23 @@ final class AuditSealingFixture
         }
 
         return self::prepare([...$fixture, 'user' => $user, 'report' => $report]);
+    }
+
+    /**
+     * The steps a business's first Flash visit adds as its baseline (BRS v3 VIS-R02); none for a
+     * Flash report that is not the baseline.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public static function baseline(AuditReport $report): array
+    {
+        return ($report->binding['baseline'] ?? false) !== true ? [] : [
+            'history' => ['history_checked' => true],
+            'premises' => ['premises_tenure' => 'rented', 'assets' => [['item' => 'Delivery motorbike', 'value' => '1800000']]],
+            'people' => ['owners_confirmed' => true, 'management_confirmed' => true],
+            'registration' => ['registration_confirmed' => true, 'tax_clearance_expires_on' => '2027-03-31'],
+            'trading' => ['trading_since' => '2021-06'],
+        ];
     }
 
     /** @param array<string, mixed> $fixture

@@ -3320,6 +3320,11 @@ const en = {
     'auditor.audit.step.count': 'Count & cash',
     'auditor.audit.step.cash_sales': 'Cash sales',
     'auditor.audit.step.costs': 'Costs',
+    'auditor.audit.step.history': 'History',
+    'auditor.audit.step.premises': 'Premises',
+    'auditor.audit.step.people': 'People',
+    'auditor.audit.step.registration': 'Registration',
+    'auditor.audit.step.trading': 'Trading start',
     'auditor.audit.step.drawings': 'Drawings',
     'auditor.audit.step.loans': 'Other loans',
     'auditor.audit.step.differences': 'Differences',
@@ -5500,6 +5505,40 @@ const en = {
         'Every category has an amount, even if it is 0.',
     'auditor.audit.guide.costs.how':
         'Use the invoices, receipts and statement payments for the month. Put each cost in one category only; anything that fits none goes under Other.',
+    'auditor.audit.guide.history.do':
+        'Compare each month of the verified history with the business’s statements.',
+    'auditor.audit.guide.history.done':
+        'You ticked that every month matches the statements.',
+    'auditor.audit.guide.history.how':
+        'Open the statements for a month, check the money in and out against the row, and move on. Raise anything that does not match with the business before you tick.',
+    'auditor.audit.guide.premises.do':
+        'Say who holds the premises and list the business’s main assets.',
+    'auditor.audit.guide.premises.enter':
+        'Owned, rented or shared, then each main asset with an estimated value in whole francs. For example Delivery motorbike, 1800000.',
+    'auditor.audit.guide.premises.done':
+        'Who holds the premises is chosen. Assets are optional; list at most 10.',
+    'auditor.audit.guide.premises.how':
+        'Ask for the title deed or the lease. Walk the premises and list only what the business uses to trade, such as vehicles, machines and cold rooms.',
+    'auditor.audit.guide.people.do':
+        'Check the identity of every director and owner, and confirm the management profiles.',
+    'auditor.audit.guide.people.done': 'Both checks are ticked.',
+    'auditor.audit.guide.people.how':
+        'Compare each person’s ID with the RDB register extract. Confirm that the management profiles the business gave match the people you met.',
+    'auditor.audit.guide.registration.do':
+        'Check the registration certificate and record the tax clearance expiry date.',
+    'auditor.audit.guide.registration.enter':
+        'The tax clearance expiry date as written on the certificate. For example 31 March 2027.',
+    'auditor.audit.guide.registration.done':
+        'The certificate is ticked as checked and a date is entered.',
+    'auditor.audit.guide.registration.how':
+        'The company name and code on the RDB certificate must match the business’s record. Read the expiry from the RRA tax clearance certificate.',
+    'auditor.audit.guide.trading.do':
+        'Record the month the business started trading.',
+    'auditor.audit.guide.trading.enter':
+        'A month and year. For example June 2021.',
+    'auditor.audit.guide.trading.done': 'A month is entered.',
+    'auditor.audit.guide.trading.how':
+        'Use the earliest invoice, statement or trading licence you can see, not the registration date if trading began later.',
     'auditor.audit.guide.drawings.do':
         'Record what the owners took out of the business this month.',
     'auditor.audit.guide.drawings.enter':
@@ -5562,6 +5601,47 @@ const en = {
     'auditor.costs.category.other': 'Other',
     'auditor.costs.total': 'Total costs',
     'auditor.costs.hint': 'Enter 0 for a category with no cost this month.',
+    'auditor.history.title': 'Trading history',
+    'auditor.history.lead':
+        'The verified money in and out for the last {count} months, newest first.',
+    'auditor.history.none': 'No verified history is on file yet.',
+    'auditor.history.month': 'Month',
+    'auditor.history.in': 'Money in (RWF)',
+    'auditor.history.out': 'Money out (RWF)',
+    'auditor.history.checked':
+        'I compared every month with the statements and they match.',
+    'auditor.premises.title': 'Premises and assets',
+    'auditor.premises.lead':
+        'Who holds the premises, and the main assets the business trades with.',
+    'auditor.premises.tenure': 'The premises are',
+    'auditor.premises.tenure.owned': 'Owned by the business',
+    'auditor.premises.tenure.rented': 'Rented',
+    'auditor.premises.tenure.shared': 'Shared with another business',
+    'auditor.premises.assets': 'Main assets',
+    'auditor.premises.none':
+        'No assets listed. Continue if the business trades without any.',
+    'auditor.premises.item': 'Asset {number}',
+    'auditor.premises.asset': 'What it is',
+    'auditor.premises.value': 'Estimated value (RWF)',
+    'auditor.premises.remove': 'Remove asset {number}',
+    'auditor.premises.add': 'Add an asset',
+    'auditor.people.title': 'Directors, owners and managers',
+    'auditor.people.lead':
+        'Check who owns and runs the business before it lists for the first time.',
+    'auditor.people.owners_confirmed':
+        'I checked the ID of every director and owner against the RDB register.',
+    'auditor.people.management_confirmed':
+        'The management profiles match the people I met.',
+    'auditor.registration.title': 'Registration and tax',
+    'auditor.registration.lead':
+        'The RDB certificate and the RRA tax clearance, as you saw them.',
+    'auditor.registration.confirmed':
+        'The RDB certificate matches the business’s name and code.',
+    'auditor.registration.tax': 'Tax clearance expires',
+    'auditor.trading.title': 'Date trading started',
+    'auditor.trading.lead':
+        'The month the business began trading, from its earliest records.',
+    'auditor.trading.since': 'Trading since',
     'auditor.drawings.title': 'Owner drawings',
     'auditor.drawings.lead':
         'What the owners took out of the business this month, from the statements and the cash book.',

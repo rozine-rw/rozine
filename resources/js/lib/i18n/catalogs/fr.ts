@@ -3480,6 +3480,11 @@ const fr: Catalog = {
     'auditor.audit.step.count': 'Comptage',
     'auditor.audit.step.cash_sales': 'Ventes en espèces',
     'auditor.audit.step.costs': 'Charges',
+    'auditor.audit.step.history': 'Historique',
+    'auditor.audit.step.premises': 'Locaux',
+    'auditor.audit.step.people': 'Personnes',
+    'auditor.audit.step.registration': 'Immatriculation',
+    'auditor.audit.step.trading': 'Début d’activité',
     'auditor.audit.step.drawings': 'Prélèvements',
     'auditor.audit.step.loans': 'Autres prêts',
     'auditor.audit.step.differences': 'Écarts',
@@ -5723,6 +5728,40 @@ const fr: Catalog = {
         'Chaque catégorie a un montant, même s’il vaut 0.',
     'auditor.audit.guide.costs.how':
         'Utilisez les factures, les reçus et les paiements des relevés du mois. Placez chaque charge dans une seule catégorie ; ce qui n’entre dans aucune va dans Autres.',
+    'auditor.audit.guide.history.do':
+        'Comparez chaque mois de l’historique vérifié aux relevés de l’entreprise.',
+    'auditor.audit.guide.history.done':
+        'Vous avez coché que chaque mois correspond aux relevés.',
+    'auditor.audit.guide.history.how':
+        'Ouvrez les relevés d’un mois, vérifiez les entrées et sorties par rapport à la ligne, puis passez au suivant. Signalez tout écart à l’entreprise avant de cocher.',
+    'auditor.audit.guide.premises.do':
+        'Indiquez qui détient les locaux et listez les principaux actifs de l’entreprise.',
+    'auditor.audit.guide.premises.enter':
+        'Propriété, location ou partage, puis chaque actif principal avec une valeur estimée en francs entiers. Par exemple Moto de livraison, 1800000.',
+    'auditor.audit.guide.premises.done':
+        'Le statut des locaux est choisi. Les actifs sont facultatifs ; 10 au maximum.',
+    'auditor.audit.guide.premises.how':
+        'Demandez le titre de propriété ou le bail. Parcourez les locaux et ne listez que ce qui sert à l’activité, comme les véhicules, les machines et les chambres froides.',
+    'auditor.audit.guide.people.do':
+        'Vérifiez l’identité de chaque administrateur et propriétaire, et confirmez les profils de la direction.',
+    'auditor.audit.guide.people.done': 'Les deux vérifications sont cochées.',
+    'auditor.audit.guide.people.how':
+        'Comparez la pièce d’identité de chaque personne à l’extrait du registre RDB. Confirmez que les profils de direction fournis correspondent aux personnes rencontrées.',
+    'auditor.audit.guide.registration.do':
+        'Vérifiez le certificat d’immatriculation et notez la date d’expiration de l’attestation fiscale.',
+    'auditor.audit.guide.registration.enter':
+        'La date d’expiration de l’attestation fiscale telle qu’écrite sur le certificat. Par exemple 31 mars 2027.',
+    'auditor.audit.guide.registration.done':
+        'Le certificat est coché comme vérifié et une date est saisie.',
+    'auditor.audit.guide.registration.how':
+        'Le nom et le code de la société sur le certificat RDB doivent correspondre au dossier. Lisez l’expiration sur l’attestation fiscale de la RRA.',
+    'auditor.audit.guide.trading.do':
+        'Notez le mois où l’entreprise a commencé son activité.',
+    'auditor.audit.guide.trading.enter':
+        'Un mois et une année. Par exemple juin 2021.',
+    'auditor.audit.guide.trading.done': 'Un mois est saisi.',
+    'auditor.audit.guide.trading.how':
+        'Utilisez la facture, le relevé ou la licence commerciale la plus ancienne que vous voyez, pas la date d’immatriculation si l’activité a commencé plus tard.',
     'auditor.audit.guide.drawings.do':
         'Notez ce que les propriétaires ont retiré de l’entreprise ce mois-ci.',
     'auditor.audit.guide.drawings.enter':
@@ -5787,6 +5826,47 @@ const fr: Catalog = {
     'auditor.costs.total': 'Total des charges',
     'auditor.costs.hint':
         'Saisissez 0 pour une catégorie sans charge ce mois-ci.',
+    'auditor.history.title': 'Historique d’activité',
+    'auditor.history.lead':
+        'Les entrées et sorties vérifiées des {count} derniers mois, du plus récent au plus ancien.',
+    'auditor.history.none': 'Aucun historique vérifié n’est encore au dossier.',
+    'auditor.history.month': 'Mois',
+    'auditor.history.in': 'Entrées (RWF)',
+    'auditor.history.out': 'Sorties (RWF)',
+    'auditor.history.checked':
+        'J’ai comparé chaque mois aux relevés et ils correspondent.',
+    'auditor.premises.title': 'Locaux et actifs',
+    'auditor.premises.lead':
+        'Qui détient les locaux, et les principaux actifs utilisés pour l’activité.',
+    'auditor.premises.tenure': 'Les locaux sont',
+    'auditor.premises.tenure.owned': 'Propriété de l’entreprise',
+    'auditor.premises.tenure.rented': 'Loués',
+    'auditor.premises.tenure.shared': 'Partagés avec une autre entreprise',
+    'auditor.premises.assets': 'Principaux actifs',
+    'auditor.premises.none':
+        'Aucun actif listé. Continuez si l’entreprise n’en utilise aucun.',
+    'auditor.premises.item': 'Actif {number}',
+    'auditor.premises.asset': 'Description',
+    'auditor.premises.value': 'Valeur estimée (RWF)',
+    'auditor.premises.remove': 'Retirer l’actif {number}',
+    'auditor.premises.add': 'Ajouter un actif',
+    'auditor.people.title': 'Administrateurs, propriétaires et direction',
+    'auditor.people.lead':
+        'Vérifiez qui possède et dirige l’entreprise avant sa première mise en ligne.',
+    'auditor.people.owners_confirmed':
+        'J’ai vérifié la pièce d’identité de chaque administrateur et propriétaire auprès du registre RDB.',
+    'auditor.people.management_confirmed':
+        'Les profils de direction correspondent aux personnes rencontrées.',
+    'auditor.registration.title': 'Immatriculation et fiscalité',
+    'auditor.registration.lead':
+        'Le certificat RDB et l’attestation fiscale de la RRA, tels que vous les avez vus.',
+    'auditor.registration.confirmed':
+        'Le certificat RDB correspond au nom et au code de l’entreprise.',
+    'auditor.registration.tax': 'Expiration de l’attestation fiscale',
+    'auditor.trading.title': 'Date de début d’activité',
+    'auditor.trading.lead':
+        'Le mois où l’entreprise a commencé son activité, d’après ses plus anciens documents.',
+    'auditor.trading.since': 'En activité depuis',
     'auditor.drawings.title': 'Prélèvements des propriétaires',
     'auditor.drawings.lead':
         'Ce que les propriétaires ont retiré de l’entreprise ce mois-ci, d’après les relevés et le livre de caisse.',

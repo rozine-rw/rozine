@@ -28,6 +28,11 @@ function procedureFields(string $step): array
     return match ($step) {
         'ledger' => ['observed_stock' => '36400000', 'reconciled' => true],
         'count' => ['cash' => '1184000', 'stock_units' => '184', 'operational_status' => 'active', 'financial_proofs' => ['cash', 'bank'], 'inventory_proofs' => ['photo']],
+        'history' => ['history_checked' => true],
+        'premises' => ['premises_tenure' => 'rented', 'assets' => [['item' => 'Delivery motorbike', 'value' => '1800000']]],
+        'people' => ['owners_confirmed' => true, 'management_confirmed' => true],
+        'registration' => ['registration_confirmed' => true, 'tax_clearance_expires_on' => '2027-03-31'],
+        'trading' => ['trading_since' => '2021-06'],
         'cash_sales' => ['undeposited_cash_sales' => '15000'],
         'costs' => ['costs' => ['stock' => '400000', 'staff' => '250000', 'premises' => '80000', 'transport' => '30000', 'taxes' => '20000', 'other' => '0']],
         'drawings' => ['owner_drawings' => '150000'],
@@ -66,12 +71,12 @@ it('records every procedure step with immutable source references and persists t
         ->and($saved['draft']['completed_steps'])->toBe(array_slice($procedure->steps($kind), 0, -1))
         ->and($saved['draft']['sources']['photos']['photos']['sha256'] ?? null)->toBe(hash('sha256', 'photos'))
         ->and(json_encode($saved))->not->toContain('rating', 'capacity', 'yield', 'credit_verdict');
-    if ($kind === 'flash') {
+    if ($kind !== 'monthly') {
         expect($saved['draft']['fields']['ledger'])->toBe(['observed_stock' => '36400000', 'reconciled' => true]);
     } else {
         expect($saved['draft']['fields']['count']['financial_proofs'])->toBe(['bank', 'cash']);
     }
-})->with(['flash', 'monthly']);
+})->with(['flash', 'baseline', 'monthly']);
 
 it('invalidates later work and the persisted note when a prior step is edited', function (): void {
     $procedure = new AuditProcedure;
@@ -419,4 +424,72 @@ it('refuses cash sales or costs it cannot record exactly', function (string $ste
     'costs with another' => ['costs', ['costs' => ['stock' => '1', 'staff' => '1', 'premises' => '1', 'transport' => '1', 'taxes' => '1', 'rent' => '1']], 'costs', 'Enter an amount for each of the six cost categories.'],
     'cost not whole' => ['costs', ['costs' => ['stock' => '1', 'staff' => '1', 'premises' => '1', 'transport' => '1', 'taxes' => '1', 'other' => '2.5']], 'costs', 'Use a non-negative whole-number amount.'],
     'cost blank' => ['costs', ['costs' => ['stock' => '1', 'staff' => '1', 'premises' => '1', 'transport' => '1', 'taxes' => '1', 'other' => null]], 'costs', 'Use a non-negative whole-number amount.'],
+]);
+
+it('adds the history, premises, people, registration and trading steps to a baseline Flash visit (BRS v3 VIS-R02)', function (): void {
+    $procedure = new AuditProcedure;
+    expect($procedure->steps('baseline'))->toBe(['review', 'check_in', 'history', 'premises', 'people', 'registration', 'trading', 'photos', 'ledger', 'seal'])
+        ->and($procedure->steps('flash'))->toBe(['review', 'check_in', 'photos', 'ledger', 'seal']);
+
+    $state = procedureBefore('baseline', 'history');
+    $history = $procedure->save('baseline', 'history', $state['draft'], 'history', ['history_checked' => true], procedureSources());
+    expect($history['step'])->toBe('premises')->and($history['draft']['fields']['history'])->toBe(['history_checked' => true])
+        ->and($history['draft']['sources']['history'] ?? null)->toBe(['verification' => procedureSource('verification')]);
+
+    $premises = $procedure->save('baseline', 'premises', $history['draft'], 'premises', ['premises_tenure' => 'owned',
+        'assets' => [['value' => '1800000', 'item' => '  Delivery motorbike '], ['item' => 'Cold room', 'value' => '0']]], procedureSources());
+    $none = $procedure->save('baseline', 'premises', $history['draft'], 'premises', ['premises_tenure' => 'shared', 'assets' => []], procedureSources());
+    expect($premises['step'])->toBe('people')
+        ->and($premises['draft']['fields']['premises'])->toBe(['premises_tenure' => 'owned', 'assets' => [['item' => 'Delivery motorbike', 'value' => '1800000'], ['item' => 'Cold room', 'value' => '0']]])
+        ->and($premises['draft']['sources']['premises'] ?? null)->toBe(['check_in' => procedureSource('check_in')])
+        ->and($none['draft']['fields']['premises'])->toBe(['premises_tenure' => 'shared', 'assets' => []]);
+
+    $people = $procedure->save('baseline', 'people', $premises['draft'], 'people', ['management_confirmed' => true, 'owners_confirmed' => true], procedureSources());
+    expect($people['step'])->toBe('registration')->and($people['draft']['fields']['people'])->toBe(['owners_confirmed' => true, 'management_confirmed' => true]);
+
+    $registration = $procedure->save('baseline', 'registration', $people['draft'], 'registration', ['registration_confirmed' => true, 'tax_clearance_expires_on' => '2024-02-29'], procedureSources());
+    expect($registration['step'])->toBe('trading')->and($registration['draft']['fields']['registration'])->toBe(['registration_confirmed' => true, 'tax_clearance_expires_on' => '2024-02-29']);
+
+    $trading = $procedure->save('baseline', 'trading', $registration['draft'], 'trading', ['trading_since' => '2019-12'], procedureSources());
+    expect($trading['step'])->toBe('photos')->and($trading['draft']['fields']['trading'])->toBe(['trading_since' => '2019-12']);
+
+    // Editing an earlier baseline step drops the later work, as for any step.
+    $again = $procedure->save('baseline', 'photos', $trading['draft'], 'premises', ['premises_tenure' => 'rented', 'assets' => []], procedureSources());
+    expect($again['step'])->toBe('people')->and($again['draft']['completed_steps'])->toBe(['review', 'check_in', 'history', 'premises'])
+        ->and($again['draft']['fields'])->not->toHaveKeys(['people', 'registration', 'trading']);
+});
+
+it('reports a baseline step unavailable until its source is', function (): void {
+    $procedure = new AuditProcedure;
+    $state = procedureBefore('baseline', 'history');
+    expect($procedure->unavailable('baseline', 'history', $state['draft'], 'history', [...procedureSources(), 'verification' => null]))->toBe('AUDIT_VERIFIED_STATEMENTS_REQUIRED')
+        ->and($procedure->unavailable('baseline', 'history', $state['draft'], 'history', procedureSources()))->toBeNull();
+});
+
+it('refuses a baseline step it cannot record exactly', function (string $step, array $input, string $field, string $message): void {
+    $procedure = new AuditProcedure;
+    $state = procedureBefore('baseline', $step);
+
+    try {
+        $procedure->save('baseline', $step, $state['draft'], $step, $input, procedureSources());
+        $this->fail('The step was accepted.');
+    } catch (CommandRejection $rejection) {
+        expect($rejection->reason)->toBe('AUDIT_STEP_INPUT_INVALID')->and($rejection->fieldErrors)->toBe([$field => [$message]]);
+    }
+})->with([
+    'history not compared' => ['history', ['history_checked' => false], 'history_checked', 'Compare every month of the history with the statements before continuing.'],
+    'history as text' => ['history', ['history_checked' => 'yes'], 'history_checked', 'Compare every month of the history with the statements before continuing.'],
+    'premises unknown tenure' => ['premises', ['premises_tenure' => 'leased', 'assets' => []], 'premises_tenure', 'Say who holds the premises.'],
+    'assets not a list' => ['premises', ['premises_tenure' => 'owned', 'assets' => ['car' => '1']], 'assets', 'List at most 10 assets.'],
+    'assets too many' => ['premises', ['premises_tenure' => 'owned', 'assets' => array_fill(0, 11, ['item' => 'Chair', 'value' => '1'])], 'assets', 'List at most 10 assets.'],
+    'asset missing value' => ['premises', ['premises_tenure' => 'owned', 'assets' => [['item' => 'Chair']]], 'assets', 'Give each asset what it is and its estimated value.'],
+    'asset blank item' => ['premises', ['premises_tenure' => 'owned', 'assets' => [['item' => ' ', 'value' => '1']]], 'assets', 'Use plain text of at most 100 characters.'],
+    'asset bad value' => ['premises', ['premises_tenure' => 'owned', 'assets' => [['item' => 'Chair', 'value' => '1.5']]], 'assets', 'Use a non-negative whole-number amount.'],
+    'owners not checked' => ['people', ['owners_confirmed' => false, 'management_confirmed' => true], 'owners_confirmed', 'Check the identity of every director and owner before continuing.'],
+    'management not confirmed' => ['people', ['owners_confirmed' => true, 'management_confirmed' => null], 'management_confirmed', 'Confirm the management profiles before continuing.'],
+    'registration not checked' => ['registration', ['registration_confirmed' => false, 'tax_clearance_expires_on' => '2027-03-31'], 'registration_confirmed', 'Check the registration certificate before continuing.'],
+    'tax date impossible' => ['registration', ['registration_confirmed' => true, 'tax_clearance_expires_on' => '2027-02-30'], 'tax_clearance_expires_on', 'Use the date on the certificate, as YYYY-MM-DD.'],
+    'trading as a date' => ['trading', ['trading_since' => '2021-06-01'], 'trading_since', 'Use the month trading started, as YYYY-MM.'],
+    'trading month 13' => ['trading', ['trading_since' => '2021-13'], 'trading_since', 'Use the month trading started, as YYYY-MM.'],
+    'trading missing' => ['trading', ['trading_since' => null], 'trading_since', 'Use the month trading started, as YYYY-MM.'],
 ]);

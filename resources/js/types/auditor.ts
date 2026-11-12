@@ -827,7 +827,17 @@ export type StatementReviewFile = {
 /* Audit procedure (MVP-AUDITOR-SCR-03…06, design sheets L1017–1498)                             */
 /* ------------------------------------------------------------------------------------------ */
 
-export type FlashStep = 'review' | 'check_in' | 'photos' | 'ledger' | 'seal';
+export type FlashStep =
+    | 'review'
+    | 'check_in'
+    | 'history'
+    | 'premises'
+    | 'people'
+    | 'registration'
+    | 'trading'
+    | 'photos'
+    | 'ledger'
+    | 'seal';
 export type MonthlyStep =
     | 'statements'
     | 'count'
@@ -1039,6 +1049,52 @@ export type LoansStage = {
     loans: OtherLoan[];
 };
 
+/** One month of the verified history a baseline visit checks (BRS v3 VIS-R02), newest first. */
+export type HistoryMonth = {
+    month: string;
+    inflow: Money;
+    outflow: Money;
+};
+
+export type HistoryStage = {
+    step: 'history';
+    months: HistoryMonth[];
+    history_checked: boolean;
+};
+
+/** Who holds the premises the business trades from (BRS v3 VIS-R02). */
+export type PremisesTenure = 'owned' | 'rented' | 'shared';
+
+export type BusinessAsset = { item: string; value: Money };
+
+export type PremisesStage = {
+    step: 'premises';
+    tenures: PremisesTenure[];
+    premises_tenure: PremisesTenure | null;
+    max: number;
+    assets: BusinessAsset[];
+};
+
+/** The identity of directors and owners and the management profiles, checked on a baseline visit. */
+export type PeopleStage = {
+    step: 'people';
+    owners_confirmed: boolean;
+    management_confirmed: boolean;
+};
+
+/** The registration certificate and tax clearance, checked on a baseline visit. */
+export type RegistrationStage = {
+    step: 'registration';
+    registration_confirmed: boolean;
+    tax_clearance_expires_on: string | null;
+};
+
+/** The month the business started trading, `YYYY-MM`. */
+export type TradingStage = {
+    step: 'trading';
+    trading_since: string | null;
+};
+
 /** The month's cash sales that were never deposited (BRS v3 VIS-R01 step 4). */
 export type CashSalesStage = {
     step: 'cash_sales';
@@ -1244,6 +1300,11 @@ export type AuditStage =
     | LedgerStage
     | StatementsStage
     | CountStage
+    | HistoryStage
+    | PremisesStage
+    | PeopleStage
+    | RegistrationStage
+    | TradingStage
     | CashSalesStage
     | CostsStage
     | DrawingsStage
