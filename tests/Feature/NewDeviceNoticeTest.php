@@ -59,9 +59,11 @@ it('tells the Party once when a new device signs in, and never for a device it k
     $device = AccountDevice::query()->where('label', 'Firefox on Android')->sole();
     expect(AccountDevice::query()->count())->toBe(2)
         ->and([$notice->party_id, $notice->facts, $notice->event_key])->toBe([$this->investor['party']->id, ['device' => 'Firefox on Android', 'signed_in_at' => now('UTC')->format('Y-m-d\TH:i:s\Z')], 'new-device:'.$device->id])
-        ->and($device->token_hash)->toBe(hash('sha256', (string) $second));
+        ->and($device->token_hash)->toBe(hash('sha256', (string) last(explode('.', (string) $second))))
+        ->and($second)->toStartWith('a-token-no-device-holds.');
 
-    $this->actingAs($this->investor['user'])->getJson(route('investor.notices'))->assertJsonPath('data.notices.0.kind', 'security.new_device')
+    $this->actingAs($this->investor['user'])->getJson(route('investor.notices'))->assertJsonPath('data.server_time', now()->toIso8601String())
+        ->assertJsonPath('data.notices.0.kind', 'security.new_device')
         ->assertJsonPath('data.notices.0.link', ['url' => '/investor/profile?section=security', 'method' => 'get']);
 });
 
@@ -75,6 +77,30 @@ it('does not recognise another account\'s device token', function (): void {
     expect(AccountDevice::query()->where('user_id', $this->investor['user']->id)->count())->toBe(2)
         ->and($borrowed->getCookie(RecognizeSignInDevice::COOKIE)?->getValue())->not->toBe($foreign)
         ->and(PartyNotice::query()->where('kind', 'security.new_device')->count())->toBe(1);
+});
+
+it('remembers each account that signs in on one browser, so switching accounts is not a new device (QA #595)', function (): void {
+    $other = User::factory()->create();
+    $mine = ($this->signIn)()->getCookie(RecognizeSignInDevice::COOKIE)?->getValue();
+    auth()->logout();
+    Cookie::flushQueuedCookies();
+    $both = $this->withCookie(RecognizeSignInDevice::COOKIE, (string) $mine)
+        ->post(route('login.store'), ['email' => $other->email, 'password' => 'password'])
+        ->getCookie(RecognizeSignInDevice::COOKIE)?->getValue();
+
+    ($this->signIn)($both)->assertCookieMissing(RecognizeSignInDevice::COOKIE);
+
+    expect(explode('.', (string) $both))->toHaveCount(2)
+        ->and(AccountDevice::query()->where('user_id', $this->investor['user']->id)->count())->toBe(1)
+        ->and(PartyNotice::query()->where('kind', 'security.new_device')->exists())->toBeFalse();
+});
+
+it('keeps only the newest tokens a browser holds', function (): void {
+    $held = implode('.', ['one', 'two', 'three', 'four', 'five']);
+    $kept = ($this->signIn)($held)->getCookie(RecognizeSignInDevice::COOKIE)?->getValue();
+
+    expect(explode('.', (string) $kept))->toHaveCount(RecognizeSignInDevice::KEPT)
+        ->and(explode('.', (string) $kept)[0])->toBe('two');
 });
 
 it('keeps device records unchanged once recorded, and lets them go with the account', function (): void {

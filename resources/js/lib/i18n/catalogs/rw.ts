@@ -7421,14 +7421,20 @@ const rw: Catalog = {
     'investor.notices.primary.refunded.body':
         'Ikusanyamari rya {business} ryarangiye ritageze ku ntego. {amount} yagarutse mu gikapu cyawe, nta mafaranga yakuweho.',
     'investor.notices.primary.raise_funded.title': 'Ikusanyamari ryuzuye',
-    'investor.notices.primary.raise_funded.body':
-        "Ikusanyamari rya {business} ryageze ku ntego. {amount} yawe y'impapuro {units} ibitswe kugeza amafaranga yoherejwe.",
+    'investor.notices.primary.raise_funded.body': {
+        one: "Ikusanyamari rya {business} ryageze ku ntego. {amount} yawe y'urupapuro {count} ibitswe kugeza amafaranga yoherejwe.",
+        other: "Ikusanyamari rya {business} ryageze ku ntego. {amount} yawe y'impapuro {count} ibitswe kugeza amafaranga yoherejwe.",
+    },
     'investor.notices.primary.commitment_confirmed.title': 'Kugura byemejwe',
-    'investor.notices.primary.commitment_confirmed.body':
-        'Wiyemeje {amount} muri {business} ku mpapuro {units}, ku kiguzi cya {rate}% ku nyungu. Nimero {reference}.',
+    'investor.notices.primary.commitment_confirmed.body': {
+        one: 'Wiyemeje {amount} muri {business} ku rupapuro {count}, ku kiguzi cya {rate}% ku nyungu. Nimero {reference}.',
+        other: 'Wiyemeje {amount} muri {business} ku mpapuro {count}, ku kiguzi cya {rate}% ku nyungu. Nimero {reference}.',
+    },
     'investor.notices.primary.holding_issued.title': 'Ishoramari ryemejwe',
-    'investor.notices.primary.holding_issued.body':
-        'Impapuro zawe {units} muri {business} zatanzwe: washoye {amount}, witeze {maturity} ku itariki {date}.',
+    'investor.notices.primary.holding_issued.body': {
+        one: 'Urupapuro rwawe {count} muri {business} rwatanzwe: washoye {amount}, witeze {maturity} ku itariki {date}.',
+        other: 'Impapuro zawe {count} muri {business} zatanzwe: washoye {amount}, witeze {maturity} ku itariki {date}.',
+    },
     'investor.notices.business.raise_funded.title': 'Ikusanyamari ryuzuye',
     'investor.notices.business.raise_funded.body':
         '{title} yageze ku ntego yayo ya {principal}. Rozine iri gutegura kohereza amafaranga kuri konti yawe.',
@@ -7459,6 +7465,10 @@ const rw: Catalog = {
     'investor.notices.verification.approved.title': 'Wemejwe',
     'investor.notices.verification.approved.body':
         'Umwirondoro wawe wemejwe kandi igikapu cyawe cyiteguye gushora imari.',
+    'investor.notices.verification.approved.body_business':
+        'Umwirondoro wawe wemejwe. Ubu ushobora gusaba ikusanyamari.',
+    'investor.notices.verification.approved.body_auditor':
+        "Umwirondoro wawe wemejwe. Ubu ushobora kwakira imirimo y'igenzura.",
     'investor.notices.verification.rejected.title':
         'Amakuru y’umwirondoro wawe akeneye kongera kurebwa',
     'investor.notices.verification.rejected.body':

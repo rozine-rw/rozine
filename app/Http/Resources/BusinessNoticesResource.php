@@ -24,7 +24,7 @@ class BusinessNoticesResource extends JsonResource
         $prefix = $request->routeIs('api.*') ? 'api.v1.' : '';
         $business = $inbox['business_id'];
 
-        return ['unread' => $inbox['unread'],
+        return ['unread' => $inbox['unread'], 'server_time' => now()->toIso8601String(),
             'notices' => array_map(fn (array $notice): array => [...$notice,
                 'link' => ['url' => match ($notice['kind']) {
                     'business.application_approved' => route($prefix.'business.applications.publish.show',

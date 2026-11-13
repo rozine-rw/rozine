@@ -114,6 +114,41 @@ describe('Business Home', () => {
         http.submit = submit;
     });
 
+    it('words verification for a business and times notices from the inbox clock like every bell (QA #595)', async () => {
+        const submit = http.submit;
+        http.submit = () =>
+            Promise.resolve({
+                data: {
+                    ...inbox,
+                    server_time: '2026-10-13T09:00:00+02:00',
+                    notices: [
+                        {
+                            ...inbox.notices[0],
+                            kind: 'verification.approved',
+                            facts: {},
+                            created_at: '2026-10-13T08:00:00+02:00',
+                        },
+                    ],
+                },
+            });
+        const { user } = renderWithUser(<BusinessHome {...fixture} />);
+
+        await user.click(
+            screen.getByRole('button', { name: 'Notifications, 2 unread' }),
+        );
+        const panel = screen.getByRole('dialog', { name: 'Notifications' });
+        const [item] = await within(panel).findAllByRole('button', {
+            name: /verified/u,
+        });
+
+        expect(item).toHaveTextContent(
+            'You are verifiedYour identity is verified. You can now apply for a raise.',
+        );
+        expect(item).toHaveTextContent('1 hour ago');
+        expect(item).not.toHaveTextContent('ready to invest');
+        http.submit = submit;
+    });
+
     it('lays out the design sections from server facts', () => {
         render(<BusinessHome {...fixture} />);
 
