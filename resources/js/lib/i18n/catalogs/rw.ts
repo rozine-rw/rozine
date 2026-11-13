@@ -592,6 +592,9 @@ const rw: Catalog = {
     'business.capital.title': 'Igishoro cyawe',
     'business.capital.subtitle': 'Amateka yawe yose, ku mpapuro zawe zose.',
     'business.capital.active_notes': '{count} zikora',
+    'business.capital.active_and_repaying':
+        '{active} zikora · {repaying} ziri kwishyurwa',
+    'business.capital.repaying_notes': '{count} ziri kwishyurwa',
     'business.capital.about': 'Ibyerekeye {label}',
     'business.capital.close': 'Funga',
     'business.capital.raised.label': 'Byakusanyijwe',
