@@ -34,6 +34,7 @@ class AuditorNoticesResource extends InvestorNoticesResource
         /** @var list<array{kind: string, facts: array<string, mixed>, link: array{url: string, method: 'get'}|null}> $notices */
         $notices = $page['notices'];
         $page['notices'] = array_map(fn (array $notice): array => $notice['kind'] === 'auditor.job_offered' && ($notice['facts']['held'] ?? false) === true
+            && ($notice['facts']['outcome'] ?? null) !== 'expired'
             ? [...$notice, 'link' => $this->link($prefix, 'auditor.jobs.show', ['assignment' => (string) $notice['facts']['assignment_id']])] : $notice, $notices);
 
         return $page;
