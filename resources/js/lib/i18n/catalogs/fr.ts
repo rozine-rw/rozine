@@ -4494,6 +4494,10 @@ const fr: Catalog = {
     'investor.market.orders.completed': 'Exécutés',
     'investor.market.orders.cancelled': 'Annulés',
     'investor.market.orders.empty': 'Aucun ordre dans cet onglet.',
+    'investor.market.browse_none.empty_title':
+        "Aucun titre n'est encore en vente",
+    'investor.market.browse_none.empty_body':
+        'Les titres apparaissent ici quand des investisseurs les mettent en revente.',
     'investor.market.browse.empty_title':
         'Aucune note ne correspond à ces filtres',
     'investor.market.browse.empty_body':
@@ -4786,7 +4790,6 @@ const fr: Catalog = {
     'investor.plus.tier.diamond': 'Diamant',
     'investor.checkout.maturity_value': "Valeur à l'échéance · {date}",
     'investor.checkout.wallet': 'Portefeuille',
-    'investor.checkout.funding_source': 'Source de financement',
     'investor.checkout.wallet_available': 'Disponible : {amount}',
     'investor.checkout.pay_with': 'Payer avec',
     'investor.checkout.wallet_line': '{wallet} · {amount} disponibles',
@@ -6821,11 +6824,8 @@ const fr: Catalog = {
     'investor.wallet.c3.no_policy':
         "Les dépôts ne sont pas encore disponibles : aucune règle de dépôt n'a été définie.",
     'investor.wallet.c3.credited_on_success': 'Crédité une fois confirmé',
-    'investor.wallet.c3.policy_synthetic':
-        "Règle de dépôt fictive {version} — chiffres d'aperçu, pas une règle en vigueur.",
-    'investor.wallet.c3.policy': 'Règle de dépôt {version}.',
-    'investor.wallet.c3.policy_minimum': 'Minimum {amount}.',
-    'investor.wallet.c3.policy_maximum': 'Maximum {amount}.',
+    'investor.wallet.c3.policy_minimum': 'Minimum {amount}',
+    'investor.wallet.c3.policy_maximum': 'Maximum {amount}',
     'investor.wallet.c3.deposit_between':
         'Saisissez un montant entre {minimum} et {maximum}.',
     'investor.wallet.c3.deposit_at_least': 'Saisissez au moins {amount}.',

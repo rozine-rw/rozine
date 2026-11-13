@@ -4314,6 +4314,9 @@ const en = {
     'investor.market.orders.completed': 'Completed',
     'investor.market.orders.cancelled': 'Cancelled',
     'investor.market.orders.empty': 'No orders in this tab.',
+    'investor.market.browse_none.empty_title': 'No notes are for sale yet',
+    'investor.market.browse_none.empty_body':
+        'Notes appear here when investors list them for resale.',
     'investor.market.browse.empty_title': 'No notes match these filters',
     'investor.market.browse.empty_body': 'Try adjusting the filters above.',
     'investor.market.saved.empty_title': 'No saved notes yet',
@@ -4598,7 +4601,6 @@ const en = {
     'investor.plus.tier.diamond': 'Diamond',
     'investor.checkout.maturity_value': 'Maturity value · {date}',
     'investor.checkout.wallet': 'Wallet',
-    'investor.checkout.funding_source': 'Funding source',
     'investor.checkout.wallet_available': 'Available: {amount}',
     'investor.checkout.pay_with': 'Pay with',
     'investor.checkout.wallet_line': '{wallet} · {amount} available',
@@ -6517,11 +6519,8 @@ const en = {
     'investor.wallet.c3.no_policy':
         "Deposits aren't available yet: no deposit policy has been set.",
     'investor.wallet.c3.credited_on_success': 'Credited once confirmed',
-    'investor.wallet.c3.policy_synthetic':
-        'Synthetic deposit policy {version} — preview figures, not live policy.',
-    'investor.wallet.c3.policy': 'Deposit policy {version}.',
-    'investor.wallet.c3.policy_minimum': 'Minimum {amount}.',
-    'investor.wallet.c3.policy_maximum': 'Maximum {amount}.',
+    'investor.wallet.c3.policy_minimum': 'Minimum {amount}',
+    'investor.wallet.c3.policy_maximum': 'Maximum {amount}',
     'investor.wallet.c3.deposit_between':
         'Enter an amount between {minimum} and {maximum}.',
     'investor.wallet.c3.deposit_at_least': 'Enter at least {amount}.',
