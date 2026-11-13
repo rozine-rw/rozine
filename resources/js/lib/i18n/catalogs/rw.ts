@@ -4153,6 +4153,8 @@ const rw: Catalog = {
     'business.visit_ready.progress': '{done} kuri {total} byiteguye',
     'business.visit_ready.shows': 'Kigomba kwerekana: {text}',
     'business.visit_ready.where': 'Aho wakibona: {text}',
+    'business.visit_ready.failed':
+        'Ntitwashoboye kubika ako kamenyetso. Reba murandasi yawe wongere ugerageze.',
     'business.visit_ready.footer':
         'Umucungamari abireba mu gihe cy’isura; abashoramari babona raporo yashyizweho kashe gusa. Ibikorwa 10 azagenzura bizagaragara hano iminsi 3 mbere y’isura. Kohereza hakiri kare si itegeko.',
     'business.visit_ready.item.bank_statements.title':

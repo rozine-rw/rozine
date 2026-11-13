@@ -4170,6 +4170,8 @@ const fr: Catalog = {
     'business.visit_ready.progress': '{done} sur {total} prêts',
     'business.visit_ready.shows': 'Doit montrer : {text}',
     'business.visit_ready.where': 'Où l’obtenir : {text}',
+    'business.visit_ready.failed':
+        'Nous n’avons pas pu enregistrer cette coche. Vérifiez votre connexion et réessayez.',
     'business.visit_ready.footer':
         'L’expert-comptable les consulte pendant la visite ; les investisseurs ne voient que le rapport scellé. Les 10 transactions à vérifier s’affichent ici 3 jours avant la visite. Le téléversement anticipé est facultatif.',
     'business.visit_ready.item.bank_statements.title':
