@@ -7223,6 +7223,37 @@ const fr: Catalog = {
         "Cette vérification n'a pas pu être effectuée.",
     'admin.applications.release.cause.other':
         "Cette vérification n'a pas réussi.",
+    'admin.applications.release.gate_state.waiting': 'Non vérifié',
+    'admin.applications.release.cause.waiting':
+        "Non vérifié tant que le contrôle « {check} » n'a pas réussi.",
+    'admin.applications.release.blocked_next':
+        "L'entreprise voit le même motif sur sa page Publier. Une fois corrigé, les contrôles sont relancés et Libérer apparaît ici.",
+    'admin.applications.release.next.ENGINE_GATE_FAILED':
+        "Les derniers chiffres de l'entreprise ne justifient plus ce billet. L'entreprise obtient un nouveau devis et signe à nouveau.",
+    'admin.applications.release.next.AUTHORITY_CHANGED':
+        "L'entreprise signe à nouveau selon son mandat de signature actuel.",
+    'admin.applications.release.next.MANDATE_UNVERIFIED':
+        "Le mandat de signature de l'entreprise doit être vérifié. Consultez le profil de l'entreprise.",
+    'admin.applications.release.next.REPORT_NOT_CURRENT':
+        'Un nouvel audit de mise en vente doit être scellé avant la libération.',
+    'admin.applications.release.next.EXPOSURE_RESERVATION_REQUIRED':
+        "L'entreprise soumet à nouveau la demande, ce qui réserve son emprunt.",
+    'admin.applications.release.next.SIGNATURES_REQUIRED':
+        "Les signataires restants signent à l'étape Révision sur le compte de l'entreprise.",
+    'admin.applications.release.next.STAFF_RELEASE_REQUIRED':
+        "L'entreprise a signé à nouveau après la libération. Vérifiez les nouvelles conditions, puis libérez à nouveau.",
+    'admin.applications.release.next.TERMS_CHANGED':
+        "L'entreprise accepte les conditions actuelles et signe à nouveau.",
+    'admin.applications.release.next.FEE_DISCLOSURE_CHANGED':
+        "L'entreprise lit l'information actuelle sur les frais et signe à nouveau.",
+    'admin.applications.release.next.QUOTE_STALE':
+        "L'entreprise actualise son devis et signe à nouveau.",
+    'admin.applications.release.next.RESTRICTION_ACTIVE':
+        "Examinez la restriction sur le profil de l'entreprise. La libération attend sa levée.",
+    'admin.applications.release.next.RELEASE_CHECK_NOT_COMPLETED':
+        "Le contrôle s'est arrêté avant la fin. Rouvrez la demande pour le relancer et prévenez l'équipe technique s'il s'arrête encore.",
+    'admin.applications.release.next.other':
+        "Ouvrez le profil de l'entreprise pour voir ce qui a changé. Le code au survol aide l'équipe technique.",
     'admin.applications.release.blocked':
         'Un contrôle a échoué : cette demande ne peut pas être libérée. La libération ne passe jamais outre un contrôle en échec.',
     'admin.applications.release.receipt': 'Reçu de libération',

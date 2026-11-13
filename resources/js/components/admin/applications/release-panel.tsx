@@ -32,6 +32,9 @@ const RELEASE_CAUSES = [
 
 type ReleaseCause = (typeof RELEASE_CAUSES)[number];
 
+/** A check the server never reached, because an earlier one failed. */
+const NOT_REACHED = 'RELEASE_CHECK_NOT_COMPLETED';
+
 const isReleaseCause = (code: string): code is ReleaseCause =>
     (RELEASE_CAUSES as readonly string[]).includes(code);
 
@@ -71,6 +74,8 @@ export function ReleasePanel({
         only: ['review', 'applications', 'tabs', 'badges'],
     });
     const failed = release.gates.filter((gate) => gate.state === 'failed');
+    /* The checks run in order and stop at the first failure, so a later check is never reached. */
+    const blocker = failed.find((gate) => gate.cause !== NOT_REACHED);
     const offered =
         failed.length === 0 &&
         release.allowed_actions.includes('application.release') &&
@@ -94,40 +99,82 @@ export function ReleasePanel({
             </p>
             <ul
                 aria-label={t('admin.applications.release.gates')}
-                className="mt-3 flex flex-col gap-1.5"
+                className="mt-3 flex flex-col gap-2.5"
             >
-                {release.gates.map((gate) => (
-                    <li
-                        key={gate.key}
-                        className="flex flex-wrap items-center gap-2 text-[12.5px]"
-                    >
-                        <span className="flex-1 font-semibold text-rz-ink">
-                            {t(`admin.applications.release.gate.${gate.key}`)}
-                        </span>
-                        {gate.cause !== null && (
-                            <span
-                                title={gate.cause}
-                                className={cn('text-[11.5px]', CAPTION)}
-                            >
-                                {t(
-                                    `admin.applications.release.cause.${isReleaseCause(gate.cause) ? gate.cause : 'other'}`,
+                {release.gates.map((gate) => {
+                    const waitingOn =
+                        gate.cause === NOT_REACHED ? blocker : undefined;
+                    const cause =
+                        gate.cause === null || isReleaseCause(gate.cause)
+                            ? gate.cause
+                            : 'other';
+
+                    return (
+                        <li key={gate.key} className="text-[12.5px]">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <span className="flex-1 font-semibold text-rz-ink">
+                                    {t(
+                                        `admin.applications.release.gate.${gate.key}`,
+                                    )}
+                                </span>
+                                {cause !== null && (
+                                    <span
+                                        title={gate.cause ?? undefined}
+                                        className={cn('text-[11.5px]', CAPTION)}
+                                    >
+                                        {waitingOn === undefined
+                                            ? t(
+                                                  `admin.applications.release.cause.${cause}`,
+                                              )
+                                            : t(
+                                                  'admin.applications.release.cause.waiting',
+                                                  {
+                                                      check: t(
+                                                          `admin.applications.release.gate.${waitingOn.key}`,
+                                                      ),
+                                                  },
+                                              )}
+                                    </span>
                                 )}
-                            </span>
-                        )}
-                        <Chip tone={gate.state === 'passed' ? 'green' : 'red'}>
-                            {t(
-                                `admin.applications.release.gate_state.${gate.state}`,
+                                <Chip
+                                    tone={
+                                        gate.state === 'passed'
+                                            ? 'green'
+                                            : waitingOn === undefined
+                                              ? 'red'
+                                              : 'grey'
+                                    }
+                                >
+                                    {t(
+                                        waitingOn === undefined
+                                            ? `admin.applications.release.gate_state.${gate.state}`
+                                            : 'admin.applications.release.gate_state.waiting',
+                                    )}
+                                </Chip>
+                            </div>
+                            {cause !== null && waitingOn === undefined && (
+                                <p
+                                    className={cn(
+                                        'mt-1 text-[11.5px] leading-[1.45]',
+                                        EXPLAIN,
+                                    )}
+                                >
+                                    {t(
+                                        `admin.applications.release.next.${cause}`,
+                                    )}
+                                </p>
                             )}
-                        </Chip>
-                    </li>
-                ))}
+                        </li>
+                    );
+                })}
             </ul>
             {failed.length > 0 && (
                 <p
                     role="status"
                     className="mt-3 rounded-xl border border-[#fdeaea] bg-[rgba(255,77,79,.06)] px-3.5 py-2.5 text-[12.5px] leading-[1.5] text-[#c4373c] dark:border-[rgba(255,107,111,.25)] dark:text-[#ff6b6f]"
                 >
-                    {t('admin.applications.release.blocked')}
+                    {t('admin.applications.release.blocked')}{' '}
+                    {t('admin.applications.release.blocked_next')}
                 </p>
             )}
             {release.receipt !== null && (
