@@ -356,7 +356,7 @@ describe('Wallet withdrawals (LED-R04)', () => {
         const panel = screen.getByRole('region', { name: 'Withdraw' });
 
         expect(panel).toHaveTextContent(
-            "Your payout account is verified. Withdrawals open once Rozine clears this account for money movement; you don't need to do anything else.",
+            'Your payout account is verified, but withdrawals from this wallet are not open to you right now. Contact Rozine support if you need to withdraw.',
         );
         expect(
             within(panel).queryByRole('button', { name: 'Confirm withdrawal' }),

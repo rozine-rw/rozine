@@ -821,7 +821,9 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
                     <span>
                         {funding.methods.length === 0
                             ? t('investor.wallet.c3.withdraw_needs_account')
-                            : t('investor.wallet.c3.withdraw_not_cleared')}
+                            : terms === null
+                              ? t('investor.wallet.c3.withdraw_not_cleared')
+                              : t('investor.wallet.c3.withdraw_not_allowed')}
                         {funding.methods.length === 0 &&
                             linkedAccounts !== null && (
                                 <>

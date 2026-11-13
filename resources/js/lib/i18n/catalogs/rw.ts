@@ -6848,6 +6848,8 @@ const rw: Catalog = {
         'Kubikuza ntibirafungurwa: iyi konti nta konti yo kwakiriraho yemejwe ifite. Huza iri mu izina ryawe, hanyuma Rozine ifungure kubikuza konti nimara kwemererwa kohereza no kwakira amafaranga.',
     'investor.wallet.c3.withdraw_not_cleared':
         'Konti yawe yo kwakiriraho yaremejwe. Kubikuza bizafunguka Rozine nimara kwemerera iyi konti kohereza no kwakira amafaranga; nta kindi usabwa gukora.',
+    'investor.wallet.c3.withdraw_not_allowed':
+        "Konti yawe yo kwakiriraho yaremejwe, ariko ubu ntiwemerewe kubikuza muri iki gikapu. Vugana n'ubufasha bwa Rozine niba ukeneye kubikuza.",
     'investor.wallet.c3.withdraw_link_account': 'Jya kuri Konti zihujwe',
     'investor.wallet.c3.withdraw_at_least': 'Nibura {amount}.',
     'investor.wallet.c3.withdraw_at_most': 'Ntarengwa {amount} icyarimwe.',

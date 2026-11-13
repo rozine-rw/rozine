@@ -182,7 +182,7 @@ describe('Business wallet withdrawals (APP-B01, LED-R04)', () => {
         expect(card()).toHaveTextContent('Active');
     });
 
-    it('offers no form while the mandate withholds withdrawal', () => {
+    it('offers no form while the mandate withholds withdrawal, without promising it opens on its own', () => {
         const props = wallet();
 
         props.allowed_actions = ['business.wallet.deposit'];
@@ -191,7 +191,7 @@ describe('Business wallet withdrawals (APP-B01, LED-R04)', () => {
         const panel = screen.getByRole('region', { name: 'Withdraw' });
 
         expect(panel).toHaveTextContent(
-            "Your payout account is verified. Withdrawals open once Rozine clears this account for money movement; you don't need to do anything else.",
+            'Your payout account is verified, but withdrawals from this wallet are not open to you right now. Contact Rozine support if you need to withdraw.',
         );
         expect(
             within(panel).getByRole('link', { name: 'Close' }),

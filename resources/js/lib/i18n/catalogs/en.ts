@@ -6562,6 +6562,8 @@ const en = {
         "Withdrawals aren't open yet: this account has no verified payout account. Link one in your own name, then Rozine opens withdrawals once the account is cleared for money movement.",
     'investor.wallet.c3.withdraw_not_cleared':
         "Your payout account is verified. Withdrawals open once Rozine clears this account for money movement; you don't need to do anything else.",
+    'investor.wallet.c3.withdraw_not_allowed':
+        'Your payout account is verified, but withdrawals from this wallet are not open to you right now. Contact Rozine support if you need to withdraw.',
     'investor.wallet.c3.withdraw_link_account': 'Go to Linked accounts',
     'investor.wallet.c3.withdraw_at_least': 'Minimum {amount}.',
     'investor.wallet.c3.withdraw_at_most': 'Maximum {amount} at a time.',

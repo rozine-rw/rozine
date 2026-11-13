@@ -6866,6 +6866,8 @@ const fr: Catalog = {
         "Les retraits ne sont pas encore ouverts : ce compte n'a pas de compte de versement vérifié. Liez-en un à votre nom ; Rozine ouvre ensuite les retraits dès que le compte est autorisé à faire des mouvements d'argent.",
     'investor.wallet.c3.withdraw_not_cleared':
         "Votre compte de versement est vérifié. Les retraits s'ouvrent dès que Rozine autorise ce compte à faire des mouvements d'argent ; vous n'avez rien d'autre à faire.",
+    'investor.wallet.c3.withdraw_not_allowed':
+        "Votre compte de versement est vérifié, mais les retraits depuis ce portefeuille ne vous sont pas ouverts pour le moment. Contactez le support Rozine si vous devez retirer de l'argent.",
     'investor.wallet.c3.withdraw_link_account': 'Aller aux comptes liés',
     'investor.wallet.c3.withdraw_at_least': 'Minimum {amount}.',
     'investor.wallet.c3.withdraw_at_most': 'Maximum {amount} par retrait.',
