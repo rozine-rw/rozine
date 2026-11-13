@@ -25,7 +25,10 @@ it('installs the provider reference registry behind in-flight deposit writers wi
     $businessWithdrawals = require database_path('migrations/2026_10_14_104058_create_business_wallet_withdrawals.php');
     $platformFee = require database_path('migrations/2026_10_16_161905_add_platform_fee_to_disbursements.php');
     $automaticDisbursement = require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php');
-    $restore = function () use ($migration, $businessDeposits, $businessRepayments, $businessWithdrawals, $platformFee, $automaticDisbursement): void {
+    // The secondary market rewrites the ledger's kind constraints, so it comes off first and goes back last.
+    $secondaryMarket = require database_path('migrations/2026_11_11_060000_create_secondary_market_tables.php');
+    $restore = function () use ($migration, $businessDeposits, $businessRepayments, $businessWithdrawals, $platformFee, $automaticDisbursement,
+        $secondaryMarket): void {
         if (! Schema::hasTable('provider_references')) {
             $migration->up();
         }
@@ -34,7 +37,9 @@ it('installs the provider reference registry behind in-flight deposit writers wi
         $businessWithdrawals->up();
         $platformFee->up();
         $automaticDisbursement->up();
+        $secondaryMarket->up();
     };
+    $secondaryMarket->down();
     $automaticDisbursement->down();
     $platformFee->down();
     $businessWithdrawals->down();
