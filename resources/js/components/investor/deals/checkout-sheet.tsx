@@ -644,7 +644,7 @@ export function CheckoutSheet({
                 ) : (
                     <>
                         <p className={cn(LABEL, 'mt-3.5')}>
-                            {t('investor.checkout.funding_source')}
+                            {t('investor.checkout.pay_with')}
                         </p>
                         <div className="mt-[7px] flex items-center gap-3 rounded-2xl border border-rz-accent-fill bg-rz-surface px-3.5 py-3">
                             <span className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-rz-accent-soft">

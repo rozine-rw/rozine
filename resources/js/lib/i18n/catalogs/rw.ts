@@ -4472,6 +4472,9 @@ const rw: Catalog = {
     'investor.market.orders.completed': 'Ayarangiye',
     'investor.market.orders.cancelled': 'Ayahagaritswe',
     'investor.market.orders.empty': 'Nta mabwiriza ari muri iki gice.',
+    'investor.market.browse_none.empty_title': 'Nta noti iragurishwa',
+    'investor.market.browse_none.empty_body':
+        'Noti zigaragara hano iyo abashoramari bazishyize ku isoko.',
     'investor.market.browse.empty_title': "Nta noti ihuye n'ibi byatoranyijwe",
     'investor.market.browse.empty_body':
         'Gerageza guhindura ibyatoranyijwe hejuru.',
@@ -4766,7 +4769,6 @@ const rw: Catalog = {
     'investor.plus.tier.diamond': 'Diyama',
     'investor.checkout.maturity_value': 'Agaciro ku iherezo · {date}',
     'investor.checkout.wallet': 'Ikofi',
-    'investor.checkout.funding_source': 'Aho amafaranga ava',
     'investor.checkout.wallet_available': 'Ahari: {amount}',
     'investor.checkout.pay_with': 'Ishyura ukoresheje',
     'investor.checkout.wallet_line': '{wallet} · {amount} bihari',
@@ -6787,11 +6789,8 @@ const rw: Catalog = {
         'Kubitsa ntibiraboneka: nta mabwiriza yo kubitsa arashyirwaho.',
     'investor.wallet.c3.credited_on_success':
         'Azashyirwa kuri konti nibimara kwemezwa',
-    'investor.wallet.c3.policy_synthetic':
-        "Amabwiriza y'igerageza yo kubitsa {version} — imibare y'igerageza, si amabwiriza akurikizwa.",
-    'investor.wallet.c3.policy': 'Amabwiriza yo kubitsa {version}.',
-    'investor.wallet.c3.policy_minimum': 'Nibura {amount}.',
-    'investor.wallet.c3.policy_maximum': 'Ntarengwa {amount}.',
+    'investor.wallet.c3.policy_minimum': 'Nibura {amount}',
+    'investor.wallet.c3.policy_maximum': 'Ntarengwa {amount}',
     'investor.wallet.c3.deposit_between':
         'Andika amafaranga ari hagati ya {minimum} na {maximum}.',
     'investor.wallet.c3.deposit_at_least': 'Andika nibura {amount}.',

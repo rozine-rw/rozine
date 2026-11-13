@@ -44,6 +44,11 @@ export default function InvestorMarket({ links }: InvestorShellPageProps) {
     const [status, setStatus] = useState<(typeof STATUS)[number]>('all');
     const [industry, setIndustry] = useState<(typeof INDUSTRY)[number]>('all');
     const [orders, setOrders] = useState<(typeof ORDERS)[number]>('buy');
+    /** With every filter on All, nothing is listed at all, so the filters are not to blame (#597). */
+    const filtered =
+        performance !== 'all' || status !== 'all' || industry !== 'all';
+    const empty =
+        view === 'saved' ? 'saved' : filtered ? 'browse' : 'browse_none';
     const performanceOptions = PERFORMANCE.map((value) => ({
         value,
         label: t(`investor.market.performance.${value}`),
@@ -183,10 +188,10 @@ export default function InvestorMarket({ links }: InvestorShellPageProps) {
                         {view === 'saved' ? '🔖' : '🗂'}
                     </span>
                     <p className="mt-4 text-[17px] font-semibold text-rz-ink">
-                        {t(`investor.market.${view}.empty_title`)}
+                        {t(`investor.market.${empty}.empty_title`)}
                     </p>
                     <p className="mt-1.5 max-w-[240px] text-[13px] leading-normal text-rz-secondary">
-                        {t(`investor.market.${view}.empty_body`)}
+                        {t(`investor.market.${empty}.empty_body`)}
                     </p>
                 </div>
             </>
