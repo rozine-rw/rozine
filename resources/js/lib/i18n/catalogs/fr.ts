@@ -7537,7 +7537,7 @@ const fr: Catalog = {
     'investor.primary.status.expired': 'Non rempli — remboursé',
     'investor.primary.status.failed_closing': 'Clôturé — remboursé',
     'investor.primary.status_body.confirmed':
-        "La levée est encore ouverte. Votre engagement est définitif ; si la levée n'est pas complète, votre argent revient dans votre portefeuille.",
+        'La levée est toujours ouverte. Vous pouvez retirer cet engagement avec un remboursement intégral tant que la levée n’a pas atteint 100 %. Si la levée n’aboutit pas, votre argent revient dans votre portefeuille.',
     'investor.primary.status_body.awaiting_disbursement':
         "La levée est entièrement financée : l'annulation est verrouillée. Les titres sont émis une fois le versement confirmé.",
     'investor.primary.status_body.in_flight_pending':
@@ -7573,7 +7573,8 @@ const fr: Catalog = {
     'investor.primary.terms': 'Conditions',
     'investor.primary.maturity': "Date d'échéance",
     'investor.primary.maturity_at_issue': "Fixée à l'émission des titres",
-    'investor.primary.versions': 'Règle · information',
+    'investor.primary.disclosure': 'Document d’information',
+    'investor.primary.disclosure_value': 'Version du {date}',
     'investor.primary.view_holding': 'Voir la détention',
     'investor.primary.awaiting_issue': "En attente d'émission",
     'investor.primary.awaiting_issue_note':
@@ -7588,6 +7589,9 @@ const fr: Catalog = {
         "Les échéances sont fixées à l'émission : la première tombe un mois après la date d'effet du versement.",
     'investor.primary.commitment_title': 'Engagement',
     'investor.primary.back_to_portfolio': 'Retour au portefeuille',
+    'investor.checkout.fee_about': 'environ {amount}',
+    'investor.checkout.fee_estimate_note':
+        'Le montant exact des frais est calculé à chaque remboursement une fois vos titres réservés ; il peut différer de quelques francs.',
     'investor.primary.cancel': "Retirer l'engagement",
     'investor.primary.cancel_title': 'Retirer cet engagement ?',
     'investor.primary.cancel_body':

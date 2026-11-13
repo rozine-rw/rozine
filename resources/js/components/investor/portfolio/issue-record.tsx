@@ -1,3 +1,4 @@
+import { disclosureRow } from '@/components/investor/primary/commitment';
 import { earningsFeeRate } from '@/components/investor/primary/earnings-fee';
 import { formatOrdinals } from '@/components/investor/primary/rights';
 import { useTranslation } from '@/hooks/use-translation';
@@ -48,10 +49,7 @@ export function IssueRecord({ issue }: { issue: IssuedHolding }) {
             formatRwf(issue.terms.total_return),
         ],
         [t('investor.plus.fee'), earningsFeeRate(t, issue.terms.earnings_fee)],
-        [
-            t('investor.primary.versions'),
-            `${issue.terms.policy_version} · ${issue.terms.disclosure_version}`,
-        ],
+        ...disclosureRow(t, locale, issue.terms.disclosure_version),
         [
             t('investor.primary.receipt.reference'),
             issue.issue_receipt.reference,
