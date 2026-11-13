@@ -570,6 +570,7 @@
         "resources/js/components/business/repayments/progress-card.tsx",
         "resources/js/components/business/repayments/receipt.tsx",
         "resources/js/components/business/repayments/schedule-list.tsx",
+        "resources/js/components/business/repayments/visit-ready-checklist.tsx",
         "resources/js/components/business/reports/audit-guide.tsx",
         "resources/js/components/business/reports/period-label.ts",
         "resources/js/components/business/reports/report-sheet.tsx",
@@ -835,10 +836,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 807,
+        "totalTrackedSources": 808,
         "generated": 345,
         "declarationOnly": 20,
-        "authoredExecutable": 442
+        "authoredExecutable": 443
     },
-    "coverageSetSha256": "8f8d16706fa975eb216c33990c8bcee087f3a13256435aeca229b2acfa889a94"
+    "coverageSetSha256": "d0d1abd28c3db4e6adc0bb348a3f2ee0a24e8184a225d0d0645e42903ef99228"
 }

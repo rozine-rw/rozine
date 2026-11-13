@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "25fdf6845d4dfc9e1cd28872da97cbc46fdb85f2281e51c7895d3c31a418b3b6",
-    "coverageSetSha256": "8f8d16706fa975eb216c33990c8bcee087f3a13256435aeca229b2acfa889a94",
+    "sourceManifestSha256": "ff3e25de4741955daa29f7824fff9509953735529574c2c079a818babbd0bc4d",
+    "coverageSetSha256": "d0d1abd28c3db4e6adc0bb348a3f2ee0a24e8184a225d0d0645e42903ef99228",
     "thresholds": {
         "critical": {
             "global": {
@@ -227,6 +227,7 @@
         "resources/js/components/business/repayments/progress-card.tsx",
         "resources/js/components/business/repayments/receipt.tsx",
         "resources/js/components/business/repayments/schedule-list.tsx",
+        "resources/js/components/business/repayments/visit-ready-checklist.tsx",
         "resources/js/components/business/reports/audit-guide.tsx",
         "resources/js/components/business/reports/period-label.ts",
         "resources/js/components/business/reports/report-sheet.tsx",

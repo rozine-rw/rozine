@@ -4147,6 +4147,81 @@ const rw: Catalog = {
     'business.repayments.issued.principal': 'Igishoro',
     'business.repayments.issued.return': 'Inyungu',
     'business.repayments.issued.total': 'Igiteranyo cyo kwishyura',
+    'business.visit_ready.title': 'Itegure isura ry’uku kwezi',
+    'business.visit_ready.lede':
+        'Kwishyura gukurikira kuzaba ku wa {due}. Umucungamari wawe azagusura hagati ya {from} na {by}, akubaze ibi bikurikira. Shyira akamenyetso kuri buri kimwe nikimara kwitegura.',
+    'business.visit_ready.progress': '{done} kuri {total} byiteguye',
+    'business.visit_ready.shows': 'Kigomba kwerekana: {text}',
+    'business.visit_ready.where': 'Aho wakibona: {text}',
+    'business.visit_ready.footer':
+        'Umucungamari abireba mu gihe cy’isura; abashoramari babona raporo yashyizweho kashe gusa. Ibikorwa 10 azagenzura bizagaragara hano iminsi 3 mbere y’isura. Kohereza hakiri kare si itegeko.',
+    'business.visit_ready.item.bank_statements.title':
+        'Raporo za banki na mobile money',
+    'business.visit_ready.item.bank_statements.shows':
+        'amafaranga yinjiye n’ayasohotse kuri buri konti ukwezi gushize',
+    'business.visit_ready.item.bank_statements.where':
+        'banki yawe cyangwa porogaramu ya mobile money (raporo y’ukwezi)',
+    'business.visit_ready.item.cash_and_stock.title':
+        'Amafaranga n’ibicuruzwa byiteguye kubarwa',
+    'business.visit_ready.item.cash_and_stock.shows':
+        'amafaranga ari mu isanduku n’ibicuruzwa biri aho ukorera uwo munsi',
+    'business.visit_ready.item.cash_and_stock.where': 'isanduku yawe n’ububiko',
+    'business.visit_ready.item.sales_records.title':
+        'Inyandiko y’ibyagurishijwe mu ntoki bitajyanywe kuri banki',
+    'business.visit_ready.item.sales_records.shows':
+        'amafaranga y’ibyagurishijwe yabitswe cyangwa yakoreshejwe mbere yo kugera kuri banki',
+    'business.visit_ready.item.sales_records.where':
+        'igitabo cy’ibyagurishijwe cyangwa cy’inyemezabwishyu',
+    'business.visit_ready.item.cost_receipts.title':
+        'Inyemezabwishyu na fagitire z’amafaranga yakoreshejwe',
+    'business.visit_ready.item.cost_receipts.shows':
+        'ibyo watanze ku bicuruzwa, abakozi, aho ukorera, ingendo, imisoro n’ibindi',
+    'business.visit_ready.item.cost_receipts.where':
+        'abakugemurira, nyir’inzu n’inyemezabwishyu za RRA',
+    'business.visit_ready.item.owner_payments.title':
+        'Inyandiko y’amafaranga yahawe ba nyir’ubucuruzi',
+    'business.visit_ready.item.owner_payments.shows':
+        'ibyo ba nyir’ubucuruzi bakuyemo ukwezi gushize',
+    'business.visit_ready.item.owner_payments.where':
+        'igitabo cy’amafaranga cyangwa raporo ya banki',
+    'business.visit_ready.item.loan_papers.title': 'Impapuro z’indi myenda',
+    'business.visit_ready.item.loan_papers.shows':
+        'buri wundi uguriza, ibisigaye kwishyurwa n’ubwishyu bwa buri kwezi',
+    'business.visit_ready.item.loan_papers.where':
+        'amasezerano y’inguzanyo cyangwa raporo z’abaguriza',
+    'business.visit_ready.item.rssb_total.title':
+        'Urupapuro rw’incamake rwa RSSB',
+    'business.visit_ready.item.rssb_total.shows':
+        'umubare w’abakozi bamenyekanyijwe, amazina apfutse',
+    'business.visit_ready.item.rssb_total.where':
+        'imenyekanisha rya RSSB (urupapuro rw’incamake gusa)',
+    'business.visit_ready.item.tax_clearance.title':
+        'Icyemezo cyo kwishyura imisoro',
+    'business.visit_ready.item.tax_clearance.shows': 'itariki kizarangiriraho',
+    'business.visit_ready.item.tax_clearance.where':
+        'RRA, cyangwa kopi yawe y’icyemezo',
+    'business.visit_ready.item.rssb_clearance.title': 'Icyemezo cya RSSB',
+    'business.visit_ready.item.rssb_clearance.shows': 'itariki kizarangiriraho',
+    'business.visit_ready.item.rssb_clearance.where':
+        'RSSB, cyangwa kopi yawe y’icyemezo',
+    'business.visit_ready.item.loan_use_proof.title':
+        'Ibimenyetso by’uko inguzanyo yakoreshejwe',
+    'business.visit_ready.item.loan_use_proof.shows':
+        'ibyo amafaranga ya Rozine yishyuye',
+    'business.visit_ready.item.loan_use_proof.where':
+        'fagitire cyangwa inyemezabwishyu z’ibyo waguze',
+    'business.visit_ready.item.change_papers.title':
+        'Impapuro z’impinduka zose',
+    'business.visit_ready.item.change_papers.shows':
+        'umwenda mushya, impinduka y’umuyobozi cyangwa nyir’imigabane, cyangwa ikirego kuva ku isura iheruka',
+    'business.visit_ready.item.change_papers.where':
+        'amasezerano, inyandiko-mvugo z’inama cyangwa impapuro z’urukiko',
+    'business.visit_ready.item.premises_access.title':
+        'Uburyo bwo gufata amafoto',
+    'business.visit_ready.item.premises_access.shows':
+        'aho ukorera n’ibicuruzwa, kugira ngo umucungamari afate amafoto muri porogaramu',
+    'business.visit_ready.item.premises_access.where':
+        'umuntu uhari wo gufungura uwo munsi',
     'business.repayments.issued.split':
         'Igishoro {principal} · inyungu {return}',
     'business.repayments.issued.note':

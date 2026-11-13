@@ -4164,6 +4164,81 @@ const fr: Catalog = {
     'business.repayments.issued.principal': 'Capital',
     'business.repayments.issued.return': 'Rendement',
     'business.repayments.issued.total': 'Total à rembourser',
+    'business.visit_ready.title': 'Préparez la visite de ce mois',
+    'business.visit_ready.lede':
+        'Votre prochain remboursement est dû le {due}. Votre expert-comptable passe entre le {from} et le {by} et vous demandera les éléments ci-dessous. Cochez chacun quand il est prêt.',
+    'business.visit_ready.progress': '{done} sur {total} prêts',
+    'business.visit_ready.shows': 'Doit montrer : {text}',
+    'business.visit_ready.where': 'Où l’obtenir : {text}',
+    'business.visit_ready.footer':
+        'L’expert-comptable les consulte pendant la visite ; les investisseurs ne voient que le rapport scellé. Les 10 transactions à vérifier s’affichent ici 3 jours avant la visite. Le téléversement anticipé est facultatif.',
+    'business.visit_ready.item.bank_statements.title':
+        'Relevés bancaires et mobile money',
+    'business.visit_ready.item.bank_statements.shows':
+        'les entrées et sorties de chaque compte le mois dernier',
+    'business.visit_ready.item.bank_statements.where':
+        'votre banque ou votre application mobile money (relevé mensuel)',
+    'business.visit_ready.item.cash_and_stock.title':
+        'Espèces et stock prêts à compter',
+    'business.visit_ready.item.cash_and_stock.shows':
+        'les espèces en caisse et le stock sur place le jour même',
+    'business.visit_ready.item.cash_and_stock.where':
+        'votre caisse, coffre et réserve',
+    'business.visit_ready.item.sales_records.title':
+        'Registre des ventes en espèces non déposées',
+    'business.visit_ready.item.sales_records.shows':
+        'les ventes en espèces gardées ou dépensées avant la banque',
+    'business.visit_ready.item.sales_records.where':
+        'votre livre des ventes ou carnet de reçus',
+    'business.visit_ready.item.cost_receipts.title':
+        'Reçus et factures des charges',
+    'business.visit_ready.item.cost_receipts.shows':
+        'vos dépenses en stock, personnel, locaux, transport, impôts et autres',
+    'business.visit_ready.item.cost_receipts.where':
+        'vos fournisseurs, votre bailleur et les reçus RRA',
+    'business.visit_ready.item.owner_payments.title':
+        'Registre des sommes versées aux propriétaires',
+    'business.visit_ready.item.owner_payments.shows':
+        'ce que les propriétaires ont retiré le mois dernier',
+    'business.visit_ready.item.owner_payments.where':
+        'votre livre de caisse ou relevé bancaire',
+    'business.visit_ready.item.loan_papers.title': 'Documents des autres prêts',
+    'business.visit_ready.item.loan_papers.shows':
+        'chaque autre prêteur, le restant dû et la mensualité',
+    'business.visit_ready.item.loan_papers.where':
+        'vos contrats de prêt ou relevés du prêteur',
+    'business.visit_ready.item.rssb_total.title': 'Page récapitulative RSSB',
+    'business.visit_ready.item.rssb_total.shows':
+        'le nombre d’employés déclarés, noms masqués',
+    'business.visit_ready.item.rssb_total.where':
+        'votre déclaration RSSB (page récapitulative seulement)',
+    'business.visit_ready.item.tax_clearance.title':
+        'Attestation de régularité fiscale',
+    'business.visit_ready.item.tax_clearance.shows': 'sa date d’expiration',
+    'business.visit_ready.item.tax_clearance.where':
+        'la RRA, ou votre copie de l’attestation',
+    'business.visit_ready.item.rssb_clearance.title':
+        'Attestation de régularité RSSB',
+    'business.visit_ready.item.rssb_clearance.shows': 'sa date d’expiration',
+    'business.visit_ready.item.rssb_clearance.where':
+        'la RSSB, ou votre copie de l’attestation',
+    'business.visit_ready.item.loan_use_proof.title':
+        'Preuve de l’utilisation du prêt',
+    'business.visit_ready.item.loan_use_proof.shows':
+        'ce que l’argent de Rozine a payé',
+    'business.visit_ready.item.loan_use_proof.where':
+        'les factures ou reçus de vos achats',
+    'business.visit_ready.item.change_papers.title':
+        'Documents de tout changement',
+    'business.visit_ready.item.change_papers.shows':
+        'toute nouvelle dette, tout changement de dirigeant ou d’actionnaire, ou tout litige depuis la dernière visite',
+    'business.visit_ready.item.change_papers.where':
+        'contrats, procès-verbaux ou pièces judiciaires',
+    'business.visit_ready.item.premises_access.title': 'Accès pour les photos',
+    'business.visit_ready.item.premises_access.shows':
+        'les locaux et le stock, pour les photos prises dans l’application',
+    'business.visit_ready.item.premises_access.where':
+        'une personne sur place pour ouvrir le jour même',
     'business.repayments.issued.split':
         'Capital {principal} · rendement {return}',
     'business.repayments.issued.note':
