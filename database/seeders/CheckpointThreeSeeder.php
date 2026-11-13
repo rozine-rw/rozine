@@ -67,7 +67,7 @@ class CheckpointThreeSeeder extends Seeder
 
     /**
      * With $visitReady, a new pack pays the funded raise out on the day that puts its first
-     * instalment 13 days ahead, so the Business's visit-ready checklist (BRS v3 VIS-R03) is open.
+     * instalment 12 to 14 days ahead (11 on 17 March in a common year), so the Business's visit-ready checklist (BRS v3 VIS-R03) is open.
      *
      * @return Pack
      */
@@ -83,16 +83,31 @@ class CheckpointThreeSeeder extends Seeder
         }
     }
 
-    /** The payout instant that puts the first instalment 13 days after today in Kigali. */
+    /**
+     * The payout instant that puts the first instalment 12 to 14 days after today in Kigali, inside
+     * the open-notice window. A due date on the 29th to 31st has no payout a month earlier when the
+     * previous month is shorter, because the schedule clamps to that month's last day. When all three
+     * days fall on such dates (17 March in a common year), it settles for the 28th, 11 days away,
+     * where the checklist is open and the reminder is due instead.
+     */
     public static function visitReadyPayoutAt(): string
     {
-        return CarbonImmutable::now(IssueSchedule::ZONE)->startOfDay()->addDays(13)->subMonthNoOverflow()->setTime(10, 0)->utc()->toIso8601String();
+        $today = CarbonImmutable::now(IssueSchedule::ZONE)->startOfDay();
+        foreach ([13, 12, 14] as $days) {
+            $due = $today->addDays($days);
+            if ($due->subMonthNoOverflow()->day === $due->day) {
+                break;
+            }
+            $due = $today->addDays(11);
+        }
+
+        return $due->subMonthNoOverflow()->setTime(10, 0)->utc()->toIso8601String();
     }
 
     /**
      * The funded note's first instalment, when the pack was paid out for the visit-ready checklist.
      *
-     * @param  Pack  $pack
+     * @param  array{paid_at?: string}  $pack
      */
     public static function firstDueOn(array $pack): ?string
     {
@@ -118,6 +133,9 @@ class CheckpointThreeSeeder extends Seeder
         }
         if ($disk->exists(self::PENDING)) {
             $pack = $this->readManifest(self::PENDING);
+            if ($visitReady && ! isset($pack['paid_at'])) {
+                throw new LogicException('C3_VISIT_READY_NEEDS_NEW_PACK: an unfinished pack was started without --visit-ready; rerun without it to finish, or reset the local database.');
+            }
         } elseif ($disk->exists(self::MANIFEST)) {
             $pack = $this->readManifest();
             if ($visitReady && ! isset($pack['paid_at'])) {

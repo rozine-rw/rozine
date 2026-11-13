@@ -15,7 +15,7 @@ class PrepareCheckpointThree extends Command
 
     protected $signature = 'local:checkpoint-three
         {--otp= : Show the current authenticator code for a C3 account alias, e.g. auditor-funded}
-        {--visit-ready : On a new pack, pay the funded raise out so its first instalment is due in 13 days and its visit-ready checklist is open}';
+        {--visit-ready : On a new pack, pay the funded raise out so its first instalment is due in 12 to 14 days (11 on 17 March in a common year) and its visit-ready checklist is open}';
 
     protected $description = 'Prepare or inspect the additive, local-only checkpoint 3 manual test pack';
 

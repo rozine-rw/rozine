@@ -66,7 +66,7 @@ it('stages a listed raise, a paid-out note and a monthly report in its window, a
         ->and(Artisan::call('local:checkpoint-three', ['--otp' => 'investor-live']))->toBe(1);
 });
 
-it('pays the funded raise out so its first instalment is 13 days away and the visit-ready checklist is open', function (): void {
+it('pays the funded raise out so its first instalment is 11 to 14 days away and the visit-ready checklist is open', function (): void {
     $this->freezeSecond();
     expect(Artisan::call('local:checkpoint-three', ['--visit-ready' => true]))->toBe(0);
     $pack = json_decode((string) Storage::disk('local')->get(CheckpointThreeSeeder::MANIFEST), true, flags: JSON_THROW_ON_ERROR);
@@ -74,7 +74,7 @@ it('pays the funded raise out so its first instalment is 13 days away and the vi
     $today = CarbonImmutable::now('Africa/Kigali')->startOfDay();
     $closing = DB::table('disbursement_closings')->where('kind', 'issued')->sole();
     expect($dueOn)->toBe(json_decode((string) $closing->due_dates, true, flags: JSON_THROW_ON_ERROR)[0])
-        ->and((int) $today->diffInDays(CarbonImmutable::parse((string) $dueOn, 'Africa/Kigali')))->toBeIn([12, 13])
+        ->and((int) $today->diffInDays(CarbonImmutable::parse((string) $dueOn, 'Africa/Kigali')))->toBeIn([11, 12, 13, 14])
         ->and(Artisan::output())->toContain('Visit-ready: first instalment due '.$dueOn);
     $business = $pack['scenarios']['funded']['business'];
     Storage::disk('local')->assertExists(CheckpointThreeSeeder::DIRECTORY.'/START-HERE.md');
@@ -83,10 +83,36 @@ it('pays the funded raise out so its first instalment is 13 days away and the vi
     $owner = User::query()->where('email', 'business-funded@c3.rozine.invalid')->sole();
     $visitReady = $this->actingAs($owner)->get(route('business.repayments.show', ['business' => $business]))->assertOk()->viewData('page')['props']['visit_ready'];
     expect($visitReady['due_on'])->toBe($dueOn);
-    expect(Artisan::call('business:remind-visit-ready'))->toBe(0)->and(Artisan::output())->toContain('Opened 1 visit-ready checklists');
+    $days = (int) $today->diffInDays(CarbonImmutable::parse((string) $dueOn, 'Africa/Kigali'));
+    expect(Artisan::call('business:remind-visit-ready'))->toBe(0)
+        ->and(Artisan::output())->toContain($days > 11 ? 'Opened 1 visit-ready checklists' : 'Opened 0 visit-ready checklists');
 
     expect(Artisan::call('local:checkpoint-three', ['--visit-ready' => true]))->toBe(0)
         ->and(DB::table('disbursement_closings')->count())->toBe(1);
+});
+
+it('pays out within the open-notice window across month ends', function (string $today, string $dueOn): void {
+    $this->travelTo(CarbonImmutable::parse($today.' 23:30', 'Africa/Kigali'));
+
+    expect(CheckpointThreeSeeder::firstDueOn(['paid_at' => CheckpointThreeSeeder::visitReadyPayoutAt()]))->toBe($dueOn);
+})->with([
+    'an ordinary day' => ['2026-11-13', '2026-11-26'],
+    '13 days lands on the 29th after February' => ['2027-03-16', '2027-03-28'],
+    '13 and 12 days land on unreachable dates' => ['2027-03-18', '2027-04-01'],
+    'every date in the window is unreachable' => ['2027-03-17', '2027-03-28'],
+    'February 29 in a leap year' => ['2028-02-16', '2028-02-29'],
+    'the 31st after a 30-day month' => ['2026-05-18', '2026-05-30'],
+]);
+
+it('refuses --visit-ready on an unfinished pack started without it', function (): void {
+    $real = app(RecordPayoutEvent::class);
+    app()->instance(RecordPayoutEvent::class, Mockery::mock($real, ['handle' => ['disposition' => 'deferred', 'decision' => 'unknown']]));
+    expect(fn () => app(CheckpointThreeSeeder::class)->prepare())->toThrow(LogicException::class, 'C3_PAYOUT_FAILED');
+    app()->forgetInstance(RecordPayoutEvent::class);
+
+    expect(fn () => app(CheckpointThreeSeeder::class)->prepare(true))->toThrow(LogicException::class, 'C3_VISIT_READY_NEEDS_NEW_PACK');
+    Storage::disk('local')->assertExists(CheckpointThreeSeeder::PENDING);
+    expect(app(CheckpointThreeSeeder::class)->prepare())->not->toHaveKey('paid_at');
 });
 
 it('refuses --visit-ready on a pack already paid out without it', function (): void {
