@@ -15,7 +15,9 @@ use App\Models\PrimaryReservationRecord;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
-/** Full original held-return authentication; no time-based or confirmed-refund retirement.
+/** Full original return authentication: a released or expired hold, or a commitment its Investor withdrew
+ * before the raise filled (INV-R03), whose full refund is retained as hold → commit → refund. No time-based retirement.
+ *
  * @phpstan-import-type CampaignInput from PrimaryCampaignSource
  * @phpstan-import-type ReplayFacts from RetainedPrimaryReservation
  */
@@ -70,12 +72,15 @@ final readonly class RetainedHeldClaimRelease
     public function binding(PrimaryReservationRecord $root, array $campaign): array
     {
         [$reservation, $version] = $this->reservations->read($root, $campaign);
-        if (! in_array($reservation->state, ['released', 'expired'], true)
-            || PrimaryCommitment::query()->where('primary_reservation_id', $root->id)->exists()) {
+        $commitment = PrimaryCommitment::query()->where('primary_reservation_id', $root->id)->first();
+        $source = new PostingSource('primary_reservation', $root->id, $root->origin_operation_id);
+        if ($reservation->state === 'confirmed' && $commitment?->primary_reservation_version_id === $version->id) {
+            $cash = $this->cash->inspectWithdrawnReturn($root->party_id, WalletMoney::of($root->principal), $source);
+        } elseif (in_array($reservation->state, ['released', 'expired'], true) && $commitment === null) {
+            $cash = $this->cash->inspectHeldReturn($root->party_id, WalletMoney::of($root->principal), $source);
+        } else {
             throw new RuntimeException('HELD_CLAIM_RETURN_INTEGRITY_FAILED');
         }
-        $cash = $this->cash->inspectHeldReturn($root->party_id, WalletMoney::of($root->principal),
-            new PostingSource('primary_reservation', $root->id, $root->origin_operation_id));
 
         return ['primary_reservation_id' => $root->id, 'root_sha256' => $root->sha256,
             'version_id' => $version->id, 'version_sha256' => $version->sha256, ...$cash];

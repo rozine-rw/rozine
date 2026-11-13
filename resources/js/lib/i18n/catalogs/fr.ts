@@ -3702,6 +3702,8 @@ const fr: Catalog = {
     'auditor.audit.step.people': 'Personnes',
     'auditor.audit.step.registration': 'Immatriculation',
     'auditor.audit.step.trading': 'Début d’activité',
+    'auditor.audit.step.available': 'Fonds disponibles',
+    'auditor.audit.step.reason': 'Motif',
     'auditor.audit.step.drawings': 'Prélèvements',
     'auditor.audit.step.loans': 'Autres prêts',
     'auditor.audit.step.differences': 'Écarts',
@@ -4162,6 +4164,81 @@ const fr: Catalog = {
     'business.repayments.issued.principal': 'Capital',
     'business.repayments.issued.return': 'Rendement',
     'business.repayments.issued.total': 'Total à rembourser',
+    'business.visit_ready.title': 'Préparez la visite de ce mois',
+    'business.visit_ready.lede':
+        'Votre prochain remboursement est dû le {due}. Votre expert-comptable passe entre le {from} et le {by} et vous demandera les éléments ci-dessous. Cochez chacun quand il est prêt.',
+    'business.visit_ready.progress': '{done} sur {total} prêts',
+    'business.visit_ready.shows': 'Doit montrer : {text}',
+    'business.visit_ready.where': 'Où l’obtenir : {text}',
+    'business.visit_ready.footer':
+        'L’expert-comptable les consulte pendant la visite ; les investisseurs ne voient que le rapport scellé. Les 10 transactions à vérifier s’affichent ici 3 jours avant la visite. Le téléversement anticipé est facultatif.',
+    'business.visit_ready.item.bank_statements.title':
+        'Relevés bancaires et mobile money',
+    'business.visit_ready.item.bank_statements.shows':
+        'les entrées et sorties de chaque compte le mois dernier',
+    'business.visit_ready.item.bank_statements.where':
+        'votre banque ou votre application mobile money (relevé mensuel)',
+    'business.visit_ready.item.cash_and_stock.title':
+        'Espèces et stock prêts à compter',
+    'business.visit_ready.item.cash_and_stock.shows':
+        'les espèces en caisse et le stock sur place le jour même',
+    'business.visit_ready.item.cash_and_stock.where':
+        'votre caisse, coffre et réserve',
+    'business.visit_ready.item.sales_records.title':
+        'Registre des ventes en espèces non déposées',
+    'business.visit_ready.item.sales_records.shows':
+        'les ventes en espèces gardées ou dépensées avant la banque',
+    'business.visit_ready.item.sales_records.where':
+        'votre livre des ventes ou carnet de reçus',
+    'business.visit_ready.item.cost_receipts.title':
+        'Reçus et factures des charges',
+    'business.visit_ready.item.cost_receipts.shows':
+        'vos dépenses en stock, personnel, locaux, transport, impôts et autres',
+    'business.visit_ready.item.cost_receipts.where':
+        'vos fournisseurs, votre bailleur et les reçus RRA',
+    'business.visit_ready.item.owner_payments.title':
+        'Registre des sommes versées aux propriétaires',
+    'business.visit_ready.item.owner_payments.shows':
+        'ce que les propriétaires ont retiré le mois dernier',
+    'business.visit_ready.item.owner_payments.where':
+        'votre livre de caisse ou relevé bancaire',
+    'business.visit_ready.item.loan_papers.title': 'Documents des autres prêts',
+    'business.visit_ready.item.loan_papers.shows':
+        'chaque autre prêteur, le restant dû et la mensualité',
+    'business.visit_ready.item.loan_papers.where':
+        'vos contrats de prêt ou relevés du prêteur',
+    'business.visit_ready.item.rssb_total.title': 'Page récapitulative RSSB',
+    'business.visit_ready.item.rssb_total.shows':
+        'le nombre d’employés déclarés, noms masqués',
+    'business.visit_ready.item.rssb_total.where':
+        'votre déclaration RSSB (page récapitulative seulement)',
+    'business.visit_ready.item.tax_clearance.title':
+        'Attestation de régularité fiscale',
+    'business.visit_ready.item.tax_clearance.shows': 'sa date d’expiration',
+    'business.visit_ready.item.tax_clearance.where':
+        'la RRA, ou votre copie de l’attestation',
+    'business.visit_ready.item.rssb_clearance.title':
+        'Attestation de régularité RSSB',
+    'business.visit_ready.item.rssb_clearance.shows': 'sa date d’expiration',
+    'business.visit_ready.item.rssb_clearance.where':
+        'la RSSB, ou votre copie de l’attestation',
+    'business.visit_ready.item.loan_use_proof.title':
+        'Preuve de l’utilisation du prêt',
+    'business.visit_ready.item.loan_use_proof.shows':
+        'ce que l’argent de Rozine a payé',
+    'business.visit_ready.item.loan_use_proof.where':
+        'les factures ou reçus de vos achats',
+    'business.visit_ready.item.change_papers.title':
+        'Documents de tout changement',
+    'business.visit_ready.item.change_papers.shows':
+        'toute nouvelle dette, tout changement de dirigeant ou d’actionnaire, ou tout litige depuis la dernière visite',
+    'business.visit_ready.item.change_papers.where':
+        'contrats, procès-verbaux ou pièces judiciaires',
+    'business.visit_ready.item.premises_access.title': 'Accès pour les photos',
+    'business.visit_ready.item.premises_access.shows':
+        'les locaux et le stock, pour les photos prises dans l’application',
+    'business.visit_ready.item.premises_access.where':
+        'une personne sur place pour ouvrir le jour même',
     'business.repayments.issued.split':
         'Capital {principal} · rendement {return}',
     'business.repayments.issued.note':
@@ -6079,6 +6156,21 @@ const fr: Catalog = {
     'auditor.audit.guide.trading.done': 'Un mois est saisi.',
     'auditor.audit.guide.trading.how':
         'Utilisez la facture, le relevé ou la licence commerciale la plus ancienne que vous voyez, pas la date d’immatriculation si l’activité a commencé plus tard.',
+    'auditor.audit.guide.available.do':
+        'Demandez à voir chaque caisse et chaque solde bancaire ou mobile money avec lesquels l’entreprise pourrait payer aujourd’hui.',
+    'auditor.audit.guide.available.enter':
+        'Le total disponible maintenant, en francs entiers.',
+    'auditor.audit.guide.available.done':
+        'Chaque justificatif vu est coché et le total est saisi.',
+    'auditor.audit.guide.available.how':
+        'Comptez l’espèce vous-même et lisez les soldes dans l’application ou sur un relevé du jour, pas sur une impression antérieure.',
+    'auditor.audit.guide.reason.do':
+        'Demandez pourquoi le remboursement est en retard et choisissez le motif qui convient le mieux.',
+    'auditor.audit.guide.reason.enter':
+        'Un motif de la liste, et une courte note s’il s’agit de Autre.',
+    'auditor.audit.guide.reason.done': 'Un motif est choisi.',
+    'auditor.audit.guide.reason.how':
+        'Notez ce qu’on vous a dit et ce que vous avez vu. N’acceptez ni plan, ni nouvelle date, ni remise : rien ne se négocie lors de cette visite.',
     'auditor.audit.guide.drawings.do':
         'Notez ce que les propriétaires ont retiré de l’entreprise ce mois-ci.',
     'auditor.audit.guide.drawings.enter':
@@ -6186,6 +6278,25 @@ const fr: Catalog = {
     'auditor.trading.lead':
         'Le mois où l’entreprise a commencé son activité, d’après ses plus anciens documents.',
     'auditor.trading.since': 'En activité depuis',
+    'auditor.available.title': 'Fonds disponibles maintenant',
+    'auditor.available.lead':
+        'Le remboursement a 7 jours de retard. Notez ce avec quoi l’entreprise pourrait payer aujourd’hui.',
+    'auditor.available.proofs': 'Justificatifs vus',
+    'auditor.available.amount': 'Disponible maintenant',
+    'auditor.available.hint':
+        'Espèces en caisse plus soldes bancaires et mobile money. Saisissez 0 s’il n’y en a pas.',
+    'auditor.late_reason.title': 'Motif du retard',
+    'auditor.late_reason.lead':
+        'Choisissez le motif qui convient le mieux. Rien ne se négocie lors de cette visite.',
+    'auditor.late_reason.option.sales_fell': 'Baisse des ventes',
+    'auditor.late_reason.option.customers_owe': 'Des clients n’ont pas payé',
+    'auditor.late_reason.option.unexpected_cost': 'Une dépense imprévue',
+    'auditor.late_reason.option.stock_bought': 'Argent utilisé pour le stock',
+    'auditor.late_reason.option.owner_away': 'Propriétaire absent ou malade',
+    'auditor.late_reason.option.trading_stopped': 'L’activité s’est arrêtée',
+    'auditor.late_reason.option.other': 'Autre',
+    'auditor.late_reason.note': 'Note (facultative)',
+    'auditor.late_reason.note_required': 'Dites ce qui s’est passé',
     'auditor.drawings.title': 'Prélèvements des propriétaires',
     'auditor.drawings.lead':
         'Ce que les propriétaires ont retiré de l’entreprise ce mois-ci, d’après les relevés et le livre de caisse.',
@@ -6576,6 +6687,8 @@ const fr: Catalog = {
         "Des investisseurs se sont déjà engagés dans cette levée : elle ne peut donc pas être annulée ici. Leurs engagements doivent d'abord être réglés.",
     'settlement.refusal.CAMPAIGN_FUNDED':
         'Cette levée est financée et en attente de décaissement : elle ne peut pas être annulée.',
+    'settlement.refusal.COMMITMENT_WITHDRAWN':
+        'Vous avez déjà retiré cet engagement. Son montant est de nouveau disponible.',
     'settlement.refusal.NOTE_INELIGIBLE':
         "Ce titre n'est pas éligible pour le moment.",
     'settlement.refusal.DISCLOSURE_STALE':
@@ -7424,11 +7537,11 @@ const fr: Catalog = {
         "Les échéances sont fixées à l'émission : la première tombe un mois après la date d'effet du versement.",
     'investor.primary.commitment_title': 'Engagement',
     'investor.primary.back_to_portfolio': 'Retour au portefeuille',
-    'investor.primary.cancel': "Annuler l'engagement",
-    'investor.primary.cancel_title': 'Annuler cet engagement ?',
+    'investor.primary.cancel': "Retirer l'engagement",
+    'investor.primary.cancel_title': 'Retirer cet engagement ?',
     'investor.primary.cancel_body':
-        'Votre capital revient intégralement sur le disponible, sans frais. Vous ne détiendrez plus ces titres.',
-    'investor.primary.cancel_confirm': 'Oui, annuler et rembourser',
+        "Votre montant revient intégralement sur le disponible, tout de suite et sans frais. Vous pouvez vous retirer tant que la levée n'a pas atteint 100 %.",
+    'investor.primary.cancel_confirm': 'Oui, retirer et rembourser',
     'investor.primary.cancel_keep': 'Le conserver',
     'investor.holding.issue.title': "Relevé d'émission",
     'investor.holding.issue.issued_at': 'Émis le',

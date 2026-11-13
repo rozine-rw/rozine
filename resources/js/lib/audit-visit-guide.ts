@@ -61,6 +61,18 @@ export const VISIT_GUIDE: Record<
         done: 'auditor.audit.guide.trading.done',
         how: 'auditor.audit.guide.trading.how',
     },
+    available: {
+        do: 'auditor.audit.guide.available.do',
+        enter: 'auditor.audit.guide.available.enter',
+        done: 'auditor.audit.guide.available.done',
+        how: 'auditor.audit.guide.available.how',
+    },
+    reason: {
+        do: 'auditor.audit.guide.reason.do',
+        enter: 'auditor.audit.guide.reason.enter',
+        done: 'auditor.audit.guide.reason.done',
+        how: 'auditor.audit.guide.reason.how',
+    },
     photos: {
         do: 'auditor.audit.guide.photos.do',
         upload: 'auditor.audit.guide.photos.upload',

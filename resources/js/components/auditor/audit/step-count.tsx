@@ -40,7 +40,7 @@ const PROOF_ICON: Record<string, IconName> = {
 const INSET_FIELD =
     'flex items-center gap-2 rounded-[10px] border border-rz-border bg-[#f6f8fb] px-3 dark:bg-rz-surface-sunken';
 
-function ProofToggle({
+export function ProofToggle({
     proof,
     on,
     onToggle,

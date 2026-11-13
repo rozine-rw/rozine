@@ -15,8 +15,8 @@ class AuditorProcedureResource extends JsonResource
     {
         /** @var array<string, mixed> $page */
         $page = $this->resource;
-        /** @var array{difference: string|null, causes: list<string>, loans_max: int, cost_categories: list<string>, loan_uses: list<string>, change_kinds: list<string>, premises_tenures: list<string>, assets_max: int} $options */
-        $options = [...$page['monthly'], ...$page['baseline']];
+        /** @var array{difference: string|null, causes: list<string>, loans_max: int, cost_categories: list<string>, loan_uses: list<string>, change_kinds: list<string>, premises_tenures: list<string>, assets_max: int, late_reasons: list<string>} $options */
+        $options = [...$page['monthly'], ...$page['baseline'], ...$page['late']];
         $report = $page['report'];
         // The review step lists the statements on file, as the job file does once the work is the partner's.
         $file = (new AuditorFileResource(['record' => $page['file'], 'jobs' => $page['jobs'], 'documents' => $page['sources']['documents'] ?? null]))->resolve($request);
@@ -83,7 +83,7 @@ class AuditorProcedureResource extends JsonResource
      * @param  array<string, mixed>  $sources
      * @param  array<string, mixed>  $file
      * @param  array<string, mixed>  $variance
-     * @param  array{difference: string|null, causes: list<string>, loans_max: int, cost_categories: list<string>, loan_uses: list<string>, change_kinds: list<string>, premises_tenures: list<string>, assets_max: int}  $monthly
+     * @param  array{difference: string|null, causes: list<string>, loans_max: int, cost_categories: list<string>, loan_uses: list<string>, change_kinds: list<string>, premises_tenures: list<string>, assets_max: int, late_reasons: list<string>}  $monthly
      * @param  array<string, mixed>|null  $seal
      * @param  array<string, mixed>|null  $reasonOptions
      * @param  array{url: string, method: string}|null  $upload
@@ -131,6 +131,10 @@ class AuditorProcedureResource extends JsonResource
             'registration' => ['step' => 'registration', 'registration_confirmed' => $fields['registration_confirmed'] ?? false,
                 'tax_clearance_expires_on' => $fields['tax_clearance_expires_on'] ?? null],
             'trading' => ['step' => 'trading', 'trading_since' => $fields['trading_since'] ?? null],
+            'available' => ['step' => 'available', 'cash_available' => AuditorJobsResource::money($fields['cash_available'] ?? null),
+                'financial_proofs' => $this->proofs($sources['financial_proofs'], $fields['financial_proofs'] ?? [])],
+            'reason' => ['step' => 'reason', 'reasons' => $monthly['late_reasons'], 'late_reason' => $fields['late_reason'] ?? null,
+                'late_reason_note' => $fields['late_reason_note'] ?? ''],
             'cash_sales' => ['step' => 'cash_sales', 'undeposited_cash_sales' => AuditorJobsResource::money($fields['undeposited_cash_sales'] ?? null)],
             'costs' => ['step' => 'costs', 'categories' => array_map(fn (string $category): array => ['key' => $category,
                 'amount' => AuditorJobsResource::money(is_array($fields['costs'] ?? null) ? $fields['costs'][$category] ?? null : null)], $monthly['cost_categories'])],

@@ -445,6 +445,7 @@
         "resources/js/components/auditor/audit/returned-status.tsx",
         "resources/js/components/auditor/audit/seal-flow.tsx",
         "resources/js/components/auditor/audit/sealed-status.tsx",
+        "resources/js/components/auditor/audit/step-available.tsx",
         "resources/js/components/auditor/audit/step-bar.tsx",
         "resources/js/components/auditor/audit/step-cash-sales.tsx",
         "resources/js/components/auditor/audit/step-changes.tsx",
@@ -456,6 +457,7 @@
         "resources/js/components/auditor/audit/step-expiries.tsx",
         "resources/js/components/auditor/audit/step-guide.tsx",
         "resources/js/components/auditor/audit/step-history.tsx",
+        "resources/js/components/auditor/audit/step-late-reason.tsx",
         "resources/js/components/auditor/audit/step-ledger.tsx",
         "resources/js/components/auditor/audit/step-loan-use.tsx",
         "resources/js/components/auditor/audit/step-loans.tsx",
@@ -568,6 +570,7 @@
         "resources/js/components/business/repayments/progress-card.tsx",
         "resources/js/components/business/repayments/receipt.tsx",
         "resources/js/components/business/repayments/schedule-list.tsx",
+        "resources/js/components/business/repayments/visit-ready-checklist.tsx",
         "resources/js/components/business/reports/audit-guide.tsx",
         "resources/js/components/business/reports/period-label.ts",
         "resources/js/components/business/reports/report-sheet.tsx",
@@ -833,10 +836,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 805,
+        "totalTrackedSources": 808,
         "generated": 345,
         "declarationOnly": 20,
-        "authoredExecutable": 440
+        "authoredExecutable": 443
     },
-    "coverageSetSha256": "a9b86354553a7ee316287fa9bc0b77c48d30e9ee0cd564005386da7145bc8267"
+    "coverageSetSha256": "d0d1abd28c3db4e6adc0bb348a3f2ee0a24e8184a225d0d0645e42903ef99228"
 }

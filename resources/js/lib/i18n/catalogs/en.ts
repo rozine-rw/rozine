@@ -3541,6 +3541,8 @@ const en = {
     'auditor.audit.step.people': 'People',
     'auditor.audit.step.registration': 'Registration',
     'auditor.audit.step.trading': 'Trading start',
+    'auditor.audit.step.available': 'Money now',
+    'auditor.audit.step.reason': 'Reason',
     'auditor.audit.step.drawings': 'Drawings',
     'auditor.audit.step.loans': 'Other loans',
     'auditor.audit.step.differences': 'Differences',
@@ -3992,6 +3994,80 @@ const en = {
     'business.repayments.issued.principal': 'Principal',
     'business.repayments.issued.return': 'Return',
     'business.repayments.issued.total': 'Total to repay',
+    'business.visit_ready.title': 'Get ready for this month’s visit',
+    'business.visit_ready.lede':
+        'Your next repayment is due on {due}. Your CPA visits between {from} and {by}, and will ask for the items below. Tick each one when it is ready.',
+    'business.visit_ready.progress': '{done} of {total} ready',
+    'business.visit_ready.shows': 'Must show: {text}',
+    'business.visit_ready.where': 'Where to get it: {text}',
+    'business.visit_ready.footer':
+        'The CPA sees these on the visit; investors only ever see the sealed report. The 10 transactions the CPA will check are shown here 3 days before the visit. Uploading early is optional.',
+    'business.visit_ready.item.bank_statements.title':
+        'Bank and mobile money statements',
+    'business.visit_ready.item.bank_statements.shows':
+        'every account’s money in and out for last month',
+    'business.visit_ready.item.bank_statements.where':
+        'your bank or mobile money app (download the monthly statement)',
+    'business.visit_ready.item.cash_and_stock.title':
+        'Cash and stock ready to count',
+    'business.visit_ready.item.cash_and_stock.shows':
+        'the cash on hand and the stock on the premises on the day',
+    'business.visit_ready.item.cash_and_stock.where':
+        'your till, safe and store room',
+    'business.visit_ready.item.sales_records.title':
+        'Record of cash sales not banked',
+    'business.visit_ready.item.sales_records.shows':
+        'cash sales kept or spent before reaching the bank',
+    'business.visit_ready.item.sales_records.where':
+        'your sales book or receipt book',
+    'business.visit_ready.item.cost_receipts.title':
+        'Receipts and invoices for costs',
+    'business.visit_ready.item.cost_receipts.shows':
+        'what you spent on stock, staff, premises, transport, taxes and other costs',
+    'business.visit_ready.item.cost_receipts.where':
+        'your suppliers, landlord and RRA receipts',
+    'business.visit_ready.item.owner_payments.title':
+        'Record of money paid to owners',
+    'business.visit_ready.item.owner_payments.shows':
+        'what the owners took out of the business last month',
+    'business.visit_ready.item.owner_payments.where':
+        'your cash book or bank statement',
+    'business.visit_ready.item.loan_papers.title': 'Papers for other loans',
+    'business.visit_ready.item.loan_papers.shows':
+        'each other lender, what is still owed and the monthly payment',
+    'business.visit_ready.item.loan_papers.where':
+        'your loan agreements or lender statements',
+    'business.visit_ready.item.rssb_total.title': 'RSSB total page',
+    'business.visit_ready.item.rssb_total.shows':
+        'the number of staff declared, with names covered',
+    'business.visit_ready.item.rssb_total.where':
+        'your RSSB declaration (the total page only)',
+    'business.visit_ready.item.tax_clearance.title':
+        'Tax clearance certificate',
+    'business.visit_ready.item.tax_clearance.shows': 'the date it expires',
+    'business.visit_ready.item.tax_clearance.where':
+        'RRA, or your copy of the certificate',
+    'business.visit_ready.item.rssb_clearance.title':
+        'RSSB clearance certificate',
+    'business.visit_ready.item.rssb_clearance.shows': 'the date it expires',
+    'business.visit_ready.item.rssb_clearance.where':
+        'RSSB, or your copy of the certificate',
+    'business.visit_ready.item.loan_use_proof.title':
+        'Proof of how the loan money was used',
+    'business.visit_ready.item.loan_use_proof.shows':
+        'what the Rozine money paid for',
+    'business.visit_ready.item.loan_use_proof.where':
+        'the invoices or receipts for what you bought',
+    'business.visit_ready.item.change_papers.title': 'Papers for any changes',
+    'business.visit_ready.item.change_papers.shows':
+        'any new debt, change of director or owner, or legal claim since the last visit',
+    'business.visit_ready.item.change_papers.where':
+        'contracts, board minutes or court papers',
+    'business.visit_ready.item.premises_access.title': 'Access for photos',
+    'business.visit_ready.item.premises_access.shows':
+        'the premises and stock, so the CPA can take photos in the app',
+    'business.visit_ready.item.premises_access.where':
+        'someone on site to open up on the day',
     'business.repayments.issued.split':
         'Principal {principal} · return {return}',
     'business.repayments.issued.note':
@@ -5851,6 +5927,21 @@ const en = {
     'auditor.audit.guide.trading.done': 'A month is entered.',
     'auditor.audit.guide.trading.how':
         'Use the earliest invoice, statement or trading licence you can see, not the registration date if trading began later.',
+    'auditor.audit.guide.available.do':
+        'Ask to see every cash box, bank and mobile-money balance the business could pay from today.',
+    'auditor.audit.guide.available.enter':
+        'The total available now, in whole francs.',
+    'auditor.audit.guide.available.done':
+        'Every proof you saw is ticked and the total is entered.',
+    'auditor.audit.guide.available.how':
+        'Count cash yourself and read balances on the live app or a same-day statement, not a printout from earlier.',
+    'auditor.audit.guide.reason.do':
+        'Ask why the repayment is late and pick the one reason that fits best.',
+    'auditor.audit.guide.reason.enter':
+        'One reason from the list, and a short note if it is Other.',
+    'auditor.audit.guide.reason.done': 'A reason is chosen.',
+    'auditor.audit.guide.reason.how':
+        'Record what you were told and saw. Do not agree a plan, a new date or any discount: nothing is negotiated on this visit.',
     'auditor.audit.guide.drawings.do':
         'Record what the owners took out of the business this month.',
     'auditor.audit.guide.drawings.enter':
@@ -5956,6 +6047,25 @@ const en = {
     'auditor.trading.lead':
         'The month the business began trading, from its earliest records.',
     'auditor.trading.since': 'Trading since',
+    'auditor.available.title': 'Money available now',
+    'auditor.available.lead':
+        'The repayment is 7 days late. Record what the business could pay with today.',
+    'auditor.available.proofs': 'Proof seen',
+    'auditor.available.amount': 'Available now',
+    'auditor.available.hint':
+        'Cash on hand plus bank and mobile-money balances. Enter 0 if there is none.',
+    'auditor.late_reason.title': 'Why it is late',
+    'auditor.late_reason.lead':
+        'Choose the reason that fits best. Nothing is negotiated on this visit.',
+    'auditor.late_reason.option.sales_fell': 'Sales fell',
+    'auditor.late_reason.option.customers_owe': 'Customers have not paid',
+    'auditor.late_reason.option.unexpected_cost': 'An unexpected cost',
+    'auditor.late_reason.option.stock_bought': 'Money went on stock',
+    'auditor.late_reason.option.owner_away': 'Owner away or unwell',
+    'auditor.late_reason.option.trading_stopped': 'Trading has stopped',
+    'auditor.late_reason.option.other': 'Other',
+    'auditor.late_reason.note': 'Note (optional)',
+    'auditor.late_reason.note_required': 'Say what happened',
     'auditor.drawings.title': 'Owner drawings',
     'auditor.drawings.lead':
         'What the owners took out of the business this month, from the statements and the cash book.',
@@ -6279,6 +6389,8 @@ const en = {
         "Investors have already committed to this raise, so it can't be cancelled here. Their commitments have to be settled first.",
     'settlement.refusal.CAMPAIGN_FUNDED':
         "This raise is funded and awaiting disbursement, so it can't be cancelled.",
+    'settlement.refusal.COMMITMENT_WITHDRAWN':
+        "You've already withdrawn this commitment. Its amount is back in Available.",
     'settlement.refusal.NOTE_INELIGIBLE': "This note isn't eligible right now.",
     'settlement.refusal.DISCLOSURE_STALE':
         'The disclosure changed. Read the current version and acknowledge it again.',
@@ -7105,11 +7217,11 @@ const en = {
         "Due dates are set when the notes are issued: the first falls one month after the payout's effective date.",
     'investor.primary.commitment_title': 'Commitment',
     'investor.primary.back_to_portfolio': 'Back to portfolio',
-    'investor.primary.cancel': 'Cancel commitment',
-    'investor.primary.cancel_title': 'Cancel this commitment?',
+    'investor.primary.cancel': 'Withdraw commitment',
+    'investor.primary.cancel_title': 'Withdraw this commitment?',
     'investor.primary.cancel_body':
-        "Your principal goes back to Available in full, with no fee. You'll no longer hold these notes.",
-    'investor.primary.cancel_confirm': 'Yes, cancel and refund',
+        'Your full amount goes back to Available at once, with no fee. You can withdraw until the raise reaches 100%.',
+    'investor.primary.cancel_confirm': 'Yes, withdraw and refund',
     'investor.primary.cancel_keep': 'Keep it',
     'investor.holding.issue.title': 'Issue record',
     'investor.holding.issue.issued_at': 'Issued',

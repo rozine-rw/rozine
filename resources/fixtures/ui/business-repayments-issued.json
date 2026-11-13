@@ -130,6 +130,7 @@
                 ]
             }
         ],
+        "visit_ready": null,
         "bases": {},
         "home": null,
         "shell_links": {
