@@ -148,7 +148,10 @@ it('lists the partner\'s filings as recent activity and counts them as jobs done
         ->and($props['standing']['jobs_done'])->toBe(1)->and($props['in_progress'][0]['status'])->toBe('awaiting_cosign')
         ->and(auditorHomeProps($fixture['user'], '/auditor/profile', 'auditor/profile')['jobs_done'])->toBe(1)
         ->and($props['standing']['on_time_pct'])->toBe(100)
-        ->and(auditorHomeProps($fixture['user'], '/auditor/profile', 'auditor/profile')['on_time_pct'])->toBe(100);
+        ->and(auditorHomeProps($fixture['user'], '/auditor/profile', 'auditor/profile')['on_time_pct'])->toBe(100)
+        // An accredited partner's "Since" tile carries the year their auditor profile was opened (#589).
+        ->and(auditorHomeProps($fixture['user'], '/auditor/profile', 'auditor/profile')['auditor']['since_year'])->toBe(now('Africa/Kigali')->year)
+        ->and($props['auditor']['since_year'])->toBe(now('Africa/Kigali')->year);
 
     $assignment = $fixture['assignment']->refresh();
     $assignment->forceFill(['state' => [...$assignment->state, 'complete_by' => CarbonImmutable::parse($sealed['data']['sealed']['sealed_at'])->subSecond()->format('Y-m-d\TH:i:s\Z')]])->save();

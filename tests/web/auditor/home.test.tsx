@@ -217,6 +217,22 @@ describe('Auditor Home', () => {
         expect(screen.getAllByLabelText('1 open offers')).toHaveLength(2);
     });
 
+    it('draws Jobs as a briefcase in the phone tab bar, not a bell that reads as notifications (#589)', () => {
+        render(<AuditorHome {...fixture()} />);
+
+        const [sidebar, tabBar] = screen.getAllByRole('navigation', {
+            name: 'App navigation',
+        });
+        const briefcase = (nav: HTMLElement) =>
+            within(nav)
+                .getByRole('link', { name: /Jobs/ })
+                // eslint-disable-next-line testing-library/no-node-access -- an icon's SVG shapes have no role to query by.
+                .querySelector('svg rect[width="17"][height="13"]');
+
+        expect(briefcase(sidebar)).not.toBeNull();
+        expect(briefcase(tabBar)).not.toBeNull();
+    });
+
     it('asks the server to pause dispatch as a command and waits for its answer', async () => {
         const { user } = renderWithUser(<AuditorHome {...fixture()} />);
         const toggle = screen.getByRole('switch', { name: 'Accepting audits' });
