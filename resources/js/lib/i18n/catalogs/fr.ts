@@ -1981,12 +1981,14 @@ const fr: Catalog = {
     'admin.kyc.slot.back': "Verso de la pièce d'identité",
     'admin.kyc.slot.selfie': 'Selfie',
     'admin.kyc.slot.passport': 'Page photo du passeport',
-    'admin.kyc.document.replaced': 'Remplacé',
+    'admin.kyc.document.replaced': 'Remplacé par un envoi plus récent',
     'admin.kyc.document.meta': '{name} · {size} Ko',
     'admin.kyc.document.open': 'Télécharger {name}',
     'admin.kyc.document.download': 'Télécharger',
     'admin.kyc.document.current': 'Documents actuels',
     'admin.kyc.document.earlier': 'Envois précédents',
+    'admin.kyc.document.earlier_hint':
+        "Chaque fichier porte le nom de l'emplacement où la personne l'a envoyé, sans vérification de ce qu'il montre.",
     'admin.kyc.document.view': 'Voir {slot}',
     'admin.kyc.document.show': 'Voir',
     'admin.kyc.document.view_file': 'Voir {name}',
@@ -6685,6 +6687,8 @@ const fr: Catalog = {
         "Des investisseurs se sont déjà engagés dans cette levée : elle ne peut donc pas être annulée ici. Leurs engagements doivent d'abord être réglés.",
     'settlement.refusal.CAMPAIGN_FUNDED':
         'Cette levée est financée et en attente de décaissement : elle ne peut pas être annulée.',
+    'settlement.refusal.COMMITMENT_WITHDRAWN':
+        'Vous avez déjà retiré cet engagement. Son montant est de nouveau disponible.',
     'settlement.refusal.NOTE_INELIGIBLE':
         "Ce titre n'est pas éligible pour le moment.",
     'settlement.refusal.DISCLOSURE_STALE':
@@ -7533,11 +7537,11 @@ const fr: Catalog = {
         "Les échéances sont fixées à l'émission : la première tombe un mois après la date d'effet du versement.",
     'investor.primary.commitment_title': 'Engagement',
     'investor.primary.back_to_portfolio': 'Retour au portefeuille',
-    'investor.primary.cancel': "Annuler l'engagement",
-    'investor.primary.cancel_title': 'Annuler cet engagement ?',
+    'investor.primary.cancel': "Retirer l'engagement",
+    'investor.primary.cancel_title': 'Retirer cet engagement ?',
     'investor.primary.cancel_body':
-        'Votre capital revient intégralement sur le disponible, sans frais. Vous ne détiendrez plus ces titres.',
-    'investor.primary.cancel_confirm': 'Oui, annuler et rembourser',
+        "Votre montant revient intégralement sur le disponible, tout de suite et sans frais. Vous pouvez vous retirer tant que la levée n'a pas atteint 100 %.",
+    'investor.primary.cancel_confirm': 'Oui, retirer et rembourser',
     'investor.primary.cancel_keep': 'Le conserver',
     'investor.holding.issue.title': "Relevé d'émission",
     'investor.holding.issue.issued_at': 'Émis le',

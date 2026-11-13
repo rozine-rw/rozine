@@ -1935,6 +1935,8 @@ facts that would differ between machines, so they are excluded deliberately.
 | `wallet_id` | `bpchar` | no | — |
 | `sha256` | `bpchar` | no | — |
 | `created_at` | `timestamptz` | no | — |
+| `commit_entry_id` | `bpchar` | yes | — |
+| `commit_sha256` | `bpchar` | yes | — |
 
 **Indexes:** `primary_held_claim_releases_pkey` on (primary_reservation_id) — unique
 
@@ -2696,6 +2698,7 @@ Files present in `database/migrations`. Which of these have run is per-environme
 | 2026_11_10_090000_create_business_prospectus_versions_table.php |
 | 2026_11_10_090000_create_business_readiness_requirements.php |
 | 2026_11_10_170000_create_business_monthly_submissions.php |
+| 2026_11_10_170000_recycle_withdrawn_commitment_claims.php |
 | 2026_11_10_190000_create_business_academy_attempts.php |
 | 2026_11_10_210000_add_monthly_difference_step.php |
 | 2026_11_10_220000_add_monthly_drawings_and_loans_steps.php |
