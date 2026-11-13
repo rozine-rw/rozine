@@ -12,8 +12,10 @@ use App\Domain\Auditor\AuditVariance;
 use App\Domain\Identity\IdentityViolation;
 use App\Models\AuditAssignment;
 use App\Models\AuditorProfile;
+use App\Models\AuditorProfileVersion;
 use App\Models\AuditReport;
 use App\Models\AuditReportSeal;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -90,9 +92,20 @@ final class EloquentAuditorFiledReportStore implements AuditorFiledReportStore
 
             return ['on_time_pct' => $timed === 0 ? null : intdiv($onTime * 100, $timed), 'clock_expiries' => $expiries,
                 'avg_variance_pct' => AuditVariance::weighted($findings), 'variance_flagged' => AuditVariance::hasMoneyDifference($findings),
-                // The Profile's "Since" tile (#589): the year the partner's auditor profile was opened.
-                'since_year' => AuditorProfile::query()->where('party_id', $partyId)->first()?->created_at?->setTimezone('Africa/Kigali')->year];
+                'since_year' => self::accreditedYear($partyId)];
         });
+    }
+
+    /**
+     * The Profile's "Since" tile (#589): the Kigali year the partner was first accredited, read from
+     * the first profile version that left their standing active. Null until they are accredited.
+     */
+    private static function accreditedYear(string $partyId): ?int
+    {
+        $first = AuditorProfileVersion::query()->whereIn('auditor_profile_id', AuditorProfile::query()->where('party_id', $partyId)->select('id'))
+            ->orderBy('revision')->get()->first(fn (AuditorProfileVersion $version): bool => $version->snapshot['state']['standing']['status'] === 'active');
+
+        return $first === null ? null : CarbonImmutable::parse($first->getRawOriginal('created_at'))->setTimezone('Africa/Kigali')->year;
     }
 
     /** @return FiledReport */
