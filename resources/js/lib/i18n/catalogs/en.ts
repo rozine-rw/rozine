@@ -4567,6 +4567,8 @@ const en = {
     'investor.deal.unit_times_one': '{price} × {count} note',
     'investor.deal.unit_times_other': '{price} × {count} notes',
     'investor.deal.expected_return': 'Expected return',
+    'investor.deal.fee_at_checkout': 'Shown at checkout',
+    'investor.deal.get_back_before_fee': 'Get back, before the fee',
     'investor.deal.total_at_maturity': 'Total repaid at maturity',
     'investor.deal.fewer_notes': 'One note fewer',
     'investor.deal.more_notes': 'One note more',
