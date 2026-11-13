@@ -377,10 +377,44 @@ const fr: Catalog = {
     'business.academy.flashcards': 'Cartes',
     'business.academy.card_progress': 'Carte {current} sur {total}',
     'business.academy.show_back': 'Voir la réponse',
-    'business.academy.show_front': 'Voir la carte',
     'business.academy.previous': 'Précédente',
-    'business.academy.next': 'Suivante',
     'business.academy.start_test': 'Commencer le test',
+    'business.academy.stars': {
+        one: '{count} étoile',
+        other: '{count} étoiles',
+    },
+    'business.academy.progress': 'Progression',
+    'business.academy.term': 'Carte',
+    'business.academy.flip_hint': 'Touchez la carte pour la retourner.',
+    'business.academy.still_learning': 'À revoir',
+    'business.academy.got_it': 'Je sais',
+    'business.academy.feedback.known': 'Bravo ! +1 étoile',
+    'business.academy.feedback.learning':
+        'Pas de souci. Cette carte reviendra à la fin.',
+    'business.academy.practice_round': {
+        one: 'Révision : encore {count} carte',
+        other: 'Révision : encore {count} cartes',
+    },
+    'business.academy.skip_to_test': 'Passer au test',
+    'business.academy.deck_done_title': 'Paquet terminé !',
+    'business.academy.deck_done_body':
+        'Vous connaissiez {known} cartes sur {total} du premier coup.',
+    'business.academy.deck_done_ready':
+        'Vous êtes prêt pour le test : {count} questions, {pass} bonnes réponses suffisent.',
+    'business.academy.deck_done_revise':
+        'Revenez à ces cartes quand vous voulez réviser.',
+    'business.academy.restart_cards': 'Revoir les cartes',
+    'business.academy.back_to_academy': 'Retour à l’Académie',
+    'business.academy.back_to_cards': 'Retour aux cartes',
+    'business.academy.go_to_question': 'Aller à la question {current}',
+    'business.academy.next_question': 'Question suivante',
+    'business.academy.review_answers': 'Vérifier les réponses',
+    'business.academy.review_title': 'Vérifiez vos réponses',
+    'business.academy.unanswered': 'Pas encore répondu',
+    'business.academy.change': 'Modifier',
+    'business.academy.change_answer': 'Modifier la réponse {current}',
+    'business.academy.ready_to_send':
+        'Tout est répondu. Envoyez quand vous êtes prêt.',
     'business.academy.test_title': 'Test',
     'business.academy.test_intro':
         'Répondez aux {count} questions. {pass} bonnes réponses suffisent.',
