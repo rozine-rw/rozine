@@ -29,6 +29,42 @@
                 "state": "todo"
             },
             {
+                "key": "cash_sales",
+                "state": "todo"
+            },
+            {
+                "key": "costs",
+                "state": "todo"
+            },
+            {
+                "key": "drawings",
+                "state": "todo"
+            },
+            {
+                "key": "loans",
+                "state": "todo"
+            },
+            {
+                "key": "differences",
+                "state": "todo"
+            },
+            {
+                "key": "staff",
+                "state": "todo"
+            },
+            {
+                "key": "expiries",
+                "state": "todo"
+            },
+            {
+                "key": "loan_use",
+                "state": "todo"
+            },
+            {
+                "key": "changes",
+                "state": "todo"
+            },
+            {
                 "key": "photos",
                 "state": "todo"
             },

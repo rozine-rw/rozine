@@ -7,11 +7,11 @@ import type { InvestorRiskStatements } from '@/types/investor';
 import type { RouteAction } from '@/types/routing';
 
 /**
- * The five risk statements before a first investment (BRS v2.0 KYC-R05), one tick each. The
- * statements are the server's exact words, since the acknowledgement binds their version and
- * digest. Once every box is ticked the Investor accepts them all at once; the checkout then
- * reloads and offers Reserve. A wording change comes back as `RISK_STATEMENTS_STALE` and
- * reloads the new statements to tick again.
+ * The five risk statements (BRS v3.0 KYC-R05) on one screen with a single tick, "I understand all
+ * of the above", asked once at app open and never inside checkout. The statements are the
+ * server's exact words, since the acknowledgement binds their version and digest. Accepting
+ * reloads the page; a wording change comes back as `RISK_STATEMENTS_STALE` and reloads the new
+ * statements to tick again.
  */
 export function RiskStatementsStep({
     risks,
@@ -24,23 +24,9 @@ export function RiskStatementsStep({
 }) {
     const { t } = useTranslation();
     const http = useHttp<Record<string, never>, unknown>();
-    const [ticked, setTicked] = useState<ReadonlySet<string>>(new Set());
+    const [understood, setUnderstood] = useState(false);
     const [busy, setBusy] = useState(false);
     const [failed, setFailed] = useState(false);
-    const all = risks.statements.every((item) => ticked.has(item.key));
-
-    const toggle = (key: string, checked: boolean) => {
-        const next = new Set(ticked);
-
-        if (checked) {
-            next.add(key);
-        } else {
-            next.delete(key);
-        }
-
-        setTicked(next);
-    };
-
     const accept = async () => {
         setBusy(true);
         setFailed(false);
@@ -58,7 +44,7 @@ export function RiskStatementsStep({
                     if (
                         readErrorCode(response.data) === 'RISK_STATEMENTS_STALE'
                     ) {
-                        setTicked(new Set());
+                        setUnderstood(false);
                     }
                 },
             });
@@ -73,7 +59,7 @@ export function RiskStatementsStep({
     return (
         <section
             aria-labelledby="risk-statements-title"
-            className="mb-[11px] rounded-xl border border-rz-border bg-rz-surface p-3"
+            className="rounded-xl border border-rz-border bg-rz-surface p-4"
         >
             <h3
                 id="risk-statements-title"
@@ -84,23 +70,25 @@ export function RiskStatementsStep({
             <p className="mt-1 text-[11px] leading-[1.45] text-rz-secondary">
                 {t('investor.checkout.risks.lead')}
             </p>
-            <ul className="mt-2 flex flex-col gap-2">
+            <ul className="mt-2 flex list-disc flex-col gap-1.5 pl-5">
                 {risks.statements.map((item) => (
-                    <li key={item.key}>
-                        <label className="flex items-start gap-2 text-[12px] leading-[1.45] text-rz-ink">
-                            <input
-                                type="checkbox"
-                                checked={ticked.has(item.key)}
-                                onChange={(event) =>
-                                    toggle(item.key, event.target.checked)
-                                }
-                                className="mt-[2px] size-4 shrink-0"
-                            />
-                            <span>{item.text}</span>
-                        </label>
+                    <li
+                        key={item.key}
+                        className="text-[12px] leading-[1.45] text-rz-ink"
+                    >
+                        {item.text}
                     </li>
                 ))}
             </ul>
+            <label className="mt-3 flex items-start gap-2 text-[12.5px] leading-[1.45] font-semibold text-rz-ink">
+                <input
+                    type="checkbox"
+                    checked={understood}
+                    onChange={(event) => setUnderstood(event.target.checked)}
+                    className="mt-[2px] size-4 shrink-0"
+                />
+                <span>{t('investor.checkout.risks.understood')}</span>
+            </label>
             {failed && (
                 <p
                     role="alert"
@@ -112,11 +100,11 @@ export function RiskStatementsStep({
             <button
                 type="button"
                 onClick={() => void accept()}
-                disabled={!all || busy}
+                disabled={!understood || busy}
                 aria-busy={busy || undefined}
                 className={cn(
                     'mt-3 h-[44px] w-full rounded-xl text-[13.5px] font-semibold',
-                    all && !busy
+                    understood && !busy
                         ? 'bg-rz-accent-fill text-white'
                         : 'cursor-not-allowed bg-rz-disabled text-rz-secondary',
                 )}

@@ -21,7 +21,7 @@ it('isolates a failure at the outer PostgreSQL commit and retains later campaign
     $other['user']->forceFill(['two_factor_secret' => encrypt($secret)])->save();
     $other['code'] = $totp->getCurrentOtp($secret);
     AuditSealingFixture::seal($other);
-    AuditSealingFixture::cosign($other);
+    AuditSealingFixture::publish($other);
     $store = app(BusinessCampaignStore::class);
     $store->release($other['audit']['staff']->id, $other['application']->id, 0, 'Reviewed.', (string) Str::uuid());
     $store->publish($other['audit']['authority']['users'][0]->id, 1, $other['audit']['business'], $other['application']->id,

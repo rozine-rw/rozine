@@ -18,6 +18,8 @@ Schedule::command('audits:request-flash')->hourly()->withoutOverlapping(30);
 
 Schedule::command('auditors:remind-renewals')->hourly()->withoutOverlapping(30);
 
+Schedule::command('readiness:evaluate')->hourly()->withoutOverlapping(30);
+
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
@@ -27,6 +29,8 @@ Schedule::command('campaigns:expire')->everyMinute()->withoutOverlapping(5);
 Schedule::command('primary:expire-reservations')->everyMinute()->withoutOverlapping(5);
 
 Schedule::command('cart:expire-checkouts')->everyMinute()->withoutOverlapping(5);
+
+Schedule::command('secondary:expire')->everyMinute()->withoutOverlapping(5);
 
 Schedule::command('disbursements:reconcile')->everyMinute()->withoutOverlapping(5);
 

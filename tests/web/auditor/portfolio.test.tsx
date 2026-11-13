@@ -159,7 +159,7 @@ describe('Auditor Portfolio', () => {
                 .getAllByRole('link')
                 .map((link) => link.textContent),
         ).toEqual([
-            '2OCTHuye MotorsFlash Audit · filed 1 OctAwaiting co-sign',
+            '2OCTHuye MotorsFlash Audit · filed 1 OctIn dispute window',
             '7OCTGreenLeaf AgroMonthly verificationIn 4 days',
             '7OCTKivu Coffee RoastersSeptember 2026 report · filed 2 OctPublished',
         ]);
@@ -412,7 +412,7 @@ describe('Auditor Portfolio', () => {
             within(
                 screen.getByRole('region', { name: 'Due in October' }),
             ).getByRole('link', { name: /Huye Motors/u }),
-        ).toHaveTextContent('Awaiting co-sign');
+        ).toHaveTextContent('In dispute window');
     });
 
     it.each([

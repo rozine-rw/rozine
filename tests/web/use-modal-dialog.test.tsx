@@ -8,15 +8,17 @@ function Dialog({
     onEscape,
     controls = true,
     autoFocusInside = false,
+    blocking = false,
     children,
 }: {
     label: string;
     onEscape?: () => void;
     controls?: boolean;
     autoFocusInside?: boolean;
+    blocking?: boolean;
     children?: React.ReactNode;
 }) {
-    const dialog = useModalDialog<HTMLDivElement>(onEscape);
+    const dialog = useModalDialog<HTMLDivElement>(onEscape, true, blocking);
 
     return (
         <div ref={dialog} tabIndex={-1} role="dialog" aria-label={label}>
@@ -157,6 +159,57 @@ describe('useModalDialog', () => {
 
         expect(inner).toHaveBeenCalledOnce();
         expect(outer).not.toHaveBeenCalled();
+    });
+
+    it('keeps the keyboard on a blocking gate when an ordinary sheet opens after it', () => {
+        const sheet = vi.fn();
+        const { rerender } = render(
+            <>
+                <Dialog label="Gate" blocking />
+            </>,
+        );
+        const gate = screen.getByRole('dialog', { name: 'Gate' });
+        expect(gate).toHaveFocus();
+
+        rerender(
+            <>
+                <Dialog label="Gate" blocking />
+                <Dialog label="Sheet" onEscape={sheet} />
+            </>,
+        );
+
+        /* The later sheet takes neither focus nor the keyboard from the gate. */
+        expect(gate).toHaveFocus();
+        tab(true);
+        expect(screen.getByRole('button', { name: 'Gate last' })).toHaveFocus();
+        tab();
+        expect(
+            screen.getByRole('button', { name: 'Gate first' }),
+        ).toHaveFocus();
+        fireEvent.keyDown(window, { key: 'Escape' });
+        expect(sheet).not.toHaveBeenCalled();
+
+        /* Once the gate closes, the sheet owns the keyboard again. */
+        rerender(
+            <>
+                <Dialog label="Sheet" onEscape={sheet} />
+            </>,
+        );
+        fireEvent.keyDown(window, { key: 'Escape' });
+        expect(sheet).toHaveBeenCalledOnce();
+    });
+
+    it('lets a dialog nested inside a blocking gate answer the keyboard', () => {
+        const inner = vi.fn();
+        render(
+            <Dialog label="Gate" blocking>
+                <Dialog label="Inner" onEscape={inner} />
+            </Dialog>,
+        );
+
+        fireEvent.keyDown(window, { key: 'Escape' });
+
+        expect(inner).toHaveBeenCalledOnce();
     });
 
     it('does nothing while inactive, and skips a focus return to a removed opener', () => {

@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Application\Business\GetBusinessHome;
 use App\Application\Business\GetBusinessMarket;
 use App\Application\Business\GetBusinessProfile;
+use App\Application\Business\GetBusinessReadiness;
 use App\Application\Business\GetBusinessReports;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\ListBusinessComplaints;
@@ -16,15 +17,16 @@ use App\Http\Resources\BusinessHomeResource;
 use App\Http\Resources\BusinessMarketResource;
 use App\Http\Resources\BusinessProfileResource;
 use App\Http\Resources\BusinessRatingResource;
+use App\Http\Resources\BusinessReadinessResource;
 use App\Http\Resources\BusinessReportsResource;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * The Business app's own pages for one business: Home, its Reports, Market and Profile tabs, and
- * the Rating and audit-prep sheets drawn over Home. Reports, Market, Profile, Rating and audit prep
- * are web pages only: the bearer transport has no such read yet.
+ * The Business app's own pages for one business: Home, its Reports, Readiness, Market and Profile
+ * tabs, and the Rating and audit-prep sheets drawn over Home. Reports, Readiness, Market, Profile,
+ * Rating and audit prep are web pages only: the bearer transport has no such read yet.
  */
 class BusinessHomeController extends Controller
 {
@@ -61,6 +63,13 @@ class BusinessHomeController extends Controller
         $resource = new BusinessReportsResource($reports->handle($this->userId($request), $this->revision($request), (string) $request->route('business')));
 
         return Inertia::render('business/reports', $resource->resolve($request));
+    }
+
+    public function readiness(ShowBusinessHomeRequest $request, GetBusinessReadiness $readiness): Response
+    {
+        $resource = new BusinessReadinessResource($readiness->handle($this->userId($request), $this->revision($request), (string) $request->route('business')));
+
+        return Inertia::render('business/readiness', $resource->resolve($request));
     }
 
     public function market(ShowBusinessHomeRequest $request, GetBusinessMarket $market): Response
