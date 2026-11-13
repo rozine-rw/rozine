@@ -1930,10 +1930,10 @@ const fr: Catalog = {
     'admin.section.events.subtitle':
         'Registre immuable de chaque action — filtrer par auteur, action ou objet',
     'admin.section.events.search': 'Rechercher dans le journal…',
-    'admin.search.label': 'Rechercher sur cette page',
-    'admin.search.empty_title': 'Aucun résultat sur cette page',
+    'admin.search.label': 'Rechercher dans cette section',
+    'admin.search.empty_title': 'Aucun résultat',
     'admin.search.empty_body':
-        'Rien dans {section} ne correspond à « {term} ». Cette recherche ne porte que sur la page actuelle.',
+        'Rien dans {section} ne correspond à « {term} ». Essayez un terme plus court ou différent.',
     'admin.account.open': 'Compte, {name}',
     'admin.account.close': 'Fermer le menu du compte',
     'admin.account.sign_out': 'Se déconnecter',

@@ -9,6 +9,7 @@ import { MAIN_CONTENT_ID, SkipLink } from '@/components/rozine/skip-link';
 import { useChangeBeacon } from '@/hooks/use-change-beacon';
 import type { ChangeBeacon } from '@/hooks/use-change-beacon';
 import { useReconnectRefresh } from '@/hooks/use-reconnect-refresh';
+import { useSearchAsYouType } from '@/hooks/use-search-as-you-type';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import { logout } from '@/routes';
@@ -332,6 +333,8 @@ type AdminFrameProps = AdminFrameShellProps & {
      * the parameters a new search clears, such as a paging cursor or an open drawer.
      */
     searchQuery?: { param: string; clears: string[] };
+    /** False where the server applies no search, so the top bar shows no search box (#607). */
+    searchable?: boolean;
     /** A drawer over the content column. */
     overlay?: ReactNode;
     /** The live page's change beacon; a preview passes none, so nothing polls. */
@@ -352,6 +355,7 @@ export function AdminFrame({
     badges,
     search,
     searchQuery,
+    searchable = true,
     overlay,
     beacon,
     children,
@@ -363,10 +367,7 @@ export function AdminFrame({
     useReconnectRefresh();
     const title = t(`admin.section.${section}.title`);
 
-    const submitSearch = (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        const q = new FormData(event.currentTarget).get('q');
-
+    const runSearch = (q: string) => {
         if (searchQuery === undefined) {
             router.reload({ data: { q } });
 
@@ -379,6 +380,14 @@ export function AdminFrame({
                 ...searchQuery.clears.map((key) => [key, undefined]),
             ]),
         });
+    };
+    const typing = useSearchAsYouType(search, runSearch);
+    const submitSearch = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        typing.cancel();
+        runSearch(
+            (new FormData(event.currentTarget).get('q') as string | null) ?? '',
+        );
     };
 
     const sidebar = (
@@ -554,43 +563,46 @@ export function AdminFrame({
                                 {t(`admin.section.${section}.subtitle`)}
                             </InfoTip>
                         </div>
-                        <form
-                            role="search"
-                            onSubmit={submitSearch}
-                            className="order-3 flex w-full items-center gap-2 rounded-[10px] border border-rz-hairline bg-rz-surface px-3 py-2 lg:order-none lg:w-[280px]"
-                        >
-                            <svg
-                                width="15"
-                                height="15"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                aria-hidden
+                        {searchable && (
+                            <form
+                                role="search"
+                                onSubmit={submitSearch}
+                                className="order-3 flex w-full items-center gap-2 rounded-[10px] border border-rz-hairline bg-rz-surface px-3 py-2 lg:order-none lg:w-[280px]"
                             >
-                                <circle
-                                    cx="11"
-                                    cy="11"
-                                    r="7"
-                                    stroke="#8a94a8"
-                                    strokeWidth="2"
+                                <svg
+                                    width="15"
+                                    height="15"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    aria-hidden
+                                >
+                                    <circle
+                                        cx="11"
+                                        cy="11"
+                                        r="7"
+                                        stroke="#8a94a8"
+                                        strokeWidth="2"
+                                    />
+                                    <path
+                                        d="m20 20-3-3"
+                                        stroke="#8a94a8"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                    />
+                                </svg>
+                                <input
+                                    type="search"
+                                    name="q"
+                                    defaultValue={search}
+                                    onChange={typing.onChange}
+                                    aria-label={t('admin.search.label')}
+                                    placeholder={t(
+                                        `admin.section.${section}.search`,
+                                    )}
+                                    className="min-w-0 flex-1 border-none bg-transparent text-[13px] text-rz-ink outline-none placeholder:text-rz-muted"
                                 />
-                                <path
-                                    d="m20 20-3-3"
-                                    stroke="#8a94a8"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                />
-                            </svg>
-                            <input
-                                type="search"
-                                name="q"
-                                defaultValue={search}
-                                aria-label={t('admin.search.label')}
-                                placeholder={t(
-                                    `admin.section.${section}.search`,
-                                )}
-                                className="min-w-0 flex-1 border-none bg-transparent text-[13px] text-rz-ink outline-none placeholder:text-rz-muted"
-                            />
-                        </form>
+                            </form>
+                        )}
                         <div className="relative">
                             <button
                                 type="button"

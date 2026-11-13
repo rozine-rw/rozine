@@ -1916,10 +1916,10 @@ const rw: Catalog = {
     'admin.section.events.subtitle':
         'Inyandiko idahinduka ya buri gikorwa — tondeka ukoresheje uwakoze, igikorwa cyangwa ikintu',
     'admin.section.events.search': 'Shakisha mu byakozwe…',
-    'admin.search.label': 'Shakisha kuri uru rupapuro',
-    'admin.search.empty_title': 'Nta bihuye kuri uru rupapuro',
+    'admin.search.label': 'Shakisha muri iki gice',
+    'admin.search.empty_title': 'Nta bihuye',
     'admin.search.empty_body':
-        'Nta kintu muri {section} gihuye na “{term}”. Iri shakisha rireba kuri uru rupapuro gusa.',
+        'Nta kintu muri {section} gihuye na “{term}”. Gerageza ijambo rigufi cyangwa irindi.',
     'admin.account.open': 'Konti, {name}',
     'admin.account.close': 'Funga urutonde rwa konti',
     'admin.account.sign_out': 'Sohoka',

@@ -971,7 +971,7 @@ describe('Party directories', () => {
             screen.getByText('No businesses match these filters.'),
         ).toBeInTheDocument();
         expect(screen.getByText('0 businesses')).toBeInTheDocument();
-        expect(screen.getByText('No matches on this page')).toBeInTheDocument();
+        expect(screen.getByText('No matches')).toBeInTheDocument();
     });
 });
 

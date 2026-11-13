@@ -66,7 +66,7 @@ function DesignedSection(props: AdminPendingSectionProps) {
 
     if (design === undefined) {
         return (
-            <AdminFrame {...props}>
+            <AdminFrame {...props} searchable={false}>
                 <section
                     aria-label={title}
                     className={cn(CARD, CARD_SHADOW, 'rounded-2xl')}
@@ -81,7 +81,7 @@ function DesignedSection(props: AdminPendingSectionProps) {
     }
 
     return (
-        <AdminFrame {...props}>
+        <AdminFrame {...props} searchable={false}>
             <section aria-label={title}>
                 {props.period !== undefined && (
                     <FinancePeriod

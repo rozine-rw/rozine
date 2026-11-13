@@ -257,10 +257,60 @@ describe('Admin frame', () => {
         );
 
         await user.type(
-            screen.getByRole('searchbox', { name: 'Search this page' }),
+            screen.getByRole('searchbox', { name: 'Search this section' }),
             'kivu{Enter}',
         );
         expect(inertia.reload).toEqual([{ data: { q: 'kivu' } }]);
+    });
+
+    it('searches once typing pauses, without Enter, and not again for the same term', () => {
+        vi.useFakeTimers();
+
+        try {
+            render(<AdminToday {...props(todayFixture)} />);
+            const box = screen.getByRole('searchbox', {
+                name: 'Search this section',
+            });
+
+            fireEvent.change(box, { target: { value: 'ki' } });
+            fireEvent.change(box, { target: { value: 'kivu' } });
+            act(() => {
+                vi.advanceTimersByTime(399);
+            });
+            expect(inertia.reload).toEqual([]);
+            act(() => {
+                vi.advanceTimersByTime(1);
+            });
+            expect(inertia.reload).toEqual([{ data: { q: 'kivu' } }]);
+
+            fireEvent.change(box, { target: { value: ' ' } });
+            act(() => {
+                vi.advanceTimersByTime(400);
+            });
+            expect(inertia.reload).toHaveLength(1);
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    it('drops a pending search when the page goes away', () => {
+        vi.useFakeTimers();
+
+        try {
+            const { unmount } = render(<AdminToday {...props(todayFixture)} />);
+
+            fireEvent.change(
+                screen.getByRole('searchbox', { name: 'Search this section' }),
+                { target: { value: 'kivu' } },
+            );
+            unmount();
+            act(() => {
+                vi.advanceTimersByTime(400);
+            });
+            expect(inertia.reload).toEqual([]);
+        } finally {
+            vi.useRealTimers();
+        }
     });
 });
 

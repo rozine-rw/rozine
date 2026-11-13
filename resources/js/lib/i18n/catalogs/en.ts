@@ -1823,10 +1823,10 @@ const en = {
     'admin.section.events.subtitle':
         'Immutable record of every action — filter by actor, action or object',
     'admin.section.events.search': 'Search the trail…',
-    'admin.search.label': 'Search this page',
-    'admin.search.empty_title': 'No matches on this page',
+    'admin.search.label': 'Search this section',
+    'admin.search.empty_title': 'No matches',
     'admin.search.empty_body':
-        'Nothing in {section} matches “{term}”. This search only looks inside the current page.',
+        'Nothing in {section} matches “{term}”. Try a shorter or different term.',
     'admin.account.open': 'Account, {name}',
     'admin.account.close': 'Close account menu',
     'admin.account.sign_out': 'Sign out',
