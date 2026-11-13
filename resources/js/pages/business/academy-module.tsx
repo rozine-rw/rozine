@@ -18,7 +18,7 @@ const primaryButton =
 const secondaryButton =
     'h-[48px] w-full rounded-2xl border border-rz-border bg-rz-surface text-[14px] font-semibold text-rz-ink transition active:scale-[.98] disabled:opacity-50 motion-reduce:transition-none';
 const textButton =
-    'rounded-lg px-1.5 py-1 text-[13px] font-semibold text-rz-accent-app-text underline-offset-4 hover:underline disabled:text-rz-disabled disabled:no-underline';
+    'rounded-lg px-1.5 py-1 text-[13px] font-semibold text-rz-accent-app-text underline-offset-4 hover:underline disabled:text-rz-secondary disabled:no-underline disabled:opacity-40';
 
 /** A star the learner earns for each card they know, drawn so it reads the same in both themes. */
 function Star({ className }: { className?: string }) {
@@ -215,21 +215,23 @@ function Flashcards({
                             </span>
                         )}
                     </p>
-                    <div className="mt-2 [perspective:1200px]">
+                    <div
+                        key={position}
+                        className="mt-2 animate-[rz-fade_.35s_ease_both] [perspective:1200px] motion-reduce:animate-none"
+                    >
                         <button
-                            key={position}
                             type="button"
                             aria-expanded={turned}
                             aria-controls="academy-card-back"
                             onClick={() => setTurned(!turned)}
                             className={cn(
-                                'relative grid min-h-[260px] w-full animate-[rz-fade_.35s_ease_both] rounded-[22px] text-left transition-transform duration-500 [transform-style:preserve-3d] motion-reduce:animate-none motion-reduce:transition-none',
+                                'relative grid min-h-[260px] w-full rounded-[22px] text-left transition-transform duration-500 [transform-style:preserve-3d] motion-reduce:transition-none',
                                 turned && '[transform:rotateY(180deg)]',
                             )}
                         >
                             <span
                                 aria-hidden={turned}
-                                className="col-start-1 row-start-1 flex flex-col rounded-[22px] border border-[#d6e4ff] bg-gradient-to-br from-rz-accent-soft to-rz-surface p-6 shadow-rz-lifted [backface-visibility:hidden] dark:border-rz-border"
+                                className="col-start-1 row-start-1 flex flex-col rounded-[22px] border border-rz-accent-fill/20 bg-gradient-to-br from-rz-accent-soft to-rz-surface p-6 shadow-rz-lifted [backface-visibility:hidden] dark:border-rz-border"
                             >
                                 <span className="text-[11px] font-bold tracking-[.08em] text-rz-accent-app-text uppercase">
                                     {t('business.academy.term')}
