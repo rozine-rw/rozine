@@ -65,7 +65,7 @@ it('names no stage before 3 published reports, counting a real published monthly
             ['code' => 'C1', 'status' => 'not_triggered', 'due_on' => null, 'days_left' => null, 'met_on' => null, 'applies_from' => ['kind' => 'entry', 'value' => 0]],
             ['code' => 'F1', 'status' => 'not_triggered', 'due_on' => null, 'days_left' => null, 'met_on' => null, 'applies_from' => ['kind' => 'entry', 'value' => 0]]]);
 
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     [$published] = app(PublishedMonthlyReports::class)->forBusiness($business);
     $props = ($this->readiness)($user, $business);
     expect(array_column(array_slice($props['requirements'], 0, 2), 'status'))->toBe(['met', 'met'])

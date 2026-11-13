@@ -449,6 +449,9 @@ it('reverses and reapplies only the assignment schema on the isolated test datab
     // The ledger-precision held release check rewrites check_primary_held_release, so it comes off first and goes back last.
     $heldReleasePrecision = require database_path('migrations/2026_10_30_190000_compare_held_release_cash_at_ledger_precision.php');
     $cartCheckouts = require database_path('migrations/2026_11_02_090000_create_investor_cart_checkouts.php');
+    // The secondary market rebinds the ledger entry sources, so it comes off first and goes back last.
+    $secondaryMarket = require database_path('migrations/2026_11_11_060000_create_secondary_market_tables.php');
+    $secondaryMarket->down();
     $cartCheckouts->down();
     $heldReleasePrecision->down();
     $repeatApplications->down();
@@ -547,6 +550,7 @@ it('reverses and reapplies only the assignment schema on the isolated test datab
     $repeatApplications->up();
     $heldReleasePrecision->up();
     $cartCheckouts->up();
+    $secondaryMarket->up();
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)
         ->and(DB::select($functionQuery))->toEqual($functions)->and(DB::select($constraintQuery))->toEqual($constraints);
