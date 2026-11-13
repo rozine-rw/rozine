@@ -137,6 +137,14 @@ export default function BusinessWallet(props: BusinessWalletProps) {
                 <BalanceCard
                     wallet={props.wallet}
                     basis={props.bases.available}
+                    open={
+                        props.allowed_actions.includes(
+                            'business.wallet.deposit',
+                        ) ||
+                        props.allowed_actions.includes(
+                            'business.wallet.withdraw',
+                        )
+                    }
                 />
                 {props.links.repayments !== null && (
                     <Link
@@ -201,6 +209,14 @@ export default function BusinessWallet(props: BusinessWalletProps) {
                         wide={false}
                         command="business.wallet.withdraw"
                         payload={{ business_id: props.business.id }}
+                        linkedAccounts={
+                            props.shell_links.profile === null
+                                ? null
+                                : {
+                                      url: `${props.shell_links.profile.url}/linked`,
+                                      method: 'get',
+                                  }
+                        }
                     />
                 )}
                 <DepositIntents deposits={props.deposits} />

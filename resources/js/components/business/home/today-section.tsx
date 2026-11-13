@@ -308,6 +308,26 @@ export function TodaySection({ items }: { items: BusinessTodo[] }) {
                         ctaTone={GREEN_TEXT}
                     />
                 );
+            case 'visit_ready':
+                return (
+                    <TodoCard
+                        href={item.link}
+                        icon={lineIcon('calendar', 'amber')}
+                        iconTile={AMBER_TILE}
+                        dot="bg-[#c2661f]"
+                        kicker={t('business.today.visit_ready.kicker')}
+                        title={t('business.visit_ready.progress', {
+                            done: item.ready,
+                            total: item.total,
+                        })}
+                        sub={t('business.today.visit_ready.sub', {
+                            from: formatDayMonth(item.visit_from, locale),
+                            by: formatDayMonth(item.visit_by, locale),
+                        })}
+                        cta={t('business.today.visit_ready.cta')}
+                        ctaTone="text-rz-ink"
+                    />
+                );
             case 'repayment_due':
                 return (
                     <TodoCard

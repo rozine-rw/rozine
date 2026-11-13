@@ -568,7 +568,11 @@ const rw: Catalog = {
     'business.today.audit.cta': 'Itegure',
     'business.today.repayment.kicker': 'Kwishyura gutaha',
     'business.today.repayment.sub': '{note} · Bigomba kwishyurwa ku wa {date}',
-    'business.today.repayment.cta': 'Ishyura ubu',
+    'business.today.repayment.cta': 'Fungura Kwishyura',
+    'business.today.visit_ready.kicker': 'Itegure uruzinduko rw’uku kwezi',
+    'business.today.visit_ready.sub':
+        'CPA wawe azaza hagati ya {from} na {by}.',
+    'business.today.visit_ready.cta': 'Fungura urutonde',
     'business.today.blocked.kicker': 'Ubusabe bwahagaze',
     'business.today.blocked.untitled': 'Ubusabe bwawe',
     'business.today.blocked.sub.UNDERWRITING_EVIDENCE_REQUIRED':
@@ -1970,14 +1974,14 @@ const rw: Catalog = {
     'admin.kyc.slot.back': "Inyuma h'indangamuntu",
     'admin.kyc.slot.selfie': 'Ifoto yawe',
     'admin.kyc.slot.passport': "Urupapuro rw'ifoto rwa pasiporo",
-    'admin.kyc.document.replaced': "Yasimbuwe n'iyoherejwe nyuma",
+    'admin.kyc.document.replaced': 'Ifayili yasimbuwe',
     'admin.kyc.document.meta': '{name} · {size} KB',
     'admin.kyc.document.open': 'Kuramo {name}',
     'admin.kyc.document.download': 'Kuramo',
     'admin.kyc.document.current': "Inyandiko z'ubu",
     'admin.kyc.document.earlier': 'Izoherejwe mbere',
     'admin.kyc.document.earlier_hint':
-        "Buri dosiye yitiriwe aho umuntu yayoherereje, ntibigenzurwa n'ibyo igaragaza.",
+        "Amafayili umuntu yasimbuje ayo yohereje nyuma. Abikwa nk'amateka kandi ntiyitirirwa ubwoko bw'inyandiko, kuko ibiyagaragaraho bitagenzuwe.",
     'admin.kyc.document.view': 'Reba {slot}',
     'admin.kyc.document.show': 'Reba',
     'admin.kyc.document.view_file': 'Reba {name}',
@@ -3397,6 +3401,7 @@ const rw: Catalog = {
     'business.wallet.detail.done': 'Birarangiye',
 
     'business.servicing.wallet.status.active': 'Birakora',
+    'business.servicing.wallet.status.not_open': 'Ntiburafungurwa',
     'business.servicing.wallet.status.restricted': 'Byabujijwe',
     'business.servicing.wallet.restricted':
         'Byabujijwe kuva ku wa {date}. Kubitsa no kwishyura biracyakunda.',
@@ -6843,8 +6848,16 @@ const rw: Catalog = {
     'investor.wallet.c3.credit_receipt':
         'Inyemezabwishyu yo gushyira kuri konti',
     'investor.wallet.c3.funding': 'Kwimura amafaranga',
-    'investor.wallet.c3.withdraw_unavailable':
-        'Kubikuza ntibirafungurwa kuri iyi konti. Bisaba konti yo kwakiriraho yemejwe muri Umwirondoro → Konti zihujwe, kandi bizafunguka konti nimara kwemererwa kohereza no kwakira amafaranga.',
+    'investor.wallet.c3.withdraw_needs_account':
+        'Kubikuza ntibirafungurwa: iyi konti nta konti yo kwakiriraho yemejwe ifite. Huza iri mu izina ryawe, hanyuma Rozine ifungure kubikuza konti nimara kwemererwa kohereza no kwakira amafaranga.',
+    'investor.wallet.c3.withdraw_not_cleared':
+        'Konti yawe yo kwakiriraho yaremejwe. Kubikuza bizafunguka Rozine nimara kwemerera iyi konti kohereza no kwakira amafaranga; nta kindi usabwa gukora.',
+    'investor.wallet.c3.withdraw_not_allowed':
+        "Konti yawe yo kwakiriraho yaremejwe, ariko ubu ntiwemerewe kubikuza muri iki gikapu. Vugana n'ubufasha bwa Rozine niba ukeneye kubikuza.",
+    'investor.wallet.c3.withdraw_link_account': 'Jya kuri Konti zihujwe',
+    'investor.wallet.c3.withdraw_at_least': 'Nibura {amount}.',
+    'investor.wallet.c3.withdraw_at_most': 'Ntarengwa {amount} icyarimwe.',
+    'investor.wallet.c3.withdraw_over_available': 'Birenze ayo ufite {amount}.',
     'investor.wallet.c3.withdraw_available': 'Ayo ushobora kubikuza: {amount}',
     'investor.wallet.c3.provider_charge': "Amafaranga y'utanga serivisi",
     'investor.wallet.c3.withdraw_terms':
