@@ -148,15 +148,34 @@ final readonly class EloquentPrimaryCheckout implements PrimaryCheckout
 
     public function refund(int $userId, int $contextRevision, string $campaignId, string $reservationId, int $expectedRevision, string $requestId): array
     {
+        return $this->refundAs($userId, $contextRevision, $campaignId, $reservationId, $expectedRevision, $requestId, false);
+    }
+
+    public function withdraw(int $userId, int $contextRevision, string $campaignId, string $reservationId, int $expectedRevision, string $requestId): array
+    {
+        return $this->refundAs($userId, $contextRevision, $campaignId, $reservationId, $expectedRevision, $requestId, true);
+    }
+
+    /**
+     * Both journal as `primary.refund`, so the commitment page and the `primary.cancel` lookup read
+     * either one. A withdrawal additionally enforces the 100% line and frees the units (INV-R03).
+     *
+     * @return array<string, mixed>
+     */
+    private function refundAs(int $userId, int $contextRevision, string $campaignId, string $reservationId, int $expectedRevision, string $requestId,
+        bool $withdrawal): array
+    {
         return $this->withInvestor($userId, $contextRevision, $campaignId,
-            function (array $identity) use ($userId, $contextRevision, $campaignId, $reservationId, $expectedRevision, $requestId): array {
+            function (array $identity) use ($userId, $contextRevision, $campaignId, $reservationId, $expectedRevision, $requestId, $withdrawal): array {
                 $partyId = (string) $identity['party']['id'];
                 $root = $this->reservationTarget($campaignId, $reservationId, $partyId);
 
                 return $this->journal->execute('party:'.$partyId, $userId, 'primary.refund', $requestId, 'primary_reservation', $root->id,
                     ['identity_context_revision' => $contextRevision, 'campaign_id' => $root->business_campaign_id, 'expected_revision' => $expectedRevision],
-                    function (): void {}, function () use ($root, $partyId, $expectedRevision): OperationResult {
-                        $refund = $this->reservations->refund($root->business_campaign_id, $root->id, $partyId, $expectedRevision);
+                    function (): void {}, function () use ($root, $partyId, $expectedRevision, $withdrawal): OperationResult {
+                        $refund = $withdrawal
+                            ? $this->reservations->withdraw($root->business_campaign_id, $root->id, $partyId, $expectedRevision)
+                            : $this->reservations->refund($root->business_campaign_id, $root->id, $partyId, $expectedRevision);
                         if (! $refund->replayed) {
                             $this->changed($root->business_campaign_id, $root->id, $partyId);
                         }

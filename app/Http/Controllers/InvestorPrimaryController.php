@@ -52,10 +52,11 @@ class InvestorPrimaryController extends Controller
             $request->integer('expected_reservation_revision'), (string) $request->validated('request_id')));
     }
 
-    /** A confirmed commitment is final (INV-R03): the command is still validated, then always refused. */
-    public function cancel(PrimaryCommandRequest $request): never
+    /** Withdraws a confirmed commitment until its raise reaches 100% (BRS v3.0 INV-R03); the page then reloads its facts. */
+    public function cancel(PrimaryCommandRequest $request, string $commitment): OperationResource
     {
-        $this->checkout->cancel();
+        return $this->present($this->checkout->cancel($this->user($request), $request->integer('identity_context_revision'), $commitment,
+            $request->integer('expected_commitment_revision'), (string) $request->validated('request_id')));
     }
 
     public function operation(ShowPrimaryOperationRequest $request, string $campaign, string $requestId): OperationResource
