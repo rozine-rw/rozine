@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Auditor\DescribeAuditJobOffers;
 use App\Application\Identity\ReadPartyNotices;
 use App\Http\Requests\Auditor\AuditorNoticesRequest;
 use App\Http\Resources\AuditorNoticesResource;
@@ -14,9 +15,9 @@ class AuditorNoticesController extends Controller
 {
     public function __construct(private ReadPartyNotices $notices) {}
 
-    public function index(AuditorNoticesRequest $request): AuditorNoticesResource
+    public function index(AuditorNoticesRequest $request, DescribeAuditJobOffers $offers): AuditorNoticesResource
     {
-        return new AuditorNoticesResource($this->notices->inbox($this->user($request)));
+        return new AuditorNoticesResource($offers->handle($this->user($request), $this->notices->inbox($this->user($request))));
     }
 
     public function read(AuditorNoticesRequest $request, string $notice): JsonResponse

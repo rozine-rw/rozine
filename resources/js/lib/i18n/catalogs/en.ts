@@ -7076,6 +7076,20 @@ const en = {
         'Flash audit at {business}, {location}. Accept by {time}.',
     'investor.notices.auditor.job_offered.body_routine':
         'Routine audit at {business}, {location}. Accept by {time}.',
+    'investor.notices.auditor.job_offered.body_statement_review':
+        'Statement review for {business}, {location}. Accept by {time}.',
+    'investor.notices.auditor.job_offered.type.flash': 'Flash audit',
+    'investor.notices.auditor.job_offered.type.routine': 'Routine audit',
+    'investor.notices.auditor.job_offered.type.statement_review':
+        'Statement review',
+    'investor.notices.auditor.job_offered.accepted':
+        '{job} at {business}, {location}. You accepted it.',
+    'investor.notices.auditor.job_offered.declined':
+        '{job} at {business}, {location}. You declined it.',
+    'investor.notices.auditor.job_offered.expired':
+        '{job} at {business}, {location}. The offer expired.',
+    'investor.notices.auditor.job_offered.withdrawn':
+        '{job} at {business}, {location}. The offer was withdrawn.',
     'investor.notices.business.report_sealed.title':
         'Audit report ready for review',
     'investor.notices.business.report_sealed.body':

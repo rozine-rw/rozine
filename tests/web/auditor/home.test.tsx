@@ -84,6 +84,79 @@ describe('Auditor Home', () => {
         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
+    it('names a statement review as one and says how a settled offer turned out, not when to accept it (#587)', async () => {
+        const offer = (
+            id: string,
+            type: 'flash' | 'routine' | 'statement_review',
+            outcome: 'open' | 'accepted' | 'declined' | 'expired' | 'withdrawn',
+        ) => ({
+            ...inbox.notices[0],
+            id,
+            facts: { ...inbox.notices[0].facts, type, outcome },
+        });
+        inertia.queue.push(
+            answers({
+                data: {
+                    ...inbox,
+                    notices: [
+                        offer(
+                            '01k7nq0c2y6w8e4t1v3x5z7d21',
+                            'statement_review',
+                            'open',
+                        ),
+                        offer(
+                            '01k7nq0c2y6w8e4t1v3x5z7d22',
+                            'statement_review',
+                            'accepted',
+                        ),
+                        offer(
+                            '01k7nq0c2y6w8e4t1v3x5z7d23',
+                            'flash',
+                            'declined',
+                        ),
+                        offer(
+                            '01k7nq0c2y6w8e4t1v3x5z7d24',
+                            'routine',
+                            'expired',
+                        ),
+                        offer(
+                            '01k7nq0c2y6w8e4t1v3x5z7d25',
+                            'flash',
+                            'withdrawn',
+                        ),
+                    ],
+                },
+            }),
+        );
+        const { user } = renderWithUser(<AuditorHome {...fixture()} />);
+
+        await user.click(
+            screen.getByRole('button', { name: 'Notifications, 2 unread' }),
+        );
+        const panel = screen.getByRole('dialog', { name: 'Notifications' });
+        const items = await within(panel).findAllByRole('button', {
+            name: /New audit job/u,
+        });
+
+        expect(items.map((item) => item.textContent)).toEqual([
+            expect.stringContaining(
+                'Statement review for Sebeya Logistics, Musanze. Accept by',
+            ),
+            expect.stringContaining(
+                'Statement review at Sebeya Logistics, Musanze. You accepted it.',
+            ),
+            expect.stringContaining(
+                'Flash audit at Sebeya Logistics, Musanze. You declined it.',
+            ),
+            expect.stringContaining(
+                'Routine audit at Sebeya Logistics, Musanze. The offer expired.',
+            ),
+            expect.stringContaining(
+                'Flash audit at Sebeya Logistics, Musanze. The offer was withdrawn.',
+            ),
+        ]);
+    });
+
     it('reminds the partner to renew a licence that is about to lapse, opening the profile', async () => {
         inertia.queue.push(
             answers({
