@@ -522,6 +522,9 @@ const fr: Catalog = {
     'business.home.company_code': 'RDB {code}',
     'business.home.rozine_rating': 'Notation Rozine',
     'business.rating.pending': 'Audit en attente',
+    'business.rating.pending_hint': 'Noté après votre premier mois audité',
+    'business.rating.pending_next':
+        "Votre note apparaît dès que votre premier rapport mensuel est audité. Nous vous prévenons à l'ouverture de votre audit, pour que vous prépariez les pièces du mois.",
     'business.rating.band.strong': 'Solide',
     'business.rating.band.stable': 'Stable',
     'business.rating.band.weak': 'Faible',
@@ -1174,7 +1177,9 @@ const fr: Catalog = {
     'business.profile.company.name': "Nom de l'entreprise",
     'business.profile.company.email': 'E-mail professionnel',
     'business.profile.company.phone': 'Téléphone professionnel',
-    'business.profile.company.phone_placeholder': '0788 123 456',
+    'business.profile.company.phone_placeholder': '07XX XXX XXX',
+    'business.profile.company.email_hint':
+        "L'adresse où Rozine envoie les reçus, avis et relevés de l'entreprise.",
     'business.profile.company.address': 'Adresse du siège',
     'business.profile.company.province': 'Province',
     'business.profile.company.district': 'District',

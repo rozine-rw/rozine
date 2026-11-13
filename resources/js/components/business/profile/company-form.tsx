@@ -13,11 +13,14 @@ function Field({
     id,
     label,
     error,
+    hint,
     children,
 }: {
     id: string;
     label: string;
     error?: string;
+    /** A line under the field saying what it is for (#596). */
+    hint?: string;
     children: ReactNode;
 }) {
     return (
@@ -29,6 +32,14 @@ function Field({
                 {label}
             </label>
             {children}
+            {hint !== undefined && (
+                <p
+                    id={`${id}-hint`}
+                    className="mt-1.5 text-[11.5px] leading-normal text-rz-secondary"
+                >
+                    {hint}
+                </p>
+            )}
             <FieldError id={`${id}-error`}>{error}</FieldError>
         </div>
     );
@@ -137,10 +148,11 @@ export function CompanyForm({ company, provinces, action }: CompanyFormProps) {
                     id="company-email"
                     label={t('business.profile.company.email')}
                     error={errors.email}
+                    hint={t('business.profile.company.email_hint')}
                 >
                     <input
                         id="company-email"
-                        aria-describedby="company-email-error"
+                        aria-describedby="company-email-hint company-email-error"
                         type="email"
                         value={data.email}
                         onChange={(event) =>

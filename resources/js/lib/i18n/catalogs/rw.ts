@@ -520,6 +520,10 @@ const rw: Catalog = {
     'business.home.company_code': 'RDB {code}',
     'business.home.rozine_rating': 'Amanota ya Rozine',
     'business.rating.pending': 'Igenzura ritegerejwe',
+    'business.rating.pending_hint':
+        "Amanota azaboneka nyuma y'ukwezi kwa mbere kugenzuwe",
+    'business.rating.pending_next':
+        "Amanota yawe azagaragara raporo yawe ya mbere y'ukwezi imaze kugenzurwa. Tuzakumenyesha igenzura ryawe nirifungura, kugira ngo utegure inyandiko z'ukwezi.",
     'business.rating.band.strong': 'Ikomeye',
     'business.rating.band.stable': 'Ihamye',
     'business.rating.band.weak': 'Idakomeye',
@@ -1169,7 +1173,9 @@ const rw: Catalog = {
     'business.profile.company.name': "Izina ry'ikigo",
     'business.profile.company.email': "Imeli y'ikigo",
     'business.profile.company.phone': "Telefoni y'ikigo",
-    'business.profile.company.phone_placeholder': '0788 123 456',
+    'business.profile.company.phone_placeholder': '07XX XXX XXX',
+    'business.profile.company.email_hint':
+        "Aho Rozine yohereza inyemezabwishyu, amatangazo n'imbonerahamwe by'ikigo.",
     'business.profile.company.address': 'Aderesi yanditswe',
     'business.profile.company.province': 'Intara',
     'business.profile.company.district': 'Akarere',

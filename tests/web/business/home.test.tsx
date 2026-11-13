@@ -245,6 +245,9 @@ describe('Business Home', () => {
         );
 
         expect(screen.getByText('Pending audit')).toBeInTheDocument();
+        expect(
+            screen.getByText('Rated after your first audited month'),
+        ).toBeInTheDocument();
         expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
         expect(
             screen.queryByText('Headroom available'),
