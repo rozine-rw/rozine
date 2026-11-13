@@ -570,7 +570,11 @@ const fr: Catalog = {
     'business.today.audit.cta': 'Se préparer',
     'business.today.repayment.kicker': 'Prochain remboursement',
     'business.today.repayment.sub': '{note} · Échéance le {date}',
-    'business.today.repayment.cta': 'Payer maintenant',
+    'business.today.repayment.cta': 'Ouvrir les remboursements',
+    'business.today.visit_ready.kicker': 'Préparez la visite de ce mois',
+    'business.today.visit_ready.sub':
+        'Votre CPA passe entre le {from} et le {by}.',
+    'business.today.visit_ready.cta': 'Ouvrir la liste',
     'business.today.blocked.kicker': 'Demande en attente',
     'business.today.blocked.untitled': 'Votre demande',
     'business.today.blocked.sub.UNDERWRITING_EVIDENCE_REQUIRED':

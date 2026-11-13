@@ -9,6 +9,7 @@ use App\Application\Business\GetBusinessMarket;
 use App\Application\Business\GetBusinessProfile;
 use App\Application\Business\GetBusinessReadiness;
 use App\Application\Business\GetBusinessReports;
+use App\Application\Business\GetBusinessRepayments;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\ListBusinessComplaints;
 use App\Http\Requests\Business\ShowBusinessHomeRequest;
@@ -32,9 +33,11 @@ class BusinessHomeController extends Controller
 {
     public function __construct(private AuthorizeActiveRole $identity) {}
 
-    public function show(ShowBusinessHomeRequest $request, GetBusinessHome $home): Response|BusinessHomeResource
+    /** On the web, Today also reads each issued Note's next instalment and an open visit-ready checklist (QA #579). */
+    public function show(ShowBusinessHomeRequest $request, GetBusinessHome $home, GetBusinessRepayments $repayments): Response|BusinessHomeResource
     {
-        $resource = new BusinessHomeResource($home->handle($this->userId($request), $this->revision($request), (string) $request->route('business')));
+        $read = $request->routeIs('api.*') ? $home : $repayments;
+        $resource = new BusinessHomeResource($read->handle($this->userId($request), $this->revision($request), (string) $request->route('business')));
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('business/home', $resource->resolve($request));
     }

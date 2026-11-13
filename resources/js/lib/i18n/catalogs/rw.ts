@@ -568,7 +568,11 @@ const rw: Catalog = {
     'business.today.audit.cta': 'Itegure',
     'business.today.repayment.kicker': 'Kwishyura gutaha',
     'business.today.repayment.sub': '{note} · Bigomba kwishyurwa ku wa {date}',
-    'business.today.repayment.cta': 'Ishyura ubu',
+    'business.today.repayment.cta': 'Fungura Kwishyura',
+    'business.today.visit_ready.kicker': 'Itegure uruzinduko rw’uku kwezi',
+    'business.today.visit_ready.sub':
+        'CPA wawe azaza hagati ya {from} na {by}.',
+    'business.today.visit_ready.cta': 'Fungura urutonde',
     'business.today.blocked.kicker': 'Ubusabe bwahagaze',
     'business.today.blocked.untitled': 'Ubusabe bwawe',
     'business.today.blocked.sub.UNDERWRITING_EVIDENCE_REQUIRED':
