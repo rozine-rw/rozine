@@ -595,6 +595,9 @@ const fr: Catalog = {
     'business.capital.subtitle':
         'Votre historique complet, sur toutes vos notes.',
     'business.capital.active_notes': '{count} active(s)',
+    'business.capital.active_and_repaying':
+        '{active} active(s) · {repaying} en remboursement',
+    'business.capital.repaying_notes': '{count} en remboursement',
     'business.capital.about': 'À propos de {label}',
     'business.capital.close': 'Fermer',
     'business.capital.raised.label': 'Levé',

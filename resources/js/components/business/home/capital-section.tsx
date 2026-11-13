@@ -70,7 +70,17 @@ function Tile({ tile, value, open, onToggle, align, above }: TileProps) {
 }
 
 /** "Your capital" — the all-time track record (design L244–269). */
-export function CapitalSection({ capital }: { capital: BusinessCapital }) {
+/**
+ * `repaying` is how many of the Business's notes are repaying (QA #583). The server counts every
+ * funded note as active, so those are taken out of the active count and named on their own.
+ */
+export function CapitalSection({
+    capital,
+    repaying = 0,
+}: {
+    capital: BusinessCapital;
+    repaying?: number;
+}) {
     const { t } = useTranslation();
     const [open, setOpen] = useState<TileKey | null>(null);
     const toggle = (tile: TileKey) => () =>
@@ -117,9 +127,18 @@ export function CapitalSection({ capital }: { capital: BusinessCapital }) {
                 </div>
                 <span className="inline-flex shrink-0 items-center gap-[5px] text-[11px] font-bold text-rz-accent-app-text">
                     <span className="size-1.5 rounded-full bg-rz-accent-app-text shadow-[0_0_0_3px_rgba(29,158,117,.10)]" />
-                    {t('business.capital.active_notes', {
-                        count: capital.active_notes,
-                    })}
+                    {repaying === 0
+                        ? t('business.capital.active_notes', {
+                              count: capital.active_notes,
+                          })
+                        : capital.active_notes > repaying
+                          ? t('business.capital.active_and_repaying', {
+                                active: capital.active_notes - repaying,
+                                repaying,
+                            })
+                          : t('business.capital.repaying_notes', {
+                                count: repaying,
+                            })}
                 </span>
             </div>
 

@@ -583,6 +583,9 @@ const en = {
     'business.capital.subtitle':
         'Your all-time track record, across every note.',
     'business.capital.active_notes': '{count} active',
+    'business.capital.active_and_repaying':
+        '{active} active · {repaying} repaying',
+    'business.capital.repaying_notes': '{count} repaying',
     'business.capital.about': 'About {label}',
     'business.capital.close': 'Close',
     'business.capital.raised.label': 'Raised',
