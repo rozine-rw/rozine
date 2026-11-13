@@ -384,8 +384,7 @@ export function AdminFrame({
     const typing = useSearchAsYouType(search, runSearch);
     const submitSearch = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        typing.cancel();
-        runSearch(
+        typing.submit(
             (new FormData(event.currentTarget).get('q') as string | null) ?? '',
         );
     };

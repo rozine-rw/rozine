@@ -283,11 +283,48 @@ describe('Admin frame', () => {
             });
             expect(inertia.reload).toEqual([{ data: { q: 'kivu' } }]);
 
-            fireEvent.change(box, { target: { value: ' ' } });
+            fireEvent.change(box, { target: { value: 'kivu ' } });
             act(() => {
                 vi.advanceTimersByTime(400);
             });
             expect(inertia.reload).toHaveLength(1);
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    it('sends a cleared box even while the previous search is still loading', () => {
+        vi.useFakeTimers();
+
+        try {
+            const { rerender } = render(
+                <AdminToday {...props(todayFixture)} />,
+            );
+            const box = screen.getByRole('searchbox', {
+                name: 'Search this section',
+            });
+
+            fireEvent.change(box, { target: { value: 'kivu' } });
+            act(() => {
+                vi.advanceTimersByTime(400);
+            });
+            // The 'kivu' response has not arrived: the server still applies no search.
+            fireEvent.change(box, { target: { value: '' } });
+            act(() => {
+                vi.advanceTimersByTime(400);
+            });
+            expect(inertia.reload).toEqual([
+                { data: { q: 'kivu' } },
+                { data: { q: '' } },
+            ]);
+
+            // Once the server applies a term, typing it again sends nothing.
+            rerender(<AdminToday {...props(todayFixture)} search="kivu" />);
+            fireEvent.change(box, { target: { value: 'kivu ' } });
+            act(() => {
+                vi.advanceTimersByTime(400);
+            });
+            expect(inertia.reload).toHaveLength(2);
         } finally {
             vi.useRealTimers();
         }

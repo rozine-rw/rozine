@@ -34,8 +34,7 @@ export default function AdminLedger(props: AdminLedgerProps) {
     const typing = useSearchAsYouType(props.search, runSearch);
     const search = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        typing.cancel();
-        runSearch(
+        typing.submit(
             (new FormData(event.currentTarget).get('q') as string | null) ?? '',
         );
     };

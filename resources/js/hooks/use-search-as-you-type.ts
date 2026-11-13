@@ -5,24 +5,29 @@ import type { ChangeEvent } from 'react';
 export const SEARCH_PAUSE_MS = 400;
 
 /**
- * Runs a search once typing pauses, so a search box needs no Enter (#607). Enter still runs it at
- * once. A term equal to the one the server last applied runs nothing, and a pending run is dropped
- * when the box unmounts.
+ * Runs a search once typing pauses, so a search box needs no Enter (#607). `submit` (Enter) runs it
+ * at once and drops the pending run. A term equal to the one last requested runs nothing; that is
+ * the last term sent, not the one the server last applied, so clearing the box while a search is
+ * still loading is sent too and supersedes it. A pending run is dropped when the box unmounts.
  */
 export function useSearchAsYouType(
     applied: string,
     run: (term: string) => void,
 ): {
     onChange: (event: ChangeEvent<HTMLInputElement>) => void;
-    /** Drops a pending run, for when Enter has already searched. */
-    cancel: () => void;
+    submit: (term: string) => void;
 } {
     const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const latest = useRef({ applied, run });
+    const latest = useRef(run);
+    const requested = useRef(applied);
 
     useEffect(() => {
-        latest.current = { applied, run };
+        latest.current = run;
     });
+
+    useEffect(() => {
+        requested.current = applied;
+    }, [applied]);
 
     const cancel = () => {
         if (timer.current !== null) {
@@ -33,8 +38,14 @@ export function useSearchAsYouType(
 
     useEffect(() => cancel, []);
 
+    const submit = (term: string) => {
+        cancel();
+        requested.current = term;
+        latest.current(term);
+    };
+
     return {
-        cancel,
+        submit,
         onChange: (event) => {
             const term = event.currentTarget.value;
 
@@ -42,8 +53,8 @@ export function useSearchAsYouType(
             timer.current = setTimeout(() => {
                 timer.current = null;
 
-                if (term.trim() !== latest.current.applied.trim()) {
-                    latest.current.run(term);
+                if (term.trim() !== requested.current.trim()) {
+                    submit(term);
                 }
             }, SEARCH_PAUSE_MS);
         },
