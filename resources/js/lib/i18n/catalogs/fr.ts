@@ -6576,6 +6576,8 @@ const fr: Catalog = {
         "Des investisseurs se sont déjà engagés dans cette levée : elle ne peut donc pas être annulée ici. Leurs engagements doivent d'abord être réglés.",
     'settlement.refusal.CAMPAIGN_FUNDED':
         'Cette levée est financée et en attente de décaissement : elle ne peut pas être annulée.',
+    'settlement.refusal.COMMITMENT_WITHDRAWN':
+        'Vous avez déjà retiré cet engagement. Son montant est de nouveau disponible.',
     'settlement.refusal.NOTE_INELIGIBLE':
         "Ce titre n'est pas éligible pour le moment.",
     'settlement.refusal.DISCLOSURE_STALE':
@@ -7424,11 +7426,11 @@ const fr: Catalog = {
         "Les échéances sont fixées à l'émission : la première tombe un mois après la date d'effet du versement.",
     'investor.primary.commitment_title': 'Engagement',
     'investor.primary.back_to_portfolio': 'Retour au portefeuille',
-    'investor.primary.cancel': "Annuler l'engagement",
-    'investor.primary.cancel_title': 'Annuler cet engagement ?',
+    'investor.primary.cancel': "Retirer l'engagement",
+    'investor.primary.cancel_title': 'Retirer cet engagement ?',
     'investor.primary.cancel_body':
-        'Votre capital revient intégralement sur le disponible, sans frais. Vous ne détiendrez plus ces titres.',
-    'investor.primary.cancel_confirm': 'Oui, annuler et rembourser',
+        "Votre montant revient intégralement sur le disponible, tout de suite et sans frais. Vous pouvez vous retirer tant que la levée n'a pas atteint 100 %.",
+    'investor.primary.cancel_confirm': 'Oui, retirer et rembourser',
     'investor.primary.cancel_keep': 'Le conserver',
     'investor.holding.issue.title': "Relevé d'émission",
     'investor.holding.issue.issued_at': 'Émis le',

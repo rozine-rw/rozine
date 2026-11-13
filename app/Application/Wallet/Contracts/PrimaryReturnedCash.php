@@ -16,7 +16,8 @@ use App\Domain\Wallet\WalletMoney;
  * checked before locking the supplied wallet; movements are then read afresh.
  * Accepts only hold + release, or hold + commit + refund, with exact original cash.
  * Never writes or replays a posting, creates a wallet, or acquires campaign locks.
- * Cash evidence alone does not authorize cancellation or make ordinals reusable.
+ * Cash evidence alone does not authorize cancellation or make ordinals reusable; only a retained
+ * release or withdrawal retirement does.
  */
 interface PrimaryReturnedCash
 {
@@ -29,4 +30,11 @@ interface PrimaryReturnedCash
      * @return array{hold_entry_id: string, hold_sha256: string, return_entry_id: string, return_sha256: string, wallet_id: string}
      */
     public function inspectHeldReturn(string $partyId, WalletMoney $amount, PostingSource $source): array;
+
+    /** The same SELECT-only inspection for a commitment the Investor withdrew before its raise filled:
+     * the original hold, its commit and the full refund back to Available (INV-R03).
+     *
+     * @return array{hold_entry_id: string, hold_sha256: string, return_entry_id: string, return_sha256: string, wallet_id: string, commit_entry_id: string, commit_sha256: string}
+     */
+    public function inspectWithdrawnReturn(string $partyId, WalletMoney $amount, PostingSource $source): array;
 }

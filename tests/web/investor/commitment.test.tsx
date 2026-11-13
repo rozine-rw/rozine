@@ -98,24 +98,24 @@ describe('Commitment', () => {
 
         render(<InvestorCommitment {...props()} />);
         await user.click(
-            screen.getByRole('button', { name: 'Cancel commitment' }),
+            screen.getByRole('button', { name: 'Withdraw commitment' }),
         );
 
         const step = screen.getByRole('group', {
-            name: 'Cancel this commitment?',
+            name: 'Withdraw this commitment?',
         });
 
         expect(step).toHaveTextContent(
-            "Your principal goes back to Available in full, with no fee. You'll no longer hold these notes.",
+            'Your full amount goes back to Available at once, with no fee. You can withdraw until the raise reaches 100%.',
         );
         expect(step).not.toHaveTextContent(/released|back on sale/i);
         await user.click(within(step).getByRole('button', { name: 'Keep it' }));
         expect(
-            screen.queryByRole('group', { name: 'Cancel this commitment?' }),
+            screen.queryByRole('group', { name: 'Withdraw this commitment?' }),
         ).not.toBeInTheDocument();
 
         await user.click(
-            screen.getByRole('button', { name: 'Cancel commitment' }),
+            screen.getByRole('button', { name: 'Withdraw commitment' }),
         );
         inertia.queue.push(
             answers({
@@ -132,7 +132,7 @@ describe('Commitment', () => {
             }),
         );
         await user.click(
-            screen.getByRole('button', { name: 'Yes, cancel and refund' }),
+            screen.getByRole('button', { name: 'Yes, withdraw and refund' }),
         );
         expect(inertia.calls[0]).toMatchObject({
             url: '/preview/investor-commitment-cancelled',
@@ -155,10 +155,10 @@ describe('Commitment', () => {
 
         inertia.queue.push(fails(409, { code: 'COMMITMENT_LOCKED' }));
         await user.click(
-            screen.getByRole('button', { name: 'Cancel commitment' }),
+            screen.getByRole('button', { name: 'Withdraw commitment' }),
         );
         await user.click(
-            screen.getByRole('button', { name: 'Yes, cancel and refund' }),
+            screen.getByRole('button', { name: 'Yes, withdraw and refund' }),
         );
 
         expect(
@@ -182,7 +182,7 @@ describe('Commitment', () => {
             screen.getByText('Fully funded — awaiting payout'),
         ).toBeInTheDocument();
         expect(
-            screen.queryByRole('button', { name: 'Cancel commitment' }),
+            screen.queryByRole('button', { name: 'Withdraw commitment' }),
         ).not.toBeInTheDocument();
     });
 
@@ -193,7 +193,7 @@ describe('Commitment', () => {
         render(<InvestorCommitment {...data} />);
 
         expect(
-            screen.queryByRole('button', { name: 'Cancel commitment' }),
+            screen.queryByRole('button', { name: 'Withdraw commitment' }),
         ).not.toBeInTheDocument();
     });
 
@@ -204,10 +204,10 @@ describe('Commitment', () => {
 
         expect(screen.getByText('Not yet confirmed')).toBeInTheDocument();
         await user.click(
-            screen.getByRole('button', { name: 'Cancel commitment' }),
+            screen.getByRole('button', { name: 'Withdraw commitment' }),
         );
         expect(
-            screen.getByRole('button', { name: 'Yes, cancel and refund' }),
+            screen.getByRole('button', { name: 'Yes, withdraw and refund' }),
         ).toBeDisabled();
     });
 
@@ -218,7 +218,7 @@ describe('Commitment', () => {
             screen.getByText('Fully funded — awaiting payout'),
         ).toBeInTheDocument();
         expect(
-            screen.queryByRole('button', { name: 'Cancel commitment' }),
+            screen.queryByRole('button', { name: 'Withdraw commitment' }),
         ).not.toBeInTheDocument();
         expect(inertia.reload).not.toHaveBeenCalled();
     });
@@ -339,7 +339,7 @@ describe('Commitment', () => {
             screen.getByText('Committed — issued after disbursement'),
         ).toBeInTheDocument();
         expect(
-            screen.queryByRole('button', { name: 'Cancel commitment' }),
+            screen.queryByRole('button', { name: 'Withdraw commitment' }),
         ).not.toBeInTheDocument();
     });
 });

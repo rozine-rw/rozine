@@ -193,6 +193,9 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     expect(Schema::hasTable('business_prospectus_versions'))->toBeFalse()
         ->and(DB::scalar("SELECT to_regprocedure('reject_business_prospectus_version_mutation()') IS NULL"))->toBeTrue();
     $cartCheckouts = require database_path('migrations/2026_11_02_090000_create_investor_cart_checkouts.php');
+    // Recycling withdrawn commitment claims rewrites check_primary_held_release again, so it comes off before the precision check.
+    $withdrawnClaims = require database_path('migrations/2026_11_10_170000_recycle_withdrawn_commitment_claims.php');
+    $withdrawnClaims->down();
     $cartCheckouts->down();
     $cartQuotes = require database_path('migrations/2026_11_01_050000_create_investor_cart_quotes_table.php');
     $cartQuotes->down();
@@ -482,6 +485,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $cartRoots->up();
     $cartQuotes->up();
     $cartCheckouts->up();
+    $withdrawnClaims->up();
     $prospectusVersions->up();
     expect(Schema::hasTable('business_prospectus_versions'))->toBeTrue();
     $prospectusDocuments->up();
