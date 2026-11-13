@@ -38,7 +38,8 @@ const REQUIREMENT_TONE = {
 const CONDITION_TONE = {
     met: 'bg-[rgba(31,138,76,.12)] text-[#17663a] dark:text-[#7fd6a2]',
     not_met: 'bg-rz-page text-rz-secondary',
-    pending: 'bg-rz-accent-soft text-rz-accent-app-text',
+    // Pending means Rozine cannot measure it yet, so it must never read as achieved (QA #575).
+    pending: 'bg-rz-warning-tint text-rz-warning-text',
 } as const satisfies Record<ReadinessMilestoneCondition['state'], string>;
 
 /** One RDY-R08 milestone: its name, whether it is reached, and each condition with its state. */

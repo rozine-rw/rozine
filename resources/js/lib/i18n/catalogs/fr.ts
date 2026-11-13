@@ -3411,6 +3411,7 @@ const fr: Catalog = {
     'business.wallet.detail.done': 'Terminé',
 
     'business.servicing.wallet.status.active': 'Actif',
+    'business.servicing.wallet.status.not_open': 'Pas encore ouvert',
     'business.servicing.wallet.status.restricted': 'Restreint',
     'business.servicing.wallet.restricted':
         'Restreint depuis le {date}. Les dépôts et les remboursements restent possibles.',
@@ -6861,8 +6862,15 @@ const fr: Catalog = {
         "Le paiement a été confirmé comme non effectué. Rien n'a été crédité.",
     'investor.wallet.c3.credit_receipt': 'Reçu de crédit',
     'investor.wallet.c3.funding': 'Mouvements de fonds',
-    'investor.wallet.c3.withdraw_unavailable':
-        "Les retraits ne sont pas encore ouverts sur ce compte. Ils demandent un compte de versement vérifié dans Profil → Comptes liés, et s'ouvrent dès que le compte est autorisé à faire des mouvements d'argent.",
+    'investor.wallet.c3.withdraw_needs_account':
+        "Les retraits ne sont pas encore ouverts : ce compte n'a pas de compte de versement vérifié. Liez-en un à votre nom ; Rozine ouvre ensuite les retraits dès que le compte est autorisé à faire des mouvements d'argent.",
+    'investor.wallet.c3.withdraw_not_cleared':
+        "Votre compte de versement est vérifié. Les retraits s'ouvrent dès que Rozine autorise ce compte à faire des mouvements d'argent ; vous n'avez rien d'autre à faire.",
+    'investor.wallet.c3.withdraw_link_account': 'Aller aux comptes liés',
+    'investor.wallet.c3.withdraw_at_least': 'Minimum {amount}.',
+    'investor.wallet.c3.withdraw_at_most': 'Maximum {amount} par retrait.',
+    'investor.wallet.c3.withdraw_over_available':
+        'Plus que votre disponible de {amount}.',
     'investor.wallet.c3.withdraw_available': 'Disponible au retrait : {amount}',
     'investor.wallet.c3.provider_charge': 'Frais du prestataire',
     'investor.wallet.c3.withdraw_terms':

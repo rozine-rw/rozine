@@ -274,6 +274,43 @@ function depositBounds(
     return t('settlement.refusal.VALIDATION_FAILED');
 }
 
+/**
+ * What is wrong with an entered withdrawal amount, named against the limits and the available
+ * balance (BRS LED-R04), or null while it sits within them (QA #573).
+ */
+function withdrawalProblem(
+    amount: string,
+    terms: { minimum: Money; maximum: Money },
+    available: Money,
+    t: ReturnType<typeof useTranslation>['t'],
+): string | null {
+    if (amount === '') {
+        return null;
+    }
+
+    const value = BigInt(amount);
+
+    if (value < BigInt(terms.minimum.amount)) {
+        return t('investor.wallet.c3.withdraw_at_least', {
+            amount: formatRwf(terms.minimum),
+        });
+    }
+
+    if (value > BigInt(terms.maximum.amount)) {
+        return t('investor.wallet.c3.withdraw_at_most', {
+            amount: formatRwf(terms.maximum),
+        });
+    }
+
+    if (value > BigInt(available.amount)) {
+        return t('investor.wallet.c3.withdraw_over_available', {
+            amount: formatRwf(available),
+        });
+    }
+
+    return null;
+}
+
 /** What the panel says once a deposit or withdrawal is recorded (#461). */
 type FundingDone = {
     kind: 'deposit' | 'withdraw';
@@ -667,6 +704,8 @@ type WithdrawPanelProps<Name extends string> = {
     command?: Name;
     /** What the command carries beyond the amount and method, such as a Business wallet's owner. */
     payload?: Record<string, unknown>;
+    /** Where payout accounts are linked, offered while withdrawals are closed (QA #574). */
+    linkedAccounts?: RouteLink | null;
 };
 
 /**
@@ -688,6 +727,7 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
     wide,
     command: name = 'wallet.withdraw' as Name,
     payload = {},
+    linkedAccounts = null,
 }: WithdrawPanelProps<Name>) {
     const { t } = useTranslation();
     const terms = funding.withdrawal;
@@ -778,7 +818,25 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
                     className="mt-2 flex items-start gap-2.5 text-xs leading-[1.55] text-rz-secondary"
                 >
                     <Icon name="info" />
-                    <span>{t('investor.wallet.c3.withdraw_unavailable')}</span>
+                    <span>
+                        {funding.methods.length === 0
+                            ? t('investor.wallet.c3.withdraw_needs_account')
+                            : t('investor.wallet.c3.withdraw_not_cleared')}
+                        {funding.methods.length === 0 &&
+                            linkedAccounts !== null && (
+                                <>
+                                    {' '}
+                                    <Link
+                                        href={linkedAccounts}
+                                        className="font-semibold text-rz-accent-app-text underline underline-offset-2"
+                                    >
+                                        {t(
+                                            'investor.wallet.c3.withdraw_link_account',
+                                        )}
+                                    </Link>
+                                </>
+                            )}
+                    </span>
                 </p>
             </section>
         );
@@ -858,8 +916,19 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
         }, FUNDING_DEBOUNCE_MS);
     };
 
-    const refusal = quote?.refusal ?? null;
+    const problem = withdrawalProblem(amount, terms, available, t);
+    const quotedRefusal = quote?.refusal ?? null;
+    /* An amount outside the limits is named under the field instead of in a generic banner. */
+    const refusal =
+        problem !== null &&
+        (quotedRefusal === 'VALIDATION_FAILED' ||
+            quotedRefusal === 'INSUFFICIENT_AVAILABLE_FUNDS')
+            ? null
+            : quotedRefusal;
+    const receivable =
+        quote !== null && quotedRefusal === null && problem === null;
     const ready =
+        problem === null &&
         quote !== null &&
         quote.amount.currency === 'RWF' &&
         quote.amount.amount === amount &&
@@ -927,9 +996,22 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
                     onChange={(event) => setAmount(event.target.value)}
                     inputMode="numeric"
                     placeholder="0"
+                    aria-invalid={problem !== null || undefined}
+                    aria-describedby={
+                        problem !== null ? 'amount-withdraw-problem' : undefined
+                    }
                     className="min-w-0 flex-1 border-0 bg-transparent text-right text-xl font-semibold text-rz-ink outline-none placeholder:text-rz-ink"
                 />
             </div>
+            {problem !== null && (
+                <p
+                    id="amount-withdraw-problem"
+                    role="alert"
+                    className="mt-1.5 text-[11px] font-semibold text-rz-danger-text"
+                >
+                    {problem}
+                </p>
+            )}
             <div className="mt-2 flex gap-1.5">
                 {funding.picks.map((pick) => (
                     <button
@@ -975,10 +1057,12 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
                     <dd
                         className={cn(
                             'text-xs font-bold',
-                            quote === null ? 'text-rz-ink' : POSITIVE_TEXT,
+                            receivable ? POSITIVE_TEXT : 'text-rz-ink',
                         )}
                     >
-                        {quote === null ? '—' : formatRwf(quote.received)}
+                        {receivable && quote !== null
+                            ? formatRwf(quote.received)
+                            : '—'}
                     </dd>
                 </div>
             </dl>

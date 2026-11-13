@@ -139,6 +139,49 @@ describe('Business wallet withdrawals (APP-B01, LED-R04)', () => {
         );
     });
 
+    it('sends a business without a verified payout account to Linked accounts (QA #574)', () => {
+        const props = wallet();
+
+        props.funding.methods = [];
+        render(<BusinessWallet {...props} />);
+
+        const panel = screen.getByRole('region', { name: 'Withdraw' });
+
+        expect(panel).toHaveTextContent(
+            "Withdrawals aren't open yet: this account has no verified payout account.",
+        );
+        expect(
+            within(panel).getByRole('link', { name: 'Go to Linked accounts' }),
+        ).toHaveAttribute('href', `${props.shell_links.profile!.url}/linked`);
+    });
+
+    it('offers no link where the shell has no profile', () => {
+        const props = wallet();
+
+        props.funding.methods = [];
+        props.shell_links.profile = null;
+        render(<BusinessWallet {...props} />);
+
+        expect(
+            screen.queryByRole('link', { name: 'Go to Linked accounts' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('says the wallet is not open yet while no money can move, and active once it can (QA #574)', () => {
+        const closed = wallet();
+
+        closed.allowed_actions = [];
+        const { unmount } = render(<BusinessWallet {...closed} />);
+        const card = () => screen.getByRole('region', { name: /available/i });
+
+        expect(card()).toHaveTextContent('Not open yet');
+        expect(card()).not.toHaveTextContent('Active');
+        unmount();
+
+        render(<BusinessWallet {...wallet()} />);
+        expect(card()).toHaveTextContent('Active');
+    });
+
     it('offers no form while the mandate withholds withdrawal', () => {
         const props = wallet();
 
@@ -148,7 +191,7 @@ describe('Business wallet withdrawals (APP-B01, LED-R04)', () => {
         const panel = screen.getByRole('region', { name: 'Withdraw' });
 
         expect(panel).toHaveTextContent(
-            "Withdrawals aren't open on this account yet. They need a verified payout account under Profile → Linked accounts, and open once the account is cleared for money movement.",
+            "Your payout account is verified. Withdrawals open once Rozine clears this account for money movement; you don't need to do anything else.",
         );
         expect(
             within(panel).getByRole('link', { name: 'Close' }),

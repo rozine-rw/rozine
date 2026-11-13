@@ -258,6 +258,58 @@ describe('Wallet withdrawals (LED-R04)', () => {
         ).toBeDisabled();
     });
 
+    it.each([
+        ['500', 'VALIDATION_FAILED', 'Minimum RWF 1,000.'],
+        ['99999999', 'VALIDATION_FAILED', 'Maximum RWF 2,000,000 at a time.'],
+        [
+            '1500000',
+            'INSUFFICIENT_AVAILABLE_FUNDS',
+            'More than your available RWF 1,253,485.',
+        ],
+    ] as const)(
+        'names what is wrong with %s under the field and pays nothing out (QA #573)',
+        (amount, refusal, problem) => {
+            const props = wallet();
+
+            props.funding.withdrawal!.quote = {
+                amount: { currency: 'RWF', amount },
+                charge: { currency: 'RWF', amount: '0' },
+                received: { currency: 'RWF', amount },
+                refusal,
+            };
+            render(<InvestorWallet {...props} />);
+
+            const panel = screen.getByRole('form', { name: 'Withdraw' });
+
+            expect(within(panel).getByRole('alert')).toHaveTextContent(problem);
+            expect(within(panel).getByLabelText('AMOUNT')).toHaveAttribute(
+                'aria-invalid',
+                'true',
+            );
+            expect(
+                within(panel).getByLabelText('AMOUNT'),
+            ).toHaveAccessibleDescription(problem);
+            expect(panel).toHaveTextContent('You receive—');
+            expect(panel).not.toHaveTextContent('Some details need correcting');
+            expect(
+                within(panel).getByRole('button', {
+                    name: 'Confirm withdrawal',
+                }),
+            ).toBeDisabled();
+        },
+    );
+
+    it('keeps an amount within the limits unmarked', () => {
+        render(<InvestorWallet {...wallet()} />);
+
+        const panel = screen.getByRole('form', { name: 'Withdraw' });
+
+        expect(within(panel).getByLabelText('AMOUNT')).not.toHaveAttribute(
+            'aria-invalid',
+        );
+        expect(panel).toHaveTextContent('You receiveRWF 100,000');
+    });
+
     it('names an unverified account refusal and an empty quote plainly', () => {
         const props = wallet();
 
@@ -304,7 +356,7 @@ describe('Wallet withdrawals (LED-R04)', () => {
         const panel = screen.getByRole('region', { name: 'Withdraw' });
 
         expect(panel).toHaveTextContent(
-            "Withdrawals aren't open on this account yet. They need a verified payout account under Profile → Linked accounts, and open once the account is cleared for money movement.",
+            "Your payout account is verified. Withdrawals open once Rozine clears this account for money movement; you don't need to do anything else.",
         );
         expect(
             within(panel).queryByRole('button', { name: 'Confirm withdrawal' }),
@@ -323,7 +375,7 @@ describe('Wallet withdrawals (LED-R04)', () => {
         expect(
             screen.getByRole('region', { name: 'Withdraw' }),
         ).toHaveTextContent(
-            "Withdrawals aren't open on this account yet. They need a verified payout account under Profile → Linked accounts, and open once the account is cleared for money movement.",
+            "Your payout account is verified. Withdrawals open once Rozine clears this account for money movement; you don't need to do anything else.",
         );
     });
 
@@ -466,7 +518,7 @@ describe('Wallet withdrawals (LED-R04)', () => {
         expect(
             screen.getByRole('region', { name: 'Withdraw' }),
         ).toHaveTextContent(
-            "Withdrawals aren't open on this account yet. They need a verified payout account under Profile → Linked accounts, and open once the account is cleared for money movement.",
+            "Withdrawals aren't open yet: this account has no verified payout account. Link one in your own name, then Rozine opens withdrawals once the account is cleared for money movement.",
         );
     });
 });

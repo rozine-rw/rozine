@@ -240,6 +240,13 @@ describe('Readiness', () => {
         expect(lines()).toContain('Stage 3 or 4Not met');
         expect(lines()).toContain('Ready for 12 months in a rowPending');
         expect(lines()).toContain('A limited companyMet');
+        expect(milestones.getAllByText('Pending')[0]).toHaveClass(
+            'bg-rz-warning-tint',
+            'text-rz-warning-text',
+        );
+        expect(milestones.getAllByText('Met')[0]).not.toHaveClass(
+            'bg-rz-warning-tint',
+        );
     });
 
     it('says when every condition of a milestone is met', () => {

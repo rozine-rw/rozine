@@ -14,12 +14,17 @@ import type { BusinessWalletProps } from '@/types/business';
 export function BalanceCard({
     wallet,
     basis,
+    open,
 }: {
     wallet: BusinessWalletProps['wallet'];
     basis: BusinessWalletProps['bases']['available'];
+    /** Whether money can move at all: an active wallet with deposits and withdrawals closed is not open yet (QA #574). */
+    open: boolean;
 }) {
     const { t, locale } = useTranslation();
     const amount = formatRwf(wallet.available);
+    const status =
+        wallet.status === 'active' && !open ? 'not_open' : wallet.status;
 
     return (
         <section
@@ -36,12 +41,12 @@ export function BalanceCard({
                     <span
                         className={cn(
                             'size-1.5 rounded-full',
-                            wallet.status === 'active'
+                            status === 'active'
                                 ? 'bg-[#6ae8bf]'
                                 : 'bg-[#ffc44f]',
                         )}
                     />
-                    {t(`business.servicing.wallet.status.${wallet.status}`)}
+                    {t(`business.servicing.wallet.status.${status}`)}
                 </span>
             </div>
             <p className="relative mt-2.5 text-[30px] font-bold tracking-[-.6px] text-white">

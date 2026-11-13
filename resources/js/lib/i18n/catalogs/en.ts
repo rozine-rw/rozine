@@ -3255,6 +3255,7 @@ const en = {
     'business.wallet.detail.reference': 'Reference',
     'business.wallet.detail.done': 'Done',
     'business.servicing.wallet.status.active': 'Active',
+    'business.servicing.wallet.status.not_open': 'Not open yet',
     'business.servicing.wallet.status.restricted': 'Restricted',
     'business.servicing.wallet.restricted':
         'Restricted since {date}. Deposits and repayments still go through.',
@@ -6557,8 +6558,15 @@ const en = {
         'The payment was confirmed as not completed. Nothing was credited.',
     'investor.wallet.c3.credit_receipt': 'Credit receipt',
     'investor.wallet.c3.funding': 'Move money',
-    'investor.wallet.c3.withdraw_unavailable':
-        "Withdrawals aren't open on this account yet. They need a verified payout account under Profile → Linked accounts, and open once the account is cleared for money movement.",
+    'investor.wallet.c3.withdraw_needs_account':
+        "Withdrawals aren't open yet: this account has no verified payout account. Link one in your own name, then Rozine opens withdrawals once the account is cleared for money movement.",
+    'investor.wallet.c3.withdraw_not_cleared':
+        "Your payout account is verified. Withdrawals open once Rozine clears this account for money movement; you don't need to do anything else.",
+    'investor.wallet.c3.withdraw_link_account': 'Go to Linked accounts',
+    'investor.wallet.c3.withdraw_at_least': 'Minimum {amount}.',
+    'investor.wallet.c3.withdraw_at_most': 'Maximum {amount} at a time.',
+    'investor.wallet.c3.withdraw_over_available':
+        'More than your available {amount}.',
     'investor.wallet.c3.withdraw_available': 'Available to withdraw: {amount}',
     'investor.wallet.c3.provider_charge': 'Provider charge',
     'investor.wallet.c3.withdraw_terms':
