@@ -91,9 +91,13 @@ it('rolls the precision back only while no hold has been retired', function (): 
     $migration = require database_path('migrations/2026_10_30_190000_compare_held_release_cash_at_ledger_precision.php');
     $definition = fn (): string => (string) DB::scalar("SELECT pg_get_functiondef('check_primary_held_release(char)'::regprocedure)");
     $installed = $definition();
+    // Recycling withdrawn commitment claims rewrites the function again, so it comes off first and goes back last.
+    $withdrawnClaims = require database_path('migrations/2026_11_10_170000_recycle_withdrawn_commitment_claims.php');
+    $withdrawnClaims->down();
     $migration->down();
     expect($definition())->toContain('OR h.created_at < r.created_at OR e.created_at < v.created_at')->not->toContain('date_trunc');
     $migration->up();
+    $withdrawnClaims->up();
     expect($definition())->toBe($installed);
 
     ($this->ready)($this->investor['user']);

@@ -102,6 +102,9 @@ export function KycDocuments({
                     >
                         {t('admin.kyc.document.earlier')}
                     </h4>
+                    <p className="mt-1 text-[11.5px] text-rz-muted">
+                        {t('admin.kyc.document.earlier_hint')}
+                    </p>
                     <ul className="mt-2 overflow-hidden rounded-[13px] border border-rz-hairline bg-rz-surface">
                         {earlier.map((document, index) => (
                             <li

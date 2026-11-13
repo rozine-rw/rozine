@@ -1966,12 +1966,14 @@ const rw: Catalog = {
     'admin.kyc.slot.back': "Inyuma h'indangamuntu",
     'admin.kyc.slot.selfie': 'Ifoto yawe',
     'admin.kyc.slot.passport': "Urupapuro rw'ifoto rwa pasiporo",
-    'admin.kyc.document.replaced': 'Yasimbuwe',
+    'admin.kyc.document.replaced': "Yasimbuwe n'iyoherejwe nyuma",
     'admin.kyc.document.meta': '{name} · {size} KB',
     'admin.kyc.document.open': 'Kuramo {name}',
     'admin.kyc.document.download': 'Kuramo',
     'admin.kyc.document.current': "Inyandiko z'ubu",
     'admin.kyc.document.earlier': 'Izoherejwe mbere',
+    'admin.kyc.document.earlier_hint':
+        "Buri dosiye yitiriwe aho umuntu yayoherereje, ntibigenzurwa n'ibyo igaragaza.",
     'admin.kyc.document.view': 'Reba {slot}',
     'admin.kyc.document.show': 'Reba',
     'admin.kyc.document.view_file': 'Reba {name}',
@@ -6593,6 +6595,8 @@ const rw: Catalog = {
         'Abashoramari bamaze kwiyemeza muri iki gikorwa cyo gukusanya, bityo ntigishobora guhagarikwa hano. Ibyo biyemeje bigomba kubanza gukemurwa.',
     'settlement.refusal.CAMPAIGN_FUNDED':
         'Iki gikorwa cyabonye amafaranga yose kandi gitegereje koherezwa, bityo ntigishobora guhagarikwa.',
+    'settlement.refusal.COMMITMENT_WITHDRAWN':
+        'Wamaze gukuraho iki cyiyemezo. Amafaranga yacyo yasubiye muri aboneka.',
     'settlement.refusal.NOTE_INELIGIBLE': 'Uru rupapuro ntirwemerewe ubu.',
     'settlement.refusal.DISCLOSURE_STALE':
         'Amakuru yo kumenyesha yahindutse. Soma ayariho ubu wongere uyemeze.',
@@ -7431,11 +7435,11 @@ const rw: Catalog = {
         "Amatariki yo kwishyura ashyirwaho impapuro zitangwa: irya mbere riba ukwezi kumwe nyuma y'itariki ubwishyu bwakoreweho.",
     'investor.primary.commitment_title': 'Icyiyemezo',
     'investor.primary.back_to_portfolio': 'Garuka ku mutungo',
-    'investor.primary.cancel': 'Hagarika icyiyemezo',
-    'investor.primary.cancel_title': 'Uhagarika iki cyiyemezo?',
+    'investor.primary.cancel': 'Kuraho icyiyemezo',
+    'investor.primary.cancel_title': 'Ukuraho iki cyiyemezo?',
     'investor.primary.cancel_body':
-        'Igishoro cyawe gisubira muri aboneka cyose, nta kiguzi. Ntuzongera gutunga izi mpapuro.',
-    'investor.primary.cancel_confirm': 'Yego, hagarika usubize',
+        'Amafaranga yawe yose asubira muri aboneka ako kanya, nta kiguzi. Ushobora kugikuraho kugeza igikorwa kigeze kuri 100%.',
+    'investor.primary.cancel_confirm': 'Yego, kuraho usubizwe',
     'investor.primary.cancel_keep': 'Bigumeho',
     'investor.holding.issue.title': 'Inyandiko yo gutanga',
     'investor.holding.issue.issued_at': 'Byatanzwe',

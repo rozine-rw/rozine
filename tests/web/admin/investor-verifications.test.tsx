@@ -363,7 +363,14 @@ describe('Compliance review drawer', () => {
         const [replaced] = within(documents)
             .getAllByRole('listitem')
             .filter((item) => !current.contains(item));
-        expect(within(replaced).getByText('Replaced')).toBeInTheDocument();
+        expect(
+            within(replaced).getByText('Replaced by a newer upload'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Each file is named for the place the person uploaded it to, not checked against what it shows.',
+            ),
+        ).toBeInTheDocument();
         expect(
             within(replaced).getByText('blurred.png · 2 KB'),
         ).toBeInTheDocument();
@@ -606,7 +613,9 @@ describe('Compliance document viewer', () => {
         await user.click(
             within(viewer).getByRole('button', { name: 'Next document' }),
         );
-        viewer = screen.getByRole('dialog', { name: 'ID front Replaced' });
+        viewer = screen.getByRole('dialog', {
+            name: 'ID front Replaced by a newer upload',
+        });
         expect(within(viewer).getByText('2 of 2')).toBeInTheDocument();
         expect(
             within(viewer).getByText('blurred.png · 2 KB'),
@@ -618,7 +627,9 @@ describe('Compliance document viewer', () => {
         ).toBeInTheDocument();
         await user.keyboard('{ArrowLeft}');
         expect(
-            screen.getByRole('dialog', { name: 'ID front Replaced' }),
+            screen.getByRole('dialog', {
+                name: 'ID front Replaced by a newer upload',
+            }),
         ).toBeInTheDocument();
         await user.click(
             screen.getByRole('button', { name: 'Previous document' }),
@@ -646,7 +657,7 @@ describe('Compliance document viewer', () => {
             screen.getByRole('button', { name: 'View blurred.png' }),
         );
         const viewer = screen.getByRole('dialog', {
-            name: 'ID front Replaced',
+            name: 'ID front Replaced by a newer upload',
         });
         expect(within(viewer).getByText('2 of 2')).toBeInTheDocument();
 
@@ -654,7 +665,9 @@ describe('Compliance document viewer', () => {
             within(viewer).getByRole('button', { name: 'Close viewer' }),
         );
         expect(
-            screen.queryByRole('dialog', { name: 'ID front Replaced' }),
+            screen.queryByRole('dialog', {
+                name: 'ID front Replaced by a newer upload',
+            }),
         ).not.toBeInTheDocument();
     });
 
