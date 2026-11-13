@@ -260,7 +260,9 @@ describe('Admin frame', () => {
             screen.getByRole('searchbox', { name: 'Search this section' }),
             'kivu{Enter}',
         );
-        expect(inertia.reload).toEqual([{ data: { q: 'kivu' } }]);
+        expect(inertia.reload).toEqual([
+            { data: { q: 'kivu' }, onCancelToken: expect.any(Function) },
+        ]);
     });
 
     it('searches once typing pauses, without Enter, and not again for the same term', () => {
@@ -281,7 +283,9 @@ describe('Admin frame', () => {
             act(() => {
                 vi.advanceTimersByTime(1);
             });
-            expect(inertia.reload).toEqual([{ data: { q: 'kivu' } }]);
+            expect(inertia.reload).toEqual([
+                { data: { q: 'kivu' }, onCancelToken: expect.any(Function) },
+            ]);
 
             fireEvent.change(box, { target: { value: 'kivu ' } });
             act(() => {
@@ -314,8 +318,8 @@ describe('Admin frame', () => {
                 vi.advanceTimersByTime(400);
             });
             expect(inertia.reload).toEqual([
-                { data: { q: 'kivu' } },
-                { data: { q: '' } },
+                { data: { q: 'kivu' }, onCancelToken: expect.any(Function) },
+                { data: { q: '' }, onCancelToken: expect.any(Function) },
             ]);
 
             // Once the server applies a term, typing it again sends nothing.
@@ -324,6 +328,38 @@ describe('Admin frame', () => {
             act(() => {
                 vi.advanceTimersByTime(400);
             });
+            expect(inertia.reload).toHaveLength(2);
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
+    it('cancels a search still in flight when the next one starts, so an older response cannot land last', () => {
+        vi.useFakeTimers();
+
+        try {
+            render(<AdminToday {...props(todayFixture)} />);
+            const box = screen.getByRole('searchbox', {
+                name: 'Search this section',
+            });
+            const first = { cancel: vi.fn() };
+
+            fireEvent.change(box, { target: { value: 'kivu' } });
+            act(() => {
+                vi.advanceTimersByTime(400);
+            });
+            (
+                inertia.reload[0] as {
+                    onCancelToken: (token: { cancel: () => void }) => void;
+                }
+            ).onCancelToken(first);
+            expect(first.cancel).not.toHaveBeenCalled();
+
+            fireEvent.change(box, { target: { value: '' } });
+            act(() => {
+                vi.advanceTimersByTime(400);
+            });
+            expect(first.cancel).toHaveBeenCalledTimes(1);
             expect(inertia.reload).toHaveLength(2);
         } finally {
             vi.useRealTimers();

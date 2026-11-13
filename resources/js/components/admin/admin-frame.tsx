@@ -1,3 +1,4 @@
+import type { CancelToken } from '@inertiajs/core';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
@@ -367,18 +368,19 @@ export function AdminFrame({
     useReconnectRefresh();
     const title = t(`admin.section.${section}.title`);
 
-    const runSearch = (q: string) => {
-        if (searchQuery === undefined) {
-            router.reload({ data: { q } });
-
-            return;
-        }
-
+    const runSearch = (
+        q: string,
+        onCancelToken: (token: CancelToken) => void,
+    ) => {
         router.reload({
-            data: Object.fromEntries([
-                [searchQuery.param, q],
-                ...searchQuery.clears.map((key) => [key, undefined]),
-            ]),
+            data:
+                searchQuery === undefined
+                    ? { q }
+                    : Object.fromEntries([
+                          [searchQuery.param, q],
+                          ...searchQuery.clears.map((key) => [key, undefined]),
+                      ]),
+            onCancelToken,
         });
     };
     const typing = useSearchAsYouType(search, runSearch);

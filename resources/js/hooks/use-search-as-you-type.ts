@@ -1,3 +1,4 @@
+import type { CancelToken } from '@inertiajs/core';
 import { useEffect, useRef } from 'react';
 import type { ChangeEvent } from 'react';
 
@@ -8,11 +9,13 @@ export const SEARCH_PAUSE_MS = 400;
  * Runs a search once typing pauses, so a search box needs no Enter (#607). `submit` (Enter) runs it
  * at once and drops the pending run. A term equal to the one last requested runs nothing; that is
  * the last term sent, not the one the server last applied, so clearing the box while a search is
- * still loading is sent too and supersedes it. A pending run is dropped when the box unmounts.
+ * still loading is sent too. Each search cancels the one still in flight, since `router.reload` is
+ * asynchronous and an older response could otherwise land last. A pending run is dropped when the
+ * box unmounts.
  */
 export function useSearchAsYouType(
     applied: string,
-    run: (term: string) => void,
+    run: (term: string, onCancelToken: (token: CancelToken) => void) => void,
 ): {
     onChange: (event: ChangeEvent<HTMLInputElement>) => void;
     submit: (term: string) => void;
@@ -20,6 +23,7 @@ export function useSearchAsYouType(
     const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const latest = useRef(run);
     const requested = useRef(applied);
+    const inFlight = useRef<CancelToken | null>(null);
 
     useEffect(() => {
         latest.current = run;
@@ -41,7 +45,11 @@ export function useSearchAsYouType(
     const submit = (term: string) => {
         cancel();
         requested.current = term;
-        latest.current(term);
+        inFlight.current?.cancel();
+        inFlight.current = null;
+        latest.current(term, (token) => {
+            inFlight.current = token;
+        });
     };
 
     return {

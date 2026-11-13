@@ -53,6 +53,7 @@ describe('Ledger', () => {
                     limit: undefined,
                     before: undefined,
                 },
+                onCancelToken: expect.any(Function),
             },
         ]);
     });
@@ -78,6 +79,7 @@ describe('Ledger', () => {
                         limit: undefined,
                         before: undefined,
                     },
+                    onCancelToken: expect.any(Function),
                 },
             ]);
         } finally {

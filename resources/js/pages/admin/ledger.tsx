@@ -1,3 +1,4 @@
+import type { CancelToken } from '@inertiajs/core';
 import { Link, router } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import { AdminFrame } from '@/components/admin/admin-frame';
@@ -27,9 +28,13 @@ const GRID =
 export default function AdminLedger(props: AdminLedgerProps) {
     const { t } = useTranslation();
 
-    const runSearch = (q: string) =>
+    const runSearch = (
+        q: string,
+        onCancelToken: (token: CancelToken) => void,
+    ) =>
         router.reload({
             data: { q, entry: undefined, limit: undefined, before: undefined },
+            onCancelToken,
         });
     const typing = useSearchAsYouType(props.search, runSearch);
     const search = (event: FormEvent<HTMLFormElement>) => {

@@ -925,6 +925,7 @@ describe('The live staff applications index (#147)', () => {
                     before: undefined,
                     application: undefined,
                 },
+                onCancelToken: expect.any(Function),
             },
         ]);
     });
@@ -936,7 +937,9 @@ describe('The live staff applications index (#147)', () => {
 
         await user.type(screen.getByRole('searchbox'), 'Kigali{Enter}');
 
-        expect(inertia.reload).toEqual([{ data: { q: 'Kigali' } }]);
+        expect(inertia.reload).toEqual([
+            { data: { q: 'Kigali' }, onCancelToken: expect.any(Function) },
+        ]);
     });
 });
 
