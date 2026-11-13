@@ -1772,6 +1772,8 @@ export type InvestorNotice = {
 /** The account's newest notices behind the bell, with the unread count. */
 export type InvestorNotices = {
     unread: number;
+    /** The server's clock when the inbox was read, for "5 minutes ago". */
+    server_time?: string;
     notices: InvestorNotice[];
     actions: { read_all: RouteAction | null };
 };

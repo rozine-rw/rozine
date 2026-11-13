@@ -7471,14 +7471,20 @@ const fr: Catalog = {
     'investor.notices.primary.refunded.body':
         "La levée de {business} s'est terminée sans atteindre son objectif. {amount} est de retour dans votre portefeuille, sans frais.",
     'investor.notices.primary.raise_funded.title': 'Levée financée',
-    'investor.notices.primary.raise_funded.body':
-        "La levée de {business} est entièrement financée. Vos {amount} pour {units} titres sont réservés jusqu'à l'envoi des fonds.",
+    'investor.notices.primary.raise_funded.body': {
+        one: "La levée de {business} est entièrement financée. Vos {amount} pour {count} titre sont réservés jusqu'à l'envoi des fonds.",
+        other: "La levée de {business} est entièrement financée. Vos {amount} pour {count} titres sont réservés jusqu'à l'envoi des fonds.",
+    },
     'investor.notices.primary.commitment_confirmed.title': 'Achat confirmé',
-    'investor.notices.primary.commitment_confirmed.body':
-        'Vous avez engagé {amount} dans {business} pour {units} titres, avec des frais sur gains de {rate} %. Référence {reference}.',
+    'investor.notices.primary.commitment_confirmed.body': {
+        one: 'Vous avez engagé {amount} dans {business} pour {count} titre, avec des frais sur gains de {rate} %. Référence {reference}.',
+        other: 'Vous avez engagé {amount} dans {business} pour {count} titres, avec des frais sur gains de {rate} %. Référence {reference}.',
+    },
     'investor.notices.primary.holding_issued.title': 'Investissement confirmé',
-    'investor.notices.primary.holding_issued.body':
-        "Vos {units} titres de {business} sont émis : {amount} investis, {maturity} attendus à l'échéance le {date}.",
+    'investor.notices.primary.holding_issued.body': {
+        one: "Votre {count} titre de {business} est émis : {amount} investis, {maturity} attendus à l'échéance le {date}.",
+        other: "Vos {count} titres de {business} sont émis : {amount} investis, {maturity} attendus à l'échéance le {date}.",
+    },
     'investor.notices.business.raise_funded.title':
         'Levée entièrement financée',
     'investor.notices.business.raise_funded.body':
@@ -7510,6 +7516,10 @@ const fr: Catalog = {
     'investor.notices.verification.approved.title': 'Vous êtes vérifié',
     'investor.notices.verification.approved.body':
         'Votre identité est vérifiée et votre portefeuille est prêt pour investir.',
+    'investor.notices.verification.approved.body_business':
+        'Votre identité est vérifiée. Vous pouvez maintenant demander une levée.',
+    'investor.notices.verification.approved.body_auditor':
+        "Votre identité est vérifiée. Vous pouvez maintenant accepter des missions d'audit.",
     'investor.notices.verification.rejected.title':
         "Vos informations d'identité doivent être revues",
     'investor.notices.verification.rejected.body':

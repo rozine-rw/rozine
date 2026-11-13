@@ -7152,14 +7152,20 @@ const en = {
     'investor.notices.primary.refunded.body':
         'The {business} raise closed without reaching its target. {amount} is back in your wallet, with no fee.',
     'investor.notices.primary.raise_funded.title': 'Raise funded',
-    'investor.notices.primary.raise_funded.body':
-        'The {business} raise is fully funded. Your {amount} for {units} notes is set aside until the funds are sent.',
+    'investor.notices.primary.raise_funded.body': {
+        one: 'The {business} raise is fully funded. Your {amount} for {count} note is set aside until the funds are sent.',
+        other: 'The {business} raise is fully funded. Your {amount} for {count} notes is set aside until the funds are sent.',
+    },
     'investor.notices.primary.commitment_confirmed.title': 'Purchase confirmed',
-    'investor.notices.primary.commitment_confirmed.body':
-        'You committed {amount} to {business} for {units} notes, at a {rate}% earnings fee. Reference {reference}.',
+    'investor.notices.primary.commitment_confirmed.body': {
+        one: 'You committed {amount} to {business} for {count} note, at a {rate}% earnings fee. Reference {reference}.',
+        other: 'You committed {amount} to {business} for {count} notes, at a {rate}% earnings fee. Reference {reference}.',
+    },
     'investor.notices.primary.holding_issued.title': 'Investment confirmed',
-    'investor.notices.primary.holding_issued.body':
-        'Your {units} notes in {business} are issued: {amount} invested, {maturity} expected at maturity on {date}.',
+    'investor.notices.primary.holding_issued.body': {
+        one: 'Your {count} note in {business} is issued: {amount} invested, {maturity} expected at maturity on {date}.',
+        other: 'Your {count} notes in {business} are issued: {amount} invested, {maturity} expected at maturity on {date}.',
+    },
     'investor.notices.business.raise_funded.title': 'Raise fully funded',
     'investor.notices.business.raise_funded.body':
         '{title} reached its target of {principal}. Rozine now prepares the payout to your account.',
@@ -7190,6 +7196,10 @@ const en = {
     'investor.notices.verification.approved.title': 'You are verified',
     'investor.notices.verification.approved.body':
         'Your identity is verified and your wallet is ready to invest.',
+    'investor.notices.verification.approved.body_business':
+        'Your identity is verified. You can now apply for a raise.',
+    'investor.notices.verification.approved.body_auditor':
+        'Your identity is verified. You can now take audit jobs.',
     'investor.notices.verification.rejected.title':
         'Your identity details need another look',
     'investor.notices.verification.rejected.body':
