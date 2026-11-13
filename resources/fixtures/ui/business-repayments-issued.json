@@ -130,6 +130,7 @@
                 ]
             }
         ],
+        "visit_ready": null,
         "bases": {},
         "home": null,
         "shell_links": {
@@ -142,6 +143,7 @@
                 "method": "get"
             },
             "reports": null,
+            "readiness": null,
             "market": null,
             "profile": null
         },

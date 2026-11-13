@@ -827,8 +827,33 @@ export type StatementReviewFile = {
 /* Audit procedure (MVP-AUDITOR-SCR-03…06, design sheets L1017–1498)                             */
 /* ------------------------------------------------------------------------------------------ */
 
-export type FlashStep = 'review' | 'check_in' | 'photos' | 'ledger' | 'seal';
-export type MonthlyStep = 'statements' | 'count' | 'photos' | 'seal';
+export type FlashStep =
+    | 'review'
+    | 'check_in'
+    | 'history'
+    | 'premises'
+    | 'people'
+    | 'registration'
+    | 'trading'
+    | 'available'
+    | 'reason'
+    | 'photos'
+    | 'ledger'
+    | 'seal';
+export type MonthlyStep =
+    | 'statements'
+    | 'count'
+    | 'cash_sales'
+    | 'costs'
+    | 'drawings'
+    | 'loans'
+    | 'differences'
+    | 'staff'
+    | 'expiries'
+    | 'loan_use'
+    | 'changes'
+    | 'photos'
+    | 'seal';
 export type AuditStepKey = FlashStep | MonthlyStep;
 
 /**
@@ -1006,6 +1031,176 @@ export type CountStage = {
     operational_status: 'active' | 'suspended' | 'restricted' | null;
 };
 
+/** Owner drawings for the month, in whole francs (BRS v3 VIS-R01 step 7); null before it is recorded. */
+export type DrawingsStage = {
+    step: 'drawings';
+    owner_drawings: Money | null;
+};
+
+/** One loan the business owes anyone other than its Rozine note. */
+export type OtherLoan = {
+    lender: string;
+    outstanding: Money;
+    monthly_payment: Money;
+};
+
+/** Other loans as the CPA saw them (BRS v3 VIS-R01 step 8); an empty list means none. */
+export type LoansStage = {
+    step: 'loans';
+    max: number;
+    loans: OtherLoan[];
+};
+
+/** One month of the verified history a baseline visit checks (BRS v3 VIS-R02), newest first. */
+export type HistoryMonth = {
+    month: string;
+    inflow: Money;
+    outflow: Money;
+};
+
+export type HistoryStage = {
+    step: 'history';
+    months: HistoryMonth[];
+    history_checked: boolean;
+};
+
+/** Who holds the premises the business trades from (BRS v3 VIS-R02). */
+export type PremisesTenure = 'owned' | 'rented' | 'shared';
+
+export type BusinessAsset = { item: string; value: Money };
+
+export type PremisesStage = {
+    step: 'premises';
+    tenures: PremisesTenure[];
+    premises_tenure: PremisesTenure | null;
+    max: number;
+    assets: BusinessAsset[];
+};
+
+/** The identity of directors and owners and the management profiles, checked on a baseline visit. */
+export type PeopleStage = {
+    step: 'people';
+    owners_confirmed: boolean;
+    management_confirmed: boolean;
+};
+
+/** The registration certificate and tax clearance, checked on a baseline visit. */
+export type RegistrationStage = {
+    step: 'registration';
+    registration_confirmed: boolean;
+    tax_clearance_expires_on: string | null;
+};
+
+/** The month the business started trading, `YYYY-MM`. */
+export type TradingStage = {
+    step: 'trading';
+    trading_since: string | null;
+};
+
+/** The money a late business could pay with now, and the financial proof seen (BRS v3 VIS-R02). */
+export type AvailableStage = {
+    step: 'available';
+    cash_available: Money | null;
+    financial_proofs: ProofItem[];
+};
+
+/** Why a repayment is late, from the fixed list of a late visit (BRS v3 VIS-R02). */
+export type LateReason =
+    | 'sales_fell'
+    | 'customers_owe'
+    | 'unexpected_cost'
+    | 'stock_bought'
+    | 'owner_away'
+    | 'trading_stopped'
+    | 'other';
+
+export type LateReasonStage = {
+    step: 'reason';
+    reasons: LateReason[];
+    late_reason: LateReason | null;
+    late_reason_note: string;
+};
+
+/** The month's cash sales that were never deposited (BRS v3 VIS-R01 step 4). */
+export type CashSalesStage = {
+    step: 'cash_sales';
+    undeposited_cash_sales: Money | null;
+};
+
+/** The six categories the CPA sorts the month's costs into (BRS v3 VIS-R01 step 5). */
+export type CostCategory =
+    | 'stock'
+    | 'staff'
+    | 'premises'
+    | 'transport'
+    | 'taxes'
+    | 'other';
+
+export type CostsStage = {
+    step: 'costs';
+    categories: { key: CostCategory; amount: Money | null }[];
+};
+
+/** The staff count as the CPA checked it on the RSSB total page (BRS v3 VIS-R01 step 10). */
+export type StaffStage = {
+    step: 'staff';
+    staff_count: string | null;
+    rssb_checked: boolean;
+};
+
+/** The tax and RSSB clearance expiry dates, `YYYY-MM-DD` (BRS v3 VIS-R01 step 12). */
+export type ExpiriesStage = {
+    step: 'expiries';
+    tax_clearance_expires_on: string | null;
+    rssb_clearance_expires_on: string | null;
+};
+
+/** How the business used its Rozine loan money this month (BRS v3 VIS-R01 step 13). */
+export type LoanUse = 'as_planned' | 'partly' | 'not_as_planned';
+
+export type LoanUseStage = {
+    step: 'loan_use';
+    options: LoanUse[];
+    loan_use: LoanUse | null;
+    note: string;
+};
+
+/** The four yes/no changes the CPA asks about (BRS v3 VIS-R01 step 14). */
+export type ChangeKind =
+    | 'new_debt'
+    | 'director_change'
+    | 'ownership_change'
+    | 'legal_claim';
+
+export type ChangesStage = {
+    step: 'changes';
+    kinds: ChangeKind[];
+    changes: Record<ChangeKind, boolean> | null;
+};
+
+/** The cause codes that explain a monthly cash difference (BRS v3 VIS-R01 step 9). */
+export type DifferenceCause =
+    | 'unrecorded_sales'
+    | 'unproven_expense'
+    | 'personal_spending'
+    | 'wrong_month'
+    | 'entry_error'
+    | 'counted_twice';
+
+/**
+ * Explain the difference: the cash the statements report against the cash counted, and the
+ * amounts already given to each cause. The difference is absolute and in whole francs; a month
+ * with no difference has nothing to explain.
+ */
+export type DifferencesStage = {
+    step: 'differences';
+    reported: Money | null;
+    observed: Money | null;
+    difference: Money | null;
+    causes: DifferenceCause[];
+    explanations: { cause: DifferenceCause; amount: string }[];
+};
+
 export type SealStage = {
     step: 'seal';
     summary: {
@@ -1131,6 +1326,22 @@ export type AuditStage =
     | LedgerStage
     | StatementsStage
     | CountStage
+    | HistoryStage
+    | PremisesStage
+    | PeopleStage
+    | RegistrationStage
+    | TradingStage
+    | AvailableStage
+    | LateReasonStage
+    | CashSalesStage
+    | CostsStage
+    | DrawingsStage
+    | LoansStage
+    | DifferencesStage
+    | StaffStage
+    | ExpiriesStage
+    | LoanUseStage
+    | ChangesStage
     | SealStage
     | SealedStage
     | ReturnedStage

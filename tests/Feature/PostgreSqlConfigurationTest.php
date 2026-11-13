@@ -170,7 +170,36 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $repeatApplications = require database_path('migrations/2026_10_22_130000_allow_repeat_business_applications.php');
     // The ledger-precision held release check rewrites check_primary_held_release, so it comes off first and goes back last.
     $heldReleasePrecision = require database_path('migrations/2026_10_30_190000_compare_held_release_cash_at_ledger_precision.php');
+    // The secondary market rewrites the ledger's kind constraints and references command operations, so it comes off first and goes back last.
+    $secondaryMarket = require database_path('migrations/2026_11_11_060000_create_secondary_market_tables.php');
+    $secondaryMarket->down();
+    // The visit-ready ticks reference business profiles, which are rebuilt below, so they come off first and go back last.
+    $visitReadyTicks = require database_path('migrations/2026_11_12_100000_create_business_visit_ready_ticks_table.php');
+    $visitReadyTicks->down();
+    expect(Schema::hasTable('business_visit_ready_ticks'))->toBeFalse();
+    // The readiness tables reference business profiles, which are rebuilt below, so they come off first and go back last.
+    $academyAttempts = require database_path('migrations/2026_11_10_190000_create_business_academy_attempts.php');
+    $academyAttempts->down();
+    $monthlySubmissions = require database_path('migrations/2026_11_10_170000_create_business_monthly_submissions.php');
+    $monthlySubmissions->down();
+    $readinessRequirements = require database_path('migrations/2026_11_10_090000_create_business_readiness_requirements.php');
+    $readinessRequirements->down();
+    expect(Schema::hasTable('business_readiness_requirements'))->toBeFalse()
+        ->and(Schema::hasTable('business_monthly_submissions'))->toBeFalse()
+        ->and(Schema::hasTable('business_academy_attempts'))->toBeFalse();
+    // Prospectus versions reference business applications, which are rebuilt below, so they come off first and go back last.
+    $prospectusDocuments = require database_path('migrations/2026_11_11_060000_create_business_prospectus_documents_table.php');
+    $prospectusDocuments->down();
+    expect(Schema::hasTable('business_prospectus_documents'))->toBeFalse()
+        ->and(DB::scalar("SELECT to_regprocedure('reject_business_prospectus_document_mutation()') IS NULL"))->toBeTrue();
+    $prospectusVersions = require database_path('migrations/2026_11_10_090000_create_business_prospectus_versions_table.php');
+    $prospectusVersions->down();
+    expect(Schema::hasTable('business_prospectus_versions'))->toBeFalse()
+        ->and(DB::scalar("SELECT to_regprocedure('reject_business_prospectus_version_mutation()') IS NULL"))->toBeTrue();
     $cartCheckouts = require database_path('migrations/2026_11_02_090000_create_investor_cart_checkouts.php');
+    // Recycling withdrawn commitment claims rewrites check_primary_held_release again, so it comes off before the precision check.
+    $withdrawnClaims = require database_path('migrations/2026_11_10_170000_recycle_withdrawn_commitment_claims.php');
+    $withdrawnClaims->down();
     $cartCheckouts->down();
     $cartQuotes = require database_path('migrations/2026_11_01_050000_create_investor_cart_quotes_table.php');
     $cartQuotes->down();
@@ -460,6 +489,20 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $cartRoots->up();
     $cartQuotes->up();
     $cartCheckouts->up();
+    $withdrawnClaims->up();
+    $prospectusVersions->up();
+    expect(Schema::hasTable('business_prospectus_versions'))->toBeTrue();
+    $prospectusDocuments->up();
+    expect(Schema::hasTable('business_prospectus_documents'))->toBeTrue();
+    $readinessRequirements->up();
+    $monthlySubmissions->up();
+    $academyAttempts->up();
+    expect(Schema::hasTable('business_readiness_requirements'))->toBeTrue()
+        ->and(Schema::hasTable('business_monthly_submissions'))->toBeTrue()
+        ->and(Schema::hasTable('business_academy_attempts'))->toBeTrue();
+    $visitReadyTicks->up();
+    expect(Schema::hasTable('business_visit_ready_ticks'))->toBeTrue();
+    $secondaryMarket->up();
     expect(Schema::hasColumn('business_photos', 'url'))->toBeTrue();
     expect(Schema::hasTable('investor_cart_lines'))->toBeTrue()
         ->and(DB::scalar("SELECT count(*) FROM pg_constraint WHERE conname = 'investor_cart_line_units'"))->toBe(1);

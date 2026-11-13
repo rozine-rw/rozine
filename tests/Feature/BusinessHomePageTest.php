@@ -29,7 +29,7 @@ beforeEach(function (): void {
         $props = $this->actingAs($user)->get(route('business.show', ['business' => $business]))->assertOk()
             ->assertInertia(fn (Assert $page): Assert => $page->component('business/home'))->viewData('page')['props'];
 
-        return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count', 'checkout_holds']));
+        return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count', 'checkout_holds', 'risk_acknowledgement']));
     };
     $this->purchase = function (BusinessCampaign $campaign, string $units): void {
         $investor = PrimaryReservationFixture::investor();
@@ -45,7 +45,7 @@ beforeEach(function (): void {
 it('offers a released application for publication before anything is listed', function (): void {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     $business = $fixture['audit']['business'];
     $application = $fixture['application'];
     $user = $fixture['audit']['authority']['users'][0];
@@ -71,7 +71,8 @@ it('offers a released application for publication before anything is listed', fu
         ->and($props['business']['name'])->toBeString()->not->toBe('')
         ->and(array_keys($props['business']))->toBe(['name', 'company_code', 'industry', 'district'])
         ->and($props['links'])->toBe(['home' => ['url' => "/business/{$business}", 'method' => 'get'], 'launcher' => ['url' => '/dashboard', 'method' => 'get'],
-            'reports' => ['url' => "/business/{$business}/reports", 'method' => 'get'], 'market' => ['url' => "/business/{$business}/market", 'method' => 'get'],
+            'reports' => ['url' => "/business/{$business}/reports", 'method' => 'get'], 'readiness' => ['url' => "/business/{$business}/readiness", 'method' => 'get'],
+            'market' => ['url' => "/business/{$business}/market", 'method' => 'get'],
             'profile' => ['url' => "/business/{$business}/profile", 'method' => 'get'],
             'wallet' => ['url' => "/business/{$business}/wallet", 'method' => 'get'],
             'deposit' => ['url' => "/business/{$business}/wallet?kind=deposit", 'method' => 'get'], 'withdraw' => null, 'notifications' => ['url' => "/business/{$business}/notices", 'method' => 'get'],
@@ -87,21 +88,32 @@ it('leads Today with a sealed audit report awaiting co-signatures, opening its c
     $user = $fixture['audit']['authority']['users'][0];
     $url = "/business/{$business}/audit-reports/{$fixture['report']->id}";
 
-    expect(($this->props)($user, $business)['today'])->toBe([['kind' => 'audit_cosign', 'report_kind' => $kind, 'due_at' => $due, 'hours_left' => 24,
+    expect(($this->props)($user, $business)['today'])->toBe([['kind' => 'audit_cosign', 'report_kind' => $kind, 'cosign' => false, 'due_at' => $due, 'hours_left' => 24,
         'link' => ['url' => $url, 'method' => 'get']]]);
     $this->get($url)->assertOk()->assertInertia(fn (Assert $page): Assert => $page->component('business/audit-cosign')
         ->where('report.id', $fixture['report']->id));
     Sanctum::actingAs($user, ['business:read']);
     $this->getJson(route('api.v1.business.show', ['business' => $business]))->assertOk()->assertJsonPath('data.today', []);
 
-    expect(AuditSealingFixture::cosign($fixture)['status'])->toBe('completed')
+    expect(AuditSealingFixture::publish($fixture)['status'])->toBe('completed')
         ->and(($this->props)($user, $business)['today'])->toBe([]);
+})->with(['flash', 'monthly']);
+
+it('asks for the co-signature only on a report sealed under the legacy policy, which has no review deadline', function (string $kind): void {
+    $this->freezeSecond();
+    $fixture = AuditSealingFixture::ready(kind: $kind);
+    AuditSealingFixture::sealLegacy($fixture);
+    $business = $fixture['audit']['business'];
+
+    expect(($this->props)($fixture['audit']['authority']['users'][0], $business)['today'])->toBe([['kind' => 'audit_cosign', 'report_kind' => $kind,
+        'cosign' => true, 'due_at' => null, 'hours_left' => null,
+        'link' => ['url' => "/business/{$business}/audit-reports/{$fixture['report']->id}", 'method' => 'get']]]);
 })->with(['flash', 'monthly']);
 
 it('moves the submitted application page on to approved, with its publish link, once staff release it', function (): void {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     $business = $fixture['audit']['business'];
     $application = $fixture['application'];
     $user = $fixture['audit']['authority']['users'][0];

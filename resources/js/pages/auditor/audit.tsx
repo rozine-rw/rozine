@@ -7,12 +7,29 @@ import { useReturnControls } from '@/components/auditor/audit/return-controls';
 import { ReturnedStatus } from '@/components/auditor/audit/returned-status';
 import { useSealFlow } from '@/components/auditor/audit/seal-flow';
 import { SealedStatus } from '@/components/auditor/audit/sealed-status';
+import { StepAvailable } from '@/components/auditor/audit/step-available';
 import { StepBar } from '@/components/auditor/audit/step-bar';
+import { StepCashSales } from '@/components/auditor/audit/step-cash-sales';
+import { StepChanges } from '@/components/auditor/audit/step-changes';
 import { StepCheckIn } from '@/components/auditor/audit/step-check-in';
+import { StepCosts } from '@/components/auditor/audit/step-costs';
 import { StepCount } from '@/components/auditor/audit/step-count';
+import { StepDifferences } from '@/components/auditor/audit/step-differences';
+import { StepDrawings } from '@/components/auditor/audit/step-drawings';
+import { StepExpiries } from '@/components/auditor/audit/step-expiries';
+import { StepGuide } from '@/components/auditor/audit/step-guide';
+import { StepHistory } from '@/components/auditor/audit/step-history';
+import { StepLateReason } from '@/components/auditor/audit/step-late-reason';
 import { StepLedger } from '@/components/auditor/audit/step-ledger';
+import { StepLoanUse } from '@/components/auditor/audit/step-loan-use';
+import { StepLoans } from '@/components/auditor/audit/step-loans';
+import { StepPeople } from '@/components/auditor/audit/step-people';
 import { StepPhotos } from '@/components/auditor/audit/step-photos';
+import { StepPremises } from '@/components/auditor/audit/step-premises';
+import { StepRegistration } from '@/components/auditor/audit/step-registration';
+import { StepStaff } from '@/components/auditor/audit/step-staff';
 import { StepStatements } from '@/components/auditor/audit/step-statements';
+import { StepTrading } from '@/components/auditor/audit/step-trading';
 import { AuditorShell } from '@/components/auditor/auditor-shell';
 import {
     AuditorCommandNotice,
@@ -44,7 +61,23 @@ import type {
  * reaches the partner as a banner above the step.
  */
 const SHOWN_FIELDS: Partial<Record<AuditStage['step'], string[]>> = {
+    history: ['history_checked'],
+    premises: ['premises_tenure', 'assets'],
+    people: ['owners_confirmed', 'management_confirmed'],
+    registration: ['registration_confirmed', 'tax_clearance_expires_on'],
+    trading: ['trading_since'],
+    available: ['cash_available', 'financial_proofs'],
+    reason: ['late_reason', 'late_reason_note'],
     ledger: ['observed_stock', 'document', 'replaces'],
+    cash_sales: ['undeposited_cash_sales'],
+    costs: ['costs'],
+    drawings: ['owner_drawings'],
+    loans: ['loans'],
+    differences: ['explanations'],
+    staff: ['staff_count', 'rssb_checked'],
+    expiries: ['tax_clearance_expires_on', 'rssb_clearance_expires_on'],
+    loan_use: ['loan_use', 'loan_use_note'],
+    changes: ['changes'],
     seal: ['note'],
 };
 
@@ -55,10 +88,26 @@ const CONTINUE: Record<
 > = {
     review: 'auditor.audit.continue',
     check_in: 'auditor.audit.continue',
+    history: 'auditor.audit.continue',
+    premises: 'auditor.audit.continue',
+    people: 'auditor.audit.continue',
+    registration: 'auditor.audit.continue',
+    trading: 'auditor.audit.to_photos',
+    available: 'auditor.audit.continue',
+    reason: 'auditor.audit.to_seal',
     photos: 'auditor.audit.continue',
     ledger: 'auditor.audit.to_seal',
     statements: 'auditor.audit.start_count',
-    count: 'auditor.audit.to_photos',
+    count: 'auditor.audit.continue',
+    cash_sales: 'auditor.audit.continue',
+    costs: 'auditor.audit.continue',
+    drawings: 'auditor.audit.continue',
+    loans: 'auditor.audit.explain_differences',
+    differences: 'auditor.audit.continue',
+    staff: 'auditor.audit.continue',
+    expiries: 'auditor.audit.continue',
+    loan_use: 'auditor.audit.continue',
+    changes: 'auditor.audit.to_photos',
 };
 
 /** The review step records only that the partner read the file and moved on. */
@@ -119,6 +168,38 @@ function StageBody({
             return <StepStatements stage={stage} context={context} />;
         case 'count':
             return <StepCount stage={stage} context={context} />;
+        case 'drawings':
+            return <StepDrawings stage={stage} context={context} />;
+        case 'history':
+            return <StepHistory stage={stage} context={context} />;
+        case 'premises':
+            return <StepPremises stage={stage} context={context} />;
+        case 'people':
+            return <StepPeople stage={stage} context={context} />;
+        case 'registration':
+            return <StepRegistration stage={stage} context={context} />;
+        case 'trading':
+            return <StepTrading stage={stage} context={context} />;
+        case 'available':
+            return <StepAvailable stage={stage} context={context} />;
+        case 'reason':
+            return <StepLateReason stage={stage} context={context} />;
+        case 'cash_sales':
+            return <StepCashSales stage={stage} context={context} />;
+        case 'costs':
+            return <StepCosts stage={stage} context={context} />;
+        case 'loans':
+            return <StepLoans stage={stage} context={context} />;
+        case 'differences':
+            return <StepDifferences stage={stage} context={context} />;
+        case 'staff':
+            return <StepStaff stage={stage} context={context} />;
+        case 'expiries':
+            return <StepExpiries stage={stage} context={context} />;
+        case 'loan_use':
+            return <StepLoanUse stage={stage} context={context} />;
+        case 'changes':
+            return <StepChanges stage={stage} context={context} />;
         case 'seal':
             return seal;
         case 'sealed':
@@ -370,6 +451,7 @@ function AuditSheet(props: AuditProcedureProps) {
                     </Link>
                 </p>
             )}
+            {!terminal && !blocked && <StepGuide step={stage.step} />}
             <StageBody
                 props={props}
                 stage={stage}

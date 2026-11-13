@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 use App\Application\Primary\Contracts\RetainedNoteSchedules;
 use App\Application\Primary\GetRetainedNoteSchedule;
+use App\Domain\Auditor\VisitReadyChecklist;
 use App\Models\BusinessCampaign;
 use App\Models\User;
 use Brick\Math\BigInteger;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\PrimaryIssuanceFixture;
@@ -32,7 +34,9 @@ it('shows the issued schedule of each issued Note, as issued, with nothing due o
         ->assertInertia(fn (Assert $page): Assert => $page->component('business/repayments'))->viewData('page')['props'];
 
     expect($props)->toMatchArray(['note' => null, 'servicing' => null, 'schedule' => [], 'pay' => null, 'allowed_actions' => [], 'actions' => ['pay' => null]])
-        ->and($props['issued'])->toHaveCount(1);
+        ->and($props['issued'])->toHaveCount(1)
+        // Every instalment of this Note fell due in the past, so there is no visit to get ready for.
+        ->and($props['visit_ready'])->toBeNull();
     $issued = $props['issued'][0];
     expect($issued)->toMatchArray(['note_id' => $campaign->campaignId, 'title' => $publication->payload['title'], 'effective_date' => $instruction->effectiveDate,
         'principal' => $money($campaign->principal), 'return' => $money($snapshot->contractualReturn), 'total' => $money($snapshot->gross)])
@@ -62,4 +66,33 @@ it('reads through its own transaction and leaves the caller\'s level as it was',
     expect(app(RetainedNoteSchedules::class)->find($campaign->campaignId)?->campaignId)->toBe($campaign->campaignId)
         ->and(DB::transactionLevel())->toBe($level)
         ->and(app(RetainedNoteSchedules::class)->find('01J00000000000000000000000'))->toBeNull();
+});
+
+it('carries the visit-ready checklist from D−14 before the next instalment, built from the monthly visit steps (BRS v3 VIS-R03)', function (): void {
+    ['campaign' => $campaign, 'instruction' => $instruction] = PrimaryIssuanceFixture::close(effectiveAt: now()->toIso8601String());
+    $publication = BusinessCampaign::query()->findOrFail($campaign->campaignId);
+    $user = User::query()->findOrFail($publication->actor_user_id);
+    $read = fn (): mixed => $this->actingAs($user)->get(route('business.repayments.show', ['business' => $campaign->businessId]))->assertOk()->viewData('page')['props']['visit_ready'];
+    [$first, $second] = $instruction->dueDates;
+    $kigali = fn (string $date, int $days): CarbonImmutable => CarbonImmutable::parse($date, 'Africa/Kigali')->addDays($days)->setTime(9, 0);
+
+    // Time only moves forward here: the identity was verified at the fixture's frozen now.
+    expect($kigali($first, -15)->isFuture())->toBeTrue();
+    $this->travelTo($kigali($first, -15));
+    expect($read())->toBeNull();
+
+    $this->travelTo($kigali($first, -14));
+    $ready = $read();
+    expect($ready)->toMatchArray(['due_on' => $first, 'opens_on' => $kigali($first, -14)->toDateString(),
+        'visit_from' => $kigali($first, -10)->toDateString(), 'visit_by' => $kigali($first, -3)->toDateString()])
+        ->and($ready['items'])->toBe((new VisitReadyChecklist)->items());
+
+    $this->travelTo($kigali($first, 0));
+    expect($read()['due_on'])->toBe($first);
+
+    // Once an instalment's day has passed, the reminder moves to the next one when its D−14 arrives.
+    $this->travelTo($kigali($first, 1));
+    expect($read())->toBeNull();
+    $this->travelTo($kigali($second, -14));
+    expect($read()['due_on'])->toBe($second);
 });

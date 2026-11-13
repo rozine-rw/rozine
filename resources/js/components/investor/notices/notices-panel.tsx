@@ -208,6 +208,82 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
             </>
         ),
     },
+    'business.readiness_stage_changed': {
+        bar: 'bg-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.10)] text-[#1e3aff]',
+        icon: <path d="M4 20h4v-5h4v-5h4V5h4" {...stroke} />,
+    },
+    'business.readiness_requirement_due': {
+        bar: 'bg-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.10)] text-[#1e3aff]',
+        icon: (
+            <>
+                <rect
+                    x="5"
+                    y="3.5"
+                    width="14"
+                    height="17"
+                    rx="2.4"
+                    {...stroke}
+                />
+                <path d="m8.5 12 2.5 2.5 4.5-5" {...stroke} />
+            </>
+        ),
+    },
+    'business.readiness_requirement_closing': {
+        bar: 'bg-[#b07a12]',
+        tile: 'bg-[rgba(176,122,18,.12)] text-[#b07a12]',
+        icon: (
+            <>
+                <circle cx="12" cy="12" r="8" {...stroke} />
+                <path d="M12 8v4l2.5 2.5" {...stroke} />
+            </>
+        ),
+    },
+    'business.readiness_requirement_overdue': {
+        bar: 'bg-[#c2410c]',
+        tile: 'bg-[rgba(194,65,12,.12)] text-[#c2410c]',
+        icon: (
+            <>
+                <circle cx="12" cy="12" r="8" {...stroke} />
+                <path d="M12 7.5v5.5M12 16.2v.3" {...stroke} />
+            </>
+        ),
+    },
+    'business.visit_ready_open': {
+        bar: 'bg-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.10)] text-[#1e3aff]',
+        icon: (
+            <>
+                <rect
+                    x="5.5"
+                    y="4.5"
+                    width="13"
+                    height="15"
+                    rx="2.4"
+                    {...stroke}
+                />
+                <path d="m8.5 12 2 2 4.5-4.5" {...stroke} />
+            </>
+        ),
+    },
+    'business.visit_ready_reminder': {
+        bar: 'bg-[#b07a12]',
+        tile: 'bg-[rgba(176,122,18,.12)] text-[#b07a12]',
+        icon: (
+            <>
+                <rect
+                    x="5.5"
+                    y="4.5"
+                    width="13"
+                    height="15"
+                    rx="2.4"
+                    {...stroke}
+                />
+                <path d="M9 10h6M9 14h4" {...stroke} />
+            </>
+        ),
+    },
     'auditor.accreditation_approved': {
         bar: 'bg-[#1e3aff]',
         tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
@@ -716,6 +792,42 @@ function body(
                     locale,
                 ),
                 date: formatDate(notice.facts.closes_at, locale),
+            });
+        case 'business.readiness_stage_changed':
+            return t('investor.notices.business.readiness_stage_changed.body', {
+                stage: t(
+                    `business.readiness.stage.${notice.facts.stage}` as 'business.readiness.stage.0',
+                ),
+                previous: t(
+                    `business.readiness.stage.${notice.facts.previous}` as 'business.readiness.stage.0',
+                ),
+                month: formatMonthYearLong(
+                    `${notice.facts.period}-01T00:00:00+02:00`,
+                    locale,
+                ),
+            });
+        case 'business.readiness_requirement_due':
+        case 'business.readiness_requirement_closing':
+        case 'business.readiness_requirement_overdue':
+            return t(`investor.notices.${notice.kind}.body`, {
+                requirement: t(
+                    `business.readiness.requirement.${notice.facts.code}.title`,
+                ),
+                date: formatDate(
+                    `${notice.facts.due_on}T00:00:00+02:00`,
+                    locale,
+                ),
+            });
+        case 'business.visit_ready_open':
+            return t('investor.notices.business.visit_ready_open.body', {
+                date: formatDate(notice.facts.due_on, locale),
+                items: notice.facts.items,
+            });
+        case 'business.visit_ready_reminder':
+            return t('investor.notices.business.visit_ready_reminder.body', {
+                date: formatDate(notice.facts.due_on, locale),
+                open: notice.facts.open,
+                items: notice.facts.items,
             });
         case 'auditor.accreditation_approved':
             return t('investor.notices.auditor.accreditation_approved.body', {

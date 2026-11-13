@@ -63,6 +63,7 @@ export const C3_REFUSAL_CODES = [
     'CART_UNITS_ABOVE_LIMIT',
     'CART_EMPTY',
     'RISK_ACKNOWLEDGEMENT_REQUIRED',
+    'COMMITMENT_WITHDRAWN',
 ] as const;
 
 export type C3RefusalCode = (typeof C3_REFUSAL_CODES)[number];

@@ -77,7 +77,7 @@ function applyUiProps(User $user, string $url): array
             return $inertia->component('business/apply');
         });
 
-    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count', 'checkout_holds']));
+    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count', 'checkout_holds', 'risk_acknowledgement']));
 }
 
 /**
@@ -94,7 +94,7 @@ function applyUiHome(User $user, string $business): array
         return $inertia->component('business/home');
     });
 
-    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count', 'checkout_holds']));
+    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count', 'checkout_holds', 'risk_acknowledgement']));
 }
 
 /**
@@ -178,7 +178,8 @@ it('renders a just-created draft with the shape of the live-minimal fixture and 
             'operation' => ['url' => '/business/application-operations/{request_id}', 'method' => 'get'],
         ])
         ->and($props['shell_links'])->toBe(['home' => ['url' => "/business/{$business}", 'method' => 'get'],
-            'launcher' => ['url' => '/dashboard', 'method' => 'get'], 'reports' => ['url' => "/business/{$business}/reports", 'method' => 'get'], 'market' => ['url' => "/business/{$business}/market", 'method' => 'get'],
+            'launcher' => ['url' => '/dashboard', 'method' => 'get'], 'reports' => ['url' => "/business/{$business}/reports", 'method' => 'get'],
+            'readiness' => ['url' => "/business/{$business}/readiness", 'method' => 'get'], 'market' => ['url' => "/business/{$business}/market", 'method' => 'get'],
             'profile' => ['url' => "/business/{$business}/profile", 'method' => 'get']])
         ->and($props['actions'])->toBe([
             'save' => ['url' => "{$path}/save", 'method' => 'post'],

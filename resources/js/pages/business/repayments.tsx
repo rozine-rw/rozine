@@ -13,6 +13,7 @@ import {
     RepaymentReceipt,
 } from '@/components/business/repayments/receipt';
 import { ScheduleList } from '@/components/business/repayments/schedule-list';
+import { VisitReadyChecklist } from '@/components/business/repayments/visit-ready-checklist';
 import { C3Notice, PollStopped } from '@/components/rozine/c3-notice';
 import { Icon } from '@/components/rozine/icon';
 import { useBoundedPoll } from '@/hooks/use-bounded-poll';
@@ -45,7 +46,8 @@ const RELOADS = [
  * recorded payment is allocated to the note's Investors afterwards; while it is, the page polls
  * within bounds, and it never shows an instalment as paid before the server does. While no note
  * is servicing, the sheet offers nothing to pay: it shows each issued note's schedule as it was
- * issued, or says there is nothing to repay.
+ * issued, or says there is nothing to repay. From D−14 before the next instalment, the reminder
+ * opens with the visit-ready checklist (BRS v3 VIS-R03).
  */
 export default function BusinessRepayments(props: BusinessRepaymentsPageProps) {
     const { t } = useTranslation();
@@ -107,9 +109,14 @@ function SheetHeading({
 
 /**
  * No note is servicing yet: nothing is due or payable, and nothing is offered. An issued note shows
- * its schedule as it was issued; with none, the sheet says there is nothing to repay.
+ * its schedule as it was issued; with none, the sheet says there is nothing to repay. From D−14
+ * before the next instalment, the reminder opens with the visit-ready checklist (BRS v3 VIS-R03).
  */
-function NothingToRepay({ links, issued }: BusinessRepaymentsEmptyProps) {
+function NothingToRepay({
+    links,
+    issued,
+    visit_ready: visitReady,
+}: BusinessRepaymentsEmptyProps) {
     const { t } = useTranslation();
 
     return (
@@ -120,6 +127,9 @@ function NothingToRepay({ links, issued }: BusinessRepaymentsEmptyProps) {
         >
             <div className="px-5 pt-[calc(env(safe-area-inset-top)+2px)] pb-10 lg:pt-[18px]">
                 <SheetHeading close={links.close} />
+                {visitReady !== null && (
+                    <VisitReadyChecklist ready={visitReady} />
+                )}
                 {issued.length === 0 ? (
                     <div className="mt-4 rounded-2xl border border-rz-border bg-rz-surface px-5 py-10 text-center">
                         <div className="text-3xl">

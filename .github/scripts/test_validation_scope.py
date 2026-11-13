@@ -2347,6 +2347,40 @@ class CanonicalCoordinationTests(NativeCoordinationFixture):
         self.assertEqual(peak, 4)
         self.assertCountEqual(checked, peers)
 
+    def test_matching_failed_peer_outside_the_scan_window_is_not_read(self):
+        old = (datetime.datetime.now(datetime.timezone.utc) - policy.FAILED_PEER_WINDOW
+               - datetime.timedelta(minutes=5)).isoformat()
+        self.failed_peer(307, matching=True)
+        self.runs[307].update(created_at=old, updated_at=old, run_started_at=old)
+        downloads = []
+        real = policy.coordination_identity
+        def identity(repository, run, **kwargs):
+            downloads.append(run["id"])
+            return real(repository, run, **kwargs)
+        with self.server(), patch.object(policy, "coordination_identity", side_effect=identity):
+            self.assertNotEqual(policy.canonical_selection(self.env())["mode"], "refusal")
+        self.assertNotIn(307, downloads)
+
+    def test_matching_failed_peer_inside_the_scan_window_still_refuses(self):
+        recent = (datetime.datetime.now(datetime.timezone.utc) - policy.FAILED_PEER_WINDOW
+                  + datetime.timedelta(minutes=5)).isoformat()
+        self.failed_peer(307, matching=True)
+        self.runs[307].update(created_at=recent, updated_at=recent, run_started_at=recent)
+        with self.server(), self.assertRaisesRegex(policy.CoordinationRefusal, "canonical_peer_unsuccessful_no_takeover"):
+            policy.canonical_selection(self.env())
+
+    def test_matching_failed_rerun_of_an_old_run_inside_the_scan_window_still_refuses(self):
+        now = datetime.datetime.now(datetime.timezone.utc)
+        old = (now - policy.FAILED_PEER_WINDOW - datetime.timedelta(days=1)).isoformat()
+        for key in ("run_started_at", "updated_at"):
+            with self.subTest(recent=key):
+                self.setUp()
+                self.failed_peer(307, matching=True)
+                self.runs[307].update(created_at=old, run_started_at=old, updated_at=old)
+                self.runs[307][key] = (now - datetime.timedelta(minutes=5)).isoformat()
+                with self.server(), self.assertRaisesRegex(policy.CoordinationRefusal, "canonical_peer_unsuccessful_no_takeover"):
+                    policy.canonical_selection(self.env())
+
     def test_parallel_historical_reads_still_refuse_a_matching_failed_peer(self):
         for number in range(300, 308):
             self.failed_peer(number, matching=number == 307)
@@ -2356,7 +2390,7 @@ class CanonicalCoordinationTests(NativeCoordinationFixture):
 
     def test_parallel_historical_reads_cannot_ignore_failed_identity_publication(self):
         for number in range(300, 308):
-            self.failed_peer(number)
+            self.failed_peer(number, matching=number == 307)
         self.jobs[307][0]["steps"][-1]["conclusion"] = "failure"
         with self.server(), self.assertRaisesRegex(policy.CoordinationRefusal, "identity_or_decision_step_not_successful"):
             policy.canonical_selection(self.env())
@@ -2607,7 +2641,8 @@ class CanonicalCoordinationTests(NativeCoordinationFixture):
             self.assertEqual(old, new)
             final_pages = after["repository_pages"] - before["repository_pages"]
             self.assertEqual(after["run_inventories"], before["run_inventories"] - peers)
-            self.assertEqual(after["total"], before["total"] - peers + final_pages)
+            # Each unrelated peer also skips its jobs and attempt reads (#549).
+            self.assertEqual(after["total"], before["total"] - 3 * peers + final_pages)
             self.assertEqual(after["archives"], before["archives"])
             print("Historical request fixture: " + json.dumps({"peers": peers, "old": before, "new": after}, sort_keys=True))
 
@@ -2631,7 +2666,7 @@ class CanonicalCoordinationTests(NativeCoordinationFixture):
         old, before = self.measured_historical_selection(legacy=True, api_override=api)
         new, after = self.measured_historical_selection(api_override=api)
         self.assertEqual(old, new)
-        self.assertEqual(after["total"], before["total"] + 3)
+        self.assertEqual(after["total"], before["total"] + 3 - 2)
         print("Small-peer large-inventory fixture: " + json.dumps({"old": before, "new": after}, sort_keys=True))
 
     def test_indexed_reads_retain_the_original_per_run_thousand_artifact_bound(self):
@@ -2652,7 +2687,10 @@ class CanonicalCoordinationTests(NativeCoordinationFixture):
                  "cancelled job", "pending job", "failed upload", "legacy source")
         for case in cases:
             self.setUp()
-            self.failed_peer(300, matching=case == "matching tree")
+            # Job and attempt reads now run only for a peer on the same native tree
+            # (#549): those cases use a matching peer so both paths still refuse.
+            job_case = case in ("missing job", "failed job", "skipped job", "cancelled job", "pending job", "failed upload")
+            self.failed_peer(300, matching=case == "matching tree" or job_case)
             proof = self.artifacts[300]["ci-coordination-identity"]
             if case == "execute": self.artifacts[100].pop("validation-tree")
             if case == "wrong repository": proof["repository"] = "fork/repo"
@@ -2756,7 +2794,7 @@ class CanonicalCoordinationTests(NativeCoordinationFixture):
     def test_historical_native_attempt_and_jobs_are_still_read_fresh(self):
         for case in ("attempt", "jobs"):
             self.setUp()
-            self.failed_peer(300)
+            self.failed_peer(300, matching=True)
             def api(endpoint, **kwargs):
                 result = copy.deepcopy(self.api(endpoint, **kwargs))
                 if endpoint.endswith("/runs/300") and case == "attempt": result["run_attempt"] = 2
@@ -2765,6 +2803,31 @@ class CanonicalCoordinationTests(NativeCoordinationFixture):
             with self.subTest(case=case):
                 result, _ = self.measured_historical_selection(api_override=api)
                 self.assertEqual(result[0], "refusal")
+                self.assertNotIn("canonical_peer_unsuccessful", result[2])
+
+    def test_failed_peer_on_another_native_tree_skips_job_and_attempt_reads(self):
+        for case in ("attempt", "jobs", "valid"):
+            self.setUp()
+            self.failed_peer(300)
+            reads = []
+            def api(endpoint, **kwargs):
+                if endpoint.endswith("/runs/300") or "/runs/300/attempts/" in endpoint: reads.append(endpoint)
+                result = copy.deepcopy(self.api(endpoint, **kwargs))
+                if endpoint.endswith("/runs/300") and case == "attempt": result["run_attempt"] = 2
+                return result
+            if case == "jobs": self.jobs[300][0]["steps"][-1]["conclusion"] = "failure"
+            with self.subTest(case=case):
+                result, counts = self.measured_historical_selection(api_override=api)
+                self.assertEqual(result[0], "decision")
+                self.assertEqual(reads, [])
+
+    def test_failed_peer_with_a_forged_native_tree_still_refuses(self):
+        self.failed_peer(300)
+        proof = self.artifacts[300]["ci-coordination-identity"]
+        proof["tree_sha"] = self.tree
+        result, _ = self.measured_historical_selection()
+        self.assertEqual(result[0], "refusal")
+        self.assertIn("coordination_identity_native_tree_mismatch", result[2])
 
     def test_final_multipage_comparison_detects_changed_metadata_off_first_page(self):
         for number in range(300, 500):
