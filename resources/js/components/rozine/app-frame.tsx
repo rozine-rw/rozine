@@ -171,10 +171,13 @@ export function AppFrame({
                     </div>
                 </aside>
 
+                {/* On desktop the frame is one screen tall, so a page whose body runs longer scrolls
+                    here instead of being clipped; pages with their own scrolling columns fill it
+                    exactly and never scroll it (QA: Academy test questions out of reach). */}
                 <main
                     id={MAIN_CONTENT_ID}
                     tabIndex={-1}
-                    className="relative min-w-0 flex-1 lg:overflow-hidden lg:rounded-r-[20px] lg:bg-rz-page"
+                    className="relative min-w-0 flex-1 lg:overflow-x-hidden lg:overflow-y-auto lg:rounded-r-[20px] lg:bg-rz-page"
                 >
                     {children}
                 </main>

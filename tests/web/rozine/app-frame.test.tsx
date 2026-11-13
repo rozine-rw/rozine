@@ -68,5 +68,8 @@ describe('AppFrame', () => {
         expect(skip).toHaveAttribute('href', '#main-content');
         expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content');
         expect(screen.getByRole('main')).toHaveAttribute('tabindex', '-1');
+        // A desktop page longer than the one-screen frame scrolls instead of being clipped.
+        expect(screen.getByRole('main')).toHaveClass('lg:overflow-y-auto');
+        expect(screen.getByRole('main')).not.toHaveClass('lg:overflow-hidden');
     });
 });
