@@ -139,6 +139,17 @@ interface PrimaryReservations
     public function refund(string $campaignId, string $reservationId, string $partyId, int $expectedRevision): ReservationRefund;
 
     /**
+     * The Investor's own withdrawal of a commitment before its raise fills (BRS v3.0 INV-R03,
+     * LED-R02). Requires the caller transaction, which authorizes the Investor and journals the
+     * command. Under the campaign's open lock, Business → campaign → all roots → commitments →
+     * wallet, it refuses `COMMITMENT_LOCKED` once the live confirmed units reach 100% of the raise
+     * (funded or not), and `CAMPAIGN_CLOSED` once the raise closed or its window elapsed. Otherwise
+     * it refunds the exact principal fee-free, as `refund`, and retires the commitment's claim so
+     * other Investors can take the withdrawn units. A replay returns the retained refund.
+     */
+    public function withdraw(string $campaignId, string $reservationId, string $partyId, int $expectedRevision): ReservationRefund;
+
+    /**
      * Examines at most limit overdue, nonterminal candidates. Unfailed candidates go
      * first in deadline/id order, then failed ones in oldest-attempt/deadline/id order.
      * Invoke without an outer transaction so each candidate commits independently.

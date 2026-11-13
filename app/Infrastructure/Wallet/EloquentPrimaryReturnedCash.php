@@ -84,22 +84,53 @@ final readonly class EloquentPrimaryReturnedCash implements PrimaryReturnedCash
      */
     public function inspectHeldReturn(string $partyId, WalletMoney $amount, PostingSource $source): array
     {
+        $entries = $this->inspect($partyId, $amount, $source, ['primary_hold', 'primary_release']);
+
+        return ['hold_entry_id' => $entries['primary_hold']->id, 'hold_sha256' => $entries['primary_hold']->sha256,
+            'return_entry_id' => $entries['primary_release']->id, 'return_sha256' => $entries['primary_release']->sha256,
+            'wallet_id' => $entries['primary_hold']->wallet_id];
+    }
+
+    /** SELECT-only full refund of a withdrawn commitment (hold → commit → refund); same guarantees as inspectHeldReturn.
+     * @return array{hold_entry_id: string, hold_sha256: string, return_entry_id: string, return_sha256: string, wallet_id: string, commit_entry_id: string, commit_sha256: string}
+     */
+    public function inspectWithdrawnReturn(string $partyId, WalletMoney $amount, PostingSource $source): array
+    {
+        $entries = $this->inspect($partyId, $amount, $source, ['primary_commit', 'primary_hold', 'primary_refund']);
+
+        return ['hold_entry_id' => $entries['primary_hold']->id, 'hold_sha256' => $entries['primary_hold']->sha256,
+            'return_entry_id' => $entries['primary_refund']->id, 'return_sha256' => $entries['primary_refund']->sha256,
+            'wallet_id' => $entries['primary_hold']->wallet_id,
+            'commit_entry_id' => $entries['primary_commit']->id, 'commit_sha256' => $entries['primary_commit']->sha256];
+    }
+
+    /**
+     * Reads the source's entries, which must be exactly `$kinds`, each the full amount between the
+     * accounts its kind moves, in the hold's wallet of the Party, with an authentic payload.
+     *
+     * @param  list<string>  $kinds  sorted by name
+     * @return array<string, LedgerEntry>
+     */
+    private function inspect(string $partyId, WalletMoney $amount, PostingSource $source, array $kinds): array
+    {
         if ($source->type !== 'primary_reservation') {
             throw new WalletViolation('WALLET_POSTING_SOURCE_INVALID');
         }
         $entries = LedgerEntry::query()->where('source_type', $source->type)->where('source_id', $source->id)->orderBy('kind')->get();
-        if ($entries->pluck('kind')->all() !== ['primary_hold', 'primary_release']) {
+        if ($entries->pluck('kind')->all() !== $kinds) {
             throw new WalletViolation('PRIMARY_RETURNED_CASH_REQUIRED');
         }
-        $hold = $entries->firstOrFail();
-        $return = $entries->last();
-        $walletId = $hold->wallet_id;
+        $walletId = $entries->firstOrFail(fn (LedgerEntry $entry): bool => $entry->kind === 'primary_hold')->wallet_id;
         if (! InvestorWallet::query()->whereKey($walletId)->where('party_id', $partyId)->where('currency', 'RWF')->exists()) {
             throw new WalletViolation('WALLET_POSTING_CONFLICT');
         }
         foreach ($entries as $entry) {
-            [$debit, $credit] = $entry->kind === 'primary_hold'
-                ? ['investor_available', 'investor_held'] : ['investor_held', 'investor_available'];
+            [$debit, $credit] = match ($entry->kind) {
+                'primary_hold' => ['investor_available', 'investor_held'],
+                'primary_commit' => ['investor_held', 'investor_committed'],
+                'primary_release' => ['investor_held', 'investor_available'],
+                default => ['investor_committed', 'investor_available'],
+            };
             $lines = DB::table('ledger_lines')->join('ledger_accounts', 'ledger_accounts.id', 'ledger_lines.account_id')
                 ->where('ledger_lines.entry_id', $entry->id)->orderBy('ledger_lines.direction')
                 ->get(['ledger_lines.direction', 'ledger_lines.amount', 'ledger_accounts.kind', 'ledger_accounts.wallet_id', 'ledger_accounts.currency'])
@@ -117,7 +148,6 @@ final readonly class EloquentPrimaryReturnedCash implements PrimaryReturnedCash
             }
         }
 
-        return ['hold_entry_id' => $hold->id, 'hold_sha256' => $hold->sha256,
-            'return_entry_id' => $return->id, 'return_sha256' => $return->sha256, 'wallet_id' => $walletId];
+        return $entries->keyBy('kind')->all();
     }
 }
