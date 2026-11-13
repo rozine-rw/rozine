@@ -197,6 +197,13 @@ describe('Company information', () => {
 
         const phone = screen.getByRole('textbox', { name: 'Business phone' });
 
+        expect(phone).toHaveAttribute('placeholder', '07XX XXX XXX');
+        expect(
+            screen.getByRole('textbox', { name: 'Business email' }),
+        ).toHaveAccessibleDescription(
+            "Where Rozine sends the business's receipts, notices and statements.",
+        );
+
         await user.clear(phone);
         await user.type(phone, '0788-555 111');
 
@@ -732,6 +739,9 @@ describe('Business account sections', () => {
             screen.getByRole('button', { name: /CMP-00000003/u }),
         ).toHaveTextContent('Awaiting reply');
 
+        expect(screen.getByTestId('support-chat-clearance')).toHaveClass(
+            'h-20',
+        );
         await user.click(
             screen.getByRole('button', { name: 'Contact Rozine Support' }),
         );

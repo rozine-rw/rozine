@@ -511,6 +511,9 @@ const en = {
     'business.home.company_code': 'RDB {code}',
     'business.home.rozine_rating': 'Rozine rating',
     'business.rating.pending': 'Pending audit',
+    'business.rating.pending_hint': 'Rated after your first audited month',
+    'business.rating.pending_next':
+        "Your rating appears once your first monthly report is audited. We'll tell you when your audit opens, so you can get the month's records ready.",
     'business.rating.band.strong': 'Strong',
     'business.rating.band.stable': 'Stable',
     'business.rating.band.weak': 'Weak',
@@ -1132,7 +1135,9 @@ const en = {
     'business.profile.company.name': 'Company name',
     'business.profile.company.email': 'Business email',
     'business.profile.company.phone': 'Business phone',
-    'business.profile.company.phone_placeholder': '0788 123 456',
+    'business.profile.company.phone_placeholder': '07XX XXX XXX',
+    'business.profile.company.email_hint':
+        "Where Rozine sends the business's receipts, notices and statements.",
     'business.profile.company.address': 'Registered address',
     'business.profile.company.province': 'Province',
     'business.profile.company.district': 'District',
