@@ -414,7 +414,29 @@ describe('Linked accounts', () => {
         ).toBeInTheDocument();
     });
 
-    it('says so when no account is linked and none can be', () => {
+    it('says linking is not open yet, that nothing is needed, and where to ask, rather than leaving a dead end (#592)', () => {
+        const page = props(linkedFixture);
+
+        page.linked = { accounts: [], add: null, banks: [], open: false };
+        page.links.sections.support = {
+            url: '/business/profile/support',
+            method: 'get',
+        };
+        render(<BusinessProfile {...page} />);
+
+        expect(
+            screen.getByText(
+                /Rozine hasn't opened payout accounts for businesses yet, so there is nothing for you to do now\./u,
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', {
+                name: 'Questions? Ask Rozine support.',
+            }),
+        ).toHaveAttribute('href', '/business/profile/support');
+    });
+
+    it('tells a holder who cannot withdraw that a signatory links the account', () => {
         const page = props(linkedFixture);
 
         page.linked = { accounts: [], add: null, banks: [] };
@@ -422,9 +444,14 @@ describe('Linked accounts', () => {
 
         expect(
             screen.getByText(
-                'No account linked yet. Linking opens once this account is cleared for money movement. Your payouts go to the verified account you link here.',
+                'No account linked yet. Only a signatory who can withdraw for this business can link a payout account. Ask one of them to link it here.',
             ),
         ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', {
+                name: 'Questions? Ask Rozine support.',
+            }),
+        ).not.toBeInTheDocument();
     });
 
     it('shows nothing until the accounts arrive', () => {

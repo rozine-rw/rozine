@@ -1208,8 +1208,12 @@ const rw: Catalog = {
     'business.profile.linked.add': '+ Huza konti yakiriraho',
     'business.profile.linked.none':
         'Nta konti irahuzwa. Huza imwe kugira ngo ushyireho kandi ubikuze amafaranga.',
-    'business.profile.linked.empty':
-        'Nta konti irahuzwa. Guhuza konti bizafunguka iyi konti nimara kwemererwa kohereza no kwakira amafaranga. Amafaranga yawe azoherezwa kuri konti yemejwe uhuza hano.',
+    'business.profile.linked.closed':
+        'Nta konti irahuzwa. Rozine ntirafungura konti zo kwakiriraho amafaranga ku bigo, bityo nta cyo usabwa gukora ubu. Amafaranga yawe aguma mu gikapu cyawe mu mutekano, kandi uzashobora guhuza hano konti iri mu izina ry’ikigo nibimara gufungurwa.',
+    'business.profile.linked.not_permitted':
+        'Nta konti irahuzwa. Umusinyi ufite uburenganzira bwo kubikuza ku kigo ni we wenyine ushobora guhuza konti yo kwakiriraho amafaranga. Saba umwe muri bo ayihuze hano.',
+    'business.profile.linked.ask_support':
+        'Ufite ikibazo? Baza ubufasha bwa Rozine.',
     'business.profile.linked.footnote':
         "Hahuzwa gusa konti iri mu izina ryanditswe ry'ubucuruzi. Amafaranga abikujwe ajya gusa kuri konti ihujwe.",
     'business.profile.legal.updated':
@@ -6852,6 +6856,8 @@ const rw: Catalog = {
         'Kubikuza ntibirafungurwa: iyi konti nta konti yo kwakiriraho yemejwe ifite. Huza iri mu izina ryawe, hanyuma Rozine ifungure kubikuza konti nimara kwemererwa kohereza no kwakira amafaranga.',
     'investor.wallet.c3.withdraw_not_cleared':
         'Konti yawe yo kwakiriraho yaremejwe. Kubikuza bizafunguka Rozine nimara kwemerera iyi konti kohereza no kwakira amafaranga; nta kindi usabwa gukora.',
+    'investor.wallet.c3.withdraw_linking_closed':
+        'Kubikuza ntibirafungurwa. Rozine ntirafungura konti zo kwakiriraho amafaranga kuri iki gikapu, bityo nta cyo guhuza cyangwa gukora ubu. Amafaranga yawe aguma hano mu mutekano kugeza icyo gihe.',
     'investor.wallet.c3.withdraw_not_allowed':
         "Konti yawe yo kwakiriraho yaremejwe, ariko ubu ntiwemerewe kubikuza muri iki gikapu. Vugana n'ubufasha bwa Rozine niba ukeneye kubikuza.",
     'investor.wallet.c3.withdraw_link_account': 'Jya kuri Konti zihujwe',
