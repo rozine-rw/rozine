@@ -8,6 +8,7 @@ use App\Models\DepositPolicy;
 use App\Models\DisbursementIntent;
 use App\Models\PrimaryHolding;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Database\Seeders\CheckpointThreeSeeder;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Artisan;
@@ -63,6 +64,36 @@ it('stages a listed raise, a paid-out note and a monthly report in its window, a
         ->and(Artisan::call('local:checkpoint-three', ['--otp' => 'auditor-funded']))->toBe(0)
         ->and(trim(Artisan::output()))->toMatch('/^[0-9]{6}$/')
         ->and(Artisan::call('local:checkpoint-three', ['--otp' => 'investor-live']))->toBe(1);
+});
+
+it('pays the funded raise out so its first instalment is 13 days away and the visit-ready checklist is open', function (): void {
+    $this->freezeSecond();
+    expect(Artisan::call('local:checkpoint-three', ['--visit-ready' => true]))->toBe(0);
+    $pack = json_decode((string) Storage::disk('local')->get(CheckpointThreeSeeder::MANIFEST), true, flags: JSON_THROW_ON_ERROR);
+    $dueOn = CheckpointThreeSeeder::firstDueOn($pack);
+    $today = CarbonImmutable::now('Africa/Kigali')->startOfDay();
+    $closing = DB::table('disbursement_closings')->where('kind', 'issued')->sole();
+    expect($dueOn)->toBe(json_decode((string) $closing->due_dates, true, flags: JSON_THROW_ON_ERROR)[0])
+        ->and((int) $today->diffInDays(CarbonImmutable::parse((string) $dueOn, 'Africa/Kigali')))->toBeIn([12, 13])
+        ->and(Artisan::output())->toContain('Visit-ready: first instalment due '.$dueOn);
+    $business = $pack['scenarios']['funded']['business'];
+    Storage::disk('local')->assertExists(CheckpointThreeSeeder::DIRECTORY.'/START-HERE.md');
+    expect(Storage::disk('local')->get(CheckpointThreeSeeder::DIRECTORY.'/START-HERE.md'))->toContain('first instalment is due '.$dueOn);
+
+    $owner = User::query()->where('email', 'business-funded@c3.rozine.invalid')->sole();
+    $visitReady = $this->actingAs($owner)->get(route('business.repayments.show', ['business' => $business]))->assertOk()->viewData('page')['props']['visit_ready'];
+    expect($visitReady['due_on'])->toBe($dueOn);
+    expect(Artisan::call('business:remind-visit-ready'))->toBe(0)->and(Artisan::output())->toContain('Opened 1 visit-ready checklists');
+
+    expect(Artisan::call('local:checkpoint-three', ['--visit-ready' => true]))->toBe(0)
+        ->and(DB::table('disbursement_closings')->count())->toBe(1);
+});
+
+it('refuses --visit-ready on a pack already paid out without it', function (): void {
+    app(CheckpointThreeSeeder::class)->prepare();
+
+    expect(Artisan::call('local:checkpoint-three', ['--visit-ready' => true]))->toBe(1)
+        ->and(Artisan::output())->toContain('C3_VISIT_READY_NEEDS_NEW_PACK');
 });
 
 it('refuses a reserved login collision without changing any accounts', function (): void {

@@ -13,7 +13,9 @@ class PrepareCheckpointThree extends Command
 {
     protected $hidden = true;
 
-    protected $signature = 'local:checkpoint-three {--otp= : Show the current authenticator code for a C3 account alias, e.g. auditor-funded}';
+    protected $signature = 'local:checkpoint-three
+        {--otp= : Show the current authenticator code for a C3 account alias, e.g. auditor-funded}
+        {--visit-ready : On a new pack, pay the funded raise out so its first instalment is due in 13 days and its visit-ready checklist is open}';
 
     protected $description = 'Prepare or inspect the additive, local-only checkpoint 3 manual test pack';
 
@@ -25,7 +27,7 @@ class PrepareCheckpointThree extends Command
 
                 return self::SUCCESS;
             }
-            $pack = $seeder->prepare();
+            $pack = $seeder->prepare((bool) $this->option('visit-ready'));
         } catch (LogicException $exception) {
             $this->components->error($exception->getMessage());
 
@@ -38,6 +40,11 @@ class PrepareCheckpointThree extends Command
         $this->line('Manifest: '.Storage::disk('local')->path(CheckpointThreeSeeder::MANIFEST));
         foreach ($pack['scenarios'] as $name => $scenario) {
             $this->line($name.': '.$scenario['business_path']);
+        }
+        $dueOn = CheckpointThreeSeeder::firstDueOn($pack);
+        if ($dueOn !== null) {
+            $this->line('Visit-ready: first instalment due '.$dueOn.'; checklist at '
+                .route('business.repayments.show', ['business' => $pack['scenarios']['funded']['business']], false));
         }
 
         return self::SUCCESS;
