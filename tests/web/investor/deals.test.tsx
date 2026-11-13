@@ -649,6 +649,23 @@ describe('Deals on a wide screen', () => {
         expect(screen.getByText('No deals open right now')).toBeInTheDocument();
     });
 
+    it('keeps the desktop panel to one description and claims no audit on monthly updates without a report (#594)', () => {
+        setWide(true);
+        const { unmount } = render(<InvestorDeal {...deal()} />);
+        const withReports = screen.queryAllByText('Audited').length;
+
+        unmount();
+        const props = deal();
+        const focus = props.home.focus!;
+
+        focus.about.description = focus.story;
+        focus.updates = [];
+        render(<InvestorDeal {...props} />);
+
+        expect(screen.getAllByText(focus.story)).toHaveLength(1);
+        expect(screen.queryAllByText('Audited')).toHaveLength(withReports - 1);
+    });
+
     it('opens a deal as the desktop panel rather than a separate page', () => {
         setWide(true);
         render(<InvestorDeal {...deal()} />);
@@ -661,6 +678,38 @@ describe('Deals on a wide screen', () => {
 });
 
 describe('Deal detail on a phone', () => {
+    it('shows the return and what comes back for the chosen notes while no quote is in hand, the fee at checkout (#594)', () => {
+        const props = deal();
+
+        props.quote = null;
+        render(<InvestorDeal {...props} />);
+
+        const card = screen.getByRole('region', { name: 'YOUR INVESTMENT' });
+
+        expect(card).toHaveTextContent('RWF 5,000 × 1 note');
+        expect(card).toHaveTextContent('+RWF 675');
+        expect(card).toHaveTextContent('Fee on earningsShown at checkout');
+        expect(card).toHaveTextContent('Get back, before the feeRWF 5,675');
+        expect(card).toHaveTextContent(
+            'Get back is before the charge on earnings. Each checkout shows the exact amount.',
+        );
+        expect(card).not.toHaveTextContent('—');
+    });
+
+    it('tells the business story once and claims no audit on a section with no report (#594)', () => {
+        const props = deal();
+
+        props.deal.about.description = props.deal.story;
+        props.deal.updates = [];
+        render(<InvestorDeal {...props} />);
+
+        expect(screen.getAllByText(props.deal.story)).toHaveLength(1);
+        expect(
+            screen.getByText('No monthly reports published yet.'),
+        ).toBeInTheDocument();
+        expect(screen.queryByText('Audited')).not.toBeInTheDocument();
+    });
+
     it('lays out the evidence with its provenance and the investment card', async () => {
         const user = userEvent.setup();
 

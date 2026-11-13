@@ -172,6 +172,14 @@ describe('Financial health', () => {
         const sheet = within(healthSheet());
 
         expect(sheet.getByText('Pending audit')).toBeInTheDocument();
+        expect(
+            sheet.getByText(
+                /Your rating appears once your first monthly report is audited/u,
+            ),
+        ).toBeInTheDocument();
+        expect(
+            sheet.queryByText(/Each audited monthly report updates this/u),
+        ).not.toBeInTheDocument();
         expect(sheet.getByText('—')).toBeInTheDocument();
         expect(sheet.queryByText('Score breakdown')).not.toBeInTheDocument();
         expect(

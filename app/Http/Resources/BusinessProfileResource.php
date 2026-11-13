@@ -60,7 +60,8 @@ class BusinessProfileResource extends JsonResource
                 'complaints' => array_map(fn (array $complaint): array => [...$complaint, 'reply' => $complaint['status'] === 'resolved' ? null
                     : ['url' => route('business.complaints.reply', [...$parameters, 'complaint' => $complaint['id']], false), 'method' => 'post']],
                     $data['complaints'])],
-            'linked' => ['add' => $data['can_link'] ? ['url' => route('business.profile.link', $parameters, false), 'method' => 'post'] : null, 'banks' => $data['banks'],
+            // Whether Rozine has opened payout linking at all, so an empty list can say why there is nothing to do yet (#592).
+            'linked' => ['add' => $data['can_link'] ? ['url' => route('business.profile.link', $parameters, false), 'method' => 'post'] : null, 'banks' => $data['banks'], 'open' => $data['linking_open'],
                 'accounts' => array_map(fn (array $method): array => ['id' => $method['id'], 'kind' => $method['kind'] === 'bank' ? 'bank' : 'mobile_money',
                     'name' => $method['label'], 'detail' => $method['masked'], 'unlink' => $data['can_link']
                         ? ['url' => route('business.profile.unlink', [...$parameters, 'method' => $method['id']], false), 'method' => 'post'] : null], $data['methods'])],

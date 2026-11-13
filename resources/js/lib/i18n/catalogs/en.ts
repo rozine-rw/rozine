@@ -511,6 +511,9 @@ const en = {
     'business.home.company_code': 'RDB {code}',
     'business.home.rozine_rating': 'Rozine rating',
     'business.rating.pending': 'Pending audit',
+    'business.rating.pending_hint': 'Rated after your first audited month',
+    'business.rating.pending_next':
+        "Your rating appears once your first monthly report is audited. We'll tell you when your audit opens, so you can get the month's records ready.",
     'business.rating.band.strong': 'Strong',
     'business.rating.band.stable': 'Stable',
     'business.rating.band.weak': 'Weak',
@@ -1135,7 +1138,9 @@ const en = {
     'business.profile.company.name': 'Company name',
     'business.profile.company.email': 'Business email',
     'business.profile.company.phone': 'Business phone',
-    'business.profile.company.phone_placeholder': '0788 123 456',
+    'business.profile.company.phone_placeholder': '07XX XXX XXX',
+    'business.profile.company.email_hint':
+        "Where Rozine sends the business's receipts, notices and statements.",
     'business.profile.company.address': 'Registered address',
     'business.profile.company.province': 'Province',
     'business.profile.company.district': 'District',
@@ -1177,8 +1182,11 @@ const en = {
     'business.profile.linked.add': '+ Link a payout account',
     'business.profile.linked.none':
         'No account linked yet. Link one to deposit and withdraw.',
-    'business.profile.linked.empty':
-        'No account linked yet. Linking opens once this account is cleared for money movement. Your payouts go to the verified account you link here.',
+    'business.profile.linked.closed':
+        "No account linked yet. Rozine hasn't opened payout accounts for businesses yet, so there is nothing for you to do now. Your balance stays safe in your wallet, and you'll be able to link an account in the business's name here once payouts open.",
+    'business.profile.linked.not_permitted':
+        'No account linked yet. Only a signatory who can withdraw for this business can link a payout account. Ask one of them to link it here.',
+    'business.profile.linked.ask_support': 'Questions? Ask Rozine support.',
     'business.profile.linked.footnote':
         "Only an account held in the business's registered name can be linked. Withdrawals go only to a linked account.",
     'business.profile.legal.updated': 'Last updated {date} · Version {version}',
@@ -4564,6 +4572,8 @@ const en = {
     'investor.deal.unit_times_one': '{price} × {count} note',
     'investor.deal.unit_times_other': '{price} × {count} notes',
     'investor.deal.expected_return': 'Expected return',
+    'investor.deal.fee_at_checkout': 'Shown at checkout',
+    'investor.deal.get_back_before_fee': 'Get back, before the fee',
     'investor.deal.total_at_maturity': 'Total repaid at maturity',
     'investor.deal.fewer_notes': 'One note fewer',
     'investor.deal.more_notes': 'One note more',
@@ -6569,6 +6579,8 @@ const en = {
         "Withdrawals aren't open yet: this account has no verified payout account. Link one in your own name, then Rozine opens withdrawals once the account is cleared for money movement.",
     'investor.wallet.c3.withdraw_not_cleared':
         "Your payout account is verified. Withdrawals open once Rozine clears this account for money movement; you don't need to do anything else.",
+    'investor.wallet.c3.withdraw_linking_closed':
+        "Withdrawals aren't open yet. Rozine hasn't opened payout accounts for this wallet, so there is nothing to link or do now. Your balance stays safe here until it does.",
     'investor.wallet.c3.withdraw_not_allowed':
         'Your payout account is verified, but withdrawals from this wallet are not open to you right now. Contact Rozine support if you need to withdraw.',
     'investor.wallet.c3.withdraw_link_account': 'Go to Linked accounts',
@@ -7145,14 +7157,20 @@ const en = {
     'investor.notices.primary.refunded.body':
         'The {business} raise closed without reaching its target. {amount} is back in your wallet, with no fee.',
     'investor.notices.primary.raise_funded.title': 'Raise funded',
-    'investor.notices.primary.raise_funded.body':
-        'The {business} raise is fully funded. Your {amount} for {units} notes is set aside until the funds are sent.',
+    'investor.notices.primary.raise_funded.body': {
+        one: 'The {business} raise is fully funded. Your {amount} for {count} note is set aside until the funds are sent.',
+        other: 'The {business} raise is fully funded. Your {amount} for {count} notes is set aside until the funds are sent.',
+    },
     'investor.notices.primary.commitment_confirmed.title': 'Purchase confirmed',
-    'investor.notices.primary.commitment_confirmed.body':
-        'You committed {amount} to {business} for {units} notes, at a {rate}% earnings fee. Reference {reference}.',
+    'investor.notices.primary.commitment_confirmed.body': {
+        one: 'You committed {amount} to {business} for {count} note, at a {rate}% earnings fee. Reference {reference}.',
+        other: 'You committed {amount} to {business} for {count} notes, at a {rate}% earnings fee. Reference {reference}.',
+    },
     'investor.notices.primary.holding_issued.title': 'Investment confirmed',
-    'investor.notices.primary.holding_issued.body':
-        'Your {units} notes in {business} are issued: {amount} invested, {maturity} expected at maturity on {date}.',
+    'investor.notices.primary.holding_issued.body': {
+        one: 'Your {count} note in {business} is issued: {amount} invested, {maturity} expected at maturity on {date}.',
+        other: 'Your {count} notes in {business} are issued: {amount} invested, {maturity} expected at maturity on {date}.',
+    },
     'investor.notices.business.raise_funded.title': 'Raise fully funded',
     'investor.notices.business.raise_funded.body':
         '{title} reached its target of {principal}. Rozine now prepares the payout to your account.',
@@ -7183,6 +7201,10 @@ const en = {
     'investor.notices.verification.approved.title': 'You are verified',
     'investor.notices.verification.approved.body':
         'Your identity is verified and your wallet is ready to invest.',
+    'investor.notices.verification.approved.body_business':
+        'Your identity is verified. You can now apply for a raise.',
+    'investor.notices.verification.approved.body_auditor':
+        'Your identity is verified. You can now take audit jobs.',
     'investor.notices.verification.rejected.title':
         'Your identity details need another look',
     'investor.notices.verification.rejected.body':
@@ -7212,7 +7234,7 @@ const en = {
     'investor.primary.status.expired': "Didn't fill — refunded",
     'investor.primary.status.failed_closing': 'Closed — refunded',
     'investor.primary.status_body.confirmed':
-        "The raise is still open. Your commitment is final; if the raise doesn't fill, your money comes back to your wallet.",
+        "The raise is still open. You can withdraw this commitment for a full refund until the raise reaches 100%. If the raise doesn't fill, your money comes back to your wallet.",
     'investor.primary.status_body.awaiting_disbursement':
         'The raise is fully funded, so cancelling is locked. Notes are issued once the payout to the business is confirmed.',
     'investor.primary.status_body.in_flight_pending':
@@ -7248,7 +7270,8 @@ const en = {
     'investor.primary.terms': 'Terms',
     'investor.primary.maturity': 'Maturity date',
     'investor.primary.maturity_at_issue': 'Set when notes are issued',
-    'investor.primary.versions': 'Policy · disclosure',
+    'investor.primary.disclosure': 'Disclosure',
+    'investor.primary.disclosure_value': 'Version of {date}',
     'investor.primary.view_holding': 'View holding',
     'investor.primary.awaiting_issue': 'Awaiting issue',
     'investor.primary.awaiting_issue_note': 'Commitments, not yet holdings',
@@ -7262,6 +7285,9 @@ const en = {
         "Due dates are set when the notes are issued: the first falls one month after the payout's effective date.",
     'investor.primary.commitment_title': 'Commitment',
     'investor.primary.back_to_portfolio': 'Back to portfolio',
+    'investor.checkout.fee_about': 'about {amount}',
+    'investor.checkout.fee_estimate_note':
+        'The exact fee is worked out on each repayment once your notes are reserved, so it can differ by a few francs.',
     'investor.primary.cancel': 'Withdraw commitment',
     'investor.primary.cancel_title': 'Withdraw this commitment?',
     'investor.primary.cancel_body':

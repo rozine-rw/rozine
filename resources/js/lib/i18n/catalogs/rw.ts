@@ -520,6 +520,10 @@ const rw: Catalog = {
     'business.home.company_code': 'RDB {code}',
     'business.home.rozine_rating': 'Amanota ya Rozine',
     'business.rating.pending': 'Igenzura ritegerejwe',
+    'business.rating.pending_hint':
+        "Amanota azaboneka nyuma y'ukwezi kwa mbere kugenzuwe",
+    'business.rating.pending_next':
+        "Amanota yawe azagaragara raporo yawe ya mbere y'ukwezi imaze kugenzurwa. Tuzakumenyesha igenzura ryawe nirifungura, kugira ngo utegure inyandiko z'ukwezi.",
     'business.rating.band.strong': 'Ikomeye',
     'business.rating.band.stable': 'Ihamye',
     'business.rating.band.weak': 'Idakomeye',
@@ -1169,7 +1173,9 @@ const rw: Catalog = {
     'business.profile.company.name': "Izina ry'ikigo",
     'business.profile.company.email': "Imeli y'ikigo",
     'business.profile.company.phone': "Telefoni y'ikigo",
-    'business.profile.company.phone_placeholder': '0788 123 456',
+    'business.profile.company.phone_placeholder': '07XX XXX XXX',
+    'business.profile.company.email_hint':
+        "Aho Rozine yohereza inyemezabwishyu, amatangazo n'imbonerahamwe by'ikigo.",
     'business.profile.company.address': 'Aderesi yanditswe',
     'business.profile.company.province': 'Intara',
     'business.profile.company.district': 'Akarere',
@@ -1211,8 +1217,12 @@ const rw: Catalog = {
     'business.profile.linked.add': '+ Huza konti yakiriraho',
     'business.profile.linked.none':
         'Nta konti irahuzwa. Huza imwe kugira ngo ushyireho kandi ubikuze amafaranga.',
-    'business.profile.linked.empty':
-        'Nta konti irahuzwa. Guhuza konti bizafunguka iyi konti nimara kwemererwa kohereza no kwakira amafaranga. Amafaranga yawe azoherezwa kuri konti yemejwe uhuza hano.',
+    'business.profile.linked.closed':
+        'Nta konti irahuzwa. Rozine ntirafungura konti zo kwakiriraho amafaranga ku bigo, bityo nta cyo usabwa gukora ubu. Amafaranga yawe aguma mu gikapu cyawe mu mutekano, kandi uzashobora guhuza hano konti iri mu izina ry’ikigo nibimara gufungurwa.',
+    'business.profile.linked.not_permitted':
+        'Nta konti irahuzwa. Umusinyi ufite uburenganzira bwo kubikuza ku kigo ni we wenyine ushobora guhuza konti yo kwakiriraho amafaranga. Saba umwe muri bo ayihuze hano.',
+    'business.profile.linked.ask_support':
+        'Ufite ikibazo? Baza ubufasha bwa Rozine.',
     'business.profile.linked.footnote':
         "Hahuzwa gusa konti iri mu izina ryanditswe ry'ubucuruzi. Amafaranga abikujwe ajya gusa kuri konti ihujwe.",
     'business.profile.legal.updated':
@@ -4743,6 +4753,8 @@ const rw: Catalog = {
     'investor.deal.unit_times_one': '{price} × urupapuro {count}',
     'investor.deal.unit_times_other': '{price} × impapuro {count}',
     'investor.deal.expected_return': 'Inyungu iteganyijwe',
+    'investor.deal.fee_at_checkout': 'Bigaragazwa mu kwishyura',
+    'investor.deal.get_back_before_fee': 'Ayo usubizwa, mbere y’ikiguzi',
     'investor.deal.total_at_maturity': 'Byose byishyurwa ku iherezo',
     'investor.deal.fewer_notes': 'Urupapuro rumwe ruke',
     'investor.deal.more_notes': 'Urupapuro rumwe rwiyongereye',
@@ -6855,6 +6867,8 @@ const rw: Catalog = {
         'Kubikuza ntibirafungurwa: iyi konti nta konti yo kwakiriraho yemejwe ifite. Huza iri mu izina ryawe, hanyuma Rozine ifungure kubikuza konti nimara kwemererwa kohereza no kwakira amafaranga.',
     'investor.wallet.c3.withdraw_not_cleared':
         'Konti yawe yo kwakiriraho yaremejwe. Kubikuza bizafunguka Rozine nimara kwemerera iyi konti kohereza no kwakira amafaranga; nta kindi usabwa gukora.',
+    'investor.wallet.c3.withdraw_linking_closed':
+        'Kubikuza ntibirafungurwa. Rozine ntirafungura konti zo kwakiriraho amafaranga kuri iki gikapu, bityo nta cyo guhuza cyangwa gukora ubu. Amafaranga yawe aguma hano mu mutekano kugeza icyo gihe.',
     'investor.wallet.c3.withdraw_not_allowed':
         "Konti yawe yo kwakiriraho yaremejwe, ariko ubu ntiwemerewe kubikuza muri iki gikapu. Vugana n'ubufasha bwa Rozine niba ukeneye kubikuza.",
     'investor.wallet.c3.withdraw_link_account': 'Jya kuri Konti zihujwe',
@@ -7438,14 +7452,20 @@ const rw: Catalog = {
     'investor.notices.primary.refunded.body':
         'Ikusanyamari rya {business} ryarangiye ritageze ku ntego. {amount} yagarutse mu gikapu cyawe, nta mafaranga yakuweho.',
     'investor.notices.primary.raise_funded.title': 'Ikusanyamari ryuzuye',
-    'investor.notices.primary.raise_funded.body':
-        "Ikusanyamari rya {business} ryageze ku ntego. {amount} yawe y'impapuro {units} ibitswe kugeza amafaranga yoherejwe.",
+    'investor.notices.primary.raise_funded.body': {
+        one: "Ikusanyamari rya {business} ryageze ku ntego. {amount} yawe y'urupapuro {count} ibitswe kugeza amafaranga yoherejwe.",
+        other: "Ikusanyamari rya {business} ryageze ku ntego. {amount} yawe y'impapuro {count} ibitswe kugeza amafaranga yoherejwe.",
+    },
     'investor.notices.primary.commitment_confirmed.title': 'Kugura byemejwe',
-    'investor.notices.primary.commitment_confirmed.body':
-        'Wiyemeje {amount} muri {business} ku mpapuro {units}, ku kiguzi cya {rate}% ku nyungu. Nimero {reference}.',
+    'investor.notices.primary.commitment_confirmed.body': {
+        one: 'Wiyemeje {amount} muri {business} ku rupapuro {count}, ku kiguzi cya {rate}% ku nyungu. Nimero {reference}.',
+        other: 'Wiyemeje {amount} muri {business} ku mpapuro {count}, ku kiguzi cya {rate}% ku nyungu. Nimero {reference}.',
+    },
     'investor.notices.primary.holding_issued.title': 'Ishoramari ryemejwe',
-    'investor.notices.primary.holding_issued.body':
-        'Impapuro zawe {units} muri {business} zatanzwe: washoye {amount}, witeze {maturity} ku itariki {date}.',
+    'investor.notices.primary.holding_issued.body': {
+        one: 'Urupapuro rwawe {count} muri {business} rwatanzwe: washoye {amount}, witeze {maturity} ku itariki {date}.',
+        other: 'Impapuro zawe {count} muri {business} zatanzwe: washoye {amount}, witeze {maturity} ku itariki {date}.',
+    },
     'investor.notices.business.raise_funded.title': 'Ikusanyamari ryuzuye',
     'investor.notices.business.raise_funded.body':
         '{title} yageze ku ntego yayo ya {principal}. Rozine iri gutegura kohereza amafaranga kuri konti yawe.',
@@ -7476,6 +7496,10 @@ const rw: Catalog = {
     'investor.notices.verification.approved.title': 'Wemejwe',
     'investor.notices.verification.approved.body':
         'Umwirondoro wawe wemejwe kandi igikapu cyawe cyiteguye gushora imari.',
+    'investor.notices.verification.approved.body_business':
+        'Umwirondoro wawe wemejwe. Ubu ushobora gusaba ikusanyamari.',
+    'investor.notices.verification.approved.body_auditor':
+        "Umwirondoro wawe wemejwe. Ubu ushobora kwakira imirimo y'igenzura.",
     'investor.notices.verification.rejected.title':
         'Amakuru y’umwirondoro wawe akeneye kongera kurebwa',
     'investor.notices.verification.rejected.body':
@@ -7504,7 +7528,7 @@ const rw: Catalog = {
     'investor.primary.status.expired': 'Ntibyuzuye — byasubijwe',
     'investor.primary.status.failed_closing': 'Byafunzwe — byasubijwe',
     'investor.primary.status_body.confirmed':
-        'Igikorwa kiracyafunguye. Icyiyemezo cyawe ni ntakuka; niba imari yose itabonetse, amafaranga yawe agaruka mu gikapu cyawe.',
+        'Gukusanya amafaranga biracyakomeje. Ushobora gukuraho iki cyemezo ugasubizwa amafaranga yose kugeza igihe gukusanya bigeze kuri 100%. Niba gukusanya bitageze ku ntego, amafaranga yawe asubira mu gikapu cyawe.',
     'investor.primary.status_body.awaiting_disbursement':
         'Imari yose yabonetse, guhagarika byafunzwe. Impapuro zitangwa kwishyura ikigo bimaze kwemezwa.',
     'investor.primary.status_body.in_flight_pending':
@@ -7540,7 +7564,8 @@ const rw: Catalog = {
     'investor.primary.terms': 'Amasezerano',
     'investor.primary.maturity': 'Itariki yo kurangiza',
     'investor.primary.maturity_at_issue': 'Ishyirwaho impapuro zitangwa',
-    'investor.primary.versions': 'Amabwiriza · itangazo',
+    'investor.primary.disclosure': 'Inyandiko isobanura',
+    'investor.primary.disclosure_value': 'Iyo ku wa {date}',
     'investor.primary.view_holding': 'Reba umutungo',
     'investor.primary.awaiting_issue': 'Bitegereje gutangwa',
     'investor.primary.awaiting_issue_note': 'Ibyiyemejwe, si imitungo ubu',
@@ -7554,6 +7579,9 @@ const rw: Catalog = {
         "Amatariki yo kwishyura ashyirwaho impapuro zitangwa: irya mbere riba ukwezi kumwe nyuma y'itariki ubwishyu bwakoreweho.",
     'investor.primary.commitment_title': 'Icyiyemezo',
     'investor.primary.back_to_portfolio': 'Garuka ku mutungo',
+    'investor.checkout.fee_about': 'hafi {amount}',
+    'investor.checkout.fee_estimate_note':
+        'Amafaranga nyayo y’ikiguzi abarwa kuri buri yishyurwa iyo impapuro zawe zimaze kubikwa, bityo ashobora gutandukanaho amafaranga make.',
     'investor.primary.cancel': 'Kuraho icyiyemezo',
     'investor.primary.cancel_title': 'Ukuraho iki cyiyemezo?',
     'investor.primary.cancel_body':

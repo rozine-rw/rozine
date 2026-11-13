@@ -207,7 +207,7 @@ export function NotesSection({ notes }: { notes: BusinessNoteSummary[] }) {
                 <div
                     role="group"
                     aria-label={t('business.note.filter_label')}
-                    className="rz-hscroll relative mt-[11px] flex snap-x gap-2 overflow-x-auto [mask-image:linear-gradient(90deg,#000_0,#000_calc(100%-26px),transparent_100%)]"
+                    className="mt-[11px] flex flex-wrap gap-2"
                 >
                     {FILTERS.map((key) => (
                         <button

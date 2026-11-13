@@ -15,7 +15,11 @@ import {
     DealStatusNotice,
     OverdueReport,
 } from '@/components/investor/deals/deal-status';
-import { CapNote, canReserve } from '@/components/investor/deals/invest-bar';
+import {
+    CapNote,
+    canReserve,
+    unquotedGetBack,
+} from '@/components/investor/deals/invest-bar';
 import { useQuotedUnits } from '@/components/investor/deals/use-quote';
 import { UpdateList, UpdateSheet } from '@/components/investor/monthly-updates';
 import { earningsFeeLabel } from '@/components/investor/primary/earnings-fee';
@@ -84,6 +88,24 @@ export function DealDetailPage({
                     },
                 }
               : null;
+    /* Unquoted, the figures follow the flat return as the desk's invest bar shows them; the fee is set at checkout (#594). */
+    const unquoted =
+        current === null && ticket !== null
+            ? {
+                  expected_return: {
+                      ...deal.unit_price,
+                      amount: String(
+                          (unquotedGetBack(deal) -
+                              Number(deal.unit_price.amount)) *
+                              ticket.units,
+                      ),
+                  },
+                  get_back: {
+                      ...deal.unit_price,
+                      amount: String(unquotedGetBack(deal) * ticket.units),
+                  },
+              }
+            : null;
     const tile =
         'rounded-xl border border-rz-border px-[5px] py-[7px] text-center';
 
@@ -355,7 +377,7 @@ export function DealDetailPage({
                 <p className="mt-[9px] text-[13px] leading-[1.55] text-rz-secondary">
                     {deal.story}
                 </p>
-                <AboutCard about={deal.about} />
+                <AboutCard about={deal.about} story={deal.story} />
             </Section>
 
             {deal.audit !== null && (
@@ -368,9 +390,12 @@ export function DealDetailPage({
                 title={t('investor.deal.monthly_updates')}
                 variant="phone"
                 badge={
-                    <SourceBadge kind="audited">
-                        {t('investor.deal.audited')}
-                    </SourceBadge>
+                    /* No "Audited" claim on a section with no report yet (#594). */
+                    deal.updates.length > 0 ? (
+                        <SourceBadge kind="audited">
+                            {t('investor.deal.audited')}
+                        </SourceBadge>
+                    ) : undefined
                 }
             >
                 <OverdueReport deal={deal} />
@@ -443,9 +468,11 @@ export function DealDetailPage({
                                     POSITIVE_TEXT,
                                 )}
                             >
-                                {current === null
-                                    ? '—'
-                                    : `+${formatRwf(current.expected_return)}`}
+                                {current !== null
+                                    ? `+${formatRwf(current.expected_return)}`
+                                    : unquoted !== null
+                                      ? `+${formatRwf(unquoted.expected_return)}`
+                                      : '—'}
                             </span>
                         </div>
                         <div className="mt-[7px] flex items-center justify-between">
@@ -455,21 +482,32 @@ export function DealDetailPage({
                                     : earningsFeeLabel(t, current.earnings_fee)}
                             </span>
                             <span className="text-xs font-semibold text-rz-ink tabular-nums">
-                                {current === null
-                                    ? '—'
-                                    : formatRwf(current.payout_fee)}
+                                {current !== null
+                                    ? formatRwf(current.payout_fee)
+                                    : unquoted !== null
+                                      ? t('investor.deal.fee_at_checkout')
+                                      : '—'}
                             </span>
                         </div>
                         <div className="mt-2 flex items-center justify-between border-t border-rz-border pt-2">
                             <span className="text-[12.5px] font-semibold text-rz-ink">
-                                {t('investor.deal.total_at_maturity')}
+                                {unquoted !== null
+                                    ? t('investor.deal.get_back_before_fee')
+                                    : t('investor.deal.total_at_maturity')}
                             </span>
                             <span className="text-[15px] font-bold text-rz-accent-app-text tabular-nums">
-                                {current === null
-                                    ? '—'
-                                    : formatRwf(current.maturity_value)}
+                                {current !== null
+                                    ? formatRwf(current.maturity_value)
+                                    : unquoted !== null
+                                      ? formatRwf(unquoted.get_back)
+                                      : '—'}
                             </span>
                         </div>
+                        {unquoted !== null && (
+                            <p className="mt-1.5 text-[11px] leading-[1.45] text-rz-secondary">
+                                {t('investor.cart.before_charge')}
+                            </p>
+                        )}
                     </div>
                     <div className="mt-2.5 flex items-center gap-2">
                         <div className="flex shrink-0 items-center rounded-xl border border-rz-border bg-rz-surface p-1">

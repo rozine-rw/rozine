@@ -391,12 +391,14 @@ export function useNotices(href: RouteLink) {
  * catalogs by kind.
  */
 /**
- * "5 days ago" (design notifications panel), counted from the page's server clock. Without one the
- * notice keeps its exact Kigali date and time.
+ * "5 days ago" (design notifications panel), counted from the inbox's own server clock, so every
+ * role's bell reads alike (#595), or else the page's. Without either the notice keeps its exact
+ * Kigali date and time.
  */
-function useNoticeTime(): (at: string) => string {
+function useNoticeTime(inboxTime?: string): (at: string) => string {
     const { t, locale } = useTranslation();
-    const serverTime: unknown = usePage().props.server_time;
+    const pageTime: unknown = usePage().props.server_time;
+    const serverTime = inboxTime ?? pageTime;
 
     return (at: string) => {
         if (typeof serverTime !== 'string') {
@@ -438,12 +440,15 @@ function useNoticeTime(): (at: string) => string {
 export function NoticesPanel({
     notices: { inbox, failed, load, send },
     onClose,
+    audience = 'investor',
 }: {
     notices: ReturnType<typeof useNotices>;
     onClose: () => void;
+    /** Whose bell this is, for the notices whose wording differs by role (#595). */
+    audience?: NoticeAudience;
 }) {
     const { t, locale } = useTranslation();
-    const noticeTime = useNoticeTime();
+    const noticeTime = useNoticeTime(inbox?.server_time);
 
     const dialog = useModalDialog<HTMLElement>(onClose);
 
@@ -614,7 +619,7 @@ export function NoticesPanel({
                                             )}
                                         </span>
                                         <span className="mt-[3px] block text-xs leading-normal text-rz-secondary">
-                                            {body(notice, t, locale)}
+                                            {body(notice, t, locale, audience)}
                                         </span>
                                     </span>
                                 </button>
@@ -626,6 +631,14 @@ export function NoticesPanel({
         </>
     );
 }
+
+type NoticeAudience = 'investor' | 'business' | 'auditor';
+
+const VERIFIED_BODY = {
+    investor: 'investor.notices.verification.approved.body',
+    business: 'investor.notices.verification.approved.body_business',
+    auditor: 'investor.notices.verification.approved.body_auditor',
+} as const;
 
 type JobOfferedFacts = Extract<
     InvestorNotice,
@@ -663,6 +676,7 @@ function body(
     notice: InvestorNotice,
     t: ReturnType<typeof useTranslation>['t'],
     locale: string,
+    audience: NoticeAudience,
 ): string {
     switch (notice.kind) {
         case 'wallet.deposit_received':
@@ -691,12 +705,12 @@ function body(
             return t('investor.notices.primary.raise_funded.body', {
                 business: notice.facts.business,
                 amount: formatRwf(notice.facts),
-                units: notice.facts.units,
+                count: Number(notice.facts.units),
             });
         case 'primary.commitment_confirmed':
             return t('investor.notices.primary.commitment_confirmed.body', {
                 business: notice.facts.business,
-                units: notice.facts.units,
+                count: Number(notice.facts.units),
                 amount: formatRwf(notice.facts),
                 rate: (Number(notice.facts.fee_rate_bps) / 100).toFixed(1),
                 reference: notice.facts.reference,
@@ -704,7 +718,7 @@ function body(
         case 'primary.holding_issued':
             return t('investor.notices.primary.holding_issued.body', {
                 business: notice.facts.business,
-                units: notice.facts.units,
+                count: Number(notice.facts.units),
                 amount: formatRwf(notice.facts),
                 maturity: formatRwf({
                     currency: 'RWF',
@@ -767,7 +781,7 @@ function body(
                 reason: notice.facts.reason,
             });
         case 'verification.approved':
-            return t('investor.notices.verification.approved.body');
+            return t(VERIFIED_BODY[audience]);
         case 'security.password_changed':
             return t('investor.notices.security.password_changed.body');
         case 'security.new_device':

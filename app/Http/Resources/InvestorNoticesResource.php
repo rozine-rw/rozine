@@ -56,7 +56,7 @@ class InvestorNoticesResource extends JsonResource
         $inbox = $this->resource;
         $prefix = $request->routeIs('api.*') ? 'api.v1.' : '';
 
-        return ['unread' => $inbox['unread'],
+        return ['unread' => $inbox['unread'], 'server_time' => now()->toIso8601String(),
             'notices' => array_map(fn (array $notice): array => [...$notice,
                 'link' => $this->link($prefix, $this->destination($notice['kind'])[0],
                     array_map(fn (string $value): string => str_starts_with($value, ':') ? (string) $notice['facts'][substr($value, 1)] : $value,
