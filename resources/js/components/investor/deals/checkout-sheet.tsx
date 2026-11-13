@@ -310,7 +310,12 @@ export function CheckoutSheet({
                         {earningsFeeLabel(t, quote.earnings_fee)}
                     </dt>
                     <dd className="text-[12.5px] font-semibold text-rz-ink">
-                        {formatRwf(quote.payout_fee)}
+                        {/* Before the notes are reserved the fee is an estimate; it is set per repayment once they are (#593). */}
+                        {quote.basis === 'indicative'
+                            ? t('investor.checkout.fee_about', {
+                                  amount: formatRwf(quote.payout_fee),
+                              })
+                            : formatRwf(quote.payout_fee)}
                     </dd>
                 </div>
                 <div className={cn(ROW, ROW_LINE)}>
@@ -333,6 +338,11 @@ export function CheckoutSheet({
                 </div>
             </dl>
             <EarningsFeeNote className="mt-[7px] px-1" />
+            {quote.basis === 'indicative' && (
+                <p className="mt-1 px-1 text-[11px] leading-[1.5] text-rz-secondary">
+                    {t('investor.checkout.fee_estimate_note')}
+                </p>
+            )}
         </>
     );
 

@@ -7195,7 +7195,7 @@ const en = {
     'investor.primary.status.expired': "Didn't fill — refunded",
     'investor.primary.status.failed_closing': 'Closed — refunded',
     'investor.primary.status_body.confirmed':
-        "The raise is still open. Your commitment is final; if the raise doesn't fill, your money comes back to your wallet.",
+        "The raise is still open. You can withdraw this commitment for a full refund until the raise reaches 100%. If the raise doesn't fill, your money comes back to your wallet.",
     'investor.primary.status_body.awaiting_disbursement':
         'The raise is fully funded, so cancelling is locked. Notes are issued once the payout to the business is confirmed.',
     'investor.primary.status_body.in_flight_pending':
@@ -7231,7 +7231,8 @@ const en = {
     'investor.primary.terms': 'Terms',
     'investor.primary.maturity': 'Maturity date',
     'investor.primary.maturity_at_issue': 'Set when notes are issued',
-    'investor.primary.versions': 'Policy · disclosure',
+    'investor.primary.disclosure': 'Disclosure',
+    'investor.primary.disclosure_value': 'Version of {date}',
     'investor.primary.view_holding': 'View holding',
     'investor.primary.awaiting_issue': 'Awaiting issue',
     'investor.primary.awaiting_issue_note': 'Commitments, not yet holdings',
@@ -7245,6 +7246,9 @@ const en = {
         "Due dates are set when the notes are issued: the first falls one month after the payout's effective date.",
     'investor.primary.commitment_title': 'Commitment',
     'investor.primary.back_to_portfolio': 'Back to portfolio',
+    'investor.checkout.fee_about': 'about {amount}',
+    'investor.checkout.fee_estimate_note':
+        'The exact fee is worked out on each repayment once your notes are reserved, so it can differ by a few francs.',
     'investor.primary.cancel': 'Withdraw commitment',
     'investor.primary.cancel_title': 'Withdraw this commitment?',
     'investor.primary.cancel_body':

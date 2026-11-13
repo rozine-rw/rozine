@@ -7487,7 +7487,7 @@ const rw: Catalog = {
     'investor.primary.status.expired': 'Ntibyuzuye — byasubijwe',
     'investor.primary.status.failed_closing': 'Byafunzwe — byasubijwe',
     'investor.primary.status_body.confirmed':
-        'Igikorwa kiracyafunguye. Icyiyemezo cyawe ni ntakuka; niba imari yose itabonetse, amafaranga yawe agaruka mu gikapu cyawe.',
+        'Gukusanya amafaranga biracyakomeje. Ushobora gukuraho iki cyemezo ugasubizwa amafaranga yose kugeza igihe gukusanya bigeze kuri 100%. Niba gukusanya bitageze ku ntego, amafaranga yawe asubira mu gikapu cyawe.',
     'investor.primary.status_body.awaiting_disbursement':
         'Imari yose yabonetse, guhagarika byafunzwe. Impapuro zitangwa kwishyura ikigo bimaze kwemezwa.',
     'investor.primary.status_body.in_flight_pending':
@@ -7523,7 +7523,8 @@ const rw: Catalog = {
     'investor.primary.terms': 'Amasezerano',
     'investor.primary.maturity': 'Itariki yo kurangiza',
     'investor.primary.maturity_at_issue': 'Ishyirwaho impapuro zitangwa',
-    'investor.primary.versions': 'Amabwiriza · itangazo',
+    'investor.primary.disclosure': 'Inyandiko isobanura',
+    'investor.primary.disclosure_value': 'Iyo ku wa {date}',
     'investor.primary.view_holding': 'Reba umutungo',
     'investor.primary.awaiting_issue': 'Bitegereje gutangwa',
     'investor.primary.awaiting_issue_note': 'Ibyiyemejwe, si imitungo ubu',
@@ -7537,6 +7538,9 @@ const rw: Catalog = {
         "Amatariki yo kwishyura ashyirwaho impapuro zitangwa: irya mbere riba ukwezi kumwe nyuma y'itariki ubwishyu bwakoreweho.",
     'investor.primary.commitment_title': 'Icyiyemezo',
     'investor.primary.back_to_portfolio': 'Garuka ku mutungo',
+    'investor.checkout.fee_about': 'hafi {amount}',
+    'investor.checkout.fee_estimate_note':
+        'Amafaranga nyayo y’ikiguzi abarwa kuri buri yishyurwa iyo impapuro zawe zimaze kubikwa, bityo ashobora gutandukanaho amafaranga make.',
     'investor.primary.cancel': 'Kuraho icyiyemezo',
     'investor.primary.cancel_title': 'Ukuraho iki cyiyemezo?',
     'investor.primary.cancel_body':
