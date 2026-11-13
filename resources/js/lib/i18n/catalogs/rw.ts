@@ -4740,6 +4740,8 @@ const rw: Catalog = {
     'investor.deal.unit_times_one': '{price} × urupapuro {count}',
     'investor.deal.unit_times_other': '{price} × impapuro {count}',
     'investor.deal.expected_return': 'Inyungu iteganyijwe',
+    'investor.deal.fee_at_checkout': 'Bigaragazwa mu kwishyura',
+    'investor.deal.get_back_before_fee': 'Ayo usubizwa, mbere y’ikiguzi',
     'investor.deal.total_at_maturity': 'Byose byishyurwa ku iherezo',
     'investor.deal.fewer_notes': 'Urupapuro rumwe ruke',
     'investor.deal.more_notes': 'Urupapuro rumwe rwiyongereye',

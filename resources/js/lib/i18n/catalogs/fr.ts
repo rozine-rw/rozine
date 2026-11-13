@@ -4748,6 +4748,8 @@ const fr: Catalog = {
     'investor.deal.unit_times_one': '{price} × {count} titre',
     'investor.deal.unit_times_other': '{price} × {count} titres',
     'investor.deal.expected_return': 'Rendement attendu',
+    'investor.deal.fee_at_checkout': 'Indiqués au paiement',
+    'investor.deal.get_back_before_fee': 'Montant récupéré, avant les frais',
     'investor.deal.total_at_maturity': "Total remboursé à l'échéance",
     'investor.deal.fewer_notes': 'Un titre de moins',
     'investor.deal.more_notes': 'Un titre de plus',
