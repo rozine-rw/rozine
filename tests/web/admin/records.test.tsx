@@ -38,7 +38,9 @@ describe('Ledger', () => {
             screen.getByRole('link', { name: 'Open entry LED-1928' }),
         ).toHaveAttribute('href', '/preview/admin-ledger-entry');
         expect(
-            screen.getByRole('link', { name: /See all 1,932 entries/ }),
+            screen.getByRole('link', {
+                name: /Show more on this page \(1,932 in all\)/,
+            }),
         ).toHaveAttribute('data-preserve-scroll', 'true');
 
         await user.type(
@@ -66,7 +68,7 @@ describe('Ledger', () => {
         );
 
         expect(
-            screen.getByRole('link', { name: /Older entries/ }),
+            screen.getByRole('link', { name: /Next page: older entries/ }),
         ).toHaveAttribute('href', '/admin/ledger?before=LED-1880');
         expect(
             screen.queryByRole('link', { name: /Back to the newest/ }),
@@ -86,7 +88,7 @@ describe('Ledger', () => {
             screen.queryByRole('link', { name: /See all/ }),
         ).not.toBeInTheDocument();
         expect(
-            screen.queryByRole('link', { name: /Older entries/ }),
+            screen.queryByRole('link', { name: /Next page: older entries/ }),
         ).not.toBeInTheDocument();
     });
 
@@ -581,4 +583,12 @@ describe('Table structure', () => {
             expect(within(table).getAllByRole('row').length).toBeGreaterThan(1);
         },
     );
+
+    it('tells a phone the other columns are a swipe away, and hides that on desktop', () => {
+        render(<AdminLedger {...ledgerProps(ledgerFixture)} />);
+
+        expect(
+            screen.getByText('Swipe sideways to see every column.'),
+        ).toHaveClass('lg:hidden');
+    });
 });

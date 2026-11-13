@@ -566,6 +566,8 @@ export function TableCard({
     footer?: ReactNode;
     className?: string;
 }) {
+    const { t } = useTranslation();
+
     return (
         <div
             className={cn(
@@ -575,6 +577,11 @@ export function TableCard({
                 className,
             )}
         >
+            {/* A phone shows only the first columns, so say the rest are a swipe away (#608). */}
+            <p className="flex items-center justify-end gap-1 px-4 pt-2.5 text-[11px] font-semibold text-rz-muted lg:hidden">
+                {t('admin.table.scroll_hint')}
+                <span aria-hidden>→</span>
+            </p>
             {/* Focusable so a keyboard can scroll a table wider than a phone (WCAG 2.1.1). */}
             <div
                 role="group"
