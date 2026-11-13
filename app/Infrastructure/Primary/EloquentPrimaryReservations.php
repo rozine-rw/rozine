@@ -309,7 +309,46 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
             throw new CommandRejection('PRIMARY_TRANSACTION_REQUIRED');
         }
 
+        return $this->refundCommitment($campaignId, $reservationId, $partyId, $expectedRevision, true);
+    }
+
+    public function withdraw(string $campaignId, string $reservationId, string $partyId, int $expectedRevision): ReservationRefund
+    {
+        if (DB::transactionLevel() === 0) {
+            throw new CommandRejection('PRIMARY_TRANSACTION_REQUIRED');
+        }
+
         return DB::transaction(function () use ($campaignId, $reservationId, $partyId, $expectedRevision): ReservationRefund {
+            $campaign = $this->campaigns->lock($campaignId);
+            $roots = PrimaryReservationRecord::query()->where('business_campaign_id', $campaign['id'])->orderBy('id')->lockForUpdate()->get();
+            PrimaryCommitment::query()->whereIn('primary_reservation_id', $roots->modelKeys())->orderBy('id')->lockForUpdate()->get();
+            $root = $roots->first(fn (PrimaryReservationRecord $record): bool => $record->id === $reservationId && $record->party_id === $partyId)
+                ?? throw new CommandRejection('RESERVATION_NOT_FOUND', 404);
+            $retired = $this->claims->retired($campaignId, $campaign);
+            if (in_array($root->id, $retired, true)) {
+                throw new CommandRejection('COMMITMENT_WITHDRAWN', 409);
+            }
+            $committed = BigInteger::zero();
+            foreach ($roots as $record) {
+                [$reservation] = $this->retainedReservation($record, $campaign);
+                if ($reservation->state === 'confirmed' && ! in_array($record->id, $retired, true)) {
+                    $committed = $committed->plus($reservation->rights->ordinals->count);
+                }
+            }
+            if ($committed->isGreaterThanOrEqualTo($campaign['units'])) {
+                throw new CommandRejection('COMMITMENT_LOCKED', 409);
+            }
+            $refund = $this->refundCommitment($campaignId, $reservationId, $partyId, $expectedRevision, false);
+            $this->claims->retain($root, $campaign, $this->wallets->lockForParty($partyId));
+
+            return $refund;
+        });
+    }
+
+    /** Refunds a confirmed commitment's exact principal; a Business closure also tells the Investor why. */
+    private function refundCommitment(string $campaignId, string $reservationId, string $partyId, int $expectedRevision, bool $notify): ReservationRefund
+    {
+        return DB::transaction(function () use ($campaignId, $reservationId, $partyId, $expectedRevision, $notify): ReservationRefund {
             $campaign = $this->campaigns->lockRetained($campaignId);
             $root = PrimaryReservationRecord::query()->where('business_campaign_id', $campaign['id'])->where('party_id', $partyId)
                 ->whereKey($reservationId)->lockForUpdate()->first() ?? throw new CommandRejection('RESERVATION_NOT_FOUND', 404);
@@ -337,7 +376,7 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                 throw new RuntimeException('RESERVATION_INTEGRITY_FAILED');
             }
 
-            if (! $posting->replayed) {
+            if ($notify && ! $posting->replayed) {
                 $this->notices->record($partyId, PartyNoticeKind::RaiseRefunded, ['amount' => $root->principal, 'currency' => 'RWF',
                     'business' => $this->campaigns->presentation($campaignId)['business']], 'primary-refund:'.$root->id);
             }

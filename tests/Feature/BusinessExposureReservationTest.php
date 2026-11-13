@@ -161,6 +161,9 @@ it('does not silently backfill pre-C3 submissions when the reservation migration
     // The secondary market rebinds the ledger entry sources, so it comes off first and goes back last.
     $secondaryMarket = require database_path('migrations/2026_11_11_060000_create_secondary_market_tables.php');
     $secondaryMarket->down();
+    // Recycling withdrawn commitment claims rewrites check_primary_held_release again, so it comes off before the precision check.
+    $withdrawnClaims = require database_path('migrations/2026_11_10_170000_recycle_withdrawn_commitment_claims.php');
+    $withdrawnClaims->down();
     $cartCheckouts->down();
     $heldReleasePrecision->down();
     $cartLines->down();
@@ -232,6 +235,7 @@ it('does not silently backfill pre-C3 submissions when the reservation migration
     $cartLines->up();
     $heldReleasePrecision->up();
     $cartCheckouts->up();
+    $withdrawnClaims->up();
     $secondaryMarket->up();
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)

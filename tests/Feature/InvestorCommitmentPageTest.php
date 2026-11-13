@@ -62,12 +62,12 @@ it('renders a confirmed commitment from its retained facts and recorded confirma
     $commitment = $props['commitment'];
     $link = ['url' => '/investor/commitments/'.$this->commitment, 'method' => 'get'];
 
-    expect([$props['contract_version'], $props['allowed_actions'], $props['refusal']])->toBe(['investor-primary-v1', [], null])
+    expect([$props['contract_version'], $props['allowed_actions'], $props['refusal']])->toBe(['investor-primary-v1', ['primary.cancel'], null])
         ->and($commitment)->toMatchArray(['id' => $this->commitment, 'revision' => 2, 'campaign_id' => $this->campaign->id,
             'deal_name' => app(PrimaryCampaignSource::class)->presentation($this->campaign->id)['business'], 'units' => '3', 'ordinals' => [['first' => '1', 'last' => '3']],
             'principal' => ['currency' => 'RWF', 'amount' => '15000'], 'rights' => $this->root->payload['rights'], 'state' => 'confirmed',
-            'cancelled_by' => null, 'closing' => null, 'refund' => null, 'holding' => null, 'allowed_actions' => [],
-            'actions' => ['cancel' => null], 'link' => $link])
+            'cancelled_by' => null, 'closing' => null, 'refund' => null, 'holding' => null, 'allowed_actions' => ['primary.cancel'],
+            'actions' => ['cancel' => ['url' => '/investor/commitments/'.$this->commitment.'/cancel', 'method' => 'post']], 'link' => $link])
         ->and($commitment)->not->toHaveKey('reservation_id')
         ->and($commitment['confirmation'])->toMatchArray(['receipt_id' => $this->commitment, 'operation_id' => $this->confirmed['operation_id'],
             'request_id' => $this->confirmRequest, 'code' => 'RESERVATION_CONFIRMED', 'amount' => ['currency' => 'RWF', 'amount' => '15000'],

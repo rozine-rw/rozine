@@ -20,6 +20,7 @@ use App\Models\BusinessExposureReservation;
 use App\Models\BusinessProfile;
 use Brick\Math\BigInteger;
 use Brick\Math\BigRational;
+use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 use RuntimeException;
@@ -82,6 +83,14 @@ final class EloquentPrimaryCampaignSource implements PrimaryCampaignSource
         return ['title' => is_string($title) ? $title : throw new RuntimeException('CAMPAIGN_INTEGRITY_FAILED'),
             'business' => is_string($business) ? $business : throw new RuntimeException('CAMPAIGN_INTEGRITY_FAILED'),
             'closed' => $closure !== null, 'closure' => $phase];
+    }
+
+    /** @return array{principal: string, expires_at: DateTimeImmutable} */
+    public function raise(string $campaignId): array
+    {
+        $campaign = BusinessCampaign::query()->whereKey($campaignId)->firstOrFail();
+
+        return ['principal' => $campaign->principal, 'expires_at' => $campaign->expires_at->toDateTimeImmutable()];
     }
 
     /** @return CampaignInput */
