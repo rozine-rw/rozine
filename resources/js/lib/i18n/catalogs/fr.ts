@@ -3702,6 +3702,8 @@ const fr: Catalog = {
     'auditor.audit.step.people': 'Personnes',
     'auditor.audit.step.registration': 'Immatriculation',
     'auditor.audit.step.trading': 'Début d’activité',
+    'auditor.audit.step.available': 'Fonds disponibles',
+    'auditor.audit.step.reason': 'Motif',
     'auditor.audit.step.drawings': 'Prélèvements',
     'auditor.audit.step.loans': 'Autres prêts',
     'auditor.audit.step.differences': 'Écarts',
@@ -6079,6 +6081,21 @@ const fr: Catalog = {
     'auditor.audit.guide.trading.done': 'Un mois est saisi.',
     'auditor.audit.guide.trading.how':
         'Utilisez la facture, le relevé ou la licence commerciale la plus ancienne que vous voyez, pas la date d’immatriculation si l’activité a commencé plus tard.',
+    'auditor.audit.guide.available.do':
+        'Demandez à voir chaque caisse et chaque solde bancaire ou mobile money avec lesquels l’entreprise pourrait payer aujourd’hui.',
+    'auditor.audit.guide.available.enter':
+        'Le total disponible maintenant, en francs entiers.',
+    'auditor.audit.guide.available.done':
+        'Chaque justificatif vu est coché et le total est saisi.',
+    'auditor.audit.guide.available.how':
+        'Comptez l’espèce vous-même et lisez les soldes dans l’application ou sur un relevé du jour, pas sur une impression antérieure.',
+    'auditor.audit.guide.reason.do':
+        'Demandez pourquoi le remboursement est en retard et choisissez le motif qui convient le mieux.',
+    'auditor.audit.guide.reason.enter':
+        'Un motif de la liste, et une courte note s’il s’agit de Autre.',
+    'auditor.audit.guide.reason.done': 'Un motif est choisi.',
+    'auditor.audit.guide.reason.how':
+        'Notez ce qu’on vous a dit et ce que vous avez vu. N’acceptez ni plan, ni nouvelle date, ni remise : rien ne se négocie lors de cette visite.',
     'auditor.audit.guide.drawings.do':
         'Notez ce que les propriétaires ont retiré de l’entreprise ce mois-ci.',
     'auditor.audit.guide.drawings.enter':
@@ -6186,6 +6203,25 @@ const fr: Catalog = {
     'auditor.trading.lead':
         'Le mois où l’entreprise a commencé son activité, d’après ses plus anciens documents.',
     'auditor.trading.since': 'En activité depuis',
+    'auditor.available.title': 'Fonds disponibles maintenant',
+    'auditor.available.lead':
+        'Le remboursement a 7 jours de retard. Notez ce avec quoi l’entreprise pourrait payer aujourd’hui.',
+    'auditor.available.proofs': 'Justificatifs vus',
+    'auditor.available.amount': 'Disponible maintenant',
+    'auditor.available.hint':
+        'Espèces en caisse plus soldes bancaires et mobile money. Saisissez 0 s’il n’y en a pas.',
+    'auditor.late_reason.title': 'Motif du retard',
+    'auditor.late_reason.lead':
+        'Choisissez le motif qui convient le mieux. Rien ne se négocie lors de cette visite.',
+    'auditor.late_reason.option.sales_fell': 'Baisse des ventes',
+    'auditor.late_reason.option.customers_owe': 'Des clients n’ont pas payé',
+    'auditor.late_reason.option.unexpected_cost': 'Une dépense imprévue',
+    'auditor.late_reason.option.stock_bought': 'Argent utilisé pour le stock',
+    'auditor.late_reason.option.owner_away': 'Propriétaire absent ou malade',
+    'auditor.late_reason.option.trading_stopped': 'L’activité s’est arrêtée',
+    'auditor.late_reason.option.other': 'Autre',
+    'auditor.late_reason.note': 'Note (facultative)',
+    'auditor.late_reason.note_required': 'Dites ce qui s’est passé',
     'auditor.drawings.title': 'Prélèvements des propriétaires',
     'auditor.drawings.lead':
         'Ce que les propriétaires ont retiré de l’entreprise ce mois-ci, d’après les relevés et le livre de caisse.',

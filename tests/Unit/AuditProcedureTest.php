@@ -33,6 +33,8 @@ function procedureFields(string $step): array
         'people' => ['owners_confirmed' => true, 'management_confirmed' => true],
         'registration' => ['registration_confirmed' => true, 'tax_clearance_expires_on' => '2027-03-31'],
         'trading' => ['trading_since' => '2021-06'],
+        'available' => ['cash_available' => '450000', 'financial_proofs' => ['cash', 'bank']],
+        'reason' => ['late_reason' => 'customers_owe', 'late_reason_note' => ''],
         'cash_sales' => ['undeposited_cash_sales' => '15000'],
         'costs' => ['costs' => ['stock' => '400000', 'staff' => '250000', 'premises' => '80000', 'transport' => '30000', 'taxes' => '20000', 'other' => '0']],
         'drawings' => ['owner_drawings' => '150000'],
@@ -500,4 +502,50 @@ it('refuses a baseline step it cannot record exactly', function (string $step, a
     'trading as a date' => ['trading', ['trading_since' => '2021-06-01'], 'trading_since', 'Use the month trading started, as YYYY-MM.'],
     'trading month 13' => ['trading', ['trading_since' => '2021-13'], 'trading_since', 'Use the month trading started, as YYYY-MM.'],
     'trading missing' => ['trading', ['trading_since' => null], 'trading_since', 'Use the month trading started, as YYYY-MM.'],
+]);
+
+it('follows check-in with the money available now and the reason on a late visit, then seals (BRS v3 VIS-R02)', function (): void {
+    $procedure = new AuditProcedure;
+    expect($procedure->steps('late'))->toBe(['review', 'check_in', 'available', 'reason', 'seal']);
+
+    $state = procedureBefore('late', 'available');
+    $available = $procedure->save('late', 'available', $state['draft'], 'available', ['financial_proofs' => ['cash', 'bank'], 'cash_available' => '0'], procedureSources());
+    expect($available['step'])->toBe('reason')
+        ->and($available['draft']['fields']['available'])->toBe(['cash_available' => '0', 'financial_proofs' => ['bank', 'cash']])
+        ->and($available['draft']['sources']['available'] ?? null)->toBe(['check_in' => procedureSource('check_in')]);
+
+    $reason = $procedure->save('late', 'reason', $available['draft'], 'reason', ['late_reason' => 'other', 'late_reason_note' => ' Flooded shop. '], procedureSources());
+    expect($reason['step'])->toBe('seal')->and($reason['draft']['fields']['reason'])->toBe(['late_reason' => 'other', 'late_reason_note' => 'Flooded shop.'])
+        ->and($procedure->unavailable('late', 'seal', $reason['draft'], 'seal', procedureSources()))->toBeNull();
+
+    $sealed = $procedure->save('late', 'seal', $reason['draft'], 'seal', ['note' => ''], procedureSources());
+    expect($sealed['draft']['completed_steps'])->toBe(['review', 'check_in', 'available', 'reason']);
+});
+
+it('withholds the money-available step until a financial proof is on file', function (): void {
+    $procedure = new AuditProcedure;
+    $state = procedureBefore('late', 'available');
+
+    expect($procedure->unavailable('late', 'available', $state['draft'], 'available', [...procedureSources(), 'financial_proofs' => []]))->toBe('AUDIT_PROOFS_REQUIRED')
+        ->and($procedure->unavailable('late', 'available', $state['draft'], 'available', [...procedureSources(), 'check_in' => null]))->toBe('AUDIT_CAPTURE_REQUIRED')
+        ->and($procedure->unavailable('late', 'available', $state['draft'], 'available', procedureSources()))->toBeNull();
+});
+
+it('refuses a late visit step it cannot record exactly', function (string $step, array $input, string $field, string $message): void {
+    $procedure = new AuditProcedure;
+    $state = procedureBefore('late', $step);
+
+    try {
+        $procedure->save('late', $step, $state['draft'], $step, $input, procedureSources());
+        $this->fail('The step was accepted.');
+    } catch (CommandRejection $rejection) {
+        expect($rejection->reason)->toBe(str_ends_with($message, 'proof before continuing.') ? 'AUDIT_PROOFS_REQUIRED' : 'AUDIT_STEP_INPUT_INVALID')
+            ->and($rejection->fieldErrors)->toBe([$field => [$message]]);
+    }
+})->with([
+    'amount with decimals' => ['available', ['cash_available' => '10.5', 'financial_proofs' => ['bank', 'cash']], 'cash_available', 'Use a non-negative whole-number amount.'],
+    'proof missed' => ['available', ['cash_available' => '10', 'financial_proofs' => ['bank']], 'financial_proofs', 'Inspect every required proof before continuing.'],
+    'reason off the list' => ['reason', ['late_reason' => 'payment_plan', 'late_reason_note' => ''], 'late_reason', 'Choose why the repayment is late.'],
+    'other without a note' => ['reason', ['late_reason' => 'other', 'late_reason_note' => ' '], 'late_reason_note', 'Use plain text of at most 200 characters.'],
+    'note too long' => ['reason', ['late_reason' => 'sales_fell', 'late_reason_note' => str_repeat('a', 201)], 'late_reason_note', 'Use plain text of at most 200 characters.'],
 ]);

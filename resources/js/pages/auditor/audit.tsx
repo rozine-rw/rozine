@@ -7,6 +7,7 @@ import { useReturnControls } from '@/components/auditor/audit/return-controls';
 import { ReturnedStatus } from '@/components/auditor/audit/returned-status';
 import { useSealFlow } from '@/components/auditor/audit/seal-flow';
 import { SealedStatus } from '@/components/auditor/audit/sealed-status';
+import { StepAvailable } from '@/components/auditor/audit/step-available';
 import { StepBar } from '@/components/auditor/audit/step-bar';
 import { StepCashSales } from '@/components/auditor/audit/step-cash-sales';
 import { StepChanges } from '@/components/auditor/audit/step-changes';
@@ -18,6 +19,7 @@ import { StepDrawings } from '@/components/auditor/audit/step-drawings';
 import { StepExpiries } from '@/components/auditor/audit/step-expiries';
 import { StepGuide } from '@/components/auditor/audit/step-guide';
 import { StepHistory } from '@/components/auditor/audit/step-history';
+import { StepLateReason } from '@/components/auditor/audit/step-late-reason';
 import { StepLedger } from '@/components/auditor/audit/step-ledger';
 import { StepLoanUse } from '@/components/auditor/audit/step-loan-use';
 import { StepLoans } from '@/components/auditor/audit/step-loans';
@@ -64,6 +66,8 @@ const SHOWN_FIELDS: Partial<Record<AuditStage['step'], string[]>> = {
     people: ['owners_confirmed', 'management_confirmed'],
     registration: ['registration_confirmed', 'tax_clearance_expires_on'],
     trading: ['trading_since'],
+    available: ['cash_available', 'financial_proofs'],
+    reason: ['late_reason', 'late_reason_note'],
     ledger: ['observed_stock', 'document', 'replaces'],
     cash_sales: ['undeposited_cash_sales'],
     costs: ['costs'],
@@ -89,6 +93,8 @@ const CONTINUE: Record<
     people: 'auditor.audit.continue',
     registration: 'auditor.audit.continue',
     trading: 'auditor.audit.to_photos',
+    available: 'auditor.audit.continue',
+    reason: 'auditor.audit.to_seal',
     photos: 'auditor.audit.continue',
     ledger: 'auditor.audit.to_seal',
     statements: 'auditor.audit.start_count',
@@ -174,6 +180,10 @@ function StageBody({
             return <StepRegistration stage={stage} context={context} />;
         case 'trading':
             return <StepTrading stage={stage} context={context} />;
+        case 'available':
+            return <StepAvailable stage={stage} context={context} />;
+        case 'reason':
+            return <StepLateReason stage={stage} context={context} />;
         case 'cash_sales':
             return <StepCashSales stage={stage} context={context} />;
         case 'costs':

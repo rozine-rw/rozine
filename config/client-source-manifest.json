@@ -445,6 +445,7 @@
         "resources/js/components/auditor/audit/returned-status.tsx",
         "resources/js/components/auditor/audit/seal-flow.tsx",
         "resources/js/components/auditor/audit/sealed-status.tsx",
+        "resources/js/components/auditor/audit/step-available.tsx",
         "resources/js/components/auditor/audit/step-bar.tsx",
         "resources/js/components/auditor/audit/step-cash-sales.tsx",
         "resources/js/components/auditor/audit/step-changes.tsx",
@@ -456,6 +457,7 @@
         "resources/js/components/auditor/audit/step-expiries.tsx",
         "resources/js/components/auditor/audit/step-guide.tsx",
         "resources/js/components/auditor/audit/step-history.tsx",
+        "resources/js/components/auditor/audit/step-late-reason.tsx",
         "resources/js/components/auditor/audit/step-ledger.tsx",
         "resources/js/components/auditor/audit/step-loan-use.tsx",
         "resources/js/components/auditor/audit/step-loans.tsx",
@@ -833,10 +835,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 805,
+        "totalTrackedSources": 807,
         "generated": 345,
         "declarationOnly": 20,
-        "authoredExecutable": 440
+        "authoredExecutable": 442
     },
-    "coverageSetSha256": "a9b86354553a7ee316287fa9bc0b77c48d30e9ee0cd564005386da7145bc8267"
+    "coverageSetSha256": "8f8d16706fa975eb216c33990c8bcee087f3a13256435aeca229b2acfa889a94"
 }

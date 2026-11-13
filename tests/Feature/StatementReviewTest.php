@@ -333,4 +333,4 @@ it('keeps the review request to staff who manage audit assignments', function ()
 it('fixes the purpose at creation to a report or a routine statement review', function (string $kind, string $purpose): void {
     expect(fn () => app(AuditEngagementState::class)->start($kind, now()->toDateTimeImmutable(), $purpose))
         ->toThrow(CommandRejection::class, 'AUDIT_PURPOSE_INVALID');
-})->with([['flash', 'statement_review'], ['routine', 'initial']]);
+})->with([['flash', 'statement_review'], ['routine', 'initial'], ['routine', 'arrears']]);

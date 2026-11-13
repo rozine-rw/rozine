@@ -19,7 +19,8 @@ class SaveAuditReportStepRequest extends AuditorCommandRequest
             'owners_confirmed' => $fields, 'management_confirmed' => $fields, 'registration_confirmed' => $fields, 'trading_since' => $fields,
             'undeposited_cash_sales' => $fields, 'costs' => $fields, 'owner_drawings' => $fields, 'loans' => $fields,
             'staff_count' => $fields, 'rssb_checked' => $fields, 'tax_clearance_expires_on' => $fields, 'rssb_clearance_expires_on' => $fields,
-            'loan_use' => $fields, 'loan_use_note' => $fields, 'changes' => $fields, 'note' => $fields, 'document' => ['sometimes', 'file', 'max:10240'],
+            'loan_use' => $fields, 'loan_use_note' => $fields, 'changes' => $fields,
+            'cash_available' => $fields, 'late_reason' => $fields, 'late_reason_note' => $fields, 'note' => $fields, 'document' => ['sometimes', 'file', 'max:10240'],
             'replaces' => ['sometimes', 'nullable', 'ulid', ...($this->hasFile('document') ? [] : ['prohibited'])]];
     }
 }

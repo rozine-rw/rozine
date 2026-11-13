@@ -203,8 +203,11 @@ final class EloquentAuditReportStore implements AuditReportStore
                                     ? CarbonImmutable::parse($current['original_dispatch_at'])->setTimezone('Africa/Kigali')->startOfMonth()->subMonth()->format('Y-m') : null;
                                 $binding = ['assignment' => ['id' => $current['id'], 'revision' => $current['revision'], 'party_id' => $current['party_id']],
                                     'engagement' => $current['engagement'], 'application' => $application, 'period' => $period];
-                                // The first Flash visit before any sealed report is the business's baseline (BRS v3 AUD-R03).
-                                if ($current['kind'] !== 'routine' && ! AuditReport::query()->where('business_id', $current['business_id'])
+                                // A late visit (AUD-R08) follows its own short procedure. Otherwise the first Flash visit
+                                // before any sealed report is the business's baseline (BRS v3 AUD-R03).
+                                if ($this->assignments->purpose($current['id']) === AuditEngagementState::PURPOSE_ARREARS) {
+                                    $binding['late'] = true;
+                                } elseif ($current['kind'] !== 'routine' && ! AuditReport::query()->where('business_id', $current['business_id'])
                                     ->whereIn('id', AuditReportSeal::query()->select('audit_report_id'))->exists()) {
                                     $binding['baseline'] = true;
                                 }
@@ -581,11 +584,20 @@ final class EloquentAuditReportStore implements AuditReportStore
 
     /**
      * The procedure a report follows: its kind, except that a Flash report bound as the business's
-     * baseline (BRS v3 AUD-R03, VIS-R02) follows the baseline steps. Fixed in the binding at start.
+     * baseline (BRS v3 AUD-R03, VIS-R02) follows the baseline steps, and one bound as a late visit
+     * (AUD-R08) follows the late steps. Fixed in the binding at start.
      */
     private static function procedureOf(AuditReport $record): string
     {
-        return $record->kind === 'flash' && ($record->binding['baseline'] ?? false) === true ? 'baseline' : $record->kind;
+        if ($record->kind !== 'flash') {
+            return $record->kind;
+        }
+
+        return match (true) {
+            ($record->binding['late'] ?? false) === true => 'late',
+            ($record->binding['baseline'] ?? false) === true => 'baseline',
+            default => 'flash',
+        };
     }
 
     /** @param Report $report */

@@ -8,7 +8,7 @@ use App\Domain\Operations\CommandRejection;
 use DateTimeImmutable;
 
 /**
- * @phpstan-type State array{kind: string, status: string, party_id: string|null, original_dispatch_at: string, offered_at: string|null, accepted_at: string|null, accept_by: string|null, complete_by: string|null, visit_by: string|null, attempt: int, tried: list<string>, operations_reason: string|null, purpose?: string, closed_at?: string, completed_at?: string, withdrawn_at?: string}
+ * @phpstan-type State array{kind: string, status: string, party_id: string|null, original_dispatch_at: string, offered_at: string|null, accepted_at: string|null, accept_by: string|null, complete_by: string|null, visit_by: string|null, attempt: int, tried: list<string>, operations_reason: string|null, purpose?: string, arrears_instalment?: string, closed_at?: string, completed_at?: string, withdrawn_at?: string}
  */
 final class AuditEngagementState
 {
@@ -17,6 +17,9 @@ final class AuditEngagementState
     public const string PURPOSE_MONTHLY = 'monthly';
 
     public const string PURPOSE_STATEMENT_REVIEW = 'statement_review';
+
+    /** The visit day 7 of arrears sends (BRS v3 AUD-R08). It is always a Flash visit. */
+    public const string PURPOSE_ARREARS = 'arrears';
 
     /**
      * Why the engagement exists. It is fixed at creation and copied into every version; rows
@@ -32,8 +35,9 @@ final class AuditEngagementState
     /** @return State */
     public function start(string $kind, DateTimeImmutable $now, string $purpose = self::PURPOSE_MONTHLY): array
     {
-        if (! in_array($purpose, [self::PURPOSE_MONTHLY, self::PURPOSE_STATEMENT_REVIEW], true)
-            || ($purpose === self::PURPOSE_STATEMENT_REVIEW && $kind !== 'routine')) {
+        if (! in_array($purpose, [self::PURPOSE_MONTHLY, self::PURPOSE_STATEMENT_REVIEW, self::PURPOSE_ARREARS], true)
+            || ($purpose === self::PURPOSE_STATEMENT_REVIEW && $kind !== 'routine')
+            || ($purpose === self::PURPOSE_ARREARS && $kind !== 'flash')) {
             throw new CommandRejection('AUDIT_PURPOSE_INVALID', 422);
         }
         $clock = $this->clock->offer($kind, $now, $now, 1);
