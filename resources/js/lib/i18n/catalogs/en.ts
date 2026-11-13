@@ -558,7 +558,11 @@ const en = {
     'business.today.audit.cta': 'Get ready',
     'business.today.repayment.kicker': 'Upcoming repayment',
     'business.today.repayment.sub': '{note} · Due {date}',
-    'business.today.repayment.cta': 'Pay now',
+    'business.today.repayment.cta': 'Open Repayments',
+    'business.today.visit_ready.kicker': 'Get ready for this month’s visit',
+    'business.today.visit_ready.sub':
+        'Your CPA visits between {from} and {by}.',
+    'business.today.visit_ready.cta': 'Open the checklist',
     'business.today.blocked.kicker': 'Application on hold',
     'business.today.blocked.untitled': 'Your application',
     'business.today.blocked.sub.UNDERWRITING_EVIDENCE_REQUIRED':

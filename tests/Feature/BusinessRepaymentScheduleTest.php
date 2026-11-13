@@ -10,7 +10,9 @@ use App\Models\User;
 use Brick\Math\BigInteger;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
+use Laravel\Sanctum\Sanctum;
 use Tests\Support\PrimaryIssuanceFixture;
 
 /*
@@ -95,4 +97,37 @@ it('carries the visit-ready checklist from D−14 before the next instalment, bu
     expect($read())->toBeNull();
     $this->travelTo($kigali($second, -14));
     expect($read()['due_on'])->toBe($second);
+});
+
+it('puts the next instalment and the open visit-ready checklist on Home\'s Today, and files the issued Note as repaying (QA #579)', function (): void {
+    ['campaign' => $campaign, 'instruction' => $instruction] = PrimaryIssuanceFixture::close(effectiveAt: now()->toIso8601String());
+    $publication = BusinessCampaign::query()->findOrFail($campaign->campaignId);
+    $user = User::query()->findOrFail($publication->actor_user_id);
+    $home = fn (): array => $this->actingAs($user)->get(route('business.show', ['business' => $campaign->businessId]))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->component('business/home'))->viewData('page')['props'];
+    $repayments = ['url' => route('business.repayments.show', ['business' => $campaign->businessId], false), 'method' => 'get'];
+    $first = $instruction->dueDates[0];
+    $schedule = DB::transaction(fn () => app(GetRetainedNoteSchedule::class)->find($campaign->campaignId));
+    $due = ['kind' => 'repayment_due', 'amount' => ['currency' => 'RWF', 'amount' => $schedule->instalments[0]->gross], 'note_title' => $publication->payload['title'],
+        'due_on' => $first, 'link' => $repayments];
+    $kigali = fn (int $days): CarbonImmutable => CarbonImmutable::parse($first, 'Africa/Kigali')->addDays($days)->setTime(9, 0);
+
+    // Before D−14 Today names the next instalment only, and never reads "all caught up".
+    $this->travelTo($kigali(-15));
+    $props = $home();
+    expect(array_values(array_filter($props['today'], fn (array $item): bool => in_array($item['kind'], ['repayment_due', 'visit_ready'], true))))->toBe([$due])
+        ->and(array_column(array_filter($props['notes'], fn (array $note): bool => $note['id'] === $campaign->campaignId), 'status'))->toBe(['repaying']);
+
+    // From D−14 the checklist leads, with how many items are ready.
+    $this->travelTo($kigali(-13));
+    $this->actingAs($user)->post(route('business.repayments.visit-ready.tick', ['business' => $campaign->businessId]),
+        ['request_id' => (string) Str::uuid(), 'due_on' => $first, 'item' => (new VisitReadyChecklist)->items()[0]['key'], 'ticked' => true])->assertRedirect();
+    $visit = array_values(array_filter($home()['today'], fn (array $item): bool => $item['kind'] === 'visit_ready'));
+    expect($visit)->toBe([['kind' => 'visit_ready', 'due_on' => $first, 'visit_from' => $kigali(-10)->toDateString(), 'visit_by' => $kigali(-3)->toDateString(),
+        'ready' => 1, 'total' => count((new VisitReadyChecklist)->items()), 'link' => $repayments]]);
+
+    // The bearer transport has no Repayments read, so its Today carries neither.
+    Sanctum::actingAs($user, ['business:read']);
+    expect(array_intersect(array_column($this->getJson(route('api.v1.business.show', ['business' => $campaign->businessId]))->assertOk()->json('data.today'), 'kind'),
+        ['repayment_due', 'visit_ready']))->toBe([]);
 });

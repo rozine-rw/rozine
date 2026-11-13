@@ -512,6 +512,48 @@ describe('Business Home', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('names an open visit checklist and the next repayment, each linked to Repayments (QA #579)', () => {
+        const today: BusinessTodo[] = [
+            {
+                kind: 'visit_ready',
+                due_on: '2026-11-26',
+                visit_from: '2026-11-16',
+                visit_by: '2026-11-23',
+                ready: 0,
+                total: 12,
+                link: link('/business/b1/repayments'),
+            },
+            {
+                kind: 'repayment_due',
+                amount: { currency: 'RWF', amount: '1250000' },
+                note_title: 'Cold Room',
+                due_on: '2026-11-26',
+                link: link('/business/b1/repayments'),
+            },
+        ];
+
+        render(<BusinessHome {...fixture} today={today} />);
+
+        expect(
+            screen.getByText('Get ready for this month’s visit'),
+        ).toBeInTheDocument();
+        expect(screen.getByText('0 of 12 ready')).toBeInTheDocument();
+        expect(
+            screen.getByText('Your CPA visits between 16 Nov and 23 Nov.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /Open the checklist/ }),
+        ).toHaveAttribute('href', '/business/b1/repayments');
+        expect(screen.getByText('Upcoming repayment')).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /Open Repayments/ }),
+        ).toHaveAttribute('href', '/business/b1/repayments');
+        expect(screen.queryByText('Pay now')).not.toBeInTheDocument();
+        expect(
+            screen.queryByText("You're all caught up"),
+        ).not.toBeInTheDocument();
+    });
+
     it('says when nothing needs doing', () => {
         render(<BusinessHome {...fixture} today={[]} />);
 
