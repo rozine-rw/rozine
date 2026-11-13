@@ -563,7 +563,7 @@ describe('Business repayments (business-servicing-v1)', () => {
         expect(screen.queryByText(/overdue|paid/iu)).not.toBeInTheDocument();
     });
 
-    it('opens the reminder with the visit-ready checklist from D−14, in the visit order (BRS v3 VIS-R03)', () => {
+    it('opens the reminder with the visit-ready checklist from D−14, in the visit order, saving each tick (BRS v3 VIS-R03)', () => {
         const page = structuredClone(
             visitReadyFixture.props,
         ) as BusinessRepaymentsEmptyProps;
@@ -591,17 +591,45 @@ describe('Business repayments (business-servicing-v1)', () => {
             'Must show: every account’s money in and out for last month Where to get it: your bank or mobile money app (download the monthly statement)',
         );
         expect(items[11]).toHaveTextContent('Access for photos');
+        // A tick saved earlier comes back ticked.
+        expect(items[0]).toBeChecked();
         expect(checklist.getByRole('status')).toHaveTextContent(
-            '0 of 12 ready',
+            '1 of 12 ready',
         );
 
         fireEvent.click(items[7]);
         expect(items[7]).toBeChecked();
         expect(checklist.getByRole('status')).toHaveTextContent(
-            '1 of 12 ready',
+            '2 of 12 ready',
         );
-        fireEvent.click(items[7]);
+        expect(inertia.posts).toHaveLength(1);
+        expect(inertia.posts[0].url).toBe(page.visit_ready?.tick.url);
+        expect(inertia.posts[0].data).toMatchObject({
+            due_on: '2026-02-28',
+            item: 'tax_clearance',
+            ticked: true,
+        });
+        expect(inertia.posts[0].data.request_id).toMatch(/^[0-9a-f-]{36}$/u);
+        expect(inertia.posts[0].options).toMatchObject({
+            preserveScroll: true,
+            preserveState: true,
+        });
+
+        // A refused save puts the box back and says so.
+        act(() => inertia.posts[0].options.onError?.());
+        expect(checklist.getByRole('alert')).toHaveTextContent(
+            'We couldn’t save that tick. Check your connection and try again.',
+        );
         expect(items[7]).not.toBeChecked();
+
+        // Unticking a saved item sends it unticked, and clears the alert.
+        fireEvent.click(items[0]);
+        expect(items[0]).not.toBeChecked();
+        expect(inertia.posts[1].data).toMatchObject({
+            item: 'bank_statements',
+            ticked: false,
+        });
+        expect(checklist.queryByRole('alert')).not.toBeInTheDocument();
         expect(
             checklist.getByText(/shown here 3 days before the visit/u),
         ).toBeInTheDocument();

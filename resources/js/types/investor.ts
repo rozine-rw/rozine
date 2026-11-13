@@ -1713,6 +1713,14 @@ export type InvestorNotice = {
           facts: { period: string; closes_at: string };
       }
     | {
+          kind: 'business.visit_ready_open';
+          facts: { due_on: string; items: string };
+      }
+    | {
+          kind: 'business.visit_ready_reminder';
+          facts: { due_on: string; open: string; items: string };
+      }
+    | {
           kind: 'business.readiness_stage_changed';
           /** Stages as '0'–'4'; `period` is the report month (YYYY-MM) that moved it. */
           facts: { stage: string; previous: string; period: string };

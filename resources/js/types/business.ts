@@ -1736,6 +1736,10 @@ export type BusinessVisitReady = {
     /** D−3: the CPA seals by this day. */
     visit_by: KigaliDate;
     items: { key: VisitReadyItemKey; step: string }[];
+    /** The items the Business has ticked as ready, saved on the server. */
+    ticked: VisitReadyItemKey[];
+    /** `business.visit_ready.tick`: ticks or unticks one item. */
+    tick: RouteAction;
 };
 
 /** One thing the CPA will ask for, keyed as the server's monthly-step map names it. */

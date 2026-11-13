@@ -1,3 +1,4 @@
+import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDayMonth } from '@/lib/rozine/format';
@@ -8,13 +9,40 @@ import type { BusinessVisitReady } from '@/types/business';
  * The visit-ready checklist (BRS v3 VIS-R03), inside the repayment reminder from D−14: exactly what
  * the CPA will ask for on this month's visit, in the visit's order, as the server generates it from
  * the monthly guided-visit steps. Each item says what it is, what it must show and where to get it.
- * The Business ticks an item when it is ready; the ticks are its own note on this screen and send
- * nothing. The ten sampled transactions are named only three days before the visit.
+ * The Business ticks an item when it is ready; each tick is saved on the server
+ * (`business.visit_ready.tick`) so the D−11 reminder can list only what is still open. The box
+ * changes at once and returns to its saved state if the save is refused. The ten sampled
+ * transactions are named only three days before the visit.
  */
 export function VisitReadyChecklist({ ready }: { ready: BusinessVisitReady }) {
     const { t, locale } = useTranslation();
-    const [ticked, setTicked] = useState<Record<string, boolean>>({});
+    const [ticked, setTicked] = useState<Record<string, boolean>>(() =>
+        Object.fromEntries(ready.ticked.map((key) => [key, true])),
+    );
+    const [failed, setFailed] = useState(false);
     const done = ready.items.filter((item) => ticked[item.key] === true).length;
+
+    const toggle = (key: string, on: boolean) => {
+        setFailed(false);
+        setTicked((current) => ({ ...current, [key]: on }));
+        router.post(
+            ready.tick.url,
+            {
+                request_id: crypto.randomUUID(),
+                due_on: ready.due_on,
+                item: key,
+                ticked: on,
+            },
+            {
+                preserveScroll: true,
+                preserveState: true,
+                onError: () => {
+                    setTicked((current) => ({ ...current, [key]: !on }));
+                    setFailed(true);
+                },
+            },
+        );
+    };
 
     return (
         <section aria-labelledby="visit-ready-title" className="mt-4">
@@ -41,6 +69,14 @@ export function VisitReadyChecklist({ ready }: { ready: BusinessVisitReady }) {
                         total: ready.items.length,
                     })}
                 </p>
+                {failed && (
+                    <p
+                        role="alert"
+                        className="mt-2 text-xs font-semibold text-rz-danger-text"
+                    >
+                        {t('business.visit_ready.failed')}
+                    </p>
+                )}
             </div>
             <ul className="mt-2.5 flex flex-col gap-[9px]">
                 {ready.items.map((item) => {
@@ -57,12 +93,7 @@ export function VisitReadyChecklist({ ready }: { ready: BusinessVisitReady }) {
                                 aria-checked={on}
                                 aria-labelledby={`${id}-title`}
                                 aria-describedby={`${id}-shows ${id}-where`}
-                                onClick={() =>
-                                    setTicked((current) => ({
-                                        ...current,
-                                        [item.key]: !on,
-                                    }))
-                                }
+                                onClick={() => toggle(item.key, !on)}
                                 className={cn(
                                     'flex w-full items-start gap-3 rounded-2xl border bg-rz-surface p-3.5 text-left',
                                     on

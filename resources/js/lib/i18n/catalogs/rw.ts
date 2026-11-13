@@ -1673,6 +1673,10 @@ const rw: Catalog = {
         'Igisabwa cyo kwitegura gisigaje iminsi 14',
     'admin.messaging.trigger.business.readiness_requirement_overdue':
         'Igisabwa cyo kwitegura cyarengeje igihe',
+    'admin.messaging.trigger.business.visit_ready_open':
+        'Urutonde rwo kwitegura isura rufunguka iminsi 14 mbere y’igice cyo kwishyura',
+    'admin.messaging.trigger.business.visit_ready_reminder':
+        'Ibintu by’urutonde bitarashyirwaho akamenyetso iminsi 11 mbere y’igice cyo kwishyura',
     'admin.messaging.trigger.auditor.accreditation_approved':
         'Uruhushya rwemejwe',
     'admin.messaging.trigger.auditor.accreditation_rejected':
@@ -4153,6 +4157,8 @@ const rw: Catalog = {
     'business.visit_ready.progress': '{done} kuri {total} byiteguye',
     'business.visit_ready.shows': 'Kigomba kwerekana: {text}',
     'business.visit_ready.where': 'Aho wakibona: {text}',
+    'business.visit_ready.failed':
+        'Ntitwashoboye kubika ako kamenyetso. Reba murandasi yawe wongere ugerageze.',
     'business.visit_ready.footer':
         'Umucungamari abireba mu gihe cy’isura; abashoramari babona raporo yashyizweho kashe gusa. Ibikorwa 10 azagenzura bizagaragara hano iminsi 3 mbere y’isura. Kohereza hakiri kare si itegeko.',
     'business.visit_ready.item.bank_statements.title':
@@ -7375,6 +7381,14 @@ const rw: Catalog = {
         'Igisabwa cyarengeje igihe',
     'investor.notices.business.readiness_requirement_overdue.body':
         '{requirement} cyagombaga kuzuzwa ku wa {date}. Ubusabe bwawe bukurikira butegereza ko cyuzuzwa.',
+    'investor.notices.business.visit_ready_open.title':
+        'Itegure isura y’uku kwezi',
+    'investor.notices.business.visit_ready_open.body':
+        'Kwishyura kwawe kugomba kuba ku wa {date}. Audit Partner wawe azasaba ibintu {items} mu isura y’uku kwezi; urutonde ruri ku rupapuro rwawe rwo Kwishyura rusobanura buri kimwe n’aho wakibona.',
+    'investor.notices.business.visit_ready_reminder.title':
+        'Urutonde rw’isura ntirurarangira',
+    'investor.notices.business.visit_ready_reminder.body':
+        'Ibintu {open} kuri {items} by’urutonde ntibirashyirwaho akamenyetso ku kwishyura kugomba kuba ku wa {date}. Shyira akamenyetso kuri buri kimwe nikimara kwitegura isura ya Audit Partner wawe.',
     'investor.notices.business.raise_expired.title':
         'Ubukangurambaga bwarangiye budashyitse',
     'investor.notices.business.raise_expired.body':

@@ -1685,6 +1685,10 @@ const fr: Catalog = {
         'Il reste 14 jours pour une exigence de préparation',
     'admin.messaging.trigger.business.readiness_requirement_overdue':
         'Une exigence de préparation passe en retard',
+    'admin.messaging.trigger.business.visit_ready_open':
+        'La liste de préparation de la visite s’ouvre 14 jours avant une échéance',
+    'admin.messaging.trigger.business.visit_ready_reminder':
+        'Des éléments de la liste ne sont pas cochés 11 jours avant une échéance',
     'admin.messaging.trigger.auditor.accreditation_approved':
         'L’accréditation est approuvée',
     'admin.messaging.trigger.auditor.accreditation_rejected':
@@ -4170,6 +4174,8 @@ const fr: Catalog = {
     'business.visit_ready.progress': '{done} sur {total} prêts',
     'business.visit_ready.shows': 'Doit montrer : {text}',
     'business.visit_ready.where': 'Où l’obtenir : {text}',
+    'business.visit_ready.failed':
+        'Nous n’avons pas pu enregistrer cette coche. Vérifiez votre connexion et réessayez.',
     'business.visit_ready.footer':
         'L’expert-comptable les consulte pendant la visite ; les investisseurs ne voient que le rapport scellé. Les 10 transactions à vérifier s’affichent ici 3 jours avant la visite. Le téléversement anticipé est facultatif.',
     'business.visit_ready.item.bank_statements.title':
@@ -7401,6 +7407,14 @@ const fr: Catalog = {
         'Exigence en retard',
     'investor.notices.business.readiness_requirement_overdue.body':
         '{requirement} était due le {date}. Votre prochaine levée attend qu’elle soit remplie.',
+    'investor.notices.business.visit_ready_open.title':
+        'Préparez la visite de ce mois',
+    'investor.notices.business.visit_ready_open.body':
+        'Votre remboursement est dû le {date}. Votre Audit Partner demandera {items} éléments lors de la visite de ce mois ; la liste sur votre page Remboursements indique ce qu’est chacun et où l’obtenir.',
+    'investor.notices.business.visit_ready_reminder.title':
+        'Liste de visite incomplète',
+    'investor.notices.business.visit_ready_reminder.body':
+        '{open} éléments sur {items} ne sont pas encore cochés pour le remboursement dû le {date}. Cochez chacun dès qu’il est prêt pour la visite de votre Audit Partner.',
     'investor.notices.business.raise_expired.title':
         'Levée clôturée sans financement complet',
     'investor.notices.business.raise_expired.body':
