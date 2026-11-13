@@ -147,6 +147,8 @@ it('refuses a new Business deposit on UAT and still settles one accepted before,
     asStaging();
     $this->postJson(route('business.wallet.deposit', $business['business']->id), stagingDeposit($business['method'], '40000'))
         ->assertForbidden()->assertJsonPath('code', 'SYNTHETIC_BUSINESS_FUNDING_OFF');
+    $this->postJson(route('business.wallet.withdraw', $business['business']->id), stagingDeposit($business['method'], '1000'))
+        ->assertForbidden()->assertJsonPath('code', 'SYNTHETIC_BUSINESS_FUNDING_OFF');
     expect(BusinessDepositIntent::query()->count())->toBe(1)
         ->and(app(GetBusinessWallet::class)->handle($business['user']->id, 1, $business['business']->id)['allowed_actions'])->toBe([]);
 
@@ -672,6 +674,8 @@ it('stops a revoked tester\'s new deposits, still settles the deposits already a
     expect(Artisan::call('staging:wallet', ['email' => 'tester@staging.rozine.invalid', '--revoke' => true, '--reason' => 'Testing finished']))->toBe(0)
         ->and(Artisan::output())->toContain('Wallet tester revoked');
     $this->actingAs($tester['user'])->postJson(route('investor.wallet.deposit'), stagingDeposit($tester['method'], '20000'))
+        ->assertForbidden()->assertJsonPath('code', 'SYNTHETIC_TESTER_REQUIRED');
+    $this->postJson(route('investor.wallet.withdraw'), stagingDeposit($tester['method'], '1000'))
         ->assertForbidden()->assertJsonPath('code', 'SYNTHETIC_TESTER_REQUIRED');
     expect(WalletDepositIntent::query()->count())->toBe(1)
         ->and(app(GetInvestorWallet::class)->handle($tester['user']->id, 1)['allowed_actions'])->toBe([])
