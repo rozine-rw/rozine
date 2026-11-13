@@ -1,9 +1,10 @@
-import { Form } from '@inertiajs/react';
+import { Form, Link } from '@inertiajs/react';
 import { LinkAccountForm } from '@/components/investor/profile/profile-parts';
 import { Icon } from '@/components/rozine/icon';
 import type { IconName } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import type { BusinessProfileProps, LinkedAccount } from '@/types/business';
+import type { RouteLink } from '@/types/routing';
 
 const KIND_ICON: Record<LinkedAccount['kind'], IconName> = {
     wallet: 'wallet',
@@ -19,8 +20,11 @@ const KIND_ICON: Record<LinkedAccount['kind'], IconName> = {
  */
 export function LinkedAccounts({
     linked,
+    support = null,
 }: {
     linked: NonNullable<BusinessProfileProps['linked']>;
+    /** The support section, offered when linking is not open yet so the business has somewhere to ask. */
+    support?: RouteLink | null;
 }) {
     const { t } = useTranslation();
 
@@ -68,12 +72,28 @@ export function LinkedAccounts({
                     </li>
                 ))}
                 {linked.accounts.length === 0 && (
-                    <li className="rounded-2xl border border-dashed border-[#dbe3f0] px-4 py-5 text-center text-[12.5px] text-rz-secondary dark:border-rz-border">
-                        {t(
-                            linked.add === null
-                                ? 'business.profile.linked.empty'
-                                : 'business.profile.linked.none',
-                        )}
+                    <li className="rounded-2xl border border-dashed border-[#dbe3f0] px-4 py-5 text-center text-[12.5px] leading-[1.55] text-rz-secondary dark:border-rz-border">
+                        {/* Never a dead end: say why there is nothing to do yet, and where to ask (#592). */}
+                        {linked.add !== null
+                            ? t('business.profile.linked.none')
+                            : linked.open === false
+                              ? t('business.profile.linked.closed')
+                              : t('business.profile.linked.not_permitted')}
+                        {linked.add === null &&
+                            linked.open === false &&
+                            support !== null && (
+                                <>
+                                    {' '}
+                                    <Link
+                                        href={support}
+                                        className="font-semibold text-rz-accent-app-text underline underline-offset-2"
+                                    >
+                                        {t(
+                                            'business.profile.linked.ask_support',
+                                        )}
+                                    </Link>
+                                </>
+                            )}
                     </li>
                 )}
             </ul>

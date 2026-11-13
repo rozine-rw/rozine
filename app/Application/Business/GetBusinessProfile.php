@@ -32,7 +32,7 @@ final class GetBusinessProfile
         private BusinessPayoutAccounts $accounts) {}
 
     /**
-     * @return array{identity_context_revision: int, business: array{id: string, entity_kind: string, profile: Profile, mandate: Terms}, contact: Contact|null, can_update_contact: bool, can_link: bool, banks: list<array{code: string, name: string}>, rating: array{band: string, score: string}|null, methods: list<array{id: string, kind: string, label: string, masked: string}>}
+     * @return array{identity_context_revision: int, business: array{id: string, entity_kind: string, profile: Profile, mandate: Terms}, contact: Contact|null, can_update_contact: bool, can_link: bool, linking_open: bool, banks: list<array{code: string, name: string}>, rating: array{band: string, score: string}|null, methods: list<array{id: string, kind: string, label: string, masked: string}>}
      */
     public function handle(int $userId, int $contextRevision, string $businessId): array
     {
@@ -41,7 +41,7 @@ final class GetBusinessProfile
                 $this->contacts->current($business['id']), $this->holds($business['mandate']['people'], (string) ($identity['party']['id'] ?? ''), 'business.profile.update'),
                 $this->holds($business['mandate']['people'], (string) ($identity['party']['id'] ?? ''), 'business.wallet.withdraw') && $this->accounts->linkable()]);
 
-        return ['identity_context_revision' => $contextRevision, 'business' => $business, 'contact' => $contact, 'can_update_contact' => $canUpdate, 'can_link' => $canLink,
+        return ['identity_context_revision' => $contextRevision, 'business' => $business, 'contact' => $contact, 'can_update_contact' => $canUpdate, 'can_link' => $canLink, 'linking_open' => $this->accounts->linkable(),
             'banks' => $canLink ? array_map(fn (string $code, string $name): array => ['code' => $code, 'name' => $name], array_keys(PayoutAccount::BANKS), PayoutAccount::BANKS) : [], 'rating' => $this->campaigns->home($userId, $contextRevision, $businessId)['rating'],
             'methods' => $this->wallet->methods($userId, $contextRevision, $businessId)];
     }

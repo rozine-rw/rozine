@@ -1357,6 +1357,8 @@ export type BusinessProfileProps = {
         accounts: LinkedAccount[];
         add: RouteAction | null;
         banks: { code: string; name: string }[];
+        /** Whether Rozine has opened payout linking at all; absent reads as open (#592). */
+        open?: boolean;
     } | null;
     /** Null while no legal document is published: the section shows its empty state. */
     legal: LegalDocument | null;
@@ -1448,6 +1450,8 @@ export type BusinessWalletMovement = BusinessWalletEntry['movement'];
  */
 export type BusinessWalletProps = BusinessServicingPageContract & {
     business: { id: string; name: string };
+    /** Whether Rozine has opened payout linking, so the wallet only points to Linked accounts when it can be done (#592); absent reads as open. */
+    linking_open?: boolean;
     wallet: BusinessWalletBalances;
     funding: {
         kind: 'deposit' | 'withdraw' | null;

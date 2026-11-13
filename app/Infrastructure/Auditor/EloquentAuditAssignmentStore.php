@@ -64,6 +64,13 @@ use Throwable;
  */
 final class EloquentAuditAssignmentStore implements AuditAssignmentStore
 {
+    /**
+     * How an offer ended when the version after it was not the partner accepting: their own decline or
+     * conflict, or the offer running out. Any other exit took the job from them: it was withdrawn.
+     */
+    private const array OFFER_EXITS = ['assignment.decline' => 'declined', 'conflict.declare' => 'declined',
+        'audit.assignment.expire' => 'expired', 'audit.assignment.advance' => 'expired'];
+
     public function __construct(
         private BusinessAuthorityStore $businesses,
         private IdentityRepository $identities,
@@ -223,6 +230,25 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                                 'outcome' => ['resolution' => $state['status'] === 'operations' ? 'reassignment_pending' : 'reassigned']])], $record->revision);
                     });
             }, $decision === 'accept' ? [$partyId] : null);
+    }
+
+    public function offerOutcomes(int $userId, array $assignmentIds): array
+    {
+        $partyId = $this->actorPartyId($userId);
+        $now = now('UTC')->format('Y-m-d\TH:i:s\Z');
+        $offers = AuditAssignmentVersion::query()->whereIn('assignment_id', $assignmentIds)->where('party_id', $partyId)->where('status', 'offered')
+            ->groupBy('assignment_id')->selectRaw('assignment_id, max(revision) as revision')->pluck('revision', 'assignment_id');
+        $outcomes = [];
+        foreach (AuditAssignment::query()->whereIn('id', $offers->keys()->all())->orderBy('id')->get() as $record) {
+            $next = AuditAssignmentVersion::query()->where('assignment_id', $record->id)->where('revision', (int) $offers[$record->id] + 1)->first(['party_id', 'status', 'command']);
+            $state = $record->state;
+            $outcome = $next === null ? ($state['accept_by'] !== null && $state['accept_by'] <= $now ? 'expired' : 'open')
+                : ($next->status === 'accepted' && $next->party_id === $partyId ? 'accepted' : self::OFFER_EXITS[$next->command] ?? 'withdrawn');
+            $outcomes[$record->id] = ['outcome' => $outcome, 'held' => $record->party_id === $partyId,
+                'type' => AuditEngagementState::purpose($state) === AuditEngagementState::PURPOSE_STATEMENT_REVIEW ? 'statement_review' : ($state['kind'] === 'flash' ? 'flash' : 'routine')];
+        }
+
+        return $outcomes;
     }
 
     /** @return View */

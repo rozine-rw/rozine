@@ -595,6 +595,9 @@ const fr: Catalog = {
     'business.capital.subtitle':
         'Votre historique complet, sur toutes vos notes.',
     'business.capital.active_notes': '{count} active(s)',
+    'business.capital.active_and_repaying':
+        '{active} active(s) · {repaying} en remboursement',
+    'business.capital.repaying_notes': '{count} en remboursement',
     'business.capital.about': 'À propos de {label}',
     'business.capital.close': 'Fermer',
     'business.capital.raised.label': 'Levé',
@@ -1215,8 +1218,12 @@ const fr: Catalog = {
     'business.profile.linked.add': '+ Lier un compte de versement',
     'business.profile.linked.none':
         'Aucun compte lié. Liez-en un pour déposer et retirer.',
-    'business.profile.linked.empty':
-        "Aucun compte lié. L'ajout d'un compte s'ouvre dès que ce compte est autorisé à faire des mouvements d'argent. Vos versements arrivent sur le compte vérifié que vous liez ici.",
+    'business.profile.linked.closed':
+        'Aucun compte lié pour l’instant. Rozine n’a pas encore ouvert les comptes de versement aux entreprises : vous n’avez rien à faire pour le moment. Votre solde reste en sécurité dans votre portefeuille, et vous pourrez lier ici un compte au nom de l’entreprise dès l’ouverture des versements.',
+    'business.profile.linked.not_permitted':
+        'Aucun compte lié pour l’instant. Seul un signataire autorisé à retirer pour cette entreprise peut lier un compte de versement. Demandez-lui de le lier ici.',
+    'business.profile.linked.ask_support':
+        'Des questions ? Contactez le support Rozine.',
     'business.profile.linked.footnote':
         "Seul un compte au nom enregistré de l'entreprise peut être lié. Les retraits ne vont que vers un compte lié.",
     'business.profile.legal.updated':
@@ -4748,6 +4755,8 @@ const fr: Catalog = {
     'investor.deal.unit_times_one': '{price} × {count} titre',
     'investor.deal.unit_times_other': '{price} × {count} titres',
     'investor.deal.expected_return': 'Rendement attendu',
+    'investor.deal.fee_at_checkout': 'Indiqués au paiement',
+    'investor.deal.get_back_before_fee': 'Montant récupéré, avant les frais',
     'investor.deal.total_at_maturity': "Total remboursé à l'échéance",
     'investor.deal.fewer_notes': 'Un titre de moins',
     'investor.deal.more_notes': 'Un titre de plus',
@@ -6870,6 +6879,8 @@ const fr: Catalog = {
         "Les retraits ne sont pas encore ouverts : ce compte n'a pas de compte de versement vérifié. Liez-en un à votre nom ; Rozine ouvre ensuite les retraits dès que le compte est autorisé à faire des mouvements d'argent.",
     'investor.wallet.c3.withdraw_not_cleared':
         "Votre compte de versement est vérifié. Les retraits s'ouvrent dès que Rozine autorise ce compte à faire des mouvements d'argent ; vous n'avez rien d'autre à faire.",
+    'investor.wallet.c3.withdraw_linking_closed':
+        'Les retraits ne sont pas encore ouverts. Rozine n’a pas encore ouvert les comptes de versement pour ce portefeuille : il n’y a rien à lier ni à faire pour le moment. Votre solde reste ici en sécurité d’ici là.',
     'investor.wallet.c3.withdraw_not_allowed':
         "Votre compte de versement est vérifié, mais les retraits depuis ce portefeuille ne vous sont pas ouverts pour le moment. Contactez le support Rozine si vous devez retirer de l'argent.",
     'investor.wallet.c3.withdraw_link_account': 'Aller aux comptes liés',
@@ -7391,6 +7402,20 @@ const fr: Catalog = {
         'Audit flash chez {business}, {location}. Acceptez avant {time}.',
     'investor.notices.auditor.job_offered.body_routine':
         'Audit de routine chez {business}, {location}. Acceptez avant {time}.',
+    'investor.notices.auditor.job_offered.body_statement_review':
+        'Revue des relevés pour {business}, {location}. Acceptez avant {time}.',
+    'investor.notices.auditor.job_offered.type.flash': 'Audit flash',
+    'investor.notices.auditor.job_offered.type.routine': 'Audit de routine',
+    'investor.notices.auditor.job_offered.type.statement_review':
+        'Revue des relevés',
+    'investor.notices.auditor.job_offered.accepted':
+        '{job} chez {business}, {location}. Vous l’avez acceptée.',
+    'investor.notices.auditor.job_offered.declined':
+        '{job} chez {business}, {location}. Vous l’avez refusée.',
+    'investor.notices.auditor.job_offered.expired':
+        '{job} chez {business}, {location}. L’offre a expiré.',
+    'investor.notices.auditor.job_offered.withdrawn':
+        '{job} chez {business}, {location}. L’offre a été retirée.',
     'investor.notices.business.report_sealed.title':
         "Rapport d'audit prêt à examiner",
     'investor.notices.business.report_sealed.body':
@@ -7524,7 +7549,7 @@ const fr: Catalog = {
     'investor.primary.status.expired': 'Non rempli — remboursé',
     'investor.primary.status.failed_closing': 'Clôturé — remboursé',
     'investor.primary.status_body.confirmed':
-        "La levée est encore ouverte. Votre engagement est définitif ; si la levée n'est pas complète, votre argent revient dans votre portefeuille.",
+        'La levée est toujours ouverte. Vous pouvez retirer cet engagement avec un remboursement intégral tant que la levée n’a pas atteint 100 %. Si la levée n’aboutit pas, votre argent revient dans votre portefeuille.',
     'investor.primary.status_body.awaiting_disbursement':
         "La levée est entièrement financée : l'annulation est verrouillée. Les titres sont émis une fois le versement confirmé.",
     'investor.primary.status_body.in_flight_pending':
@@ -7560,7 +7585,8 @@ const fr: Catalog = {
     'investor.primary.terms': 'Conditions',
     'investor.primary.maturity': "Date d'échéance",
     'investor.primary.maturity_at_issue': "Fixée à l'émission des titres",
-    'investor.primary.versions': 'Règle · information',
+    'investor.primary.disclosure': 'Document d’information',
+    'investor.primary.disclosure_value': 'Version du {date}',
     'investor.primary.view_holding': 'Voir la détention',
     'investor.primary.awaiting_issue': "En attente d'émission",
     'investor.primary.awaiting_issue_note':
@@ -7575,6 +7601,9 @@ const fr: Catalog = {
         "Les échéances sont fixées à l'émission : la première tombe un mois après la date d'effet du versement.",
     'investor.primary.commitment_title': 'Engagement',
     'investor.primary.back_to_portfolio': 'Retour au portefeuille',
+    'investor.checkout.fee_about': 'environ {amount}',
+    'investor.checkout.fee_estimate_note':
+        'Le montant exact des frais est calculé à chaque remboursement une fois vos titres réservés ; il peut différer de quelques francs.',
     'investor.primary.cancel': "Retirer l'engagement",
     'investor.primary.cancel_title': 'Retirer cet engagement ?',
     'investor.primary.cancel_body':

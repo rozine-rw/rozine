@@ -600,7 +600,7 @@ describe('Business Home', () => {
 
         expect(screen.getByText('88M')).toBeInTheDocument();
         expect(screen.getByText('1,657')).toBeInTheDocument();
-        expect(screen.getByText('1 active')).toBeInTheDocument();
+        expect(screen.getByText('1 repaying')).toBeInTheDocument();
 
         await user.click(screen.getByRole('button', { name: 'About Raised' }));
         expect(screen.getByRole('tooltip')).toHaveTextContent(
@@ -661,6 +661,62 @@ describe('Business Home', () => {
         expect(
             screen.getByText('No notes with this status'),
         ).toBeInTheDocument();
+    });
+
+    it('opens on Repaying and counts it when the only note is repaying (QA #583)', () => {
+        const repaying = fixture.notes.filter(
+            (note) => note.status === 'repaying',
+        );
+        const { unmount } = render(
+            <BusinessHome
+                {...fixture}
+                notes={repaying}
+                capital={{ ...fixture.capital, active_notes: 1 }}
+            />,
+        );
+
+        expect(
+            screen.getByRole('button', { name: 'Repaying' }),
+        ).toHaveAttribute('aria-pressed', 'true');
+        expect(
+            screen.queryByText('No notes with this status'),
+        ).not.toBeInTheDocument();
+        expect(screen.getByText('1 repaying')).toBeInTheDocument();
+        unmount();
+
+        render(
+            <BusinessHome
+                {...fixture}
+                notes={[
+                    ...repaying,
+                    { ...repaying[0], id: 'N-9', status: 'funded' },
+                ]}
+                capital={{ ...fixture.capital, active_notes: 2 }}
+            />,
+        );
+        expect(screen.getByText('1 active · 1 repaying')).toBeInTheDocument();
+    });
+
+    it('opens on Active and keeps the plain count when nothing is repaying', () => {
+        render(
+            <BusinessHome
+                {...fixture}
+                notes={fixture.notes.filter(
+                    (note) => note.status !== 'repaying',
+                )}
+            />,
+        );
+
+        expect(screen.getByText('1 active')).toBeInTheDocument();
+    });
+
+    it('opens on Active when there are no notes', () => {
+        render(<BusinessHome {...fixture} notes={[]} />);
+
+        expect(screen.getByRole('button', { name: 'Active' })).toHaveAttribute(
+            'aria-pressed',
+            'true',
+        );
     });
 
     it('labels funded and failed notes', async () => {

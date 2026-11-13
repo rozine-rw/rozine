@@ -144,7 +144,7 @@ describe('Checkout: the indicative step', () => {
         const sheet = screen.getByRole('dialog', { name: 'Checkout' });
 
         expect(sheet).toHaveTextContent(
-            'Fee on earnings · 10.0% (Silver)RWF 68',
+            'Fee on earnings · 10.0% (Silver)about RWF 68',
         );
         expect(sheet).toHaveTextContent('Back over 6 monthsRWF 5,607');
         expect(sheet).toHaveTextContent(
@@ -184,7 +184,11 @@ describe('Checkout: the indicative step', () => {
         );
         expect(within(sheet).getByText('+RWF 675')).toBeInTheDocument();
         expect(sheet).toHaveTextContent(
-            'Fee on earnings · 15.0% (Standard)RWF 101',
+            'Fee on earnings · 15.0% (Standard)about RWF 101',
+        );
+        // An indicative fee is an estimate until the notes are reserved (#593).
+        expect(sheet).toHaveTextContent(
+            'The exact fee is worked out on each repayment once your notes are reserved, so it can differ by a few francs.',
         );
         expect(sheet).toHaveTextContent('Back over 6 monthsRWF 5,574');
         expect(

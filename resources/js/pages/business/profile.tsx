@@ -134,7 +134,10 @@ export default function BusinessProfile({
                         (linked === null ? (
                             <PendingSection kind="linked" />
                         ) : (
-                            <LinkedAccounts linked={linked} />
+                            <LinkedAccounts
+                                linked={linked}
+                                support={links.sections.support}
+                            />
                         ))}
                     {section === 'support' && (
                         <>
