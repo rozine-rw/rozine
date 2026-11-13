@@ -706,6 +706,8 @@ type WithdrawPanelProps<Name extends string> = {
     payload?: Record<string, unknown>;
     /** Where payout accounts are linked, offered while withdrawals are closed (QA #574). */
     linkedAccounts?: RouteLink | null;
+    /** False where Rozine has not opened payout linking yet: the panel says so rather than pointing to Linked accounts (#592). */
+    linkingOpen?: boolean;
 };
 
 /**
@@ -728,6 +730,7 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
     command: name = 'wallet.withdraw' as Name,
     payload = {},
     linkedAccounts = null,
+    linkingOpen = true,
 }: WithdrawPanelProps<Name>) {
     const { t } = useTranslation();
     const terms = funding.withdrawal;
@@ -820,11 +823,16 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
                     <Icon name="info" />
                     <span>
                         {funding.methods.length === 0
-                            ? t('investor.wallet.c3.withdraw_needs_account')
+                            ? linkingOpen
+                                ? t('investor.wallet.c3.withdraw_needs_account')
+                                : t(
+                                      'investor.wallet.c3.withdraw_linking_closed',
+                                  )
                             : terms === null
                               ? t('investor.wallet.c3.withdraw_not_cleared')
                               : t('investor.wallet.c3.withdraw_not_allowed')}
                         {funding.methods.length === 0 &&
+                            linkingOpen &&
                             linkedAccounts !== null && (
                                 <>
                                     {' '}

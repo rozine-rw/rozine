@@ -59,8 +59,9 @@ it('links a mobile money number and a bank account in the business\'s name, veri
             ->where('linked.accounts.0', ['id' => $linked[0]->id, 'kind' => 'mobile_money', 'name' => 'MTN MoMo', 'detail' => '+250 781 ···· 567',
                 'unlink' => ['url' => '/business/'.$business.'/profile/linked-accounts/'.$linked[0]->id.'/unlink', 'method' => 'post']])
             ->where('linked.accounts.1.kind', 'bank')
-            ->where('linked.add', ['url' => '/business/'.$business.'/profile/linked-accounts', 'method' => 'post'])
+            ->where('linked.add', ['url' => '/business/'.$business.'/profile/linked-accounts', 'method' => 'post'])->where('linked.open', true)
             ->has('linked.banks', count(PayoutAccount::BANKS))->where('linked.banks.0', ['code' => 'bk', 'name' => 'Bank of Kigali']));
+    $this->get(route('business.wallet.show', ['business' => $business]))->assertInertia(fn (Assert $page): Assert => $page->where('linking_open', true));
 });
 
 it('answers a repeated request once, and refuses an account already linked or not in the business\'s name', function (): void {
@@ -107,7 +108,9 @@ it('offers and accepts linking only to a holder of business.wallet.withdraw', fu
     $method = BusinessFundingMethod::factory()->create(['business_id' => $business]);
 
     $this->actingAs($authority['users'][1])->get(route('business.profile', ['business' => $business, 'section' => 'linked']))
-        ->assertInertia(fn (Assert $page): Assert => $page->where('linked.add', null)->where('linked.banks', [])->where('linked.accounts.0.unlink', null));
+        ->assertInertia(fn (Assert $page): Assert => $page->where('linked.add', null)->where('linked.banks', [])->where('linked.accounts.0.unlink', null)
+            // Linking is open; this holder only lacks the permission, so the page doesn't say it is closed (#592).
+            ->where('linked.open', true));
     $this->post(route('business.profile.link', ['business' => $business]), ($this->account)())->assertForbidden()->assertJsonPath('code', 'ACTION_FORBIDDEN');
     $this->post(route('business.profile.unlink', ['business' => $business, 'method' => $method->id]), ['request_id' => (string) Str::uuid()])
         ->assertForbidden()->assertJsonPath('code', 'ACTION_FORBIDDEN');
@@ -123,7 +126,9 @@ it('offers no linking where nothing can verify an account or on the test site, a
 
     expect(app(BusinessPayoutAccounts::class)->linkable())->toBeFalse();
     $this->get(route('business.profile', ['business' => $business, 'section' => 'linked']))
-        ->assertInertia(fn (Assert $page): Assert => $page->where('linked.add', null)->where('linked.banks', []));
+        ->assertInertia(fn (Assert $page): Assert => $page->where('linked.add', null)->where('linked.banks', [])->where('linked.open', false));
+    // The wallet says so too, so it doesn't send the business to an empty Linked accounts (#592).
+    $this->get(route('business.wallet.show', ['business' => $business]))->assertInertia(fn (Assert $page): Assert => $page->where('linking_open', false));
     $this->post(route('business.profile.link', ['business' => $business]), ($this->account)())
         ->assertSessionHasErrors(['number' => 'Accounts cannot be linked yet. Try again later.']);
 

@@ -29,7 +29,7 @@ class BusinessWalletResource extends JsonResource
 
         return ['contract_version' => 'business-servicing-v1', 'identity_context_revision' => $context, 'server_time' => now()->toIso8601String(),
             'allowed_actions' => $request->routeIs('api.*') && ! $request->user()?->tokenCan('business:command') ? [] : $data['allowed_actions'],
-            'business' => $data['business'], 'wallet' => $data['wallet'], 'funding' => $data['funding'],
+            'business' => $data['business'], 'wallet' => $data['wallet'], 'funding' => $data['funding'], 'linking_open' => (bool) ($data['linking_open'] ?? false),
             'deposits' => array_map(fn (array $deposit): array => self::deposit($request, $business, $context, $deposit), $data['deposits']),
             'withdrawals' => array_map(fn (array $withdrawal): array => self::withdrawal($request, $business, $context, $withdrawal), $data['withdrawals']),
             'history' => ['movement' => $movement,

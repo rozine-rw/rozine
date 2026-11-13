@@ -1218,8 +1218,12 @@ const fr: Catalog = {
     'business.profile.linked.add': '+ Lier un compte de versement',
     'business.profile.linked.none':
         'Aucun compte lié. Liez-en un pour déposer et retirer.',
-    'business.profile.linked.empty':
-        "Aucun compte lié. L'ajout d'un compte s'ouvre dès que ce compte est autorisé à faire des mouvements d'argent. Vos versements arrivent sur le compte vérifié que vous liez ici.",
+    'business.profile.linked.closed':
+        'Aucun compte lié pour l’instant. Rozine n’a pas encore ouvert les comptes de versement aux entreprises : vous n’avez rien à faire pour le moment. Votre solde reste en sécurité dans votre portefeuille, et vous pourrez lier ici un compte au nom de l’entreprise dès l’ouverture des versements.',
+    'business.profile.linked.not_permitted':
+        'Aucun compte lié pour l’instant. Seul un signataire autorisé à retirer pour cette entreprise peut lier un compte de versement. Demandez-lui de le lier ici.',
+    'business.profile.linked.ask_support':
+        'Des questions ? Contactez le support Rozine.',
     'business.profile.linked.footnote':
         "Seul un compte au nom enregistré de l'entreprise peut être lié. Les retraits ne vont que vers un compte lié.",
     'business.profile.legal.updated':
@@ -6873,6 +6877,8 @@ const fr: Catalog = {
         "Les retraits ne sont pas encore ouverts : ce compte n'a pas de compte de versement vérifié. Liez-en un à votre nom ; Rozine ouvre ensuite les retraits dès que le compte est autorisé à faire des mouvements d'argent.",
     'investor.wallet.c3.withdraw_not_cleared':
         "Votre compte de versement est vérifié. Les retraits s'ouvrent dès que Rozine autorise ce compte à faire des mouvements d'argent ; vous n'avez rien d'autre à faire.",
+    'investor.wallet.c3.withdraw_linking_closed':
+        'Les retraits ne sont pas encore ouverts. Rozine n’a pas encore ouvert les comptes de versement pour ce portefeuille : il n’y a rien à lier ni à faire pour le moment. Votre solde reste ici en sécurité d’ici là.',
     'investor.wallet.c3.withdraw_not_allowed':
         "Votre compte de versement est vérifié, mais les retraits depuis ce portefeuille ne vous sont pas ouverts pour le moment. Contactez le support Rozine si vous devez retirer de l'argent.",
     'investor.wallet.c3.withdraw_link_account': 'Aller aux comptes liés',

@@ -1177,8 +1177,11 @@ const en = {
     'business.profile.linked.add': '+ Link a payout account',
     'business.profile.linked.none':
         'No account linked yet. Link one to deposit and withdraw.',
-    'business.profile.linked.empty':
-        'No account linked yet. Linking opens once this account is cleared for money movement. Your payouts go to the verified account you link here.',
+    'business.profile.linked.closed':
+        "No account linked yet. Rozine hasn't opened payout accounts for businesses yet, so there is nothing for you to do now. Your balance stays safe in your wallet, and you'll be able to link an account in the business's name here once payouts open.",
+    'business.profile.linked.not_permitted':
+        'No account linked yet. Only a signatory who can withdraw for this business can link a payout account. Ask one of them to link it here.',
+    'business.profile.linked.ask_support': 'Questions? Ask Rozine support.',
     'business.profile.linked.footnote':
         "Only an account held in the business's registered name can be linked. Withdrawals go only to a linked account.",
     'business.profile.legal.updated': 'Last updated {date} · Version {version}',
@@ -6569,6 +6572,8 @@ const en = {
         "Withdrawals aren't open yet: this account has no verified payout account. Link one in your own name, then Rozine opens withdrawals once the account is cleared for money movement.",
     'investor.wallet.c3.withdraw_not_cleared':
         "Your payout account is verified. Withdrawals open once Rozine clears this account for money movement; you don't need to do anything else.",
+    'investor.wallet.c3.withdraw_linking_closed':
+        "Withdrawals aren't open yet. Rozine hasn't opened payout accounts for this wallet, so there is nothing to link or do now. Your balance stays safe here until it does.",
     'investor.wallet.c3.withdraw_not_allowed':
         'Your payout account is verified, but withdrawals from this wallet are not open to you right now. Contact Rozine support if you need to withdraw.',
     'investor.wallet.c3.withdraw_link_account': 'Go to Linked accounts',
