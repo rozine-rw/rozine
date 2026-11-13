@@ -59,7 +59,7 @@ class AuditorProfileController extends Controller
             'engagement' => $this->engagements->handle($userId, $revision),
             'jobs' => $jobs->handle($userId, $revision),
             'filed' => $reports->handle($userId, $revision, limit: 0)['counts']['all'],
-            'on_time_pct' => $reports->trackRecord($userId, $revision)['on_time_pct'],
+            'track_record' => $reports->trackRecord($userId, $revision),
             'earnings' => $earnings->handle($userId, $revision),
         ]);
 

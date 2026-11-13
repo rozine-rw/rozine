@@ -11,6 +11,7 @@ use App\Domain\Auditor\AuditReportWindow;
 use App\Domain\Auditor\AuditVariance;
 use App\Domain\Identity\IdentityViolation;
 use App\Models\AuditAssignment;
+use App\Models\AuditorProfile;
 use App\Models\AuditReport;
 use App\Models\AuditReportSeal;
 use Illuminate\Database\Eloquent\Builder;
@@ -88,7 +89,9 @@ final class EloquentAuditorFiledReportStore implements AuditorFiledReportStore
                 ->whereIn('exits.command', ['audit.assignment.expire', 'audit.assignment.advance'])->count();
 
             return ['on_time_pct' => $timed === 0 ? null : intdiv($onTime * 100, $timed), 'clock_expiries' => $expiries,
-                'avg_variance_pct' => AuditVariance::weighted($findings), 'variance_flagged' => AuditVariance::hasMoneyDifference($findings)];
+                'avg_variance_pct' => AuditVariance::weighted($findings), 'variance_flagged' => AuditVariance::hasMoneyDifference($findings),
+                // The Profile's "Since" tile (#589): the year the partner's auditor profile was opened.
+                'since_year' => AuditorProfile::query()->where('party_id', $partyId)->first()?->created_at?->setTimezone('Africa/Kigali')->year];
         });
     }
 

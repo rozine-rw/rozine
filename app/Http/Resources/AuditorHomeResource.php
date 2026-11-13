@@ -53,7 +53,7 @@ class AuditorHomeResource extends JsonResource
             // Home offers one command, the dispatch switch; the accreditation commands live on Profile.
             'allowed_actions' => array_values(array_intersect($facts['allowed_actions'], ['availability.update'])),
             'engagement' => (new AuditorEngagementSummaryResource($page['engagement']))->resolve($request),
-            'auditor' => ['name' => $page['name'], 'firm' => null, 'accreditation' => null, 'avatar_url' => null, 'since_year' => null],
+            'auditor' => ['name' => $page['name'], 'firm' => null, 'accreditation' => null, 'avatar_url' => null, 'since_year' => $page['track_record']['since_year'] ?? null],
             'quality_score' => null,
             'earned_this_month' => AuditorPortfolioResource::earnings($page['earnings'])['this_month'],
             'active_deals' => $page['earnings']['deals'],

@@ -38,8 +38,9 @@ const phoneStroke = {
 
 /**
  * The design draws two icon sets: the desktop sidebar's (Desktop L77–92) and the phone tab bar's
- * (L3034–3040, where Jobs is a bell and Portfolio a clipboard). Each tab carries both; the frame's
- * sidebar only ever shows the first and its tab bar only the second.
+ * (L3034–3040, where Portfolio is a clipboard). Each tab carries both; the frame's sidebar only
+ * ever shows the first and its tab bar only the second. The phone design's Jobs bell read as
+ * notifications, so Jobs is the desktop's briefcase on both (#589).
  */
 const DESKTOP: Record<AuditorTab, ReactNode> = {
     home: (
@@ -83,15 +84,17 @@ const PHONE: Record<AuditorTab, ReactNode> = {
     ),
     jobs: (
         <>
-            <path
-                d="M12 3a6 6 0 0 0-6 6c0 5-2 6-2 6h16s-2-1-2-6a6 6 0 0 0-6-6z"
+            <rect
+                x="3.5"
+                y="7"
+                width="17"
+                height="13"
+                rx="2.5"
                 {...phoneStroke}
-                strokeLinejoin="round"
             />
             <path
-                d="M10.5 20a1.8 1.8 0 0 0 3 0"
+                d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7"
                 {...phoneStroke}
-                strokeLinecap="round"
             />
         </>
     ),
