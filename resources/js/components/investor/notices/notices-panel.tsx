@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
+import type { MessageCode } from '@/lib/i18n/types';
 import {
     formatDate,
     formatDateTime,
@@ -626,6 +627,38 @@ export function NoticesPanel({
     );
 }
 
+type JobOfferedFacts = Extract<
+    InvestorNotice,
+    { kind: 'auditor.job_offered' }
+>['facts'];
+
+/** An open offer's sentence, by the job's type. */
+const JOB_OFFERED_BODY = {
+    flash: 'investor.notices.auditor.job_offered.body_flash',
+    routine: 'investor.notices.auditor.job_offered.body_routine',
+    statement_review:
+        'investor.notices.auditor.job_offered.body_statement_review',
+} as const satisfies Record<JobOfferedFacts['type'], MessageCode>;
+
+/** The job's type as a settled offer names it. */
+const JOB_OFFERED_TYPE = {
+    flash: 'investor.notices.auditor.job_offered.type.flash',
+    routine: 'investor.notices.auditor.job_offered.type.routine',
+    statement_review:
+        'investor.notices.auditor.job_offered.type.statement_review',
+} as const satisfies Record<JobOfferedFacts['type'], MessageCode>;
+
+/** A settled offer's sentence, by how it turned out. */
+const JOB_OFFERED_SETTLED = {
+    accepted: 'investor.notices.auditor.job_offered.accepted',
+    declined: 'investor.notices.auditor.job_offered.declined',
+    expired: 'investor.notices.auditor.job_offered.expired',
+    withdrawn: 'investor.notices.auditor.job_offered.withdrawn',
+} as const satisfies Record<
+    Exclude<NonNullable<JobOfferedFacts['outcome']>, 'open'>,
+    MessageCode
+>;
+
 function body(
     notice: InvestorNotice,
     t: ReturnType<typeof useTranslation>['t'],
@@ -868,17 +901,22 @@ function body(
                     date: formatDate(notice.facts.due_at, locale),
                 },
             );
-        case 'auditor.job_offered':
-            return t(
-                notice.facts.type === 'flash'
-                    ? 'investor.notices.auditor.job_offered.body_flash'
-                    : 'investor.notices.auditor.job_offered.body_routine',
-                {
-                    business: notice.facts.business,
-                    location: notice.facts.location,
-                    time: formatDateTime(notice.facts.accept_by, locale),
-                },
-            );
+        case 'auditor.job_offered': {
+            const outcome = notice.facts.outcome ?? 'open';
+            const facts = {
+                business: notice.facts.business,
+                location: notice.facts.location,
+                time: formatDateTime(notice.facts.accept_by, locale),
+            };
+
+            /* Once the offer is settled the notice says how, not "accept by" a time gone by (#587). */
+            return outcome === 'open'
+                ? t(JOB_OFFERED_BODY[notice.facts.type], facts)
+                : t(JOB_OFFERED_SETTLED[outcome], {
+                      ...facts,
+                      job: t(JOB_OFFERED_TYPE[notice.facts.type]),
+                  });
+        }
         case 'business.raise_expired':
             return t('investor.notices.business.raise_expired.body', {
                 title: notice.facts.title,

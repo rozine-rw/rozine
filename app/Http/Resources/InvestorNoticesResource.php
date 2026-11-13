@@ -76,7 +76,7 @@ class InvestorNoticesResource extends JsonResource
      * @param  array<string, string>  $parameters
      * @return array{url: string, method: 'get'}|null
      */
-    private function link(string $prefix, string $name, array $parameters): ?array
+    protected function link(string $prefix, string $name, array $parameters): ?array
     {
         return Route::has($prefix.$name) ? ['url' => route($prefix.$name, $parameters, false), 'method' => 'get'] : null;
     }

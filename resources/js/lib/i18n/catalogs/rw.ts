@@ -7364,6 +7364,20 @@ const rw: Catalog = {
         'Igenzura ryihuse kuri {business}, {location}. Emera mbere ya {time}.',
     'investor.notices.auditor.job_offered.body_routine':
         'Igenzura risanzwe kuri {business}, {location}. Emera mbere ya {time}.',
+    'investor.notices.auditor.job_offered.body_statement_review':
+        'Isuzuma ry’inyandiko za konti kuri {business}, {location}. Emera mbere ya {time}.',
+    'investor.notices.auditor.job_offered.type.flash': 'Igenzura ryihuse',
+    'investor.notices.auditor.job_offered.type.routine': 'Igenzura risanzwe',
+    'investor.notices.auditor.job_offered.type.statement_review':
+        'Isuzuma ry’inyandiko za konti',
+    'investor.notices.auditor.job_offered.accepted':
+        '{job} kuri {business}, {location}. Warabyemeye.',
+    'investor.notices.auditor.job_offered.declined':
+        '{job} kuri {business}, {location}. Warabyanze.',
+    'investor.notices.auditor.job_offered.expired':
+        '{job} kuri {business}, {location}. Igihe cyo kwemera cyarangiye.',
+    'investor.notices.auditor.job_offered.withdrawn':
+        '{job} kuri {business}, {location}. Ubu busabe bwakuweho.',
     'investor.notices.business.report_sealed.title':
         "Raporo y'igenzura yiteguye gusuzumwa",
     'investor.notices.business.report_sealed.body':

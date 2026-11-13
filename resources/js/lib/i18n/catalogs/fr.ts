@@ -7391,6 +7391,20 @@ const fr: Catalog = {
         'Audit flash chez {business}, {location}. Acceptez avant {time}.',
     'investor.notices.auditor.job_offered.body_routine':
         'Audit de routine chez {business}, {location}. Acceptez avant {time}.',
+    'investor.notices.auditor.job_offered.body_statement_review':
+        'Revue des relevés pour {business}, {location}. Acceptez avant {time}.',
+    'investor.notices.auditor.job_offered.type.flash': 'Audit flash',
+    'investor.notices.auditor.job_offered.type.routine': 'Audit de routine',
+    'investor.notices.auditor.job_offered.type.statement_review':
+        'Revue des relevés',
+    'investor.notices.auditor.job_offered.accepted':
+        '{job} chez {business}, {location}. Vous l’avez acceptée.',
+    'investor.notices.auditor.job_offered.declined':
+        '{job} chez {business}, {location}. Vous l’avez refusée.',
+    'investor.notices.auditor.job_offered.expired':
+        '{job} chez {business}, {location}. L’offre a expiré.',
+    'investor.notices.auditor.job_offered.withdrawn':
+        '{job} chez {business}, {location}. L’offre a été retirée.',
     'investor.notices.business.report_sealed.title':
         "Rapport d'audit prêt à examiner",
     'investor.notices.business.report_sealed.body':
