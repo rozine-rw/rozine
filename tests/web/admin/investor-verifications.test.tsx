@@ -364,11 +364,12 @@ describe('Compliance review drawer', () => {
             .getAllByRole('listitem')
             .filter((item) => !current.contains(item));
         expect(
-            within(replaced).getByText('Replaced by a newer upload'),
+            within(replaced).getByText('Replaced upload'),
         ).toBeInTheDocument();
+        expect(replaced).not.toHaveTextContent('ID front');
         expect(
             screen.getByText(
-                'Each file is named for the place the person uploaded it to, not checked against what it shows.',
+                'Files the person replaced with a newer upload. They are kept for the record and are not named for a document type, because what each one shows is not checked.',
             ),
         ).toBeInTheDocument();
         expect(
@@ -614,7 +615,7 @@ describe('Compliance document viewer', () => {
             within(viewer).getByRole('button', { name: 'Next document' }),
         );
         viewer = screen.getByRole('dialog', {
-            name: 'ID front Replaced by a newer upload',
+            name: 'Replaced upload',
         });
         expect(within(viewer).getByText('2 of 2')).toBeInTheDocument();
         expect(
@@ -628,7 +629,7 @@ describe('Compliance document viewer', () => {
         await user.keyboard('{ArrowLeft}');
         expect(
             screen.getByRole('dialog', {
-                name: 'ID front Replaced by a newer upload',
+                name: 'Replaced upload',
             }),
         ).toBeInTheDocument();
         await user.click(
@@ -657,7 +658,7 @@ describe('Compliance document viewer', () => {
             screen.getByRole('button', { name: 'View blurred.png' }),
         );
         const viewer = screen.getByRole('dialog', {
-            name: 'ID front Replaced by a newer upload',
+            name: 'Replaced upload',
         });
         expect(within(viewer).getByText('2 of 2')).toBeInTheDocument();
 
@@ -666,7 +667,7 @@ describe('Compliance document viewer', () => {
         );
         expect(
             screen.queryByRole('dialog', {
-                name: 'ID front Replaced by a newer upload',
+                name: 'Replaced upload',
             }),
         ).not.toBeInTheDocument();
     });
