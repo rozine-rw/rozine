@@ -221,7 +221,7 @@ it('isolates complete POC static checks while retaining the safety catalog and e
     $catalog = array_column($workflow['jobs']['poc-php']['steps'], null, 'name');
 
     expect($static['needs'])->toBe('plan')
-        ->and($static['runs-on'])->toBe('ubuntu-latest')
+        ->and($static['runs-on'])->toBe('ubuntu-24.04')
         ->and($static)->not->toHaveKey('services')
         ->and($static['permissions'])->toBe(['contents' => 'read', 'actions' => 'read'])
         ->and($steps['Checkout exact tested commit']['with'])->toBe([
