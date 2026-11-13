@@ -570,7 +570,11 @@ const fr: Catalog = {
     'business.today.audit.cta': 'Se préparer',
     'business.today.repayment.kicker': 'Prochain remboursement',
     'business.today.repayment.sub': '{note} · Échéance le {date}',
-    'business.today.repayment.cta': 'Payer maintenant',
+    'business.today.repayment.cta': 'Ouvrir les remboursements',
+    'business.today.visit_ready.kicker': 'Préparez la visite de ce mois',
+    'business.today.visit_ready.sub':
+        'Votre CPA passe entre le {from} et le {by}.',
+    'business.today.visit_ready.cta': 'Ouvrir la liste',
     'business.today.blocked.kicker': 'Demande en attente',
     'business.today.blocked.untitled': 'Votre demande',
     'business.today.blocked.sub.UNDERWRITING_EVIDENCE_REQUIRED':
@@ -1985,14 +1989,14 @@ const fr: Catalog = {
     'admin.kyc.slot.back': "Verso de la pièce d'identité",
     'admin.kyc.slot.selfie': 'Selfie',
     'admin.kyc.slot.passport': 'Page photo du passeport',
-    'admin.kyc.document.replaced': 'Remplacé par un envoi plus récent',
+    'admin.kyc.document.replaced': 'Envoi remplacé',
     'admin.kyc.document.meta': '{name} · {size} Ko',
     'admin.kyc.document.open': 'Télécharger {name}',
     'admin.kyc.document.download': 'Télécharger',
     'admin.kyc.document.current': 'Documents actuels',
     'admin.kyc.document.earlier': 'Envois précédents',
     'admin.kyc.document.earlier_hint':
-        "Chaque fichier porte le nom de l'emplacement où la personne l'a envoyé, sans vérification de ce qu'il montre.",
+        "Fichiers que la personne a remplacés par un envoi plus récent. Ils sont conservés pour l'historique et ne portent pas de type de document, car leur contenu n'est pas vérifié.",
     'admin.kyc.document.view': 'Voir {slot}',
     'admin.kyc.document.show': 'Voir',
     'admin.kyc.document.view_file': 'Voir {name}',
@@ -3411,6 +3415,7 @@ const fr: Catalog = {
     'business.wallet.detail.done': 'Terminé',
 
     'business.servicing.wallet.status.active': 'Actif',
+    'business.servicing.wallet.status.not_open': 'Pas encore ouvert',
     'business.servicing.wallet.status.restricted': 'Restreint',
     'business.servicing.wallet.restricted':
         'Restreint depuis le {date}. Les dépôts et les remboursements restent possibles.',
@@ -6861,8 +6866,17 @@ const fr: Catalog = {
         "Le paiement a été confirmé comme non effectué. Rien n'a été crédité.",
     'investor.wallet.c3.credit_receipt': 'Reçu de crédit',
     'investor.wallet.c3.funding': 'Mouvements de fonds',
-    'investor.wallet.c3.withdraw_unavailable':
-        "Les retraits ne sont pas encore ouverts sur ce compte. Ils demandent un compte de versement vérifié dans Profil → Comptes liés, et s'ouvrent dès que le compte est autorisé à faire des mouvements d'argent.",
+    'investor.wallet.c3.withdraw_needs_account':
+        "Les retraits ne sont pas encore ouverts : ce compte n'a pas de compte de versement vérifié. Liez-en un à votre nom ; Rozine ouvre ensuite les retraits dès que le compte est autorisé à faire des mouvements d'argent.",
+    'investor.wallet.c3.withdraw_not_cleared':
+        "Votre compte de versement est vérifié. Les retraits s'ouvrent dès que Rozine autorise ce compte à faire des mouvements d'argent ; vous n'avez rien d'autre à faire.",
+    'investor.wallet.c3.withdraw_not_allowed':
+        "Votre compte de versement est vérifié, mais les retraits depuis ce portefeuille ne vous sont pas ouverts pour le moment. Contactez le support Rozine si vous devez retirer de l'argent.",
+    'investor.wallet.c3.withdraw_link_account': 'Aller aux comptes liés',
+    'investor.wallet.c3.withdraw_at_least': 'Minimum {amount}.',
+    'investor.wallet.c3.withdraw_at_most': 'Maximum {amount} par retrait.',
+    'investor.wallet.c3.withdraw_over_available':
+        'Plus que votre disponible de {amount}.',
     'investor.wallet.c3.withdraw_available': 'Disponible au retrait : {amount}',
     'investor.wallet.c3.provider_charge': 'Frais du prestataire',
     'investor.wallet.c3.withdraw_terms':

@@ -161,6 +161,17 @@ export type BusinessTodo =
           note_title: string;
           due_on: string;
           link: RouteLink;
+      }
+    | {
+          /** The D−14 visit-ready checklist for the next instalment, open on Repayments (QA #579). */
+          kind: 'visit_ready';
+          due_on: string;
+          visit_from: string;
+          visit_by: string;
+          /** Checklist items ticked as ready, of `total`. */
+          ready: number;
+          total: number;
+          link: RouteLink;
       };
 
 export type BusinessCapital = {

@@ -15,7 +15,8 @@ const DOWNLOAD =
 
 /**
  * A case's identity documents laid out for review: the current ID front, back and selfie side by
- * side as previews of the files themselves, then any uploads they replaced. Each opens full size
+ * side as previews of the files themselves, then any uploads they replaced, named only as replaced
+ * uploads because a superseded file may not show what its slot asked for. Each opens full size
  * in a viewer that steps through them, and every file still downloads.
  */
 export function KycDocuments({
@@ -113,10 +114,7 @@ export function KycDocuments({
                             >
                                 <div className="min-w-0 flex-1">
                                     <div className="text-[13px] font-semibold text-rz-ink">
-                                        {slot(document)}{' '}
-                                        <span className="ml-2 text-[11px] font-semibold text-rz-faint">
-                                            {t('admin.kyc.document.replaced')}
-                                        </span>
+                                        {t('admin.kyc.document.replaced')}
                                     </div>
                                     <div className="truncate text-[11.5px] text-rz-muted">
                                         {meta(document)}
@@ -237,14 +235,9 @@ function Viewer({
                             <div className="flex items-center gap-3 border-b border-rz-hairline px-[18px] py-3">
                                 <div className="min-w-0 flex-1">
                                     <DialogPrimitive.Title className="text-[15px] font-bold text-rz-ink">
-                                        {slot(document)}{' '}
-                                        {!document.current && (
-                                            <span className="ml-2 text-[11px] font-semibold text-rz-faint">
-                                                {t(
-                                                    'admin.kyc.document.replaced',
-                                                )}
-                                            </span>
-                                        )}
+                                        {document.current
+                                            ? slot(document)
+                                            : t('admin.kyc.document.replaced')}
                                     </DialogPrimitive.Title>
                                     <p className="truncate text-[12px] text-rz-muted">
                                         {meta(document)}
