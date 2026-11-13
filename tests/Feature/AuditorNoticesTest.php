@@ -173,7 +173,8 @@ it('keeps each job notice current: it opens the job while the partner holds it a
 
     // An offer past its time reads as expired before the sweep has moved it on.
     $this->travelTo(CarbonImmutable::parse($assignment->state['accept_by'])->addMinute());
-    expect($notice($second['user'])['facts']['outcome'])->toBe('expired');
+    expect($notice($second['user']))->toMatchArray(['link' => ['url' => '/auditor/jobs', 'method' => 'get']])
+        ->and($notice($second['user'])['facts'])->toMatchArray(['outcome' => 'expired', 'held' => true]);
     $this->travelBack();
 
     AuditAssignmentFixture::respond($second['user'], $assignment);

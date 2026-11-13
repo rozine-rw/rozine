@@ -6907,6 +6907,37 @@ const en = {
     'admin.applications.release.cause.RELEASE_CHECK_NOT_COMPLETED':
         "This check couldn't be completed.",
     'admin.applications.release.cause.other': "This check didn't pass.",
+    'admin.applications.release.gate_state.waiting': 'Not checked',
+    'admin.applications.release.cause.waiting':
+        'Not checked until the {check} check passes.',
+    'admin.applications.release.blocked_next':
+        "The business sees the same reason on its Publish page. Once it's fixed, the checks run again and Release appears here.",
+    'admin.applications.release.next.ENGINE_GATE_FAILED':
+        "The business's latest figures no longer support this note. The business gets a new quote and signs again.",
+    'admin.applications.release.next.AUTHORITY_CHANGED':
+        'The business signs again under its current signing mandate.',
+    'admin.applications.release.next.MANDATE_UNVERIFIED':
+        "The business's signing mandate needs verifying. Check it on the business profile.",
+    'admin.applications.release.next.REPORT_NOT_CURRENT':
+        'A new listing audit has to be sealed before release.',
+    'admin.applications.release.next.EXPOSURE_RESERVATION_REQUIRED':
+        'The business submits the application again, which reserves its borrowing.',
+    'admin.applications.release.next.SIGNATURES_REQUIRED':
+        'The remaining signatories sign at Review on the business account.',
+    'admin.applications.release.next.STAFF_RELEASE_REQUIRED':
+        'The business signed again after the release. Check the new terms, then release again.',
+    'admin.applications.release.next.TERMS_CHANGED':
+        'The business accepts the current terms and signs again.',
+    'admin.applications.release.next.FEE_DISCLOSURE_CHANGED':
+        'The business reads the current fee disclosure and signs again.',
+    'admin.applications.release.next.QUOTE_STALE':
+        'The business refreshes its quote and signs again.',
+    'admin.applications.release.next.RESTRICTION_ACTIVE':
+        "Review the restriction on the business profile. Release waits until it's lifted.",
+    'admin.applications.release.next.RELEASE_CHECK_NOT_COMPLETED':
+        'The check stopped before it finished. Open the application again to rerun it, and tell engineering if it keeps stopping.',
+    'admin.applications.release.next.other':
+        'Open the business profile to see what changed. The code on hover helps engineering trace it.',
     'admin.applications.release.blocked':
         "A check failed, so this application can't be released. Release never overrides a failed check.",
     'admin.applications.release.receipt': 'Release receipt',

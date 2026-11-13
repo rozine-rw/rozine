@@ -149,7 +149,7 @@ it('lists the partner\'s filings as recent activity and counts them as jobs done
         ->and(auditorHomeProps($fixture['user'], '/auditor/profile', 'auditor/profile')['jobs_done'])->toBe(1)
         ->and($props['standing']['on_time_pct'])->toBe(100)
         ->and(auditorHomeProps($fixture['user'], '/auditor/profile', 'auditor/profile')['on_time_pct'])->toBe(100)
-        // An accredited partner's "Since" tile carries the year their auditor profile was opened (#589).
+        // An accredited partner's "Since" tile carries the year they were first accredited (#589).
         ->and(auditorHomeProps($fixture['user'], '/auditor/profile', 'auditor/profile')['auditor']['since_year'])->toBe(now('Africa/Kigali')->year)
         ->and($props['auditor']['since_year'])->toBe(now('Africa/Kigali')->year);
 
@@ -191,4 +191,19 @@ it('counts the offers that ran out on a partner as clock expiries', function ():
     expect($second['party']->id)->not->toBe($first['party']->id)
         ->and(auditorHomeProps($first['user'])['standing']['clock_expiries'])->toBe(1)
         ->and(auditorHomeProps($second['user'])['standing']['clock_expiries'])->toBe(0);
+});
+
+it('dates the Since tile from the partner\'s first accreditation, not the day their profile was opened (#589)', function (): void {
+    $this->travelTo(CarbonImmutable::parse('2025-12-30 10:00', 'Africa/Kigali'));
+    $fixture = AuditorFixture::make();
+    $submission = AuditorFixture::submit($fixture['user']);
+    $since = fn (): ?int => auditorHomeProps($fixture['user'], '/auditor/profile', 'auditor/profile')['auditor']['since_year'];
+    expect($since())->toBeNull();
+
+    $this->travelTo(CarbonImmutable::parse('2026-01-02 10:00', 'Africa/Kigali'));
+    AuditorFixture::review($fixture['staff'], $fixture['party']->id, 1, 'approve', $submission['data']['submission_id']);
+    $this->travelTo(CarbonImmutable::parse('2026-01-20 10:00', 'Africa/Kigali'));
+    AuditorFixture::review($fixture['staff'], $fixture['party']->id, 2, 'recheck');
+
+    expect($since())->toBe(2026);
 });

@@ -7200,6 +7200,37 @@ const rw: Catalog = {
     'admin.applications.release.cause.RELEASE_CHECK_NOT_COMPLETED':
         'Iri genzura ntiryashoboye kurangira.',
     'admin.applications.release.cause.other': 'Iri genzura ntiryatsinze.',
+    'admin.applications.release.gate_state.waiting': 'Ntiryagenzuwe',
+    'admin.applications.release.cause.waiting':
+        'Ntirizagenzurwa kugeza igenzura rya {check} ritsinze.',
+    'admin.applications.release.blocked_next':
+        'Ubucuruzi bubona impamvu imwe ku rupapuro rwabwo rwo Gutangaza. Nibimara gukosorwa, igenzura rizongera gukorwa maze Kurekura bigaragare hano.',
+    'admin.applications.release.next.ENGINE_GATE_FAILED':
+        "Imibare mishya y'ubucuruzi ntikigaragaza ko iyi nyandiko ikwiye. Ubucuruzi bwaka igiciro gishya bugasinya bundi bushya.",
+    'admin.applications.release.next.AUTHORITY_CHANGED':
+        'Ubucuruzi businya bundi bushya hakurikijwe ububasha bwo gusinya buriho ubu.',
+    'admin.applications.release.next.MANDATE_UNVERIFIED':
+        "Ububasha bwo gusinya bw'ubucuruzi bugomba kugenzurwa. Bureba ku mwirondoro w'ubucuruzi.",
+    'admin.applications.release.next.REPORT_NOT_CURRENT':
+        'Igenzura rishya ryo gushyira ku isoko rigomba gufungwa mbere yo kurekura.',
+    'admin.applications.release.next.EXPOSURE_RESERVATION_REQUIRED':
+        'Ubucuruzi bwongera gutanga dosiye, bigatuma inguzanyo yabwo yongera kubikwa.',
+    'admin.applications.release.next.SIGNATURES_REQUIRED':
+        "Abasinya basigaye basinya ku Isuzuma kuri konti y'ubucuruzi.",
+    'admin.applications.release.next.STAFF_RELEASE_REQUIRED':
+        'Ubucuruzi bwongeye gusinya nyuma yo kurekurwa. Reba amabwiriza mashya, hanyuma wongere urekure.',
+    'admin.applications.release.next.TERMS_CHANGED':
+        'Ubucuruzi bwemera amabwiriza ariho ubu bugasinya bundi bushya.',
+    'admin.applications.release.next.FEE_DISCLOSURE_CHANGED':
+        "Ubucuruzi busoma itangazo ry'amafaranga ririho ubu bugasinya bundi bushya.",
+    'admin.applications.release.next.QUOTE_STALE':
+        'Ubucuruzi buvugurura igiciro bwahawe bugasinya bundi bushya.',
+    'admin.applications.release.next.RESTRICTION_ACTIVE':
+        "Suzuma ikumira riri ku mwirondoro w'ubucuruzi. Kurekura bitegereza ko rikurwaho.",
+    'admin.applications.release.next.RELEASE_CHECK_NOT_COMPLETED':
+        'Igenzura ryahagaze ritarangiye. Ongera ufungure dosiye kugira ngo ryongere rikorwe, kandi ubimenyeshe itsinda rya tekiniki niriramuka ryongeye guhagarara.',
+    'admin.applications.release.next.other':
+        "Fungura umwirondoro w'ubucuruzi urebe icyahindutse. Kode igaragara iyo ushyizeho akayobora ifasha itsinda rya tekiniki.",
     'admin.applications.release.blocked':
         'Igenzura rimwe ryananiranye, bityo iyi dosiye ntishobora kurekurwa. Kurekura ntibirenga igenzura ryananiranye.',
     'admin.applications.release.receipt': 'Inyemezabwishyu yo kurekura',
