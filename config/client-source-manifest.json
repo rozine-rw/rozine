@@ -76,6 +76,7 @@
         "resources/js/actions/App/Http/Controllers/InvestorPrimaryController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorProfileController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorProspectusController.ts",
+        "resources/js/actions/App/Http/Controllers/InvestorProspectusPdfController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorRiskAcknowledgementController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorVerificationController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorWalletController.ts",
@@ -837,8 +838,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 809,
-        "generated": 346,
+        "totalTrackedSources": 810,
+        "generated": 347,
         "declarationOnly": 20,
         "authoredExecutable": 443
     },

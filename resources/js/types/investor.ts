@@ -2181,5 +2181,6 @@ export type InvestorProspectusProps = {
     quoted_lines: number[];
     /** The forecast months that cite an uploaded signed contract. */
     contracted_months: string[];
-    links: C3InvestorShellLinks & { back: RouteLink };
+    /** Back to the deal, and the same signed version as a PDF download. */
+    links: C3InvestorShellLinks & { back: RouteLink; pdf: RouteLink };
 };

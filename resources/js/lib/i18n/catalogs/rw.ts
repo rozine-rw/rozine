@@ -4645,6 +4645,7 @@ const rw: Catalog = {
     'investor.deal.prospectus.read': 'Soma',
     'investor.prospectus.title': 'Prosipegitusi ya {name}',
     'investor.prospectus.back': 'Subira ku ishoramari',
+    'investor.prospectus.download': 'Kuramo PDF',
     'investor.prospectus.signed':
         'Verisiyo {version}, yasinywe na {name} ku wa {date}',
     'investor.prospectus.fingerprint': 'Ikimenyetso {fingerprint}',

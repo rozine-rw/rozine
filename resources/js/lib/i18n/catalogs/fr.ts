@@ -4653,6 +4653,7 @@ const fr: Catalog = {
     'investor.deal.prospectus.read': 'Lire',
     'investor.prospectus.title': 'Prospectus de {name}',
     'investor.prospectus.back': 'Retour à l’offre',
+    'investor.prospectus.download': 'Télécharger le PDF',
     'investor.prospectus.signed':
         'Version {version}, signée par {name} le {date}',
     'investor.prospectus.fingerprint': 'Empreinte {fingerprint}',

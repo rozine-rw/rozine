@@ -9,6 +9,7 @@ use App\Application\Business\UploadProspectusDocument;
 use App\Models\BusinessProspectusVersion;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
+use Smalot\PdfParser\Parser;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryReservationFixture;
 
@@ -74,10 +75,12 @@ it('leads the deal\'s details with the signed prospectus and opens it in the app
         ->where('inputs.use_of_funds.0.label', 'Solar cold room')->where('quoted_lines', [0])->where('contracted_months', ['2027-02'])
         ->where('facts', ['principal' => '10800000', 'term_months' => 6, 'instalment' => '1999800', 'verified_monthly_revenue' => '4000000',
             'latest_sealed_report_at' => $signed->payload['document']['facts']['latest_sealed_report_at'] ?? null, 'platform_fee' => '324000', 'net_of_fee' => '10476000'])
-        ->where('links.back', ['url' => route('investor.deals.show', $route, false), 'method' => 'get'])->where('links.wallet', null));
+        ->where('links.back', ['url' => route('investor.deals.show', $route, false), 'method' => 'get'])->where('links.wallet', null)
+        ->where('links.pdf', ['url' => route('investor.deals.prospectus_pdf', $route, false), 'method' => 'get']));
     $api = $this->getJson(route('api.v1.investor.deals.prospectus', $route))->assertOk()
         ->assertJsonPath('data.prospectus.fingerprint', $signed->fingerprint)->assertJsonPath('data.prospectus.signed_by', $this->representative)
-        ->assertJsonPath('data.links.portfolio', null)->assertJsonPath('data.links.back.url', route('api.v1.investor.deals.show', $route, false));
+        ->assertJsonPath('data.links.portfolio', null)->assertJsonPath('data.links.back.url', route('api.v1.investor.deals.show', $route, false))
+        ->assertJsonPath('data.links.pdf.url', route('api.v1.investor.deals.prospectus_pdf', $route, false));
     $signer = collect($signed->payload['document'] ?? [])->only(['signed_by_party_id', 'signed_by_name'])->all();
     expect($signer)->toBe(['signed_by_party_id' => $this->signer,
         'signed_by_name' => $this->representative]);
@@ -97,4 +100,26 @@ it('shows no prospectus card before one is signed, and has nothing to read for i
         ->assertInertia(fn (Assert $page): Assert => $page->where('deal.prospectus', null)->where('deal.links.prospectus', null));
     $this->getJson(route('api.v1.investor.deals.prospectus', ['campaign' => $campaign->id]))->assertNotFound()->assertJsonPath('code', 'PROSPECTUS_NOT_FOUND');
     $this->getJson(route('api.v1.investor.deals.prospectus', ['campaign' => (string) Str::ulid()]))->assertNotFound()->assertJsonPath('code', 'DEAL_NOT_FOUND');
+});
+
+it('downloads the signed version as a private PDF that keeps the evidence documents out', function (): void {
+    $campaign = PrimaryReservationFixture::campaign(beforeRelease: $this->signed);
+    $investor = PrimaryReservationFixture::investor();
+    $signed = BusinessProspectusVersion::query()->where('kind', 'signed')->sole();
+    $route = ['campaign' => $campaign->id];
+    $this->get(route('investor.deals.prospectus_pdf', $route))->assertRedirect(route('login'));
+
+    foreach ([route('investor.deals.prospectus_pdf', $route), route('api.v1.investor.deals.prospectus_pdf', $route)] as $url) {
+        $response = $this->actingAs($investor['user'])->get($url)->assertOk()->assertHeader('Content-Type', 'application/pdf')
+            ->assertHeader('X-Content-Type-Options', 'nosniff');
+        expect($response->headers->get('Cache-Control'))->toContain('no-store')->toContain('private')
+            ->and($response->headers->get('Content-Disposition'))->toStartWith('attachment; filename=rozine-prospectus-')->toEndWith('-v2.pdf');
+        $text = preg_replace('/\s+/u', ' ', (new Parser)->parseContent((string) $response->getContent())->getText());
+        expect($text)->toContain('prospectus')->toContain('signed by '.$this->representative)->toContain($signed->fingerprint)
+            ->toContain('Solar cold room')->toContain('Quote on file')->toContain('Signed contract on file')->toContain('RWF 324,000')
+            ->toContain('The largest customer brings 10% of revenue.')->toContain('Power cuts can spoil stock')
+            ->not->toContain('cold-room-quote.pdf')->not->toContain('hotel-contract.pdf')->not->toContain('8,500,000')
+            ->not->toContain($this->evidence[0])->not->toContain($this->evidence[1]);
+    }
+    $this->getJson(route('api.v1.investor.deals.prospectus_pdf', ['campaign' => (string) Str::ulid()]))->assertNotFound()->assertJsonPath('code', 'DEAL_NOT_FOUND');
 });
