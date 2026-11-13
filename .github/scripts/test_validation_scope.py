@@ -2347,6 +2347,40 @@ class CanonicalCoordinationTests(NativeCoordinationFixture):
         self.assertEqual(peak, 4)
         self.assertCountEqual(checked, peers)
 
+    def test_matching_failed_peer_outside_the_scan_window_is_not_read(self):
+        old = (datetime.datetime.now(datetime.timezone.utc) - policy.FAILED_PEER_WINDOW
+               - datetime.timedelta(minutes=5)).isoformat()
+        self.failed_peer(307, matching=True)
+        self.runs[307].update(created_at=old, updated_at=old, run_started_at=old)
+        downloads = []
+        real = policy.coordination_identity
+        def identity(repository, run, **kwargs):
+            downloads.append(run["id"])
+            return real(repository, run, **kwargs)
+        with self.server(), patch.object(policy, "coordination_identity", side_effect=identity):
+            self.assertNotEqual(policy.canonical_selection(self.env())["mode"], "refusal")
+        self.assertNotIn(307, downloads)
+
+    def test_matching_failed_peer_inside_the_scan_window_still_refuses(self):
+        recent = (datetime.datetime.now(datetime.timezone.utc) - policy.FAILED_PEER_WINDOW
+                  + datetime.timedelta(minutes=5)).isoformat()
+        self.failed_peer(307, matching=True)
+        self.runs[307].update(created_at=recent, updated_at=recent, run_started_at=recent)
+        with self.server(), self.assertRaisesRegex(policy.CoordinationRefusal, "canonical_peer_unsuccessful_no_takeover"):
+            policy.canonical_selection(self.env())
+
+    def test_matching_failed_rerun_of_an_old_run_inside_the_scan_window_still_refuses(self):
+        now = datetime.datetime.now(datetime.timezone.utc)
+        old = (now - policy.FAILED_PEER_WINDOW - datetime.timedelta(days=1)).isoformat()
+        for key in ("run_started_at", "updated_at"):
+            with self.subTest(recent=key):
+                self.setUp()
+                self.failed_peer(307, matching=True)
+                self.runs[307].update(created_at=old, run_started_at=old, updated_at=old)
+                self.runs[307][key] = (now - datetime.timedelta(minutes=5)).isoformat()
+                with self.server(), self.assertRaisesRegex(policy.CoordinationRefusal, "canonical_peer_unsuccessful_no_takeover"):
+                    policy.canonical_selection(self.env())
+
     def test_parallel_historical_reads_still_refuse_a_matching_failed_peer(self):
         for number in range(300, 308):
             self.failed_peer(number, matching=number == 307)
