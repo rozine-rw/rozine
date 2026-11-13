@@ -1599,6 +1599,10 @@ const en = {
         'A readiness requirement has 14 days left',
     'admin.messaging.trigger.business.readiness_requirement_overdue':
         'A readiness requirement turns overdue',
+    'admin.messaging.trigger.business.visit_ready_open':
+        'The visit-ready checklist opens 14 days before an instalment',
+    'admin.messaging.trigger.business.visit_ready_reminder':
+        'Checklist items are still not ticked 11 days before an instalment',
     'admin.messaging.trigger.auditor.accreditation_approved':
         'Accreditation is approved',
     'admin.messaging.trigger.auditor.accreditation_rejected':
@@ -7085,6 +7089,14 @@ const en = {
         'Requirement overdue',
     'investor.notices.business.readiness_requirement_overdue.body':
         '{requirement} was due on {date}. Your next raise waits until it is met.',
+    'investor.notices.business.visit_ready_open.title':
+        'Get ready for this month’s visit',
+    'investor.notices.business.visit_ready_open.body':
+        'Your repayment is due on {date}. Your Audit Partner will ask for {items} things on this month’s visit; the checklist on your Repayments page says what each one is and where to get it.',
+    'investor.notices.business.visit_ready_reminder.title':
+        'Visit checklist not finished',
+    'investor.notices.business.visit_ready_reminder.body':
+        '{open} of {items} checklist items are still not ticked for the repayment due on {date}. Tick each one off when it is ready for your Audit Partner’s visit.',
     'investor.notices.business.raise_expired.title':
         'Raise closed without full funding',
     'investor.notices.business.raise_expired.body':

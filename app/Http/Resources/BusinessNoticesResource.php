@@ -35,6 +35,7 @@ class BusinessNoticesResource extends JsonResource
                     'business.reporting_window_open' => route('business.audit-prep', ['business' => $business], false),
                     'business.readiness_stage_changed', 'business.readiness_requirement_due', 'business.readiness_requirement_closing',
                     'business.readiness_requirement_overdue' => route('business.readiness', ['business' => $business], false),
+                    'business.visit_ready_open', 'business.visit_ready_reminder' => route('business.repayments.show', ['business' => $business], false),
                     'support.complaint_answered', 'support.complaint_resolved' => route('business.profile', ['business' => $business, 'section' => 'support'], false),
                     default => route($prefix.'business.wallet.show', ['business' => $business], false),
                 }, 'method' => 'get'],
