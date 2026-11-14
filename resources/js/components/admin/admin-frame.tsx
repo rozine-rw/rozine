@@ -398,9 +398,7 @@ export function AdminFrame({
     const typing = useSearchAsYouType(search, runSearch);
     const submitSearch = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        typing.submit(
-            (new FormData(event.currentTarget).get('q') as string | null) ?? '',
-        );
+        typing.submit(String(new FormData(event.currentTarget).get('q')));
     };
 
     const sidebar = (
