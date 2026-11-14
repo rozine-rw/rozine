@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "fc5d032cc563e8c2e495801cc62fa28a9a7281cc3e8fafa2f6389df778127990",
-    "coverageSetSha256": "d0d1abd28c3db4e6adc0bb348a3f2ee0a24e8184a225d0d0645e42903ef99228",
+    "sourceManifestSha256": "117c7568ced4c3ba8b3c7177c87583a7705e67db61315ee364bb40017db1fdaa",
+    "coverageSetSha256": "71c2cf6c39ed2ae0c4b6e582df1467e0ab4ad0bd60714a4ff9755934623fe5df",
     "thresholds": {
         "critical": {
             "global": {
@@ -406,6 +406,7 @@
         "resources/js/lib/rozine/raising.ts",
         "resources/js/lib/rozine/statement-transcription.ts",
         "resources/js/lib/utils.ts",
+        "resources/js/pages/admin/access-requests.tsx",
         "resources/js/pages/admin/applications.tsx",
         "resources/js/pages/admin/audit-reports.tsx",
         "resources/js/pages/admin/auth/login.tsx",

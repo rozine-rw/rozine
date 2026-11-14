@@ -221,6 +221,15 @@ const GLYPHS: Record<AdminFrameSection, ReactNode> = {
             <circle cx="12" cy="10.5" r="2.2" />
         </>
     ),
+    access_requests: (
+        <>
+            <circle cx="10" cy="8" r="3.2" />
+            <path
+                d="M4 19c.8-3 3.2-4.6 6-4.6 1.2 0 2.3.3 3.2.8M18 13v6M15 16h6"
+                strokeLinecap="round"
+            />
+        </>
+    ),
     complaints: (
         <path
             d="M21 11.5a8.5 8.5 0 0 1-12.4 7.55L3.5 20.5l1.45-5.05A8.5 8.5 0 1 1 21 11.5Z"
@@ -290,7 +299,10 @@ const GROUPS: {
     items: AdminFrameSection[];
 }[] = [
     { group: null, items: ['today'] },
-    { group: 'accounts', items: ['businesses', 'investors', 'auditors'] },
+    {
+        group: 'accounts',
+        items: ['businesses', 'investors', 'auditors', 'access_requests'],
+    },
     {
         group: 'capital',
         items: ['applications', 'notes', 'primary_market', 'secondary_market'],

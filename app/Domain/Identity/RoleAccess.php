@@ -63,6 +63,24 @@ final class RoleAccess
     }
 
     /**
+     * The roles a verified person may ask Rozine's staff for from the launcher (#616): Business or
+     * Auditor, when they hold no membership of that role in any status, since an earlier one stays a
+     * staff decision. An Auditor keeps no other role, so Auditor access is requestable only without
+     * another retained role, and Business access only without a retained Auditor role.
+     *
+     * @param  list<array{role: string, status: string}>  $memberships
+     * @return list<'business'|'auditor'>
+     */
+    public function requestable(array $memberships): array
+    {
+        $held = array_column($memberships, 'role');
+        $retained = array_column(array_filter($memberships, fn (array $membership): bool => $membership['status'] !== 'revoked'), 'role');
+
+        return array_values(array_filter(['business', 'auditor'], fn (string $role): bool => ! in_array($role, $held, true)
+            && ($role === 'auditor' ? $retained === [] : ! in_array('auditor', $retained, true))));
+    }
+
+    /**
      * A verified Business member may add Investor access to the same Party without a second identity
      * check (issue #380). Any earlier Investor membership, in whatever status, stays a staff decision,
      * and an Auditor keeps no other role.

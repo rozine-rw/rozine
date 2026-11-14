@@ -189,6 +189,28 @@ const fr: Catalog = {
     'suite.app.browse': 'Voir les offres →',
     'suite.app.request_access': "Demander l'accès →",
     'suite.app.add_access': 'Commencer à investir →',
+    'suite.app.request_sent': 'Demande envoyée ✓',
+    'suite.app.request_sent_summary':
+        'L’équipe Rozine a reçu votre demande et vous contactera.',
+    'suite.app.verify_first': 'Vérifiez d’abord votre identité →',
+    'suite.app.unavailable': 'Indisponible avec votre accès actuel',
+    'suite.request_access.business.title': 'Demander l’accès Entreprise',
+    'suite.request_access.business.body':
+        'Indiquez l’entreprise pour laquelle vous souhaitez lever des fonds. L’équipe Rozine vérifie l’entreprise et vous, en tant que représentant, avant d’ouvrir l’accès Entreprise.',
+    'suite.request_access.business.organization': 'Nom de l’entreprise',
+    'suite.request_access.business.reference':
+        'Code RDB de l’entreprise (facultatif)',
+    'suite.request_access.auditor.title': 'Demander l’accès Auditeur',
+    'suite.request_access.auditor.body':
+        'Les partenaires d’audit sont des comptables agréés. L’équipe Rozine vérifie votre licence ICPAR avant d’ouvrir l’accès Auditeur. Un compte Auditeur ne peut ni investir ni lever des fonds.',
+    'suite.request_access.auditor.organization': 'Cabinet d’audit (facultatif)',
+    'suite.request_access.auditor.reference': 'Numéro de licence ICPAR',
+    'suite.request_access.phone': 'Numéro de téléphone (facultatif)',
+    'suite.request_access.note':
+        'Informations utiles pour l’équipe (facultatif)',
+    'suite.request_access.submit': 'Envoyer la demande',
+    'suite.request_access.sending': 'Envoi…',
+    'suite.request_access.cancel': 'Annuler',
     'suite.app.investor.add':
         "Ajoutez l'accès Investisseur à votre identité vérifiée. Aucune nouvelle vérification d'identité.",
     'suite.add_investor.title': "Ajouter l'accès Investisseur",
@@ -8311,6 +8333,27 @@ const fr: Catalog = {
         'Une levée apparaît ici dès que sa publication est notée et ouverte.',
     'admin.nav.reconciliation': 'Rapprochement',
     'admin.nav.coverage': 'Couverture des partenaires',
+    'admin.nav.access_requests': 'Demandes d’accès',
+    'admin.section.access_requests.title': 'Demandes d’accès',
+    'admin.section.access_requests.subtitle':
+        'Accès Entreprise et Auditeur demandés depuis le lanceur',
+    'admin.section.access_requests.search': 'Rechercher…',
+    'admin.access_requests.title': 'Demandes d’accès',
+    'admin.access_requests.caption':
+        'Personnes ayant demandé l’accès Entreprise ou Auditeur, les plus récentes d’abord. Accordez le rôle via l’intégration d’entreprise ou dans le Réseau des auditeurs.',
+    'admin.access_requests.table': 'Demandes d’accès',
+    'admin.access_requests.empty_title': 'Aucune demande d’accès',
+    'admin.access_requests.empty_body':
+        'Les demandes envoyées depuis le lanceur apparaissent ici.',
+    'admin.access_requests.col.person': 'Personne',
+    'admin.access_requests.col.role': 'Accès',
+    'admin.access_requests.col.details': 'Détails',
+    'admin.access_requests.col.sent': 'Envoyée',
+    'admin.access_requests.col.action': 'Accorder',
+    'admin.access_requests.reference.business': 'Code RDB {reference}',
+    'admin.access_requests.reference.auditor': 'Licence ICPAR {reference}',
+    'admin.access_requests.grant.business': 'Entreprises →',
+    'admin.access_requests.grant.auditor': 'Réseau des auditeurs →',
     'admin.nav.reports': 'Rapports',
     'admin.section.reconciliation.title': 'Rapprochement',
     'admin.section.reconciliation.subtitle':

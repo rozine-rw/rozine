@@ -185,6 +185,28 @@ const rw: Catalog = {
     'suite.app.browse': 'Reba amahirwe →',
     'suite.app.request_access': 'Saba uburenganzira →',
     'suite.app.add_access': 'Tangira gushora →',
+    'suite.app.request_sent': 'Ubusabe bwoherejwe ✓',
+    'suite.app.request_sent_summary':
+        'Abakozi ba Rozine bakiriye ubusabe bwawe kandi bazakuvugisha.',
+    'suite.app.verify_first': 'Banza wemeze umwirondoro wawe →',
+    'suite.app.unavailable': 'Ntibishoboka n’uburenganzira ufite ubu',
+    'suite.request_access.business.title': 'Saba uburenganzira bwa Sosiyete',
+    'suite.request_access.business.body':
+        'Tubwire sosiyete ushaka gushakira igishoro. Abakozi ba Rozine bagenzura sosiyete nawe nk’uyihagarariye mbere yo gufungura uburenganzira bwa Sosiyete.',
+    'suite.request_access.business.organization': 'Izina rya sosiyete',
+    'suite.request_access.business.reference':
+        'Kode ya RDB ya sosiyete (si ngombwa)',
+    'suite.request_access.auditor.title': 'Saba uburenganzira bw’Umugenzuzi',
+    'suite.request_access.auditor.body':
+        'Abafatanyabikorwa b’igenzura ni abacungamari bafite uruhushya. Abakozi ba Rozine bagenzura uruhushya rwawe rwa ICPAR mbere yo gufungura uburenganzira bw’Umugenzuzi. Konti y’Umugenzuzi ntishobora no gushora cyangwa gushaka igishoro.',
+    'suite.request_access.auditor.organization':
+        'Ikigo cy’igenzura (si ngombwa)',
+    'suite.request_access.auditor.reference': 'Nimero y’uruhushya rwa ICPAR',
+    'suite.request_access.phone': 'Nimero ya telefoni (si ngombwa)',
+    'suite.request_access.note': 'Icyo abakozi bakwiye kumenya (si ngombwa)',
+    'suite.request_access.submit': 'Ohereza ubusabe',
+    'suite.request_access.sending': 'Birimo koherezwa…',
+    'suite.request_access.cancel': 'Hagarika',
     'suite.app.investor.add':
         "Ongeraho uburenganzira bw'Umushoramari ku mwirondoro wawe wemejwe. Nta kongera kugenzura umwirondoro.",
     'suite.add_investor.title': "Ongeraho uburenganzira bw'Umushoramari",
@@ -8282,6 +8304,28 @@ const rw: Catalog = {
         'Ubukusanyamari bugaragara hano iyo itangazwa ryabwo rimaze guhabwa amanota no gufungurwa.',
     'admin.nav.reconciliation': 'Guhuza konti',
     'admin.nav.coverage': 'Aho abafatanyabikorwa bakorera',
+    'admin.nav.access_requests': 'Ubusabe bw’uburenganzira',
+    'admin.section.access_requests.title': 'Ubusabe bw’uburenganzira',
+    'admin.section.access_requests.subtitle':
+        'Uburenganzira bwa Sosiyete n’Umugenzuzi bwasabwe bivuye ku rupapuro rw’amaporogaramu',
+    'admin.section.access_requests.search': 'Shakisha…',
+    'admin.access_requests.title': 'Ubusabe bw’uburenganzira',
+    'admin.access_requests.caption':
+        'Abantu basabye uburenganzira bwa Sosiyete cyangwa Umugenzuzi, abashya mbere. Tanga uruhare ukoresheje kwandika sosiyete cyangwa mu Rusobe rw’Abagenzuzi.',
+    'admin.access_requests.table': 'Ubusabe bw’uburenganzira',
+    'admin.access_requests.empty_title': 'Nta busabe bw’uburenganzira',
+    'admin.access_requests.empty_body':
+        'Ubusabe bwoherejwe bivuye ku rupapuro rw’amaporogaramu buzagaragara hano.',
+    'admin.access_requests.col.person': 'Umuntu',
+    'admin.access_requests.col.role': 'Uburenganzira',
+    'admin.access_requests.col.details': 'Ibisobanuro',
+    'admin.access_requests.col.sent': 'Byoherejwe',
+    'admin.access_requests.col.action': 'Tanga',
+    'admin.access_requests.reference.business': 'Kode ya RDB {reference}',
+    'admin.access_requests.reference.auditor':
+        'Uruhushya rwa ICPAR {reference}',
+    'admin.access_requests.grant.business': 'Amasosiyete →',
+    'admin.access_requests.grant.auditor': 'Urusobe rw’Abagenzuzi →',
     'admin.nav.reports': 'Raporo',
     'admin.section.reconciliation.title': 'Guhuza konti',
     'admin.section.reconciliation.subtitle':

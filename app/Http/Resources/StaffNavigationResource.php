@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Application\Identity\BrowseRoleAccessRequests;
 use App\Http\Controllers\StaffSectionController;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -80,6 +81,9 @@ class StaffNavigationResource extends JsonResource
             'risk' => $links['exceptions'] ?? $pendingPage('risk'), 'compliance' => $compliance,
             'messaging' => in_array('messaging.view', $permissions, true)
                 ? ['url' => route($prefix.'staff.messaging.index', [], false), 'method' => 'get'] : $pendingPage('messaging'),
-            'repayments' => null, 'mail_testers' => $mailTesters];
+            'repayments' => null, 'mail_testers' => $mailTesters,
+            // Business and Auditor access requests (#616), for whoever may act on either kind.
+            'access_requests' => $prefix === '' && array_intersect(BrowseRoleAccessRequests::PERMISSIONS, $permissions) !== []
+                ? ['url' => route('staff.access-requests.index', [], false), 'method' => 'get'] : null];
     }
 }

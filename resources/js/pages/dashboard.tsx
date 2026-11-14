@@ -1,4 +1,4 @@
-import { Head, Link, router, useHttp } from '@inertiajs/react';
+import { Head, Link, router, useForm, useHttp } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 import { LogoLockup } from '@/components/rozine/logo';
 import { RoleIcon } from '@/components/rozine/role-icon';
@@ -19,6 +19,8 @@ import type {
     IdentityCode,
     IdentityContext,
     InvestorAccessOffer,
+    RequestableRole,
+    RoleAccessOffer,
     RoleApp,
     RouteLink,
     SelectActiveRoleInput,
@@ -35,12 +37,19 @@ type LauncherProps = {
     verification?: 'pending' | 'required' | null;
     /** Sent while a verified Business member may add Investor access to their own Party (#380). */
     investor_access?: InvestorAccessOffer | null;
+    /**
+     * Business and Auditor access asked for on the card itself (#616): which roles may be asked
+     * for and which were already sent. Absent in previews, where those cards explain only.
+     */
+    access_requests?: RoleAccessOffer;
     /** Supplied only by local/testing synthetic fixture previews. */
     preview_links?: Partial<Record<RoleApp, RouteLink>>;
 };
 /** Every marketplace app, in the launcher's order. */
 const APPS: RoleApp[] = ['investor', 'business', 'auditor'];
 const SUPPORT = 'mailto:hello@rozine.rw';
+const FIELD =
+    'h-10 w-full rounded-[11px] border border-rz-hairline bg-rz-surface px-3 text-sm text-rz-ink';
 type Listed =
     | 'IDENTITY_READY'
     | 'IDENTITY_VERIFICATION_REQUIRED'
@@ -49,7 +58,8 @@ type Blocker = Exclude<IdentityCode, Listed>;
 /**
  * A person sees every app while ready, while their identity is verified or before any role is
  * granted: an app opens when its role is available, the Investor deals open read-only while the
- * identity is verified, and any other app asks Rozine for access. Other codes need their fix first.
+ * identity is verified, and Business or Auditor access is asked for on its card. Other codes need
+ * their fix first.
  */
 const listsApps = (code: IdentityCode): code is Listed =>
     code === 'IDENTITY_READY' ||
@@ -70,6 +80,7 @@ export default function Launcher({
     staff_access,
     verification,
     investor_access,
+    access_requests,
     preview_links,
 }: LauncherProps) {
     const { t } = useTranslation();
@@ -78,6 +89,7 @@ export default function Launcher({
     const [failure, setFailure] = useState<string | null>(null);
     const [opening, setOpening] = useState(false);
     const [addingInvestor, setAddingInvestor] = useState(false);
+    const [requesting, setRequesting] = useState<RequestableRole | null>(null);
     const refreshing = useAccessRefresh(
         ['identity', 'staff_access', 'verification'],
         preview_links === undefined,
@@ -92,6 +104,7 @@ export default function Launcher({
         preview_links === undefined
             ? (investor_access ?? null)
             : null;
+    const accessOffer = access_requests ?? null;
     const mfaRequired =
         identity.available_roles.includes('auditor') && !canSelect;
 
@@ -322,9 +335,19 @@ export default function Launcher({
                                                             action="suite.app.browse"
                                                         />
                                                     </Link>
-                                                ) : (
-                                                    <a
-                                                        href={SUPPORT}
+                                                ) : role !== 'investor' &&
+                                                  accessOffer?.requestable.includes(
+                                                      role,
+                                                  ) ? (
+                                                    <button
+                                                        type="button"
+                                                        aria-expanded={
+                                                            requesting === role
+                                                        }
+                                                        aria-controls="request-role-access"
+                                                        onClick={() =>
+                                                            setRequesting(role)
+                                                        }
                                                         className={CARD}
                                                     >
                                                         <AppCardBody
@@ -332,7 +355,43 @@ export default function Launcher({
                                                             summary={`suite.app.${role}.description`}
                                                             action="suite.app.request_access"
                                                         />
+                                                    </button>
+                                                ) : role !== 'investor' &&
+                                                  accessOffer?.sent[role] !==
+                                                      undefined ? (
+                                                    <div
+                                                        role="status"
+                                                        className={CARD}
+                                                    >
+                                                        <AppCardBody
+                                                            role={role}
+                                                            summary="suite.app.request_sent_summary"
+                                                            action="suite.app.request_sent"
+                                                        />
+                                                    </div>
+                                                ) : identity.code ===
+                                                  'IDENTITY_VERIFICATION_REQUIRED' ? (
+                                                    <a
+                                                        href={
+                                                            investorVerification()
+                                                                .url
+                                                        }
+                                                        className={CARD}
+                                                    >
+                                                        <AppCardBody
+                                                            role={role}
+                                                            summary={`suite.app.${role}.description`}
+                                                            action="suite.app.verify_first"
+                                                        />
                                                     </a>
+                                                ) : (
+                                                    <div className={CARD}>
+                                                        <AppCardBody
+                                                            role={role}
+                                                            summary={`suite.app.${role}.description`}
+                                                            action="suite.app.unavailable"
+                                                        />
+                                                    </div>
                                                 )}
                                             </li>
                                         ))}
@@ -360,6 +419,17 @@ export default function Launcher({
                                                         pending.current,
                                                     );
                                                 }}
+                                            />
+                                        )}
+                                    {accessOffer !== null &&
+                                        requesting !== null && (
+                                            <RequestRoleAccess
+                                                key={requesting}
+                                                role={requesting}
+                                                link={accessOffer.link}
+                                                onClose={() =>
+                                                    setRequesting(null)
+                                                }
                                             />
                                         )}
                                     {identity.code ===
@@ -445,11 +515,15 @@ function AppCardBody({
     summary:
         | `suite.app.${RoleApp}.description`
         | 'suite.app.investor.preview'
-        | 'suite.app.investor.add';
+        | 'suite.app.investor.add'
+        | 'suite.app.request_sent_summary';
     action:
         | 'suite.app.open'
         | 'suite.app.browse'
         | 'suite.app.request_access'
+        | 'suite.app.request_sent'
+        | 'suite.app.verify_first'
+        | 'suite.app.unavailable'
         | 'suite.app.add_access';
 }) {
     const { t } = useTranslation();
@@ -590,6 +664,138 @@ function AddInvestorAccess({
                 </button>
             </div>
         </section>
+    );
+}
+
+/**
+ * A verified person asks Rozine's staff for Business or Auditor access (#616) instead of writing an
+ * email: what staff need to act on it (the business name, or the ICPAR licence number an Audit
+ * Partner is accredited on), sent once. The launcher then shows the request as sent.
+ */
+function RequestRoleAccess({
+    role,
+    link,
+    onClose,
+}: {
+    role: RequestableRole;
+    link: RoleAccessOffer['link'];
+    onClose: () => void;
+}) {
+    const { t } = useTranslation();
+    const [requestId] = useState(() => crypto.randomUUID());
+    const form = useForm({
+        request_id: requestId,
+        role,
+        organization: '',
+        reference: '',
+        phone: '',
+        note: '',
+    });
+    const error = (
+        ['role', 'organization', 'reference', 'phone', 'note'] as const
+    )
+        .map((key) => form.errors[key])
+        .find((message) => message !== undefined);
+
+    return (
+        <form
+            id="request-role-access"
+            aria-labelledby="request-role-access-title"
+            onSubmit={(event) => {
+                event.preventDefault();
+                form.submit(link, { preserveScroll: true, onSuccess: onClose });
+            }}
+            className="mt-4 flex max-w-xl flex-col gap-3 rounded-[18px] border border-rz-hairline bg-rz-surface p-5"
+        >
+            <h2
+                id="request-role-access-title"
+                className="text-base font-semibold text-rz-ink"
+            >
+                {t(`suite.request_access.${role}.title`)}
+            </h2>
+            <p className="text-sm text-rz-body">
+                {t(`suite.request_access.${role}.body`)}
+            </p>
+            <label className="flex flex-col gap-1.5 text-[12.5px] font-semibold text-rz-ink">
+                {t(`suite.request_access.${role}.organization`)}
+                <input
+                    name="organization"
+                    value={form.data.organization}
+                    required={role === 'business'}
+                    maxLength={160}
+                    onChange={(event) =>
+                        form.setData('organization', event.target.value)
+                    }
+                    className={FIELD}
+                />
+            </label>
+            <label className="flex flex-col gap-1.5 text-[12.5px] font-semibold text-rz-ink">
+                {t(`suite.request_access.${role}.reference`)}
+                <input
+                    name="reference"
+                    value={form.data.reference}
+                    required={role === 'auditor'}
+                    maxLength={60}
+                    onChange={(event) =>
+                        form.setData('reference', event.target.value)
+                    }
+                    className={FIELD}
+                />
+            </label>
+            <label className="flex flex-col gap-1.5 text-[12.5px] font-semibold text-rz-ink">
+                {t('suite.request_access.phone')}
+                <input
+                    name="phone"
+                    type="tel"
+                    autoComplete="tel"
+                    value={form.data.phone}
+                    maxLength={32}
+                    onChange={(event) =>
+                        form.setData('phone', event.target.value)
+                    }
+                    className={FIELD}
+                />
+            </label>
+            <label className="flex flex-col gap-1.5 text-[12.5px] font-semibold text-rz-ink">
+                {t('suite.request_access.note')}
+                <textarea
+                    name="note"
+                    value={form.data.note}
+                    maxLength={1000}
+                    rows={3}
+                    onChange={(event) =>
+                        form.setData('note', event.target.value)
+                    }
+                    className="w-full rounded-[11px] border border-rz-hairline bg-rz-surface px-3 py-2 text-sm text-rz-ink"
+                />
+            </label>
+            {error !== undefined && (
+                <p role="alert" className="text-sm text-rz-danger-text">
+                    {error}
+                </p>
+            )}
+            <div className="flex gap-2.5">
+                <button
+                    type="button"
+                    onClick={onClose}
+                    className="h-10 rounded-[11px] border border-rz-hairline px-4 text-sm font-semibold text-rz-body"
+                >
+                    {t('suite.request_access.cancel')}
+                </button>
+                <button
+                    type="submit"
+                    disabled={form.processing}
+                    aria-busy={form.processing || undefined}
+                    className="h-10 flex-1 rounded-[11px] bg-rz-accent px-4 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    {t(
+                        form.processing
+                            ? 'suite.request_access.sending'
+                            : 'suite.request_access.submit',
+                    )}
+                </button>
+            </div>
+        </form>
     );
 }
 

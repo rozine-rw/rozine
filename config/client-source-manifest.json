@@ -1,7 +1,10 @@
 {
     "version": 1,
     "sourceRoot": "resources/js",
-    "extensions": [".ts", ".tsx"],
+    "extensions": [
+        ".ts",
+        ".tsx"
+    ],
     "policy": "D-66/D-67",
     "exclusionMetadata": {
         "generatedPaths": {
@@ -80,6 +83,7 @@
         "resources/js/actions/App/Http/Controllers/InvestorVerificationController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorWalletController.ts",
         "resources/js/actions/App/Http/Controllers/PulseController.ts",
+        "resources/js/actions/App/Http/Controllers/RoleAccessRequestController.ts",
         "resources/js/actions/App/Http/Controllers/RoleBookmarkController.ts",
         "resources/js/actions/App/Http/Controllers/RoleHomeController.ts",
         "resources/js/actions/App/Http/Controllers/Settings/ProfileController.ts",
@@ -288,6 +292,7 @@
         "resources/js/routes/business/wallet/index.ts",
         "resources/js/routes/business/wallet/operations/index.ts",
         "resources/js/routes/changes/index.ts",
+        "resources/js/routes/identity/access-requests/index.ts",
         "resources/js/routes/identity/active-role/index.ts",
         "resources/js/routes/identity/bookmarks/index.ts",
         "resources/js/routes/identity/index.ts",
@@ -325,6 +330,7 @@
         "resources/js/routes/site/business/index.ts",
         "resources/js/routes/site/index.ts",
         "resources/js/routes/site/investor/index.ts",
+        "resources/js/routes/staff/access-requests/index.ts",
         "resources/js/routes/staff/applications/index.ts",
         "resources/js/routes/staff/applications/operations/index.ts",
         "resources/js/routes/staff/audit/disputes/index.ts",
@@ -750,6 +756,7 @@
         "resources/js/lib/rozine/raising.ts",
         "resources/js/lib/rozine/statement-transcription.ts",
         "resources/js/lib/utils.ts",
+        "resources/js/pages/admin/access-requests.tsx",
         "resources/js/pages/admin/applications.tsx",
         "resources/js/pages/admin/audit-reports.tsx",
         "resources/js/pages/admin/auth/login.tsx",
@@ -837,10 +844,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 809,
-        "generated": 346,
+        "totalTrackedSources": 813,
+        "generated": 349,
         "declarationOnly": 20,
-        "authoredExecutable": 443
+        "authoredExecutable": 444
     },
-    "coverageSetSha256": "d0d1abd28c3db4e6adc0bb348a3f2ee0a24e8184a225d0d0645e42903ef99228"
+    "coverageSetSha256": "71c2cf6c39ed2ae0c4b6e582df1467e0ab4ad0bd60714a4ff9755934623fe5df"
 }
