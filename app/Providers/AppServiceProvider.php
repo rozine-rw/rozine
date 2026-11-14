@@ -67,6 +67,7 @@ use App\Application\Disbursement\SyntheticDisbursementGuard;
 use App\Application\Environment\Contracts\DemoFixtureStore;
 use App\Application\Environment\Contracts\StagingMailTesterStore;
 use App\Application\Environment\EnvironmentIsolation;
+use App\Application\Environment\UatMoneySimulation;
 use App\Application\Evidence\Contracts\StatementExtractionQueue;
 use App\Application\Evidence\Contracts\StatementReviews;
 use App\Application\Evidence\Contracts\StatementStore;
@@ -192,6 +193,7 @@ use App\Infrastructure\Disbursement\EloquentCampaignDisbursementProgress;
 use App\Infrastructure\Disbursement\EloquentDisbursementClosingEvidence;
 use App\Infrastructure\Disbursement\EloquentDisbursementFeeFacts;
 use App\Infrastructure\Disbursement\EloquentDisbursementStore;
+use App\Infrastructure\Disbursement\SimulatedFundedCampaigns;
 use App\Infrastructure\Disbursement\SyntheticDisbursementSources;
 use App\Infrastructure\Disbursement\SyntheticPayoutProvider;
 use App\Infrastructure\Disbursement\UnavailableFundedCampaigns;
@@ -228,6 +230,7 @@ use App\Infrastructure\Primary\CurrentPrimaryAdmission;
 use App\Infrastructure\Primary\EloquentCampaignCommitments;
 use App\Infrastructure\Primary\EloquentCampaignReservationSummary;
 use App\Infrastructure\Primary\EloquentCartCheckouts;
+use App\Infrastructure\Primary\EloquentFundedCampaigns;
 use App\Infrastructure\Primary\EloquentInvestorCart;
 use App\Infrastructure\Primary\EloquentInvestorCartQuotes;
 use App\Infrastructure\Primary\EloquentInvestorHoldings;
@@ -251,6 +254,7 @@ use App\Infrastructure\Secondary\EloquentSecondaryMarket;
 use App\Infrastructure\Secondary\RetainedSecondaryNotes;
 use App\Infrastructure\Secondary\UnavailableSecondaryMarket;
 use App\Infrastructure\Wallet\EloquentBusinessPayoutAccounts;
+use App\Infrastructure\Wallet\EloquentBusinessPayoutDestinations;
 use App\Infrastructure\Wallet\EloquentBusinessWalletStore;
 use App\Infrastructure\Wallet\EloquentBusinessWithdrawals;
 use App\Infrastructure\Wallet\EloquentPayoutAccounts;
@@ -422,18 +426,21 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(SyntheticWalletTesters::class, EloquentSyntheticWalletTesters::class);
         $this->app->singleton(SyntheticSettlement::class, SyntheticDepositSettlement::class);
         $this->registerDisbursements();
-        // Secondary trading stays off until Erastus switches it on (BRS v3.0 §12, `app.secondary_trading`).
+        // Secondary trading stays off until Erastus switches it on (BRS v3.0 §12, `app.secondary_trading`); he opened it
+        // on UAT with the money simulation (14 Nov 2026).
         $this->app->bind(SecondaryNotes::class, RetainedSecondaryNotes::class);
         $this->app->bind(NoteUnitHolders::class, EloquentNoteUnitHolders::class);
         $this->app->bind(SecondaryLedger::class, WalletSecondaryLedger::class);
         $this->app->bind(SecondaryMarketSweep::class, EloquentSecondaryMarket::class);
-        $this->app->bind(SecondaryMarket::class, fn (): SecondaryMarket => config('app.secondary_trading') === true
+        $this->app->bind(SecondaryMarket::class, fn (): SecondaryMarket => config('app.secondary_trading') === true || $this->app->make(UatMoneySimulation::class)->active()
             ? $this->app->make(EloquentSecondaryMarket::class) : $this->app->make(UnavailableSecondaryMarket::class));
     }
 
     /**
-     * Disbursement ports. Outside local/testing with live money off, every funding, destination and
-     * provider port is its unavailable adapter, so disbursement fails closed; staff connections are
+     * Disbursement ports. Local and testing use the synthetic fixtures. UAT with its money simulation on
+     * uses the retained funding source, the Business's own linked account and the synthetic provider.
+     * Everywhere else every funding, destination and provider port is its unavailable adapter, so
+     * disbursement fails closed; staff connections are
      * answered by the real source, which itself answers `unavailable` without full evidence.
      */
     private function registerDisbursements(): void
@@ -447,10 +454,19 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(BusinessHolders::class, RetainedBusinessHolders::class);
         $this->app->singleton(SyntheticDisbursementSources::class);
         $synthetic = fn (): bool => $this->app->make(SyntheticDisbursementGuard::class)->allowed();
-        $this->app->bind(FundedCampaigns::class, fn (): FundedCampaigns => $synthetic() ? $this->app->make(SyntheticDisbursementSources::class) : new UnavailableFundedCampaigns);
-        $this->app->bind(PayoutDestinations::class, fn (): PayoutDestinations => $synthetic() ? $this->app->make(SyntheticDisbursementSources::class) : new UnavailablePayoutDestinations);
+        $simulated = fn (): bool => $this->app->make(UatMoneySimulation::class)->active();
+        $this->app->bind(FundedCampaigns::class, fn (): FundedCampaigns => match (true) {
+            $synthetic() => $this->app->make(SyntheticDisbursementSources::class),
+            $simulated() => new SimulatedFundedCampaigns($this->app->make(EloquentFundedCampaigns::class), $this->app->make(UatMoneySimulation::class)),
+            default => new UnavailableFundedCampaigns,
+        });
+        $this->app->bind(PayoutDestinations::class, fn (): PayoutDestinations => match (true) {
+            $synthetic() => $this->app->make(SyntheticDisbursementSources::class),
+            $simulated() => $this->app->make(EloquentBusinessPayoutDestinations::class),
+            default => new UnavailablePayoutDestinations,
+        });
         $this->app->bind(SyntheticDisbursementFixtures::class, fn (): SyntheticDisbursementFixtures => $this->app->make(SyntheticDisbursementSources::class));
-        $this->app->bind(PayoutProvider::class, fn (): PayoutProvider => $synthetic() ? $this->app->make(SyntheticPayoutProvider::class) : new UnavailablePayoutProvider);
+        $this->app->bind(PayoutProvider::class, fn (): PayoutProvider => $synthetic() || $simulated() ? $this->app->make(SyntheticPayoutProvider::class) : new UnavailablePayoutProvider);
         $this->app->bind(SyntheticPayoutScripts::class, SyntheticPayoutProvider::class);
     }
 

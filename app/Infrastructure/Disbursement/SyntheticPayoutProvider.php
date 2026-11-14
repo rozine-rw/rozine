@@ -21,10 +21,12 @@ use RuntimeException;
 use Throwable;
 
 /**
- * An offline payout provider for local and testing only. Messages are HMAC-signed over their
- * canonical JSON with a key derived from the application key, so an observation cannot be forged
- * or altered. What a send acknowledges and what a query answers are scripted; it contacts nothing
- * and holds no real account or PSP arrangement. It refuses to be called inside a transaction.
+ * An offline payout provider for local, testing and the UAT money simulation. Messages are
+ * HMAC-signed over their canonical JSON with a key derived from the application key, so an
+ * observation cannot be forged or altered. On local and testing what a send acknowledges and what a
+ * query answers are scripted; under the UAT simulation (where nothing can be scripted) every send is
+ * acknowledged and a query reports the payout succeeded. It contacts nothing and holds no real
+ * account or PSP arrangement. It refuses to be called inside a transaction.
  */
 final class SyntheticPayoutProvider implements PayoutProvider, SyntheticPayoutScripts
 {
@@ -59,7 +61,8 @@ final class SyntheticPayoutProvider implements PayoutProvider, SyntheticPayoutSc
     public function query(PayoutInstruction $instruction): ?VerifiedPayoutEvent
     {
         $this->assertOutsideTransaction();
-        $script = $this->cache->store()->get(self::PREFIX.'query:'.$instruction->intentId);
+        $script = $this->guard->simulating() ? ['state' => 'succeeded', 'overrides' => []]
+            : $this->cache->store()->get(self::PREFIX.'query:'.$instruction->intentId);
         if (! is_array($script)) {
             return null;
         }
@@ -71,7 +74,7 @@ final class SyntheticPayoutProvider implements PayoutProvider, SyntheticPayoutSc
     /** @param array<string, mixed> $message */
     public function verify(array $message): VerifiedPayoutEvent
     {
-        $this->guard->assertAllowed();
+        $this->guard->assertProviderAllowed();
         $fields = array_intersect_key($message, array_flip(self::FIELDS));
         ksort($fields);
         $strings = array_filter($message, is_string(...));
@@ -136,7 +139,7 @@ final class SyntheticPayoutProvider implements PayoutProvider, SyntheticPayoutSc
      */
     private function sign(array $fields): array
     {
-        $this->guard->assertAllowed();
+        $this->guard->assertProviderAllowed();
         $message = array_intersect_key($fields, array_flip(self::FIELDS));
         ksort($message);
 
@@ -146,14 +149,14 @@ final class SyntheticPayoutProvider implements PayoutProvider, SyntheticPayoutSc
     /** @return array{answer: string, idempotent: bool} */
     private function sendScript(): array
     {
-        $this->guard->assertAllowed();
+        $this->guard->assertProviderAllowed();
 
         return $this->cache->store()->get(self::PREFIX.'send', ['answer' => 'ack', 'idempotent' => false]);
     }
 
     private function assertOutsideTransaction(): void
     {
-        $this->guard->assertAllowed();
+        $this->guard->assertProviderAllowed();
         if (app('db.transactions')->callbackApplicableTransactions()->isNotEmpty()) {
             throw new LogicException('DISBURSEMENT_PROVIDER_TRANSACTION_OPEN: a provider is called only after the outermost commit.');
         }
