@@ -1,5 +1,6 @@
 import { useTranslation } from '@/hooks/use-translation';
 import { formatRwfShort } from '@/lib/rozine/format';
+import { cn } from '@/lib/utils';
 import type { C3AboutBusiness, C3DealFinancials } from '@/types/investor';
 
 /**
@@ -30,15 +31,31 @@ export function EbitdaValue({
 }
 
 /** The business's coarse approved description (H9): no address, team size or company code. */
-export function AboutCard({ about }: { about: C3AboutBusiness }) {
+export function AboutCard({
+    about,
+    story = null,
+}: {
+    about: C3AboutBusiness;
+    /** The deal's own story, already shown above; the card doesn't repeat a description that matches it (#594). */
+    story?: string | null;
+}) {
     const { t } = useTranslation();
+    const repeated = about.description.trim() === story?.trim();
 
     return (
         <div className="mt-2.5 rounded-xl border border-rz-border bg-rz-surface px-[13px] py-2.5">
-            <p className="text-xs leading-[1.55] text-rz-secondary">
-                {about.description}
-            </p>
-            <p className="mt-2 flex justify-between gap-2.5 border-t border-[#eef2f9] pt-2 text-xs dark:border-rz-divider">
+            {!repeated && (
+                <p className="text-xs leading-[1.55] text-rz-secondary">
+                    {about.description}
+                </p>
+            )}
+            <p
+                className={cn(
+                    'flex justify-between gap-2.5 text-xs',
+                    !repeated &&
+                        'mt-2 border-t border-[#eef2f9] pt-2 dark:border-rz-divider',
+                )}
+            >
                 <span className="text-rz-secondary">
                     {t('investor.deal.industry')}
                 </span>

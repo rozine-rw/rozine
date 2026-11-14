@@ -114,11 +114,16 @@ describe('Market', () => {
         }
 
         expect(
-            screen.getByText('No notes match these filters'),
+            screen.getByText('No notes are for sale yet'),
         ).toBeInTheDocument();
         expect(
-            screen.getByText('Try adjusting the filters above.'),
+            screen.getByText(
+                'Notes appear here when investors list them for resale.',
+            ),
         ).toBeInTheDocument();
+        expect(
+            screen.queryByText('No notes match these filters'),
+        ).not.toBeInTheDocument();
         expect(screen.getByText('🗂')).toBeInTheDocument();
     });
 

@@ -247,3 +247,30 @@ it('pins original POC provenance and budgets reuse before staging admission', fu
         ->and($steps[3]['with']['name'])->toBe('poc-reuse-${{ github.run_id }}-${{ github.run_attempt }}')
         ->and($steps[4]['run'])->toBe('python3 .github/scripts/check-poc-budget.py');
 });
+
+it('keeps full runs short with PCOV shards, PCOV negative controls and a sharded PostgreSQL lane behind one admission name', function (): void {
+    $workflow = Yaml::parseFile($this->root.'/.github/workflows/tests.yml');
+    $step = function (string $job, string $name) use ($workflow): array {
+        foreach ($workflow['jobs'][$job]['steps'] as $candidate) {
+            if (($candidate['name'] ?? null) === $name) {
+                return $candidate;
+            }
+        }
+
+        throw new RuntimeException('Missing workflow step: '.$job.' / '.$name);
+    };
+    $setup = fn (string $job): array => $step($job, 'Setup PHP')['with'];
+    $lane = $step('concurrency', 'Run the suite and the concurrency evidence against PostgreSQL');
+
+    expect($setup('php-shards')['coverage'])->toBe('pcov')
+        ->and($setup('php-shards')['ini-values'])->toBe('pcov.directory=app')
+        ->and($setup('concurrency')['coverage'])->toBe('none')
+        ->and($setup('negative-control-groups')['coverage'])->toBe("\${{ matrix.group == 'coverage' && 'pcov' || 'none' }}")
+        ->and($workflow['jobs']['concurrency']['strategy']['matrix']['shard'])->toBe([1, 2, 3, 4])
+        ->and($workflow['jobs']['concurrency']['timeout-minutes'])->toBe(60)
+        ->and($lane['run'])->toBe('php vendor/bin/pest -c phpunit.pgsql.xml --ci --no-tia --compact --shard="$SHARD/4"')
+        ->and($workflow['jobs']['concurrency-gate']['name'])->toBe('PostgreSQL concurrency lane')
+        ->and($workflow['jobs']['concurrency-gate']['needs'])->toBe(['plan', 'concurrency'])
+        ->and($workflow['jobs']['concurrency-gate']['if'])->toBe("\${{ always() && needs.plan.outputs.full == 'true' }}")
+        ->and($workflow['jobs']['concurrency-gate']['steps'][0]['env']['SHARD_RESULT'])->toBe('${{ needs.concurrency.result }}');
+});

@@ -19,14 +19,17 @@ it('installs the provider reference registry behind in-flight deposit writers wi
         DB::select("SELECT proname, pg_get_functiondef(oid) AS definition FROM pg_proc WHERE pronamespace = current_schema()::regnamespace
             AND proname IN ('ledger_entry_wallet_owner', 'ledger_account_wallet_owner') ORDER BY proname"),
     ];
+    // The secondary market rewrites the ledger's kind constraints, so it comes off first and goes back last. Earlier
+    // rollback tests in the same database can leave its tables without those kinds, so reinstall it before the baseline.
+    $secondaryMarket = require database_path('migrations/2026_11_11_060000_create_secondary_market_tables.php');
+    $secondaryMarket->down();
+    $secondaryMarket->up();
     $installed = $shape();
     $businessDeposits = require database_path('migrations/2026_10_03_120000_create_business_deposit_records.php');
     $businessRepayments = require database_path('migrations/2026_10_04_100000_create_business_repayment_records.php');
     $businessWithdrawals = require database_path('migrations/2026_10_14_104058_create_business_wallet_withdrawals.php');
     $platformFee = require database_path('migrations/2026_10_16_161905_add_platform_fee_to_disbursements.php');
     $automaticDisbursement = require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php');
-    // The secondary market rewrites the ledger's kind constraints, so it comes off first and goes back last.
-    $secondaryMarket = require database_path('migrations/2026_11_11_060000_create_secondary_market_tables.php');
     $restore = function () use ($migration, $businessDeposits, $businessRepayments, $businessWithdrawals, $platformFee, $automaticDisbursement,
         $secondaryMarket): void {
         if (! Schema::hasTable('provider_references')) {

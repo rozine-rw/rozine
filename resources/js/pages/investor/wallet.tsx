@@ -174,7 +174,7 @@ export default function InvestorWallet(props: C3InvestorWalletProps) {
     return (
         <InvestorShell
             title={t('investor.wallet.title')}
-            tab={null}
+            tab="deals"
             links={props.links}
             showTabBar={false}
             beacon={{

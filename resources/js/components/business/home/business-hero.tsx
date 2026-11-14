@@ -71,6 +71,11 @@ export function BusinessHero({
                         ? t('business.rating.pending')
                         : `${t(`business.rating.band.${rating.band}`)} · ${rating.score}`}
                 </span>
+                {rating === null && (
+                    <span className="mt-0.5 block text-[11px] leading-snug text-white">
+                        {t('business.rating.pending_hint')}
+                    </span>
+                )}
             </span>
         </>
     );

@@ -172,7 +172,7 @@ profile.form = profileForm
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::notices
-* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @see app/Http/Controllers/AuditorNoticesController.php:18
 * @route '/auditor/notices'
 */
 export const notices = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -187,7 +187,7 @@ notices.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::notices
-* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @see app/Http/Controllers/AuditorNoticesController.php:18
 * @route '/auditor/notices'
 */
 notices.url = (options?: RouteQueryOptions) => {
@@ -196,7 +196,7 @@ notices.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::notices
-* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @see app/Http/Controllers/AuditorNoticesController.php:18
 * @route '/auditor/notices'
 */
 notices.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -206,7 +206,7 @@ notices.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::notices
-* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @see app/Http/Controllers/AuditorNoticesController.php:18
 * @route '/auditor/notices'
 */
 notices.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -216,7 +216,7 @@ notices.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::notices
-* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @see app/Http/Controllers/AuditorNoticesController.php:18
 * @route '/auditor/notices'
 */
 const noticesForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -226,7 +226,7 @@ const noticesForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::notices
-* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @see app/Http/Controllers/AuditorNoticesController.php:18
 * @route '/auditor/notices'
 */
 noticesForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -236,7 +236,7 @@ noticesForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::notices
-* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @see app/Http/Controllers/AuditorNoticesController.php:18
 * @route '/auditor/notices'
 */
 noticesForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

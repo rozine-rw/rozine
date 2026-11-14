@@ -114,6 +114,41 @@ describe('Business Home', () => {
         http.submit = submit;
     });
 
+    it('words verification for a business and times notices from the inbox clock like every bell (QA #595)', async () => {
+        const submit = http.submit;
+        http.submit = () =>
+            Promise.resolve({
+                data: {
+                    ...inbox,
+                    server_time: '2026-10-13T09:00:00+02:00',
+                    notices: [
+                        {
+                            ...inbox.notices[0],
+                            kind: 'verification.approved',
+                            facts: {},
+                            created_at: '2026-10-13T08:00:00+02:00',
+                        },
+                    ],
+                },
+            });
+        const { user } = renderWithUser(<BusinessHome {...fixture} />);
+
+        await user.click(
+            screen.getByRole('button', { name: 'Notifications, 2 unread' }),
+        );
+        const panel = screen.getByRole('dialog', { name: 'Notifications' });
+        const [item] = await within(panel).findAllByRole('button', {
+            name: /verified/u,
+        });
+
+        expect(item).toHaveTextContent(
+            'You are verifiedYour identity is verified. You can now apply for a raise.',
+        );
+        expect(item).toHaveTextContent('1 hour ago');
+        expect(item).not.toHaveTextContent('ready to invest');
+        http.submit = submit;
+    });
+
     it('lays out the design sections from server facts', () => {
         render(<BusinessHome {...fixture} />);
 
@@ -210,6 +245,9 @@ describe('Business Home', () => {
         );
 
         expect(screen.getByText('Pending audit')).toBeInTheDocument();
+        expect(
+            screen.getByText('Rated after your first audited month'),
+        ).toBeInTheDocument();
         expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
         expect(
             screen.queryByText('Headroom available'),
@@ -565,7 +603,7 @@ describe('Business Home', () => {
 
         expect(screen.getByText('88M')).toBeInTheDocument();
         expect(screen.getByText('1,657')).toBeInTheDocument();
-        expect(screen.getByText('1 active')).toBeInTheDocument();
+        expect(screen.getByText('1 repaying')).toBeInTheDocument();
 
         await user.click(screen.getByRole('button', { name: 'About Raised' }));
         expect(screen.getByRole('tooltip')).toHaveTextContent(
@@ -626,6 +664,62 @@ describe('Business Home', () => {
         expect(
             screen.getByText('No notes with this status'),
         ).toBeInTheDocument();
+    });
+
+    it('opens on Repaying and counts it when the only note is repaying (QA #583)', () => {
+        const repaying = fixture.notes.filter(
+            (note) => note.status === 'repaying',
+        );
+        const { unmount } = render(
+            <BusinessHome
+                {...fixture}
+                notes={repaying}
+                capital={{ ...fixture.capital, active_notes: 1 }}
+            />,
+        );
+
+        expect(
+            screen.getByRole('button', { name: 'Repaying' }),
+        ).toHaveAttribute('aria-pressed', 'true');
+        expect(
+            screen.queryByText('No notes with this status'),
+        ).not.toBeInTheDocument();
+        expect(screen.getByText('1 repaying')).toBeInTheDocument();
+        unmount();
+
+        render(
+            <BusinessHome
+                {...fixture}
+                notes={[
+                    ...repaying,
+                    { ...repaying[0], id: 'N-9', status: 'funded' },
+                ]}
+                capital={{ ...fixture.capital, active_notes: 2 }}
+            />,
+        );
+        expect(screen.getByText('1 active · 1 repaying')).toBeInTheDocument();
+    });
+
+    it('opens on Active and keeps the plain count when nothing is repaying', () => {
+        render(
+            <BusinessHome
+                {...fixture}
+                notes={fixture.notes.filter(
+                    (note) => note.status !== 'repaying',
+                )}
+            />,
+        );
+
+        expect(screen.getByText('1 active')).toBeInTheDocument();
+    });
+
+    it('opens on Active when there are no notes', () => {
+        render(<BusinessHome {...fixture} notes={[]} />);
+
+        expect(screen.getByRole('button', { name: 'Active' })).toHaveAttribute(
+            'aria-pressed',
+            'true',
+        );
     });
 
     it('labels funded and failed notes', async () => {

@@ -15,6 +15,15 @@ const FILTERS = ['draft', 'active', 'repaying', 'failed', 'archived'] as const;
 
 type NoteFilter = (typeof FILTERS)[number];
 
+/** Which tab opens first when several have notes: live and repaying notes before drafts and history. */
+const OPEN_ORDER: NoteFilter[] = [
+    'active',
+    'repaying',
+    'draft',
+    'failed',
+    'archived',
+];
+
 /** Where each note state is filed, as the design's status map files it. */
 const FILTER_OF: Record<NoteStatus, NoteFilter> = {
     draft: 'draft',
@@ -176,7 +185,14 @@ function NoteCard({ note }: { note: BusinessNoteSummary }) {
 /** "YOUR NOTES" — status chips and the note cards (design L271–329). */
 export function NotesSection({ notes }: { notes: BusinessNoteSummary[] }) {
     const { t } = useTranslation();
-    const [filter, setFilter] = useState<NoteFilter>('active');
+    // Open on the first status that has notes, so a Business whose only note is repaying never
+    // lands on an empty Active list that invites a new raise (QA #583).
+    const [filter, setFilter] = useState<NoteFilter>(
+        () =>
+            OPEN_ORDER.find((key) =>
+                notes.some((note) => FILTER_OF[note.status] === key),
+            ) ?? 'active',
+    );
     const shown = notes.filter((note) => FILTER_OF[note.status] === filter);
 
     return (
@@ -191,7 +207,7 @@ export function NotesSection({ notes }: { notes: BusinessNoteSummary[] }) {
                 <div
                     role="group"
                     aria-label={t('business.note.filter_label')}
-                    className="rz-hscroll relative mt-[11px] flex snap-x gap-2 overflow-x-auto [mask-image:linear-gradient(90deg,#000_0,#000_calc(100%-26px),transparent_100%)]"
+                    className="mt-[11px] flex flex-wrap gap-2"
                 >
                     {FILTERS.map((key) => (
                         <button

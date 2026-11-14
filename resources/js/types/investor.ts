@@ -1690,10 +1690,18 @@ export type InvestorNotice = {
     | {
           kind: 'auditor.job_offered';
           facts: {
-              type: 'flash' | 'routine';
+              /** The job's real type; a statement review is named as one (#587). */
+              type: 'flash' | 'routine' | 'statement_review';
               business: string;
               location: string;
               accept_by: string;
+              /** How the offer turned out, read when the Auditor bell lists it; absent elsewhere. */
+              outcome?:
+                  | 'open'
+                  | 'accepted'
+                  | 'declined'
+                  | 'expired'
+                  | 'withdrawn';
           };
       }
     | {
@@ -1764,6 +1772,8 @@ export type InvestorNotice = {
 /** The account's newest notices behind the bell, with the unread count. */
 export type InvestorNotices = {
     unread: number;
+    /** The server's clock when the inbox was read, for "5 minutes ago". */
+    server_time?: string;
     notices: InvestorNotice[];
     actions: { read_all: RouteAction | null };
 };

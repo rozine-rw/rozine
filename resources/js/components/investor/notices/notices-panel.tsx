@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
+import type { MessageCode } from '@/lib/i18n/types';
 import {
     formatDate,
     formatDateTime,
@@ -390,12 +391,14 @@ export function useNotices(href: RouteLink) {
  * catalogs by kind.
  */
 /**
- * "5 days ago" (design notifications panel), counted from the page's server clock. Without one the
- * notice keeps its exact Kigali date and time.
+ * "5 days ago" (design notifications panel), counted from the inbox's own server clock, so every
+ * role's bell reads alike (#595), or else the page's. Without either the notice keeps its exact
+ * Kigali date and time.
  */
-function useNoticeTime(): (at: string) => string {
+function useNoticeTime(inboxTime?: string): (at: string) => string {
     const { t, locale } = useTranslation();
-    const serverTime: unknown = usePage().props.server_time;
+    const pageTime: unknown = usePage().props.server_time;
+    const serverTime = inboxTime ?? pageTime;
 
     return (at: string) => {
         if (typeof serverTime !== 'string') {
@@ -437,12 +440,15 @@ function useNoticeTime(): (at: string) => string {
 export function NoticesPanel({
     notices: { inbox, failed, load, send },
     onClose,
+    audience = 'investor',
 }: {
     notices: ReturnType<typeof useNotices>;
     onClose: () => void;
+    /** Whose bell this is, for the notices whose wording differs by role (#595). */
+    audience?: NoticeAudience;
 }) {
     const { t, locale } = useTranslation();
-    const noticeTime = useNoticeTime();
+    const noticeTime = useNoticeTime(inbox?.server_time);
 
     const dialog = useModalDialog<HTMLElement>(onClose);
 
@@ -613,7 +619,7 @@ export function NoticesPanel({
                                             )}
                                         </span>
                                         <span className="mt-[3px] block text-xs leading-normal text-rz-secondary">
-                                            {body(notice, t, locale)}
+                                            {body(notice, t, locale, audience)}
                                         </span>
                                     </span>
                                 </button>
@@ -626,10 +632,51 @@ export function NoticesPanel({
     );
 }
 
+type NoticeAudience = 'investor' | 'business' | 'auditor';
+
+const VERIFIED_BODY = {
+    investor: 'investor.notices.verification.approved.body',
+    business: 'investor.notices.verification.approved.body_business',
+    auditor: 'investor.notices.verification.approved.body_auditor',
+} as const;
+
+type JobOfferedFacts = Extract<
+    InvestorNotice,
+    { kind: 'auditor.job_offered' }
+>['facts'];
+
+/** An open offer's sentence, by the job's type. */
+const JOB_OFFERED_BODY = {
+    flash: 'investor.notices.auditor.job_offered.body_flash',
+    routine: 'investor.notices.auditor.job_offered.body_routine',
+    statement_review:
+        'investor.notices.auditor.job_offered.body_statement_review',
+} as const satisfies Record<JobOfferedFacts['type'], MessageCode>;
+
+/** The job's type as a settled offer names it. */
+const JOB_OFFERED_TYPE = {
+    flash: 'investor.notices.auditor.job_offered.type.flash',
+    routine: 'investor.notices.auditor.job_offered.type.routine',
+    statement_review:
+        'investor.notices.auditor.job_offered.type.statement_review',
+} as const satisfies Record<JobOfferedFacts['type'], MessageCode>;
+
+/** A settled offer's sentence, by how it turned out. */
+const JOB_OFFERED_SETTLED = {
+    accepted: 'investor.notices.auditor.job_offered.accepted',
+    declined: 'investor.notices.auditor.job_offered.declined',
+    expired: 'investor.notices.auditor.job_offered.expired',
+    withdrawn: 'investor.notices.auditor.job_offered.withdrawn',
+} as const satisfies Record<
+    Exclude<NonNullable<JobOfferedFacts['outcome']>, 'open'>,
+    MessageCode
+>;
+
 function body(
     notice: InvestorNotice,
     t: ReturnType<typeof useTranslation>['t'],
     locale: string,
+    audience: NoticeAudience,
 ): string {
     switch (notice.kind) {
         case 'wallet.deposit_received':
@@ -658,12 +705,12 @@ function body(
             return t('investor.notices.primary.raise_funded.body', {
                 business: notice.facts.business,
                 amount: formatRwf(notice.facts),
-                units: notice.facts.units,
+                count: Number(notice.facts.units),
             });
         case 'primary.commitment_confirmed':
             return t('investor.notices.primary.commitment_confirmed.body', {
                 business: notice.facts.business,
-                units: notice.facts.units,
+                count: Number(notice.facts.units),
                 amount: formatRwf(notice.facts),
                 rate: (Number(notice.facts.fee_rate_bps) / 100).toFixed(1),
                 reference: notice.facts.reference,
@@ -671,7 +718,7 @@ function body(
         case 'primary.holding_issued':
             return t('investor.notices.primary.holding_issued.body', {
                 business: notice.facts.business,
-                units: notice.facts.units,
+                count: Number(notice.facts.units),
                 amount: formatRwf(notice.facts),
                 maturity: formatRwf({
                     currency: 'RWF',
@@ -734,7 +781,7 @@ function body(
                 reason: notice.facts.reason,
             });
         case 'verification.approved':
-            return t('investor.notices.verification.approved.body');
+            return t(VERIFIED_BODY[audience]);
         case 'security.password_changed':
             return t('investor.notices.security.password_changed.body');
         case 'security.new_device':
@@ -868,17 +915,22 @@ function body(
                     date: formatDate(notice.facts.due_at, locale),
                 },
             );
-        case 'auditor.job_offered':
-            return t(
-                notice.facts.type === 'flash'
-                    ? 'investor.notices.auditor.job_offered.body_flash'
-                    : 'investor.notices.auditor.job_offered.body_routine',
-                {
-                    business: notice.facts.business,
-                    location: notice.facts.location,
-                    time: formatDateTime(notice.facts.accept_by, locale),
-                },
-            );
+        case 'auditor.job_offered': {
+            const outcome = notice.facts.outcome ?? 'open';
+            const facts = {
+                business: notice.facts.business,
+                location: notice.facts.location,
+                time: formatDateTime(notice.facts.accept_by, locale),
+            };
+
+            /* Once the offer is settled the notice says how, not "accept by" a time gone by (#587). */
+            return outcome === 'open'
+                ? t(JOB_OFFERED_BODY[notice.facts.type], facts)
+                : t(JOB_OFFERED_SETTLED[outcome], {
+                      ...facts,
+                      job: t(JOB_OFFERED_TYPE[notice.facts.type]),
+                  });
+        }
         case 'business.raise_expired':
             return t('investor.notices.business.raise_expired.body', {
                 title: notice.facts.title,

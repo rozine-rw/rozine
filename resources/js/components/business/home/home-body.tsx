@@ -89,7 +89,14 @@ export function HomeBody({
                         inert={overlay?.column === 'right' || undefined}
                     >
                         <div className="px-5 lg:px-[18px] lg:pt-[18px]">
-                            <CapitalSection capital={props.capital} />
+                            <CapitalSection
+                                capital={props.capital}
+                                repaying={
+                                    props.notes.filter(
+                                        (note) => note.status === 'repaying',
+                                    ).length
+                                }
+                            />
                         </div>
                         <NotesSection notes={props.notes} />
                         <GrowSection
