@@ -1080,6 +1080,27 @@ def preflight_merge_identity(repository, run):
     return proof
 
 
+def refused_before_identity(repository, run):
+    # A finished run whose identity job refused (for example a stale base SHA)
+    # published no evidence and ran no tree-bound work, so its failure says
+    # nothing about any tree. Any other job that ran, or an unsettled run,
+    # keeps the absence unexplained and the selection refuses.
+    if run.get("status") != "completed":
+        return False
+    jobs = run_jobs(repository, run)
+    identity = [job for job in jobs if job["name"] == IDENTITY_JOB]
+    if (len(identity) != 1 or identity[0].get("status") != "completed"
+            or identity[0].get("conclusion") not in ("failure", "cancelled", "timed_out")):
+        return False
+    for job in jobs:
+        allowed = ("skipped", "success") if job["name"] == "Board sync offline tests" else ("skipped",)
+        if job is not identity[0] and (job.get("status") != "completed" or job.get("conclusion") not in allowed):
+            return False
+    same_attempt(repository, run)
+    diagnostic("peer_refused_before_identity", run)
+    return True
+
+
 def newer_run_blocks(repository, run, source, tree):
     # A later rerun attempt keeps the same run ID. Its status is authoritative.
     if run["id"] == source["id"]:
@@ -1100,7 +1121,12 @@ def newer_run_blocks(repository, run, source, tree):
             try:
                 return immutable_merge_identity(repository, run)["tree_sha"] == tree
             except MissingEvidence:
-                return preflight_merge_identity(repository, run)["tree_sha"] == tree
+                try:
+                    return preflight_merge_identity(repository, run)["tree_sha"] == tree
+                except MissingEvidence:
+                    if refused_before_identity(repository, run):
+                        return False
+                    raise
         expected = {"schema": 2, "repository": repository, "run_id": str(run["id"]), "run_attempt": str(run["run_attempt"])}
         if any(proof.get(key) != value for key, value in expected.items()) or not re.fullmatch(SHA, str(proof.get("tested_sha", ""))):
             raise ValueError("failed-run merge evidence has unverifiable provenance")

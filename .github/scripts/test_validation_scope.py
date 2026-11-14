@@ -1210,6 +1210,35 @@ class MergeIdentityTests(unittest.TestCase):
         self.artifacts = []
         with self.assertRaises(policy.MissingEvidence): self.classify()
 
+    def test_run_refused_before_identity_cannot_block(self):
+        self.artifacts = []
+        identity = {"name": policy.IDENTITY_JOB, "status": "completed", "conclusion": "failure"}
+        board = {"name": "Board sync offline tests", "status": "completed", "conclusion": "success"}
+        skipped = [{"name": name, "status": "completed", "conclusion": "skipped"} for name in ["Select CI scope", "Reuse POC validation evidence"]]
+        self.jobs = [identity, board, *skipped]
+        self.assertFalse(self.classify())
+        for scenario in ["identity succeeded", "identity pending", "duplicate identity", "no identity", "test ran", "board failed", "job pending", "run pending"]:
+            jobs = copy.deepcopy([identity, board, *skipped])
+            run = copy.deepcopy(self.run)
+            if scenario == "identity succeeded": jobs[0]["conclusion"] = "success"
+            elif scenario == "identity pending": jobs[0].update(status="in_progress", conclusion=None)
+            elif scenario == "duplicate identity": jobs.append(dict(identity))
+            elif scenario == "no identity": jobs.pop(0)
+            elif scenario == "test ran": jobs[2]["conclusion"] = "failure"
+            elif scenario == "board failed": jobs[1]["conclusion"] = "failure"
+            elif scenario == "job pending": jobs[3].update(status="queued", conclusion=None)
+            elif scenario == "run pending": run.update(status="in_progress", conclusion=None)
+            original = (self.jobs, self.run)
+            self.jobs, self.run = jobs, run
+            with self.subTest(scenario=scenario), self.assertRaises(policy.MissingEvidence): self.classify()
+            self.jobs, self.run = original
+
+    def test_rerun_while_classifying_refused_run_refuses(self):
+        self.artifacts = []
+        self.jobs = [{"name": policy.IDENTITY_JOB, "status": "completed", "conclusion": "failure"}]
+        self.latest = dict(self.run, run_attempt=3)
+        with self.assertRaisesRegex(policy.CoordinationRefusal, "^run_or_attempt_changed$"): self.classify()
+
     def test_expired_duplicate_unreadable_legacy_evidence_never_falls_back(self):
         for scenario in ["expired", "duplicate", "malformed", "download failure", "API failure"]:
             with self.subTest(scenario=scenario):
