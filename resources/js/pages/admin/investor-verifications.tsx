@@ -166,11 +166,11 @@ export default function AdminInvestorVerifications(
                                 </div>
                             </div>
                             <div role="cell" className="min-w-0">
-                                <div className="truncate text-[12px] font-semibold text-[#157357] dark:text-[#3fcda0]">
+                                <div className="text-[12px] leading-[1.35] font-semibold break-words text-[#157357] dark:text-[#3fcda0]">
                                     {t('admin.kyc.checks.passed')}
                                 </div>
                                 <div
-                                    className="truncate text-[11px] text-rz-faint"
+                                    className="mt-0.5 text-[11px] leading-[1.35] break-words text-rz-faint"
                                     title={entry.checks
                                         .map((check) =>
                                             t(`admin.kyc.check.${check}`),

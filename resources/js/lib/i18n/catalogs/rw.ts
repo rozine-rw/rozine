@@ -3261,6 +3261,9 @@ const rw: Catalog = {
         "Icyemezo cy'amategeko gituma iyi konti ikomeza guhagarikwa. Ubwubahirize cyangwa Amategeko gusa ni bo bashobora kuyifungura.",
     'admin.parties.freeze': 'Hagarika konti',
     'admin.parties.release': 'Ongera ukoreshe konti',
+    'admin.parties.freeze_unavailable':
+        'Guhagarika iyi konti ntibirashoboka muri konsole, ni yo mpamvu nta buto bwo Guhagarika buri hano.',
+    'admin.table.scroll_hint': 'Nyerera ku ruhande urebe inkingi zose.',
     'admin.parties.freeze_caption':
         "Guhagarika bikuraho ako kanya uburenganzira bwa konti muri porogaramu ya {app}. Bishobora gusubizwa igihe icyo ari cyo cyose; guhagarika no gufungura byombi bigira impamvu n'izina.",
     'admin.parties.restrictions': 'Amateka yo guhagarika',
@@ -3318,8 +3321,8 @@ const rw: Catalog = {
     'admin.ledger.col.debit': 'Ibisohoka',
     'admin.ledger.col.credit': 'Ibyinjira',
     'admin.ledger.open_named': 'Fungura icyanditswe {id}',
-    'admin.ledger.see_all': 'Reba ibyanditswe byose {count}',
-    'admin.ledger.older': 'Ibyanditswe bya kera',
+    'admin.ledger.see_all': 'Erekana ibindi kuri uru rupapuro ({count} byose)',
+    'admin.ledger.older': 'Urupapuro rukurikira: ibyanditswe bya kera',
     'admin.ledger.newest': 'Subira ku bishya',
     'admin.ledger.empty': 'Nta cyanditswe muri iki gihe.',
     'admin.ledger.drawer_label': 'Icyanditswe {id}',
