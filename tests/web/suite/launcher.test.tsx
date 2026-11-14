@@ -4,7 +4,7 @@ import type { ComponentProps } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import { LogoLockup, LogoMark } from '@/components/rozine/logo';
 import Launcher from '@/pages/dashboard';
-import type { IdentityCode, IdentityContext } from '@/types';
+import type { IdentityCode, IdentityContext, RoleAccessOffer } from '@/types';
 import mfaBlockedFixture from '../../../resources/fixtures/ui/launcher-auditor-mfa-blocked.json';
 import auditorFixture from '../../../resources/fixtures/ui/launcher-auditor.json';
 import lostMembershipFixture from '../../../resources/fixtures/ui/launcher-lost-membership.json';
@@ -787,9 +787,11 @@ describe('Asking for Business or Auditor access', () => {
     const offer = (
         requestable: ('business' | 'auditor')[],
         sent: Partial<Record<'business' | 'auditor', string>> = {},
+        unavailable: RoleAccessOffer['unavailable'] = {},
     ) => ({
         requestable,
         sent,
+        unavailable,
         link: { url: '/identity/access-requests', method: 'post' as const },
     });
     const investor: IdentityContext = {
@@ -930,6 +932,70 @@ describe('Asking for Business or Auditor access', () => {
         );
         expect(screen.getAllByRole('listitem')[2]).toHaveTextContent(
             /Not available with your current access$/u,
+        );
+    });
+
+    it('says why a card cannot be asked for (#622)', () => {
+        const { rerender } = render(
+            <Launcher
+                identity={investor}
+                access_requests={offer(
+                    [],
+                    {},
+                    {
+                        business: 'ROLE_ON_RECORD',
+                        auditor: 'AUDITOR_ONLY_ROLE',
+                    },
+                )}
+            />,
+        );
+        const [, business, auditor] = screen.getAllByRole('listitem');
+
+        expect(business).toHaveTextContent(
+            'Your Business access is already on record with Rozine. Contact Rozine support to change it.',
+        );
+        expect(auditor).toHaveTextContent(
+            'Audit Partners can’t hold another Rozine role, so this account can’t ask for Auditor access.',
+        );
+        expect(auditor).toHaveTextContent(
+            /Not available with your current access$/u,
+        );
+
+        rerender(
+            <Launcher
+                identity={investor}
+                access_requests={offer(
+                    [],
+                    {},
+                    {
+                        business: 'AUDITOR_ACCOUNT',
+                        auditor: 'ROLE_ON_RECORD',
+                    },
+                )}
+            />,
+        );
+        expect(screen.getAllByRole('listitem')[1]).toHaveTextContent(
+            'Audit Partners can’t hold another Rozine role, so this Auditor account can’t ask for Business access.',
+        );
+        expect(screen.getAllByRole('listitem')[2]).toHaveTextContent(
+            'Your Auditor access is already on record with Rozine. Contact Rozine support to change it.',
+        );
+
+        // A reason the card has no wording for keeps the card's own description.
+        rerender(
+            <Launcher
+                identity={investor}
+                access_requests={offer(
+                    [],
+                    {},
+                    {
+                        business: 'AUDITOR_ONLY_ROLE',
+                    },
+                )}
+            />,
+        );
+        expect(screen.getAllByRole('listitem')[1]).not.toHaveTextContent(
+            'Audit Partners',
         );
     });
 });

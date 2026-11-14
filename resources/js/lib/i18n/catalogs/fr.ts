@@ -193,6 +193,14 @@ const fr: Catalog = {
     'suite.app.request_sent_summary':
         'L’équipe Rozine a reçu votre demande et vous contactera.',
     'suite.app.verify_first': 'Vérifiez d’abord votre identité →',
+    'suite.app.unavailable_reason.business_on_record':
+        'Votre accès Entreprise est déjà enregistré chez Rozine. Contactez le support Rozine pour le modifier.',
+    'suite.app.unavailable_reason.auditor_account':
+        'Les auditeurs partenaires ne peuvent pas avoir un autre rôle Rozine : ce compte Auditeur ne peut donc pas demander l’accès Entreprise.',
+    'suite.app.unavailable_reason.auditor_on_record':
+        'Votre accès Auditeur est déjà enregistré chez Rozine. Contactez le support Rozine pour le modifier.',
+    'suite.app.unavailable_reason.auditor_only_role':
+        'Les auditeurs partenaires ne peuvent pas avoir un autre rôle Rozine : ce compte ne peut donc pas demander l’accès Auditeur.',
     'suite.app.unavailable': 'Indisponible avec votre accès actuel',
     'suite.request_access.business.title': 'Demander l’accès Entreprise',
     'suite.request_access.business.body':

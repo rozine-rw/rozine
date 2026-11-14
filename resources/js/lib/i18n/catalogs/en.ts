@@ -186,6 +186,14 @@ const en = {
     'suite.app.request_sent_summary':
         'Rozine staff have your request and will contact you.',
     'suite.app.verify_first': 'Verify your identity first →',
+    'suite.app.unavailable_reason.business_on_record':
+        'Your Business access is already on record with Rozine. Contact Rozine support to change it.',
+    'suite.app.unavailable_reason.auditor_account':
+        'Audit Partners can’t hold another Rozine role, so this Auditor account can’t ask for Business access.',
+    'suite.app.unavailable_reason.auditor_on_record':
+        'Your Auditor access is already on record with Rozine. Contact Rozine support to change it.',
+    'suite.app.unavailable_reason.auditor_only_role':
+        'Audit Partners can’t hold another Rozine role, so this account can’t ask for Auditor access.',
     'suite.app.unavailable': 'Not available with your current access',
     'suite.request_access.business.title': 'Request Business access',
     'suite.request_access.business.body':

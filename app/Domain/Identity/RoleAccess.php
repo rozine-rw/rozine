@@ -63,6 +63,31 @@ final class RoleAccess
     }
 
     /**
+     * Why the launcher cannot offer a request for Business or Auditor access (#622), for each of the
+     * two roles that is not requestable: `ROLE_ON_RECORD` when the person already holds a membership of
+     * that role in some status (staff decide what happens to it), `AUDITOR_ONLY_ROLE` when asking for
+     * Auditor access alongside another retained role, and `AUDITOR_ACCOUNT` when asking for Business
+     * access while holding an Auditor role. An Auditor keeps no other role.
+     *
+     * @param  list<array{role: string, status: string}>  $memberships
+     * @return array<'business'|'auditor', 'ROLE_ON_RECORD'|'AUDITOR_ONLY_ROLE'|'AUDITOR_ACCOUNT'>
+     */
+    public function unavailableReasons(array $memberships): array
+    {
+        $held = array_column($memberships, 'role');
+        $requestable = $this->requestable($memberships);
+        $reasons = [];
+        foreach (['business', 'auditor'] as $role) {
+            if (in_array($role, $requestable, true)) {
+                continue;
+            }
+            $reasons[$role] = in_array($role, $held, true) ? 'ROLE_ON_RECORD' : ($role === 'auditor' ? 'AUDITOR_ONLY_ROLE' : 'AUDITOR_ACCOUNT');
+        }
+
+        return $reasons;
+    }
+
+    /**
      * The roles a verified person may ask Rozine's staff for from the launcher (#616): Business or
      * Auditor, when they hold no membership of that role in any status, since an earlier one stays a
      * staff decision. An Auditor keeps no other role, so Auditor access is requestable only without

@@ -60,7 +60,7 @@ it('sends Business access from the launcher once, shows it as sent, and replays 
     $user = accessRequester();
     $link = ['url' => '/identity/access-requests', 'method' => 'post'];
 
-    expect(($this->launcherAccess)($user))->toBe(['requestable' => ['business'], 'sent' => [], 'link' => $link])
+    expect(($this->launcherAccess)($user))->toBe(['requestable' => ['business'], 'sent' => [], 'unavailable' => ['auditor' => 'AUDITOR_ONLY_ROLE'], 'link' => $link])
         ->and(($this->launcherAccess)(accessRequester([]))['requestable'])->toBe(['business', 'auditor']);
     $this->actingAs($user);
 
@@ -71,7 +71,8 @@ it('sends Business access from the launcher once, shows it as sent, and replays 
     $row = RoleAccessRequest::query()->sole();
     expect($row->only(['party_id', 'role', 'organization', 'reference', 'phone', 'note']))->toBe(['party_id' => $user->party_id, 'role' => 'business',
         'organization' => 'Kivu Harvest Ltd', 'reference' => null, 'phone' => '+250 788 000 000', 'note' => 'Coffee washing station'])
-        ->and(($this->launcherAccess)($user))->toBe(['requestable' => [], 'sent' => ['business' => $row->created_at->toIso8601String()], 'link' => $link]);
+        ->and(($this->launcherAccess)($user))->toBe(['requestable' => [], 'sent' => ['business' => $row->created_at->toIso8601String()],
+            'unavailable' => ['auditor' => 'AUDITOR_ONLY_ROLE'], 'link' => $link]);
 
     $this->post(route('identity.access-requests.store'), accessRequest())
         ->assertSessionHasErrors(['role' => 'You already asked for this access. Rozine will contact you.']);
@@ -96,25 +97,25 @@ it('asks an Auditor for the ICPAR licence and a Business for its name, and check
         ->toBe(['role' => 'auditor', 'organization' => '', 'reference' => 'ICPAR-2041', 'phone' => null, 'note' => null]);
 });
 
-it('offers nothing to ask for and refuses a request outside the roles a person may still ask for', function (array $memberships, bool $verified, string $role, array $requestable): void {
+it('offers nothing to ask for, says why, and refuses a request outside the roles a person may still ask for', function (array $memberships, bool $verified, string $role, array $requestable, array $unavailable): void {
     $user = accessRequester($memberships, $verified);
 
-    expect(($this->launcherAccess)($user)['requestable'])->toBe($requestable);
+    expect(($this->launcherAccess)($user))->toMatchArray(['requestable' => $requestable, 'unavailable' => $unavailable]);
     $this->post(route('identity.access-requests.store'), accessRequest(['role' => $role, 'reference' => 'ICPAR-1']))
         ->assertSessionHasErrors(['role' => "This access can't be requested from your account. Refresh the page to see your apps."]);
     expect(RoleAccessRequest::query()->exists())->toBeFalse();
 })->with([
-    'an Auditor asking for Business' => [['auditor' => 'active'], true, 'business', []],
-    'a Business member asking for Auditor' => [['business' => 'active'], true, 'auditor', []],
-    'a pending Business member asking again' => [['business' => 'pending'], true, 'business', []],
-    'a person still being verified' => [['investor' => 'active'], false, 'business', []],
-    'a revoked Business member asking for Business again' => [['business' => 'revoked'], true, 'business', ['auditor']],
+    'an Auditor asking for Business' => [['auditor' => 'active'], true, 'business', [], ['business' => 'AUDITOR_ACCOUNT', 'auditor' => 'ROLE_ON_RECORD']],
+    'a Business member asking for Auditor' => [['business' => 'active'], true, 'auditor', [], ['business' => 'ROLE_ON_RECORD', 'auditor' => 'AUDITOR_ONLY_ROLE']],
+    'a pending Business member asking again' => [['business' => 'pending'], true, 'business', [], ['business' => 'ROLE_ON_RECORD', 'auditor' => 'AUDITOR_ONLY_ROLE']],
+    'a person still being verified' => [['investor' => 'active'], false, 'business', [], []],
+    'a revoked Business member asking for Business again' => [['business' => 'revoked'], true, 'business', ['auditor'], ['business' => 'ROLE_ON_RECORD']],
 ]);
 
 it('refuses a signed-in account with no Party, which has nothing to ask for', function (): void {
     $user = User::factory()->create();
 
-    expect(($this->launcherAccess)($user))->toMatchArray(['requestable' => [], 'sent' => []]);
+    expect(($this->launcherAccess)($user))->toMatchArray(['requestable' => [], 'sent' => [], 'unavailable' => []]);
     $this->post(route('identity.access-requests.store'), accessRequest())->assertSessionHasErrors('role');
 });
 

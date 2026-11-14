@@ -189,6 +189,14 @@ const rw: Catalog = {
     'suite.app.request_sent_summary':
         'Abakozi ba Rozine bakiriye ubusabe bwawe kandi bazakuvugisha.',
     'suite.app.verify_first': 'Banza wemeze umwirondoro wawe →',
+    'suite.app.unavailable_reason.business_on_record':
+        'Uburenganzira bwawe bwa Sosiyete busanzwe bwanditswe muri Rozine. Vugana n’ubufasha bwa Rozine kugira ngo buhindurwe.',
+    'suite.app.unavailable_reason.auditor_account':
+        'Abagenzuzi ntibashobora kugira urundi ruhare muri Rozine, bityo iyi konti y’Umugenzuzi ntishobora gusaba uburenganzira bwa Sosiyete.',
+    'suite.app.unavailable_reason.auditor_on_record':
+        'Uburenganzira bwawe bw’Umugenzuzi busanzwe bwanditswe muri Rozine. Vugana n’ubufasha bwa Rozine kugira ngo buhindurwe.',
+    'suite.app.unavailable_reason.auditor_only_role':
+        'Abagenzuzi ntibashobora kugira urundi ruhare muri Rozine, bityo iyi konti ntishobora gusaba uburenganzira bw’Umugenzuzi.',
     'suite.app.unavailable': 'Ntibishoboka n’uburenganzira ufite ubu',
     'suite.request_access.business.title': 'Saba uburenganzira bwa Sosiyete',
     'suite.request_access.business.body':
