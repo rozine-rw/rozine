@@ -1957,6 +1957,7 @@ const fr: Catalog = {
     'admin.search.empty_body':
         'Rien dans {section} ne correspond à « {term} ». Essayez un terme plus court ou différent.',
     'admin.account.open': 'Compte, {name}',
+    'settings.back_to_console': 'Retour à la console d’administration',
     'admin.account.close': 'Fermer le menu du compte',
     'admin.account.sign_out': 'Se déconnecter',
     'admin.role.analyst': 'Analyste',

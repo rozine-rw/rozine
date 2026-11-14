@@ -46,6 +46,7 @@ export default function AdminLedger(props: AdminLedgerProps) {
         <AdminFrame
             section="ledger"
             {...props}
+            searchable={false}
             overlay={
                 props.entry && (
                     <EntryDrawer key={props.entry.id} entry={props.entry} />
