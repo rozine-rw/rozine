@@ -208,7 +208,7 @@ describe('Disbursements queue', () => {
                 'All disbursements released',
             ),
         ).not.toBeInTheDocument();
-        expect(screen.getByText('No matches on this page')).toBeInTheDocument();
+        expect(screen.getByText('No matches')).toBeInTheDocument();
         expect(
             screen.getByRole('link', { name: 'Older disbursements' }),
         ).toHaveAttribute('href', '/preview/admin-disbursements');

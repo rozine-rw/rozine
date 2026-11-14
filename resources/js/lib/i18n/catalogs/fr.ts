@@ -1930,10 +1930,10 @@ const fr: Catalog = {
     'admin.section.events.subtitle':
         'Registre immuable de chaque action — filtrer par auteur, action ou objet',
     'admin.section.events.search': 'Rechercher dans le journal…',
-    'admin.search.label': 'Rechercher sur cette page',
-    'admin.search.empty_title': 'Aucun résultat sur cette page',
+    'admin.search.label': 'Rechercher dans cette section',
+    'admin.search.empty_title': 'Aucun résultat',
     'admin.search.empty_body':
-        'Rien dans {section} ne correspond à « {term} ». Cette recherche ne porte que sur la page actuelle.',
+        'Rien dans {section} ne correspond à « {term} ». Essayez un terme plus court ou différent.',
     'admin.account.open': 'Compte, {name}',
     'admin.account.close': 'Fermer le menu du compte',
     'admin.account.sign_out': 'Se déconnecter',
@@ -3275,6 +3275,10 @@ const fr: Catalog = {
         'Une retenue légale maintient ce compte gelé. Seuls la conformité ou le juridique peuvent le lever.',
     'admin.parties.freeze': 'Geler le compte',
     'admin.parties.release': 'Réactiver le compte',
+    'admin.parties.freeze_unavailable':
+        "Le gel de ce compte n'est pas encore disponible dans la console : il n'y a donc pas de bouton Geler ici.",
+    'admin.table.scroll_hint':
+        'Faites défiler sur le côté pour voir toutes les colonnes.',
     'admin.parties.freeze_caption':
         "Le gel retire immédiatement l'accès du compte à l'application {app}. Réversible à tout moment ; le gel et la levée portent un motif et un nom.",
     'admin.parties.restrictions': 'Historique des gels',
@@ -3331,8 +3335,8 @@ const fr: Catalog = {
     'admin.ledger.col.debit': 'Débit',
     'admin.ledger.col.credit': 'Crédit',
     'admin.ledger.open_named': "Ouvrir l'écriture {id}",
-    'admin.ledger.see_all': 'Voir les {count} écritures',
-    'admin.ledger.older': 'Écritures plus anciennes',
+    'admin.ledger.see_all': 'Afficher plus sur cette page ({count} au total)',
+    'admin.ledger.older': 'Page suivante : écritures plus anciennes',
     'admin.ledger.newest': 'Revenir aux plus récentes',
     'admin.ledger.empty': 'Aucune écriture sur cette période.',
     'admin.ledger.drawer_label': 'Écriture {id}',

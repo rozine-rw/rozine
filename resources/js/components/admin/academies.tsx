@@ -64,7 +64,7 @@ export function AdminAcademies(props: AdminPendingSectionProps) {
     const rows = ROWS[tab];
 
     return (
-        <AdminFrame {...props}>
+        <AdminFrame {...props} searchable={false}>
             <section aria-label={title}>
                 <div
                     role="tablist"

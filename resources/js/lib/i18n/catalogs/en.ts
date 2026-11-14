@@ -1823,10 +1823,10 @@ const en = {
     'admin.section.events.subtitle':
         'Immutable record of every action — filter by actor, action or object',
     'admin.section.events.search': 'Search the trail…',
-    'admin.search.label': 'Search this page',
-    'admin.search.empty_title': 'No matches on this page',
+    'admin.search.label': 'Search this section',
+    'admin.search.empty_title': 'No matches',
     'admin.search.empty_body':
-        'Nothing in {section} matches “{term}”. This search only looks inside the current page.',
+        'Nothing in {section} matches “{term}”. Try a shorter or different term.',
     'admin.account.open': 'Account, {name}',
     'admin.account.close': 'Close account menu',
     'admin.account.sign_out': 'Sign out',
@@ -3123,6 +3123,9 @@ const en = {
         'A legal hold keeps this account frozen. Only Compliance or Legal can release it.',
     'admin.parties.freeze': 'Freeze account',
     'admin.parties.release': 'Reactivate account',
+    'admin.parties.freeze_unavailable':
+        "Freezing isn't available for this account from the console yet, so there's no Freeze button here.",
+    'admin.table.scroll_hint': 'Swipe sideways to see every column.',
     'admin.parties.freeze_caption':
         "Freezing instantly revokes the account's access in the {app} app. Reversible at any time, and both the freeze and the release carry a reason and a name.",
     'admin.parties.restrictions': 'Freeze history',
@@ -3178,8 +3181,8 @@ const en = {
     'admin.ledger.col.debit': 'Debit',
     'admin.ledger.col.credit': 'Credit',
     'admin.ledger.open_named': 'Open entry {id}',
-    'admin.ledger.see_all': 'See all {count} entries',
-    'admin.ledger.older': 'Older entries',
+    'admin.ledger.see_all': 'Show more on this page ({count} in all)',
+    'admin.ledger.older': 'Next page: older entries',
     'admin.ledger.newest': 'Back to the newest',
     'admin.ledger.empty': 'No ledger entries in this range.',
     'admin.ledger.drawer_label': 'Ledger entry {id}',

@@ -971,7 +971,7 @@ describe('Party directories', () => {
             screen.getByText('No businesses match these filters.'),
         ).toBeInTheDocument();
         expect(screen.getByText('0 businesses')).toBeInTheDocument();
-        expect(screen.getByText('No matches on this page')).toBeInTheDocument();
+        expect(screen.getByText('No matches')).toBeInTheDocument();
     });
 });
 
@@ -1035,6 +1035,30 @@ describe('Party 360', () => {
             },
         ]);
         expect(within(drawer).getByText('Freeze history')).toBeInTheDocument();
+    });
+
+    it('says Freeze is unavailable instead of describing a button that is not there', async () => {
+        const fixture = props(overdueFixture);
+
+        if (fixture.party == null) {
+            throw new Error('the fixture opens an investor');
+        }
+
+        const { freeze: _freeze, ...actions } = fixture.party.actions;
+
+        fixture.party = { ...fixture.party, actions };
+        const { user } = renderWithUser(<AdminParties {...fixture} />);
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        expect(
+            screen.queryByRole('button', { name: 'Freeze account' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByText(/Freezing isn't available for this account/),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText(/Reversible at any time/),
+        ).not.toBeInTheDocument();
     });
 
     it('shows a KYC-overdue investor and verifies, rejects or freezes with a reason', async () => {
@@ -2578,6 +2602,9 @@ describe('Party 360', () => {
         expect(
             screen.queryByRole('button', { name: 'Reactivate account' }),
         ).not.toBeInTheDocument();
+        expect(
+            screen.queryByText(/Reversible at any time/),
+        ).not.toBeInTheDocument();
         unmount();
 
         fixture.party = {
@@ -2605,7 +2632,11 @@ describe('Party 360', () => {
         await view.user.click(screen.getByRole('tab', { name: 'Controls' }));
         expect(screen.getByText('Expired')).toBeInTheDocument();
         expect(screen.getByText('Rejected')).toBeInTheDocument();
-        expect(screen.getByText(/in the Admin app/)).toBeInTheDocument();
+        // Nothing offered: say so rather than describe a Freeze button that isn't there.
+        expect(screen.queryByText(/in the Admin app/)).not.toBeInTheDocument();
+        expect(
+            screen.getByText(/Freezing isn't available/),
+        ).toBeInTheDocument();
     });
 
     it('reads a frozen operator once, with who disabled them and their access history', async () => {

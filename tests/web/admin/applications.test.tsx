@@ -234,10 +234,10 @@ describe('Applications queue', () => {
                 name: 'Underwriting rules in effect',
             }),
         ).not.toBeInTheDocument();
-        expect(screen.getByText('No matches on this page')).toBeInTheDocument();
+        expect(screen.getByText('No matches')).toBeInTheDocument();
         expect(
             screen.getByText(
-                'Nothing in Applications Queue matches “zzz”. This search only looks inside the current page.',
+                'Nothing in Applications Queue matches “zzz”. Try a shorter or different term.',
             ),
         ).toBeInTheDocument();
     });
@@ -925,6 +925,7 @@ describe('The live staff applications index (#147)', () => {
                     before: undefined,
                     application: undefined,
                 },
+                onCancelToken: expect.any(Function),
             },
         ]);
     });
@@ -936,7 +937,9 @@ describe('The live staff applications index (#147)', () => {
 
         await user.type(screen.getByRole('searchbox'), 'Kigali{Enter}');
 
-        expect(inertia.reload).toEqual([{ data: { q: 'Kigali' } }]);
+        expect(inertia.reload).toEqual([
+            { data: { q: 'Kigali' }, onCancelToken: expect.any(Function) },
+        ]);
     });
 });
 

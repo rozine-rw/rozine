@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import AdminEvents from '@/pages/admin/events';
 import AdminLedger from '@/pages/admin/ledger';
@@ -38,7 +38,9 @@ describe('Ledger', () => {
             screen.getByRole('link', { name: 'Open entry LED-1928' }),
         ).toHaveAttribute('href', '/preview/admin-ledger-entry');
         expect(
-            screen.getByRole('link', { name: /See all 1,932 entries/ }),
+            screen.getByRole('link', {
+                name: /Show more on this page \(1,932 in all\)/,
+            }),
         ).toHaveAttribute('data-preserve-scroll', 'true');
 
         await user.type(
@@ -53,8 +55,38 @@ describe('Ledger', () => {
                     limit: undefined,
                     before: undefined,
                 },
+                onCancelToken: expect.any(Function),
             },
         ]);
+    });
+
+    it('searches the ledger once typing pauses, starting from the newest page', () => {
+        vi.useFakeTimers();
+
+        try {
+            render(<AdminLedger {...ledgerProps(ledgerFixture)} />);
+
+            fireEvent.change(
+                screen.getByRole('searchbox', { name: 'Search the ledger' }),
+                { target: { value: 'contra' } },
+            );
+            act(() => {
+                vi.advanceTimersByTime(400);
+            });
+            expect(inertia.reload).toEqual([
+                {
+                    data: {
+                        q: 'contra',
+                        entry: undefined,
+                        limit: undefined,
+                        before: undefined,
+                    },
+                    onCancelToken: expect.any(Function),
+                },
+            ]);
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     it('pages back to older entries and returns to the newest', () => {
@@ -66,7 +98,7 @@ describe('Ledger', () => {
         );
 
         expect(
-            screen.getByRole('link', { name: /Older entries/ }),
+            screen.getByRole('link', { name: /Next page: older entries/ }),
         ).toHaveAttribute('href', '/admin/ledger?before=LED-1880');
         expect(
             screen.queryByRole('link', { name: /Back to the newest/ }),
@@ -86,7 +118,7 @@ describe('Ledger', () => {
             screen.queryByRole('link', { name: /See all/ }),
         ).not.toBeInTheDocument();
         expect(
-            screen.queryByRole('link', { name: /Older entries/ }),
+            screen.queryByRole('link', { name: /Next page: older entries/ }),
         ).not.toBeInTheDocument();
     });
 
@@ -113,7 +145,7 @@ describe('Ledger', () => {
         );
         expect(
             screen.getByText(
-                'Nothing in Ledger matches “zzz”. This search only looks inside the current page.',
+                'Nothing in Ledger matches “zzz”. Try a shorter or different term.',
             ),
         ).toBeInTheDocument();
     });
@@ -581,4 +613,12 @@ describe('Table structure', () => {
             expect(within(table).getAllByRole('row').length).toBeGreaterThan(1);
         },
     );
+
+    it('tells a phone the other columns are a swipe away, and hides that on desktop', () => {
+        render(<AdminLedger {...ledgerProps(ledgerFixture)} />);
+
+        expect(
+            screen.getByText('Swipe sideways to see every column.'),
+        ).toHaveClass('lg:hidden');
+    });
 });
