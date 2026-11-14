@@ -150,9 +150,7 @@ describe('Admin Notes', () => {
         expect(screen.queryByRole('status')).not.toBeInTheDocument();
 
         rerender(<AdminNotes {...props({ notes: [], search: 'ubuki' })} />);
-        expect(screen.getByRole('status')).toHaveTextContent(
-            'No matches on this page',
-        );
+        expect(screen.getByRole('status')).toHaveTextContent('No matches');
 
         rerender(
             <AdminNotes
@@ -174,12 +172,12 @@ describe('Admin Notes', () => {
         );
 
         const status = screen.getByRole('status');
-        expect(status).toHaveTextContent('No matches on this page');
+        expect(status).toHaveTextContent('No matches');
         expect(status).toHaveTextContent(
-            'Nothing in Notes matches “Missing issuer”. This search only looks inside the current page.',
+            'Nothing in Notes matches “Missing issuer”. Try a shorter or different term.',
         );
         expect(
-            screen.getByRole('searchbox', { name: 'Search this page' }),
+            screen.getByRole('searchbox', { name: 'Search this section' }),
         ).toHaveValue('Missing issuer');
         expect(
             screen.queryByText('No notes to show yet.'),

@@ -1,3 +1,4 @@
+import type { CancelToken } from '@inertiajs/core';
 import { Link, router } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import { AdminFrame } from '@/components/admin/admin-frame';
@@ -10,6 +11,7 @@ import {
     ShowMoreLink,
     TableCard,
 } from '@/components/admin/ui';
+import { useSearchAsYouType } from '@/hooks/use-search-as-you-type';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatCount, formatRwfShort } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
@@ -26,16 +28,20 @@ const GRID =
 export default function AdminLedger(props: AdminLedgerProps) {
     const { t } = useTranslation();
 
+    const runSearch = (
+        q: string,
+        onCancelToken: (token: CancelToken) => void,
+    ) =>
+        router.reload({
+            data: { q, entry: undefined, limit: undefined, before: undefined },
+            onCancelToken,
+        });
+    const typing = useSearchAsYouType(props.search, runSearch);
     const search = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        router.reload({
-            data: {
-                q: new FormData(event.currentTarget).get('q'),
-                entry: undefined,
-                limit: undefined,
-                before: undefined,
-            },
-        });
+        typing.submit(
+            (new FormData(event.currentTarget).get('q') as string | null) ?? '',
+        );
     };
 
     return (
@@ -120,6 +126,7 @@ export default function AdminLedger(props: AdminLedgerProps) {
                                 type="search"
                                 name="q"
                                 defaultValue={props.search}
+                                onChange={typing.onChange}
                                 aria-label={t('admin.ledger.search_label')}
                                 placeholder={t(
                                     'admin.ledger.search_placeholder',

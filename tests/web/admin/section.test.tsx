@@ -27,6 +27,16 @@ const designed = Object.entries(SECTION_DESIGNS).flatMap(([section, design]) =>
 beforeEach(resetInertia);
 
 describe('A designed section that is not wired yet', () => {
+    it.each(['policies', 'academies', 'plus'] as const)(
+        '%s offers no search box, since nothing on it is searched',
+        (section) => {
+            render(<AdminPendingSection {...props({ section })} />);
+
+            expect(screen.queryByRole('search')).not.toBeInTheDocument();
+            expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
+        },
+    );
+
     it('lays out every console section the design shows, Engines included', () => {
         expect(designed.map(([section]) => section)).toEqual([
             'notes',

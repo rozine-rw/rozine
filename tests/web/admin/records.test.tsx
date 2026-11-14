@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import AdminEvents from '@/pages/admin/events';
 import AdminLedger from '@/pages/admin/ledger';
@@ -53,8 +53,38 @@ describe('Ledger', () => {
                     limit: undefined,
                     before: undefined,
                 },
+                onCancelToken: expect.any(Function),
             },
         ]);
+    });
+
+    it('searches the ledger once typing pauses, starting from the newest page', () => {
+        vi.useFakeTimers();
+
+        try {
+            render(<AdminLedger {...ledgerProps(ledgerFixture)} />);
+
+            fireEvent.change(
+                screen.getByRole('searchbox', { name: 'Search the ledger' }),
+                { target: { value: 'contra' } },
+            );
+            act(() => {
+                vi.advanceTimersByTime(400);
+            });
+            expect(inertia.reload).toEqual([
+                {
+                    data: {
+                        q: 'contra',
+                        entry: undefined,
+                        limit: undefined,
+                        before: undefined,
+                    },
+                    onCancelToken: expect.any(Function),
+                },
+            ]);
+        } finally {
+            vi.useRealTimers();
+        }
     });
 
     it('pages back to older entries and returns to the newest', () => {
@@ -113,7 +143,7 @@ describe('Ledger', () => {
         );
         expect(
             screen.getByText(
-                'Nothing in Ledger matches “zzz”. This search only looks inside the current page.',
+                'Nothing in Ledger matches “zzz”. Try a shorter or different term.',
             ),
         ).toBeInTheDocument();
     });
