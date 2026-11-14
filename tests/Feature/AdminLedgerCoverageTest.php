@@ -42,7 +42,7 @@ beforeEach(function (): void {
 
             public function entries(?string $search, int $limit, ?string $before = null): array
             {
-                return ['entries' => [], 'total' => 0, 'next_before' => null];
+                return ['entries' => [], 'total' => 0, 'next_before' => null, 'newer_before' => null];
             }
 
             public function latest(int $limit): array

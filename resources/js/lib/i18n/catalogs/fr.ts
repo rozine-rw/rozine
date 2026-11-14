@@ -154,6 +154,7 @@ const fr: Catalog = {
     'auth.verify_email.submit': 'Vérifier l’e-mail',
     'auth.verify_email.resend': 'Envoyer un nouveau code',
     'auth.verify_email.log_out': 'Se déconnecter',
+    'auth.confirm_password.cancel': 'Annuler et revenir aux paramètres',
     'auth.confirm_password.head_title': 'Confirmer le mot de passe',
     'auth.confirm_password.layout_title': 'Confirmer le mot de passe',
     'auth.confirm_password.layout_description':
@@ -3368,6 +3369,7 @@ const fr: Catalog = {
     'admin.ledger.open_named': "Ouvrir l'écriture {id}",
     'admin.ledger.see_all': 'Afficher plus sur cette page ({count} au total)',
     'admin.ledger.older': 'Page suivante : écritures plus anciennes',
+    'admin.ledger.newer': 'Page précédente : écritures plus récentes',
     'admin.ledger.newest': 'Revenir aux plus récentes',
     'admin.ledger.empty': 'Aucune écriture sur cette période.',
     'admin.ledger.drawer_label': 'Écriture {id}',

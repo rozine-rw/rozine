@@ -152,6 +152,7 @@ const rw: Catalog = {
     'auth.verify_email.submit': 'Emeza imeyili',
     'auth.verify_email.resend': 'Ohereza kode nshya',
     'auth.verify_email.log_out': 'Sohoka',
+    'auth.confirm_password.cancel': 'Hagarika usubire ku igenamiterere',
     'auth.confirm_password.head_title': 'Emeza ijambobanga',
     'auth.confirm_password.layout_title': 'Emeza ijambobanga',
     'auth.confirm_password.layout_description':
@@ -3354,6 +3355,7 @@ const rw: Catalog = {
     'admin.ledger.open_named': 'Fungura icyanditswe {id}',
     'admin.ledger.see_all': 'Erekana ibindi kuri uru rupapuro ({count} byose)',
     'admin.ledger.older': 'Urupapuro rukurikira: ibyanditswe bya kera',
+    'admin.ledger.newer': 'Urupapuro rubanza: ibyanditswe bishya',
     'admin.ledger.newest': 'Subira ku bishya',
     'admin.ledger.empty': 'Nta cyanditswe muri iki gihe.',
     'admin.ledger.drawer_label': 'Icyanditswe {id}',

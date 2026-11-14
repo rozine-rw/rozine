@@ -71,8 +71,13 @@ final readonly class EloquentLedgerJournal implements LedgerJournal
         $rows = $this->select(clone $matching)->when($before !== null, fn (Builder $query) => $query->where('ledger_entries.id', '<', $before))
             ->orderByDesc('ledger_entries.id')->limit($limit + 1)->get()->all();
         $nextBefore = count($rows) > $limit ? (string) $rows[$limit - 1]->id : null;
+        // The newer page ends at `before` itself: it starts after the entry `limit` places above it, or
+        // is the newest page when there are not that many.
+        $newerBefore = $before === null ? null : (clone $matching)->where('ledger_entries.id', '>=', $before)
+            ->orderBy('ledger_entries.id')->offset($limit)->limit(1)->value('ledger_entries.id');
 
-        return ['entries' => $this->shape(array_slice($rows, 0, $limit)), 'total' => $matching->count(), 'next_before' => $nextBefore];
+        return ['entries' => $this->shape(array_slice($rows, 0, $limit)), 'total' => $matching->count(), 'next_before' => $nextBefore,
+            'newer_before' => $newerBefore === null ? null : (string) $newerBefore];
     }
 
     public function latest(int $limit): array
