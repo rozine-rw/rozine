@@ -54,6 +54,7 @@ function Row({ label, value }: { label: string; value: ReactNode }) {
  * with its fingerprint: the purpose, the terms and the 3% platform fee, the use of funds, the
  * CPA-verified figures beside the business's own forecast, management and risks. A line or month
  * backed by an uploaded quote or signed contract says so; the documents themselves stay private.
+ * Download PDF saves the same signed version as a file.
  */
 export default function InvestorProspectus({
     deal,
@@ -102,6 +103,28 @@ export default function InvestorProspectus({
                             fingerprint: prospectus.fingerprint,
                         })}
                     </p>
+                    <a
+                        href={links.pdf.url}
+                        download
+                        className="mt-3 inline-flex items-center gap-2 rounded-xl bg-rz-accent-fill px-4 py-2.5 text-[13.5px] font-semibold text-white"
+                    >
+                        <svg
+                            aria-hidden
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                        >
+                            <path
+                                d="M12 3v12M8 11l4 4 4-4M5 20h14"
+                                stroke="currentColor"
+                                strokeWidth="1.9"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
+                        </svg>
+                        {t('investor.prospectus.download')}
+                    </a>
                 </header>
 
                 <Part id="purpose" title={t('investor.prospectus.purpose')}>

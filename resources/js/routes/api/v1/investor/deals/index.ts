@@ -197,9 +197,109 @@ prospectusForm.head = (args: { campaign: string | number } | [campaign: string |
 
 prospectus.form = prospectusForm
 
+/**
+* @see \App\Http\Controllers\InvestorProspectusPdfController::__invoke
+* @see app/Http/Controllers/InvestorProspectusPdfController.php:22
+* @route '/api/v1/investor/deals/{campaign}/prospectus.pdf'
+*/
+export const prospectus_pdf = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: prospectus_pdf.url(args, options),
+    method: 'get',
+})
+
+prospectus_pdf.definition = {
+    methods: ["get","head"],
+    url: '/api/v1/investor/deals/{campaign}/prospectus.pdf',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\InvestorProspectusPdfController::__invoke
+* @see app/Http/Controllers/InvestorProspectusPdfController.php:22
+* @route '/api/v1/investor/deals/{campaign}/prospectus.pdf'
+*/
+prospectus_pdf.url = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { campaign: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            campaign: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        campaign: args.campaign,
+    }
+
+    return prospectus_pdf.definition.url
+            .replace('{campaign}', parsedArgs.campaign.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorProspectusPdfController::__invoke
+* @see app/Http/Controllers/InvestorProspectusPdfController.php:22
+* @route '/api/v1/investor/deals/{campaign}/prospectus.pdf'
+*/
+prospectus_pdf.get = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: prospectus_pdf.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorProspectusPdfController::__invoke
+* @see app/Http/Controllers/InvestorProspectusPdfController.php:22
+* @route '/api/v1/investor/deals/{campaign}/prospectus.pdf'
+*/
+prospectus_pdf.head = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: prospectus_pdf.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorProspectusPdfController::__invoke
+* @see app/Http/Controllers/InvestorProspectusPdfController.php:22
+* @route '/api/v1/investor/deals/{campaign}/prospectus.pdf'
+*/
+const prospectus_pdfForm = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: prospectus_pdf.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorProspectusPdfController::__invoke
+* @see app/Http/Controllers/InvestorProspectusPdfController.php:22
+* @route '/api/v1/investor/deals/{campaign}/prospectus.pdf'
+*/
+prospectus_pdfForm.get = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: prospectus_pdf.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorProspectusPdfController::__invoke
+* @see app/Http/Controllers/InvestorProspectusPdfController.php:22
+* @route '/api/v1/investor/deals/{campaign}/prospectus.pdf'
+*/
+prospectus_pdfForm.head = (args: { campaign: string | number } | [campaign: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: prospectus_pdf.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+prospectus_pdf.form = prospectus_pdfForm
+
 const deals = {
     show: Object.assign(show, show),
     prospectus: Object.assign(prospectus, prospectus),
+    prospectus_pdf: Object.assign(prospectus_pdf, prospectus_pdf),
 }
 
 export default deals
