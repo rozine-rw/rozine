@@ -1921,6 +1921,7 @@ const rw: Catalog = {
     'admin.search.empty_body':
         'Nta kintu muri {section} gihuye na “{term}”. Gerageza ijambo rigufi cyangwa irindi.',
     'admin.account.open': 'Konti, {name}',
+    'settings.back_to_console': 'Subira kuri konsole y’ubuyobozi',
     'admin.account.close': 'Funga urutonde rwa konti',
     'admin.account.sign_out': 'Sohoka',
     'admin.role.analyst': 'Umusesenguzi',
