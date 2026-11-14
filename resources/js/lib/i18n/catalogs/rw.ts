@@ -374,10 +374,44 @@ const rw: Catalog = {
     'business.academy.flashcards': 'Amakarita',
     'business.academy.card_progress': 'Ikarita {current} kuri {total}',
     'business.academy.show_back': 'Reba igisubizo',
-    'business.academy.show_front': 'Reba ikarita',
     'business.academy.previous': 'Ibanziriza',
-    'business.academy.next': 'Ikurikira',
     'business.academy.start_test': 'Tangira ikizamini',
+    'business.academy.stars': {
+        one: 'Inyenyeri {count}',
+        other: 'Inyenyeri {count}',
+    },
+    'business.academy.progress': 'Aho ugeze',
+    'business.academy.term': 'Ikarita',
+    'business.academy.flip_hint': 'Kanda ku ikarita kugira ngo uyihindure.',
+    'business.academy.still_learning': 'Ndacyiga',
+    'business.academy.got_it': 'Ndabyumva',
+    'business.academy.feedback.known': 'Ni byiza! +1 inyenyeri',
+    'business.academy.feedback.learning':
+        'Nta kibazo. Iyi karita izagaruka ku iherezo.',
+    'business.academy.practice_round': {
+        one: 'Subiramo: hasigaye ikarita {count}',
+        other: 'Subiramo: hasigaye amakarita {count}',
+    },
+    'business.academy.skip_to_test': 'Jya ku kizamini',
+    'business.academy.deck_done_title': 'Warangije amakarita!',
+    'business.academy.deck_done_body':
+        'Wari uzi amakarita {known} kuri {total} ubwa mbere.',
+    'business.academy.deck_done_ready':
+        'Witeguye ikizamini: ibibazo {count}, ibisubizo {pass} by’ukuri birahagije.',
+    'business.academy.deck_done_revise':
+        'Garuka kuri aya makarita igihe cyose ushaka gusubiramo.',
+    'business.academy.restart_cards': 'Ongera usubiremo amakarita',
+    'business.academy.back_to_academy': 'Subira ku Ishuri',
+    'business.academy.back_to_cards': 'Subira ku makarita',
+    'business.academy.go_to_question': 'Jya ku kibazo {current}',
+    'business.academy.next_question': 'Ikibazo gikurikira',
+    'business.academy.review_answers': 'Reba ibisubizo',
+    'business.academy.review_title': 'Genzura ibisubizo byawe',
+    'business.academy.unanswered': 'Ntikirasubizwa',
+    'business.academy.change': 'Hindura',
+    'business.academy.change_answer': 'Hindura igisubizo {current}',
+    'business.academy.ready_to_send':
+        'Byose byasubijwe. Ohereza igihe witeguye.',
     'business.academy.test_title': 'Ikizamini',
     'business.academy.test_intro':
         'Subiza ibibazo byose {count}. Ibisubizo {pass} by’ukuri birahagije.',

@@ -63,10 +63,28 @@ const props = (
 
 const button = (name: string) => screen.getByRole('button', { name });
 
-/** Turns through every card to the last one. */
-const toLastCard = async (user: ReturnType<typeof userEvent.setup>) => {
-    for (let card = 1; card < fixture.props.cards.length; card++) {
-        await user.click(button('Next'));
+/** Turns over every card and marks it known, to the deck's finish screen. */
+const throughDeck = async (user: ReturnType<typeof userEvent.setup>) => {
+    for (let card = 0; card < fixture.props.cards.length; card++) {
+        await user.click(button('Show answer'));
+        await user.click(button('Got it'));
+    }
+};
+
+/** Answers each drawn question with the option at `choice(index)`, moving on after each. */
+const answerAll = async (
+    user: ReturnType<typeof userEvent.setup>,
+    choice: (index: number) => number,
+) => {
+    for (let index = 0; index < fixture.props.test.length; index++) {
+        await user.click(screen.getAllByRole('radio')[choice(index)]);
+        await user.click(
+            button(
+                index === fixture.props.test.length - 1
+                    ? 'Review answers'
+                    : 'Next question',
+            ),
+        );
     }
 };
 
@@ -77,7 +95,7 @@ beforeEach(() => {
 });
 
 describe('Academy module', () => {
-    it('turns each flashcard over and moves between them', async () => {
+    it('turns a card over, earns a star when known and brings a missed card back at the end', async () => {
         const user = userEvent.setup();
 
         render(<BusinessAcademyModule {...props()} />);
@@ -89,38 +107,93 @@ describe('Academy module', () => {
             }),
         ).toBeInTheDocument();
         expect(screen.getByText('Card 1 of 9')).toBeInTheDocument();
-        expect(screen.getByText('Books')).toBeInTheDocument();
+        expect(screen.getByLabelText('0 stars')).toBeInTheDocument();
         expect(
             screen.queryByText(/^Your books are the record/u),
         ).not.toBeInTheDocument();
         expect(button('Previous')).toBeDisabled();
 
-        await user.click(button('Show answer'));
+        /* Tapping the card turns it over and back again. */
+        await user.click(screen.getByRole('button', { expanded: false }));
         expect(
             screen.getByText(/^Your books are the record/u),
         ).toBeInTheDocument();
-        await user.click(button('Show card'));
+        await user.click(screen.getByRole('button', { expanded: true }));
         expect(
             screen.queryByText(/^Your books are the record/u),
         ).not.toBeInTheDocument();
 
-        await user.click(button('Next'));
-        expect(screen.getByText('Card 2 of 9')).toBeInTheDocument();
         await user.click(button('Show answer'));
+        await user.click(button('Got it'));
+        expect(screen.getByText('Card 2 of 9')).toBeInTheDocument();
+        expect(screen.getByLabelText('1 star')).toBeInTheDocument();
+        expect(screen.getByText('Nice one! +1 star')).toBeInTheDocument();
+
+        /* Going back takes the star of that card away until it is marked again. */
         await user.click(button('Previous'));
         expect(screen.getByText('Card 1 of 9')).toBeInTheDocument();
-        expect(button('Show answer')).toBeInTheDocument();
+        expect(screen.getByLabelText('0 stars')).toBeInTheDocument();
+        await user.click(button('Show answer'));
+        await user.click(button('Got it'));
+
+        await user.click(button('Show answer'));
+        await user.click(button('Still learning'));
+        expect(
+            screen.getByText('No problem. This card comes back at the end.'),
+        ).toBeInTheDocument();
+
+        for (let card = 3; card <= 9; card++) {
+            expect(screen.getByText(`Card ${card} of 9`)).toBeInTheDocument();
+            await user.click(button('Show answer'));
+            await user.click(button('Got it'));
+        }
+
+        expect(
+            screen.getByText('Practice again: 1 card to go'),
+        ).toBeInTheDocument();
+        expect(screen.getByText('Same day')).toBeInTheDocument();
+        await user.click(button('Show answer'));
+        await user.click(button('Still learning'));
+        expect(
+            screen.getByText('Practice again: 1 card to go'),
+        ).toBeInTheDocument();
+        await user.click(button('Show answer'));
+        await user.click(button('Got it'));
+
+        expect(
+            screen.getByRole('heading', { name: 'Deck complete!' }),
+        ).toBeInTheDocument();
+        expect(screen.getByLabelText('9 stars')).toBeInTheDocument();
+        expect(
+            screen.getByText('You knew 8 of 9 cards on the first try.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'You are ready for the test: 10 questions, 8 correct answers pass.',
+            ),
+        ).toBeInTheDocument();
         expect(screen.queryByRole('status')).not.toBeInTheDocument();
+
+        await user.click(button('Go through the cards again'));
+        expect(screen.getByText('Card 1 of 9')).toBeInTheDocument();
+        expect(screen.getByLabelText('0 stars')).toBeInTheDocument();
     });
 
-    it('opens the test after the last card and sends every answer once, for its attempt', async () => {
+    it('lets a learner skip the cards to an open test and come back to them', async () => {
         const user = userEvent.setup();
 
         render(<BusinessAcademyModule {...props()} />);
-        expect(
-            screen.queryByRole('button', { name: 'Start the test' }),
-        ).not.toBeInTheDocument();
-        await toLastCard(user);
+        await user.click(button('Skip to the test'));
+        expect(screen.getByRole('form', { name: 'Test' })).toBeInTheDocument();
+        await user.click(button('Back to the cards'));
+        expect(screen.getByText('Card 1 of 9')).toBeInTheDocument();
+    });
+
+    it('opens the test after the deck, one question at a time, and sends every answer once, for its attempt', async () => {
+        const user = userEvent.setup();
+
+        render(<BusinessAcademyModule {...props()} />);
+        await throughDeck(user);
         await user.click(button('Start the test'));
 
         const test = screen.getByRole('form', { name: 'Test' });
@@ -130,27 +203,28 @@ describe('Academy module', () => {
                 'Answer all 10 questions. 8 correct answers pass.',
             ),
         ).toBeInTheDocument();
+        expect(within(test).getAllByRole('group')).toHaveLength(1);
+        expect(within(test).getByText('Question 1 of 10')).toBeInTheDocument();
+        expect(button('Previous')).toBeDisabled();
+        expect(button('Next question')).toBeDisabled();
+
+        await answerAll(user, () => 0);
         expect(
-            within(test).getByText('10 questions left to answer.'),
+            screen.getByRole('heading', { name: 'Check your answers' }),
         ).toBeInTheDocument();
-        expect(button('Send answers')).toBeDisabled();
-
-        const groups = within(test).getAllByRole('group');
-
-        expect(groups).toHaveLength(10);
-
-        for (const group of groups.slice(0, 9)) {
-            await user.click(within(group).getAllByRole('radio')[0]);
-        }
-
         expect(
-            within(test).getByText('1 question left to answer.'),
+            screen.getByText('All answered. Send when you are ready.'),
         ).toBeInTheDocument();
-        await user.click(within(groups[9]).getAllByRole('radio')[1]);
-        await user.click(within(groups[9]).getAllByRole('radio')[2]);
-        expect(
-            within(test).queryByText(/left to answer/u),
-        ).not.toBeInTheDocument();
+
+        /* Changing the last answer from the check goes back to that question. */
+        await user.click(button('Change answer 10'));
+        expect(screen.getByText('Question 10 of 10')).toBeInTheDocument();
+        await user.click(screen.getAllByRole('radio')[1]);
+        await user.click(screen.getAllByRole('radio')[2]);
+        await user.click(button('Previous'));
+        expect(screen.getByText('Question 9 of 10')).toBeInTheDocument();
+        await user.click(button('Go to question 10'));
+        await user.click(button('Review answers'));
         await user.click(button('Send answers'));
 
         const drawn = fixture.props.test;
@@ -174,6 +248,22 @@ describe('Academy module', () => {
         expect(inertia.posts[0].data.request_id).toMatch(/^[0-9a-f-]{36}$/u);
     });
 
+    it('holds the send until every question is answered', async () => {
+        const user = userEvent.setup();
+
+        render(<BusinessAcademyModule {...props()} />);
+        await user.click(button('Skip to the test'));
+        await user.click(button('Go to question 10'));
+        await user.click(screen.getAllByRole('radio')[0]);
+        await user.click(button('Review answers'));
+
+        expect(
+            screen.getByText('9 questions left to answer.'),
+        ).toBeInTheDocument();
+        expect(screen.getAllByText('Not answered yet')).toHaveLength(9);
+        expect(button('Send answers')).toBeDisabled();
+    });
+
     it('marks a refused answer and the form, and shows the send in progress', async () => {
         const question = fixture.props.test[0].id;
 
@@ -185,7 +275,7 @@ describe('Academy module', () => {
         const user = userEvent.setup();
 
         render(<BusinessAcademyModule {...props()} />);
-        await toLastCard(user);
+        await throughDeck(user);
         await user.click(button('Start the test'));
 
         expect(screen.getByText('Choose one answer.')).toBeInTheDocument();
@@ -194,6 +284,8 @@ describe('Academy module', () => {
                 'This test was already answered. Reload the page for your next attempt.',
             ),
         ).toBeInTheDocument();
+        await answerAll(user, () => 0);
+        expect(screen.getByText('Choose one answer.')).toBeInTheDocument();
         expect(button('Sending…')).toHaveAttribute('aria-busy', 'true');
     });
 
@@ -225,10 +317,21 @@ describe('Academy module', () => {
         expect(screen.getByRole('status')).toHaveTextContent(
             /^Not passed: 6 of 10\. The test reopens on .+ with new questions\.$/u,
         );
-        await toLastCard(user);
+        expect(
+            screen.queryByRole('button', { name: 'Skip to the test' }),
+        ).not.toBeInTheDocument();
+        await throughDeck(user);
         expect(
             screen.queryByRole('button', { name: 'Start the test' }),
         ).not.toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Come back to these cards whenever you want a refresher.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: 'Back to the Academy' }),
+        ).toHaveAttribute('href', '/preview/business-academy');
     });
 
     it('offers the next test straight after a failed one has reopened', () => {
