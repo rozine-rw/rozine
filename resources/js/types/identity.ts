@@ -48,6 +48,16 @@ export type RoleAccessOffer = {
     requestable: RequestableRole[];
     /** Empty roles are left out (an empty map arrives as `[]`). */
     sent: Partial<Record<RequestableRole, string>>;
+    /**
+     * Why a role that is neither requestable nor sent cannot be asked for (#622). Empty roles are
+     * left out (an empty map arrives as `[]`).
+     */
+    unavailable: Partial<
+        Record<
+            RequestableRole,
+            'ROLE_ON_RECORD' | 'AUDITOR_ONLY_ROLE' | 'AUDITOR_ACCOUNT'
+        >
+    >;
     link: { url: string; method: 'post' };
 };
 
