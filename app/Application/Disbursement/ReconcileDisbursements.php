@@ -22,7 +22,7 @@ final class ReconcileDisbursements
     /** @return array{queried: int, observed: int, decisions: array<string, int>} */
     public function handle(?string $intentId = null, int $limit = 25): array
     {
-        $this->guard->assertAllowed();
+        $this->guard->assertProviderAllowed();
         if ($this->store->transactionOpen()) {
             throw new LogicException('DISBURSEMENT_RECONCILE_TRANSACTION_OPEN: a provider is asked only outside every transaction.');
         }

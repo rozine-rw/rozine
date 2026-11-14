@@ -139,12 +139,13 @@ it('declines a staging deposit paid from the declining test number and credits n
         ->and(app(GetInvestorWallet::class)->handle($tester['user']->id, 1)['wallet']['total']['amount'])->toBe('0');
 });
 
-it('refuses a new Business deposit on UAT and still settles one accepted before, through the Business provider path', function (): void {
+it('refuses a new Business deposit on UAT while its money simulation is off and still settles one accepted before, through the Business provider path', function (): void {
     $business = stagingBusiness();
     $this->actingAs($business['user'])->postJson(route('business.wallet.deposit', $business['business']->id), stagingDeposit($business['method'], '30000'))->assertOk();
     expect(app(GetBusinessWallet::class)->handle($business['user']->id, 1, $business['business']->id)['allowed_actions'])->toBe(['business.wallet.deposit', 'business.wallet.withdraw']);
 
     asStaging();
+    config(['app.uat_money_simulation' => false]);
     $this->postJson(route('business.wallet.deposit', $business['business']->id), stagingDeposit($business['method'], '40000'))
         ->assertForbidden()->assertJsonPath('code', 'SYNTHETIC_BUSINESS_FUNDING_OFF');
     $this->postJson(route('business.wallet.withdraw', $business['business']->id), stagingDeposit($business['method'], '1000'))
@@ -156,6 +157,21 @@ it('refuses a new Business deposit on UAT and still settles one accepted before,
         ->and(BusinessProviderEvent::query()->sole()->only(['state', 'disposition', 'environment', 'amount']))
         ->toBe(['state' => 'succeeded', 'disposition' => 'applied', 'environment' => 'uat', 'amount' => '30000'])
         ->and(BusinessDepositCredit::query()->count())->toBe(1)->and(WalletProviderEvent::query()->count())->toBe(0);
+});
+
+it('lets a Business deposit and withdraw on UAT while its money simulation is on, so it can repay a raise', function (): void {
+    $business = stagingBusiness();
+    asStaging();
+    expect(config('app.uat_money_simulation'))->toBeTrue();
+
+    $this->actingAs($business['user'])->postJson(route('business.wallet.deposit', $business['business']->id), stagingDeposit($business['method'], '40000'))->assertOk();
+    expect(app(GetBusinessWallet::class)->handle($business['user']->id, 1, $business['business']->id)['allowed_actions'])->toBe(['business.wallet.deposit', 'business.wallet.withdraw'])
+        ->and(BusinessDepositIntent::query()->count())->toBe(1);
+
+    expect(Artisan::call('wallet:dispatch-deposits'))->toBe(0)
+        ->and(BusinessProviderEvent::query()->sole()->only(['state', 'disposition', 'environment', 'amount']))
+        ->toBe(['state' => 'succeeded', 'disposition' => 'applied', 'environment' => 'uat', 'amount' => '40000'])
+        ->and(BusinessDepositCredit::query()->count())->toBe(1);
 });
 
 it('leaves local and testing deposits to the manual event hook', function (): void {

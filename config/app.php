@@ -45,6 +45,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | UAT Money Simulation
+    |--------------------------------------------------------------------------
+    |
+    | Staging only (the `uat` profile with live money off; ignored everywhere
+    | else). Simulates money after funding so testers can run disbursement,
+    | repayments, Investor payouts and resale end to end with synthetic
+    | accounts. Resale is open while it is on. Erastus, 14 Nov 2026.
+    |
+    */
+
+    'uat_money_simulation' => (bool) env('UAT_MONEY_SIMULATION', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Debug Mode
     |--------------------------------------------------------------------------
     |
