@@ -117,18 +117,39 @@ it('pages back from the last row shown, keeping the search, and returns to the n
     $last = $newest['entries'][1]['id'];
     expect(array_column(array_column($newest['entries'], 'amount'), 'amount'))->toBe(['40000', '30000'])
         ->and($newest['older'])->toBe(['url' => '/admin/ledger?q=aline&limit=2&before='.$last, 'method' => 'get'])
-        ->and($newest['newest'])->toBeNull();
+        ->and($newest['newest'])->toBeNull()->and($newest['newer'])->toBeNull();
 
     $older = ($this->page)($staff, ['q' => 'aline', 'limit' => 2, 'before' => $last]);
     $oldest = $older['entries'][0]['id'];
     expect(array_column(array_column($older['entries'], 'amount'), 'amount'))->toBe(['20000'])
         ->and($older['total'])->toBe(3)->and($older['older'])->toBeNull()->and($older['more'])->toBeNull()
-        ->and($older['newest'])->toBe(['url' => '/admin/ledger?q=aline&limit=2', 'method' => 'get'])
+        ->and($older['newer'])->toBe(['url' => '/admin/ledger?q=aline&limit=2', 'method' => 'get'])
+        ->and($older['newest'])->toBeNull()
         ->and($older['entries'][0]['link']['url'])->toBe('/admin/ledger?q=aline&limit=2&before='.$last.'&entry='.$oldest)
         ->and(($this->page)($staff, ['q' => 'aline', 'limit' => 2, 'before' => $last, 'entry' => $oldest])['entry']['links']['close'])
         ->toBe(['url' => '/admin/ledger?q=aline&limit=2&before='.$last, 'method' => 'get']);
 
     $this->actingAs($staff)->get(route('staff.ledger.index', ['before' => 'nope']))->assertSessionHasErrors('before');
+});
+
+it('steps forward one page at a time from deep in the ledger, and back to the newest (#623)', function (): void {
+    foreach (['10000', '20000', '30000', '40000', '50000'] as $amount) {
+        ($this->deposit)($amount);
+    }
+    $staff = ledgerStaff(['treasury']);
+    $amounts = fn (array $page): array => array_column(array_column($page['entries'], 'amount'), 'amount');
+
+    $first = ($this->page)($staff, ['q' => 'aline', 'limit' => 2]);
+    $second = ($this->page)($staff, ['q' => 'aline', 'limit' => 2, 'before' => $first['entries'][1]['id']]);
+    $third = ($this->page)($staff, ['q' => 'aline', 'limit' => 2, 'before' => $second['entries'][1]['id']]);
+    expect($amounts($third))->toBe(['10000'])
+        ->and($third['newer'])->toBe(['url' => '/admin/ledger?q=aline&limit=2&before='.$first['entries'][1]['id'], 'method' => 'get'])
+        ->and($third['newest'])->toBe(['url' => '/admin/ledger?q=aline&limit=2', 'method' => 'get']);
+
+    $back = ($this->page)($staff, ['q' => 'aline', 'limit' => 2, 'before' => $first['entries'][1]['id']]);
+    expect($amounts($back))->toBe($amounts($second))->toBe(['30000', '20000'])
+        ->and($back['newer'])->toBe(['url' => '/admin/ledger?q=aline&limit=2', 'method' => 'get'])
+        ->and($back['newest'])->toBeNull();
 });
 
 it('names an owner, account or kind it does not know plainly', function (): void {
@@ -137,7 +158,7 @@ it('names an owner, account or kind it does not know plainly', function (): void
         'account_id' => '01k0000000000000000000abcd', 'account_kind' => $kind, 'owner' => $owner, 'owner_name' => $name];
     $entry = ['id' => '01k00000000000000000000001', 'kind' => 'future_kind', 'at' => '2027-01-22T08:00:00+00:00', 'reference' => null, 'operation_id' => null,
         'lines' => [$line('debit', '700', 'business_available', 'business', null), $line('debit', '300', 'future_account', null, null)]];
-    $props = (new StaffLedgerResource(['entries' => [$entry], 'total' => 1, 'next_before' => null, 'entry' => [...$entry, 'origin' => null], 'search' => '',
+    $props = (new StaffLedgerResource(['entries' => [$entry], 'total' => 1, 'next_before' => null, 'newer_before' => null, 'entry' => [...$entry, 'origin' => null], 'search' => '',
         'limit' => 50, 'before' => null, 'roles' => ['treasury'], 'permissions' => ['ledger.view']]))->resolve($request);
 
     expect($props['entries'][0])->toMatchArray(['kind' => 'investment', 'from' => 'Business · available', 'to' => '—', 'reference' => $entry['id'],

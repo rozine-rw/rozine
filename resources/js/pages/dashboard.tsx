@@ -388,7 +388,10 @@ export default function Launcher({
                                                     <div className={CARD}>
                                                         <AppCardBody
                                                             role={role}
-                                                            summary={`suite.app.${role}.description`}
+                                                            summary={unavailableSummary(
+                                                                role,
+                                                                accessOffer,
+                                                            )}
                                                             action="suite.app.unavailable"
                                                         />
                                                     </div>
@@ -506,6 +509,45 @@ export default function Launcher({
     );
 }
 
+const UNAVAILABLE_REASON = {
+    business: {
+        ROLE_ON_RECORD: 'suite.app.unavailable_reason.business_on_record',
+        AUDITOR_ACCOUNT: 'suite.app.unavailable_reason.auditor_account',
+    },
+    auditor: {
+        ROLE_ON_RECORD: 'suite.app.unavailable_reason.auditor_on_record',
+        AUDITOR_ONLY_ROLE: 'suite.app.unavailable_reason.auditor_only_role',
+    },
+} as const;
+
+type UnavailableSummary = {
+    [
+        Role in RequestableRole
+    ]: (typeof UNAVAILABLE_REASON)[Role][keyof (typeof UNAVAILABLE_REASON)[Role]];
+}[RequestableRole];
+
+/**
+ * What a card the person cannot open or ask for says (#622): why, when the launcher knows (an
+ * Auditor keeps no other role, or the role is already on record with staff), else what it does.
+ */
+function unavailableSummary(
+    role: RoleApp,
+    offer: RoleAccessOffer | null,
+): `suite.app.${RoleApp}.description` | UnavailableSummary {
+    if (role === 'investor') {
+        return 'suite.app.investor.description';
+    }
+
+    const reasons: Partial<Record<string, UnavailableSummary>> =
+        UNAVAILABLE_REASON[role];
+    const reason = offer?.unavailable[role];
+
+    return (
+        (reason === undefined ? undefined : reasons[reason]) ??
+        `suite.app.${role}.description`
+    );
+}
+
 function AppCardBody({
     role,
     summary,
@@ -514,6 +556,7 @@ function AppCardBody({
     role: RoleApp;
     summary:
         | `suite.app.${RoleApp}.description`
+        | UnavailableSummary
         | 'suite.app.investor.preview'
         | 'suite.app.investor.add'
         | 'suite.app.request_sent_summary';

@@ -379,6 +379,8 @@ export function AdminFrame({
     const [accountOpen, setAccountOpen] = useState(false);
     useReconnectRefresh();
     const title = t(`admin.section.${section}.title`);
+    /** The sidebar entry this page sits under, named before its title (#623). */
+    const parent = LIT_BY[section];
 
     const runSearch = (
         q: string,
@@ -565,6 +567,15 @@ export function AdminFrame({
                                     />
                                 </svg>
                             </button>
+                            {parent && (
+                                <span
+                                    data-testid="frame-parent"
+                                    className="shrink-0 text-[13px] font-semibold text-rz-muted"
+                                >
+                                    {t(`admin.nav.${parent}`)}
+                                    <span aria-hidden> ›</span>
+                                </span>
+                            )}
                             <h1 className="truncate text-[15px] font-bold tracking-[-.01em] text-rz-ink">
                                 {title}
                             </h1>

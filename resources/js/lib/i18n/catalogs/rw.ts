@@ -152,6 +152,7 @@ const rw: Catalog = {
     'auth.verify_email.submit': 'Emeza imeyili',
     'auth.verify_email.resend': 'Ohereza kode nshya',
     'auth.verify_email.log_out': 'Sohoka',
+    'auth.confirm_password.cancel': 'Hagarika usubire ku igenamiterere',
     'auth.confirm_password.head_title': 'Emeza ijambobanga',
     'auth.confirm_password.layout_title': 'Emeza ijambobanga',
     'auth.confirm_password.layout_description':
@@ -189,6 +190,14 @@ const rw: Catalog = {
     'suite.app.request_sent_summary':
         'Abakozi ba Rozine bakiriye ubusabe bwawe kandi bazakuvugisha.',
     'suite.app.verify_first': 'Banza wemeze umwirondoro wawe →',
+    'suite.app.unavailable_reason.business_on_record':
+        'Uburenganzira bwawe bwa Sosiyete busanzwe bwanditswe muri Rozine. Vugana n’ubufasha bwa Rozine kugira ngo buhindurwe.',
+    'suite.app.unavailable_reason.auditor_account':
+        'Abagenzuzi ntibashobora kugira urundi ruhare muri Rozine, bityo iyi konti y’Umugenzuzi ntishobora gusaba uburenganzira bwa Sosiyete.',
+    'suite.app.unavailable_reason.auditor_on_record':
+        'Uburenganzira bwawe bw’Umugenzuzi busanzwe bwanditswe muri Rozine. Vugana n’ubufasha bwa Rozine kugira ngo buhindurwe.',
+    'suite.app.unavailable_reason.auditor_only_role':
+        'Abagenzuzi ntibashobora kugira urundi ruhare muri Rozine, bityo iyi konti ntishobora gusaba uburenganzira bw’Umugenzuzi.',
     'suite.app.unavailable': 'Ntibishoboka n’uburenganzira ufite ubu',
     'suite.request_access.business.title': 'Saba uburenganzira bwa Sosiyete',
     'suite.request_access.business.body':
@@ -3346,6 +3355,7 @@ const rw: Catalog = {
     'admin.ledger.open_named': 'Fungura icyanditswe {id}',
     'admin.ledger.see_all': 'Erekana ibindi kuri uru rupapuro ({count} byose)',
     'admin.ledger.older': 'Urupapuro rukurikira: ibyanditswe bya kera',
+    'admin.ledger.newer': 'Urupapuro rubanza: ibyanditswe bishya',
     'admin.ledger.newest': 'Subira ku bishya',
     'admin.ledger.empty': 'Nta cyanditswe muri iki gihe.',
     'admin.ledger.drawer_label': 'Icyanditswe {id}',

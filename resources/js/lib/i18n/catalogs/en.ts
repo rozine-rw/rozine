@@ -151,6 +151,7 @@ const en = {
     'auth.verify_email.submit': 'Verify email',
     'auth.verify_email.resend': 'Send a new code',
     'auth.verify_email.log_out': 'Log out',
+    'auth.confirm_password.cancel': 'Cancel and go back to settings',
     'auth.confirm_password.head_title': 'Confirm password',
     'auth.confirm_password.layout_title': 'Confirm password',
     'auth.confirm_password.layout_description':
@@ -186,6 +187,14 @@ const en = {
     'suite.app.request_sent_summary':
         'Rozine staff have your request and will contact you.',
     'suite.app.verify_first': 'Verify your identity first →',
+    'suite.app.unavailable_reason.business_on_record':
+        'Your Business access is already on record with Rozine. Contact Rozine support to change it.',
+    'suite.app.unavailable_reason.auditor_account':
+        'Audit Partners can’t hold another Rozine role, so this Auditor account can’t ask for Business access.',
+    'suite.app.unavailable_reason.auditor_on_record':
+        'Your Auditor access is already on record with Rozine. Contact Rozine support to change it.',
+    'suite.app.unavailable_reason.auditor_only_role':
+        'Audit Partners can’t hold another Rozine role, so this account can’t ask for Auditor access.',
     'suite.app.unavailable': 'Not available with your current access',
     'suite.request_access.business.title': 'Request Business access',
     'suite.request_access.business.body':
@@ -3204,6 +3213,7 @@ const en = {
     'admin.ledger.open_named': 'Open entry {id}',
     'admin.ledger.see_all': 'Show more on this page ({count} in all)',
     'admin.ledger.older': 'Next page: older entries',
+    'admin.ledger.newer': 'Previous page: newer entries',
     'admin.ledger.newest': 'Back to the newest',
     'admin.ledger.empty': 'No ledger entries in this range.',
     'admin.ledger.drawer_label': 'Ledger entry {id}',

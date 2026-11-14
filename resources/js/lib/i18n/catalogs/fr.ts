@@ -154,6 +154,7 @@ const fr: Catalog = {
     'auth.verify_email.submit': 'Vérifier l’e-mail',
     'auth.verify_email.resend': 'Envoyer un nouveau code',
     'auth.verify_email.log_out': 'Se déconnecter',
+    'auth.confirm_password.cancel': 'Annuler et revenir aux paramètres',
     'auth.confirm_password.head_title': 'Confirmer le mot de passe',
     'auth.confirm_password.layout_title': 'Confirmer le mot de passe',
     'auth.confirm_password.layout_description':
@@ -193,6 +194,14 @@ const fr: Catalog = {
     'suite.app.request_sent_summary':
         'L’équipe Rozine a reçu votre demande et vous contactera.',
     'suite.app.verify_first': 'Vérifiez d’abord votre identité →',
+    'suite.app.unavailable_reason.business_on_record':
+        'Votre accès Entreprise est déjà enregistré chez Rozine. Contactez le support Rozine pour le modifier.',
+    'suite.app.unavailable_reason.auditor_account':
+        'Les auditeurs partenaires ne peuvent pas avoir un autre rôle Rozine : ce compte Auditeur ne peut donc pas demander l’accès Entreprise.',
+    'suite.app.unavailable_reason.auditor_on_record':
+        'Votre accès Auditeur est déjà enregistré chez Rozine. Contactez le support Rozine pour le modifier.',
+    'suite.app.unavailable_reason.auditor_only_role':
+        'Les auditeurs partenaires ne peuvent pas avoir un autre rôle Rozine : ce compte ne peut donc pas demander l’accès Auditeur.',
     'suite.app.unavailable': 'Indisponible avec votre accès actuel',
     'suite.request_access.business.title': 'Demander l’accès Entreprise',
     'suite.request_access.business.body':
@@ -3360,6 +3369,7 @@ const fr: Catalog = {
     'admin.ledger.open_named': "Ouvrir l'écriture {id}",
     'admin.ledger.see_all': 'Afficher plus sur cette page ({count} au total)',
     'admin.ledger.older': 'Page suivante : écritures plus anciennes',
+    'admin.ledger.newer': 'Page précédente : écritures plus récentes',
     'admin.ledger.newest': 'Revenir aux plus récentes',
     'admin.ledger.empty': 'Aucune écriture sur cette période.',
     'admin.ledger.drawer_label': 'Écriture {id}',

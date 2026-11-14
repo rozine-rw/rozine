@@ -31,9 +31,10 @@ final readonly class RequestRoleAccess
 
     /**
      * What the launcher shows for each role the person does not hold: the roles they may ask for,
-     * and when they already asked.
+     * when they already asked, and why the others cannot be asked for (#622).
      *
-     * @return array{requestable: list<'business'|'auditor'>, sent: array<'business'|'auditor', string>}
+     * @return array{requestable: list<'business'|'auditor'>, sent: array<'business'|'auditor', string>,
+     *     unavailable: array<'business'|'auditor', 'ROLE_ON_RECORD'|'AUDITOR_ONLY_ROLE'|'AUDITOR_ACCOUNT'>}
      */
     public function offer(int $userId): array
     {
@@ -41,10 +42,12 @@ final readonly class RequestRoleAccess
         $party = $identity['party'];
         $access = $this->roles->evaluate($identity['email_verified'], $party['kind'] ?? null, $party['verified'] ?? false, $identity['memberships']);
         $sent = $this->requests->sent($userId);
-        $requestable = in_array($access['code'], ['IDENTITY_READY', 'ROLE_MEMBERSHIP_REQUIRED'], true)
+        $ready = in_array($access['code'], ['IDENTITY_READY', 'ROLE_MEMBERSHIP_REQUIRED'], true);
+        $requestable = $ready
             ? array_values(array_filter($this->roles->requestable($identity['memberships']), fn (string $role): bool => ! isset($sent[$role])))
             : [];
 
-        return ['requestable' => $requestable, 'sent' => $sent];
+        return ['requestable' => $requestable, 'sent' => $sent,
+            'unavailable' => $ready ? array_diff_key($this->roles->unavailableReasons($identity['memberships']), $sent) : []];
     }
 }
