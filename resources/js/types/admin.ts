@@ -1148,7 +1148,9 @@ export type AdminLedgerProps = AdminShellProps & {
     more: RouteLink | null;
     /** The next older page, after the last row shown; null on the last page. */
     older: RouteLink | null;
-    /** Back to the newest page; null while on it. */
+    /** One page toward the newest (#623); null on the newest page. */
+    newer: RouteLink | null;
+    /** Back to the newest page, when that is more than one page away; null otherwise. */
     newest: RouteLink | null;
     entry: LedgerEntryDetail | null;
 };

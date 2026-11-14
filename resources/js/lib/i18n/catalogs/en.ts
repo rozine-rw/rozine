@@ -151,6 +151,7 @@ const en = {
     'auth.verify_email.submit': 'Verify email',
     'auth.verify_email.resend': 'Send a new code',
     'auth.verify_email.log_out': 'Log out',
+    'auth.confirm_password.cancel': 'Cancel and go back to settings',
     'auth.confirm_password.head_title': 'Confirm password',
     'auth.confirm_password.layout_title': 'Confirm password',
     'auth.confirm_password.layout_description':
@@ -3204,6 +3205,7 @@ const en = {
     'admin.ledger.open_named': 'Open entry {id}',
     'admin.ledger.see_all': 'Show more on this page ({count} in all)',
     'admin.ledger.older': 'Next page: older entries',
+    'admin.ledger.newer': 'Previous page: newer entries',
     'admin.ledger.newest': 'Back to the newest',
     'admin.ledger.empty': 'No ledger entries in this range.',
     'admin.ledger.drawer_label': 'Ledger entry {id}',

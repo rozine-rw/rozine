@@ -63,8 +63,9 @@ class HandleInertiaRequests extends Middleware
             'checkout_holds' => Inertia::always(fn (): ?array => $this->checkoutHolds($request)),
             // KYC-R05: the risk statements still to acknowledge, asked once at app open, never inside checkout.
             'risk_acknowledgement' => fn (): ?array => $this->riskAcknowledgement($request),
-            // Account settings sit outside the console (#618), so staff get their way back to it there.
-            'staff_console' => fn (): ?array => $request->routeIs('profile.edit', 'security.edit', 'appearance.edit') && $this->opensConsole($request)
+            // Account settings sit outside the console (#618), so staff get their way back to it there, and on the
+            // password check in front of Security (#623).
+            'staff_console' => fn (): ?array => $request->routeIs('profile.edit', 'security.edit', 'appearance.edit', 'password.confirm') && $this->opensConsole($request)
                 ? ['url' => route('staff.dashboard', [], false), 'method' => 'get'] : null,
             'nonLiveEnvironment' => Inertia::always(fn (): ?string => app(EnvironmentIsolation::class)->isIsolated()
                 ? app(EnvironmentIsolation::class)->profile()
