@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\StaffFixture;
+use Tests\TestCase;
 
 /*
  * Business and Auditor access are asked for on the launcher's own cards (#616), not by email: a
@@ -51,7 +52,9 @@ function accessRequest(array $overrides = []): array
 function launcherAccess(User $user): array
 {
     $props = [];
-    test()->actingAs($user)->get(route('dashboard'))->assertOk()->assertInertia(function (Assert $page) use (&$props): void {
+    /** @var TestCase $test */
+    $test = test();
+    $test->actingAs($user)->get(route('dashboard'))->assertOk()->assertInertia(function (Assert $page) use (&$props): void {
         $props = $page->toArray()['props']['access_requests'];
     });
 
