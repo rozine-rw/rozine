@@ -80,6 +80,10 @@ class StaffNavigationResource extends JsonResource
             'risk' => $links['exceptions'] ?? $pendingPage('risk'), 'compliance' => $compliance,
             'messaging' => in_array('messaging.view', $permissions, true)
                 ? ['url' => route($prefix.'staff.messaging.index', [], false), 'method' => 'get'] : $pendingPage('messaging'),
-            'repayments' => null, 'mail_testers' => $mailTesters];
+            'repayments' => null, 'mail_testers' => $mailTesters,
+            // Business and Auditor access requests (#616), for whoever may act on either kind (the
+            // permissions BrowseRoleAccessRequests checks).
+            'access_requests' => $prefix === '' && array_intersect(['businesses.verify', 'audit.partners.verify'], $permissions) !== []
+                ? ['url' => route('staff.access-requests.index', [], false), 'method' => 'get'] : null];
     }
 }
