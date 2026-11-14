@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\StaffFixture;
-use Tests\TestCase;
 
 /*
  * Business and Auditor access are asked for on the launcher's own cards (#616), not by email: a
@@ -21,6 +20,15 @@ use Tests\TestCase;
 
 beforeEach(function (): void {
     $this->withoutVite();
+    /** What the launcher offers this person to ask for. */
+    $this->launcherAccess = function (User $user): array {
+        $props = [];
+        $this->actingAs($user)->get(route('dashboard'))->assertOk()->assertInertia(function (Assert $page) use (&$props): void {
+            $props = $page->toArray()['props']['access_requests'];
+        });
+
+        return $props;
+    };
 });
 
 /**
@@ -48,25 +56,12 @@ function accessRequest(array $overrides = []): array
         'phone' => '+250 788 000 000', 'note' => 'Coffee washing station', ...$overrides];
 }
 
-/** @return array<string, mixed> */
-function launcherAccess(User $user): array
-{
-    $props = [];
-    /** @var TestCase $test */
-    $test = test();
-    $test->actingAs($user)->get(route('dashboard'))->assertOk()->assertInertia(function (Assert $page) use (&$props): void {
-        $props = $page->toArray()['props']['access_requests'];
-    });
-
-    return $props;
-}
-
 it('sends Business access from the launcher once, shows it as sent, and replays the same request', function (): void {
     $user = accessRequester();
     $link = ['url' => '/identity/access-requests', 'method' => 'post'];
 
-    expect(launcherAccess($user))->toBe(['requestable' => ['business'], 'sent' => [], 'link' => $link])
-        ->and(launcherAccess(accessRequester([]))['requestable'])->toBe(['business', 'auditor']);
+    expect(($this->launcherAccess)($user))->toBe(['requestable' => ['business'], 'sent' => [], 'link' => $link])
+        ->and(($this->launcherAccess)(accessRequester([]))['requestable'])->toBe(['business', 'auditor']);
     $this->actingAs($user);
 
     $command = accessRequest();
@@ -76,7 +71,7 @@ it('sends Business access from the launcher once, shows it as sent, and replays 
     $row = RoleAccessRequest::query()->sole();
     expect($row->only(['party_id', 'role', 'organization', 'reference', 'phone', 'note']))->toBe(['party_id' => $user->party_id, 'role' => 'business',
         'organization' => 'Kivu Harvest Ltd', 'reference' => null, 'phone' => '+250 788 000 000', 'note' => 'Coffee washing station'])
-        ->and(launcherAccess($user))->toBe(['requestable' => [], 'sent' => ['business' => $row->created_at->toIso8601String()], 'link' => $link]);
+        ->and(($this->launcherAccess)($user))->toBe(['requestable' => [], 'sent' => ['business' => $row->created_at->toIso8601String()], 'link' => $link]);
 
     $this->post(route('identity.access-requests.store'), accessRequest())
         ->assertSessionHasErrors(['role' => 'You already asked for this access. Rozine will contact you.']);
@@ -104,7 +99,7 @@ it('asks an Auditor for the ICPAR licence and a Business for its name, and check
 it('offers nothing to ask for and refuses a request outside the roles a person may still ask for', function (array $memberships, bool $verified, string $role, array $requestable): void {
     $user = accessRequester($memberships, $verified);
 
-    expect(launcherAccess($user)['requestable'])->toBe($requestable);
+    expect(($this->launcherAccess)($user)['requestable'])->toBe($requestable);
     $this->post(route('identity.access-requests.store'), accessRequest(['role' => $role, 'reference' => 'ICPAR-1']))
         ->assertSessionHasErrors(['role' => "This access can't be requested from your account. Refresh the page to see your apps."]);
     expect(RoleAccessRequest::query()->exists())->toBeFalse();
@@ -119,7 +114,7 @@ it('offers nothing to ask for and refuses a request outside the roles a person m
 it('refuses a signed-in account with no Party, which has nothing to ask for', function (): void {
     $user = User::factory()->create();
 
-    expect(launcherAccess($user))->toMatchArray(['requestable' => [], 'sent' => []]);
+    expect(($this->launcherAccess)($user))->toMatchArray(['requestable' => [], 'sent' => []]);
     $this->post(route('identity.access-requests.store'), accessRequest())->assertSessionHasErrors('role');
 });
 
