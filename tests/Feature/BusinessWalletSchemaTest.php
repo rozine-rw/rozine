@@ -116,13 +116,13 @@ it('derives an owner for exactly the wallet kinds every ledger constraint admits
     $entryOwners = collect($entries)->mapWithKeys(fn (string $kind): array => [$kind => DB::scalar('SELECT ledger_entry_wallet_owner(?)', [$kind])])->all();
 
     expect($accountOwners)->toBe(['audit_partner_fee_payable' => null, 'business_available' => 'business', 'business_withdrawing' => 'business', 'deposit_clearing' => null, 'deposit_fee_revenue' => null,
-        'disbursement_settlement' => null, 'investor_available' => 'investor', 'investor_committed' => 'investor', 'investor_held' => 'investor',
+        'disbursement_settlement' => null, 'earnings_fee_revenue' => null, 'investor_available' => 'investor', 'investor_committed' => 'investor', 'investor_held' => 'investor',
         'investor_withdrawing' => 'investor', 'platform_fee_revenue' => null, 'repayment_clearing' => null, 'secondary_fee_revenue' => null,
         'secondary_settlement' => null, 'withdrawal_clearing' => null])
         ->and($entryOwners)->toBe(['business_deposit_credit' => 'business', 'business_repayment_debit' => 'business',
             'business_withdrawal_hold' => 'business', 'business_withdrawal_payout' => 'business', 'business_withdrawal_return' => 'business', 'deposit_credit' => 'investor', 'disbursement_platform_fee' => 'business', 'primary_commit' => 'investor',
             'primary_hold' => 'investor', 'primary_issue' => 'investor', 'primary_refund' => 'investor', 'primary_release' => 'investor',
-            'secondary_hold' => 'investor', 'secondary_purchase' => 'investor', 'secondary_release' => 'investor', 'secondary_sale' => 'investor',
+            'secondary_hold' => 'investor', 'secondary_purchase' => 'investor', 'secondary_release' => 'investor', 'secondary_sale' => 'investor', 'servicing_payout' => 'investor',
             'withdrawal_hold' => 'investor', 'withdrawal_payout' => 'investor', 'withdrawal_return' => 'investor']);
 });
 

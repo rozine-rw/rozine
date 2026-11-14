@@ -35,4 +35,6 @@ Schedule::command('secondary:expire')->everyMinute()->withoutOverlapping(5);
 
 Schedule::command('disbursements:reconcile')->everyMinute()->withoutOverlapping(5);
 
+Schedule::command('servicing:payouts')->everyMinute()->withoutOverlapping(5);
+
 Schedule::command('changes:prune')->daily()->withoutOverlapping(60);
