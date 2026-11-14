@@ -215,7 +215,7 @@ export default function AdminEvents(props: AdminEventsProps) {
     }
 
     return (
-        <AdminFrame section="events" {...props}>
+        <AdminFrame section="events" {...props} searchable={false}>
             <div className="mb-[18px] flex items-center gap-2.5 rounded-xl border border-[#dde6f3] bg-[rgba(30,58,255,.07)] px-4 py-3 dark:border-rz-border">
                 <svg
                     width="17"

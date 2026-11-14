@@ -56,8 +56,8 @@ const GLYPHS: Record<InvestorTab, ReactNode> = {
 
 type InvestorShellProps = {
     title: string;
-    /** The tab to mark current, if any. Wallet has no tab of its own, so it marks Deals, whose top bar opens it (#597). */
-    tab: InvestorTab | null;
+    /** The tab to mark current. Wallet has no tab of its own, so it marks Deals, whose top bar opens it (#597). */
+    tab: InvestorTab;
     /** Phase 1B links, or a C3 page's narrowed links: a null destination is hidden, never faked. */
     links: C3InvestorShellLinks;
     showTabBar?: boolean;
@@ -107,7 +107,7 @@ export function InvestorShell({
         <AppFrame
             audience="investor"
             nav={nav}
-            active={tab ?? ''}
+            active={tab}
             launcher={links.launcher}
             showTabBar={showTabBar}
         >

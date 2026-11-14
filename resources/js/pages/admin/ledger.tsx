@@ -39,15 +39,14 @@ export default function AdminLedger(props: AdminLedgerProps) {
     const typing = useSearchAsYouType(props.search, runSearch);
     const search = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        typing.submit(
-            (new FormData(event.currentTarget).get('q') as string | null) ?? '',
-        );
+        typing.submit(String(new FormData(event.currentTarget).get('q')));
     };
 
     return (
         <AdminFrame
             section="ledger"
             {...props}
+            searchable={false}
             overlay={
                 props.entry && (
                     <EntryDrawer key={props.entry.id} entry={props.entry} />

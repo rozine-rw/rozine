@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "fc5d032cc563e8c2e495801cc62fa28a9a7281cc3e8fafa2f6389df778127990",
-    "coverageSetSha256": "d0d1abd28c3db4e6adc0bb348a3f2ee0a24e8184a225d0d0645e42903ef99228",
+    "sourceManifestSha256": "98be5419e907b2bb2b526d0f3112bc48ecab754f284eff7fed104374d9de8d62",
+    "coverageSetSha256": "8b99b3ff94921dbe4a1c2ace8a564b864dd114657adeba23caa931bc331886be",
     "thresholds": {
         "critical": {
             "global": {
@@ -373,6 +373,7 @@
         "resources/js/hooks/use-online.ts",
         "resources/js/hooks/use-operation-command.ts",
         "resources/js/hooks/use-reconnect-refresh.ts",
+        "resources/js/hooks/use-search-as-you-type.ts",
         "resources/js/hooks/use-translation.ts",
         "resources/js/hooks/use-two-factor-auth.ts",
         "resources/js/layouts/app-layout.tsx",
@@ -406,6 +407,7 @@
         "resources/js/lib/rozine/raising.ts",
         "resources/js/lib/rozine/statement-transcription.ts",
         "resources/js/lib/utils.ts",
+        "resources/js/pages/admin/access-requests.tsx",
         "resources/js/pages/admin/applications.tsx",
         "resources/js/pages/admin/audit-reports.tsx",
         "resources/js/pages/admin/auth/login.tsx",

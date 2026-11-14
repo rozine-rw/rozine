@@ -413,7 +413,7 @@ export function PolicyPeek({
                                         `admin.policy.${item.key}`,
                                 )}
                             </dt>
-                            <dd className="mt-[3px] truncate text-[13.5px] font-bold tracking-[-.01em] text-rz-ink">
+                            <dd className="mt-[3px] text-[13.5px] leading-[1.3] font-bold tracking-[-.01em] break-words text-rz-ink">
                                 {policyValue(item, t)}
                             </dd>
                         </div>

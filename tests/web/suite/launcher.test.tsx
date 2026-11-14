@@ -17,32 +17,55 @@ const mocks = vi.hoisted(() => ({
     command: { processing: false, transform: vi.fn(), submit: vi.fn() },
     visit: vi.fn(),
     reload: vi.fn(),
+    form: {
+        errors: {} as Record<string, string>,
+        processing: false,
+        submit: vi.fn(),
+        data: {} as Record<string, string>,
+    },
 }));
-vi.mock('@inertiajs/react', () => ({
-    Head: ({ title }: { title: string }) => (
-        <span data-testid="page-title">{title}</span>
-    ),
-    Link: ({
-        children,
-        href,
-        as,
-        preserveState: _preserveState,
-        ...props
-    }: Omit<ComponentProps<'a'>, 'href'> & {
-        href: string | { url: string };
-        as?: string;
-        preserveState?: boolean;
-    }) =>
-        as === 'button' ? (
-            <button>{children}</button>
-        ) : (
-            <a href={typeof href === 'string' ? href : href.url} {...props}>
-                {children}
-            </a>
+vi.mock('@inertiajs/react', async () => {
+    const { useState } = await import('react');
+
+    return {
+        Head: ({ title }: { title: string }) => (
+            <span data-testid="page-title">{title}</span>
         ),
-    useHttp: () => mocks.command,
-    router: { visit: mocks.visit, reload: mocks.reload },
-}));
+        Link: ({
+            children,
+            href,
+            as,
+            preserveState: _preserveState,
+            ...props
+        }: Omit<ComponentProps<'a'>, 'href'> & {
+            href: string | { url: string };
+            as?: string;
+            preserveState?: boolean;
+        }) =>
+            as === 'button' ? (
+                <button>{children}</button>
+            ) : (
+                <a href={typeof href === 'string' ? href : href.url} {...props}>
+                    {children}
+                </a>
+            ),
+        useHttp: () => mocks.command,
+        useForm: (initial: Record<string, string>) => {
+            const [data, setData] = useState(initial);
+            mocks.form.data = data;
+
+            return {
+                data,
+                errors: mocks.form.errors,
+                processing: mocks.form.processing,
+                setData: (key: string, value: string) =>
+                    setData((current) => ({ ...current, [key]: value })),
+                submit: mocks.form.submit,
+            };
+        },
+        router: { visit: mocks.visit, reload: mocks.reload },
+    };
+});
 const identityFrom = (fixture: { props: { identity: unknown } }) =>
     fixture.props.identity as IdentityContext;
 const ready = identityFrom(readyFixture);
@@ -57,6 +80,8 @@ const selected = (
 beforeEach(() => {
     vi.clearAllMocks();
     mocks.command.processing = false;
+    mocks.form.errors = {};
+    mocks.form.processing = false;
 });
 
 describe('Suite launcher', () => {
@@ -75,12 +100,9 @@ describe('Suite launcher', () => {
             'Discover verified businesses, invest, track returns.',
         );
         expect(within(apps[2]).queryByRole('button')).not.toBeInTheDocument();
-        expect(within(apps[2]).getByRole('link')).toHaveAttribute(
-            'href',
-            'mailto:hello@rozine.rw',
-        );
-        expect(within(apps[2]).getByRole('link')).toHaveTextContent(
-            /^Auditor.*Request access →$/u,
+        expect(within(apps[2]).queryByRole('link')).not.toBeInTheDocument();
+        expect(apps[2]).toHaveTextContent(
+            /^Auditor.*Not available with your current access$/u,
         );
         await userEvent.click(within(apps[0]).getByRole('button'));
         expect(mocks.command.transform.mock.calls[0][0]()).toEqual({
@@ -371,14 +393,17 @@ describe('Suite launcher', () => {
         expect(within(apps[0]).getByRole('link')).toHaveTextContent(
             'Browse open deals now. Investing opens once your identity is verified.Browse deals →',
         );
-        expect(within(apps[1]).getByRole('link')).toHaveAttribute(
-            'href',
-            'mailto:hello@rozine.rw',
-        );
-        expect(within(apps[2]).getByRole('link')).toHaveAttribute(
-            'href',
-            'mailto:hello@rozine.rw',
-        );
+
+        for (const app of apps.slice(1)) {
+            expect(within(app).getByRole('link')).toHaveAttribute(
+                'href',
+                '/investor/verification',
+            );
+            expect(within(app).getByRole('link')).toHaveTextContent(
+                /Verify your identity first →$/u,
+            );
+        }
+
         expect(screen.getByRole('status')).toHaveTextContent(
             'Ready to invest?',
         );
@@ -491,7 +516,7 @@ describe('Suite launcher preview states', () => {
         expect(mocks.visit).not.toHaveBeenCalled();
     });
 
-    it('offers every app on request after a lost membership', () => {
+    it('explains every app it cannot open after a lost membership', () => {
         render(<Launcher identity={identityFrom(lostMembershipFixture)} />);
 
         const apps = screen.getAllByRole('listitem');
@@ -503,12 +528,9 @@ describe('Suite launcher preview states', () => {
         expect(screen.queryByRole('status')).not.toBeInTheDocument();
 
         for (const app of apps) {
-            expect(within(app).getByRole('link')).toHaveAttribute(
-                'href',
-                'mailto:hello@rozine.rw',
-            );
-            expect(within(app).getByRole('link')).toHaveTextContent(
-                /Request access →$/u,
+            expect(within(app).queryByRole('link')).not.toBeInTheDocument();
+            expect(app).toHaveTextContent(
+                /Not available with your current access$/u,
             );
         }
     });
@@ -740,7 +762,7 @@ describe('Adding Investor access to a verified Business member', () => {
         expect(mocks.visit).not.toHaveBeenCalled();
     });
 
-    it('closes the panel on cancel, and asks for access when the server sends no offer', async () => {
+    it('closes the panel on cancel, and offers nothing to open when the server sends no offer', async () => {
         const { unmount } = render(
             <Launcher identity={businessMember} investor_access={offer} />,
         );
@@ -755,8 +777,159 @@ describe('Adding Investor access to a verified Business member', () => {
         unmount();
 
         render(<Launcher identity={businessMember} />);
+        expect(screen.getAllByRole('listitem')[0]).toHaveTextContent(
+            /Not available with your current access$/u,
+        );
+    });
+});
+
+describe('Asking for Business or Auditor access', () => {
+    const offer = (
+        requestable: ('business' | 'auditor')[],
+        sent: Partial<Record<'business' | 'auditor', string>> = {},
+    ) => ({
+        requestable,
+        sent,
+        link: { url: '/identity/access-requests', method: 'post' as const },
+    });
+    const investor: IdentityContext = {
+        ...ready,
+        available_roles: ['investor'],
+    };
+
+    it('asks for Business access on the card with the business name, then closes once sent', async () => {
+        render(
+            <Launcher
+                identity={investor}
+                access_requests={offer(['business', 'auditor'])}
+            />,
+        );
+        const apps = screen.getAllByRole('listitem');
+
+        expect(within(apps[1]).queryByRole('link')).not.toBeInTheDocument();
+        await userEvent.click(within(apps[1]).getByRole('button'));
+        expect(within(apps[1]).getByRole('button')).toHaveAttribute(
+            'aria-expanded',
+            'true',
+        );
+        const form = screen.getByRole('form', {
+            name: 'Request Business access',
+        });
+
+        expect(within(form).getByLabelText('Business name')).toBeRequired();
         expect(
-            within(screen.getAllByRole('listitem')[0]).getByRole('link'),
-        ).toHaveTextContent(/Request access →$/u);
+            within(form).getByLabelText('RDB company code (optional)'),
+        ).not.toBeRequired();
+        await userEvent.type(
+            within(form).getByLabelText('Business name'),
+            'Kivu Harvest Ltd',
+        );
+        await userEvent.type(
+            within(form).getByLabelText('RDB company code (optional)'),
+            '108123456',
+        );
+        await userEvent.type(
+            within(form).getByLabelText('Phone number (optional)'),
+            '+250 788 000 000',
+        );
+        await userEvent.type(
+            within(form).getByLabelText(
+                'Anything staff should know (optional)',
+            ),
+            'Coffee washing station',
+        );
+        await userEvent.click(
+            within(form).getByRole('button', { name: 'Send request' }),
+        );
+
+        expect(mocks.form.data).toEqual({
+            request_id: expect.any(String),
+            role: 'business',
+            organization: 'Kivu Harvest Ltd',
+            reference: '108123456',
+            phone: '+250 788 000 000',
+            note: 'Coffee washing station',
+        });
+        const [link, options] = mocks.form.submit.mock.calls[0];
+
+        expect(link).toEqual({
+            url: '/identity/access-requests',
+            method: 'post',
+        });
+        expect(options.preserveScroll).toBe(true);
+        act(() => options.onSuccess());
+        expect(
+            screen.queryByRole('form', { name: 'Request Business access' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('asks an Auditor for the ICPAR licence, shows a refusal, and cancels', async () => {
+        mocks.form.errors = {
+            role: 'You already asked for this access. Rozine will contact you.',
+        };
+        render(
+            <Launcher
+                identity={investor}
+                access_requests={offer(['auditor'])}
+            />,
+        );
+
+        await userEvent.click(
+            within(screen.getAllByRole('listitem')[2]).getByRole('button'),
+        );
+        const form = screen.getByRole('form', {
+            name: 'Request Auditor access',
+        });
+
+        expect(
+            within(form).getByLabelText('ICPAR licence number'),
+        ).toBeRequired();
+        expect(
+            within(form).getByLabelText('Audit firm (optional)'),
+        ).not.toBeRequired();
+        expect(within(form).getByRole('alert')).toHaveTextContent(
+            'You already asked for this access.',
+        );
+        await userEvent.click(
+            within(form).getByRole('button', { name: 'Cancel' }),
+        );
+        expect(
+            screen.queryByRole('form', { name: 'Request Auditor access' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('holds the send button while the request is in flight', async () => {
+        mocks.form.processing = true;
+        render(
+            <Launcher
+                identity={investor}
+                access_requests={offer(['business'])}
+            />,
+        );
+
+        await userEvent.click(
+            within(screen.getAllByRole('listitem')[1]).getByRole('button'),
+        );
+        expect(screen.getByRole('button', { name: 'Sending…' })).toBeDisabled();
+    });
+
+    it('shows a sent request on its card instead of asking again', () => {
+        render(
+            <Launcher
+                identity={investor}
+                access_requests={offer([], {
+                    business: '2026-11-14T13:40:00+00:00',
+                })}
+            />,
+        );
+        const business = screen.getAllByRole('listitem')[1];
+
+        expect(within(business).queryByRole('button')).not.toBeInTheDocument();
+        expect(within(business).getByRole('status')).toHaveTextContent(
+            /Rozine staff have your request and will contact you\.Request sent ✓$/u,
+        );
+        expect(screen.getAllByRole('listitem')[2]).toHaveTextContent(
+            /Not available with your current access$/u,
+        );
     });
 });

@@ -37,6 +37,20 @@ export type InvestorAccessOffer = {
     link: { url: string; method: 'post' };
 };
 
+/** The marketplace roles a person asks Rozine's staff for from the launcher (#616). */
+export type RequestableRole = 'business' | 'auditor';
+
+/**
+ * Which roles the person may ask for from the launcher, when they already asked (ISO time, per
+ * role), and where the request is sent. Granting the role stays with staff.
+ */
+export type RoleAccessOffer = {
+    requestable: RequestableRole[];
+    /** Empty roles are left out (an empty map arrives as `[]`). */
+    sent: Partial<Record<RequestableRole, string>>;
+    link: { url: string; method: 'post' };
+};
+
 export type AddInvestorAccessInput = {
     expected_revision: number;
     terms_version: string;

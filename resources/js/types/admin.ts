@@ -63,6 +63,7 @@ export type AdminOptionalSection =
     | 'complaints'
     | 'reports'
     | 'mail_testers'
+    | 'access_requests'
     | AdminPendingSection;
 
 /**
@@ -2254,3 +2255,37 @@ export type AdminSystemHealthProps = AdminFrameShellProps &
         /** Worst first: critical, watch, healthy, then the untracked signals. */
         signals: HealthSignal[];
     };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Business and Auditor access requests from the launcher (#616)                               */
+/* ------------------------------------------------------------------------------------------ */
+
+export type AccessRequestRole = 'business' | 'auditor';
+
+/** One request as a person sent it from the launcher, with who sent it. */
+export type AccessRequestRow = {
+    id: string;
+    role: AccessRequestRole;
+    name: string;
+    email: string;
+    /** The business name; an Auditor may leave the firm blank. */
+    organization: string;
+    /** The RDB code a Business may give, or the ICPAR licence an Auditor must. */
+    reference: string | null;
+    phone: string | null;
+    note: string | null;
+    sent_at: string;
+    /**
+     * Null while the request is open. Once staff create the membership it asked for, that
+     * membership's status: the request is handled and leaves the open queue.
+     */
+    outcome: 'pending' | 'active' | 'suspended' | 'revoked' | null;
+};
+
+export type AdminAccessRequestsProps = AdminFrameShellProps & {
+    /** The kinds of request this viewer may act on. */
+    roles: AccessRequestRole[];
+    requests: AccessRequestRow[];
+    /** Where staff grant each kind: Onboard business, or the Auditor Network. */
+    links: Record<AccessRequestRole, RouteLink>;
+};
