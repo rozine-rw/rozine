@@ -75,8 +75,8 @@ final class BusinessScoreView
         $binding = array_find_key($limits, fn (BigInteger $limit): bool => $limit->isEqualTo($ceiling));
         $approved = BigInteger::zero();
         if ($ceiling->isGreaterThanOrEqualTo(LoanCapacity::MINIMUM_PRINCIPAL)) {
-            $offer = $this->capacity->evaluate((string) $ceiling, $termMonths, self::rational($pricing['fraction']), $cfads, $room,
-                array_map(fn (array $month): BigRational => self::rational($month['cfads']), $cashFlow['repeat_projections']))['offer'];
+            $offer = $this->capacity->plan($termMonths, self::rational($pricing['fraction']), $cfads, BigRational::min($room, $ceiling),
+                array_map(fn (array $month): BigRational => self::rational($month['cfads']), $cashFlow['repeat_projections']));
             $approved = BigInteger::of($offer['principal']['amount'] ?? '0');
         }
         $counted = array_column($quoted, 'principal', 'id');

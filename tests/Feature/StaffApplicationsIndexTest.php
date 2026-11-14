@@ -42,11 +42,11 @@ it('projects the same retained queue and current release gates through web and A
     $web = $this->get(route('staff.applications.index', ['application' => $id]))->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->component('admin/applications')
             ->where('contract_version', 'staff-applications-v1')->has('applications', 1)
-            ->where('applications.0.id', $id)->where('applications.0.requested.amount', '12000000')
+            ->where('applications.0.id', $id)->where('applications.0.requested.amount', '10800000')
             ->where('applications.0.rate_pct', BusinessApplicationSubmission::query()->where('business_application_id', $id)->firstOrFail()->payload['review']['quote']['rate_pct'])
             ->where('applications.0.state', 'submitted')->where('applications.0.capacity_used_pct', null)
             ->where('applications.0.approve_link', null)->where('tabs.0.count', 1)->where('tabs.1.count', 0)
-            ->where('nav.today.url', '/admin/dashboard')->where('nav.businesses.url', '/admin/businesses')->where('nav.ledger.url', '/admin/ledger')->where('policy', [['key' => 'target_dscr', 'value' => '1.50×'], ['key' => 'listing_audit', 'value' => '', 'term' => 'every_deal'], ['key' => 'audit_routing', 'value' => '≥ 1.25×'], ['key' => 'rate_band', 'value' => '10–15%']])
+            ->where('nav.today.url', '/admin/dashboard')->where('nav.businesses.url', '/admin/businesses')->where('nav.ledger.url', '/admin/ledger')->where('policy', [['key' => 'target_dscr', 'value' => '1.50×'], ['key' => 'listing_audit', 'value' => '', 'term' => 'every_deal'], ['key' => 'audit_routing', 'value' => '≥ 1.50×'], ['key' => 'rate_band', 'value' => '10–15%']])
             ->where('review.release.allowed_actions', ['application.release'])->where('review.capacity.outstanding', null)
             ->where('review.links.business', ['url' => '/admin/businesses?business='.$fixture['application']->business_id, 'method' => 'get'])->where('review.audit.state', null)->where('review.factors', [])
             ->missing('review.acceptance')->missing('review.actor_user_id')->missing('review.application.draft')->missing('roles'));
@@ -257,7 +257,7 @@ it('lists drafts the engine refused under Rejected with the reason, without a st
         ->assertInertia(fn (Assert $page): Assert => $page->where('active_tab', 'rejected')->where('tabs.2.key', 'rejected')->where('tabs.2.count', 1)
             ->where('tabs.2.link.url', '/admin/applications?tab=rejected&search=&limit=20')->has('applications', 1)
             ->where('applications.0', fn ($row): bool => $row['id'] === $refused['application']->id && $row['state'] === 'rejected'
-                && $row['note_title'] === $title && $row['requested'] === ['amount' => '12000000', 'currency' => 'RWF'] && $row['rate_pct'] === null
+                && $row['note_title'] === $title && $row['requested'] === ['amount' => '10800000', 'currency' => 'RWF'] && $row['rate_pct'] === null
                 && $row['decision'] === ['code' => 'reject', 'reason' => '', 'reason_code' => 'RESTRICTION_ACTIVE'] && $row['link'] === null
                 && $row['business'] !== '' && is_string($row['submitted_at']))
             ->where('pagination.next', null)->where('review', null));

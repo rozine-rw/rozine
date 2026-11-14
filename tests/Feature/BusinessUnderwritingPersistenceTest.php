@@ -23,7 +23,7 @@ beforeEach(function (): void {
 });
 
 it('persists the qualified repeat window and signs the exact replayable whole-unit offer', function (): void {
-    $fixture = BusinessQuoteFixture::make(credit: false, historyMonths: 12);
+    $fixture = BusinessQuoteFixture::make(credit: false, historyMonths: 12, requestedPrincipal: '10840000');
     $facts = BusinessCreditFactsFixture::repeat();
     app(RecordIsolatedBusinessCreditFacts::class)->handle($fixture['audit']['staff']->id, $fixture['audit']['business'], 0,
         $facts, 'synthetic:qualified-repeat', 'Synthetic settled-note and baseline evidence.', (string) Str::uuid());
@@ -61,7 +61,7 @@ it('persists the qualified repeat window and signs the exact replayable whole-un
     expect(18000000 * 2)->toBeGreaterThanOrEqual((int) $offer['total']['amount'] * 3)
         ->and(18000000 * 2)->toBeLessThan($nextUnitTotal * 3);
     app(SaveBusinessApplication::class)->handle($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'],
-        $fixture['application']->id, 3, BusinessApplicationFixture::fields('12000000'), 'review', (string) Str::uuid());
+        $fixture['application']->id, 3, BusinessApplicationFixture::fields('10840000'), 'review', (string) Str::uuid());
     $submitted = BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture));
     expect($submitted['code'])->toBe('APPLICATION_SUBMITTED')->and($submitted['data']['quote'])->toEqual($offer);
     $submission = BusinessApplicationSubmission::query()->firstOrFail();
@@ -101,7 +101,7 @@ it('refuses incomplete windows and unqualified repeat history without publishing
         ->and($stored['scorecard'])->toBeNull()->and($stored['capacity'])->toBeNull()
         ->and(app(ApplicationUnderwriting::class)->evaluate($stored['inputs']))->toBe($stored);
     $advance = app(SaveBusinessApplication::class)->handle($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'],
-        $fixture['application']->id, 3, BusinessApplicationFixture::fields('12000000'), 'review', (string) Str::uuid());
+        $fixture['application']->id, 3, BusinessApplicationFixture::fields('10800000'), 'review', (string) Str::uuid());
     expect($advance['code'])->toBe('QUOTE_STALE')->and($fixture['application']->refresh()->step)->toBe('raise');
     $this->assertDatabaseCount('business_application_signatures', 0);
     $this->assertDatabaseCount('business_application_submissions', 0);
@@ -120,7 +120,7 @@ it('deduplicates the same evidenced debt across sources and isolates other busin
     $schedule = array_fill_keys(['2026-09', '2026-10', '2026-11', '2026-12', '2027-01', '2027-02'], '50000');
     $schedule['2026-11'] = '100000';
     $debt = ['id' => 'synthetic:existing-note', 'principal' => '10000000', 'service_by_month' => $schedule];
-    $fixture = BusinessQuoteFixture::make(credit: false, auditedObligations: [$debt]);
+    $fixture = BusinessQuoteFixture::make(credit: false, auditedObligations: [$debt], requestedPrincipal: '10000000');
     $facts = [...BusinessCreditFactsFixture::facts(), 'obligations' => [$debt]];
     app(RecordIsolatedBusinessCreditFacts::class)->handle($fixture['audit']['staff']->id, $fixture['audit']['business'], 0,
         $facts, 'synthetic:existing-note', 'Synthetic complete exposure calendar.', (string) Str::uuid());
