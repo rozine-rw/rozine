@@ -8313,14 +8313,24 @@ const rw: Catalog = {
     'admin.access_requests.caption':
         'Abantu basabye uburenganzira bwa Sosiyete cyangwa Umugenzuzi, abashya mbere. Tanga uruhare ukoresheje kwandika sosiyete cyangwa mu Rusobe rw’Abagenzuzi.',
     'admin.access_requests.table': 'Ubusabe bw’uburenganzira',
-    'admin.access_requests.empty_title': 'Nta busabe bw’uburenganzira',
+    'admin.access_requests.empty_title':
+        'Nta busabe bw’uburenganzira butarakemurwa',
     'admin.access_requests.empty_body':
-        'Ubusabe bwoherejwe bivuye ku rupapuro rw’amaporogaramu buzagaragara hano.',
+        'Ubusabe bwoherejwe bivuye ku rupapuro rw’amaporogaramu buzagaragara hano kugeza umuntu ahawe uruhare.',
     'admin.access_requests.col.person': 'Umuntu',
     'admin.access_requests.col.role': 'Uburenganzira',
     'admin.access_requests.col.details': 'Ibisobanuro',
     'admin.access_requests.col.sent': 'Byoherejwe',
     'admin.access_requests.col.action': 'Tanga',
+    'admin.access_requests.col.outcome': 'Ubunyamuryango',
+    'admin.access_requests.handled_title': 'Byakemuwe',
+    'admin.access_requests.handled_caption':
+        'Ubusabe bw’abantu ubu bafite ubunyamuryango bw’urwo ruhare, n’uko buhagaze.',
+    'admin.access_requests.handled_table': 'Ubusabe bw’uburenganzira bwakemuwe',
+    'admin.access_requests.outcome.pending': 'Birategereje',
+    'admin.access_requests.outcome.active': 'Burakora',
+    'admin.access_requests.outcome.suspended': 'Bwahagaritswe by’agateganyo',
+    'admin.access_requests.outcome.revoked': 'Bwakuweho',
     'admin.access_requests.reference.business': 'Kode ya RDB {reference}',
     'admin.access_requests.reference.auditor':
         'Uruhushya rwa ICPAR {reference}',

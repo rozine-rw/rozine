@@ -2275,6 +2275,11 @@ export type AccessRequestRow = {
     phone: string | null;
     note: string | null;
     sent_at: string;
+    /**
+     * Null while the request is open. Once staff create the membership it asked for, that
+     * membership's status: the request is handled and leaves the open queue.
+     */
+    outcome: 'pending' | 'active' | 'suspended' | 'revoked' | null;
 };
 
 export type AdminAccessRequestsProps = AdminFrameShellProps & {

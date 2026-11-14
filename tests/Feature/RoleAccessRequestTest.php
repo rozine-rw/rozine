@@ -141,15 +141,45 @@ it('shows staff who grant each role the requests for it, newest first, and refus
         ->and($props['viewer']['role'])->toBe('compliance')
         ->and($props['requests'])->toBe([
             ['id' => $rows[0]->id, 'role' => 'auditor', 'name' => 'Jean Mugisha', 'email' => $auditor->email, 'organization' => 'Ledger & Co',
-                'reference' => 'ICPAR-2041', 'phone' => '+250 788 000 000', 'note' => 'Coffee washing station', 'sent_at' => $rows[0]->created_at->toIso8601String()],
+                'reference' => 'ICPAR-2041', 'phone' => '+250 788 000 000', 'note' => 'Coffee washing station', 'sent_at' => $rows[0]->created_at->toIso8601String(), 'outcome' => null],
             ['id' => $rows[1]->id, 'role' => 'business', 'name' => 'Jean Mugisha', 'email' => $business->email, 'organization' => 'Kivu Harvest Ltd',
-                'reference' => null, 'phone' => '+250 788 000 000', 'note' => 'Coffee washing station', 'sent_at' => $rows[1]->created_at->toIso8601String()],
+                'reference' => null, 'phone' => '+250 788 000 000', 'note' => 'Coffee washing station', 'sent_at' => $rows[1]->created_at->toIso8601String(), 'outcome' => null],
         ]);
 
     $treasury = User::factory()->withTwoFactor()->create();
     StaffFixture::provision($treasury, ['treasury'], 'Access request refusal.');
     $this->actingAs($treasury)->get(route('staff.access-requests.index'))->assertForbidden();
     $this->actingAs($treasury)->get(route('staff.dashboard'))->assertInertia(fn (Assert $page): Assert => $page->where('nav.access_requests', null));
+});
+
+it('moves a request out of the open queue once staff create the membership it asked for, keeping what was sent', function (): void {
+    $business = accessRequester();
+    $this->actingAs($business)->post(route('identity.access-requests.store'), accessRequest())->assertSessionHasNoErrors();
+    $this->travel(1)->minutes();
+    $auditor = accessRequester([]);
+    $this->actingAs($auditor)->post(route('identity.access-requests.store'),
+        accessRequest(['role' => 'auditor', 'organization' => '', 'reference' => 'ICPAR-2041']))->assertSessionHasNoErrors();
+    $this->travel(1)->minutes();
+    $later = accessRequester();
+    $this->actingAs($later)->post(route('identity.access-requests.store'), accessRequest())->assertSessionHasNoErrors();
+
+    // Staff onboard the first Business (still pending) and verify the Auditor; the latest Business stays open.
+    RoleMembership::factory()->create(['party_id' => $business->party_id, 'role' => 'business', 'status' => 'pending']);
+    RoleMembership::factory()->create(['party_id' => $auditor->party_id, 'role' => 'auditor', 'status' => 'active']);
+
+    $staff = User::factory()->withTwoFactor()->create();
+    StaffFixture::provision($staff, ['compliance'], 'Access request outcomes.');
+    $rows = [];
+    $this->actingAs($staff)->get(route('staff.access-requests.index'))->assertOk()->assertInertia(function (Assert $page) use (&$rows): void {
+        $rows = $page->toArray()['props']['requests'];
+    });
+
+    expect(array_map(fn (array $row): array => [$row['email'], $row['outcome']], $rows))->toBe([
+        [$later->email, null],
+        [$auditor->email, 'active'],
+        [$business->email, 'pending'],
+    ])->and($rows[2]['organization'])->toBe('Kivu Harvest Ltd')
+        ->and(RoleAccessRequest::query()->count())->toBe(3);
 });
 
 it('keeps a sent request as it was sent', function (): void {

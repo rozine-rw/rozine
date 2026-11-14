@@ -12,6 +12,7 @@ use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Models\RoleAccessRequest;
 use App\Models\User;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -74,11 +75,17 @@ final class EloquentRoleAccessRequests implements RoleAccessRequests
         /** @var list<StaffRow> $rows */
         $rows = array_values(RoleAccessRequest::query()->whereIn('role_access_requests.role', $roles)
             ->join('users', 'users.party_id', '=', 'role_access_requests.party_id')
+            ->leftJoin('role_memberships', function (JoinClause $join): void {
+                $join->on('role_memberships.party_id', '=', 'role_access_requests.party_id')
+                    ->on('role_memberships.role', '=', 'role_access_requests.role');
+            })
+            ->orderByRaw('role_memberships.status is not null')
             ->orderByDesc('role_access_requests.created_at')->orderByDesc('role_access_requests.id')
-            ->get(['role_access_requests.*', 'users.name as requester_name', 'users.email as requester_email'])
+            ->get(['role_access_requests.*', 'users.name as requester_name', 'users.email as requester_email', 'role_memberships.status as outcome'])
             ->map(fn (RoleAccessRequest $row): array => ['id' => $row->id, 'role' => $row->role, 'name' => (string) $row->getAttribute('requester_name'),
                 'email' => (string) $row->getAttribute('requester_email'), 'organization' => $row->organization, 'reference' => $row->reference,
-                'phone' => $row->phone, 'note' => $row->note, 'sent_at' => $row->created_at->toIso8601String()])->all());
+                'phone' => $row->phone, 'note' => $row->note, 'sent_at' => $row->created_at->toIso8601String(),
+                'outcome' => $row->getAttribute('outcome')])->all());
 
         return $rows;
     }

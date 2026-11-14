@@ -54,6 +54,7 @@ describe('Access requests', () => {
                         phone: null,
                         note: null,
                         sent_at: '2026-11-14T13:45:00+00:00',
+                        outcome: null,
                     },
                     {
                         id: '01JBUSINESS',
@@ -65,6 +66,7 @@ describe('Access requests', () => {
                         phone: '+250 788 000 000',
                         note: 'Coffee washing station',
                         sent_at: '2026-11-14T12:00:00+00:00',
+                        outcome: null,
                     },
                 ])}
             />,
@@ -100,11 +102,98 @@ describe('Access requests', () => {
         expect(
             within(business).getByRole('link', { name: 'Businesses →' }),
         ).toHaveAttribute('href', '/admin/businesses');
+        expect(screen.queryByText('Handled')).not.toBeInTheDocument();
+    });
+
+    it('moves a request whose person now holds the role to Handled, with the membership status', () => {
+        const sent = {
+            role: 'business' as const,
+            email: 'person@example.test',
+            organization: 'Kivu Harvest Ltd',
+            reference: null,
+            phone: null,
+            note: null,
+            sent_at: '2026-11-14T12:00:00+00:00',
+        };
+        render(
+            <AdminAccessRequests
+                {...page([
+                    { ...sent, id: '1', name: 'Open One', outcome: null },
+                    {
+                        ...sent,
+                        id: '2',
+                        name: 'Pending One',
+                        outcome: 'pending',
+                    },
+                    { ...sent, id: '3', name: 'Active One', outcome: 'active' },
+                    {
+                        ...sent,
+                        id: '4',
+                        name: 'Paused One',
+                        outcome: 'suspended',
+                    },
+                    {
+                        ...sent,
+                        id: '5',
+                        name: 'Revoked One',
+                        outcome: 'revoked',
+                    },
+                ])}
+            />,
+        );
+
+        const open = screen.getByRole('table', { name: 'Access requests' });
+        const handled = screen.getByRole('table', {
+            name: 'Handled access requests',
+        });
+
+        expect(within(open).getByText('Open One')).toBeInTheDocument();
+        expect(within(open).queryByText('Active One')).not.toBeInTheDocument();
+        expect(within(handled).queryByText('Open One')).not.toBeInTheDocument();
+        expect(within(handled).getByText('Membership')).toBeInTheDocument();
+
+        for (const [name, status] of [
+            ['Pending One', 'Pending'],
+            ['Active One', 'Active'],
+            ['Paused One', 'Suspended'],
+            ['Revoked One', 'Revoked'],
+        ]) {
+            const row = rowOf(name);
+
+            expect(row).toHaveTextContent(status);
+            expect(
+                within(row).queryByRole('link', { name: 'Businesses →' }),
+            ).not.toBeInTheDocument();
+        }
+    });
+
+    it('says when every request has been handled', () => {
+        render(
+            <AdminAccessRequests
+                {...page([
+                    {
+                        id: '1',
+                        role: 'auditor',
+                        name: 'Grace Uwase',
+                        email: 'grace@example.test',
+                        organization: '',
+                        reference: 'ICPAR-2041',
+                        phone: null,
+                        note: null,
+                        sent_at: '2026-11-14T13:45:00+00:00',
+                        outcome: 'active',
+                    },
+                ])}
+            />,
+        );
+
+        expect(screen.getByText('No open access requests')).toBeInTheDocument();
+        expect(rowOf('Grace Uwase')).toHaveTextContent('Active');
     });
 
     it('says when nothing has been asked for yet', () => {
         render(<AdminAccessRequests {...page([])} />);
 
-        expect(screen.getByText('No access requests')).toBeInTheDocument();
+        expect(screen.getByText('No open access requests')).toBeInTheDocument();
     });
 });
