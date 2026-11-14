@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "117c7568ced4c3ba8b3c7177c87583a7705e67db61315ee364bb40017db1fdaa",
-    "coverageSetSha256": "71c2cf6c39ed2ae0c4b6e582df1467e0ab4ad0bd60714a4ff9755934623fe5df",
+    "sourceManifestSha256": "98be5419e907b2bb2b526d0f3112bc48ecab754f284eff7fed104374d9de8d62",
+    "coverageSetSha256": "8b99b3ff94921dbe4a1c2ace8a564b864dd114657adeba23caa931bc331886be",
     "thresholds": {
         "critical": {
             "global": {
@@ -373,6 +373,7 @@
         "resources/js/hooks/use-online.ts",
         "resources/js/hooks/use-operation-command.ts",
         "resources/js/hooks/use-reconnect-refresh.ts",
+        "resources/js/hooks/use-search-as-you-type.ts",
         "resources/js/hooks/use-translation.ts",
         "resources/js/hooks/use-two-factor-auth.ts",
         "resources/js/layouts/app-layout.tsx",
