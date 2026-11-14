@@ -1828,6 +1828,7 @@ const en = {
     'admin.search.empty_body':
         'Nothing in {section} matches “{term}”. Try a shorter or different term.',
     'admin.account.open': 'Account, {name}',
+    'settings.back_to_console': 'Back to the Admin console',
     'admin.account.close': 'Close account menu',
     'admin.account.sign_out': 'Sign out',
     'admin.role.analyst': 'Analyst',

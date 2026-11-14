@@ -6,6 +6,7 @@ namespace App\Http\Middleware;
 
 use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Identity\GetIdentityContext;
+use App\Application\Identity\GetStaffAccess;
 use App\Application\Primary\AcknowledgeInvestorRisks;
 use App\Application\Primary\Contracts\PrimaryPurchaseIndex;
 use App\Application\Primary\Contracts\RiskAcknowledgements;
@@ -62,10 +63,21 @@ class HandleInertiaRequests extends Middleware
             'checkout_holds' => Inertia::always(fn (): ?array => $this->checkoutHolds($request)),
             // KYC-R05: the risk statements still to acknowledge, asked once at app open, never inside checkout.
             'risk_acknowledgement' => fn (): ?array => $this->riskAcknowledgement($request),
+            // Account settings sit outside the console (#618), so staff get their way back to it there.
+            'staff_console' => fn (): ?array => $request->routeIs('profile.edit', 'security.edit', 'appearance.edit') && $this->opensConsole($request)
+                ? ['url' => route('staff.dashboard', [], false), 'method' => 'get'] : null,
             'nonLiveEnvironment' => Inertia::always(fn (): ?string => app(EnvironmentIsolation::class)->isIsolated()
                 ? app(EnvironmentIsolation::class)->profile()
                 : null),
         ];
+    }
+
+    /** Whether the signed-in account opens the Admin console, as the launcher decides it (settings routes require sign-in). */
+    private function opensConsole(Request $request): bool
+    {
+        $staff = app(GetStaffAccess::class)->handle((int) $request->user()?->getAuthIdentifier());
+
+        return ($staff['can_open_admin'] ?? false) === true && in_array('admin.open', (array) ($staff['allowed_actions'] ?? []), true);
     }
 
     /**
