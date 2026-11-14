@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\Contracts\HeldVisitDocuments;
 use App\Application\Primary\Contracts\RetainedNoteSchedules;
 use App\Application\Primary\GetRetainedNoteSchedule;
 use App\Domain\Auditor\VisitReadyChecklist;
@@ -87,7 +88,9 @@ it('carries the visit-ready checklist from D−14 before the next instalment, bu
     $ready = $read();
     expect($ready)->toMatchArray(['due_on' => $first, 'opens_on' => $kigali($first, -14)->toDateString(),
         'visit_from' => $kigali($first, -10)->toDateString(), 'visit_by' => $kigali($first, -3)->toDateString()])
-        ->and($ready['items'])->toBe((new VisitReadyChecklist)->items());
+        // The CPA already holds the tax clearance certificate the baseline visit recorded, valid past this visit.
+        ->and($ready['items'])->toBe((new VisitReadyChecklist)->items(['tax_clearance']))
+        ->and(app(HeldVisitDocuments::class)->held($campaign->businessId, $kigali($first, -3)->toDateString()))->toBe(['tax_clearance']);
 
     $this->travelTo($kigali($first, 0));
     expect($read()['due_on'])->toBe($first);

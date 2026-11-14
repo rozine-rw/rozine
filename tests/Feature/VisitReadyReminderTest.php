@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Business\Contracts\BusinessNoticeAudience;
+use App\Application\Business\Contracts\HeldVisitDocuments;
 use App\Application\Business\RemindVisitReady;
 use App\Domain\Auditor\VisitReadyChecklist;
 use App\Models\BusinessCampaign;
@@ -38,7 +39,9 @@ function visitReadyIssued(): array
 
 it('opens the checklist at D−14 once, then reminds at D−11 of the items not ticked', function (): void {
     ['business' => $business, 'user' => $user, 'due_on' => $due, 'at' => $at] = visitReadyIssued();
-    $total = count((new VisitReadyChecklist)->items());
+    // Certificates the CPA already holds are not counted.
+    $total = count((new VisitReadyChecklist)->items(app(HeldVisitDocuments::class)->held($business, VisitReadyChecklist::visitBy($due))));
+    expect($total)->toBe(count((new VisitReadyChecklist)->items()) - 1);
 
     $this->travelTo($at(15));
     expect(Artisan::call('business:remind-visit-ready'))->toBe(0)
@@ -77,7 +80,7 @@ it('opens the checklist at D−14 once, then reminds at D−11 of the items not 
 it('sends no reminder when every item is ticked', function (): void {
     ['business' => $business, 'user' => $user, 'due_on' => $due, 'at' => $at] = visitReadyIssued();
     $this->travelTo($at(14));
-    foreach ((new VisitReadyChecklist)->items() as ['key' => $item]) {
+    foreach ((new VisitReadyChecklist)->items(['tax_clearance']) as ['key' => $item]) {
         $this->actingAs($user)->post(route('business.repayments.visit-ready.tick', ['business' => $business]),
             ['request_id' => (string) Str::uuid(), 'due_on' => $due, 'item' => $item, 'ticked' => true])->assertRedirect();
     }
