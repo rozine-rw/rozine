@@ -234,15 +234,11 @@ describe('Access requests', () => {
             screen.queryByText('Swipe sideways to see every column.'),
         ).not.toBeInTheDocument();
         // With no rows the header fits the phone instead of scrolling sideways.
-        expect(
-            screen
-                .getByRole('group', { name: 'Access requests' })
-                .querySelector('.min-w-0'),
-        ).not.toBeNull();
-        expect(
-            screen
-                .getByRole('group', { name: 'Access requests' })
-                .querySelector('.min-w-\\[760px\\]'),
-        ).toBeNull();
+        const body = within(
+            screen.getByRole('group', { name: 'Access requests' }),
+        ).getByTestId('table-body');
+
+        expect(body).toHaveClass('min-w-0');
+        expect(body).not.toHaveClass('min-w-[760px]');
     });
 });
