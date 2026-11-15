@@ -1,0 +1,62 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Infrastructure\Secondary;
+
+use App\Application\Environment\UatMoneySimulation;
+use App\Application\Secondary\Contracts\SecondaryMarket;
+use App\Domain\Operations\CommandRejection;
+use Illuminate\Support\Facades\DB;
+
+/**
+ * Resale on UAT while its money simulation is on: the real market, but only a named synthetic
+ * Business's notes can be listed (`app.uat_money_simulation_businesses`). Reserving, settling and
+ * the rest act on listings, so they can only reach those notes.
+ */
+final readonly class SimulatedSecondaryMarket implements SecondaryMarket
+{
+    public function __construct(private SecondaryMarket $market, private UatMoneySimulation $simulation) {}
+
+    public function list(int $userId, int $contextRevision, string $holdingId, string $units, string $price, string $requestId): array
+    {
+        $campaignId = DB::table('primary_holdings')->where('id', $holdingId)->value('business_campaign_id')
+            ?? DB::table('secondary_transfers')->where('id', $holdingId)->value('business_campaign_id');
+        $businessId = $campaignId === null ? null : DB::table('business_campaigns')->where('id', $campaignId)->value('business_id');
+        if ($businessId !== null && ! $this->simulation->covers((string) $businessId)) {
+            throw new CommandRejection('SECONDARY_TRADING_DISABLED', 503);
+        }
+
+        return $this->market->list($userId, $contextRevision, $holdingId, $units, $price, $requestId);
+    }
+
+    public function reserve(int $userId, int $contextRevision, string $listingId, string $units, string $requestId): array
+    {
+        return $this->market->reserve($userId, $contextRevision, $listingId, $units, $requestId);
+    }
+
+    public function settle(int $userId, int $contextRevision, string $listingId, string $reservationId, string $requestId): array
+    {
+        return $this->market->settle($userId, $contextRevision, $listingId, $reservationId, $requestId);
+    }
+
+    public function amend(int $userId, int $contextRevision, string $listingId, ?string $price, string $requestId): array
+    {
+        return $this->market->amend($userId, $contextRevision, $listingId, $price, $requestId);
+    }
+
+    public function halt(int $staffUserId, ?string $noteId, string $reason, string $requestId): array
+    {
+        return $this->market->halt($staffUserId, $noteId, $reason, $requestId);
+    }
+
+    public function lift(int $staffUserId, ?string $noteId, string $reason, string $requestId): array
+    {
+        return $this->market->lift($staffUserId, $noteId, $reason, $requestId);
+    }
+
+    public function cancelListing(int $staffUserId, string $listingId, string $reason, string $requestId): array
+    {
+        return $this->market->cancelListing($staffUserId, $listingId, $reason, $requestId);
+    }
+}

@@ -24,7 +24,7 @@ use App\Infrastructure\Disbursement\SyntheticDisbursementSources;
 use App\Infrastructure\Disbursement\SyntheticPayoutProvider;
 use App\Infrastructure\Disbursement\UnavailableFundedCampaigns;
 use App\Infrastructure\Disbursement\UnavailablePayoutProvider;
-use App\Infrastructure\Secondary\EloquentSecondaryMarket;
+use App\Infrastructure\Secondary\SimulatedSecondaryMarket;
 use App\Infrastructure\Secondary\UnavailableSecondaryMarket;
 use App\Infrastructure\Wallet\SimulatedNoteServicing;
 use App\Infrastructure\Wallet\SimulatedServicingPayouts;
@@ -51,12 +51,13 @@ use Tests\Support\PrimaryHoldingFixture;
  * Nothing of it reaches demo or production.
  */
 
-function asUatProfile(): void
+/** UAT with the simulation on, naming these synthetic test Businesses. */
+function asUatProfile(string ...$businesses): void
 {
     $isolation = Mockery::mock(EnvironmentIsolation::class.'[profile]', [app(), app('config')]);
     $isolation->allows(['profile' => 'uat']);
     app()->instance(EnvironmentIsolation::class, $isolation);
-    config(['app.uat_money_simulation' => true]);
+    config(['app.uat_money_simulation' => true, 'app.uat_money_simulation_businesses' => $businesses]);
 }
 
 it('stays off on UAT until staging opts in', function (): void {
@@ -83,7 +84,7 @@ it('binds the funding source, payout provider and resale to the simulation on UA
         ->and(get_class(app()->make(PayoutProvider::class)))->toBe($provider)
         ->and(get_class(app()->make(SecondaryMarket::class)))->toBe($market);
 })->with([
-    ['uat', true, SimulatedFundedCampaigns::class, SyntheticPayoutProvider::class, EloquentSecondaryMarket::class],
+    ['uat', true, SimulatedFundedCampaigns::class, SyntheticPayoutProvider::class, SimulatedSecondaryMarket::class],
     ['uat', false, UnavailableFundedCampaigns::class, UnavailablePayoutProvider::class, UnavailableSecondaryMarket::class],
     ['testing', true, SyntheticDisbursementSources::class, SyntheticPayoutProvider::class, UnavailableSecondaryMarket::class],
     ['demo', true, UnavailableFundedCampaigns::class, UnavailablePayoutProvider::class, UnavailableSecondaryMarket::class],
@@ -115,7 +116,7 @@ it('hands a failed closing to the retained funding source unchanged', function (
 it('pays a fully funded raise on UAT to the Business\'s linked account, issues its notes and keeps the scheduler idempotent', function (): void {
     ['campaign' => $publication] = PrimaryHoldingFixture::committed(units: ['1080', '1080'], requoted: [0]);
     $businessId = (string) BusinessCampaign::query()->whereKey($publication->id)->value('business_id');
-    asUatProfile();
+    asUatProfile(strtoupper($businessId));
 
     // No linked account yet: the disbursement opens and waits for a destination; nothing is sent.
     expect(Artisan::call('disbursements:reconcile'))->toBe(0);
@@ -157,7 +158,7 @@ function simulatedIssuedNote(string $deposit = '5000000'): array
     app(ApplyBusinessProviderOutcome::class)->handle(app(SyntheticEventSigner::class)->sign(['provider' => 'synthetic',
         'event_id' => 'synthetic-event-'.Str::lower(Str::random(12)), 'reference' => $intent->provider_reference, 'state' => 'succeeded',
         'amount' => $deposit, 'currency' => 'RWF', 'environment' => 'testing', 'observed_at' => now('UTC')->startOfSecond()->format(DATE_ATOM)]));
-    asUatProfile();
+    asUatProfile($businessId);
     Artisan::call('disbursements:reconcile');
     Artisan::call('disbursements:reconcile');
     expect(app(RetainedNoteSchedules::class)->find($publication->id))->not->toBeNull();
@@ -301,9 +302,11 @@ it('refuses simulated servicing and payouts outside the simulation, and finds no
         ->and(app(ServicingStatements::class)->current('x'))->toBeNull()
         ->and(app(ServicingPayouts::class)->payOut('x'))->toBe(0);
 
-    asUatProfile();
+    $namedBusiness = strtolower((string) Str::ulid());
+    asUatProfile($namedBusiness);
     expect(app(SimulatedServicingPayouts::class)->payOut(strtolower((string) Str::ulid())))->toBe(0)
-        ->and(app(SimulatedNoteServicing::class)->lockForPayment(strtolower((string) Str::ulid()), strtolower((string) Str::ulid())))->toBeNull();
+        ->and(app(SimulatedNoteServicing::class)->lockForPayment($namedBusiness, strtolower((string) Str::ulid())))->toBeNull()
+        ->and(app(SimulatedNoteServicing::class)->current($namedBusiness))->toBeNull();
 });
 
 it('collects a repayment under the same note lock resale settles under, so neither sees the holders change mid-way', function (): void {
@@ -338,4 +341,52 @@ it('collects a repayment under the same note lock resale settles under, so neith
         }
         DB::purge('resale_watcher');
     }
+});
+
+it('acts only on the synthetic test Businesses staging names', function (): void {
+    asUatProfile(' 01ABC ', '01def');
+    $simulation = app(UatMoneySimulation::class);
+    expect($simulation->covers('01abc'))->toBeTrue()->and($simulation->covers('01DEF'))->toBeTrue()->and($simulation->covers('01xyz'))->toBeFalse();
+    config(['app.uat_money_simulation_businesses' => null]);
+    expect($simulation->covers('01abc'))->toBeFalse();
+    config(['app.uat_money_simulation' => false, 'app.uat_money_simulation_businesses' => ['01abc']]);
+    expect($simulation->covers('01abc'))->toBeFalse();
+});
+
+it('leaves an unnamed Business\'s funded raise, repayments and resale untouched', function (): void {
+    ['campaign' => $publication] = PrimaryHoldingFixture::committed(units: ['1080', '1080'], requoted: [0]);
+    $businessId = (string) BusinessCampaign::query()->whereKey($publication->id)->value('business_id');
+    asUatProfile(strtolower((string) Str::ulid()));
+
+    expect(Artisan::call('disbursements:reconcile'))->toBe(0)
+        ->and(Disbursement::query()->where('business_campaign_id', $publication->id)->exists())->toBeFalse()
+        ->and(app(ServicingStatements::class)->current($businessId))->toBeNull()
+        ->and(app(SimulatedNoteServicing::class)->lockForPayment($businessId, strtolower($publication->id)))->toBeNull();
+});
+
+it('lists for resale only notes of a named Business, and passes every other market command through', function (): void {
+    $note = simulatedIssuedNote();
+    $holdingId = (string) DB::table('primary_holdings')->where('business_campaign_id', $note['campaign'])->value('id');
+    $market = $this->createMock(SecondaryMarket::class);
+    $market->expects($this->exactly(2))->method('list')->willReturnCallback(fn (int $userId, int $revision, string $holding): array => ['code' => 'SECONDARY_LISTED', 'holding' => $holding]);
+    $market->expects($this->once())->method('reserve')->with(1, 1, 'l', '4', 'r2')->willReturn(['code' => 'reserve']);
+    $market->expects($this->once())->method('settle')->with(1, 1, 'l', 'v', 'r3')->willReturn(['code' => 'settle']);
+    $market->expects($this->once())->method('amend')->with(1, 1, 'l', '2800', 'r4')->willReturn(['code' => 'amend']);
+    $market->expects($this->once())->method('halt')->with(2, null, 'why', 'r5')->willReturn(['code' => 'halt']);
+    $market->expects($this->once())->method('lift')->with(2, 'n', 'why', 'r6')->willReturn(['code' => 'lift']);
+    $market->expects($this->once())->method('cancelListing')->with(2, 'l', 'why', 'r7')->willReturn(['code' => 'cancel']);
+    $simulated = new SimulatedSecondaryMarket($market, app(UatMoneySimulation::class));
+
+    // A lot the market does not know is left to the market itself to refuse.
+    expect($simulated->list(1, 1, $holdingId, '4', '2700', 'r1'))->toBe(['code' => 'SECONDARY_LISTED', 'holding' => $holdingId])
+        ->and($simulated->list(1, 1, 'unknown-lot', '4', '2700', 'r0'))->toBe(['code' => 'SECONDARY_LISTED', 'holding' => 'unknown-lot'])
+        ->and($simulated->reserve(1, 1, 'l', '4', 'r2'))->toBe(['code' => 'reserve'])
+        ->and($simulated->settle(1, 1, 'l', 'v', 'r3'))->toBe(['code' => 'settle'])
+        ->and($simulated->amend(1, 1, 'l', '2800', 'r4'))->toBe(['code' => 'amend'])
+        ->and($simulated->halt(2, null, 'why', 'r5'))->toBe(['code' => 'halt'])
+        ->and($simulated->lift(2, 'n', 'why', 'r6'))->toBe(['code' => 'lift'])
+        ->and($simulated->cancelListing(2, 'l', 'why', 'r7'))->toBe(['code' => 'cancel']);
+
+    config(['app.uat_money_simulation_businesses' => []]);
+    expect(fn () => $simulated->list(1, 1, $holdingId, '4', '2700', 'r8'))->toThrow(CommandRejection::class, 'SECONDARY_TRADING_DISABLED');
 });

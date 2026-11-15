@@ -59,6 +59,14 @@ return [
     'uat_money_simulation' => (bool) env('UAT_MONEY_SIMULATION', false),
 
     /*
+    | The synthetic test Businesses the simulation may act on, as a comma-separated list of Business
+    | IDs. Only their funded raises disburse, only they can repay, and only their notes can be listed
+    | for resale. Empty means none.
+    */
+
+    'uat_money_simulation_businesses' => array_values(array_filter(array_map('trim', explode(',', (string) env('UAT_MONEY_SIMULATION_BUSINESSES', ''))))),
+
+    /*
     |--------------------------------------------------------------------------
     | Application Debug Mode
     |--------------------------------------------------------------------------

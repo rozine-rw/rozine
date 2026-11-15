@@ -7,6 +7,7 @@ namespace App\Infrastructure\Disbursement;
 use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\FailedClosing;
 use App\Application\Disbursement\FundedCampaign;
+use App\Application\Disbursement\FundedCampaignRef;
 use App\Application\Disbursement\IssueInstruction;
 use App\Application\Disbursement\RecheckResult;
 use App\Application\Environment\UatMoneySimulation;
@@ -28,7 +29,8 @@ final readonly class SimulatedFundedCampaigns implements FundedCampaigns
     {
         $this->assertSimulating();
 
-        return $this->retained->funded($before, $limit);
+        return array_values(array_filter($this->retained->funded($before, $limit),
+            fn (FundedCampaignRef $campaign): bool => $this->simulation->covers($campaign->businessId)));
     }
 
     public function lockBusiness(string $businessId): void

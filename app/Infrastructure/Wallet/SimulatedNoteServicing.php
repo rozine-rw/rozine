@@ -47,6 +47,9 @@ final readonly class SimulatedNoteServicing implements NoteServicing, ServicingS
     public function lockForPayment(string $businessId, string $noteId): ?ServicingQuote
     {
         $this->assertSimulating();
+        if (! $this->simulation->covers($businessId)) {
+            return null;
+        }
         $noteId = strtolower($noteId);
         $campaignId = self::campaignId($noteId);
         $schedule = $campaignId === null ? null : $this->schedules->find($campaignId);
@@ -80,6 +83,9 @@ final readonly class SimulatedNoteServicing implements NoteServicing, ServicingS
     public function current(string $businessId): ?array
     {
         $this->assertSimulating();
+        if (! $this->simulation->covers($businessId)) {
+            return null;
+        }
         $repaid = null;
         foreach (DB::table('business_campaigns')->where('business_id', $businessId)->orderBy('id')->pluck('id') as $campaignId) {
             $schedule = $this->schedules->find((string) $campaignId);

@@ -12,7 +12,8 @@ use Illuminate\Contracts\Config\Repository;
  * Business repays from its wallet, Investors are paid, and resale is open, so every journey after
  * funding can be tested. Nothing real moves: the payout provider and the accounts are synthetic.
  * Every other profile (local and testing keep their own fixtures; demo and production) never
- * reaches it, whatever `app.uat_money_simulation` says.
+ * reaches it, whatever `app.uat_money_simulation` says. Within it, only the named synthetic Businesses
+ * in `app.uat_money_simulation_businesses` are disbursed, repay and have their notes resold.
  */
 final readonly class UatMoneySimulation
 {
@@ -22,5 +23,14 @@ final readonly class UatMoneySimulation
     {
         return $this->isolation->profile() === 'uat' && $this->config->get('isolation.live_money_enabled') === false
             && $this->config->get('app.uat_money_simulation') === true;
+    }
+
+    /** Whether the simulation is on and names this Business as one of its synthetic test Businesses. */
+    public function covers(string $businessId): bool
+    {
+        $named = $this->config->get('app.uat_money_simulation_businesses');
+
+        return $this->active() && is_array($named)
+            && in_array(strtolower($businessId), array_map(fn (mixed $id): string => strtolower(trim((string) $id)), $named), true);
     }
 }
