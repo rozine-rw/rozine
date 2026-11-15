@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Business;
 
+use App\Application\Business\Contracts\ServicingStatements;
 use App\Application\Business\Contracts\VisitReadyTicks;
 use App\Application\Primary\Contracts\RetainedNoteSchedules;
 use App\Application\Primary\RetainedNoteInstalment;
@@ -11,7 +12,9 @@ use App\Domain\Auditor\VisitReadyChecklist;
 use Carbon\CarbonImmutable;
 
 /**
- * Repayments over Business Home. No servicing domain is bound yet, so nothing is due or payable;
+ * Repayments over Business Home. Where servicing runs (UAT's money simulation), `statement` is the
+ * Business's repaying note: what each instalment was paid, what is due and payable now, and its
+ * recent repayments. Otherwise nothing is due or payable, and
  * what the Business can see is each issued Note's schedule as it was issued: every instalment's
  * Kigali due date and its principal and return, the equal monthly amount the Business pays (BRS
  * glossary, "Instalment"). It carries no paid amounts, late fees or current claim. The Notes are
@@ -27,7 +30,8 @@ use Carbon\CarbonImmutable;
  */
 final readonly class GetBusinessRepayments
 {
-    public function __construct(private GetBusinessHome $home, private RetainedNoteSchedules $schedules, private VisitReadyChecklist $checklist, private VisitReadyTicks $ticks) {}
+    public function __construct(private GetBusinessHome $home, private RetainedNoteSchedules $schedules, private VisitReadyChecklist $checklist, private VisitReadyTicks $ticks,
+        private ServicingStatements $statements) {}
 
     /** @return array<string, mixed> */
     public function handle(int $userId, int $contextRevision, string $businessId): array
@@ -53,7 +57,7 @@ final readonly class GetBusinessRepayments
             $visitReady['ticked'] = $this->ticks->ticked((string) $home['entry']['business_id'], $visitReady['due_on']);
         }
 
-        return [...$home, 'issued' => $issued, 'visit_ready' => $visitReady];
+        return [...$home, 'issued' => $issued, 'visit_ready' => $visitReady, 'statement' => $this->statements->current((string) $home['entry']['business_id'])];
     }
 
     /** @return array{currency: 'RWF', amount: string} */

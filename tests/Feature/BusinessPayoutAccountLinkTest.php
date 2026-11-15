@@ -136,8 +136,15 @@ it('offers no linking where nothing can verify an account or on the test site, a
     $isolation = Mockery::mock(EnvironmentIsolation::class.'[profile]', [app(), app('config')]);
     $isolation->allows(['profile' => 'uat']);
     app()->instance(EnvironmentIsolation::class, $isolation);
+    config(['app.uat_money_simulation' => false]);
     $this->post(route('business.profile.link', ['business' => $business]), ($this->account)())
         ->assertSessionHasErrors(['number' => 'Accounts cannot be linked on this test site.']);
 
     expect(BusinessFundingMethod::query()->where('business_id', $business)->exists())->toBeFalse();
+
+    // UAT's money simulation opens linking, so a Business can be paid its raise (Erastus, 14 Nov 2026).
+    config(['app.uat_money_simulation' => true]);
+    expect(app(BusinessPayoutAccounts::class)->linkable())->toBeTrue();
+    $this->post(route('business.profile.link', ['business' => $business]), ($this->account)())->assertSessionHasNoErrors();
+    expect(BusinessFundingMethod::query()->where('business_id', $business)->whereNotNull('verified_at')->exists())->toBeTrue();
 });
