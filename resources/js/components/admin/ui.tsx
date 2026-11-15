@@ -591,13 +591,18 @@ export function TableCard({
                 tabIndex={0}
                 className="rz-hscroll overflow-x-auto focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-rz-focus-border"
             >
-                {/* With no rows there is nothing to the side, so the header fits the phone instead of scrolling (#627). */}
+                {/* With no rows there is nothing to the side, so nothing scrolls, and a phone shows the empty state
+                    without a column header squeezed above it; the card's own header and filters stay (#627). */}
                 <div
                     data-testid="table-body"
                     className={cn(empty ? 'min-w-0' : minWidth, 'lg:min-w-0')}
                 >
                     {header}
-                    <div role="table" aria-label={label}>
+                    <div
+                        role="table"
+                        aria-label={label}
+                        className={cn(empty && 'max-lg:hidden')}
+                    >
                         {children}
                     </div>
                 </div>
