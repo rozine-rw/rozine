@@ -54,7 +54,11 @@ class RoleAccessRequestController extends Controller
         return Inertia::render('admin/access-requests', ['server_time' => now()->toIso8601String(),
             'viewer' => (new StaffViewerResource($staff['roles']))->resolve($request),
             'nav' => (new StaffNavigationResource($staff['allowed_actions']))->resolve($request),
-            'badges' => ['applications' => null, 'disbursements' => null], 'search' => '', ...$page,
+            'badges' => ['applications' => null, 'disbursements' => null], 'search' => '', 'roles' => $page['roles'],
+            // An open Business request opens "+ Onboard a business" filled from the request (#627).
+            'requests' => array_map(fn (array $row): array => [...$row, 'grant' => $row['role'] === 'business'
+                ? ['url' => route('staff.businesses.index', ['onboard_request' => $row['id']], false), 'method' => 'get']
+                : $link('staff.auditors.index')], $page['requests']),
             'links' => ['business' => $link('staff.businesses.index'), 'auditor' => $link('staff.auditors.index')]]);
     }
 }

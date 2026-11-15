@@ -2956,6 +2956,8 @@ const rw: Catalog = {
     'admin.businesses.onboard.title': 'Andika ubucuruzi',
     'admin.businesses.onboard.body':
         'Andika sosiyete ukoresheje kode yayo ya RDB, cyangwa umucuruzi ku giti cye, hamwe n’uhagarariye ubucuruzi ku mugaragaro. Uhagarariye agomba kuba asanzwe afite konti ya Rozine yemejwe umwirondoro. Ahabwa inshingano n’uburenganzira byose kuri manda ya mbere. Iri hinduka ryandikwa n’izina ryawe n’impamvu.',
+    'admin.businesses.onboard.prefilled':
+        'Byujujwe hakurikijwe ubusabe bwo kwinjira. Genzura buri gice kandi wuzuze ibisigaye mbere yo kwandika.',
     'admin.businesses.onboard.field.kind': 'Ubwoko bw’ubucuruzi',
     'admin.businesses.onboard.kind.organization': 'Sosiyete',
     'admin.businesses.onboard.kind.person': 'Umucuruzi ku giti cye',
@@ -8345,8 +8347,16 @@ const rw: Catalog = {
     'admin.access_requests.reference.business': 'Kode ya RDB {reference}',
     'admin.access_requests.reference.auditor':
         'Uruhushya rwa ICPAR {reference}',
-    'admin.access_requests.grant.business': 'Amasosiyete →',
+    'admin.access_requests.grant.business': 'Andika ubu bucuruzi →',
     'admin.access_requests.grant.auditor': 'Urusobe rw’Abagenzuzi →',
+    'admin.access_requests.identity.verified': 'Umwirondoro wemejwe',
+    'admin.access_requests.identity.unverified': 'Umwirondoro ntiwemejwe',
+    'admin.access_requests.time': '{time} CAT',
+    'admin.access_requests.handled_at':
+        'Uruhare ruheruka guhindurwa {time} CAT',
+    'admin.access_requests.handled_empty_title': 'Nta busabe burakorwaho',
+    'admin.access_requests.handled_empty_body':
+        'Iyo umuntu amaze guhabwa uruhare yasabye, ubusabe bwe buza hano n’uko ubunyamuryango bwe buhagaze.',
     'admin.nav.reports': 'Raporo',
     'admin.section.reconciliation.title': 'Guhuza konti',
     'admin.section.reconciliation.subtitle':

@@ -31,7 +31,7 @@ class RoleHomeController extends Controller
         $business = $applications->handle($userId, $identity['context_revision'], null, 1)['entries'][0]['business_id'] ?? null;
 
         if ($business === null) {
-            Inertia::flash('toast', ['type' => 'info', 'message' => __('Your business is not set up on Rozine yet. Email hello@rozine.rw and our team will start your business verification.')]);
+            Inertia::flash('toast', ['type' => 'info', 'message' => __('Your Business access is ready, but no business is linked to it yet. Our team will finish setting up your business, and then the Business app opens from here.')]);
 
             return redirect()->route('dashboard');
         }

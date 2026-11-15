@@ -12,6 +12,7 @@ use App\Application\Business\BrowseBusinessDirectory;
 use App\Application\Business\OnboardBusiness;
 use App\Application\Evidence\GetStaffStatementAuditReadiness;
 use App\Application\Evidence\RequestStatementReview;
+use App\Application\Identity\BrowseRoleAccessRequests;
 use App\Application\Identity\GetStaffAccess;
 use App\Application\Operations\PlatformPolicies;
 use App\Http\Requests\Auditor\ResolveAuditAssignmentRequest;
@@ -106,7 +107,7 @@ class StaffBusinessDirectoryController extends Controller
     public function __construct(private BrowseBusinessDirectory $directory) {}
 
     public function index(ListBusinessDirectoryRequest $request, GetStaffAccess $access, GetAuditLocation $location, GetBusinessAuditEngagement $audits,
-        GetStaffStatementAuditReadiness $statements): Response|StaffBusinessDirectoryResource
+        GetStaffStatementAuditReadiness $statements, BrowseRoleAccessRequests $requests): Response|StaffBusinessDirectoryResource
     {
         $actorId = (int) $request->user()?->getAuthIdentifier();
         /** @var 'all' $chip */
@@ -130,7 +131,8 @@ class StaffBusinessDirectoryController extends Controller
                     'partners' => $audits->partners($actorId, $business['row']['business_id']),
                     'statements' => $statements->handle($actorId, $business['row']['business_id'])] : null,
             'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions'], 'onboarded' => session('business_onboarded'),
-            'onboarding_sectors' => OnboardBusiness::sectors()]);
+            'onboarding_sectors' => OnboardBusiness::sectors(),
+            'onboarding_prefill' => ($onboard = $request->validated('onboard_request')) === null ? null : $requests->onboardingPrefill($actorId, (string) $onboard)]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('admin/parties', $resource->resolve($request));
     }
