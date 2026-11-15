@@ -174,6 +174,7 @@ describe('Access requests', () => {
         });
 
         expect(within(open).getByText('Open One')).toBeInTheDocument();
+        expect(open).not.toHaveClass('max-lg:hidden');
         expect(within(open).queryByText('Active One')).not.toBeInTheDocument();
         expect(within(handled).queryByText('Open One')).not.toBeInTheDocument();
         expect(within(handled).getByText('Membership')).toBeInTheDocument();
@@ -240,5 +241,12 @@ describe('Access requests', () => {
 
         expect(body).toHaveClass('min-w-0');
         expect(body).not.toHaveClass('min-w-[760px]');
+        // …and a phone shows the empty state without the column header squeezed above it.
+        expect(
+            screen.getByRole('table', { name: 'Access requests' }),
+        ).toHaveClass('max-lg:hidden');
+        expect(
+            screen.getByRole('table', { name: 'Handled access requests' }),
+        ).toHaveClass('max-lg:hidden');
     });
 });
