@@ -591,7 +591,8 @@ export function TableCard({
                 tabIndex={0}
                 className="rz-hscroll overflow-x-auto focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-rz-focus-border"
             >
-                <div className={cn(minWidth, 'lg:min-w-0')}>
+                {/* With no rows there is nothing to the side, so the header fits the phone instead of scrolling (#627). */}
+                <div className={cn(empty ? 'min-w-0' : minWidth, 'lg:min-w-0')}>
                     {header}
                     <div role="table" aria-label={label}>
                         {children}

@@ -233,5 +233,16 @@ describe('Access requests', () => {
         expect(
             screen.queryByText('Swipe sideways to see every column.'),
         ).not.toBeInTheDocument();
+        // With no rows the header fits the phone instead of scrolling sideways.
+        expect(
+            screen
+                .getByRole('group', { name: 'Access requests' })
+                .querySelector('.min-w-0'),
+        ).not.toBeNull();
+        expect(
+            screen
+                .getByRole('group', { name: 'Access requests' })
+                .querySelector('.min-w-\\[760px\\]'),
+        ).toBeNull();
     });
 });
