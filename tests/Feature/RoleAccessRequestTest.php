@@ -157,11 +157,14 @@ it('shows staff who grant each role the requests for it, newest first, and refus
         ->assertInertia(fn (Assert $page): Assert => $page->where('onboard.prefill', null));
     $this->actingAs($staff)->get(route('staff.businesses.index'))->assertInertia(fn (Assert $page): Assert => $page->where('onboard.prefill', null));
     $this->actingAs($staff)->get(route('staff.businesses.index', ['onboard_request' => 'not-a-ulid']))->assertSessionHasErrors('onboard_request');
-    RoleMembership::factory()->create(['party_id' => $business->party_id, 'role' => 'business', 'status' => 'pending']);
-    $this->actingAs($staff)->get($props['requests'][1]['grant']['url'])->assertInertia(fn (Assert $page): Assert => $page->where('onboard.prefill', null));
+    // Staff who do not onboard Businesses get nothing for the same still-open request.
     $analyst = User::factory()->withTwoFactor()->create();
     StaffFixture::provision($analyst, ['analyst'], 'Directory without onboarding.');
-    expect(app(BrowseRoleAccessRequests::class)->onboardingPrefill($analyst->id, $rows[1]->id))->toBeNull();
+    expect(app(BrowseRoleAccessRequests::class)->onboardingPrefill($analyst->id, $rows[1]->id))->toBeNull()
+        ->and(app(BrowseRoleAccessRequests::class)->onboardingPrefill($staff->id, $rows[1]->id))->not->toBeNull();
+    $this->actingAs($analyst)->get($props['requests'][1]['grant']['url'])->assertInertia(fn (Assert $page): Assert => $page->where('onboard', null));
+    RoleMembership::factory()->create(['party_id' => $business->party_id, 'role' => 'business', 'status' => 'pending']);
+    $this->actingAs($staff)->get($props['requests'][1]['grant']['url'])->assertInertia(fn (Assert $page): Assert => $page->where('onboard.prefill', null));
 
     $treasury = User::factory()->withTwoFactor()->create();
     StaffFixture::provision($treasury, ['treasury'], 'Access request refusal.');
