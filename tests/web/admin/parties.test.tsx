@@ -603,7 +603,26 @@ describe('Party directories', () => {
         districts: { 'Kigali City': ['Gasabo'], Southern: ['Huye'] },
         latest_year: 2026,
         prefill: null,
+        request_closed: false,
     };
+
+    it('says when the access request it was opened from is already handled', () => {
+        render(
+            <AdminParties
+                {...{
+                    ...props(businessesFixture),
+                    onboard: { ...ONBOARD, request_closed: true },
+                }}
+            />,
+        );
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'That access request is already handled or no longer open, so nothing was filled in.',
+        );
+        expect(
+            screen.getByRole('button', { name: '+ Onboard a business' }),
+        ).toBeInTheDocument();
+    });
 
     it('opens the onboard form filled from an access request, and blanks it on cancel', () => {
         render(

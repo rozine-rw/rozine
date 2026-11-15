@@ -2958,6 +2958,8 @@ const rw: Catalog = {
         'Andika sosiyete ukoresheje kode yayo ya RDB, cyangwa umucuruzi ku giti cye, hamwe n’uhagarariye ubucuruzi ku mugaragaro. Uhagarariye agomba kuba asanzwe afite konti ya Rozine yemejwe umwirondoro. Ahabwa inshingano n’uburenganzira byose kuri manda ya mbere. Iri hinduka ryandikwa n’izina ryawe n’impamvu.',
     'admin.businesses.onboard.prefilled':
         'Byujujwe hakurikijwe ubusabe bwo kwinjira. Genzura buri gice kandi wuzuze ibisigaye mbere yo kwandika.',
+    'admin.businesses.onboard.request_closed':
+        'Ubwo busabe bwo kwinjira bwamaze gukorwaho cyangwa ntibukiri bufunguye, nta kintu cyujujwe.',
     'admin.businesses.onboard.field.kind': 'Ubwoko bw’ubucuruzi',
     'admin.businesses.onboard.kind.organization': 'Sosiyete',
     'admin.businesses.onboard.kind.person': 'Umucuruzi ku giti cye',

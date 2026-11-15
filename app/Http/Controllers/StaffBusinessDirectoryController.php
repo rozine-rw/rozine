@@ -121,6 +121,8 @@ class StaffBusinessDirectoryController extends Controller
         $staff = $access->handle($actorId);
         $business = $selected === null ? null : $this->directory->business($actorId, (string) $selected);
 
+        $onboard = $request->validated('onboard_request');
+        $prefill = $onboard === null ? null : $requests->onboardingPrefill($actorId, (string) $onboard);
         $resource = new StaffBusinessDirectoryResource([...$this->directory->directory($actorId, $chip, $sort, $sector, $search, self::LIMIT), 'policy' => PlatformPolicies::businesses(),
             'chip' => $chip, 'sort' => $sort, 'sector' => $sector, 'search' => $search,
             'business' => $business,
@@ -132,7 +134,7 @@ class StaffBusinessDirectoryController extends Controller
                     'statements' => $statements->handle($actorId, $business['row']['business_id'])] : null,
             'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions'], 'onboarded' => session('business_onboarded'),
             'onboarding_sectors' => OnboardBusiness::sectors(),
-            'onboarding_prefill' => ($onboard = $request->validated('onboard_request')) === null ? null : $requests->onboardingPrefill($actorId, (string) $onboard)]);
+            'onboarding_prefill' => $prefill, 'onboarding_request_closed' => $onboard !== null && $prefill === null]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('admin/parties', $resource->resolve($request));
     }

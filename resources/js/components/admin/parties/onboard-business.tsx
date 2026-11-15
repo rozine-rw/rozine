@@ -189,7 +189,7 @@ export function OnboardBusiness({ action }: { action: OnboardBusinessAction }) {
     );
 
     if (!open) {
-        return (
+        const button = (
             <button
                 type="button"
                 onClick={() => setOpen(true)}
@@ -197,6 +197,21 @@ export function OnboardBusiness({ action }: { action: OnboardBusinessAction }) {
             >
                 {t('admin.businesses.onboard.open')}
             </button>
+        );
+
+        // A link from a request that is handled or gone says so, instead of opening the plain directory silently.
+        return action.request_closed ? (
+            <div className="flex flex-wrap items-center justify-end gap-2">
+                <p
+                    role="status"
+                    className="text-[12px] font-medium text-rz-muted"
+                >
+                    {t('admin.businesses.onboard.request_closed')}
+                </p>
+                {button}
+            </div>
+        ) : (
+            button
         );
     }
 
