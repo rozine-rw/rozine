@@ -73,7 +73,7 @@ describe('Access requests', () => {
                         handled_at: null,
                         identity_verified: false,
                         grant: {
-                            url: '/admin/businesses?onboard=request&name=Kivu',
+                            url: '/admin/businesses?onboard_request=01JBUSINESS',
                             method: 'get',
                         },
                     },
@@ -117,7 +117,7 @@ describe('Access requests', () => {
             }),
         ).toHaveAttribute(
             'href',
-            '/admin/businesses?onboard=request&name=Kivu',
+            '/admin/businesses?onboard_request=01JBUSINESS',
         );
         expect(screen.getByText('Nothing handled yet')).toBeInTheDocument();
     });
@@ -187,7 +187,9 @@ describe('Access requests', () => {
             const row = rowOf(name);
 
             expect(row).toHaveTextContent(status);
-            expect(row).toHaveTextContent('Handled 15 Nov 2026 · 11:30 CAT');
+            expect(row).toHaveTextContent(
+                'Role last updated 15 Nov 2026 · 11:30 CAT',
+            );
             expect(
                 within(row).queryByRole('link', {
                     name: 'Onboard this business →',

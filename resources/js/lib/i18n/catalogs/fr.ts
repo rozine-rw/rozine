@@ -8379,7 +8379,7 @@ const fr: Catalog = {
     'admin.access_requests.identity.verified': 'Identité vérifiée',
     'admin.access_requests.identity.unverified': 'Identité non vérifiée',
     'admin.access_requests.time': '{time} CAT',
-    'admin.access_requests.handled_at': 'Traitée {time} CAT',
+    'admin.access_requests.handled_at': 'Rôle mis à jour le {time} CAT',
     'admin.access_requests.handled_empty_title':
         'Rien de traité pour l’instant',
     'admin.access_requests.handled_empty_body':

@@ -13,6 +13,7 @@ use App\Domain\Operations\OperationResult;
 use App\Models\RoleAccessRequest;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 
@@ -92,6 +93,18 @@ final class EloquentRoleAccessRequests implements RoleAccessRequests
                 'identity_verified' => $row->getAttribute('identity_verified_at') !== null])->all());
 
         return $rows;
+    }
+
+    public function onboardingPrefill(string $requestId): ?array
+    {
+        $row = RoleAccessRequest::query()->whereKey($requestId)->where('role_access_requests.role', 'business')
+            ->join('users', 'users.party_id', '=', 'role_access_requests.party_id')
+            ->whereNotExists(fn (Builder $query) => $query->from('role_memberships')
+                ->whereColumn('role_memberships.party_id', 'role_access_requests.party_id')->where('role_memberships.role', 'business'))
+            ->first(['role_access_requests.organization', 'role_access_requests.reference', 'users.email as requester_email']);
+
+        return $row === null ? null : ['name' => $row->organization, 'rdb_code' => $row->reference ?? '',
+            'representative_email' => (string) $row->getAttribute('requester_email')];
     }
 
     /** A raw timestamp column as an ISO 8601 instant, or null. */

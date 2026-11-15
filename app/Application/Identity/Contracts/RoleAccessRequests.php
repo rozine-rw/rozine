@@ -32,6 +32,14 @@ interface RoleAccessRequests
     public function request(int $userId, string $requestId, string $role, array $details): array;
 
     /**
+     * What an open Business request carries into "+ Onboard a business" (#627): the business name, the
+     * RDB code and the requester's email. Null when no such request is open.
+     *
+     * @return array{name: string, rdb_code: string, representative_email: string}|null
+     */
+    public function onboardingPrefill(string $requestId): ?array;
+
+    /**
      * The requests for the roles the staff member may act on: open ones (no membership of that role
      * yet) first, then handled ones with the membership's status as their outcome, each newest first.
      *

@@ -8352,7 +8352,8 @@ const rw: Catalog = {
     'admin.access_requests.identity.verified': 'Umwirondoro wemejwe',
     'admin.access_requests.identity.unverified': 'Umwirondoro ntiwemejwe',
     'admin.access_requests.time': '{time} CAT',
-    'admin.access_requests.handled_at': 'Byakozweho {time} CAT',
+    'admin.access_requests.handled_at':
+        'Uruhare ruheruka guhindurwa {time} CAT',
     'admin.access_requests.handled_empty_title': 'Nta busabe burakorwaho',
     'admin.access_requests.handled_empty_body':
         'Iyo umuntu amaze guhabwa uruhare yasabye, ubusabe bwe buza hano n’uko ubunyamuryango bwe buhagaze.',

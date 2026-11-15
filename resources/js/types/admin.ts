@@ -2288,7 +2288,7 @@ export type AccessRequestRow = {
      * membership's status: the request is handled and leaves the open queue.
      */
     outcome: 'pending' | 'active' | 'suspended' | 'revoked' | null;
-    /** When that membership last changed; null while the request is open. */
+    /** When that membership last changed (not when it was first granted); null while the request is open. */
     handled_at: string | null;
     /** Whether the requester's identity is verified, which granting the role needs. */
     identity_verified: boolean;

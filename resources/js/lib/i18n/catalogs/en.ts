@@ -8078,7 +8078,7 @@ const en = {
     'admin.access_requests.identity.verified': 'Identity verified',
     'admin.access_requests.identity.unverified': 'Identity not verified',
     'admin.access_requests.time': '{time} CAT',
-    'admin.access_requests.handled_at': 'Handled {time} CAT',
+    'admin.access_requests.handled_at': 'Role last updated {time} CAT',
     'admin.access_requests.handled_empty_title': 'Nothing handled yet',
     'admin.access_requests.handled_empty_body':
         'Once the person holds the role they asked for, their request moves here with that membership’s status.',

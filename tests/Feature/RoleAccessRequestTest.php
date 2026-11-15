@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Identity\BrowseRoleAccessRequests;
 use App\Models\Party;
 use App\Models\RoleAccessRequest;
 use App\Models\RoleMembership;
@@ -146,15 +147,21 @@ it('shows staff who grant each role the requests for it, newest first, and refus
                 'handled_at' => null, 'identity_verified' => true, 'grant' => ['url' => '/admin/auditors', 'method' => 'get']],
             ['id' => $rows[1]->id, 'role' => 'business', 'name' => 'Jean Mugisha', 'email' => $business->email, 'organization' => 'Kivu Harvest Ltd',
                 'reference' => null, 'phone' => '+250 788 000 000', 'note' => 'Coffee washing station', 'sent_at' => $rows[1]->created_at->toIso8601String(), 'outcome' => null,
-                'handled_at' => null, 'identity_verified' => true, 'grant' => ['url' => route('staff.businesses.index',
-                    ['onboard' => 'request', 'name' => 'Kivu Harvest Ltd', 'rdb_code' => '', 'email' => $business->email], false), 'method' => 'get']],
+                'handled_at' => null, 'identity_verified' => true, 'grant' => ['url' => '/admin/businesses?onboard_request='.$rows[1]->id, 'method' => 'get']],
         ]);
     // The Business link opens "+ Onboard a business" filled from the request (#627).
     $this->actingAs($staff)->get($props['requests'][1]['grant']['url'])->assertOk()->assertInertia(fn (Assert $page): Assert => $page
         ->where('onboard.prefill', ['name' => 'Kivu Harvest Ltd', 'rdb_code' => '', 'representative_email' => $business->email]));
-    $this->actingAs($staff)->get(route('staff.businesses.index', ['onboard' => 'request', 'name' => ['x'], 'rdb_code' => str_repeat('9', 40)]))
-        ->assertInertia(fn (Assert $page): Assert => $page->where('onboard.prefill', ['name' => '', 'rdb_code' => str_repeat('9', 32), 'representative_email' => '']));
+    // Only an open Business request fills the form, and only for staff who onboard Businesses.
+    $this->actingAs($staff)->get(route('staff.businesses.index', ['onboard_request' => $rows[0]->id]))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('onboard.prefill', null));
     $this->actingAs($staff)->get(route('staff.businesses.index'))->assertInertia(fn (Assert $page): Assert => $page->where('onboard.prefill', null));
+    $this->actingAs($staff)->get(route('staff.businesses.index', ['onboard_request' => 'not-a-ulid']))->assertSessionHasErrors('onboard_request');
+    RoleMembership::factory()->create(['party_id' => $business->party_id, 'role' => 'business', 'status' => 'pending']);
+    $this->actingAs($staff)->get($props['requests'][1]['grant']['url'])->assertInertia(fn (Assert $page): Assert => $page->where('onboard.prefill', null));
+    $analyst = User::factory()->withTwoFactor()->create();
+    StaffFixture::provision($analyst, ['analyst'], 'Directory without onboarding.');
+    expect(app(BrowseRoleAccessRequests::class)->onboardingPrefill($analyst->id, $rows[1]->id))->toBeNull();
 
     $treasury = User::factory()->withTwoFactor()->create();
     StaffFixture::provision($treasury, ['treasury'], 'Access request refusal.');
