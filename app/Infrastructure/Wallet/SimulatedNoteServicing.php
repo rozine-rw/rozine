@@ -21,7 +21,6 @@ use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use LogicException;
-use Throwable;
 
 /**
  * Servicing on UAT while its money simulation is on (Erastus, 14 Nov 2026), until the servicing
@@ -71,14 +70,9 @@ final readonly class SimulatedNoteServicing implements NoteServicing, ServicingS
         if ($this->revision($noteId, $repaymentId) !== $expectedRevision) {
             throw new CommandRejection('VERSION_CONFLICT', 409, $this->revision($noteId, $repaymentId));
         }
-        // Paid on once the repayment commits; one that fails is retried by `servicing:payouts` each minute.
-        DB::afterCommit(function () use ($repaymentId): void {
-            try {
-                $this->payouts->payOut($repaymentId);
-            } catch (Throwable $exception) {
-                report($exception);
-            }
-        });
+        // Paid on in the collecting transaction: the holders at collection are the ones paid, and a
+        // payout that cannot post refuses the repayment rather than leaving it to a later holder.
+        $this->payouts->payOut($repaymentId);
 
         return $expectedRevision + 1;
     }

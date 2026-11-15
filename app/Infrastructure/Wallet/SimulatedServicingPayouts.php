@@ -92,15 +92,6 @@ final readonly class SimulatedServicingPayouts implements ServicingPayouts
         });
     }
 
-    public function unpaid(int $limit): array
-    {
-        $this->assertSimulating();
-
-        return array_values(BusinessRepayment::query()->whereNotExists(fn ($query) => $query->selectRaw('1')->from('servicing_payouts')
-            ->whereColumn('servicing_payouts.repayment_id', 'business_repayments.id'))->orderBy('id')->limit($limit)->pluck('id')
-            ->map(fn (mixed $id): string => (string) $id)->all());
-    }
-
     /**
      * Shares an amount over the lots by units: each gets its floor, then the largest remainders one
      * RWF each, ties to the earlier lot.

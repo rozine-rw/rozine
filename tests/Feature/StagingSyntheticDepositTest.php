@@ -162,7 +162,8 @@ it('refuses a new Business deposit on UAT while its money simulation is off and 
 it('lets a Business deposit and withdraw on UAT while its money simulation is on, so it can repay a raise', function (): void {
     $business = stagingBusiness();
     asStaging();
-    expect(config('app.uat_money_simulation'))->toBeTrue();
+    expect(config('app.uat_money_simulation'))->toBeFalse();
+    config(['app.uat_money_simulation' => true]);
 
     $this->actingAs($business['user'])->postJson(route('business.wallet.deposit', $business['business']->id), stagingDeposit($business['method'], '40000'))->assertOk();
     expect(app(GetBusinessWallet::class)->handle($business['user']->id, 1, $business['business']->id)['allowed_actions'])->toBe(['business.wallet.deposit', 'business.wallet.withdraw'])

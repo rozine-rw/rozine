@@ -28,7 +28,6 @@ use App\Infrastructure\Secondary\EloquentSecondaryMarket;
 use App\Infrastructure\Secondary\UnavailableSecondaryMarket;
 use App\Infrastructure\Wallet\SimulatedNoteServicing;
 use App\Infrastructure\Wallet\SimulatedServicingPayouts;
-use App\Infrastructure\Wallet\UnavailableServicingPayouts;
 use App\Models\BusinessCampaign;
 use App\Models\BusinessDepositIntent;
 use App\Models\BusinessFundingMethod;
@@ -56,7 +55,15 @@ function asUatProfile(): void
     $isolation = Mockery::mock(EnvironmentIsolation::class.'[profile]', [app(), app('config')]);
     $isolation->allows(['profile' => 'uat']);
     app()->instance(EnvironmentIsolation::class, $isolation);
+    config(['app.uat_money_simulation' => true]);
 }
+
+it('stays off on UAT until staging opts in', function (): void {
+    expect(config('app.uat_money_simulation'))->toBeFalse();
+    app()->instance(EnvironmentIsolation::class, Mockery::mock(EnvironmentIsolation::class, ['profile' => 'uat']));
+
+    expect(app(UatMoneySimulation::class)->active())->toBeFalse();
+});
 
 it('is active only on UAT with live money off and its switch on', function (string $profile, bool $liveMoney, bool $switch, bool $active): void {
     app()->instance(EnvironmentIsolation::class, Mockery::mock(EnvironmentIsolation::class, ['profile' => $profile]));
@@ -198,9 +205,7 @@ it('lets the Business repay its note on UAT and pays each holder its share less 
             ->where('schedule.0.status', 'paid')->where('schedule.0.paid.total.amount', $first->gross)->where('pay.options.0.instalment_indexes', [2])
             ->where('recent.0.allocation', 'allocated')->where('recent.0.investors_paid', 2)->where('recent.0.amount.amount', $first->gross));
 
-    // Paid on once: the sweep finds nothing more, and a stale quote is refused.
-    expect(Artisan::call('servicing:payouts'))->toBe(0)->and(Artisan::output())->toContain('Paid on 0 repayments')
-        ->and(DB::table('servicing_payouts')->count())->toBe(2);
+    // Paid on once, and a stale quote is refused.
     $this->actingAs($note['payer'])->postJson(route('business.repayments.pay', $note['business']),
         ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, 'note_id' => $note['campaign'], 'option' => 'next_instalment',
             'expected_servicing_revision' => 1, 'quoted_total' => ['currency' => 'RWF', 'amount' => $first->gross]])
@@ -211,7 +216,7 @@ it('lets the Business repay its note on UAT and pays each holder its share less 
             'next_instalment', WalletMoney::of($first->gross), 2)))->toThrow(CommandRejection::class, 'VERSION_CONFLICT');
 });
 
-it('keeps a repayment whose payout fails, and the sweep reports it as failed until it can be paid', function (): void {
+it('refuses a repayment whose payout cannot post, so nothing is collected without paying its holders', function (): void {
     $note = simulatedIssuedNote();
     $schedule = app(RetainedNoteSchedules::class)->find($note['campaign']);
     $holders = $this->createStub(NoteUnitHolders::class);
@@ -221,9 +226,8 @@ it('keeps a repayment whose payout fails, and the sweep reports it as failed unt
 
     $this->actingAs($note['payer'])->postJson(route('business.repayments.pay', $note['business']),
         ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, 'note_id' => $note['campaign'], 'option' => 'next_instalment',
-            'expected_servicing_revision' => 1, 'quoted_total' => ['currency' => 'RWF', 'amount' => $schedule->instalments[0]->gross]])->assertOk();
-    expect(DB::table('business_repayments')->count())->toBe(1)->and(DB::table('servicing_payouts')->count())->toBe(0)
-        ->and(Artisan::call('servicing:payouts'))->toBe(0)->and(Artisan::output())->toContain('Paid on 0 repayments to 0 lots; 1 failed.');
+            'expected_servicing_revision' => 1, 'quoted_total' => ['currency' => 'RWF', 'amount' => $schedule->instalments[0]->gross]])->assertServerError();
+    expect(DB::table('business_repayments')->count())->toBe(0)->and(DB::table('servicing_payouts')->count())->toBe(0);
 });
 
 it('shows instalments past their date as due now and overdue with their days past due', function (): void {
@@ -255,7 +259,7 @@ it('reads repaid once every instalment is paid, and offers nothing more', functi
     expect((string) DB::table('servicing_payouts')->sum('principal'))->toBe($schedule->principal);
 });
 
-it('pays a sold unit\'s share to its buyer, and the sweep pays on a repayment whose payout did not run', function (): void {
+it('pays a sold unit\'s share to whoever holds it at collection, and a later resale moves nothing already paid', function (): void {
     $note = simulatedIssuedNote();
     $buyer = InvestorWalletFixture::ready()['user']->party_id;
     $schedule = app(RetainedNoteSchedules::class)->find($note['campaign']);
@@ -270,29 +274,31 @@ it('pays a sold unit\'s share to its buyer, and the sweep pays on a repayment wh
             'ordinals' => [['first' => (string) $schedule->holdings[1]->ordinals[0]['first'], 'last' => (string) $schedule->holdings[1]->ordinals[0]['last']]]],
     ]);
     app()->instance(NoteUnitHolders::class, $holders);
-    app()->instance(ServicingPayouts::class, new UnavailableServicingPayouts);
 
     $this->actingAs($note['payer'])->postJson(route('business.repayments.pay', $note['business']),
         ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, 'note_id' => $note['campaign'], 'option' => 'next_instalment',
             'expected_servicing_revision' => 1, 'quoted_total' => ['currency' => 'RWF', 'amount' => $schedule->instalments[0]->gross]])->assertOk();
-    expect(DB::table('servicing_payouts')->count())->toBe(0);
-
-    app()->forgetInstance(ServicingPayouts::class);
-    expect(Artisan::call('servicing:payouts'))->toBe(0)->and(Artisan::output())->toContain('Paid on 1 repayments to 3 lots; 0 failed.');
     $bought = DB::table('servicing_payouts')->where('party_id', $buyer)->sole();
-    expect($bought->lot_type)->toBe('secondary_transfer')->and((int) $bought->units)->toBe(80)
+    expect(DB::table('servicing_payouts')->count())->toBe(3)->and($bought->lot_type)->toBe('secondary_transfer')->and((int) $bought->units)->toBe(80)
         ->and($bought->rate_bps)->toBe($seller->terms['earnings_fee']['rate_bps'])
-        ->and((string) DB::table('servicing_payouts')->sum('principal'))->toBe($schedule->instalments[0]->principal);
+        ->and((string) DB::table('servicing_payouts')->sum('principal'))->toBe($schedule->instalments[0]->principal)
+        ->and(investorAvailable($buyer))->toBe((string) $bought->net);
+
+    // The buyer resells all 80 units after collection: the repayment already paid stays with the holder at collection.
+    $later = $this->createStub(NoteUnitHolders::class);
+    $later->method('lots')->willReturn([['lot_type' => 'primary_holding', 'lot_id' => $seller->holdingId, 'party_id' => $seller->partyId, 'units' => '1080',
+        'ordinals' => [['first' => (string) $seller->ordinals[0]['first'], 'last' => (string) $seller->ordinals[0]['last']]]]]);
+    app()->instance(NoteUnitHolders::class, $later);
+    $repaymentId = (string) DB::table('business_repayments')->value('id');
+    expect(app(SimulatedServicingPayouts::class)->payOut($repaymentId))->toBe(0)
+        ->and(DB::table('servicing_payouts')->count())->toBe(3)->and(investorAvailable($buyer))->toBe((string) $bought->net);
 });
 
 it('refuses simulated servicing and payouts outside the simulation, and finds nothing to pay on where none runs', function (): void {
     expect(fn () => app(SimulatedNoteServicing::class)->current('x'))->toThrow(LogicException::class, 'UAT_SIMULATION_ONLY')
         ->and(fn () => app(SimulatedServicingPayouts::class)->payOut('x'))->toThrow(LogicException::class, 'UAT_SIMULATION_ONLY')
-        ->and(fn () => app(SimulatedServicingPayouts::class)->unpaid(5))->toThrow(LogicException::class, 'UAT_SIMULATION_ONLY')
         ->and(app(ServicingStatements::class)->current('x'))->toBeNull()
         ->and(app(ServicingPayouts::class)->payOut('x'))->toBe(0);
-    expect(Artisan::call('servicing:payouts'))->toBe(0)->and(Artisan::output())->toContain('Paid on 0 repayments to 0 lots; 0 failed.')
-        ->and(Artisan::call('servicing:payouts', ['--limit' => '0']))->toBe(2);
 
     asUatProfile();
     expect(app(SimulatedServicingPayouts::class)->payOut(strtolower((string) Str::ulid())))->toBe(0)
