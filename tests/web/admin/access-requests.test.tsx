@@ -55,6 +55,9 @@ describe('Access requests', () => {
                         note: null,
                         sent_at: '2026-11-14T13:45:00+00:00',
                         outcome: null,
+                        handled_at: null,
+                        identity_verified: true,
+                        grant: { url: '/admin/auditors', method: 'get' },
                     },
                     {
                         id: '01JBUSINESS',
@@ -67,6 +70,12 @@ describe('Access requests', () => {
                         note: 'Coffee washing station',
                         sent_at: '2026-11-14T12:00:00+00:00',
                         outcome: null,
+                        handled_at: null,
+                        identity_verified: false,
+                        grant: {
+                            url: '/admin/businesses?onboard_request=01JBUSINESS',
+                            method: 'get',
+                        },
                     },
                 ])}
             />,
@@ -85,6 +94,8 @@ describe('Access requests', () => {
         expect(auditor).toHaveTextContent('Auditor');
         expect(auditor).toHaveTextContent('—');
         expect(auditor).toHaveTextContent('ICPAR licence ICPAR-2041');
+        expect(auditor).toHaveTextContent('Identity verified');
+        expect(auditor).toHaveTextContent('14 Nov 2026 · 15:45 CAT');
         expect(
             within(auditor).getByRole('link', { name: 'grace@example.test' }),
         ).toHaveAttribute('href', 'mailto:grace@example.test');
@@ -99,10 +110,16 @@ describe('Access requests', () => {
         expect(
             within(business).getByRole('link', { name: '+250 788 000 000' }),
         ).toHaveAttribute('href', 'tel:+250 788 000 000');
+        expect(business).toHaveTextContent('Identity not verified');
         expect(
-            within(business).getByRole('link', { name: 'Businesses →' }),
-        ).toHaveAttribute('href', '/admin/businesses');
-        expect(screen.queryByText('Handled')).not.toBeInTheDocument();
+            within(business).getByRole('link', {
+                name: 'Onboard this business →',
+            }),
+        ).toHaveAttribute(
+            'href',
+            '/admin/businesses?onboard_request=01JBUSINESS',
+        );
+        expect(screen.getByText('Nothing handled yet')).toBeInTheDocument();
     });
 
     it('moves a request whose person now holds the role to Handled, with the membership status', () => {
@@ -114,11 +131,20 @@ describe('Access requests', () => {
             phone: null,
             note: null,
             sent_at: '2026-11-14T12:00:00+00:00',
+            handled_at: '2026-11-15T09:30:00+00:00',
+            identity_verified: true,
+            grant: { url: '/admin/businesses', method: 'get' as const },
         };
         render(
             <AdminAccessRequests
                 {...page([
-                    { ...sent, id: '1', name: 'Open One', outcome: null },
+                    {
+                        ...sent,
+                        id: '1',
+                        name: 'Open One',
+                        outcome: null,
+                        handled_at: null,
+                    },
                     {
                         ...sent,
                         id: '2',
@@ -161,8 +187,13 @@ describe('Access requests', () => {
             const row = rowOf(name);
 
             expect(row).toHaveTextContent(status);
+            expect(row).toHaveTextContent(
+                'Role last updated 15 Nov 2026 · 11:30 CAT',
+            );
             expect(
-                within(row).queryByRole('link', { name: 'Businesses →' }),
+                within(row).queryByRole('link', {
+                    name: 'Onboard this business →',
+                }),
             ).not.toBeInTheDocument();
         }
     });
@@ -182,6 +213,9 @@ describe('Access requests', () => {
                         note: null,
                         sent_at: '2026-11-14T13:45:00+00:00',
                         outcome: 'active',
+                        handled_at: '2026-11-15T09:30:00+00:00',
+                        identity_verified: true,
+                        grant: { url: '/admin/auditors', method: 'get' },
                     },
                 ])}
             />,
@@ -195,5 +229,9 @@ describe('Access requests', () => {
         render(<AdminAccessRequests {...page([])} />);
 
         expect(screen.getByText('No open access requests')).toBeInTheDocument();
+        expect(screen.getByText('Nothing handled yet')).toBeInTheDocument();
+        expect(
+            screen.queryByText('Swipe sideways to see every column.'),
+        ).not.toBeInTheDocument();
     });
 });

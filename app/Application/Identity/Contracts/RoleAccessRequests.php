@@ -13,7 +13,7 @@ namespace App\Application\Identity\Contracts;
  * @phpstan-type Details array{organization: string, reference: string|null, phone: string|null, note: string|null}
  * @phpstan-type StaffRow array{id: string, role: 'business'|'auditor', name: string, email: string, organization: string,
  *     reference: string|null, phone: string|null, note: string|null, sent_at: string,
- *     outcome: 'pending'|'active'|'suspended'|'revoked'|null}
+ *     outcome: 'pending'|'active'|'suspended'|'revoked'|null, handled_at: string|null, identity_verified: bool}
  */
 interface RoleAccessRequests
 {
@@ -30,6 +30,14 @@ interface RoleAccessRequests
      * @return array<string, mixed>
      */
     public function request(int $userId, string $requestId, string $role, array $details): array;
+
+    /**
+     * What an open Business request carries into "+ Onboard a business" (#627): the business name, the
+     * RDB code and the requester's email. Null when no such request is open.
+     *
+     * @return array{name: string, rdb_code: string, representative_email: string}|null
+     */
+    public function onboardingPrefill(string $requestId): ?array;
 
     /**
      * The requests for the roles the staff member may act on: open ones (no membership of that role

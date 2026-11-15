@@ -18,6 +18,6 @@ class ListBusinessDirectoryRequest extends FormRequest
     {
         return ['chip' => ['sometimes', 'string', 'in:all'], 'sort' => ['sometimes', 'string', 'in:raised,active_notes,investors,name'],
             'sector' => ['sometimes', 'nullable', 'string', 'max:120'], 'q' => ['sometimes', 'nullable', 'string', 'max:120'],
-            'business' => ['sometimes', 'string', 'ulid']];
+            'business' => ['sometimes', 'string', 'ulid'], 'onboard_request' => ['sometimes', 'string', 'ulid']];
     }
 }

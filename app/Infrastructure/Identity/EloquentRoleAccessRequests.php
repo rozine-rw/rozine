@@ -12,6 +12,8 @@ use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Models\RoleAccessRequest;
 use App\Models\User;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 
@@ -75,19 +77,40 @@ final class EloquentRoleAccessRequests implements RoleAccessRequests
         /** @var list<StaffRow> $rows */
         $rows = array_values(RoleAccessRequest::query()->whereIn('role_access_requests.role', $roles)
             ->join('users', 'users.party_id', '=', 'role_access_requests.party_id')
+            ->join('parties', 'parties.id', '=', 'role_access_requests.party_id')
             ->leftJoin('role_memberships', function (JoinClause $join): void {
                 $join->on('role_memberships.party_id', '=', 'role_access_requests.party_id')
                     ->on('role_memberships.role', '=', 'role_access_requests.role');
             })
             ->orderByRaw('role_memberships.status is not null')
             ->orderByDesc('role_access_requests.created_at')->orderByDesc('role_access_requests.id')
-            ->get(['role_access_requests.*', 'users.name as requester_name', 'users.email as requester_email', 'role_memberships.status as outcome'])
+            ->get(['role_access_requests.*', 'users.name as requester_name', 'users.email as requester_email', 'role_memberships.status as outcome',
+                'role_memberships.updated_at as handled_at', 'parties.verified_at as identity_verified_at'])
             ->map(fn (RoleAccessRequest $row): array => ['id' => $row->id, 'role' => $row->role, 'name' => (string) $row->getAttribute('requester_name'),
                 'email' => (string) $row->getAttribute('requester_email'), 'organization' => $row->organization, 'reference' => $row->reference,
                 'phone' => $row->phone, 'note' => $row->note, 'sent_at' => $row->created_at->toIso8601String(),
-                'outcome' => $row->getAttribute('outcome')])->all());
+                'outcome' => $row->getAttribute('outcome'), 'handled_at' => self::instant($row->getAttribute('handled_at')),
+                'identity_verified' => $row->getAttribute('identity_verified_at') !== null])->all());
 
         return $rows;
+    }
+
+    public function onboardingPrefill(string $requestId): ?array
+    {
+        $row = RoleAccessRequest::query()->whereKey($requestId)->where('role_access_requests.role', 'business')
+            ->join('users', 'users.party_id', '=', 'role_access_requests.party_id')
+            ->whereNotExists(fn (Builder $query) => $query->from('role_memberships')
+                ->whereColumn('role_memberships.party_id', 'role_access_requests.party_id')->where('role_memberships.role', 'business'))
+            ->first(['role_access_requests.organization', 'role_access_requests.reference', 'users.email as requester_email']);
+
+        return $row === null ? null : ['name' => $row->organization, 'rdb_code' => $row->reference ?? '',
+            'representative_email' => (string) $row->getAttribute('requester_email')];
+    }
+
+    /** A raw timestamp column as an ISO 8601 instant, or null. */
+    private static function instant(mixed $value): ?string
+    {
+        return $value === null ? null : CarbonImmutable::parse((string) $value)->toIso8601String();
     }
 
     /**

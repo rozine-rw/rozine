@@ -32,4 +32,16 @@ final readonly class BrowseRoleAccessRequests
 
         return ['roles' => $roles, 'requests' => $this->requests->forStaff($roles)];
     }
+
+    /**
+     * An open Business request's details for "+ Onboard a business" (#627), only for staff who onboard
+     * Businesses, so the requester's details travel by request id, never in the link itself.
+     *
+     * @return array{name: string, rdb_code: string, representative_email: string}|null
+     */
+    public function onboardingPrefill(int $staffId, string $requestId): ?array
+    {
+        return in_array(self::PERMISSIONS['business'], $this->staff->permissions($staffId), true)
+            ? $this->requests->onboardingPrefill($requestId) : null;
+    }
 }
