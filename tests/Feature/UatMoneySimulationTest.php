@@ -8,6 +8,7 @@ use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\Contracts\PayoutDestinations;
 use App\Application\Disbursement\Contracts\PayoutProvider;
 use App\Application\Disbursement\FailedClosing;
+use App\Application\Disbursement\FundedCampaignRef;
 use App\Application\Disbursement\SyntheticDisbursementGuard;
 use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Environment\UatMoneySimulation;
@@ -24,6 +25,7 @@ use App\Infrastructure\Disbursement\SyntheticDisbursementSources;
 use App\Infrastructure\Disbursement\SyntheticPayoutProvider;
 use App\Infrastructure\Disbursement\UnavailableFundedCampaigns;
 use App\Infrastructure\Disbursement\UnavailablePayoutProvider;
+use App\Infrastructure\Secondary\EloquentSecondaryMarket;
 use App\Infrastructure\Secondary\SimulatedSecondaryMarket;
 use App\Infrastructure\Secondary\UnavailableSecondaryMarket;
 use App\Infrastructure\Wallet\SimulatedNoteServicing;
@@ -389,4 +391,66 @@ it('lists for resale only notes of a named Business, and passes every other mark
 
     config(['app.uat_money_simulation_businesses' => []]);
     expect(fn () => $simulated->list(1, 1, $holdingId, '4', '2700', 'r8'))->toThrow(CommandRejection::class, 'SECONDARY_TRADING_DISABLED');
+});
+
+it('names its Businesses before limiting, so unnamed funded raises cannot crowd out named ones', function (): void {
+    asUatProfile('01NAMED1', '01named2');
+    $ref = fn (string $campaign, string $business): FundedCampaignRef => new FundedCampaignRef($campaign, $business, '2026-11-15T00:00:00Z');
+    $pages = [
+        '' => [$ref('09', '01other'), $ref('08', '01other')],
+        '08' => [$ref('07', '01other'), $ref('06', '01named1')],
+        '06' => [$ref('05', '01named2'), $ref('04', '01named1')],
+    ];
+    $retained = $this->createMock(FundedCampaigns::class);
+    $retained->expects($this->exactly(3))->method('funded')
+        ->willReturnCallback(fn (?string $before, int $limit): array => $limit === 2 ? $pages[$before ?? ''] : []);
+    $simulated = new SimulatedFundedCampaigns($retained, app(UatMoneySimulation::class));
+
+    expect(array_map(fn (FundedCampaignRef $campaign): string => $campaign->campaignId, $simulated->funded(null, 2)))->toBe(['06', '05']);
+
+    $short = $this->createMock(FundedCampaigns::class);
+    $short->expects($this->once())->method('funded')->willReturn([$ref('03', '01other')]);
+    expect((new SimulatedFundedCampaigns($short, app(UatMoneySimulation::class)))->funded(null, 2))->toBe([])
+        ->and($simulated->funded(null, 0))->toBe([]);
+});
+
+it('stops a disbursement already under way once its Business is taken off the list, and finishes it once named again', function (): void {
+    ['campaign' => $publication] = PrimaryHoldingFixture::committed(units: ['1080', '1080'], requoted: [0]);
+    $businessId = (string) BusinessCampaign::query()->whereKey($publication->id)->value('business_id');
+    asUatProfile($businessId);
+    expect(Artisan::call('disbursements:reconcile'))->toBe(0)
+        ->and(Disbursement::query()->where('business_campaign_id', $publication->id)->exists())->toBeTrue();
+
+    // Taken off the list while its disbursement waits: it can no longer be locked to advance, so linking an account sends nothing.
+    config(['app.uat_money_simulation_businesses' => []]);
+    expect(fn () => DB::transaction(fn () => app(FundedCampaigns::class)->lockFunded($publication->id)))
+        ->toThrow(CommandRejection::class, 'FUNDING_SOURCE_UNAVAILABLE');
+    BusinessFundingMethod::factory()->create(['business_id' => $businessId, 'kind' => 'bank', 'label' => 'Bank of Kigali',
+        'masked' => 'Account ····6789', 'reference' => 'bk:000123456789', 'verified_at' => now('UTC')->subMinute()]);
+    Artisan::call('disbursements:reconcile');
+    expect(DisbursementIntent::query()->exists())->toBeFalse()->and(DisbursementClosing::query()->exists())->toBeFalse();
+
+    config(['app.uat_money_simulation_businesses' => [$businessId]]);
+    Artisan::call('disbursements:reconcile');
+    Artisan::call('disbursements:reconcile');
+    expect(DisbursementClosing::query()->where('intent_id', DisbursementIntent::query()->sole()->id)->sole()->kind)->toBe('issued');
+});
+
+it('refuses to reserve, settle or reprice an existing listing once its Business is taken off the list, but lets it be withdrawn', function (): void {
+    $note = simulatedIssuedNote();
+    $holding = DB::table('primary_holdings')->where('business_campaign_id', $note['campaign'])->orderBy('id')->first();
+    $seller = User::query()->where('party_id', $holding->party_id)->sole();
+    $listingId = app(EloquentSecondaryMarket::class)->list($seller->id, 1, (string) $holding->id, '4', '1000', (string) Str::uuid())['data']['listing']['listing_id'];
+    $market = $this->createMock(SecondaryMarket::class);
+    $market->expects($this->once())->method('reserve')->willReturn(['code' => 'reserve']);
+    $market->expects($this->once())->method('amend')->with(1, 1, $listingId, null, 'withdraw')->willReturn(['code' => 'withdrawn']);
+    $market->expects($this->never())->method('settle');
+    $simulated = new SimulatedSecondaryMarket($market, app(UatMoneySimulation::class));
+    expect($simulated->reserve(1, 1, $listingId, '4', 'named'))->toBe(['code' => 'reserve']);
+
+    config(['app.uat_money_simulation_businesses' => []]);
+    expect(fn () => $simulated->reserve(1, 1, $listingId, '4', 'r1'))->toThrow(CommandRejection::class, 'SECONDARY_TRADING_DISABLED')
+        ->and(fn () => $simulated->settle(1, 1, $listingId, 'v', 'r2'))->toThrow(CommandRejection::class, 'SECONDARY_TRADING_DISABLED')
+        ->and(fn () => $simulated->amend(1, 1, $listingId, '1200', 'r3'))->toThrow(CommandRejection::class, 'SECONDARY_TRADING_DISABLED')
+        ->and($simulated->amend(1, 1, $listingId, null, 'withdraw'))->toBe(['code' => 'withdrawn']);
 });

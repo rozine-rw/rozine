@@ -7,10 +7,10 @@ namespace App\Infrastructure\Disbursement;
 use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\FailedClosing;
 use App\Application\Disbursement\FundedCampaign;
-use App\Application\Disbursement\FundedCampaignRef;
 use App\Application\Disbursement\IssueInstruction;
 use App\Application\Disbursement\RecheckResult;
 use App\Application\Environment\UatMoneySimulation;
+use App\Domain\Operations\CommandRejection;
 use LogicException;
 
 /**
@@ -29,8 +29,22 @@ final readonly class SimulatedFundedCampaigns implements FundedCampaigns
     {
         $this->assertSimulating();
 
-        return array_values(array_filter($this->retained->funded($before, $limit),
-            fn (FundedCampaignRef $campaign): bool => $this->simulation->covers($campaign->businessId)));
+        // Scope before limiting: page past unnamed Businesses' raises so they cannot crowd out named ones.
+        $named = [];
+        while ($limit > 0 && count($named) < $limit) {
+            $page = $this->retained->funded($before, $limit);
+            foreach ($page as $campaign) {
+                if (count($named) < $limit && $this->simulation->covers($campaign->businessId)) {
+                    $named[] = $campaign;
+                }
+            }
+            if (count($page) < $limit) {
+                break;
+            }
+            $before = $page[count($page) - 1]->campaignId;
+        }
+
+        return $named;
     }
 
     public function lockBusiness(string $businessId): void
@@ -42,8 +56,13 @@ final readonly class SimulatedFundedCampaigns implements FundedCampaigns
     public function lockFunded(string $campaignId): FundedCampaign
     {
         $this->assertSimulating();
+        $campaign = $this->retained->lockFunded($campaignId);
+        // A disbursement already queued for a Business taken off the list stops here: the store reads this as the funding source being unavailable.
+        if (! $this->simulation->covers($campaign->businessId)) {
+            throw new CommandRejection('FUNDING_SOURCE_UNAVAILABLE', 409);
+        }
 
-        return $this->retained->lockFunded($campaignId);
+        return $campaign;
     }
 
     public function recheck(FundedCampaign $campaign): RecheckResult
