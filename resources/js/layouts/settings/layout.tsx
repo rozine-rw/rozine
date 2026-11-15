@@ -1,14 +1,15 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import type { PropsWithChildren } from 'react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/hooks/use-current-url';
+import { useTranslation } from '@/hooks/use-translation';
 import { cn, toUrl } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
-import type { NavItem } from '@/types';
+import type { NavItem, RouteLink } from '@/types';
 
 const sidebarNavItems: NavItem[] = [
     {
@@ -27,9 +28,22 @@ const sidebarNavItems: NavItem[] = [
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
     const { isCurrentOrParentUrl } = useCurrentUrl();
+    const { t } = useTranslation();
+    /** Sent to staff only: settings sit outside the console, so they get their way back (#618). */
+    const consoleLink = usePage<{ staff_console?: RouteLink | null }>().props
+        .staff_console;
 
     return (
         <div className="px-4 py-6">
+            {consoleLink && (
+                <Link
+                    href={consoleLink}
+                    className="mb-5 inline-flex items-center gap-1.5 rounded-[10px] border border-rz-hairline bg-rz-surface px-3.5 py-2 text-sm font-semibold text-rz-accent-text"
+                >
+                    <span aria-hidden>←</span>
+                    {t('settings.back_to_console')}
+                </Link>
+            )}
             <Heading
                 title="Settings"
                 description="Manage your profile and account settings"

@@ -39,15 +39,14 @@ export default function AdminLedger(props: AdminLedgerProps) {
     const typing = useSearchAsYouType(props.search, runSearch);
     const search = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        typing.submit(
-            (new FormData(event.currentTarget).get('q') as string | null) ?? '',
-        );
+        typing.submit(String(new FormData(event.currentTarget).get('q')));
     };
 
     return (
         <AdminFrame
             section="ledger"
             {...props}
+            searchable={false}
             overlay={
                 props.entry && (
                     <EntryDrawer key={props.entry.id} entry={props.entry} />
@@ -59,7 +58,10 @@ export default function AdminLedger(props: AdminLedgerProps) {
                 minWidth="min-w-[820px]"
                 className="shadow-[0_1px_2px_rgba(16,32,58,.04),0_14px_30px_-24px_rgba(16,32,58,.28)]"
                 footer={
-                    (props.more || props.older || props.newest) && (
+                    (props.more ||
+                        props.older ||
+                        props.newer ||
+                        props.newest) && (
                         <>
                             {props.more && (
                                 <ShowMoreLink link={props.more}>
@@ -71,6 +73,11 @@ export default function AdminLedger(props: AdminLedgerProps) {
                             {props.older && (
                                 <ShowMoreLink link={props.older}>
                                     {t('admin.ledger.older')}
+                                </ShowMoreLink>
+                            )}
+                            {props.newer && (
+                                <ShowMoreLink link={props.newer}>
+                                    {t('admin.ledger.newer')}
                                 </ShowMoreLink>
                             )}
                             {props.newest && (

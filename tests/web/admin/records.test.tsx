@@ -28,6 +28,16 @@ describe('Ledger', () => {
         );
 
         expect(screen.getByText('1,932 entries')).toBeInTheDocument();
+        const nav = screen.getByRole('navigation', {
+            name: 'Console navigation',
+        });
+
+        expect(
+            within(nav).getByRole('link', { name: /^Payments/u }),
+        ).toHaveAttribute('aria-current', 'page');
+        expect(screen.getByTestId('frame-parent')).toHaveTextContent(
+            'Payments ›',
+        );
         expect(screen.getByText('2026-09-23 20:36:51 CAT')).toBeInTheDocument();
         expect(
             screen.getByText('Rozine Platform → Diane Uwase, CPA'),
@@ -115,10 +125,32 @@ describe('Ledger', () => {
             screen.getByRole('link', { name: /Back to the newest/ }),
         ).toHaveAttribute('href', '/admin/ledger');
         expect(
+            screen.queryByRole('link', {
+                name: /Previous page: newer entries/,
+            }),
+        ).not.toBeInTheDocument();
+        expect(
             screen.queryByRole('link', { name: /See all/ }),
         ).not.toBeInTheDocument();
         expect(
             screen.queryByRole('link', { name: /Next page: older entries/ }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('steps one page toward the newest from an older page (#623)', () => {
+        render(
+            <AdminLedger
+                {...ledgerProps(ledgerFixture)}
+                more={null}
+                newer={{ url: '/admin/ledger?before=LED-1990', method: 'get' }}
+            />,
+        );
+
+        expect(
+            screen.getByRole('link', { name: /Previous page: newer entries/ }),
+        ).toHaveAttribute('href', '/admin/ledger?before=LED-1990');
+        expect(
+            screen.queryByRole('link', { name: /Back to the newest/ }),
         ).not.toBeInTheDocument();
     });
 
