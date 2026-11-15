@@ -37,6 +37,7 @@ use App\Models\DisbursementClosing;
 use App\Models\DisbursementIntent;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -303,4 +304,38 @@ it('refuses simulated servicing and payouts outside the simulation, and finds no
     asUatProfile();
     expect(app(SimulatedServicingPayouts::class)->payOut(strtolower((string) Str::ulid())))->toBe(0)
         ->and(app(SimulatedNoteServicing::class)->lockForPayment(strtolower((string) Str::ulid()), strtolower((string) Str::ulid())))->toBeNull();
+});
+
+it('collects a repayment under the same note lock resale settles under, so neither sees the holders change mid-way', function (): void {
+    $note = simulatedIssuedNote();
+    config(['database.connections.resale_watcher' => config('database.connections.pgsql')]);
+    $resale = DB::connection('resale_watcher');
+    $noteLocked = fn (): bool => ! $resale->transaction(fn (): bool => (bool) $resale->scalar('SELECT pg_try_advisory_xact_lock(hashtextextended(?, 0))',
+        ['secondary-note:'.$note['campaign']]));
+    try {
+        // Collection holds the note: resale settlement on the same note must wait.
+        expect($noteLocked())->toBeFalse();
+        DB::beginTransaction();
+        expect(app(SimulatedNoteServicing::class)->lockForPayment($note['business'], strtolower($note['campaign'])))->not->toBeNull()
+            ->and($noteLocked())->toBeTrue();
+        DB::rollBack();
+        expect($noteLocked())->toBeFalse();
+
+        // Resale settlement holds the note: collection waits for it rather than reading the holders mid-transfer.
+        $resale->beginTransaction();
+        $resale->select('SELECT pg_advisory_xact_lock_shared(hashtextextended(?, 0))', ['secondary-market']);
+        $resale->select('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', ['secondary-note:'.$note['campaign']]);
+        DB::beginTransaction();
+        DB::statement("SET LOCAL lock_timeout = '200ms'");
+        expect(fn () => app(SimulatedNoteServicing::class)->lockForPayment($note['business'], strtolower($note['campaign'])))
+            ->toThrow(QueryException::class, 'lock timeout');
+    } finally {
+        while (DB::transactionLevel() > 0) {
+            DB::rollBack();
+        }
+        if ($resale->transactionLevel() > 0) {
+            $resale->rollBack();
+        }
+        DB::purge('resale_watcher');
+    }
 });

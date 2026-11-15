@@ -53,7 +53,7 @@ final readonly class SimulatedNoteServicing implements NoteServicing, ServicingS
         if ($schedule === null || $schedule->businessId !== $businessId) {
             return null;
         }
-        DB::select('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', ['servicing-note:'.$noteId]);
+        self::lockNote((string) $campaignId);
         $paid = $this->paid($noteId);
         $options = [];
         foreach ($this->options($schedule, $paid) as $option) {
@@ -208,17 +208,6 @@ final readonly class SimulatedNoteServicing implements NoteServicing, ServicingS
         return $paid;
     }
 
-    /**
-     * The stored campaign ID for a note ID. Campaign IDs are kept in upper case, while servicing
-     * records (and the pay request) carry the lower-case form the repayment schema requires.
-     */
-    public static function campaignId(string $noteId): ?string
-    {
-        $campaignId = DB::table('business_campaigns')->whereRaw('lower(id) = ?', [strtolower($noteId)])->value('id');
-
-        return $campaignId === null ? null : (string) $campaignId;
-    }
-
     private function revision(string $noteId, ?string $except = null): int
     {
         return BusinessRepayment::query()->where('note_id', $noteId)->when($except !== null, fn ($query) => $query->whereKeyNot($except))->count() + 1;
@@ -276,5 +265,26 @@ final readonly class SimulatedNoteServicing implements NoteServicing, ServicingS
         if (! $this->simulation->active()) {
             throw new LogicException('UAT_SIMULATION_ONLY: simulated servicing runs only on UAT with its money simulation on.');
         }
+    }
+
+    /**
+     * The stored campaign ID for a note ID. Campaign IDs are kept in upper case, while servicing
+     * records (and the pay request) carry the lower-case form the repayment schema requires.
+     */
+    private static function campaignId(string $noteId): ?string
+    {
+        $campaignId = DB::table('business_campaigns')->whereRaw('lower(id) = ?', [strtolower($noteId)])->value('id');
+
+        return $campaignId === null ? null : (string) $campaignId;
+    }
+
+    /**
+     * Takes the note lock resale settlement takes (`EloquentSecondaryMarket::lockNote`), in the same
+     * order, so units cannot change hands between reading a note's holders and paying them.
+     */
+    private static function lockNote(string $campaignId): void
+    {
+        DB::select('SELECT pg_advisory_xact_lock_shared(hashtextextended(?, 0))', ['secondary-market']);
+        DB::select('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', ['secondary-note:'.$campaignId]);
     }
 }
