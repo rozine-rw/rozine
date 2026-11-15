@@ -2821,6 +2821,8 @@ const en = {
     'admin.businesses.onboard.title': 'Onboard a business',
     'admin.businesses.onboard.body':
         'Record a company from its RDB code, or a sole trader, with its official representative. The representative must already have a Rozine account with a verified identity. They get every role and permission on the first mandate. The change is logged with your name and reason.',
+    'admin.businesses.onboard.prefilled':
+        'Filled from an access request. Check each field and add the rest before you onboard.',
     'admin.businesses.onboard.field.kind': 'Type of business',
     'admin.businesses.onboard.kind.organization': 'Company',
     'admin.businesses.onboard.kind.person': 'Sole trader',
@@ -8071,8 +8073,15 @@ const en = {
     'admin.access_requests.outcome.revoked': 'Revoked',
     'admin.access_requests.reference.business': 'RDB code {reference}',
     'admin.access_requests.reference.auditor': 'ICPAR licence {reference}',
-    'admin.access_requests.grant.business': 'Businesses →',
+    'admin.access_requests.grant.business': 'Onboard this business →',
     'admin.access_requests.grant.auditor': 'Auditor Network →',
+    'admin.access_requests.identity.verified': 'Identity verified',
+    'admin.access_requests.identity.unverified': 'Identity not verified',
+    'admin.access_requests.time': '{time} CAT',
+    'admin.access_requests.handled_at': 'Handled {time} CAT',
+    'admin.access_requests.handled_empty_title': 'Nothing handled yet',
+    'admin.access_requests.handled_empty_body':
+        'Once the person holds the role they asked for, their request moves here with that membership’s status.',
     'admin.nav.reports': 'Reports',
     'admin.section.reconciliation.title': 'Reconciliation',
     'admin.section.reconciliation.subtitle':

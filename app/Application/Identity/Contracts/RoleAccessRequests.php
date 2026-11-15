@@ -13,7 +13,7 @@ namespace App\Application\Identity\Contracts;
  * @phpstan-type Details array{organization: string, reference: string|null, phone: string|null, note: string|null}
  * @phpstan-type StaffRow array{id: string, role: 'business'|'auditor', name: string, email: string, organization: string,
  *     reference: string|null, phone: string|null, note: string|null, sent_at: string,
- *     outcome: 'pending'|'active'|'suspended'|'revoked'|null}
+ *     outcome: 'pending'|'active'|'suspended'|'revoked'|null, handled_at: string|null, identity_verified: bool}
  */
 interface RoleAccessRequests
 {

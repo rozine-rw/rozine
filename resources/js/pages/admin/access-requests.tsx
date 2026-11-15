@@ -18,7 +18,6 @@ import type {
     AdminAccessRequestsProps,
     Tone,
 } from '@/types/admin';
-import type { RouteLink } from '@/types/routing';
 
 const OUTCOME_TONE: Record<NonNullable<AccessRequestRow['outcome']>, Tone> = {
     pending: 'amber',
@@ -30,7 +29,7 @@ const OUTCOME_TONE: Record<NonNullable<AccessRequestRow['outcome']>, Tone> = {
 const GRID =
     'grid grid-cols-[minmax(0,1.4fr)_minmax(0,.7fr)_minmax(0,1.3fr)_minmax(0,1fr)_minmax(120px,.9fr)] gap-3 px-5';
 
-function Row({ row, grant }: { row: AccessRequestRow; grant: RouteLink }) {
+function Row({ row }: { row: AccessRequestRow }) {
     const { t, locale } = useTranslation();
 
     return (
@@ -54,6 +53,15 @@ function Row({ row, grant }: { row: AccessRequestRow; grant: RouteLink }) {
                         {row.phone}
                     </a>
                 )}
+                <span className="mt-1.5 block">
+                    <Chip tone={row.identity_verified ? 'green' : 'amber'}>
+                        {t(
+                            row.identity_verified
+                                ? 'admin.access_requests.identity.verified'
+                                : 'admin.access_requests.identity.unverified',
+                        )}
+                    </Chip>
+                </span>
             </span>
             <span role="cell">
                 <Chip tone={row.role === 'business' ? 'blue' : 'purple'}>
@@ -76,12 +84,21 @@ function Row({ row, grant }: { row: AccessRequestRow; grant: RouteLink }) {
                 )}
             </span>
             <span role="cell" className="text-[12px] text-rz-body">
-                {formatDateTime(row.sent_at, locale)}
+                {t('admin.access_requests.time', {
+                    time: formatDateTime(row.sent_at, locale),
+                })}
+                {row.handled_at !== null && (
+                    <span className="mt-0.5 block text-[11px] font-medium text-rz-muted">
+                        {t('admin.access_requests.handled_at', {
+                            time: formatDateTime(row.handled_at, locale),
+                        })}
+                    </span>
+                )}
             </span>
             <div role="cell" className="flex justify-end">
                 {row.outcome === null ? (
                     <Link
-                        href={grant}
+                        href={row.grant}
                         className="shrink-0 rounded-lg border border-rz-hairline bg-rz-surface px-3 py-1.5 text-[11.5px] font-semibold text-rz-slate"
                     >
                         {t(`admin.access_requests.grant.${row.role}`)}
@@ -100,14 +117,12 @@ function RequestTable({
     label,
     actionLabel,
     rows,
-    links,
     empty,
 }: {
     label: string;
     actionLabel: string;
     rows: AccessRequestRow[];
-    links: AdminAccessRequestsProps['links'];
-    empty?: ReactNode;
+    empty: ReactNode;
 }) {
     const { t } = useTranslation();
 
@@ -125,7 +140,7 @@ function RequestTable({
                 <HeadCell end>{actionLabel}</HeadCell>
             </div>
             {rows.map((row) => (
-                <Row key={row.id} row={row} grant={links[row.role]} />
+                <Row key={row.id} row={row} />
             ))}
         </TableCard>
     );
@@ -155,7 +170,6 @@ export default function AdminAccessRequests(props: AdminAccessRequestsProps) {
                 label={t('admin.access_requests.table')}
                 actionLabel={t('admin.access_requests.col.action')}
                 rows={open}
-                links={props.links}
                 empty={
                     <EmptyState
                         title={t('admin.access_requests.empty_title')}
@@ -163,24 +177,29 @@ export default function AdminAccessRequests(props: AdminAccessRequestsProps) {
                     />
                 }
             />
-            {handled.length > 0 && (
-                <div className="mt-6">
-                    <div className="mb-3.5">
-                        <CardTitle>
-                            {t('admin.access_requests.handled_title')}
-                        </CardTitle>
-                        <p className="mt-[3px] text-[12px] text-rz-muted">
-                            {t('admin.access_requests.handled_caption')}
-                        </p>
-                    </div>
-                    <RequestTable
-                        label={t('admin.access_requests.handled_table')}
-                        actionLabel={t('admin.access_requests.col.outcome')}
-                        rows={handled}
-                        links={props.links}
-                    />
+            <div className="mt-6">
+                <div className="mb-3.5">
+                    <CardTitle>
+                        {t('admin.access_requests.handled_title')}
+                    </CardTitle>
+                    <p className="mt-[3px] text-[12px] text-rz-muted">
+                        {t('admin.access_requests.handled_caption')}
+                    </p>
                 </div>
-            )}
+                <RequestTable
+                    label={t('admin.access_requests.handled_table')}
+                    actionLabel={t('admin.access_requests.col.outcome')}
+                    rows={handled}
+                    empty={
+                        <EmptyState
+                            title={t(
+                                'admin.access_requests.handled_empty_title',
+                            )}
+                            body={t('admin.access_requests.handled_empty_body')}
+                        />
+                    }
+                />
+            </div>
         </AdminFrame>
     );
 }

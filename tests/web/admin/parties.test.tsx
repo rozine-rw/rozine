@@ -602,7 +602,58 @@ describe('Party directories', () => {
         sectors: ['Agriculture', 'Retail & trade', 'Services'],
         districts: { 'Kigali City': ['Gasabo'], Southern: ['Huye'] },
         latest_year: 2026,
+        prefill: null,
     };
+
+    it('opens the onboard form filled from an access request, and blanks it on cancel', () => {
+        render(
+            <AdminParties
+                {...{
+                    ...props(businessesFixture),
+                    onboard: {
+                        ...ONBOARD,
+                        prefill: {
+                            name: 'QA Access Request Ltd',
+                            rdb_code: '123456789',
+                            representative_email: 'kyc2@example.test',
+                        },
+                    },
+                }}
+            />,
+        );
+
+        const form = screen.getByRole('form', { name: 'Onboard a business' });
+
+        expect(
+            within(form).getByText(
+                'Filled from an access request. Check each field and add the rest before you onboard.',
+            ),
+        ).toBeInTheDocument();
+        expect(within(form).getByLabelText('Business name')).toHaveValue(
+            'QA Access Request Ltd',
+        );
+        expect(within(form).getByLabelText('RDB company code')).toHaveValue(
+            '123456789',
+        );
+        expect(
+            within(form).getByLabelText("Representative's account email"),
+        ).toHaveValue('kyc2@example.test');
+
+        fireEvent.click(within(form).getByRole('button', { name: 'Cancel' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: '+ Onboard a business' }),
+        );
+        expect(
+            within(
+                screen.getByRole('form', { name: 'Onboard a business' }),
+            ).getByLabelText('Business name'),
+        ).toHaveValue('');
+        expect(
+            screen.queryByText(
+                'Filled from an access request. Check each field and add the rest before you onboard.',
+            ),
+        ).not.toBeInTheDocument();
+    });
 
     it('lets a verifier onboard a company with its representative and evidence', () => {
         inertia.succeed = true;

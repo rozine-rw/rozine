@@ -87,7 +87,8 @@ class StaffBusinessDirectoryResource extends JsonResource
             'shown' => count($page['rows']), 'total' => $page['matching'],
             'onboard' => $prefix === '' && in_array('businesses.verify', $page['permissions'], true)
                 ? ['url' => route('staff.businesses.onboard', [], false), 'method' => 'post', 'effective_at' => now('UTC')->format('Y-m-d\TH:i:s\Z'),
-                    'sectors' => $page['onboarding_sectors'] ?? [], 'districts' => config('rwanda.districts'), 'latest_year' => now()->year] : null,
+                    'sectors' => $page['onboarding_sectors'] ?? [], 'districts' => config('rwanda.districts'), 'latest_year' => now()->year,
+                    'prefill' => self::prefill($request)] : null,
             'onboarded' => $page['onboarded'] ?? null,
             'directory' => ['kind' => 'business', 'rows' => array_map(fn (array $row): array => ['id' => $row['business_id'], 'name' => $row['name'],
                 'sector' => $row['sector'], 'rating' => $row['rating'], 'active_notes' => $row['active_notes'], 'investors' => $row['investors'],
@@ -97,6 +98,23 @@ class StaffBusinessDirectoryResource extends JsonResource
                 'premises' => ($page['premises'] ?? null) === null ? null : StaffAuditorDirectoryResource::location($page['premises'], $prefix === ''
                     ? ['url' => route('staff.businesses.premises.verify', ['business' => $page['business']['row']['business_id']], false), 'method' => 'post'] : null),
                 'audit' => ($page['audit'] ?? null) === null ? null : self::audit($page['audit']['engagement'], $page['audit']['closed'], $page['audit']['partners'], $page['audit']['statements'], $page['business']['row']['business_id'], $prefix === '')]];
+    }
+
+    /**
+     * What an access request (#627) carries into "+ Onboard a business": the business name, the RDB code
+     * and the requester's email, from the link on the request. Only plain text the form already accepts;
+     * staff still check every field before submitting.
+     *
+     * @return array{name: string, rdb_code: string, representative_email: string}|null
+     */
+    private static function prefill(Request $request): ?array
+    {
+        if ($request->query('onboard') !== 'request') {
+            return null;
+        }
+        $text = fn (string $key, int $limit): string => is_string($value = $request->query($key)) ? Str::limit(trim($value), $limit, '') : '';
+
+        return ['name' => $text('name', 160), 'rdb_code' => $text('rdb_code', 32), 'representative_email' => $text('email', 254)];
     }
 
     /**

@@ -1047,6 +1047,12 @@ export type OnboardBusinessAction = RouteAction & {
     sectors: string[];
     districts: Record<string, string[]>;
     latest_year: number;
+    /** Filled from an access request when staff open the form from one (#627). */
+    prefill: {
+        name: string;
+        rdb_code: string;
+        representative_email: string;
+    } | null;
 };
 
 export type AdminPartiesProps = AdminFrameShellProps & {
@@ -2282,6 +2288,12 @@ export type AccessRequestRow = {
      * membership's status: the request is handled and leaves the open queue.
      */
     outcome: 'pending' | 'active' | 'suspended' | 'revoked' | null;
+    /** When that membership last changed; null while the request is open. */
+    handled_at: string | null;
+    /** Whether the requester's identity is verified, which granting the role needs. */
+    identity_verified: boolean;
+    /** Where staff grant this request: Onboard a business filled from it, or the Auditor Network. */
+    grant: RouteLink;
 };
 
 export type AdminAccessRequestsProps = AdminFrameShellProps & {

@@ -2968,6 +2968,8 @@ const fr: Catalog = {
     'admin.businesses.onboard.title': 'Intégrer une entreprise',
     'admin.businesses.onboard.body':
         'Enregistrez une société à partir de son code RDB, ou un entrepreneur individuel, avec son représentant officiel. Le représentant doit déjà avoir un compte Rozine avec une identité vérifiée. Il reçoit tous les rôles et toutes les autorisations du premier mandat. La modification est enregistrée avec votre nom et votre motif.',
+    'admin.businesses.onboard.prefilled':
+        'Rempli à partir d’une demande d’accès. Vérifiez chaque champ et complétez le reste avant d’intégrer.',
     'admin.businesses.onboard.field.kind': 'Type d’entreprise',
     'admin.businesses.onboard.kind.organization': 'Société',
     'admin.businesses.onboard.kind.person': 'Entrepreneur individuel',
@@ -8372,8 +8374,16 @@ const fr: Catalog = {
     'admin.access_requests.outcome.revoked': 'Révoquée',
     'admin.access_requests.reference.business': 'Code RDB {reference}',
     'admin.access_requests.reference.auditor': 'Licence ICPAR {reference}',
-    'admin.access_requests.grant.business': 'Entreprises →',
+    'admin.access_requests.grant.business': 'Intégrer cette entreprise →',
     'admin.access_requests.grant.auditor': 'Réseau des auditeurs →',
+    'admin.access_requests.identity.verified': 'Identité vérifiée',
+    'admin.access_requests.identity.unverified': 'Identité non vérifiée',
+    'admin.access_requests.time': '{time} CAT',
+    'admin.access_requests.handled_at': 'Traitée {time} CAT',
+    'admin.access_requests.handled_empty_title':
+        'Rien de traité pour l’instant',
+    'admin.access_requests.handled_empty_body':
+        'Dès que la personne détient le rôle demandé, sa demande passe ici avec le statut de cette adhésion.',
     'admin.nav.reports': 'Rapports',
     'admin.section.reconciliation.title': 'Rapprochement',
     'admin.section.reconciliation.subtitle':

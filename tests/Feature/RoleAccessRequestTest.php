@@ -142,10 +142,19 @@ it('shows staff who grant each role the requests for it, newest first, and refus
         ->and($props['viewer']['role'])->toBe('compliance')
         ->and($props['requests'])->toBe([
             ['id' => $rows[0]->id, 'role' => 'auditor', 'name' => 'Jean Mugisha', 'email' => $auditor->email, 'organization' => 'Ledger & Co',
-                'reference' => 'ICPAR-2041', 'phone' => '+250 788 000 000', 'note' => 'Coffee washing station', 'sent_at' => $rows[0]->created_at->toIso8601String(), 'outcome' => null],
+                'reference' => 'ICPAR-2041', 'phone' => '+250 788 000 000', 'note' => 'Coffee washing station', 'sent_at' => $rows[0]->created_at->toIso8601String(), 'outcome' => null,
+                'handled_at' => null, 'identity_verified' => true, 'grant' => ['url' => '/admin/auditors', 'method' => 'get']],
             ['id' => $rows[1]->id, 'role' => 'business', 'name' => 'Jean Mugisha', 'email' => $business->email, 'organization' => 'Kivu Harvest Ltd',
-                'reference' => null, 'phone' => '+250 788 000 000', 'note' => 'Coffee washing station', 'sent_at' => $rows[1]->created_at->toIso8601String(), 'outcome' => null],
+                'reference' => null, 'phone' => '+250 788 000 000', 'note' => 'Coffee washing station', 'sent_at' => $rows[1]->created_at->toIso8601String(), 'outcome' => null,
+                'handled_at' => null, 'identity_verified' => true, 'grant' => ['url' => route('staff.businesses.index',
+                    ['onboard' => 'request', 'name' => 'Kivu Harvest Ltd', 'rdb_code' => '', 'email' => $business->email], false), 'method' => 'get']],
         ]);
+    // The Business link opens "+ Onboard a business" filled from the request (#627).
+    $this->actingAs($staff)->get($props['requests'][1]['grant']['url'])->assertOk()->assertInertia(fn (Assert $page): Assert => $page
+        ->where('onboard.prefill', ['name' => 'Kivu Harvest Ltd', 'rdb_code' => '', 'representative_email' => $business->email]));
+    $this->actingAs($staff)->get(route('staff.businesses.index', ['onboard' => 'request', 'name' => ['x'], 'rdb_code' => str_repeat('9', 40)]))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('onboard.prefill', ['name' => '', 'rdb_code' => str_repeat('9', 32), 'representative_email' => '']));
+    $this->actingAs($staff)->get(route('staff.businesses.index'))->assertInertia(fn (Assert $page): Assert => $page->where('onboard.prefill', null));
 
     $treasury = User::factory()->withTwoFactor()->create();
     StaffFixture::provision($treasury, ['treasury'], 'Access request refusal.');
@@ -167,6 +176,8 @@ it('moves a request out of the open queue once staff create the membership it as
     // Staff onboard the first Business (still pending) and verify the Auditor; the latest Business stays open.
     RoleMembership::factory()->create(['party_id' => $business->party_id, 'role' => 'business', 'status' => 'pending']);
     RoleMembership::factory()->create(['party_id' => $auditor->party_id, 'role' => 'auditor', 'status' => 'active']);
+    // A requester whose identity is no longer verified shows as such, so staff know a grant would be refused.
+    Party::query()->whereKey($later->party_id)->update(['verified_at' => null]);
 
     $staff = User::factory()->withTwoFactor()->create();
     StaffFixture::provision($staff, ['compliance'], 'Access request outcomes.');
@@ -180,6 +191,9 @@ it('moves a request out of the open queue once staff create the membership it as
         [$auditor->email, 'active'],
         [$business->email, 'pending'],
     ])->and($rows[2]['organization'])->toBe('Kivu Harvest Ltd')
+        ->and(array_map(fn (array $row): bool => $row['identity_verified'], $rows))->toBe([false, true, true])
+        ->and($rows[0]['handled_at'])->toBeNull()
+        ->and($rows[1]['handled_at'])->toBe(RoleMembership::query()->where('party_id', $auditor->party_id)->sole()->updated_at?->toIso8601String())
         ->and(RoleAccessRequest::query()->count())->toBe(3);
 });
 
