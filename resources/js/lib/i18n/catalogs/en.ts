@@ -2823,6 +2823,8 @@ const en = {
         'Record a company from its RDB code, or a sole trader, with its official representative. The representative must already have a Rozine account with a verified identity. They get every role and permission on the first mandate. The change is logged with your name and reason.',
     'admin.businesses.onboard.prefilled':
         'Filled from an access request. Check each field and add the rest before you onboard.',
+    'admin.businesses.onboard.request_closed':
+        'That access request is already handled or no longer open, so nothing was filled in.',
     'admin.businesses.onboard.field.kind': 'Type of business',
     'admin.businesses.onboard.kind.organization': 'Company',
     'admin.businesses.onboard.kind.person': 'Sole trader',

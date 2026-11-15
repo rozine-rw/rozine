@@ -1047,6 +1047,8 @@ export type OnboardBusinessAction = RouteAction & {
     sectors: string[];
     districts: Record<string, string[]>;
     latest_year: number;
+    /** True when the link named an access request that is handled or no longer exists. */
+    request_closed: boolean;
     /** Filled from an access request when staff open the form from one (#627). */
     prefill: {
         name: string;

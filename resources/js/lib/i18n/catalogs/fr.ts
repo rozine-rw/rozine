@@ -2970,6 +2970,8 @@ const fr: Catalog = {
         'Enregistrez une société à partir de son code RDB, ou un entrepreneur individuel, avec son représentant officiel. Le représentant doit déjà avoir un compte Rozine avec une identité vérifiée. Il reçoit tous les rôles et toutes les autorisations du premier mandat. La modification est enregistrée avec votre nom et votre motif.',
     'admin.businesses.onboard.prefilled':
         'Rempli à partir d’une demande d’accès. Vérifiez chaque champ et complétez le reste avant d’intégrer.',
+    'admin.businesses.onboard.request_closed':
+        'Cette demande d’accès est déjà traitée ou n’est plus ouverte : rien n’a été pré-rempli.',
     'admin.businesses.onboard.field.kind': 'Type d’entreprise',
     'admin.businesses.onboard.kind.organization': 'Société',
     'admin.businesses.onboard.kind.person': 'Entrepreneur individuel',

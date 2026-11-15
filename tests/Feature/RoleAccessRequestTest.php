@@ -151,11 +151,13 @@ it('shows staff who grant each role the requests for it, newest first, and refus
         ]);
     // The Business link opens "+ Onboard a business" filled from the request (#627).
     $this->actingAs($staff)->get($props['requests'][1]['grant']['url'])->assertOk()->assertInertia(fn (Assert $page): Assert => $page
-        ->where('onboard.prefill', ['name' => 'Kivu Harvest Ltd', 'rdb_code' => '', 'representative_email' => $business->email]));
+        ->where('onboard.prefill', ['name' => 'Kivu Harvest Ltd', 'rdb_code' => '', 'representative_email' => $business->email])
+        ->where('onboard.request_closed', false));
     // Only an open Business request fills the form, and only for staff who onboard Businesses.
     $this->actingAs($staff)->get(route('staff.businesses.index', ['onboard_request' => $rows[0]->id]))
-        ->assertInertia(fn (Assert $page): Assert => $page->where('onboard.prefill', null));
-    $this->actingAs($staff)->get(route('staff.businesses.index'))->assertInertia(fn (Assert $page): Assert => $page->where('onboard.prefill', null));
+        ->assertInertia(fn (Assert $page): Assert => $page->where('onboard.prefill', null)->where('onboard.request_closed', true));
+    $this->actingAs($staff)->get(route('staff.businesses.index'))->assertInertia(fn (Assert $page): Assert => $page->where('onboard.prefill', null)
+        ->where('onboard.request_closed', false));
     $this->actingAs($staff)->get(route('staff.businesses.index', ['onboard_request' => 'not-a-ulid']))->assertSessionHasErrors('onboard_request');
     // Staff who do not onboard Businesses get nothing for the same still-open request.
     $analyst = User::factory()->withTwoFactor()->create();
@@ -164,7 +166,9 @@ it('shows staff who grant each role the requests for it, newest first, and refus
         ->and(app(BrowseRoleAccessRequests::class)->onboardingPrefill($staff->id, $rows[1]->id))->not->toBeNull();
     $this->actingAs($analyst)->get($props['requests'][1]['grant']['url'])->assertInertia(fn (Assert $page): Assert => $page->where('onboard', null));
     RoleMembership::factory()->create(['party_id' => $business->party_id, 'role' => 'business', 'status' => 'pending']);
-    $this->actingAs($staff)->get($props['requests'][1]['grant']['url'])->assertInertia(fn (Assert $page): Assert => $page->where('onboard.prefill', null));
+    // Once handled, the same link says the request is closed instead of silently showing the directory.
+    $this->actingAs($staff)->get($props['requests'][1]['grant']['url'])->assertInertia(fn (Assert $page): Assert => $page->where('onboard.prefill', null)
+        ->where('onboard.request_closed', true));
 
     $treasury = User::factory()->withTwoFactor()->create();
     StaffFixture::provision($treasury, ['treasury'], 'Access request refusal.');
