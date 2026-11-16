@@ -121,7 +121,7 @@ describe('The once-only risk acknowledgement (BRS v3.0 KYC-R05)', () => {
 
             expect(
                 screen.queryByText(
-                    'Your wallet, cart and checkout open once you have confirmed these.',
+                    'Adding money, your cart and checkout open once you have confirmed these.',
                 ),
             ).not.toBeInTheDocument();
             await user.click(screen.getByRole('button', { name: 'Not now' }));
@@ -142,6 +142,42 @@ describe('The once-only risk acknowledgement (BRS v3.0 KYC-R05)', () => {
             expect(screen.getByRole('dialog')).toBeInTheDocument();
         });
 
+        it.each([
+            '/investor/wallet',
+            '/investor/wallet?movement=external',
+            '/investor/wallet?kind=withdraw',
+        ])(
+            'lets a holder read %s and withdraw once the statements are put off (#660)',
+            (url) => {
+                window.sessionStorage.setItem(
+                    'rozine.risk-gate.later.brs-3.0-kyc-r05',
+                    '1',
+                );
+                inertia.shared = { risk_acknowledgement: due() };
+                inertia.url = url;
+                render(<RiskGate />);
+
+                expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+            },
+        );
+
+        it('keeps adding money behind the statements and sends Not now back to the wallet (#660)', async () => {
+            const user = userEvent.setup();
+            window.sessionStorage.setItem(
+                'rozine.risk-gate.later.brs-3.0-kyc-r05',
+                '1',
+            );
+            inertia.shared = { risk_acknowledgement: due() };
+            inertia.url = '/investor/wallet?kind=deposit';
+            render(<RiskGate />);
+
+            await user.click(
+                screen.getByRole('button', { name: 'Not now, back to Wallet' }),
+            );
+
+            expect(inertia.visit).toHaveBeenCalledWith('/investor/wallet');
+        });
+
         it('closes on Escape like Not now', async () => {
             const user = userEvent.setup();
             inertia.shared = { risk_acknowledgement: due() };
@@ -153,12 +189,7 @@ describe('The once-only risk acknowledgement (BRS v3.0 KYC-R05)', () => {
             expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
         });
 
-        it.each([
-            '/investor/wallet',
-            '/investor/wallet?tab=history',
-            '/investor/cart',
-            '/investor/deals/01hzcampaign/checkout',
-        ])(
+        it.each(['/investor/cart', '/investor/deals/01hzcampaign/checkout'])(
             'keeps %s behind the statements and offers Portfolio instead',
             async (url) => {
                 const user = userEvent.setup();
@@ -171,7 +202,7 @@ describe('The once-only risk acknowledgement (BRS v3.0 KYC-R05)', () => {
                 render(<RiskGate />);
 
                 expect(screen.getByRole('dialog')).toHaveTextContent(
-                    'Your wallet, cart and checkout open once you have confirmed these.',
+                    'Adding money, your cart and checkout open once you have confirmed these.',
                 );
                 await user.click(
                     screen.getByRole('button', {

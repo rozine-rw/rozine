@@ -4,7 +4,7 @@ import { formatOrdinals } from '@/components/investor/primary/rights';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDate, formatDateTime, formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { IssuedHolding } from '@/types/investor';
+import type { HoldingScheduleRow, IssuedHolding } from '@/types/investor';
 
 const HEADING = 'text-sm font-semibold text-rz-ink';
 
@@ -17,12 +17,21 @@ const HEADING = 'text-sm font-semibold text-rz-ink';
 export function IssueRecord({
     issue,
     resold = '0',
+    schedule,
 }: {
     issue: IssuedHolding;
     /** Units of the Holding sold on the market since issue. */
     resold?: string;
+    /**
+     * The schedule as it stands now: paid instalments with what was paid and when, the rest for
+     * the units still held. Without it the table shows the schedule as issued.
+     */
+    schedule?: HoldingScheduleRow[];
 }) {
     const { t, locale } = useTranslation();
+    const rowsNow: HoldingScheduleRow[] =
+        schedule ??
+        issue.schedule.map((row) => ({ ...row, paid_on: null, net: null }));
     const rows: [string, string][] = [
         [
             t('investor.primary.units'),
@@ -120,13 +129,30 @@ export function IssueRecord({
                     </tr>
                 </thead>
                 <tbody>
-                    {issue.schedule.map((row) => (
+                    {rowsNow.map((row) => (
                         <tr
                             key={row.index}
                             className="border-t border-[#eef2f9] dark:border-rz-divider"
                         >
                             <td className="px-3.5 py-2 text-rz-slate">
                                 {formatDate(row.due_on, locale)}
+                                {row.paid_on !== null && (
+                                    <span className="block text-[10.5px] font-semibold text-[#157357] dark:text-[#3fcda0]">
+                                        {t(
+                                            row.paid_on < row.due_on
+                                                ? 'investor.holding.issue.paid_early'
+                                                : 'investor.holding.issue.paid_on',
+                                            {
+                                                date: formatDate(
+                                                    row.paid_on,
+                                                    locale,
+                                                ),
+                                            },
+                                        )}
+                                        {row.net !== null &&
+                                            ` · ${t('investor.holding.issue.paid_net', { amount: formatRwf(row.net) })}`}
+                                    </span>
+                                )}
                             </td>
                             <td className="px-3.5 py-2 text-right font-semibold text-rz-ink tabular-nums">
                                 {formatRwf(row.principal)}

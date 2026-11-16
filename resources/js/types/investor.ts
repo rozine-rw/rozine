@@ -2035,6 +2035,8 @@ export type C3HoldingDetail = Omit<HoldingDetail, 'updates'> & {
     latest_report?: Pick<MonthlyUpdate, 'month' | 'status' | 'summary'> | null;
     /** How many of the Holding's units were sold on the market. */
     resold_units?: string;
+    /** The schedule as it stands now: paid rows with what was paid, the rest for the units still held. */
+    schedule?: HoldingScheduleRow[];
     issue: IssuedHolding;
 };
 
@@ -2325,4 +2327,16 @@ export type InvestorProspectusProps = {
     contracted_months: string[];
     /** Back to the deal, and the same signed version as a PDF download. */
     links: C3InvestorShellLinks & { back: RouteLink; pdf: RouteLink };
+};
+
+/** One instalment of a Holding's schedule as it stands now (QA #645). */
+export type HoldingScheduleRow = {
+    index: number;
+    due_on: string;
+    principal: Money;
+    return: Money;
+    /** The Kigali date it was paid, or null while it is still to come. */
+    paid_on: string | null;
+    /** What reached the wallet, on the first instalment a payout covered; null otherwise. */
+    net: Money | null;
 };

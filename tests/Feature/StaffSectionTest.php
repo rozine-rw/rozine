@@ -94,7 +94,7 @@ test('Finance shows the fee revenue the ledger holds to whoever may read the led
 
     $this->actingAs(sectionStaff(['treasury']))->get('/admin/finance')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('admin/section')->where('section', 'finance')->where('nav.finance.url', '/admin/finance')
-            ->where('figures', ['revenue' => $money('194400'), 'primary' => $money('194400')])
+            ->where('figures', ['revenue' => $money('194400'), 'primary' => $money('194400'), 'investor_fees' => $money('0'), 'secondary' => $money('0')])
             ->where('streams', [['key' => 'platform_fee', 'rate' => ['key' => 'platform_fee', 'value' => '3%'], 'paid_by' => 'business', 'collected' => $money('194400')],
                 ['key' => 'audit_partner_share', 'rate' => ['key' => 'cpa_share', 'value' => '40%'], 'paid_by' => 'business', 'collected' => $money('129600')],
                 ['key' => 'deposit_fees', 'rate' => null, 'paid_by' => 'investor', 'collected' => $money('0')],

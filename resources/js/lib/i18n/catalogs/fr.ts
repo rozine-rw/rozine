@@ -3522,7 +3522,10 @@ const fr: Catalog = {
     'business.servicing.wallet.filter.internal': 'Remboursements',
     'business.servicing.wallet.entry.deposit': 'Dépôt · {counterparty}',
     'business.servicing.wallet.entry.repayment': 'Remboursement · {note}',
-    'business.servicing.wallet.instalments': 'Échéances {list}',
+    'business.servicing.wallet.instalments': {
+        one: 'Échéance {list}',
+        other: 'Échéances {list}',
+    },
     'business.servicing.wallet.empty': 'Rien pour le moment.',
     'business.servicing.wallet.older': 'Afficher plus',
     'business.servicing.wallet.receipt.label': 'Reçu de la transaction',
@@ -4396,6 +4399,13 @@ const fr: Catalog = {
         "Règle l'échéance {list} en avance, au montant prévu. Aucune remise pour un paiement anticipé.",
     'business.servicing.repay.wallet_has':
         'Votre portefeuille dispose de {amount}.',
+    'business.servicing.repay.confirm_title': 'Confirmer ce paiement',
+    'business.servicing.repay.confirm_body.due_now':
+        "{amount} quitte votre portefeuille pour l'échéance {list}, avec les éventuels frais de retard. Le montant va à vos investisseurs et ne peut pas être annulé.",
+    'business.servicing.repay.confirm_body.next_instalment':
+        "{amount} quitte votre portefeuille pour régler l'échéance {list} en avance. Aucune remise pour un paiement anticipé, et ce paiement ne peut pas être annulé.",
+    'business.servicing.repay.confirm_cancel': 'Annuler',
+    'business.servicing.repay.confirm_cta': 'Confirmer {amount}',
     'business.servicing.repay.pay_cta': 'Payer {amount}',
     'business.servicing.repay.short':
         'Votre portefeuille ne suffit pas pour ce paiement.',
@@ -4607,14 +4617,19 @@ const fr: Catalog = {
     'investor.market.resale.sell_title': 'Vendre des parts sur le marché',
     'investor.market.resale.buy': 'Acheter',
     'investor.market.resale.buy_title': 'Acheter des parts de {name}',
-    'investor.market.resale.units_at': '{units} parts à {price} chacune',
+    'investor.market.resale.units_at': {
+        one: '{units} part à {price}',
+        other: '{units} parts à {price} chacune',
+    },
     'investor.market.resale.yours': 'Votre annonce',
     'investor.market.resale.reserved': 'Réservée',
     'investor.market.resale.total': 'Total',
     'investor.market.resale.expires': 'Annoncée jusqu’au {when}',
     'investor.market.resale.withdraw': 'Retirer',
-    'investor.market.resale.reserved_for_you':
-        '{units} parts réservées pour vous jusqu’au {when}. Confirmez pour payer {amount} depuis votre portefeuille.',
+    'investor.market.resale.reserved_for_you': {
+        one: '{units} part réservée pour vous jusqu’au {when}. Confirmez pour payer {amount} depuis votre portefeuille.',
+        other: '{units} parts réservées pour vous jusqu’au {when}. Confirmez pour payer {amount} depuis votre portefeuille.',
+    },
     'investor.market.resale.confirm': 'Confirmer l’achat',
     'investor.market.resale.working': 'En cours…',
     'investor.market.resale.units': 'Parts',
@@ -4623,14 +4638,19 @@ const fr: Catalog = {
         'La réservation bloque ce montant dans votre portefeuille pendant que vous confirmez.',
     'investor.market.resale.reserve': 'Réserver les parts',
     'investor.market.resale.holding': 'Placement',
-    'investor.market.resale.lot_option': '{name} · {units} parts libres',
+    'investor.market.resale.lot_option': {
+        one: '{name} · {units} part libre',
+        other: '{name} · {units} parts libres',
+    },
     'investor.market.resale.price': 'Prix par part (RWF)',
     'investor.market.resale.cap': 'Au plus {cap} par part',
     'investor.market.resale.listing_total': 'Total de l’annonce {amount}',
     'investor.market.resale.list': 'Mettre en vente',
     'investor.market.resale.trade_buy': 'Acheté · {name}',
-    'investor.market.resale.too_many':
-        'Seulement {count} unités sont proposées.',
+    'investor.market.resale.too_many': {
+        one: 'Seulement {count} part est proposée.',
+        other: 'Seulement {count} parts sont proposées.',
+    },
     'investor.market.resale.bought': {
         one: 'Vous avez acheté {count} unité de {name} pour {amount}.',
         other: 'Vous avez acheté {count} unités de {name} pour {amount}.',
@@ -7734,10 +7754,11 @@ const fr: Catalog = {
     'investor.checkout.risks.failed':
         "Nous n'avons pas pu enregistrer votre réponse. Réessayez.",
     'investor.risk_gate.later': 'Plus tard',
+    'investor.risk_gate.later_wallet': 'Pas maintenant, retour au portefeuille',
     'investor.risk_gate.later_portfolio':
         'Plus tard, voir mes placements (Portefeuille)',
     'investor.risk_gate.money_page':
-        "Votre solde, votre panier et le paiement s'ouvrent une fois ces déclarations confirmées.",
+        "L'ajout d'argent, votre panier et le paiement s'ouvrent une fois ces déclarations confirmées.",
     'investor.checkout.c3.reserve_after_risks':
         'Confirmez d’abord les déclarations de risque pour réserver.',
     'investor.checkout.c3.reserve_unavailable':
@@ -7826,6 +7847,9 @@ const fr: Catalog = {
         other: '{count} notes · {held} encore détenues',
     },
     'investor.holding.issue.effective_date': "Date d'effet (Kigali)",
+    'investor.holding.issue.paid_on': 'Payé le {date}',
+    'investor.holding.issue.paid_early': 'Payé en avance le {date}',
+    'investor.holding.issue.paid_net': '{amount} net',
     'investor.holding.issue.schedule': 'Échéancier',
     'investor.holding.issue.due': 'Échéance',
     'auth.two_factor.recovery_codes_remaining': {

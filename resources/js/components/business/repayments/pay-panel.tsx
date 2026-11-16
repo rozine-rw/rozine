@@ -13,7 +13,8 @@ import type {
  * Pay from the Business wallet (C4 v1 §4a `repayment.pay`): what is due now, or the next
  * instalment early at its exact scheduled amount. Pay is offered only when the server lists
  * `repayment.pay` and the wallet covers the chosen option; when it doesn't, the panel offers a
- * top-up instead of a disabled button. The total on screen goes with the command as
+ * top-up instead of a disabled button. Pay opens a confirmation of the amount and instalment, with
+ * Cancel; only Confirm sends the command. The total on screen goes with the command as
  * `quoted_total`, so a total that changed meanwhile is refused rather than charged.
  */
 export function PayPanel({
@@ -33,6 +34,8 @@ export function PayPanel({
 }) {
     const { t } = useTranslation();
     const [key, setKey] = useState(pay.options[0]?.key);
+    /** Pay first shows what leaves the wallet; only Confirm sends it (QA #659). */
+    const [confirming, setConfirming] = useState(false);
     const option = pay.options.find((candidate) => candidate.key === key);
 
     if (option === undefined) {
@@ -61,7 +64,10 @@ export function PayPanel({
                             type="button"
                             role="radio"
                             aria-checked={candidate.key === key}
-                            onClick={() => setKey(candidate.key)}
+                            onClick={() => {
+                                setKey(candidate.key);
+                                setConfirming(false);
+                            }}
                             className={cn(
                                 'flex items-center justify-between rounded-xl border-[1.5px] px-3 py-2.5 text-left text-[13px]',
                                 candidate.key === key
@@ -92,10 +98,52 @@ export function PayPanel({
                     amount: formatRwf(pay.funding.available),
                 })}
             </p>
-            {covered && offered ? (
+            {covered && offered && confirming ? (
+                <div
+                    role="alertdialog"
+                    aria-label={t('business.servicing.repay.confirm_title')}
+                    className="mt-3 rounded-2xl border border-rz-border bg-rz-surface-sunken p-3.5"
+                >
+                    <p className="text-sm font-semibold text-rz-ink">
+                        {t('business.servicing.repay.confirm_title')}
+                    </p>
+                    <p className="mt-1 text-xs leading-[1.5] text-rz-secondary">
+                        {t(
+                            `business.servicing.repay.confirm_body.${option.key}`,
+                            {
+                                amount: formatRwf(option.amounts.total),
+                                list: option.instalment_indexes.join(', '),
+                            },
+                        )}
+                    </p>
+                    <div className="mt-3 flex gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setConfirming(false)}
+                            disabled={busy}
+                            className="h-11 flex-1 rounded-xl border border-rz-border bg-rz-surface text-[14px] font-semibold text-rz-ink disabled:opacity-60"
+                        >
+                            {t('business.servicing.repay.confirm_cancel')}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => onPay(option)}
+                            disabled={busy || locked}
+                            aria-busy={busy || undefined}
+                            className="h-11 flex-1 rounded-xl bg-rz-accent-fill text-[14px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            {busy
+                                ? t('business.wallet.processing')
+                                : t('business.servicing.repay.confirm_cta', {
+                                      amount: formatRwf(option.amounts.total),
+                                  })}
+                        </button>
+                    </div>
+                </div>
+            ) : covered && offered ? (
                 <button
                     type="button"
-                    onClick={() => onPay(option)}
+                    onClick={() => setConfirming(true)}
                     disabled={busy || locked}
                     aria-busy={busy || undefined}
                     className="mt-3 h-[52px] w-full rounded-2xl bg-rz-accent-fill text-[15px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"

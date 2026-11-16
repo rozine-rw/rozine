@@ -693,7 +693,11 @@ export function HoldingSchedule({
             {update !== null && (
                 <UpdateSheet update={update} onClose={() => setUpdate(null)} />
             )}
-            <IssueRecord issue={holding.issue} resold={holding.resold_units} />
+            <IssueRecord
+                issue={holding.issue}
+                resold={holding.resold_units}
+                schedule={holding.schedule}
+            />
         </>
     );
 }

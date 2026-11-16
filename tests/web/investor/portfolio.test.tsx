@@ -280,6 +280,31 @@ describe('Portfolio', () => {
         ).toBeInTheDocument();
     });
 
+    it('marks a paid instalment with its date and net, and shows the rest as scheduled (QA #645)', () => {
+        const props = holding(holdingMinimalFixture);
+        const [first, ...rest] = props.holding.issue.schedule;
+
+        props.holding.schedule = [
+            {
+                ...first,
+                principal: { currency: 'RWF', amount: '500000' },
+                return: { currency: 'RWF', amount: '55500' },
+                paid_on: '2026-11-16',
+                net: { currency: 'RWF', amount: '548840' },
+            },
+            ...rest.map((row) => ({ ...row, paid_on: null, net: null })),
+        ];
+        render(<InvestorHolding {...props} />);
+
+        const rows = screen
+            .getAllByRole('row')
+            .filter((row) => /Paid/u.test(row.textContent ?? ''));
+        expect(rows).toHaveLength(1);
+        expect(rows[0]).toHaveTextContent(/RWF 548,840 net/u);
+        expect(rows[0]).toHaveTextContent('RWF 500,000');
+        expect(rows[0]).toHaveTextContent('RWF 55,500');
+    });
+
     it('renders the live empty portfolio with no empty breakdowns and no unlinked tab', () => {
         const props = portfolio(portfolioMinimalFixture);
 

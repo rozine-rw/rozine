@@ -272,7 +272,7 @@ describe('Business wallet (business-servicing-v1)', () => {
             within(history).getByRole('link', { name: 'Repayments' }),
         ).toHaveAttribute('aria-current', 'true');
         expect(history).toHaveTextContent('Repayment · Fleet Expansion');
-        expect(history).toHaveTextContent('Instalments 2');
+        expect(history).toHaveTextContent('Instalment #2');
         expect(
             within(history).getByRole('link', { name: 'Show more' }),
         ).toHaveAttribute('href', '/preview/business-wallet-internal');

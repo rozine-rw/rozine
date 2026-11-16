@@ -37,6 +37,8 @@ const RELOADS = [
     'receipt',
     'recent',
     'actions',
+    // The Home behind the sheet shows the wallet balance a payment just spent (QA #659).
+    'home',
 ];
 
 /**

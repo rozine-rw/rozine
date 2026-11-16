@@ -3508,7 +3508,10 @@ const rw: Catalog = {
     'business.servicing.wallet.filter.internal': 'Ibyishyuwe',
     'business.servicing.wallet.entry.deposit': 'Kubitsa · {counterparty}',
     'business.servicing.wallet.entry.repayment': 'Kwishyura · {note}',
-    'business.servicing.wallet.instalments': 'Ibice {list}',
+    'business.servicing.wallet.instalments': {
+        one: 'Igice {list}',
+        other: 'Ibice {list}',
+    },
     'business.servicing.wallet.empty': 'Nta kirimo kugeza ubu.',
     'business.servicing.wallet.older': 'Erekana ibya kera',
     'business.servicing.wallet.receipt.label': "Inyemezabwishyu y'igikorwa",
@@ -4378,6 +4381,13 @@ const rw: Catalog = {
         "Byishyura igice {list} mbere y'igihe, ku mafaranga yateganyijwe. Nta gabanywa ribaho ku kwishyura kare.",
     'business.servicing.repay.wallet_has':
         'Igikapu cyawe gifite {amount} ushobora gukoresha.',
+    'business.servicing.repay.confirm_title': 'Emeza ubu bwishyu',
+    'business.servicing.repay.confirm_body.due_now':
+        "{amount} ivuye mu gikapu cyawe yishyura igice {list}, hamwe n'amafaranga y'ubukererwe niba ahari. Ijya ku bashoramari bawe kandi ntishobora gusubizwa inyuma.",
+    'business.servicing.repay.confirm_body.next_instalment':
+        "{amount} ivuye mu gikapu cyawe yishyura igice {list} mbere y'igihe. Nta gabanywa ribaho ku kwishyura kare, kandi ntishobora gusubizwa inyuma.",
+    'business.servicing.repay.confirm_cancel': 'Reka',
+    'business.servicing.repay.confirm_cta': 'Emeza {amount}',
     'business.servicing.repay.pay_cta': 'Ishyura {amount}',
     'business.servicing.repay.short':
         'Ibiri mu gikapu cyawe ntibihagije kuri iki gikorwa.',
@@ -4595,15 +4605,19 @@ const rw: Catalog = {
     'investor.market.resale.sell_title': 'Gurisha imigabane ku isoko',
     'investor.market.resale.buy': 'Gura',
     'investor.market.resale.buy_title': 'Gura imigabane ya {name}',
-    'investor.market.resale.units_at':
-        'Imigabane {units} kuri {price} buri umwe',
+    'investor.market.resale.units_at': {
+        one: 'Umugabane {units} kuri {price}',
+        other: 'Imigabane {units} kuri {price} buri umwe',
+    },
     'investor.market.resale.yours': 'Icyo washyizeho',
     'investor.market.resale.reserved': 'Yafashwe',
     'investor.market.resale.total': 'Igiteranyo',
     'investor.market.resale.expires': 'Kugeza {when}',
     'investor.market.resale.withdraw': 'Kuramo',
-    'investor.market.resale.reserved_for_you':
-        'Imigabane {units} yagufatiwe kugeza {when}. Emeza wishyure {amount} uvuye mu gikapu cyawe.',
+    'investor.market.resale.reserved_for_you': {
+        one: 'Umugabane {units} wagufatiwe kugeza {when}. Emeza wishyure {amount} uvuye mu gikapu cyawe.',
+        other: 'Imigabane {units} yagufatiwe kugeza {when}. Emeza wishyure {amount} uvuye mu gikapu cyawe.',
+    },
     'investor.market.resale.confirm': 'Emeza kugura',
     'investor.market.resale.working': 'Birakorwa…',
     'investor.market.resale.units': 'Imigabane',
@@ -4612,14 +4626,19 @@ const rw: Catalog = {
         'Gufata bigumisha aya mafaranga mu gikapu cyawe igihe gito mu gihe wemeza.',
     'investor.market.resale.reserve': 'Fata imigabane',
     'investor.market.resale.holding': 'Ishoramari',
-    'investor.market.resale.lot_option': '{name} · imigabane {units} iboneka',
+    'investor.market.resale.lot_option': {
+        one: '{name} · umugabane {units} uboneka',
+        other: '{name} · imigabane {units} iboneka',
+    },
     'investor.market.resale.price': 'Igiciro kuri buri mugabane (RWF)',
     'investor.market.resale.cap': 'Ntibirenze {cap} kuri buri mugabane',
     'investor.market.resale.listing_total': 'Igiteranyo {amount}',
     'investor.market.resale.list': 'Shyira ku isoko',
     'investor.market.resale.trade_buy': 'Waguze · {name}',
-    'investor.market.resale.too_many':
-        'Imigabane {count} gusa ni yo iri ku isoko.',
+    'investor.market.resale.too_many': {
+        one: 'Umugabane {count} gusa ni wo uri ku isoko.',
+        other: 'Imigabane {count} gusa ni yo iri ku isoko.',
+    },
     'investor.market.resale.bought': {
         one: 'Waguze umugabane {count} wa {name} kuri {amount}.',
         other: 'Waguze imigabane {count} ya {name} kuri {amount}.',
@@ -7706,9 +7725,10 @@ const rw: Catalog = {
     'investor.checkout.risks.failed':
         'Ntitwashoboye kubika igisubizo cyawe. Ongera ugerageze.',
     'investor.risk_gate.later': 'Si ubu',
+    'investor.risk_gate.later_wallet': 'Si ubu, subira ku gikapu',
     'investor.risk_gate.later_portfolio': 'Si ubu, jya kuri Ishoramari ryanjye',
     'investor.risk_gate.money_page':
-        "Ikofi yawe, igitebo n'iyishyura bifunguka umaze kwemeza ibi.",
+        "Kongeramo amafaranga, igitebo n'iyishyura bifunguka umaze kwemeza ibi.",
     'investor.checkout.c3.reserve_after_risks':
         "Banza wemeze amagambo y'ingaruka kugira ngo ubike.",
     'investor.checkout.c3.reserve_unavailable': 'Gufata ntibishoboka ubu.',
@@ -7795,6 +7815,9 @@ const rw: Catalog = {
         other: '{count} · {held} biracyafitwe',
     },
     'investor.holding.issue.effective_date': 'Itariki ikurikizwa (Kigali)',
+    'investor.holding.issue.paid_on': 'Byishyuwe {date}',
+    'investor.holding.issue.paid_early': 'Byishyuwe kare {date}',
+    'investor.holding.issue.paid_net': '{amount} nyakuri',
     'investor.holding.issue.schedule': 'Ingengabihe',
     'investor.holding.issue.due': 'Itariki',
     'auth.two_factor.recovery_codes_remaining': {
