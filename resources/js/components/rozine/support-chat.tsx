@@ -225,6 +225,13 @@ export function SupportChat({
                 </section>
             )}
 
+            {/* Room below the last answers so the floating chat button never covers them (#596). */}
+            <div
+                aria-hidden
+                data-testid="support-chat-clearance"
+                className="h-20 lg:h-16"
+            />
+
             {!isOpen && (
                 <button
                     type="button"

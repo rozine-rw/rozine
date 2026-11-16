@@ -21,10 +21,11 @@ final readonly class EloquentAccountDevices implements AccountDevices
 {
     public function __construct(private PartyNotices $notices) {}
 
-    public function recognize(int $userId, ?string $token, string $label): ?string
+    public function recognize(int $userId, array $tokens, string $label): ?string
     {
         $owned = AccountDevice::query()->where('user_id', $userId);
-        if (is_string($token) && $token !== '' && (clone $owned)->where('token_hash', hash('sha256', $token))->exists()) {
+        $hashes = array_map(fn (string $token): string => hash('sha256', $token), $tokens);
+        if ((clone $owned)->whereIn('token_hash', $hashes)->exists()) {
             return null;
         }
 

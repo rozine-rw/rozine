@@ -57,7 +57,11 @@ export function ScoreCard({ rating, refusal, drift }: ScoreCardProps) {
                         : `${t(`business.rating.band.${rating.band}`)} · ${rating.score}`}
                 </p>
                 <p className="mt-[5px] text-[11.5px] leading-normal text-rz-secondary">
-                    {t('business.rating.explainer')}
+                    {t(
+                        rating === null
+                            ? 'business.rating.pending_next'
+                            : 'business.rating.explainer',
+                    )}
                 </p>
                 {drift !== null && rating !== null && (
                     <div className="mt-[11px] rounded-xl border border-[#fbe4cc] bg-[#fff8f1] px-3 py-[11px] dark:border-transparent dark:bg-[rgba(194,102,31,.12)]">

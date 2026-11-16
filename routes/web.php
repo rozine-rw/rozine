@@ -49,6 +49,7 @@ use App\Http\Controllers\InvestorRiskAcknowledgementController;
 use App\Http\Controllers\InvestorVerificationController;
 use App\Http\Controllers\InvestorWalletController;
 use App\Http\Controllers\PulseController;
+use App\Http\Controllers\RoleAccessRequestController;
 use App\Http\Controllers\RoleBookmarkController;
 use App\Http\Controllers\RoleHomeController;
 use App\Http\Controllers\SiteController;
@@ -310,6 +311,7 @@ Route::middleware(['auth', 'throttle:60,1'])->prefix('identity')->name('identity
     Route::post('memberships', [IdentityManagementController::class, 'membership'])->name('memberships.update');
     Route::post('active-role', [IdentityManagementController::class, 'selectRole'])->name('active-role.store');
     Route::post('investor-access', [IdentityManagementController::class, 'addInvestor'])->name('investor-access.store');
+    Route::post('access-requests', [RoleAccessRequestController::class, 'store'])->name('access-requests.store');
     Route::get('roles/{role}', [IdentityManagementController::class, 'role'])->name('roles.show');
     Route::get('bookmarks/{role}', [RoleBookmarkController::class, 'show'])->name('bookmarks.show');
     Route::post('bookmarks', [RoleBookmarkController::class, 'store'])->name('bookmarks.store');
@@ -396,6 +398,7 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::get('admin/primary-market', StaffPrimaryMarketController::class)->name('staff.primary-market.index');
     Route::get('admin/payments', StaffPaymentsController::class)->name('staff.payments.index');
     Route::get('admin/coverage', StaffCoverageController::class)->name('staff.coverage.index');
+    Route::get('admin/access-requests', [RoleAccessRequestController::class, 'index'])->name('staff.access-requests.index');
     Route::get('admin/complaints', [StaffComplaintController::class, 'index'])->name('staff.complaints.index');
     Route::get('admin/system-health', StaffSystemHealthController::class)->name('staff.system-health.index');
     Route::post('admin/complaints/{complaint}/answers', [StaffComplaintController::class, 'answer'])->whereUlid('complaint')->name('staff.complaints.answer');

@@ -24,8 +24,10 @@ it('installs Business deposit records behind an in-flight Investor posting witho
     $platformFee = require database_path('migrations/2026_10_16_161905_add_platform_fee_to_disbursements.php');
     $automaticDisbursement = require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php');
     // The secondary market rebinds the ledger entry sources too, so it comes off first and goes back last.
+    // Servicing payouts reference Business repayments and rebind the ledger kinds after the secondary market, so they come off before it and go back after it.
+    $servicingPayouts = require database_path('migrations/2026_11_14_120000_create_servicing_payouts.php');
     $secondaryMarket = require database_path('migrations/2026_11_11_060000_create_secondary_market_tables.php');
-    $restore = function () use ($migration, $businessRepayments, $businessWithdrawals, $platformFee, $automaticDisbursement, $secondaryMarket): void {
+    $restore = function () use ($migration, $businessRepayments, $businessWithdrawals, $platformFee, $automaticDisbursement, $secondaryMarket, $servicingPayouts): void {
         if (! Schema::hasTable('business_deposit_intents')) {
             $migration->up();
         }
@@ -34,7 +36,9 @@ it('installs Business deposit records behind an in-flight Investor posting witho
         $platformFee->up();
         $automaticDisbursement->up();
         $secondaryMarket->up();
+        $servicingPayouts->up();
     };
+    $servicingPayouts->down();
     $secondaryMarket->down();
     $automaticDisbursement->down();
     $platformFee->down();
