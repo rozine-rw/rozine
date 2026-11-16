@@ -398,6 +398,17 @@ it('lists a repayment in the Business wallet with its receipt, opens it from Rep
     $this->actingAs($note['payer'])->getJson(route('business.notices.index', $note['business']))->assertOk()
         ->assertJson(fn (AssertableJson $json): AssertableJson => $json->where('data.notices.0.kind', 'business.repayment_received')
             ->where('data.notices.0.facts.amount', $gross)->where('data.notices.0.facts.instalments', '1')->where('data.notices.0.link.url', $receipt)->etc());
+    $payout = DB::table('servicing_payouts')->where('repayment_id', $repayment->id)->where('party_id', $schedule->holdings[0]->partyId)->sole();
+    // An unsold Holding is paid exactly its own scheduled row, the split its schedule shows (QA #645).
+    expect([$payout->principal, $payout->contractual_return])
+        ->toBe([$schedule->holdings[0]->instalments[0]->principal, $schedule->holdings[0]->instalments[0]->contractualReturn]);
+    $holder = User::query()->where('party_id', $schedule->holdings[0]->partyId)->sole();
+    app()->forgetInstance(EnvironmentIsolation::class);
+    $this->actingAs($holder)->getJson(route('investor.notices'))->assertOk()
+        ->assertJson(fn (AssertableJson $json): AssertableJson => $json->where('data.notices.0.kind', 'wallet.payout_received')
+            ->where('data.notices.0.facts.amount', $payout->net)->where('data.notices.0.facts.fee', $payout->fee)
+            ->where('data.notices.0.facts.gross', (string) ((int) $payout->principal + (int) $payout->contractual_return))
+            ->where('data.notices.0.link.url', route('investor.wallet', [], false))->etc());
 });
 
 it('refuses a repayment whose payout cannot post, so nothing is collected without paying its holders', function (): void {

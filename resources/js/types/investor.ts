@@ -1684,6 +1684,15 @@ export type InvestorNotice = {
 } & (
     | { kind: 'wallet.deposit_received'; facts: Money }
     | {
+          kind: 'wallet.payout_received';
+          facts: Money & {
+              gross: string;
+              fee: string;
+              title: string;
+              instalments: string;
+          };
+      }
+    | {
           kind: 'wallet.withdrawal_sent';
           facts: Money & { account: string; received: string };
       }

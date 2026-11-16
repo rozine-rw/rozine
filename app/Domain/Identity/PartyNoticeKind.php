@@ -19,6 +19,7 @@ enum PartyNoticeKind: string
     case VerificationRejected = 'verification.rejected';
     case DepositReceived = 'wallet.deposit_received';
     case WithdrawalSent = 'wallet.withdrawal_sent';
+    case PayoutReceived = 'wallet.payout_received';
     case WithdrawalReturned = 'wallet.withdrawal_returned';
     case RaiseRefunded = 'primary.refunded';
     case ReportPublished = 'primary.report_published';
@@ -89,7 +90,7 @@ enum PartyNoticeKind: string
     {
         return match ($this) {
             self::VerificationApproved, self::VerificationRejected => 'onboarding',
-            self::DepositReceived, self::WithdrawalSent, self::WithdrawalReturned, self::BusinessDepositReceived, self::BusinessWithdrawalSent,
+            self::DepositReceived, self::WithdrawalSent, self::WithdrawalReturned, self::PayoutReceived, self::BusinessDepositReceived, self::BusinessWithdrawalSent,
             self::BusinessWithdrawalReturned => 'wallet',
             self::RaiseRefunded, self::RaiseFunded, self::BusinessRaiseExpired, self::BusinessRaiseFunded => 'fundraising',
             self::CommitmentConfirmed, self::HoldingIssued => 'portfolio',

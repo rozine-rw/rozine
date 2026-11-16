@@ -1715,6 +1715,8 @@ const fr: Catalog = {
         'La conformité approuve une vérification d’identité',
     'admin.messaging.trigger.verification.rejected':
         'La conformité renvoie une vérification d’identité',
+    'admin.messaging.trigger.wallet.payout_received':
+        'Le service verse à un détenteur sa part d’un remboursement',
     'admin.messaging.trigger.wallet.deposit_received':
         'Le prestataire confirme un dépôt',
     'admin.messaging.trigger.wallet.withdrawal_sent': 'Un retrait est versé',
@@ -7605,6 +7607,9 @@ const fr: Catalog = {
         'Levée clôturée sans financement complet',
     'investor.notices.business.raise_expired.body':
         "{title} s'est clôturée à son échéance avec {committed} engagés sur {target}. Les investisseurs ont été remboursés et aucun frais n'a été prélevé.",
+    'investor.notices.wallet.payout_received.title': 'Paiement reçu',
+    'investor.notices.wallet.payout_received.body':
+        '{net} est arrivé dans votre portefeuille de {title}, échéance {instalments} : {gross} moins {fee} de frais sur les gains.',
     'investor.notices.wallet.deposit_received.title': 'Dépôt reçu',
     'investor.notices.wallet.deposit_received.body':
         '{amount} est maintenant dans votre portefeuille.',

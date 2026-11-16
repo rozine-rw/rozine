@@ -1622,6 +1622,8 @@ const en = {
         'Compliance approves an identity check',
     'admin.messaging.trigger.verification.rejected':
         'Compliance sends an identity check back',
+    'admin.messaging.trigger.wallet.payout_received':
+        'Servicing pays a holder its share of a repayment',
     'admin.messaging.trigger.wallet.deposit_received':
         'The provider confirms a deposit',
     'admin.messaging.trigger.wallet.withdrawal_sent':
@@ -7279,6 +7281,9 @@ const en = {
         'Raise closed without full funding',
     'investor.notices.business.raise_expired.body':
         '{title} closed at its deadline with {committed} of {target} committed. Investors were refunded and no fee was charged.',
+    'investor.notices.wallet.payout_received.title': 'Payout received',
+    'investor.notices.wallet.payout_received.body':
+        '{net} reached your wallet from {title}, instalment {instalments}: {gross} less the {fee} earnings fee.',
     'investor.notices.wallet.deposit_received.title': 'Deposit received',
     'investor.notices.wallet.deposit_received.body':
         '{amount} is now in your wallet.',

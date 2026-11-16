@@ -1704,6 +1704,8 @@ const rw: Catalog = {
         'Ishami ry’iyubahirizwa ryemeje igenzura ry’umwirondoro',
     'admin.messaging.trigger.verification.rejected':
         'Ishami ry’iyubahirizwa risubije igenzura ry’umwirondoro',
+    'admin.messaging.trigger.wallet.payout_received':
+        'Serivisi yishyura nyir’impapuro umugabane we w’ubwishyu',
     'admin.messaging.trigger.wallet.deposit_received':
         'Utanga serivisi yemeje kubitsa',
     'admin.messaging.trigger.wallet.withdrawal_sent':
@@ -7578,6 +7580,9 @@ const rw: Catalog = {
         'Ubukangurambaga bwarangiye budashyitse',
     'investor.notices.business.raise_expired.body':
         '{title} yarangiye igihe cyayo kigeze hamaze kwemezwa {committed} kuri {target}. Abashoramari basubijwe amafaranga yabo, nta kiguzi cyakwa.',
+    'investor.notices.wallet.payout_received.title': 'Ubwishyu bwakiriwe',
+    'investor.notices.wallet.payout_received.body':
+        '{net} yageze mu gikapu cyawe ivuye kuri {title}, igice {instalments}: {gross} ukuyemo {fee} y’amafaranga ku nyungu.',
     'investor.notices.wallet.deposit_received.title':
         'Amafaranga yashyizwe kuri konti',
     'investor.notices.wallet.deposit_received.body':
