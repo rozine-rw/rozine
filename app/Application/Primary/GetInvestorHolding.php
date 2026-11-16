@@ -7,6 +7,7 @@ namespace App\Application\Primary;
 use App\Application\Business\Contracts\InvestorDealCatalogue;
 use App\Application\Primary\Contracts\HoldingPayouts;
 use App\Application\Primary\Contracts\InvestorHoldings;
+use App\Application\Secondary\Contracts\NoteUnitHolders;
 use App\Domain\Operations\CommandRejection;
 use Carbon\CarbonImmutable;
 
@@ -17,14 +18,14 @@ use Carbon\CarbonImmutable;
  * instalment, and the business's published monthly audit reports, the newest of which sets the
  * Holding's health and its on-plan strip (`latest_report`). What servicing has paid on to
  * it so far (`HoldingPayouts`) is its net received and its payments made; the recovery plan,
- * arrears and photos stay empty.
+ * arrears and photos stay empty. `resold_units` is how many of its units were sold on the market.
  *
  * @phpstan-import-type IssuedHoldingRecord from InvestorHoldings
  */
 final class GetInvestorHolding
 {
     public function __construct(private GetInvestorViewer $viewer, private InvestorHoldings $holdings, private GetInvestorPortfolio $portfolio,
-        private InvestorDealCatalogue $catalogue, private HoldingPayouts $paid) {}
+        private InvestorDealCatalogue $catalogue, private HoldingPayouts $paid, private NoteUnitHolders $lots) {}
 
     /**
      * Refuses `HOLDING_NOT_FOUND` (404) for an unknown Holding or another Party's.
@@ -59,7 +60,7 @@ final class GetInvestorHolding
                 'received' => HoldingFigures::money(HoldingFigures::received($position['paid'])['net']),
                 'next_payment' => $upcoming === [] ? null : ['amount' => $upcoming[0]['amount'], 'due_on' => HoldingFigures::kigaliMidnight($upcoming[0]['due_on'])],
                 'months_left' => count($upcoming), 'on_time' => ['made' => $made, 'on_time' => $made - $late, 'late' => $late], 'investors' => $card['investors'],
-                'updates' => $updates,
+                'updates' => $updates, 'resold_units' => (string) $this->lots->soldFrom('primary_holding', $holding['id']),
                 'latest_report' => $latest === null ? null : ['month' => $latest['month'], 'status' => $latest['status'], 'summary' => $latest['summary']]]];
     }
 }

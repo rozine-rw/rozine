@@ -1704,6 +1704,8 @@ const rw: Catalog = {
         'Ishami ry’iyubahirizwa ryemeje igenzura ry’umwirondoro',
     'admin.messaging.trigger.verification.rejected':
         'Ishami ry’iyubahirizwa risubije igenzura ry’umwirondoro',
+    'admin.messaging.trigger.wallet.payout_received':
+        'Serivisi yishyura nyir’impapuro umugabane we w’ubwishyu',
     'admin.messaging.trigger.wallet.deposit_received':
         'Utanga serivisi yemeje kubitsa',
     'admin.messaging.trigger.wallet.withdrawal_sent':
@@ -1737,6 +1739,8 @@ const rw: Catalog = {
         'Ikusanya rigeze ku ntego yaryo',
     'admin.messaging.trigger.business.disbursement_sent':
         'Amafaranga yoherejwe mu ikofi y’ikigo',
+    'admin.messaging.trigger.business.repayment_received':
+        'Ikigo cyishyura inguzanyo kivuye mu gikapu cyacyo',
     'admin.messaging.trigger.business.withdrawal_sent':
         'Amafaranga ikigo cyabikuje yoherejwe',
     'admin.messaging.trigger.business.withdrawal_returned':
@@ -3477,8 +3481,7 @@ const rw: Catalog = {
     'business.wallet.export.label': 'Kuramo raporo y’ikofi',
     'business.wallet.export.pdf': 'Kuramo PDF',
     'business.wallet.export.csv': 'Kuramo CSV',
-    'business.wallet.caption':
-        'Amafaranga ya serivisi, ayishyurwa n’ayatanzwe anyura hano',
+    'business.wallet.caption': 'Amafaranga yashyizwemo n’ayishyuwe anyura hano',
     'business.wallet.deposit.button': 'Shyiramo',
     'business.wallet.withdraw.button': 'Bikuza',
     'business.wallet.processing': 'Birimo gukorwa…',
@@ -3495,6 +3498,7 @@ const rw: Catalog = {
     'business.servicing.wallet.pending': '{amount} bitegereje kwemezwa',
     'business.servicing.wallet.to_repayments': 'Jya ku kwishyura',
     'business.servicing.wallet.movement': "Ubwoko bw'igikorwa",
+    'business.servicing.wallet.filter.all': 'Byose',
     'business.servicing.wallet.filter.external': 'Ibyabikijwe',
     'business.servicing.wallet.filter.internal': 'Ibyishyuwe',
     'business.servicing.wallet.entry.deposit': 'Kubitsa · {counterparty}',
@@ -4523,6 +4527,21 @@ const rw: Catalog = {
     'investor.nav.portfolio': 'Ishoramari ryanjye',
     'investor.nav.profile': 'Umwirondoro',
     'investor.market.order_detail.title': "Ibisobanuro by'ibwiriza",
+    'investor.market.order_detail.status': 'Uko bihagaze',
+    'investor.market.order_detail.status_open': 'Birafunguye',
+    'investor.market.order_detail.status_reserved': 'Byafashwe n’umuguzi',
+    'investor.market.order_detail.status_reserved_for_you': 'Byagufatiwe',
+    'investor.market.order_detail.filled': 'Byarangiye',
+    'investor.market.order_detail.side': 'Uruhande',
+    'investor.market.order_detail.side_buy': 'Kugura',
+    'investor.market.order_detail.side_sell': 'Kugurisha',
+    'investor.market.order_detail.remaining': 'Imigabane',
+    'investor.market.order_detail.price': 'Igiciro cy’umugabane',
+    'investor.market.order_detail.amount_buy': 'Wishyuye',
+    'investor.market.order_detail.amount_sell': 'Wakiriye',
+    'investor.market.order_detail.fee': 'Amafaranga ya serivisi',
+    'investor.market.order_detail.settled': 'Byishyuwe',
+    'investor.market.order_detail.expires': 'Bifunguye kugeza',
     'investor.market.order_detail.empty_title': 'Nta bwiriza ryatoranyijwe',
     'investor.market.order_detail.empty_body':
         'Hitamo ibwiriza ibumoso urebe impamvu ryakozwe cyangwa ritakozwe.',
@@ -4558,6 +4577,7 @@ const rw: Catalog = {
     'investor.market.orders.sell': 'Amabwiriza yo kugurisha',
     'investor.market.orders.completed': 'Ayarangiye',
     'investor.market.orders.cancelled': 'Ayahagaritswe',
+    'investor.market.orders.filled': 'Amabwiriza yarangiye',
     'investor.market.orders.empty': 'Nta mabwiriza ari muri iki gice.',
     'investor.market.browse_none.empty_title': 'Nta noti iragurishwa',
     'investor.market.browse_none.empty_body':
@@ -4593,6 +4613,14 @@ const rw: Catalog = {
     'investor.market.resale.listing_total': 'Igiteranyo {amount}',
     'investor.market.resale.list': 'Shyira ku isoko',
     'investor.market.resale.trade_buy': 'Waguze · {name}',
+    'investor.market.resale.too_many':
+        'Imigabane {count} gusa ni yo iri ku isoko.',
+    'investor.market.resale.bought': {
+        one: 'Waguze umugabane {count} wa {name} kuri {amount}.',
+        other: 'Waguze imigabane {count} ya {name} kuri {amount}.',
+    },
+    'investor.market.resale.see_portfolio': 'Bireba mu ishoramari',
+    'investor.market.resale.dismiss': 'Funga',
     'investor.market.resale.trade_sell': 'Wagurishije · {name}',
     'investor.market.resale.refused':
         'Ntibyakunze ({code}). Reba amakuru wongere ugerageze.',
@@ -5254,6 +5282,11 @@ const rw: Catalog = {
     'investor.portfolio.matures_line':
         'Birangira {date} · {made}/{total} byishyuwe',
     'investor.portfolio.details': 'Ibisobanuro',
+    'investor.portfolio.bought.title': 'Byaguzwe ku isoko',
+    'investor.portfolio.bought.line': {
+        one: 'Umugabane {count} kuri {price} · waguzwe {date}',
+        other: 'Imigabane {count} kuri {price} buri umwe · yaguzwe {date}',
+    },
     'investor.portfolio.see_all': 'Reba izindi {count} ›',
     'investor.portfolio.empty.active.title': 'Nta cyo ufite ubu',
     'investor.portfolio.empty.active.body':
@@ -7003,6 +7036,8 @@ const rw: Catalog = {
     'investor.wallet.c3.entry.withdrawal_in':
         'Byagarutse bivuye kuri {counterparty}',
     'investor.wallet.c3.entry.withdrawal_out': 'Kubikuza · {counterparty}',
+    'investor.wallet.c3.entry.resale_out': 'Kugura ku isoko · {counterparty}',
+    'investor.wallet.c3.entry.resale_in': 'Kugurisha ku isoko · {counterparty}',
     'investor.wallet.c3.entry.repayment_in': 'Kwishyurwa · {counterparty}',
     'business.publish.intro':
         '{title} izagaragara ku bashoramari buri ntambwe iri hepfo imaze kuzuzwa. Gutangaza bikoresha imikono watanze mu isuzuma, nta kindi cyo gusinya hano.',
@@ -7461,6 +7496,9 @@ const rw: Catalog = {
     'investor.notices.business.application_approved.title': 'Ubusabe bwemejwe',
     'investor.notices.business.application_approved.body':
         '{title} yemerewe {amount} mu mezi {months}. Suzuma kandi usinye kugira ngo ikusanyamari ritangazwe.',
+    'investor.notices.business.repayment_received.title': 'Kwishyura kwakiriwe',
+    'investor.notices.business.repayment_received.body':
+        '{amount} yishyuwe ivuye mu gikapu cyawe kuri {title}, igice {instalments}.',
     'investor.notices.business.withdrawal_sent.title': 'Ibyabikujwe byoherejwe',
     'investor.notices.business.withdrawal_sent.body':
         '{amount} byoherejwe kuri {account}.',
@@ -7574,6 +7612,9 @@ const rw: Catalog = {
         'Ubukangurambaga bwarangiye budashyitse',
     'investor.notices.business.raise_expired.body':
         '{title} yarangiye igihe cyayo kigeze hamaze kwemezwa {committed} kuri {target}. Abashoramari basubijwe amafaranga yabo, nta kiguzi cyakwa.',
+    'investor.notices.wallet.payout_received.title': 'Ubwishyu bwakiriwe',
+    'investor.notices.wallet.payout_received.body':
+        '{net} yageze mu gikapu cyawe ivuye kuri {title}, igice {instalments}: {gross} ukuyemo {fee} y’amafaranga ku nyungu.',
     'investor.notices.wallet.deposit_received.title':
         'Amafaranga yashyizwe kuri konti',
     'investor.notices.wallet.deposit_received.body':
@@ -7648,6 +7689,10 @@ const rw: Catalog = {
     'investor.checkout.risks.accept': 'Komeza',
     'investor.checkout.risks.failed':
         'Ntitwashoboye kubika igisubizo cyawe. Ongera ugerageze.',
+    'investor.risk_gate.later': 'Si ubu',
+    'investor.risk_gate.later_portfolio': 'Si ubu, jya kuri Ishoramari ryanjye',
+    'investor.risk_gate.money_page':
+        "Ikofi yawe, igitebo n'iyishyura bifunguka umaze kwemeza ibi.",
     'investor.checkout.c3.reserve_after_risks':
         "Banza wemeze amagambo y'ingaruka kugira ngo ubike.",
     'investor.checkout.c3.reserve_unavailable': 'Gufata ntibishoboka ubu.',
@@ -7728,6 +7773,11 @@ const rw: Catalog = {
     'investor.holding.issue.title': 'Inyandiko yo gutanga',
     'investor.holding.issue.issued_at': 'Byatanzwe',
     'investor.holding.issue.effective_at': 'Ubwishyu bwakozwe',
+    'investor.holding.issue.resold': 'Byagurishijwe ku isoko',
+    'investor.holding.issue.resold_value': {
+        one: '{count} · {held} biracyafitwe',
+        other: '{count} · {held} biracyafitwe',
+    },
     'investor.holding.issue.effective_date': 'Itariki ikurikizwa (Kigali)',
     'investor.holding.issue.schedule': 'Ingengabihe',
     'investor.holding.issue.due': 'Itariki',

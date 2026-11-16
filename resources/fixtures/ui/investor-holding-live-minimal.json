@@ -27,6 +27,7 @@
             },
             "gain_pct": "0.0",
             "repaid_pct": 0,
+            "resold_units": "0",
             "matures_on": "2027-03-21T00:00:00+02:00",
             "payments_made": 0,
             "payments_total": 6,

@@ -113,6 +113,7 @@ describe('Checkout with the risk acknowledgement still due (BRS v3.0 KYC-R05)', 
                 },
             },
         };
+        inertia.url = '/investor/deals/01hzcampaign/checkout';
         render(<InvestorCheckout {...props()} />);
 
         const gate = screen.getByRole('dialog', { name: 'Before you invest' });
@@ -122,17 +123,23 @@ describe('Checkout with the risk acknowledgement still due (BRS v3.0 KYC-R05)', 
         expect(checkout).toHaveClass('z-[63]');
         expect(gate).toHaveFocus();
 
-        /* Tab reaches the tick and the button, then wraps inside the gate, never into checkout. */
+        /* Tab reaches the tick and both buttons, then wraps inside the gate, never into checkout. */
+        const accept = within(gate).getByRole('button', { name: 'Continue' });
+        const later = within(gate).getByRole('button', {
+            name: 'Not now, go to Portfolio',
+        });
         await user.tab();
         expect(tick).toHaveFocus();
         await user.keyboard(' ');
         expect(tick).toBeChecked();
         await user.tab();
-        expect(within(gate).getByRole('button')).toHaveFocus();
+        expect(accept).toHaveFocus();
+        await user.tab();
+        expect(later).toHaveFocus();
         await user.tab();
         expect(tick).toHaveFocus();
         await user.tab({ shift: true });
-        expect(within(gate).getByRole('button')).toHaveFocus();
+        expect(later).toHaveFocus();
         expect(within(checkout).getAllByRole('button')[0]).not.toHaveFocus();
     });
 });

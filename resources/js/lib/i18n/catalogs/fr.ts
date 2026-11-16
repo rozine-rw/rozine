@@ -1715,6 +1715,8 @@ const fr: Catalog = {
         'La conformité approuve une vérification d’identité',
     'admin.messaging.trigger.verification.rejected':
         'La conformité renvoie une vérification d’identité',
+    'admin.messaging.trigger.wallet.payout_received':
+        'Le service verse à un détenteur sa part d’un remboursement',
     'admin.messaging.trigger.wallet.deposit_received':
         'Le prestataire confirme un dépôt',
     'admin.messaging.trigger.wallet.withdrawal_sent': 'Un retrait est versé',
@@ -1748,6 +1750,8 @@ const fr: Catalog = {
         'Une levée atteint son objectif',
     'admin.messaging.trigger.business.disbursement_sent':
         'Les fonds sont versés sur le portefeuille de l’entreprise',
+    'admin.messaging.trigger.business.repayment_received':
+        'Une entreprise paie un remboursement depuis son portefeuille',
     'admin.messaging.trigger.business.withdrawal_sent':
         'Un retrait de l’entreprise est versé',
     'admin.messaging.trigger.business.withdrawal_returned':
@@ -3491,8 +3495,7 @@ const fr: Catalog = {
     'business.wallet.export.label': 'Télécharger le relevé',
     'business.wallet.export.pdf': 'Télécharger le PDF',
     'business.wallet.export.csv': 'Télécharger le CSV',
-    'business.wallet.caption':
-        'Frais, versements et décaissements sont réglés ici',
+    'business.wallet.caption': 'Dépôts et remboursements sont réglés ici',
     'business.wallet.deposit.button': 'Déposer',
     'business.wallet.withdraw.button': 'Retirer',
     'business.wallet.processing': 'Traitement…',
@@ -3509,6 +3512,7 @@ const fr: Catalog = {
     'business.servicing.wallet.pending': '{amount} en attente de confirmation',
     'business.servicing.wallet.to_repayments': 'Aller aux remboursements',
     'business.servicing.wallet.movement': 'Type de mouvement',
+    'business.servicing.wallet.filter.all': 'Tout',
     'business.servicing.wallet.filter.external': 'Dépôts',
     'business.servicing.wallet.filter.internal': 'Remboursements',
     'business.servicing.wallet.entry.deposit': 'Dépôt · {counterparty}',
@@ -4533,6 +4537,21 @@ const fr: Catalog = {
     'investor.nav.portfolio': 'Portefeuille',
     'investor.nav.profile': 'Profil',
     'investor.market.order_detail.title': "Détail de l'ordre",
+    'investor.market.order_detail.status': 'Statut',
+    'investor.market.order_detail.status_open': 'Ouvert',
+    'investor.market.order_detail.status_reserved': 'Réservé par un acheteur',
+    'investor.market.order_detail.status_reserved_for_you': 'Réservé pour vous',
+    'investor.market.order_detail.filled': 'Exécuté',
+    'investor.market.order_detail.side': 'Sens',
+    'investor.market.order_detail.side_buy': 'Achat',
+    'investor.market.order_detail.side_sell': 'Vente',
+    'investor.market.order_detail.remaining': 'Unités',
+    'investor.market.order_detail.price': 'Prix par unité',
+    'investor.market.order_detail.amount_buy': 'Vous avez payé',
+    'investor.market.order_detail.amount_sell': 'Vous avez reçu',
+    'investor.market.order_detail.fee': 'Frais',
+    'investor.market.order_detail.settled': 'Réglé',
+    'investor.market.order_detail.expires': "Ouvert jusqu'au",
     'investor.market.order_detail.empty_title': 'Aucun ordre sélectionné',
     'investor.market.order_detail.empty_body':
         'Choisissez un ordre à gauche pour voir pourquoi il a été exécuté ou non.',
@@ -4568,6 +4587,7 @@ const fr: Catalog = {
     'investor.market.orders.sell': 'Ordres de vente',
     'investor.market.orders.completed': 'Exécutés',
     'investor.market.orders.cancelled': 'Annulés',
+    'investor.market.orders.filled': 'Ordres exécutés',
     'investor.market.orders.empty': 'Aucun ordre dans cet onglet.',
     'investor.market.browse_none.empty_title':
         "Aucun titre n'est encore en vente",
@@ -4604,6 +4624,14 @@ const fr: Catalog = {
     'investor.market.resale.listing_total': 'Total de l’annonce {amount}',
     'investor.market.resale.list': 'Mettre en vente',
     'investor.market.resale.trade_buy': 'Acheté · {name}',
+    'investor.market.resale.too_many':
+        'Seulement {count} unités sont proposées.',
+    'investor.market.resale.bought': {
+        one: 'Vous avez acheté {count} unité de {name} pour {amount}.',
+        other: 'Vous avez acheté {count} unités de {name} pour {amount}.',
+    },
+    'investor.market.resale.see_portfolio': 'Voir dans le portefeuille',
+    'investor.market.resale.dismiss': 'Fermer',
     'investor.market.resale.trade_sell': 'Vendu · {name}',
     'investor.market.resale.refused':
         'Cela n’a pas abouti ({code}). Vérifiez et réessayez.',
@@ -5262,6 +5290,11 @@ const fr: Catalog = {
     'investor.portfolio.matures_line':
         'Échéance {date} · {made}/{total} versements',
     'investor.portfolio.details': 'Détails',
+    'investor.portfolio.bought.title': 'Achetées sur le marché',
+    'investor.portfolio.bought.line': {
+        one: '{count} unité à {price} · achetée le {date}',
+        other: '{count} unités à {price} chacune · achetées le {date}',
+    },
     'investor.portfolio.see_all': 'Voir les {count} autres ›',
     'investor.portfolio.empty.active.title': "Aucun avoir pour l'instant",
     'investor.portfolio.empty.active.body':
@@ -7020,6 +7053,10 @@ const fr: Catalog = {
         'Reçu de remboursement',
     'investor.wallet.c3.entry.withdrawal_in': 'Retour de {counterparty}',
     'investor.wallet.c3.entry.withdrawal_out': 'Retrait · {counterparty}',
+    'investor.wallet.c3.entry.resale_out':
+        'Achat sur le marché · {counterparty}',
+    'investor.wallet.c3.entry.resale_in':
+        'Vente sur le marché · {counterparty}',
     'investor.wallet.c3.entry.repayment_in': 'Remboursement · {counterparty}',
     'business.publish.intro':
         "{title} sera visible des investisseurs dès que chaque étape ci-dessous sera remplie. La publication reprend les signatures données à la revue : il n'y a rien de plus à signer ici.",
@@ -7489,6 +7526,9 @@ const fr: Catalog = {
     'investor.notices.business.application_approved.title': 'Demande approuvée',
     'investor.notices.business.application_approved.body':
         '{title} est approuvée pour {amount} sur {months} mois. Relisez et signez pour publier la levée.',
+    'investor.notices.business.repayment_received.title': 'Remboursement reçu',
+    'investor.notices.business.repayment_received.body':
+        '{amount} a été payé depuis votre portefeuille pour {title}, échéance {instalments}.',
     'investor.notices.business.withdrawal_sent.title': 'Retrait envoyé',
     'investor.notices.business.withdrawal_sent.body':
         '{amount} a été envoyé vers {account}.',
@@ -7601,6 +7641,9 @@ const fr: Catalog = {
         'Levée clôturée sans financement complet',
     'investor.notices.business.raise_expired.body':
         "{title} s'est clôturée à son échéance avec {committed} engagés sur {target}. Les investisseurs ont été remboursés et aucun frais n'a été prélevé.",
+    'investor.notices.wallet.payout_received.title': 'Paiement reçu',
+    'investor.notices.wallet.payout_received.body':
+        '{net} est arrivé dans votre portefeuille de {title}, échéance {instalments} : {gross} moins {fee} de frais sur les gains.',
     'investor.notices.wallet.deposit_received.title': 'Dépôt reçu',
     'investor.notices.wallet.deposit_received.body':
         '{amount} est maintenant dans votre portefeuille.',
@@ -7674,6 +7717,11 @@ const fr: Catalog = {
     'investor.checkout.risks.accept': 'Continuer',
     'investor.checkout.risks.failed':
         "Nous n'avons pas pu enregistrer votre réponse. Réessayez.",
+    'investor.risk_gate.later': 'Plus tard',
+    'investor.risk_gate.later_portfolio':
+        'Plus tard, voir mes placements (Portefeuille)',
+    'investor.risk_gate.money_page':
+        "Votre solde, votre panier et le paiement s'ouvrent une fois ces déclarations confirmées.",
     'investor.checkout.c3.reserve_after_risks':
         'Confirmez d’abord les déclarations de risque pour réserver.',
     'investor.checkout.c3.reserve_unavailable':
@@ -7756,6 +7804,11 @@ const fr: Catalog = {
     'investor.holding.issue.title': "Relevé d'émission",
     'investor.holding.issue.issued_at': 'Émis le',
     'investor.holding.issue.effective_at': 'Versement effectif',
+    'investor.holding.issue.resold': 'Vendues sur le marché',
+    'investor.holding.issue.resold_value': {
+        one: '{count} note · {held} encore détenues',
+        other: '{count} notes · {held} encore détenues',
+    },
     'investor.holding.issue.effective_date': "Date d'effet (Kigali)",
     'investor.holding.issue.schedule': 'Échéancier',
     'investor.holding.issue.due': 'Échéance',

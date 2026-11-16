@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDate, formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
@@ -41,50 +42,101 @@ export function ScheduleList({ schedule }: { schedule: BusinessInstalment[] }) {
                             key={row.index}
                             className="border-b border-[#eef2f9] px-[15px] py-[13px] last:border-b-0 dark:border-rz-divider"
                         >
-                            <div className="flex items-center justify-between gap-3">
-                                <div>
-                                    <p className="text-[13.5px] font-semibold text-rz-ink">
-                                        {formatRwf(
-                                            owing
-                                                ? row.outstanding.total
-                                                : row.scheduled.total,
-                                        )}
-                                    </p>
-                                    <p className="text-[11.5px] text-rz-secondary">
-                                        {row.paid_on === null
-                                            ? t(
-                                                  'business.servicing.repay.row.due',
-                                                  {
-                                                      index: row.index,
-                                                      date: formatDate(
-                                                          row.due_on,
-                                                          locale,
-                                                      ),
-                                                  },
-                                              )
-                                            : t(
-                                                  'business.servicing.repay.row.paid',
-                                                  {
-                                                      index: row.index,
-                                                      date: formatDate(
-                                                          row.paid_on,
-                                                          locale,
-                                                      ),
-                                                  },
-                                              )}
-                                    </p>
-                                </div>
-                                <span
-                                    className={cn(
-                                        'rounded-[10px] px-[9px] py-1 text-[11px] font-semibold whitespace-nowrap',
-                                        PILL[row.status],
-                                    )}
+                            {row.receipt ? (
+                                <Link
+                                    href={row.receipt}
+                                    preserveScroll
+                                    className="flex items-center justify-between gap-3"
                                 >
-                                    {t(
-                                        `business.servicing.repay.status.${row.status}`,
-                                    )}
-                                </span>
-                            </div>
+                                    <div>
+                                        <p className="text-[13.5px] font-semibold text-rz-ink">
+                                            {formatRwf(
+                                                owing
+                                                    ? row.outstanding.total
+                                                    : row.scheduled.total,
+                                            )}
+                                        </p>
+                                        <p className="text-[11.5px] text-rz-secondary">
+                                            {row.paid_on === null
+                                                ? t(
+                                                      'business.servicing.repay.row.due',
+                                                      {
+                                                          index: row.index,
+                                                          date: formatDate(
+                                                              row.due_on,
+                                                              locale,
+                                                          ),
+                                                      },
+                                                  )
+                                                : t(
+                                                      'business.servicing.repay.row.paid',
+                                                      {
+                                                          index: row.index,
+                                                          date: formatDate(
+                                                              row.paid_on,
+                                                              locale,
+                                                          ),
+                                                      },
+                                                  )}
+                                        </p>
+                                    </div>
+                                    <span
+                                        className={cn(
+                                            'rounded-[10px] px-[9px] py-1 text-[11px] font-semibold whitespace-nowrap',
+                                            PILL[row.status],
+                                        )}
+                                    >
+                                        {t(
+                                            `business.servicing.repay.status.${row.status}`,
+                                        )}
+                                    </span>
+                                </Link>
+                            ) : (
+                                <div className="flex items-center justify-between gap-3">
+                                    <div>
+                                        <p className="text-[13.5px] font-semibold text-rz-ink">
+                                            {formatRwf(
+                                                owing
+                                                    ? row.outstanding.total
+                                                    : row.scheduled.total,
+                                            )}
+                                        </p>
+                                        <p className="text-[11.5px] text-rz-secondary">
+                                            {row.paid_on === null
+                                                ? t(
+                                                      'business.servicing.repay.row.due',
+                                                      {
+                                                          index: row.index,
+                                                          date: formatDate(
+                                                              row.due_on,
+                                                              locale,
+                                                          ),
+                                                      },
+                                                  )
+                                                : t(
+                                                      'business.servicing.repay.row.paid',
+                                                      {
+                                                          index: row.index,
+                                                          date: formatDate(
+                                                              row.paid_on,
+                                                              locale,
+                                                          ),
+                                                      },
+                                                  )}
+                                        </p>
+                                    </div>
+                                    <span
+                                        className={cn(
+                                            'rounded-[10px] px-[9px] py-1 text-[11px] font-semibold whitespace-nowrap',
+                                            PILL[row.status],
+                                        )}
+                                    >
+                                        {t(
+                                            `business.servicing.repay.status.${row.status}`,
+                                        )}
+                                    </span>
+                                </div>
+                            )}
                             {row.late_fees.length > 0 && (
                                 <ul
                                     aria-label={t(
