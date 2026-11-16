@@ -1149,6 +1149,72 @@ export type InvestorShellPageProps = {
     links: C3InvestorShellLinks;
 };
 
+/** A live resale listing on the Market board (BRS v3.0 §12), with what this Investor may do with it. */
+export type MarketListing = {
+    listing_id: string;
+    note_id: string;
+    deal_name: string;
+    remaining_units: string;
+    /** Per unit, whole francs. */
+    price: Money;
+    listed_at: string;
+    expires_at: string;
+    /** The Investor's own listing. */
+    mine: boolean;
+    /** Held by another buyer's live reservation. */
+    reserved: boolean;
+    /** The Investor's own live reservation of it, if any. */
+    reservation: {
+        reservation_id: string;
+        units: string;
+        price: Money;
+        buyer_pays: Money;
+        expires_at: string;
+    } | null;
+    actions: {
+        reserve: RouteAction | null;
+        settle: RouteAction | null;
+        withdraw: RouteAction | null;
+    };
+};
+
+/** A lot the Investor holds, with the units not already listed and the price cap per unit. */
+export type MarketSellableLot = {
+    lot_id: string;
+    note_id: string;
+    deal_name: string;
+    units: string;
+    free_units: string;
+    cap: Money;
+    /** Whether the note's trading window is open now. */
+    tradable: boolean;
+};
+
+export type MarketTrade = {
+    transfer_id: string;
+    side: 'buy' | 'sell';
+    deal_name: string;
+    units: string;
+    price: Money;
+    /** What the buyer paid, or what the seller received. */
+    amount: Money;
+    fee: Money;
+    settled_at: string;
+};
+
+/** `investor-market-v1`: the Market page with the resale board. */
+export type InvestorMarketProps = InvestorShellPageProps & {
+    contract_version: 'investor-market-v1';
+    server_time: string;
+    market: {
+        open: boolean;
+        listings: MarketListing[];
+        sellable: MarketSellableLot[];
+        trades: MarketTrade[];
+    };
+    actions: { list: RouteAction | null };
+};
+
 export type C3InvestorWalletProps = InvestorPageContract & {
     wallet: WalletBalances;
     holds: CheckoutHold[];

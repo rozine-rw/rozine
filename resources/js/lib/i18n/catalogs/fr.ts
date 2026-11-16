@@ -4577,6 +4577,36 @@ const fr: Catalog = {
         'Aucune note ne correspond à ces filtres',
     'investor.market.browse.empty_body':
         'Essayez de modifier les filtres ci-dessus.',
+    'investor.market.resale.listings': 'Annonces de revente',
+    'investor.market.resale.sell': 'Vendre des parts',
+    'investor.market.resale.sell_title': 'Vendre des parts sur le marché',
+    'investor.market.resale.buy': 'Acheter',
+    'investor.market.resale.buy_title': 'Acheter des parts de {name}',
+    'investor.market.resale.units_at': '{units} parts à {price} chacune',
+    'investor.market.resale.yours': 'Votre annonce',
+    'investor.market.resale.reserved': 'Réservée',
+    'investor.market.resale.total': 'Total',
+    'investor.market.resale.expires': 'Annoncée jusqu’au {when}',
+    'investor.market.resale.withdraw': 'Retirer',
+    'investor.market.resale.reserved_for_you':
+        '{units} parts réservées pour vous jusqu’au {when}. Confirmez pour payer {amount} depuis votre portefeuille.',
+    'investor.market.resale.confirm': 'Confirmer l’achat',
+    'investor.market.resale.working': 'En cours…',
+    'investor.market.resale.units': 'Parts',
+    'investor.market.resale.you_pay': 'Vous payez {amount}',
+    'investor.market.resale.reserve_note':
+        'La réservation bloque ce montant dans votre portefeuille pendant que vous confirmez.',
+    'investor.market.resale.reserve': 'Réserver les parts',
+    'investor.market.resale.holding': 'Placement',
+    'investor.market.resale.lot_option': '{name} · {units} parts libres',
+    'investor.market.resale.price': 'Prix par part (RWF)',
+    'investor.market.resale.cap': 'Au plus {cap} par part',
+    'investor.market.resale.listing_total': 'Total de l’annonce {amount}',
+    'investor.market.resale.list': 'Mettre en vente',
+    'investor.market.resale.trade_buy': 'Acheté · {name}',
+    'investor.market.resale.trade_sell': 'Vendu · {name}',
+    'investor.market.resale.refused':
+        'Cela n’a pas abouti ({code}). Vérifiez et réessayez.',
     'investor.market.saved.empty_title':
         'Aucune note enregistrée pour le moment',
     'investor.market.saved.empty_body':
