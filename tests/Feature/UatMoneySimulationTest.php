@@ -7,11 +7,13 @@ use App\Application\Business\Contracts\ServicingStatements;
 use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\Contracts\PayoutDestinations;
 use App\Application\Disbursement\Contracts\PayoutProvider;
+use App\Application\Disbursement\Contracts\SimulatedRaiseFunding;
 use App\Application\Disbursement\FailedClosing;
 use App\Application\Disbursement\FundedCampaignRef;
 use App\Application\Disbursement\SyntheticDisbursementGuard;
 use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Environment\UatMoneySimulation;
+use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\RetainedNoteSchedules;
 use App\Application\Secondary\Contracts\NoteUnitHolders;
 use App\Application\Secondary\Contracts\SecondaryMarket;
@@ -20,6 +22,7 @@ use App\Application\Wallet\Contracts\SyntheticEventSigner;
 use App\Application\Wallet\RecordBusinessDeposit;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Wallet\WalletMoney;
+use App\Infrastructure\Business\SimulatedCommittedRaiseFunding;
 use App\Infrastructure\Disbursement\SimulatedFundedCampaigns;
 use App\Infrastructure\Disbursement\SyntheticDisbursementSources;
 use App\Infrastructure\Disbursement\SyntheticPayoutProvider;
@@ -453,4 +456,46 @@ it('refuses to reserve, settle or reprice an existing listing once its Business 
         ->and(fn () => $simulated->settle(1, 1, $listingId, 'v', 'r2'))->toThrow(CommandRejection::class, 'SECONDARY_TRADING_DISABLED')
         ->and(fn () => $simulated->amend(1, 1, $listingId, '1200', 'r3'))->toThrow(CommandRejection::class, 'SECONDARY_TRADING_DISABLED')
         ->and($simulated->amend(1, 1, $listingId, null, 'withdraw'))->toBe(['code' => 'withdrawn']);
+});
+
+it('records a named Business\'s fully committed raise as funded on UAT, so its disbursement opens on the same run, once', function (): void {
+    ['campaign' => $publication] = PrimaryHoldingFixture::committed(units: ['1080', '1080'], fund: false);
+    $businessId = (string) BusinessCampaign::query()->whereKey($publication->id)->value('business_id');
+    asUatProfile(strtoupper($businessId));
+    expect(app(CampaignFundingEvidence::class)->find($publication->id))->toBeNull();
+
+    expect(Artisan::call('disbursements:reconcile'))->toBe(0)
+        ->and(Artisan::output())->toContain('recorded 1 fully committed raises as funded');
+    $funding = app(CampaignFundingEvidence::class)->find($publication->id);
+    expect($funding)->not->toBeNull()
+        ->and($funding['admission']['policy']['evidence']['policy_version'])->toBe(SimulatedCommittedRaiseFunding::POLICY_VERSION)
+        ->and(count($funding['commitments']))->toBe(2)
+        ->and(Disbursement::query()->where('business_campaign_id', $publication->id)->count())->toBe(1);
+
+    expect(Artisan::call('disbursements:reconcile'))->toBe(0)
+        ->and(DB::table('primary_campaign_fundings')->where('business_campaign_id', $publication->id)->count())->toBe(1)
+        ->and(Disbursement::query()->where('business_campaign_id', $publication->id)->count())->toBe(1);
+});
+
+it('leaves a raise that is not fully committed, or belongs to an unnamed Business, unfunded', function (): void {
+    ['campaign' => $partial] = PrimaryHoldingFixture::committed(units: ['1080'], fund: false);
+    $businessId = (string) BusinessCampaign::query()->whereKey($partial->id)->value('business_id');
+    asUatProfile($businessId);
+
+    expect(app(SimulatedRaiseFunding::class)->fundCommitted(25))->toBe(['funded' => 0, 'waiting' => 1])
+        ->and(app(CampaignFundingEvidence::class)->find($partial->id))->toBeNull();
+
+    asUatProfile(strtolower((string) Str::ulid()));
+    expect(app(SimulatedRaiseFunding::class)->fundCommitted(25))->toBe(['funded' => 0, 'waiting' => 0]);
+});
+
+it('records no funding outside the simulation or with no room to', function (): void {
+    ['campaign' => $publication] = PrimaryHoldingFixture::committed(units: ['1080', '1080'], fund: false);
+    $businessId = (string) BusinessCampaign::query()->whereKey($publication->id)->value('business_id');
+    config(['app.uat_money_simulation' => false, 'app.uat_money_simulation_businesses' => [$businessId]]);
+
+    expect(app(SimulatedRaiseFunding::class)->fundCommitted(25))->toBe(['funded' => 0, 'waiting' => 0]);
+    asUatProfile($businessId);
+    expect(app(SimulatedRaiseFunding::class)->fundCommitted(0))->toBe(['funded' => 0, 'waiting' => 0])
+        ->and(app(CampaignFundingEvidence::class)->find($publication->id))->toBeNull();
 });
