@@ -7757,6 +7757,8 @@ const fr: Catalog = {
     'investor.risk_gate.later_wallet': 'Pas maintenant, retour au portefeuille',
     'investor.risk_gate.later_portfolio':
         'Plus tard, voir mes placements (Portefeuille)',
+    'investor.risk_gate.deposit':
+        "L'ajout d'argent à votre portefeuille s'ouvre une fois ces déclarations confirmées.",
     'investor.risk_gate.money_page':
         "L'ajout d'argent, votre panier et le paiement s'ouvrent une fois ces déclarations confirmées.",
     'investor.checkout.c3.reserve_after_risks':
