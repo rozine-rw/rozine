@@ -15,6 +15,12 @@ import type { InvestorRiskAcknowledgementDue } from '@/types/investor';
  */
 const MONEY_PAGE = /^\/investor\/(?:cart|deals\/[^/?#]+\/checkout)(?:[/?#]|$)/;
 
+/**
+ * The wallet never opens the statements by itself: wide screens put the deposit form on it, and
+ * Deposit asks for them when it is used (#663).
+ */
+const ASKED_ON_USE = /^\/investor\/wallet(?:[/?#]|$)/;
+
 /** Asks the open gate to show the statements for an action that adds money. */
 const REQUEST_EVENT = 'rozine:risk-statements';
 
@@ -91,7 +97,7 @@ function Gate({
     const [later, setLater] = useState(() => wasPutOff(due.version));
     const [requested, setRequested] = useState(false);
     const moneyPage = MONEY_PAGE.test(url);
-    const open = moneyPage || requested || !later;
+    const open = moneyPage || requested || (!later && !ASKED_ON_USE.test(url));
     const notNow = () => {
         putOff(due.version);
         setLater(true);

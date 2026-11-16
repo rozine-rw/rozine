@@ -179,6 +179,17 @@ describe('The once-only risk acknowledgement (BRS v3.0 KYC-R05)', () => {
             },
         );
 
+        it.each(['/investor/wallet', '/investor/wallet?kind=deposit'])(
+            'leaves %s open in a fresh visit, asking on Deposit instead (#663)',
+            (url) => {
+                inertia.shared = { risk_acknowledgement: due() };
+                inertia.url = url;
+                render(<RiskGate />);
+
+                expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+            },
+        );
+
         it('asks again when Deposit is used, and Not now just closes them over the wallet (#663)', async () => {
             const user = userEvent.setup();
             window.sessionStorage.setItem(
