@@ -1190,7 +1190,7 @@ class MergeIdentityTests(unittest.TestCase):
         return zipped_proof("merge-identity.json", self.proof)
 
     def classify(self):
-        with patch.object(policy, "api", side_effect=self.api), patch.object(policy, "command", side_effect=self.command), patch.object(policy, "run_jobs", return_value=self.jobs):
+        with patch.object(policy, "api", side_effect=self.api), patch.object(policy, "command", side_effect=self.command), patch.object(policy, "run_jobs", return_value=self.jobs), patch.object(policy, "pages", return_value=[{"total_count": len(self.jobs), "jobs": self.jobs}]):
             return policy.newer_run_blocks(self.repository, self.run, self.source, "c" * 40)
 
     def test_actual_artifact_lookup_excludes_only_proven_different_merge_trees(self):
@@ -1210,34 +1210,82 @@ class MergeIdentityTests(unittest.TestCase):
         self.artifacts = []
         with self.assertRaises(policy.MissingEvidence): self.classify()
 
-    def test_run_refused_before_identity_cannot_block(self):
+    def refused_jobs(self):
+        names = [(policy.IDENTITY_JOB, "failure"), ("Board sync offline tests", "success"),
+                 ("Select CI scope", "skipped"), ("Reuse POC validation evidence", "skipped")]
+        return [{"id": 500 + index, "run_id": 100, "run_attempt": 2, "name": name, "status": "completed", "conclusion": conclusion}
+                for index, (name, conclusion) in enumerate(names)]
+
+    def classify_inventory(self, *reads):
+        # Patch below the job reader so its completeness checks run for real.
         self.artifacts = []
-        identity = {"name": policy.IDENTITY_JOB, "status": "completed", "conclusion": "failure"}
-        board = {"name": "Board sync offline tests", "status": "completed", "conclusion": "success"}
-        skipped = [{"name": name, "status": "completed", "conclusion": "skipped"} for name in ["Select CI scope", "Reuse POC validation evidence"]]
-        self.jobs = [identity, board, *skipped]
-        self.assertFalse(self.classify())
+        endpoint = f"repos/{self.repository}/actions/runs/100/attempts/2/jobs?per_page=100"
+        inventory = iter(copy.deepcopy(list(reads)))
+
+        def pages(requested, **kwargs):
+            self.assertEqual(requested, endpoint)
+            return next(inventory)
+
+        with patch.object(policy, "api", side_effect=self.api), patch.object(policy, "command", side_effect=self.command), patch.object(policy, "pages", side_effect=pages):
+            return policy.newer_run_blocks(self.repository, self.run, self.source, "c" * 40)
+
+    def test_run_refused_before_identity_cannot_block(self):
+        jobs = self.refused_jobs()
+        whole = [{"total_count": 4, "jobs": jobs}]
+        self.assertFalse(self.classify_inventory(whole, whole))
+        split = [{"total_count": 4, "jobs": jobs[:2]}, {"total_count": 4, "jobs": jobs[2:]}]
+        self.assertFalse(self.classify_inventory(split, split))
         for scenario in ["identity succeeded", "identity pending", "duplicate identity", "no identity", "test ran", "board failed", "job pending", "run pending"]:
-            jobs = copy.deepcopy([identity, board, *skipped])
+            changed = copy.deepcopy(jobs)
             run = copy.deepcopy(self.run)
-            if scenario == "identity succeeded": jobs[0]["conclusion"] = "success"
-            elif scenario == "identity pending": jobs[0].update(status="in_progress", conclusion=None)
-            elif scenario == "duplicate identity": jobs.append(dict(identity))
-            elif scenario == "no identity": jobs.pop(0)
-            elif scenario == "test ran": jobs[2]["conclusion"] = "failure"
-            elif scenario == "board failed": jobs[1]["conclusion"] = "failure"
-            elif scenario == "job pending": jobs[3].update(status="queued", conclusion=None)
+            if scenario == "identity succeeded": changed[0]["conclusion"] = "success"
+            elif scenario == "identity pending": changed[0].update(status="in_progress", conclusion=None)
+            elif scenario == "duplicate identity": changed.append(dict(changed[0], id=600))
+            elif scenario == "no identity": changed.pop(0)
+            elif scenario == "test ran": changed[2]["conclusion"] = "failure"
+            elif scenario == "board failed": changed[1]["conclusion"] = "failure"
+            elif scenario == "job pending": changed[3].update(status="queued", conclusion=None)
             elif scenario == "run pending": run.update(status="in_progress", conclusion=None)
-            original = (self.jobs, self.run)
-            self.jobs, self.run = jobs, run
-            with self.subTest(scenario=scenario), self.assertRaises(policy.MissingEvidence): self.classify()
-            self.jobs, self.run = original
+            read = [{"total_count": len(changed), "jobs": changed}]
+            original = self.run
+            self.run = run
+            with self.subTest(scenario=scenario), self.assertRaises(policy.MissingEvidence): self.classify_inventory(read, read)
+            self.run = original
+
+    def test_refused_peer_needs_a_complete_stable_job_inventory(self):
+        jobs = self.refused_jobs()
+        whole = [{"total_count": 4, "jobs": jobs}]
+        later = copy.deepcopy(jobs)
+        later[2].update(status="in_progress", conclusion=None)
+        added = jobs + [{"id": 600, "run_id": 100, "run_attempt": 2, "name": "PHP 8.5 tests (shard 1/8)", "status": "completed", "conclusion": "failure"}]
+        scenarios = {
+            # A job the reader never saw could have run tree-bound work.
+            "missing page": ([{"total_count": 5, "jobs": jobs}], whole),
+            "short later page": ([{"total_count": 5, "jobs": jobs[:2]}, {"total_count": 5, "jobs": jobs[2:]}], whole),
+            "page totals disagree": ([{"total_count": 4, "jobs": jobs[:2]}, {"total_count": 5, "jobs": jobs[2:]}], whole),
+            "duplicate job id": ([{"total_count": 4, "jobs": jobs[:3] + [dict(jobs[3], id=jobs[0]["id"])]}], whole),
+            "job without id": ([{"total_count": 4, "jobs": jobs[:3] + [{k: v for k, v in jobs[3].items() if k != "id"}]}], whole),
+            "boolean job id": ([{"total_count": 4, "jobs": jobs[:3] + [dict(jobs[3], id=True)]}], whole),
+            "job from another attempt": ([{"total_count": 4, "jobs": jobs[:3] + [dict(jobs[3], run_attempt=1)]}], whole),
+            "job from another run": ([{"total_count": 4, "jobs": jobs[:3] + [dict(jobs[3], run_id=101)]}], whole),
+            "string total": ([{"total_count": "4", "jobs": jobs}], whole),
+            "zero total": ([{"total_count": 0, "jobs": []}], whole),
+            "total over bound": ([{"total_count": 1001, "jobs": jobs}], whole),
+            "no pages": ([], whole),
+            "malformed page": ([{"total_count": 4}], whole),
+            "malformed job": ([{"total_count": 4, "jobs": jobs[:3] + ["job"]}], whole),
+            # The inventory must not move between two complete reads.
+            "job changed on reread": (whole, [{"total_count": 4, "jobs": later}]),
+            "job added on reread": (whole, [{"total_count": 5, "jobs": added}]),
+            "reread incomplete": (whole, [{"total_count": 5, "jobs": jobs}]),
+        }
+        for scenario, reads in scenarios.items():
+            with self.subTest(scenario=scenario), self.assertRaises(policy.MissingEvidence): self.classify_inventory(*reads)
 
     def test_rerun_while_classifying_refused_run_refuses(self):
-        self.artifacts = []
-        self.jobs = [{"name": policy.IDENTITY_JOB, "status": "completed", "conclusion": "failure"}]
         self.latest = dict(self.run, run_attempt=3)
-        with self.assertRaisesRegex(policy.CoordinationRefusal, "^run_or_attempt_changed$"): self.classify()
+        whole = [{"total_count": 4, "jobs": self.refused_jobs()}]
+        with self.assertRaisesRegex(policy.CoordinationRefusal, "^run_or_attempt_changed$"): self.classify_inventory(whole, whole)
 
     def test_expired_duplicate_unreadable_legacy_evidence_never_falls_back(self):
         for scenario in ["expired", "duplicate", "malformed", "download failure", "API failure"]:
@@ -1492,7 +1540,7 @@ class PreflightClassificationTests(unittest.TestCase):
 
     @contextlib.contextmanager
     def server(self):
-        with patch.object(policy, "api", side_effect=self.api), patch.object(policy, "command", side_effect=self.command), patch.object(policy, "run_jobs", return_value=self.jobs), patch.object(policy.time, "sleep"):
+        with patch.object(policy, "api", side_effect=self.api), patch.object(policy, "command", side_effect=self.command), patch.object(policy, "run_jobs", return_value=self.jobs), patch.object(policy, "pages", return_value=[{"total_count": len(self.jobs), "jobs": self.jobs}]), patch.object(policy.time, "sleep"):
             yield
 
     def classify(self):
