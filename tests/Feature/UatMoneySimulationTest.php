@@ -46,6 +46,7 @@ use App\Models\DisbursementIntent;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -341,6 +342,36 @@ it('reopens resale and drops a paid instalment from the cap once its payouts pos
             'expected_servicing_revision' => 1, 'quoted_total' => ['currency' => 'RWF', 'amount' => $schedule->instalments[0]->gross]])->assertOk();
 
     expect($postedThrough())->toBe($schedule->instalments[0]->dueDate);
+});
+
+it('moves the raise on once its payout settles, and Home past a paid instalment', function (): void {
+    $note = simulatedIssuedNote();
+    $schedule = app(RetainedNoteSchedules::class)->find($note['campaign']);
+    $closing = DB::table('disbursement_closings')->where('kind', 'issued')->sole();
+    $disbursement = DB::table('disbursements')->where('id', $closing->disbursement_id)->sole();
+    $net = (string) ((int) $disbursement->amount - (int) $disbursement->platform_fee);
+
+    $this->actingAs($note['payer'])->get(route('business.campaigns.show', ['business' => $note['business'], 'campaign' => $note['campaign']]))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('campaign.lifecycle', 'issued')->where('note.progress.phase', 'disbursed')
+            ->where('note.progress.amount.amount', $net)->where('note.progress.platform_fee.amount', (string) $disbursement->platform_fee)
+            ->where('note.progress.receipt.code', 'DISBURSEMENT_ISSUED')->where('note.progress.receipt.reference', 'DSB-'.strtoupper(substr($disbursement->id, -8)))
+            ->where('note.progress.receipt.link.url', route('business.campaigns.show', ['business' => $note['business'], 'campaign' => $note['campaign']], false))
+            ->where('note.progress.effective_date', $schedule->closing->effectiveDate)->etc());
+    $holder = User::query()->where('party_id', $schedule->holdings[0]->partyId)->sole();
+    app()->forgetInstance(EnvironmentIsolation::class);
+    $this->actingAs($holder)->get(route('investor.deals.show', $note['campaign']))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('deal.lifecycle', 'issued')->etc());
+    asUatProfile($note['business']);
+    $this->actingAs($note['payer'])->get(route('business.show', $note['business']))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('today', fn (Collection $today): bool => $today->contains(fn (array $item): bool => $item['kind'] === 'repayment_due'
+            && $item['due_on'] === $schedule->instalments[0]->dueDate))->etc());
+
+    $this->actingAs($note['payer'])->postJson(route('business.repayments.pay', $note['business']),
+        ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, 'note_id' => $note['campaign'], 'option' => 'next_instalment',
+            'expected_servicing_revision' => 1, 'quoted_total' => ['currency' => 'RWF', 'amount' => $schedule->instalments[0]->gross]])->assertOk();
+    $this->actingAs($note['payer'])->get(route('business.show', $note['business']))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('today', fn (Collection $today): bool => $today->contains(fn (array $item): bool => $item['kind'] === 'repayment_due'
+            && $item['due_on'] === $schedule->instalments[1]->dueDate))->etc());
 });
 
 it('refuses a repayment whose payout cannot post, so nothing is collected without paying its holders', function (): void {
