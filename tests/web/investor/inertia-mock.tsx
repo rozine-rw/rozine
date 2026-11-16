@@ -41,6 +41,8 @@ export const inertia = {
     httpErrors: {} as Record<string, string>,
     /** The shared page props `usePage` returns, such as the Cart tab's count. */
     shared: {} as Record<string, unknown>,
+    /** The current page URL `usePage` returns. */
+    url: '/investor',
     /** The `onFinish` of each link visit a click started, so a test can end one when it chooses. */
     linkVisits: [] as (() => void)[],
 };
@@ -56,6 +58,7 @@ export function resetInertia(): void {
     inertia.queue = [];
     inertia.httpErrors = {};
     inertia.shared = {};
+    inertia.url = '/investor';
     inertia.linkVisits = [];
     inertia.reload.mockReset();
     inertia.visit.mockReset();
@@ -134,7 +137,7 @@ export function useHttp() {
 }
 
 export function usePage() {
-    return { props: inertia.shared };
+    return { props: inertia.shared, url: inertia.url };
 }
 
 export function Head({ title }: { title: string }) {

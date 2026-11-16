@@ -1,5 +1,6 @@
 import { router, useHttp } from '@inertiajs/react';
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import { readErrorCode } from '@/lib/rozine/operation';
 import { cn } from '@/lib/utils';
@@ -17,10 +18,16 @@ export function RiskStatementsStep({
     risks,
     action,
     identityRevision,
+    note = null,
+    secondary = null,
 }: {
     risks: InvestorRiskStatements;
     action: RouteAction;
     identityRevision: number;
+    /** A line under the lead, such as why this page waits for the statements. */
+    note?: string | null;
+    /** A second action under Continue, such as "Not now". */
+    secondary?: ReactNode;
 }) {
     const { t } = useTranslation();
     const http = useHttp<Record<string, never>, unknown>();
@@ -70,6 +77,11 @@ export function RiskStatementsStep({
             <p className="mt-1 text-[11px] leading-[1.45] text-rz-secondary">
                 {t('investor.checkout.risks.lead')}
             </p>
+            {note && (
+                <p className="mt-1 text-[11px] leading-[1.45] font-semibold text-rz-ink">
+                    {note}
+                </p>
+            )}
             <ul className="mt-2 flex list-disc flex-col gap-1.5 pl-5">
                 {risks.statements.map((item) => (
                     <li
@@ -111,6 +123,7 @@ export function RiskStatementsStep({
             >
                 {t('investor.checkout.risks.accept')}
             </button>
+            {secondary}
         </section>
     );
 }
