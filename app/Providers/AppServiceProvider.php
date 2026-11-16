@@ -65,6 +65,7 @@ use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\Contracts\PayoutDestinations;
 use App\Application\Disbursement\Contracts\PayoutProvider;
 use App\Application\Disbursement\Contracts\PlatformFeeLedger;
+use App\Application\Disbursement\Contracts\SimulatedRaiseFunding;
 use App\Application\Disbursement\Contracts\SyntheticDisbursementFixtures;
 use App\Application\Disbursement\Contracts\SyntheticPayoutScripts;
 use App\Application\Disbursement\SyntheticDisbursementGuard;
@@ -195,6 +196,7 @@ use App\Infrastructure\Business\RetainedAuditedRaises;
 use App\Infrastructure\Business\RetainedCampaignClosures;
 use App\Infrastructure\Business\RetainedCampaignPublication;
 use App\Infrastructure\Business\RetainedInvestorDeals;
+use App\Infrastructure\Business\SimulatedCommittedRaiseFunding;
 use App\Infrastructure\Business\UnavailableNoteServicing;
 use App\Infrastructure\Disbursement\EloquentCampaignDisbursementProgress;
 use App\Infrastructure\Disbursement\EloquentDisbursementClosingEvidence;
@@ -486,6 +488,7 @@ class AppServiceProvider extends ServiceProvider
             $simulated() => new SimulatedFundedCampaigns($this->app->make(EloquentFundedCampaigns::class), $this->app->make(UatMoneySimulation::class)),
             default => new UnavailableFundedCampaigns,
         });
+        $this->app->bind(SimulatedRaiseFunding::class, SimulatedCommittedRaiseFunding::class);
         $this->app->bind(PayoutDestinations::class, fn (): PayoutDestinations => match (true) {
             $synthetic() => $this->app->make(SyntheticDisbursementSources::class),
             $simulated() => $this->app->make(EloquentBusinessPayoutDestinations::class),
