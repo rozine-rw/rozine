@@ -796,3 +796,22 @@ it('settles UAT withdrawals through their signed outcome: paid to the good numbe
     app()->terminate();
     expect(WalletWithdrawalEvent::query()->count())->toBe(2);
 });
+
+it('names the staging demo resale buyer a wallet tester on deploy, only while the UAT money simulation is on', function (): void {
+    $migration = require database_path('migrations/2026_11_16_180000_name_uat_demo_wallet_tester.php');
+    $buyer = InvestorWalletFixture::investor('qa-kyc3@rozine.rw')['user'];
+
+    // Off UAT, or on UAT with the simulation off, nothing is named.
+    $migration->up();
+    asStaging();
+    $migration->up();
+    expect(SyntheticWalletTesterChange::query()->count())->toBe(0);
+
+    config(['app.uat_money_simulation' => true]);
+    $migration->up();
+    $migration->up();
+    expect(SyntheticWalletTesterChange::query()->sole()->only(['party_id', 'action']))->toBe(['party_id' => $buyer->party_id, 'action' => 'granted'])
+        ->and(InvestorFundingMethod::query()->where('party_id', $buyer->party_id)->whereNotNull('verified_at')->pluck('label')->all())->toBe(['MTN MoMo']);
+    $migration->down();
+    expect(SyntheticWalletTesterChange::query()->count())->toBe(1);
+});
