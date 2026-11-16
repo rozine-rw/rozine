@@ -98,8 +98,8 @@ test('Finance shows the fee revenue the ledger holds to whoever may read the led
             ->where('streams', [['key' => 'platform_fee', 'rate' => ['key' => 'platform_fee', 'value' => '3%'], 'paid_by' => 'business', 'collected' => $money('194400')],
                 ['key' => 'audit_partner_share', 'rate' => ['key' => 'cpa_share', 'value' => '40%'], 'paid_by' => 'business', 'collected' => $money('129600')],
                 ['key' => 'deposit_fees', 'rate' => null, 'paid_by' => 'investor', 'collected' => $money('0')],
-                ['key' => 'earnings_fee', 'rate' => ['key' => 'earnings_fee', 'value' => '15% · 12% · 10% · 9% · 8%'], 'paid_by' => 'investor', 'collected' => null],
-                ['key' => 'resale_fee', 'rate' => ['key' => 'resale_fee', 'value' => '2%'], 'paid_by' => 'seller', 'collected' => null],
+                ['key' => 'earnings_fee', 'rate' => ['key' => 'earnings_fee', 'value' => '15% · 12% · 10% · 9% · 8%'], 'paid_by' => 'investor', 'collected' => $money('0')],
+                ['key' => 'resale_fee', 'rate' => ['key' => 'resale_fee', 'value' => '2%'], 'paid_by' => 'seller', 'collected' => $money('0')],
                 ['key' => 'withdrawal_fee', 'rate' => ['key' => 'withdrawal_fee', 'value' => '', 'term' => 'none'], 'paid_by' => null, 'collected' => null],
                 ['key' => 'loss_reserve', 'rate' => ['key' => 'loss_reserve', 'value' => '', 'term' => 'none'], 'paid_by' => null, 'collected' => null]]));
     $this->actingAs(sectionStaff(['analyst']))->get('/admin/finance')->assertOk()

@@ -1726,6 +1726,19 @@ export type NoteRegisterRow = {
     target: Money;
     investors: number;
     listed_at: string;
+    /** Opens this note's holders drawer. */
+    link?: RouteLink;
+};
+
+/** Who holds a note's units now: issued Holdings and lots bought on the market. */
+export type NoteHoldersDrawer = {
+    id: string;
+    reference: string;
+    business: string;
+    state: NoteState;
+    investors: number;
+    holders: { name: string; units: string; bought: boolean }[];
+    close: RouteLink;
 };
 
 export type AdminNotesProps = AdminFrameShellProps &
@@ -1740,6 +1753,7 @@ export type AdminNotesProps = AdminFrameShellProps &
         notes: NoteRegisterRow[];
         pagination: Pagination;
         sort: NotesSort;
+        drawer?: NoteHoldersDrawer | null;
     };
 
 export type AdminPrimaryMarketProps = AdminFrameShellProps &

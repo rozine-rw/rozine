@@ -10,6 +10,7 @@ use App\Domain\Secondary\HoldingLot;
 use App\Models\SecondaryTransfer;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 /**
@@ -24,6 +25,13 @@ final readonly class EloquentNoteUnitHolders implements NoteUnitHolders
     public function __construct(private SecondaryNotes $notes) {}
 
     public function lots(string $noteId): array
+    {
+        // The issued lots are read from authenticated issuance evidence, which reads only inside a transaction.
+        return DB::transaction(fn (): array => $this->held($noteId));
+    }
+
+    /** @return list<Lot> */
+    private function held(string $noteId): array
     {
         $note = $this->notes->find($noteId);
         if ($note === null) {

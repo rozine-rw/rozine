@@ -61,6 +61,13 @@ function Row({ row }: { row: C3DisbursementRow }) {
             </span>
             <span role="cell" className="text-[12.5px] font-bold text-rz-ink">
                 {formatRwfShort(row.amount)}
+                {row.platform_fee != null && (
+                    <span className="block text-[11px] font-medium text-rz-secondary">
+                        {t('admin.disbursements.net', {
+                            amount: formatRwfShort(row.platform_fee.payout),
+                        })}
+                    </span>
+                )}
             </span>
             <span role="cell">
                 <ProviderStateChip state={row.provider_state} />

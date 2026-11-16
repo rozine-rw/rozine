@@ -8,6 +8,7 @@ use App\Application\Business\Contracts\InvestorDealCatalogue;
 use App\Application\Primary\Contracts\CampaignDisbursementProgress;
 use App\Application\Primary\Contracts\HoldingPayouts;
 use App\Application\Primary\Contracts\InvestorHoldings;
+use App\Application\Primary\Contracts\RetainedNoteSchedules;
 use App\Application\Secondary\Contracts\NoteUnitHolders;
 use Brick\Math\BigDecimal;
 use Brick\Math\BigInteger;
@@ -26,6 +27,7 @@ use RuntimeException;
  * raise is open, `funded` once its funding is locked, awaiting or with the payout in flight that issues them.
  *
  * @phpstan-import-type HeldPosition from HoldingFigures
+ * @phpstan-import-type Projectable from HoldingFigures
  * @phpstan-import-type Card from HoldingFigures
  *
  * @phpstan-type Money array{currency: string, amount: string}
@@ -50,7 +52,8 @@ final class GetInvestorPortfolio
     private array $latest = [];
 
     public function __construct(private GetInvestorViewer $viewer, private InvestorHoldings $holdings, private InvestorDealCatalogue $catalogue,
-        private CampaignDisbursementProgress $disbursements, private HoldingPayouts $paid, private NoteUnitHolders $lots) {}
+        private CampaignDisbursementProgress $disbursements, private HoldingPayouts $paid, private NoteUnitHolders $lots,
+        private RetainedNoteSchedules $schedules) {}
 
     /**
      * Idle cash is the available wallet bucket as the ledger reports it, or null when there is
@@ -67,7 +70,7 @@ final class GetInvestorPortfolio
         $bought = $viewer['wallet'] === null ? [] : $this->bought($userId);
         $primary = array_reduce($positions, fn (BigInteger $sum, array $position): BigInteger => $sum->plus($position['holding']['principal']['amount']), BigInteger::zero());
         $invested = array_reduce($bought, fn (BigInteger $sum, array $lot): BigInteger => $sum->plus($lot['paid']['amount']), $primary);
-        $payouts = $this->payouts($positions);
+        $payouts = $this->payouts([...$positions, ...$this->boughtPositions($bought)]);
         $received = HoldingFigures::received(array_merge([], ...array_map(fn (array $position): array => $position['paid'], $positions)));
         $month = now()->setTimezone(HoldingFigures::ZONE)->format('Y-m');
         $thisMonth = HoldingFigures::received(array_values(array_filter(array_merge([], ...array_map(fn (array $position): array => $position['paid'], $positions)),
@@ -188,14 +191,42 @@ final class GetInvestorPortfolio
         return array_map(function (array $holding) use (&$cards, $paid): array {
             $cards[$holding['campaign_id']] ??= $this->card($holding['campaign_id']);
 
-            return ['holding' => $holding, 'card' => $cards[$holding['campaign_id']], 'paid' => $paid[$holding['id']] ?? []];
+            return ['holding' => HoldingFigures::held($holding, $this->lots->soldFrom('primary_holding', $holding['id'])),
+                'card' => $cards[$holding['campaign_id']], 'paid' => $paid[$holding['id']] ?? []];
         }, $holdings);
+    }
+
+    /**
+     * Each bought lot as a position for the payout projection only: the note's schedule scaled to
+     * the lot's units, net of the note's earnings fee, without the instalments the note has paid.
+     *
+     * @param  list<Bought>  $bought
+     * @return list<Projectable>
+     */
+    private function boughtPositions(array $bought): array
+    {
+        $positions = [];
+        foreach ($bought as $lot) {
+            $note = $this->schedules->find($lot['note_id']) ?? throw new RuntimeException('HOLDING_PRESENTATION_UNAVAILABLE');
+            $units = array_sum(array_map(fn ($holding): int => $holding->units, $note->holdings));
+            $scale = fn (string $amount): array => HoldingFigures::money(BigInteger::of($amount)->multipliedBy($lot['units'])->dividedBy($units, RoundingMode::Down));
+            $paidOn = array_merge([], ...array_values($this->paid->forHoldings(array_map(fn ($holding): string => $holding->holdingId, $note->holdings))));
+            /** @var array{earnings_fee: array{rate_bps: int}} $terms */
+            $terms = $note->holdings[0]->terms;
+            $positions[] = ['holding' => ['schedule' => array_map(fn ($instalment): array => ['index' => $instalment->index, 'due_on' => $instalment->dueDate,
+                'principal' => $scale($instalment->principal), 'return' => $scale($instalment->contractualReturn)], $note->instalments),
+                'terms' => ['earnings_fee' => ['rate_bps' => $terms['earnings_fee']['rate_bps']]]],
+                'card' => ['name' => $lot['name'], 'accent' => $lot['accent']],
+                'paid' => array_map(fn (array $payout): array => [...$payout, 'principal' => '0', 'return' => '0', 'net' => '0'], $paidOn)];
+        }
+
+        return $positions;
     }
 
     /**
      * The projected instalments grouped by Kigali month, earliest first, each split by business.
      *
-     * @param  list<HeldPosition>  $positions
+     * @param  list<Projectable>  $positions
      * @return list<PayoutMonth>
      */
     private function payouts(array $positions): array

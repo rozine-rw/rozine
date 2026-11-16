@@ -22,6 +22,8 @@ use Carbon\CarbonImmutable;
  *
  * @phpstan-type Card array{name: string, accent: string, industry: string, district: string, rating: array{band: string, score: string}, investors: int}
  * @phpstan-type HeldPosition array{holding: IssuedHoldingRecord, card: Card, paid: list<HoldingPayout>}
+ * @phpstan-type Projectable array{holding: array{schedule: list<array{index: int, due_on: string, principal: Money, return: Money}>, terms: array{earnings_fee: array{rate_bps: int}}},
+ *     card: array{name: string, accent: string}, paid: list<HoldingPayout>}
  * @phpstan-type Received array{made: int, principal: BigInteger, return: BigInteger, net: BigInteger}
  * @phpstan-type Projected array{due_on: string, amount: Money, name: string, accent: string}
  */
@@ -60,9 +62,33 @@ final class HoldingFigures
     }
 
     /**
+     * The Holding as its units still held carry it, once some were sold on the market: its
+     * principal, schedule, total return and payout fee scaled to the units left (rounded down),
+     * the issue's own record left as it was recorded.
+     *
+     * @param  IssuedHoldingRecord  $holding
+     * @return IssuedHoldingRecord
+     */
+    public static function held(array $holding, int $resold): array
+    {
+        if ($resold === 0) {
+            return $holding;
+        }
+        $units = (int) $holding['units'];
+        $left = $units - $resold;
+        $scale = fn (string $amount): array => self::money(BigInteger::of($amount)->multipliedBy($left)->dividedBy($units, RoundingMode::Down));
+
+        return [...$holding, 'principal' => $scale($holding['principal']['amount']),
+            'schedule' => array_map(fn (array $entry): array => [...$entry, 'principal' => $scale($entry['principal']['amount']),
+                'return' => $scale($entry['return']['amount'])], $holding['schedule']),
+            'rights' => [...$holding['rights'], 'total_return' => $scale($holding['rights']['total_return']['amount'])],
+            'terms' => [...$holding['terms'], 'payout_fee' => $scale($holding['terms']['payout_fee']['amount'])]];
+    }
+
+    /**
      * The scheduled instalments not yet paid and due today or later in Kigali, earliest first, each net.
      *
-     * @param  list<HeldPosition>  $positions
+     * @param  list<Projectable>  $positions
      * @return list<Projected>
      */
     public static function upcoming(array $positions, CarbonImmutable $now): array

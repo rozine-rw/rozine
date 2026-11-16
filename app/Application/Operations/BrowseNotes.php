@@ -7,6 +7,7 @@ namespace App\Application\Operations;
 use App\Application\Business\Contracts\InvestorDealCatalogue;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Operations\Contracts\OperationsDashboardStore;
+use App\Application\Secondary\Contracts\NoteUnitHolders;
 
 /**
  * The Notes register (`primary.view`): every published raise as a note, by where it sits now (the
@@ -22,7 +23,8 @@ use App\Application\Operations\Contracts\OperationsDashboardStore;
  */
 final readonly class BrowseNotes
 {
-    public function __construct(private OperationsDashboardStore $dashboard, private InvestorDealCatalogue $deals, private AuthorizeStaffPermission $staff) {}
+    public function __construct(private OperationsDashboardStore $dashboard, private InvestorDealCatalogue $deals, private AuthorizeStaffPermission $staff,
+        private NoteUnitHolders $lots) {}
 
     /** @return array{notes: list<NoteRow>, capital_raised: string} */
     public function handle(int $actorId): array
@@ -40,5 +42,23 @@ final readonly class BrowseNotes
         }
 
         return ['notes' => $notes, 'capital_raised' => $this->dashboard->figures()['capital_raised']];
+    }
+
+    /**
+     * Who holds a note's units now, largest first: each issued Holding still holding units and each
+     * lot bought on the market, by its holder's name.
+     *
+     * @return list<array{name: string, units: string, bought: bool}>
+     */
+    public function holders(int $actorId, string $noteId): array
+    {
+        $this->staff->check($actorId, 'primary.view');
+        $lots = $this->lots->lots($noteId);
+        $names = $this->dashboard->partyNames(array_values(array_unique(array_column($lots, 'party_id'))));
+        $holders = array_map(fn (array $lot): array => ['name' => $names[$lot['party_id']] ?? '—', 'units' => $lot['units'],
+            'bought' => $lot['lot_type'] === 'secondary_transfer'], $lots);
+        usort($holders, fn (array $left, array $right): int => (int) $right['units'] <=> (int) $left['units']);
+
+        return $holders;
     }
 }
