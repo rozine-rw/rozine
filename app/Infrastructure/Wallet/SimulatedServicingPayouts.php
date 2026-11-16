@@ -47,13 +47,11 @@ final readonly class SimulatedServicingPayouts implements ServicingPayouts
             if ($repayment === null) {
                 return 0;
             }
-            DB::select('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', ['servicing-note:'.$repayment->note_id]);
+            $campaignId = self::campaignId($repayment->note_id) ?? throw new RuntimeException('SERVICING_NOTE_NOT_ISSUED');
+            self::lockNote($campaignId);
             if (DB::table('servicing_payouts')->where('repayment_id', $repayment->id)->exists()) {
                 return 0;
             }
-            // Campaign IDs are stored in upper case; the repayment carries the lower-case form.
-            $campaignId = (string) (DB::table('business_campaigns')->whereRaw('lower(id) = ?', [$repayment->note_id])->value('id')
-                ?? throw new RuntimeException('SERVICING_NOTE_NOT_ISSUED'));
             $schedule = $this->schedules->find($campaignId) ?? throw new RuntimeException('SERVICING_NOTE_NOT_ISSUED');
             /** @var list<int> $indexes */
             $indexes = $repayment->payload['instalment_indexes'];
@@ -192,5 +190,26 @@ final readonly class SimulatedServicingPayouts implements ServicingPayouts
         if (! $this->simulation->active()) {
             throw new LogicException('UAT_SIMULATION_ONLY: simulated payouts run only on UAT with their money simulation on.');
         }
+    }
+
+    /**
+     * The stored campaign ID for a note ID. Campaign IDs are kept in upper case, while servicing
+     * records (and the pay request) carry the lower-case form the repayment schema requires.
+     */
+    private static function campaignId(string $noteId): ?string
+    {
+        $campaignId = DB::table('business_campaigns')->whereRaw('lower(id) = ?', [strtolower($noteId)])->value('id');
+
+        return $campaignId === null ? null : (string) $campaignId;
+    }
+
+    /**
+     * Takes the note lock resale settlement takes (`EloquentSecondaryMarket::lockNote`), in the same
+     * order, so units cannot change hands between reading a note's holders and paying them.
+     */
+    private static function lockNote(string $campaignId): void
+    {
+        DB::select('SELECT pg_advisory_xact_lock_shared(hashtextextended(?, 0))', ['secondary-market']);
+        DB::select('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', ['secondary-note:'.$campaignId]);
     }
 }

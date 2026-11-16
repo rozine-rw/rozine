@@ -26,9 +26,11 @@ it('installs the wallet supertype behind an in-flight posting without blocking i
     $platformFee = require database_path('migrations/2026_10_16_161905_add_platform_fee_to_disbursements.php');
     $automaticDisbursement = require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php');
     // The secondary market rewrites the ledger's kind constraints, so it comes off first and goes back last.
+    // Servicing payouts reference Business repayments and rebind the ledger kinds after the secondary market, so they come off before it and go back after it.
+    $servicingPayouts = require database_path('migrations/2026_11_14_120000_create_servicing_payouts.php');
     $secondaryMarket = require database_path('migrations/2026_11_11_060000_create_secondary_market_tables.php');
     $restore = function () use ($migration, $ownerGuard, $businessDeposits, $businessRepayments, $businessWithdrawals, $platformFee,
-        $automaticDisbursement, $secondaryMarket): void {
+        $automaticDisbursement, $secondaryMarket, $servicingPayouts): void {
         if (! Schema::hasTable('business_wallets')) {
             $migration->up();
         }
@@ -39,7 +41,9 @@ it('installs the wallet supertype behind an in-flight posting without blocking i
         $platformFee->up();
         $automaticDisbursement->up();
         $secondaryMarket->up();
+        $servicingPayouts->up();
     };
+    $servicingPayouts->down();
     $secondaryMarket->down();
     $automaticDisbursement->down();
     $platformFee->down();

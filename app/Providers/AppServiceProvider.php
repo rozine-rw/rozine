@@ -258,6 +258,7 @@ use App\Infrastructure\Pulse\EloquentPulseSignupRepository;
 use App\Infrastructure\Secondary\EloquentNoteUnitHolders;
 use App\Infrastructure\Secondary\EloquentSecondaryMarket;
 use App\Infrastructure\Secondary\RetainedSecondaryNotes;
+use App\Infrastructure\Secondary\SimulatedSecondaryMarket;
 use App\Infrastructure\Secondary\UnavailableSecondaryMarket;
 use App\Infrastructure\Wallet\EloquentBusinessPayoutAccounts;
 use App\Infrastructure\Wallet\EloquentBusinessPayoutDestinations;
@@ -450,8 +451,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(NoteUnitHolders::class, EloquentNoteUnitHolders::class);
         $this->app->bind(SecondaryLedger::class, WalletSecondaryLedger::class);
         $this->app->bind(SecondaryMarketSweep::class, EloquentSecondaryMarket::class);
-        $this->app->bind(SecondaryMarket::class, fn (): SecondaryMarket => config('app.secondary_trading') === true || $this->app->make(UatMoneySimulation::class)->active()
-            ? $this->app->make(EloquentSecondaryMarket::class) : $this->app->make(UnavailableSecondaryMarket::class));
+        $this->app->bind(SecondaryMarket::class, fn (): SecondaryMarket => match (true) {
+            config('app.secondary_trading') === true => $this->app->make(EloquentSecondaryMarket::class),
+            $this->app->make(UatMoneySimulation::class)->active() => new SimulatedSecondaryMarket($this->app->make(EloquentSecondaryMarket::class),
+                $this->app->make(UatMoneySimulation::class)),
+            default => $this->app->make(UnavailableSecondaryMarket::class),
+        });
     }
 
     /**
