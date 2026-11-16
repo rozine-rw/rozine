@@ -225,8 +225,15 @@ it('lets the Business repay its note on UAT and pays each holder its share less 
     $fees = (string) $payouts->sum(fn (object $row): int => (int) $row->fee);
     $this->actingAs($treasury)->get('/admin/finance')
         ->assertInertia(fn (Assert $page): Assert => $page->where('streams.3.key', 'earnings_fee')->where('streams.3.collected.amount', $fees)
-            ->where('figures.revenue.amount', fn (string $amount): bool => (int) $amount >= (int) $fees)->etc());
+            ->where('figures.investor_fees.amount', $fees)->where('figures.revenue.amount', fn (string $amount): bool => (int) $amount >= (int) $fees)->etc());
     $entry = DB::table('ledger_entries')->where('kind', 'servicing_payout')->value('id');
+    // A payout is found by its Business's name and by the word staff read in its Type column.
+    $business = (string) DB::table('business_profiles')->whereIn('id', DB::table('business_repayments')->select('business_id'))->value('profile->name');
+    foreach ([$business, 'investor payout'] as $search) {
+        $this->actingAs($treasury)->get(route('staff.ledger.index', ['q' => $search]))
+            ->assertInertia(fn (Assert $page): Assert => $page->where('entries', fn (Collection $rows): bool => $rows->contains(fn (array $row): bool => $row['id'] === $entry
+                && ($search === 'investor payout' || $row['reference'] === $business)))->etc());
+    }
     $this->actingAs($treasury)->get(route('staff.ledger.index', ['entry' => $entry]))
         ->assertInertia(fn (Assert $page): Assert => $page->where('entry.kind', 'distribution')->etc());
 
@@ -276,7 +283,9 @@ it('shows a holder the repayment paid on in its wallet, statement, holding page 
             ->where('holding.payments_made', 1)->where('holding.payments_total', count($schedule->instalments))
             ->where('holding.gain.amount', (string) $return)->where('holding.on_time', ['made' => 1, 'on_time' => 1, 'late' => 0])
             ->where('holding.next_payment.due_on', fn (string $due): bool => str_starts_with($due, $schedule->instalments[1]->dueDate))
-            ->where('holding.months_left', count($schedule->instalments) - 1)->etc());
+            ->where('holding.months_left', count($schedule->instalments) - 1)
+            ->where('holding.schedule.0.paid_on', fn (string $on): bool => $on !== '')->where('holding.schedule.0.net.amount', (string) $payout->net)
+            ->where('holding.schedule.0.principal.amount', (string) $payout->principal)->where('holding.schedule.1.paid_on', null)->where('holding.schedule.1.net', null)->etc());
     $this->actingAs($investor)->get(route('investor.portfolio'))
         ->assertInertia(fn (Assert $page): Assert => $page->where('holdings.0.payments_made', 1)->where('holdings.0.gain.amount', (string) $return)
             ->where('totals.gain.amount', (string) $return)->where('totals.this_month.amount', (string) $return)->etc());
@@ -393,7 +402,7 @@ it('shows a resale on both sides: the buyer\'s units in Portfolio and both walle
         ->assertInertia(fn (Assert $page): Assert => $page->where('drawer.id', fn (string $id): bool => strtolower($id) === strtolower($note['campaign']))
             ->where('drawer.holders', fn (Collection $holders): bool => $holders->contains(fn (array $row): bool => $row['bought'] && $row['units'] === '2' && $row['name'] === $buyer->name)
                 && $holders->contains(fn (array $row): bool => ! $row['bought'] && $row['name'] === $seller->name && $row['units'] === (string) ($holding->units - 2)))
-            ->where('drawer.close.url', route('staff.notes.index', [], false))
+            ->where('drawer.investors', 3)->where('drawer.close.url', route('staff.notes.index', [], false))
             ->where('notes.0.link.url', fn (string $url): bool => str_contains($url, 'note='))->etc());
     $this->actingAs($analyst)->get(route('staff.notes.index'))->assertInertia(fn (Assert $page): Assert => $page->where('drawer', null)->etc());
 
@@ -487,7 +496,8 @@ it('lists a repayment in the Business wallet with its receipt, opens it from Rep
         ->and($ids)->toContain($repayment->id)->and($ids)->toBe($newestFirst);
     $this->actingAs($note['payer'])->get($receipt)
         ->assertInertia(fn (Assert $page): Assert => $page->where('receipt.kind', 'repayment')->where('receipt.receipt.code', 'REPAYMENT_RECEIVED')
-            ->where('receipt.receipt.reference', 'RZR-'.strtoupper(substr($repayment->id, -10)))->etc());
+            ->where('receipt.receipt.reference', 'RZR-'.strtoupper(substr($repayment->id, -10)))
+            ->where('receipt.receipt.policy_version', SimulatedServicingPayouts::POLICY_VERSION)->etc());
     $this->actingAs($note['payer'])->get(route('business.repayments.show', $note['business']))
         ->assertInertia(fn (Assert $page): Assert => $page->where('recent.0.link.url', $receipt)->where('schedule.0.receipt.url', $receipt)
             ->where('schedule.1.receipt', null)->missing('schedule.0.repayment_id')->etc());

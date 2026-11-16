@@ -163,6 +163,7 @@ export function ListingCard({
                     <p className="mt-0.5 text-[12px] text-rz-secondary">
                         {t('investor.market.resale.units_at', {
                             units: listing.remaining_units,
+                            count: Number(listing.remaining_units),
                             price: formatRwf(listing.price),
                         })}
                     </p>
@@ -216,6 +217,7 @@ export function ListingCard({
                     <p className="text-[12.5px] text-rz-ink">
                         {t('investor.market.resale.reserved_for_you', {
                             units: listing.reservation.units,
+                            count: Number(listing.reservation.units),
                             amount: formatRwf(listing.reservation.buyer_pays),
                             when: formatDateTime(
                                 listing.reservation.expires_at,
@@ -300,6 +302,7 @@ export function BuySheet({
                 <p className="mt-1 text-[12.5px] text-rz-secondary">
                     {t('investor.market.resale.units_at', {
                         units: listing.remaining_units,
+                        count: Number(listing.remaining_units),
                         price: formatRwf(listing.price),
                     })}
                 </p>
@@ -422,6 +425,7 @@ export function SellSheet({
                                 {t('investor.market.resale.lot_option', {
                                     name: candidate.deal_name,
                                     units: candidate.free_units,
+                                    count: Number(candidate.free_units),
                                 })}
                             </option>
                         ))}
@@ -519,6 +523,7 @@ export function TradeRow({
                 <p className="mt-0.5 text-[11.5px] text-rz-secondary">
                     {t('investor.market.resale.units_at', {
                         units: trade.units,
+                        count: Number(trade.units),
                         price: formatRwf(trade.price),
                     })}{' '}
                     · {formatDateTime(trade.settled_at, locale)}

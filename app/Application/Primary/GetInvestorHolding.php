@@ -57,6 +57,21 @@ final class GetInvestorHolding
             }
         }
         $latest = $updates[0] ?? null;
+        // Each instalment as it stands for the units still held: a paid one with what was paid and
+        // when (a payout covering several instalments carries its amounts on the first), the rest
+        // as scheduled (QA #645).
+        $paidRows = [];
+        foreach ($position['paid'] as $payout) {
+            foreach ($payout['instalments'] as $place => $index) {
+                $paidRows[$index] = ['paid_on' => CarbonImmutable::parse($payout['recorded_at'])->setTimezone(HoldingFigures::ZONE)->format('Y-m-d'),
+                    'amounts' => $place === 0 ? $payout : null];
+            }
+        }
+        $schedule = array_map(fn (array $row): array => ['index' => $row['index'], 'due_on' => $row['due_on'],
+            'principal' => isset($paidRows[$row['index']]['amounts']) ? HoldingFigures::money($paidRows[$row['index']]['amounts']['principal']) : $row['principal'],
+            'return' => isset($paidRows[$row['index']]['amounts']) ? HoldingFigures::money($paidRows[$row['index']]['amounts']['return']) : $row['return'],
+            'paid_on' => $paidRows[$row['index']]['paid_on'] ?? null,
+            'net' => isset($paidRows[$row['index']]['amounts']) ? HoldingFigures::money($paidRows[$row['index']]['amounts']['net']) : null], $holding['schedule']);
 
         return ['identity_context_revision' => $viewer['identity_context_revision'], 'verified' => true, 'issue' => $issue,
             'holding' => [...GetInvestorPortfolio::summary($position, $latest), 'rating' => $card['rating'], 'rate_pct' => $holding['terms']['rate_pct'],
@@ -64,7 +79,7 @@ final class GetInvestorHolding
                 'received' => HoldingFigures::money(HoldingFigures::received($position['paid'])['net']),
                 'next_payment' => $upcoming === [] ? null : ['amount' => $upcoming[0]['amount'], 'due_on' => HoldingFigures::kigaliMidnight($upcoming[0]['due_on'])],
                 'months_left' => count($upcoming), 'on_time' => ['made' => $made, 'on_time' => $made - $late, 'late' => $late], 'investors' => $card['investors'],
-                'updates' => $updates, 'resold_units' => (string) $resold,
+                'updates' => $updates, 'resold_units' => (string) $resold, 'schedule' => $schedule,
                 'latest_report' => $latest === null ? null : ['month' => $latest['month'], 'status' => $latest['status'], 'summary' => $latest['summary']]]];
     }
 }

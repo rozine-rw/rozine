@@ -146,6 +146,9 @@ describe('Business repayments (business-servicing-v1)', () => {
         fireEvent.click(
             screen.getByRole('button', { name: 'Pay RWF 3,405,000' }),
         );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Confirm RWF 3,405,000' }),
+        );
 
         await waitFor(() =>
             expect(inertia.visits).toEqual([
@@ -213,6 +216,9 @@ describe('Business repayments (business-servicing-v1)', () => {
 
         fireEvent.click(
             screen.getByRole('button', { name: 'Pay RWF 3,405,000' }),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Confirm RWF 3,405,000' }),
         );
         await waitFor(() => expect(inertia.calls).toHaveLength(1));
         expect(inertia.calls[0].body).toMatchObject({ option: 'due_now' });
@@ -417,6 +423,27 @@ describe('Business repayments (business-servicing-v1)', () => {
         );
     });
 
+    it('asks to confirm the amount before paying, and Cancel sends nothing (QA #659)', () => {
+        render(<BusinessRepayments {...props()} />);
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Pay RWF 3,405,000' }),
+        );
+        const confirm = screen.getByRole('alertdialog', {
+            name: 'Confirm this payment',
+        });
+        expect(confirm).toHaveTextContent(
+            /RWF 3,405,000 leaves your wallet to pay instalment 3 early/u,
+        );
+        expect(inertia.calls).toHaveLength(0);
+
+        fireEvent.click(
+            within(confirm).getByRole('button', { name: 'Cancel' }),
+        );
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+        expect(inertia.calls).toHaveLength(0);
+    });
+
     it('holds a seeded unconfirmed payment and offers no second one', () => {
         render(<BusinessRepayments {...props(unconfirmedFixture)} />);
 
@@ -446,6 +473,9 @@ describe('Business repayments (business-servicing-v1)', () => {
 
         fireEvent.click(
             screen.getByRole('button', { name: 'Pay RWF 3,405,000' }),
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Confirm RWF 3,405,000' }),
         );
 
         expect(

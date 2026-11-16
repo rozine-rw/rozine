@@ -51,8 +51,8 @@ final readonly class EloquentLedgerJournal implements LedgerJournal
                 JOIN business_campaigns ON business_campaigns.id = disbursements.business_campaign_id
                 JOIN business_profiles ON business_profiles.id = business_campaigns.business_id WHERE disbursement_closings.id = ledger_entries.source_id)
             WHEN 'servicing_payout' THEN (SELECT business_profiles.profile->>'name' FROM servicing_payouts
-                JOIN business_campaigns ON business_campaigns.id = servicing_payouts.note_id
-                JOIN business_profiles ON business_profiles.id = business_campaigns.business_id WHERE servicing_payouts.id = ledger_entries.source_id)
+                JOIN business_repayments ON business_repayments.id = servicing_payouts.repayment_id
+                JOIN business_profiles ON business_profiles.id = business_repayments.business_id WHERE servicing_payouts.id = ledger_entries.source_id)
             WHEN 'secondary_reservation' THEN (SELECT business_profiles.profile->>'name' FROM secondary_reservations
                 JOIN secondary_listings ON secondary_listings.id = secondary_reservations.listing_id
                 JOIN business_campaigns ON business_campaigns.id = secondary_listings.business_campaign_id
@@ -69,11 +69,30 @@ final readonly class EloquentLedgerJournal implements LedgerJournal
                 JOIN business_profiles ON business_profiles.id = business_wallets.business_id WHERE business_wallets.id = %1$s))
         SQL;
 
+    /**
+     * The words staff read in the ledger's Type column (and the market's own word for a trade), by
+     * the entry kinds they name, so a search for "Investor payout" or "resale" finds those entries.
+     */
+    private const array TYPE_WORDS = [
+        'wallet deposit' => ['deposit_credit', 'business_deposit_credit'],
+        'withdrawal' => ['withdrawal_hold', 'withdrawal_payout', 'withdrawal_return', 'business_withdrawal_hold', 'business_withdrawal_payout', 'business_withdrawal_return'],
+        'investment' => ['primary_hold', 'primary_commit', 'primary_release', 'primary_refund'],
+        'disbursement' => ['primary_issue'],
+        'platform fee' => ['disbursement_platform_fee'],
+        'repayment' => ['business_repayment_debit'],
+        'investor payout' => ['servicing_payout'],
+        'secondary trade' => ['secondary_hold', 'secondary_release', 'secondary_purchase', 'secondary_sale'],
+        'resale' => ['secondary_hold', 'secondary_release', 'secondary_purchase', 'secondary_sale'],
+    ];
+
     public function entries(?string $search, int $limit, ?string $before = null): array
     {
         $matching = DB::table('ledger_entries')->when($search !== null, function (Builder $query) use ($search): void {
+            $term = mb_strtolower(trim((string) $search));
             $like = '%'.addcslashes(mb_strtolower((string) $search), '%_\\').'%';
-            $query->where(fn (Builder $match) => $match->whereRaw('lower(ledger_entries.id) like ?', [$like])
+            $kinds = array_values(array_unique(array_merge([], ...array_values(array_filter(self::TYPE_WORDS,
+                fn (string $words): bool => $term !== '' && str_contains($words, $term), ARRAY_FILTER_USE_KEY)))));
+            $query->where(fn (Builder $match) => $match->whereIn('ledger_entries.kind', $kinds)->orWhereRaw('lower(ledger_entries.id) like ?', [$like])
                 ->orWhereRaw('lower(ledger_entries.kind) like ?', [$like])
                 ->orWhereRaw('lower(('.self::BUSINESS.')) like ?', [$like])
                 ->orWhereRaw('('.sprintf(self::SEALED, 'provider_reference_sha256').') = ?', [hash('sha256', trim((string) $search))])
