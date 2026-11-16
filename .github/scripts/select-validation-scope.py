@@ -1080,6 +1080,58 @@ def preflight_merge_identity(repository, run):
     return proof
 
 
+def complete_attempt_jobs(repository, run):
+    # Absence of other work is provable only from a complete inventory that is
+    # bound to this attempt and unchanged across two reads. Anything less
+    # returns None, so the caller keeps refusing.
+    endpoint = f"repos/{repository}/actions/runs/{run['id']}/attempts/{run['run_attempt']}/jobs?per_page=100"
+
+    def read():
+        responses = pages(endpoint)
+        if not responses or any(not isinstance(response, dict) or not isinstance(response.get("jobs"), list)
+                                for response in responses):
+            return None
+        total = responses[0].get("total_count")
+        if type(total) is not int or not 0 < total <= 1000:
+            return None
+        jobs = [job for response in responses for job in response["jobs"]]
+        if (any(response.get("total_count") != total for response in responses)
+                or any(not isinstance(job, dict) or type(job.get("id")) is not int or job["id"] <= 0 for job in jobs)
+                or len(jobs) != total or len({job["id"] for job in jobs}) != total
+                or any(job.get("run_id") != run["id"] or job.get("run_attempt") != run["run_attempt"] for job in jobs)):
+            return None
+        return sorted(jobs, key=lambda job: job["id"])
+
+    first = read()
+    if first is None or read() != first:
+        diagnostic("peer_job_inventory_incomplete_or_changed", run)
+        return None
+    return first
+
+
+def refused_before_identity(repository, run):
+    # A finished run whose identity job refused (for example a stale base SHA)
+    # published no evidence and ran no tree-bound work, so its failure says
+    # nothing about any tree. Any other job that ran, or an unsettled run,
+    # keeps the absence unexplained and the selection refuses.
+    if run.get("status") != "completed":
+        return False
+    jobs = complete_attempt_jobs(repository, run)
+    if jobs is None:
+        return False
+    identity = [job for job in jobs if job["name"] == IDENTITY_JOB]
+    if (len(identity) != 1 or identity[0].get("status") != "completed"
+            or identity[0].get("conclusion") not in ("failure", "cancelled", "timed_out")):
+        return False
+    for job in jobs:
+        allowed = ("skipped", "success") if job["name"] == "Board sync offline tests" else ("skipped",)
+        if job is not identity[0] and (job.get("status") != "completed" or job.get("conclusion") not in allowed):
+            return False
+    same_attempt(repository, run)
+    diagnostic("peer_refused_before_identity", run)
+    return True
+
+
 def newer_run_blocks(repository, run, source, tree):
     # A later rerun attempt keeps the same run ID. Its status is authoritative.
     if run["id"] == source["id"]:
@@ -1100,7 +1152,12 @@ def newer_run_blocks(repository, run, source, tree):
             try:
                 return immutable_merge_identity(repository, run)["tree_sha"] == tree
             except MissingEvidence:
-                return preflight_merge_identity(repository, run)["tree_sha"] == tree
+                try:
+                    return preflight_merge_identity(repository, run)["tree_sha"] == tree
+                except MissingEvidence:
+                    if refused_before_identity(repository, run):
+                        return False
+                    raise
         expected = {"schema": 2, "repository": repository, "run_id": str(run["id"]), "run_attempt": str(run["run_attempt"])}
         if any(proof.get(key) != value for key, value in expected.items()) or not re.fullmatch(SHA, str(proof.get("tested_sha", ""))):
             raise ValueError("failed-run merge evidence has unverifiable provenance")
