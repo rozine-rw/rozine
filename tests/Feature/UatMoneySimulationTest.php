@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\Contracts\CampaignTitles;
 use App\Application\Business\Contracts\ServicingPayouts;
 use App\Application\Business\Contracts\ServicingStatements;
 use App\Application\Disbursement\Contracts\FundedCampaigns;
@@ -19,6 +20,7 @@ use App\Application\Secondary\Contracts\NoteUnitHolders;
 use App\Application\Secondary\Contracts\SecondaryMarket;
 use App\Application\Wallet\ApplyBusinessProviderOutcome;
 use App\Application\Wallet\Contracts\SyntheticEventSigner;
+use App\Application\Wallet\Contracts\WalletStore;
 use App\Application\Wallet\RecordBusinessDeposit;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Wallet\WalletMoney;
@@ -221,6 +223,47 @@ it('lets the Business repay its note on UAT and pays each holder its share less 
     expect(app(SimulatedServicingPayouts::class)->payOut($repaymentId))->toBe(0)
         ->and(fn () => DB::transaction(fn (): int => app(SimulatedNoteServicing::class)->applyRepayment(strtolower($note['campaign']), $repaymentId,
             'next_instalment', WalletMoney::of($first->gross), 2)))->toThrow(CommandRejection::class, 'VERSION_CONFLICT');
+});
+
+it('shows a holder the repayment paid on in its wallet, statement, holding page and portfolio', function (): void {
+    $note = simulatedIssuedNote();
+    $schedule = app(RetainedNoteSchedules::class)->find($note['campaign']);
+    $first = $schedule->instalments[0];
+    $this->actingAs($note['payer'])->postJson(route('business.repayments.pay', $note['business']),
+        ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, 'note_id' => $note['campaign'], 'option' => 'next_instalment',
+            'expected_servicing_revision' => 1, 'quoted_total' => ['currency' => 'RWF', 'amount' => $first->gross]])
+        ->assertOk();
+    $holding = $schedule->holdings[0];
+    $payout = DB::table('servicing_payouts')->where('lot_id', $holding->holdingId)->sole();
+    $entry = DB::table('ledger_entries')->where('kind', 'servicing_payout')->where('source_id', $payout->id)->sole();
+    $investor = User::query()->where('party_id', $holding->partyId)->sole();
+    $title = app(CampaignTitles::class)->title($note['campaign']);
+
+    $this->actingAs($investor)->get(route('investor.wallet'))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('history.items.0.id', $entry->id)->where('history.items.0.kind', 'repayment')
+            ->where('history.items.0.direction', 'in')->where('history.items.0.amount.amount', (string) $payout->net)
+            ->where('history.items.0.counterparty', $title)->etc());
+    $this->actingAs($investor)->get(route('investor.wallet', ['receipt' => $entry->id]))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('receipt.kind', 'repayment')->where('receipt.receipt.code', 'REPAYMENT_PAID')
+            ->where('receipt.receipt.amount.amount', (string) $payout->net)->where('receipt.receipt.reference', 'RZW-'.strtoupper(substr($entry->id, -10)))->etc());
+    $statement = app(WalletStore::class)->statement($investor->id, null, null, null);
+    expect(collect($statement['rows'])->firstWhere('kind', 'repayment'))->toMatchArray(['movement' => 'external', 'direction' => 'in',
+        'counterparty' => $title, 'amount' => ['currency' => 'RWF', 'amount' => (string) $payout->net]])
+        ->and(app(WalletStore::class)->statementMonths($investor->id, null))->toContain(now()->setTimezone(config('app.timezone'))->format('Y-m-01'));
+
+    // Reading what was paid needs no simulation; off UAT, published audit seals verify against the test database.
+    app()->forgetInstance(EnvironmentIsolation::class);
+    config(['app.uat_money_simulation' => false]);
+    $return = (int) $payout->contractual_return;
+    $this->actingAs($investor)->get(route('investor.holdings.show', $holding->holdingId))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('holding.received.amount', (string) $payout->net)
+            ->where('holding.payments_made', 1)->where('holding.payments_total', count($schedule->instalments))
+            ->where('holding.gain.amount', (string) $return)->where('holding.on_time', ['made' => 1, 'on_time' => 1, 'late' => 0])
+            ->where('holding.next_payment.due_on', fn (string $due): bool => str_starts_with($due, $schedule->instalments[1]->dueDate))
+            ->where('holding.months_left', count($schedule->instalments) - 1)->etc());
+    $this->actingAs($investor)->get(route('investor.portfolio'))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('holdings.0.payments_made', 1)->where('holdings.0.gain.amount', (string) $return)
+            ->where('totals.gain.amount', (string) $return)->where('totals.this_month.amount', (string) $return)->etc());
 });
 
 it('refuses a repayment whose payout cannot post, so nothing is collected without paying its holders', function (): void {

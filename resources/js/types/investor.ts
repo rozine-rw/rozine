@@ -1102,6 +1102,17 @@ export type WalletEntry =
       }
     | {
           id: string;
+          movement: 'external';
+          /** A business's note repayment paid on to the Investor, net of the fee on earnings. */
+          kind: 'repayment';
+          direction: 'in';
+          amount: Money;
+          counterparty: string;
+          occurred_at: string;
+          link: RouteLink;
+      }
+    | {
+          id: string;
           movement: 'internal';
           kind: 'hold' | 'hold_release' | 'commitment' | 'commitment_refund';
           from: WalletBucket;

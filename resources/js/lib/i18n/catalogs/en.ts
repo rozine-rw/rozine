@@ -6676,6 +6676,7 @@ const en = {
     'investor.wallet.c3.settled_receipt.WITHDRAWAL_RETURNED': 'Return receipt',
     'investor.wallet.c3.entry.withdrawal_in': 'Returned from {counterparty}',
     'investor.wallet.c3.entry.withdrawal_out': 'Withdrawal · {counterparty}',
+    'investor.wallet.c3.entry.repayment_in': 'Repayment · {counterparty}',
     'business.publish.intro':
         "{title} goes live for investors once every step below is met. Publishing uses the signatures you gave at Review, so there's nothing more to sign here.",
     'business.publish.release.awaiting':

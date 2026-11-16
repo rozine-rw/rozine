@@ -6972,6 +6972,7 @@ const rw: Catalog = {
     'investor.wallet.c3.entry.withdrawal_in':
         'Byagarutse bivuye kuri {counterparty}',
     'investor.wallet.c3.entry.withdrawal_out': 'Kubikuza · {counterparty}',
+    'investor.wallet.c3.entry.repayment_in': 'Kwishyurwa · {counterparty}',
     'business.publish.intro':
         '{title} izagaragara ku bashoramari buri ntambwe iri hepfo imaze kuzuzwa. Gutangaza bikoresha imikono watanze mu isuzuma, nta kindi cyo gusinya hano.',
     'business.publish.release.awaiting':

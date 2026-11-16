@@ -11,7 +11,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * `C3InvestorHoldingProps` (investor-primary-v1) from `GetInvestorHolding`. The issue block is
  * the Holding as the primary issue recorded it, with its schedule's Kigali due dates and the
  * `HOLDING_ISSUED` receipt, which names the disbursement operation that issued it. Its note is
- * the campaign the Holding was issued from. Servicing facts keep their C3 empty states. Portfolio,
+ * the campaign the Holding was issued from. Payments made and received come from servicing's payouts; the other servicing facts keep their C3 empty states. Portfolio,
  * Market, Cart and Profile are web pages only, so the API carries their links as null. `links.changes`
  * is the change beacon for the Investor's purchases.
  *
@@ -32,7 +32,7 @@ class InvestorHoldingResource extends JsonResource
 
         return ['contract_version' => 'investor-primary-v1', 'identity_context_revision' => $data['identity_context_revision'], 'server_time' => now()->toIso8601String(),
             'allowed_actions' => [],
-            'holding' => [...$data['holding'], 'link' => $self, 'on_time' => ['made' => 0, 'on_time' => 0, 'late' => 0], 'rating_change' => null,
+            'holding' => [...$data['holding'], 'link' => $self, 'on_time' => $data['holding']['on_time'] ?? ['made' => 0, 'on_time' => 0, 'late' => 0], 'rating_change' => null,
                 'recovery_plan' => null, 'arrears' => null, 'photos' => [],
                 'issue' => ['id' => $issue['id'], 'revision' => 1, 'note_id' => $issue['campaign_id'], 'campaign_id' => $issue['campaign_id'],
                     'units' => $issue['units'], 'ordinals' => $issue['ordinals'], 'principal' => $issue['principal'], 'rights' => $issue['rights'],
