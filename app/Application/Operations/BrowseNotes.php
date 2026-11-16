@@ -38,10 +38,21 @@ final readonly class BrowseNotes
             }
             $notes[] = ['campaign_id' => $note['campaign_id'], 'state' => $note['state'], 'name' => (string) $card['name'], 'industry' => (string) $card['industry'],
                 'rate_pct' => (string) $card['rate_pct'], 'term_months' => (int) $card['term_months'], 'funded_pct' => (string) $card['funded_pct'],
-                'raised' => $card['raised'], 'target' => $card['target'], 'investors' => (int) $card['investors'], 'live_at' => $note['live_at']];
+                'raised' => $card['raised'], 'target' => $card['target'], 'investors' => $this->investors($note['campaign_id'], (int) $card['investors']), 'live_at' => $note['live_at']];
         }
 
         return ['notes' => $notes, 'capital_raised' => $this->dashboard->figures()['capital_raised']];
+    }
+
+    /**
+     * How many Investors hold the note now, buyers on the market included, so the row agrees with
+     * its drawer (#663). Before issuance nothing is held yet, and the raise's own count of Investors stands.
+     */
+    private function investors(string $noteId, int $committed): int
+    {
+        $parties = array_unique(array_column($this->lots->lots($noteId), 'party_id'));
+
+        return $parties === [] ? $committed : count($parties);
     }
 
     /**

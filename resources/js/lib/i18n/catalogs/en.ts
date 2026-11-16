@@ -7425,6 +7425,8 @@ const en = {
     'investor.risk_gate.later': 'Not now',
     'investor.risk_gate.later_wallet': 'Not now, back to Wallet',
     'investor.risk_gate.later_portfolio': 'Not now, go to Portfolio',
+    'investor.risk_gate.deposit':
+        'Adding money to your wallet opens once you have confirmed these.',
     'investor.risk_gate.money_page':
         'Adding money, your cart and checkout open once you have confirmed these.',
     'investor.checkout.c3.reserve_after_risks':

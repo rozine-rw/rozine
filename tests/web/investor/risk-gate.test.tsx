@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
 import {
     afterEach,
     beforeEach,
@@ -8,7 +9,10 @@ import {
     it,
     vi,
 } from 'vite-plus/test';
-import { RiskGate } from '@/components/investor/risk-gate';
+import {
+    RiskGate,
+    useRiskStatementsCleared,
+} from '@/components/investor/risk-gate';
 import type { InvestorRiskAcknowledgementDue } from '@/types/investor';
 import { answers, fails, inertia, resetInertia } from './inertia-mock';
 
@@ -32,6 +36,18 @@ const due = (): InvestorRiskAcknowledgementDue => ({
     identity_context_revision: 7,
     action: ACTION,
 });
+
+/** A stand-in for the wallet's Deposit, saying whether it may send. */
+function Deposit() {
+    const cleared = useRiskStatementsCleared();
+    const [sent, setSent] = useState<boolean | null>(null);
+
+    return (
+        <button type="button" onClick={() => setSent(cleared())}>
+            {sent === null ? 'Deposit' : `Deposit ${String(sent)}`}
+        </button>
+    );
+}
 
 describe('The once-only risk acknowledgement (BRS v3.0 KYC-R05)', () => {
     beforeEach(() => resetInertia());
@@ -146,6 +162,8 @@ describe('The once-only risk acknowledgement (BRS v3.0 KYC-R05)', () => {
             '/investor/wallet',
             '/investor/wallet?movement=external',
             '/investor/wallet?kind=withdraw',
+            '/investor/wallet?kind=deposit',
+            '/investor/wallet?kind=deposit&amount=5000',
         ])(
             'lets a holder read %s and withdraw once the statements are put off (#660)',
             (url) => {
@@ -161,21 +179,48 @@ describe('The once-only risk acknowledgement (BRS v3.0 KYC-R05)', () => {
             },
         );
 
-        it('keeps adding money behind the statements and sends Not now back to the wallet (#660)', async () => {
+        it('asks again when Deposit is used, and Not now just closes them over the wallet (#663)', async () => {
             const user = userEvent.setup();
             window.sessionStorage.setItem(
                 'rozine.risk-gate.later.brs-3.0-kyc-r05',
                 '1',
             );
             inertia.shared = { risk_acknowledgement: due() };
-            inertia.url = '/investor/wallet?kind=deposit';
-            render(<RiskGate />);
+            inertia.url = '/investor/wallet?kind=deposit&amount=5000';
+            render(
+                <>
+                    <RiskGate />
+                    <Deposit />
+                </>,
+            );
 
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+            await user.click(screen.getByRole('button', { name: 'Deposit' }));
+            expect(
+                screen.getByRole('button', { name: 'Deposit false' }),
+            ).toBeInTheDocument();
+
+            expect(screen.getByRole('dialog')).toHaveTextContent(
+                'Adding money to your wallet opens once you have confirmed these.',
+            );
             await user.click(
                 screen.getByRole('button', { name: 'Not now, back to Wallet' }),
             );
 
-            expect(inertia.visit).toHaveBeenCalledWith('/investor/wallet');
+            expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+            expect(inertia.visit).not.toHaveBeenCalled();
+        });
+
+        it('lets Deposit through once nothing is due', async () => {
+            const user = userEvent.setup();
+            inertia.shared = { risk_acknowledgement: null };
+            render(<Deposit />);
+
+            await user.click(screen.getByRole('button', { name: 'Deposit' }));
+
+            expect(
+                screen.getByRole('button', { name: 'Deposit true' }),
+            ).toBeInTheDocument();
         });
 
         it('closes on Escape like Not now', async () => {
