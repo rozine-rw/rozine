@@ -45,11 +45,13 @@ final class VisitReadyChecklist
 
     /**
      * The checklist for the instalment due on `$dueOn`, or null before D−14 or after the due date.
-     * Dates are Kigali calendar dates (`Y-m-d`).
+     * Dates are Kigali calendar dates (`Y-m-d`). Items in `$held` are documents the CPA already
+     * holds, and are not asked for again.
      *
+     * @param  list<string>  $held
      * @return array{due_on: string, opens_on: string, visit_from: string, visit_by: string, items: list<array{key: string, step: string}>}|null
      */
-    public function forInstalment(string $dueOn, string $today): ?array
+    public function forInstalment(string $dueOn, string $today, array $held = []): ?array
     {
         $due = CarbonImmutable::parse($dueOn, 'Africa/Kigali')->startOfDay();
         $now = CarbonImmutable::parse($today, 'Africa/Kigali')->startOfDay();
@@ -60,20 +62,31 @@ final class VisitReadyChecklist
 
         return ['due_on' => $dueOn, 'opens_on' => $opens->toDateString(),
             'visit_from' => $due->subDays(self::VISIT_FROM_DAYS_BEFORE)->toDateString(),
-            'visit_by' => $due->subDays(self::VISIT_BY_DAYS_BEFORE)->toDateString(), 'items' => $this->items()];
+            'visit_by' => self::visitBy($dueOn), 'items' => $this->items($held)];
     }
 
     /**
-     * Every item, in the order of the monthly steps it serves.
+     * The day the CPA must seal the visit for the instalment due on `$dueOn` (D−3, AUD-R04).
+     */
+    public static function visitBy(string $dueOn): string
+    {
+        return CarbonImmutable::parse($dueOn, 'Africa/Kigali')->subDays(self::VISIT_BY_DAYS_BEFORE)->toDateString();
+    }
+
+    /**
+     * Every item, in the order of the monthly steps it serves, less the documents in `$held`.
      *
+     * @param  list<string>  $held
      * @return list<array{key: string, step: string}>
      */
-    public function items(): array
+    public function items(array $held = []): array
     {
         $items = [];
         foreach ($this->procedure->steps('monthly') as $step) {
             foreach (self::ITEMS[$step] as $key) {
-                $items[] = ['key' => $key, 'step' => $step];
+                if (! in_array($key, $held, true)) {
+                    $items[] = ['key' => $key, 'step' => $step];
+                }
             }
         }
 
