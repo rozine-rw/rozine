@@ -5,7 +5,7 @@ import InvestorCart from '@/pages/investor/cart';
 import InvestorMarket from '@/pages/investor/market';
 import type {
     C3InvestorCartProps,
-    InvestorShellPageProps,
+    InvestorMarketProps,
 } from '@/types/investor';
 import emptyCartFixture from '../../../resources/fixtures/ui/investor-cart-empty.json';
 import cartFixture from '../../../resources/fixtures/ui/investor-cart.json';
@@ -17,7 +17,7 @@ vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 vi.setConfig({ testTimeout: 30_000 });
 
 const props = (fixture: { props: unknown }) =>
-    structuredClone(fixture.props) as InvestorShellPageProps;
+    structuredClone(fixture.props) as InvestorMarketProps;
 const cart = (fixture: { props: unknown } = cartFixture) =>
     structuredClone(fixture.props) as C3InvestorCartProps;
 

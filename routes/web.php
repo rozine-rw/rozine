@@ -47,6 +47,7 @@ use App\Http\Controllers\InvestorProfileController;
 use App\Http\Controllers\InvestorProspectusController;
 use App\Http\Controllers\InvestorProspectusPdfController;
 use App\Http\Controllers\InvestorRiskAcknowledgementController;
+use App\Http\Controllers\InvestorSecondaryController;
 use App\Http\Controllers\InvestorVerificationController;
 use App\Http\Controllers\InvestorWalletController;
 use App\Http\Controllers\PulseController;
@@ -142,6 +143,10 @@ Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;n
     Route::post('complaints', [InvestorComplaintController::class, 'store'])->name('complaints.store');
     Route::post('complaints/{complaint}/messages', [InvestorComplaintController::class, 'reply'])->whereUlid('complaint')->name('complaints.reply');
     Route::get('market', [InvestorMarketController::class, 'market'])->name('market');
+    Route::post('market/listings', [InvestorSecondaryController::class, 'list'])->name('market_list');
+    Route::post('market/listings/{listing}/reserve', [InvestorSecondaryController::class, 'reserve'])->whereUlid('listing')->name('market_reserve');
+    Route::post('market/listings/{listing}/settle', [InvestorSecondaryController::class, 'settle'])->whereUlid('listing')->name('market_settle');
+    Route::post('market/listings/{listing}/withdraw', [InvestorSecondaryController::class, 'withdraw'])->whereUlid('listing')->name('market_withdraw');
     Route::get('cart', [InvestorMarketController::class, 'cart'])->name('cart');
     Route::post('deals/{campaign}/cart', [InvestorMarketController::class, 'addToCart'])->whereUlid('campaign')->name('cart_add');
     Route::post('cart/{campaign}/units', [InvestorMarketController::class, 'changeCartUnits'])->whereUlid('campaign')->name('cart_units');

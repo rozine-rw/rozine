@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Secondary;
 
+use App\Application\Business\Contracts\CampaignTitles;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Primary\Contracts\InvestorHoldings;
 use App\Application\Secondary\Contracts\NoteUnitHolders;
+use App\Application\Secondary\Contracts\SecondaryBoard;
 use App\Application\Secondary\Contracts\SecondaryLedger;
 use App\Application\Secondary\Contracts\SecondaryMarket;
 use App\Application\Secondary\Contracts\SecondaryMarketSweep;
@@ -21,6 +23,7 @@ use App\Domain\Secondary\PriceCap;
 use App\Domain\Secondary\SecondaryListing;
 use App\Domain\Secondary\SecondaryTerms;
 use App\Domain\Secondary\SecondaryViolation;
+use App\Domain\Secondary\SettlementQuote;
 use App\Domain\Secondary\TradingWindow;
 use App\Models\SecondaryHalt;
 use App\Models\SecondaryHaltLift;
@@ -50,15 +53,20 @@ use Illuminate\Support\Str;
  *
  * @phpstan-import-type MarketResult from SecondaryMarket
  * @phpstan-import-type Note from SecondaryNotes
+ * @phpstan-import-type Board from SecondaryBoard
+ * @phpstan-import-type BoardListing from SecondaryBoard
+ * @phpstan-import-type SellableLot from SecondaryBoard
+ * @phpstan-import-type Trade from SecondaryBoard
  */
-final readonly class EloquentSecondaryMarket implements SecondaryMarket, SecondaryMarketSweep
+final readonly class EloquentSecondaryMarket implements SecondaryBoard, SecondaryMarket, SecondaryMarketSweep
 {
     /** Refusals about what the caller asked for, rather than the market's current state. */
     private const array INPUT_REFUSALS = ['INVALID_UNITS', 'INVALID_PRICE', 'PRICE_ABOVE_CAP', 'UNITS_NOT_HELD', 'UNITS_NOT_LISTED', 'HOLDING_LIMIT_EXCEEDED',
         'OWN_LISTING', 'REASON_REQUIRED'];
 
     public function __construct(private AuthorizeActiveRole $authority, private AuthorizeStaffPermission $staff, private OperationJournal $journal,
-        private SecondaryNotes $notes, private NoteUnitHolders $holders, private InvestorHoldings $holdings, private WalletPostings $wallets, private SecondaryLedger $postings) {}
+        private SecondaryNotes $notes, private NoteUnitHolders $holders, private InvestorHoldings $holdings, private WalletPostings $wallets, private SecondaryLedger $postings,
+        private CampaignTitles $titles) {}
 
     public function list(int $userId, int $contextRevision, string $holdingId, string $units, string $price, string $requestId): array
     {
@@ -101,6 +109,107 @@ final readonly class EloquentSecondaryMarket implements SecondaryMarket, Seconda
     {
         return $this->asStaff($staffUserId, 'secondary.listings.cancel', 'secondary.cancel', $requestId, 'secondary_listing', strtolower($listingId),
             ['reason' => $reason], fn (): OperationResult => $this->cancelByStaff(strtolower($listingId), $reason));
+    }
+
+    public function board(int $userId, ?int $contextRevision): array
+    {
+        return DB::transaction(fn (): array => $this->authority->handle($userId, 'investor', null, $contextRevision, function (array $identity) use ($userId): array {
+            $partyId = strtolower((string) $identity['party']['id']);
+            $now = self::now();
+            $names = [];
+            $name = function (string $noteId) use (&$names): string {
+                return $names[$noteId] ??= $this->titles->title(strtoupper($noteId));
+            };
+
+            return ['open' => true, 'listings' => $this->openListings($partyId, $now, $name), 'sellable' => $this->sellable($userId, $partyId, $now, $name),
+                'trades' => $this->trades($partyId, $name)];
+        }), 3);
+    }
+
+    /**
+     * @param  Closure(string): string  $name
+     * @return list<BoardListing>
+     */
+    private function openListings(string $partyId, DateTimeImmutable $now, Closure $name): array
+    {
+        $rows = SecondaryListingRecord::query()->where('state', 'open')->where('expires_at', '>', $now)->orderByDesc('listed_at')->limit(50)->get();
+        $listings = [];
+        foreach ($rows as $row) {
+            $live = $this->liveReservation($row, $now);
+            if ($this->restore($row, $live)->at($now)->state !== 'open') {
+                continue;
+            }
+            $mine = $live !== null && $live->buyer_party_id === $partyId;
+            $listings[] = ['listing_id' => $row->id, 'note_id' => $row->business_campaign_id, 'deal_name' => $name($row->business_campaign_id),
+                'remaining_units' => (string) $row->remaining_units, 'price' => self::money($row->price),
+                'listed_at' => $row->listed_at->utc()->format(DateTimeInterface::ATOM), 'expires_at' => $row->expires_at->utc()->format(DateTimeInterface::ATOM),
+                'mine' => $row->seller_party_id === $partyId, 'reserved' => $live !== null && ! $mine, 'reservation' => $mine ? $this->presentReservation($live) : null];
+        }
+
+        return $listings;
+    }
+
+    /**
+     * Every lot the Party holds, primary and bought, with the units not already listed and the
+     * note's price cap now; `tradable` is whether the note's trading window is open.
+     *
+     * @param  Closure(string): string  $name
+     * @return list<SellableLot>
+     */
+    private function sellable(int $userId, string $partyId, DateTimeImmutable $now, Closure $name): array
+    {
+        $noteIds = array_values(array_unique([...array_map(fn (array $holding): string => $holding['campaign_id'], $this->holdings->forInvestor($userId)),
+            ...SecondaryTransfer::query()->where('buyer_party_id', $partyId)->distinct()->pluck('business_campaign_id')->all()]));
+        $lots = [];
+        foreach ($noteIds as $noteId) {
+            $note = $this->notes->find($noteId);
+            if ($note === null) {
+                continue;
+            }
+            $cap = $this->cap($note);
+            $tradable = $this->decideOpen($this->window($note), $now);
+            foreach ($this->holders->lots($noteId) as $lot) {
+                if ($lot['party_id'] !== $partyId || (int) $lot['units'] === 0) {
+                    continue;
+                }
+                $listed = SecondaryListingRecord::query()->where('lot_type', $lot['lot_type'])->where('lot_id', $lot['lot_id'])->where('state', 'open')->get()
+                    ->sum(fn (SecondaryListingRecord $row): int => $this->restore($row, $this->liveReservation($row, $now))->at($now)->state === 'open' ? $row->remaining_units : 0);
+                $lots[] = ['lot_id' => $lot['lot_id'], 'note_id' => $noteId, 'deal_name' => $name($noteId), 'units' => $lot['units'],
+                    'free_units' => (string) max(0, (int) $lot['units'] - $listed), 'cap' => self::money((string) $cap), 'tradable' => $tradable];
+            }
+        }
+
+        return $lots;
+    }
+
+    /**
+     * @param  Closure(string): string  $name
+     * @return list<Trade>
+     */
+    private function trades(string $partyId, Closure $name): array
+    {
+        return array_values(SecondaryTransfer::query()->where(fn ($query) => $query->where('buyer_party_id', $partyId)->orWhere('seller_party_id', $partyId))
+            ->orderByDesc('settled_at')->limit(20)->get()->map(function (SecondaryTransfer $transfer) use ($partyId, $name): array {
+                $buy = $transfer->buyer_party_id === $partyId;
+                $quote = SettlementQuote::of((string) $transfer->units, $transfer->price);
+
+                return ['transfer_id' => $transfer->id, 'side' => $buy ? 'buy' : 'sell', 'deal_name' => $name($transfer->business_campaign_id),
+                    'units' => (string) $transfer->units, 'price' => self::money($transfer->price),
+                    'amount' => self::money($buy ? (string) $quote->buyerPays : $transfer->seller_receives),
+                    'fee' => self::money($buy ? (string) $quote->buyerPays->minus($transfer->gross) : $transfer->seller_fee),
+                    'settled_at' => $transfer->settled_at->utc()->format(DateTimeInterface::ATOM)];
+            })->all());
+    }
+
+    private function decideOpen(TradingWindow $window, DateTimeImmutable $at): bool
+    {
+        try {
+            $window->requireOpen($at);
+
+            return true;
+        } catch (SecondaryViolation) {
+            return false;
+        }
     }
 
     /**

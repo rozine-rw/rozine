@@ -5,24 +5,26 @@ declare(strict_types=1);
 namespace App\Application\Primary;
 
 use App\Application\Business\Contracts\InvestorDealCatalogue;
+use App\Application\Primary\Contracts\HoldingPayouts;
 use App\Application\Primary\Contracts\InvestorHoldings;
 use App\Domain\Operations\CommandRejection;
-use Brick\Math\BigInteger;
+use Carbon\CarbonImmutable;
 
 /**
  * One issued Holding for the authenticated Investor (C3 v2 §2e), read under current Investor
  * authority. It carries the issue as recorded (`IssuedHolding`) and the figures the issue alone
  * supports: the expected return, the maturity value net of the payout fee and the next scheduled
  * instalment, and the business's published monthly audit reports, the newest of which sets the
- * Holding's health and its on-plan strip (`latest_report`). Nothing has been received or
- * serviced yet, so the payment record, recovery plan, arrears and photos are empty.
+ * Holding's health and its on-plan strip (`latest_report`). What servicing has paid on to
+ * it so far (`HoldingPayouts`) is its net received and its payments made; the recovery plan,
+ * arrears and photos stay empty.
  *
  * @phpstan-import-type IssuedHoldingRecord from InvestorHoldings
  */
 final class GetInvestorHolding
 {
     public function __construct(private GetInvestorViewer $viewer, private InvestorHoldings $holdings, private GetInvestorPortfolio $portfolio,
-        private InvestorDealCatalogue $catalogue) {}
+        private InvestorDealCatalogue $catalogue, private HoldingPayouts $paid) {}
 
     /**
      * Refuses `HOLDING_NOT_FOUND` (404) for an unknown Holding or another Party's.
@@ -37,17 +39,26 @@ final class GetInvestorHolding
             throw new CommandRejection('HOLDING_NOT_FOUND', 404);
         }
         $card = $this->portfolio->card($holding['campaign_id']);
-        $position = ['holding' => $holding, 'card' => $card];
+        $position = ['holding' => $holding, 'card' => $card, 'paid' => $this->paid->forHoldings([$holding['id']])[$holding['id']] ?? []];
         $upcoming = HoldingFigures::upcoming([$position], now());
         $updates = $this->catalogue->updates($holding['campaign_id']);
+        $dueOn = array_column($holding['schedule'], 'due_on', 'index');
+        $made = $late = 0;
+        foreach ($position['paid'] as $payout) {
+            $paidOn = CarbonImmutable::parse($payout['recorded_at'])->setTimezone(HoldingFigures::ZONE)->format('Y-m-d');
+            foreach ($payout['instalments'] as $index) {
+                $made++;
+                $late += $paidOn > ($dueOn[$index] ?? $paidOn) ? 1 : 0;
+            }
+        }
         $latest = $updates[0] ?? null;
 
         return ['identity_context_revision' => $viewer['identity_context_revision'], 'verified' => true, 'issue' => $holding,
             'holding' => [...GetInvestorPortfolio::summary($position, $latest), 'rating' => $card['rating'], 'rate_pct' => $holding['terms']['rate_pct'],
                 'expected_profit' => $holding['rights']['total_return'], 'maturity_value' => HoldingFigures::maturityValue($holding),
-                'received' => HoldingFigures::money(BigInteger::zero()),
+                'received' => HoldingFigures::money(HoldingFigures::received($position['paid'])['net']),
                 'next_payment' => $upcoming === [] ? null : ['amount' => $upcoming[0]['amount'], 'due_on' => HoldingFigures::kigaliMidnight($upcoming[0]['due_on'])],
-                'months_left' => count($upcoming), 'investors' => $card['investors'],
+                'months_left' => count($upcoming), 'on_time' => ['made' => $made, 'on_time' => $made - $late, 'late' => $late], 'investors' => $card['investors'],
                 'updates' => $updates,
                 'latest_report' => $latest === null ? null : ['month' => $latest['month'], 'status' => $latest['status'], 'summary' => $latest['summary']]]];
     }

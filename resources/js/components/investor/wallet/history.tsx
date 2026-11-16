@@ -52,6 +52,11 @@ const ENTRY_ICON: Record<
         tint: 'bg-rz-accent-soft',
         tone: 'blue',
     },
+    repayment: {
+        icon: 'trend-up',
+        tint: 'bg-[rgba(29,158,117,.10)]',
+        tone: 'green',
+    },
 };
 
 function EntryTile({
@@ -284,6 +289,12 @@ function entryLabel(
     t: ReturnType<typeof useTranslation>['t'],
     entry: WalletEntry,
 ): string {
+    if (entry.movement === 'external' && entry.kind === 'repayment') {
+        return t('investor.wallet.c3.entry.repayment_in', {
+            counterparty: entry.counterparty,
+        });
+    }
+
     if (entry.movement === 'external') {
         return t(`investor.wallet.c3.entry.${entry.kind}_${entry.direction}`, {
             counterparty: entry.counterparty,
@@ -498,9 +509,9 @@ export function WalletHistory({
                                                 )}
                                             >
                                                 {t(
-                                                    entry.kind === 'deposit'
-                                                        ? 'investor.wallet.c3.credited'
-                                                        : 'investor.wallet.c3.withdrawal.succeeded',
+                                                    entry.kind === 'withdrawal'
+                                                        ? 'investor.wallet.c3.withdrawal.succeeded'
+                                                        : 'investor.wallet.c3.credited',
                                                 )}
                                             </span>
                                         </>

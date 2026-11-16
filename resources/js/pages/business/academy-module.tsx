@@ -672,6 +672,7 @@ function Test({
                                         <button
                                             type="button"
                                             onClick={() => setStep(index)}
+                                            aria-describedby={`academy-review-${each.id}-error`}
                                             aria-label={t(
                                                 'business.academy.change_answer',
                                                 { current: index + 1 },

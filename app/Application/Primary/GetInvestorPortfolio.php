@@ -6,17 +6,21 @@ namespace App\Application\Primary;
 
 use App\Application\Business\Contracts\InvestorDealCatalogue;
 use App\Application\Primary\Contracts\CampaignDisbursementProgress;
+use App\Application\Primary\Contracts\HoldingPayouts;
 use App\Application\Primary\Contracts\InvestorHoldings;
+use Brick\Math\BigDecimal;
 use Brick\Math\BigInteger;
 use Brick\Math\RoundingMode;
+use Carbon\CarbonImmutable;
 use RuntimeException;
 
 /**
  * The Portfolio facts for the authenticated Investor (C3 v2 §2d), read under current Investor
  * authority through `GetInvestorViewer`: the cash still idle in the wallet and every Holding the
  * primary issue gave them, with the business it is in (`HoldingFigures`). Payouts are the
- * scheduled instalments still due, net of the earnings fee and labelled as a projection; nothing
- * has been received until servicing pays it, so every gain is zero. Confirmed purchases no Holding
+ * scheduled instalments still unpaid and due, net of the earnings fee and labelled as a projection;
+ * what servicing has paid on to a Holding (`HoldingPayouts`) is its received return, its gain and its
+ * payments made. Confirmed purchases no Holding
  * has issued from yet are listed apart and never counted among the Holdings: `confirmed` while the
  * raise is open, `funded` once its funding is locked, awaiting or with the payout in flight that issues them.
  *
@@ -43,7 +47,7 @@ final class GetInvestorPortfolio
     private array $latest = [];
 
     public function __construct(private GetInvestorViewer $viewer, private InvestorHoldings $holdings, private InvestorDealCatalogue $catalogue,
-        private CampaignDisbursementProgress $disbursements) {}
+        private CampaignDisbursementProgress $disbursements, private HoldingPayouts $paid) {}
 
     /**
      * Idle cash is the available wallet bucket as the ledger reports it, or null when there is
@@ -57,16 +61,20 @@ final class GetInvestorPortfolio
         /** @var Money|null $available */
         $available = $viewer['wallet']['wallet']['breakdown']['available'] ?? null;
         $positions = $viewer['wallet'] === null ? [] : $this->positions($userId);
-        $zero = HoldingFigures::money('0');
         $invested = array_reduce($positions, fn (BigInteger $sum, array $position): BigInteger => $sum->plus($position['holding']['principal']['amount']), BigInteger::zero());
         $payouts = $this->payouts($positions);
+        $received = HoldingFigures::received(array_merge([], ...array_map(fn (array $position): array => $position['paid'], $positions)));
+        $month = now()->setTimezone(HoldingFigures::ZONE)->format('Y-m');
+        $thisMonth = HoldingFigures::received(array_values(array_filter(array_merge([], ...array_map(fn (array $position): array => $position['paid'], $positions)),
+            fn (array $payout): bool => CarbonImmutable::parse($payout['recorded_at'])->setTimezone(HoldingFigures::ZONE)->format('Y-m') === $month)));
         $projected = array_reduce(array_slice($payouts, 0, 3), fn (BigInteger $sum, array $month): BigInteger => $sum->plus($month['amount']['amount']), BigInteger::zero());
 
         return ['identity_context_revision' => $viewer['identity_context_revision'], 'verified' => $viewer['wallet'] !== null,
             'idle' => $available === null || $available['amount'] === '0' ? null : $available,
             'holdings' => array_map(fn (array $position): array => self::summary($position, $this->latestUpdate($position['holding']['campaign_id'])), $positions),
             'totals' => ['businesses' => count(array_unique(array_map(fn (array $position): string => $position['holding']['campaign_id'], $positions))),
-                'value' => HoldingFigures::money($invested), 'invested' => HoldingFigures::money($invested), 'gain' => $zero, 'this_month' => $zero,
+                'value' => HoldingFigures::money($invested->plus($received['return'])), 'invested' => HoldingFigures::money($invested),
+                'gain' => HoldingFigures::money($received['return']), 'this_month' => HoldingFigures::money($thisMonth['return']),
                 'projected_3m' => HoldingFigures::money($projected),
                 'next_payout' => $payouts === [] ? null : ['amount' => $payouts[0]['amount'], 'month' => $payouts[0]['month']],
                 'avg_monthly' => HoldingFigures::money($projected->dividedBy(3, RoundingMode::HalfUp))],
@@ -77,7 +85,9 @@ final class GetInvestorPortfolio
 
     /**
      * One Holding as the Portfolio and the Holding page list it. Its health follows the business's
-     * newest published monthly report: on watch when that report is, healthy otherwise.
+     * newest published monthly report: on watch when that report is, healthy otherwise. Its value
+     * is what was invested plus the gross return received; `repaid_pct` is the share of its
+     * scheduled payments made.
      *
      * @param  HeldPosition  $position
      * @param  array<string, mixed>|null  $latest  The newest published monthly update, if any.
@@ -88,10 +98,15 @@ final class GetInvestorPortfolio
         $holding = $position['holding'];
         $card = $position['card'];
         $schedule = $holding['schedule'];
+        $received = HoldingFigures::received($position['paid']);
+        $invested = BigInteger::of($holding['principal']['amount']);
+        $gainPct = $invested->isZero() ? '0.0' : (string) BigDecimal::of($received['return'])->multipliedBy(100)->dividedBy($invested, 1, RoundingMode::HalfUp);
 
         return ['id' => $holding['id'], 'name' => $card['name'], 'accent' => $card['accent'], 'industry' => $card['industry'], 'district' => $card['district'],
-            'health' => ($latest['status'] ?? null) === 'watch' ? 'watch' : 'healthy', 'value' => $holding['principal'], 'invested' => $holding['principal'], 'gain' => HoldingFigures::money('0'), 'gain_pct' => '0.0',
-            'repaid_pct' => 0, 'matures_on' => HoldingFigures::kigaliMidnight($schedule[count($schedule) - 1]['due_on']), 'payments_made' => 0,
+            'health' => ($latest['status'] ?? null) === 'watch' ? 'watch' : 'healthy', 'value' => HoldingFigures::money($invested->plus($received['return'])),
+            'invested' => $holding['principal'], 'gain' => HoldingFigures::money($received['return']), 'gain_pct' => $gainPct,
+            'repaid_pct' => HoldingFigures::percent((string) $received['made'], (string) count($schedule)),
+            'matures_on' => HoldingFigures::kigaliMidnight($schedule[count($schedule) - 1]['due_on']), 'payments_made' => $received['made'],
             'payments_total' => count($schedule)];
     }
 
@@ -143,12 +158,14 @@ final class GetInvestorPortfolio
     private function positions(int $userId): array
     {
         $cards = [];
+        $holdings = $this->holdings->forInvestor($userId);
+        $paid = $this->paid->forHoldings(array_map(fn (array $holding): string => $holding['id'], $holdings));
 
-        return array_map(function (array $holding) use (&$cards): array {
+        return array_map(function (array $holding) use (&$cards, $paid): array {
             $cards[$holding['campaign_id']] ??= $this->card($holding['campaign_id']);
 
-            return ['holding' => $holding, 'card' => $cards[$holding['campaign_id']]];
-        }, $this->holdings->forInvestor($userId));
+            return ['holding' => $holding, 'card' => $cards[$holding['campaign_id']], 'paid' => $paid[$holding['id']] ?? []];
+        }, $holdings);
     }
 
     /**

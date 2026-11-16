@@ -58,6 +58,7 @@ use App\Application\Business\Contracts\ServicingStatements;
 use App\Application\Business\Contracts\StaffApplicationQueue;
 use App\Application\Business\Contracts\UpcomingInstalments;
 use App\Application\Business\Contracts\VisitReadyTicks;
+use App\Application\Disbursement\Contracts\DisbursedCampaigns;
 use App\Application\Disbursement\Contracts\DisbursementClosingEvidence;
 use App\Application\Disbursement\Contracts\DisbursementFeeFacts;
 use App\Application\Disbursement\Contracts\DisbursementStore;
@@ -109,6 +110,7 @@ use App\Application\Primary\Contracts\CartCheckouts;
 use App\Application\Primary\Contracts\CartSettlementAlerts;
 use App\Application\Primary\Contracts\FundedPurchaseChanges;
 use App\Application\Primary\Contracts\HeldNoteCapital;
+use App\Application\Primary\Contracts\HoldingPayouts;
 use App\Application\Primary\Contracts\HoldingSource;
 use App\Application\Primary\Contracts\InvestorCart;
 use App\Application\Primary\Contracts\InvestorCartQuotes;
@@ -125,6 +127,7 @@ use App\Application\Primary\Contracts\RetainedNoteSchedules;
 use App\Application\Primary\Contracts\RiskAcknowledgements;
 use App\Application\Pulse\Contracts\PulseSignupRepository;
 use App\Application\Secondary\Contracts\NoteUnitHolders;
+use App\Application\Secondary\Contracts\SecondaryBoard;
 use App\Application\Secondary\Contracts\SecondaryLedger;
 use App\Application\Secondary\Contracts\SecondaryMarket;
 use App\Application\Secondary\Contracts\SecondaryMarketSweep;
@@ -199,6 +202,7 @@ use App\Infrastructure\Business\RetainedInvestorDeals;
 use App\Infrastructure\Business\SimulatedCommittedRaiseFunding;
 use App\Infrastructure\Business\UnavailableNoteServicing;
 use App\Infrastructure\Disbursement\EloquentCampaignDisbursementProgress;
+use App\Infrastructure\Disbursement\EloquentDisbursedCampaigns;
 use App\Infrastructure\Disbursement\EloquentDisbursementClosingEvidence;
 use App\Infrastructure\Disbursement\EloquentDisbursementFeeFacts;
 use App\Infrastructure\Disbursement\EloquentDisbursementStore;
@@ -257,11 +261,13 @@ use App\Infrastructure\Primary\RetainedHoldingSource;
 use App\Infrastructure\Primary\RetainedInvestorCheckoutFacts;
 use App\Infrastructure\Primary\RetainedIssuedHoldings;
 use App\Infrastructure\Primary\RetainedPrimaryFunding;
+use App\Infrastructure\Primary\ServicingHoldingPayouts;
 use App\Infrastructure\Primary\TransactionalRetainedNoteSchedules;
 use App\Infrastructure\Pulse\EloquentPulseSignupRepository;
 use App\Infrastructure\Secondary\EloquentNoteUnitHolders;
 use App\Infrastructure\Secondary\EloquentSecondaryMarket;
 use App\Infrastructure\Secondary\RetainedSecondaryNotes;
+use App\Infrastructure\Secondary\SimulatedSecondaryBoard;
 use App\Infrastructure\Secondary\SimulatedSecondaryMarket;
 use App\Infrastructure\Secondary\UnavailableSecondaryMarket;
 use App\Infrastructure\Wallet\EloquentBusinessPayoutAccounts;
@@ -424,6 +430,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(InvestorCheckoutFacts::class, RetainedInvestorCheckoutFacts::class);
         $this->app->bind(HeldNoteCapital::class, RetainedHeldNoteCapital::class);
         $this->app->bind(InvestorHoldings::class, EloquentInvestorHoldings::class);
+        $this->app->bind(HoldingPayouts::class, ServicingHoldingPayouts::class);
         $this->app->bind(PrimaryPurchaseIndex::class, EloquentPrimaryPurchaseIndex::class);
         $this->app->bind(PrimaryCommitmentView::class, EloquentPrimaryCommitmentView::class);
         $this->app->bind(PrimaryReservations::class, EloquentPrimaryReservations::class);
@@ -462,6 +469,12 @@ class AppServiceProvider extends ServiceProvider
                 $this->app->make(UatMoneySimulation::class)),
             default => $this->app->make(UnavailableSecondaryMarket::class),
         });
+        $this->app->bind(SecondaryBoard::class, fn (): SecondaryBoard => match (true) {
+            config('app.secondary_trading') === true => $this->app->make(EloquentSecondaryMarket::class),
+            $this->app->make(UatMoneySimulation::class)->active() => new SimulatedSecondaryBoard($this->app->make(EloquentSecondaryMarket::class),
+                $this->app->make(UatMoneySimulation::class)),
+            default => $this->app->make(UnavailableSecondaryMarket::class),
+        });
     }
 
     /**
@@ -478,6 +491,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(NoteAuditPartner::class, EloquentNoteAuditPartner::class);
         $this->app->bind(DisbursementClosingEvidence::class, EloquentDisbursementClosingEvidence::class);
         $this->app->bind(CampaignDisbursementProgress::class, EloquentCampaignDisbursementProgress::class);
+        $this->app->bind(DisbursedCampaigns::class, EloquentDisbursedCampaigns::class);
         $this->app->bind(FundedPurchaseChanges::class, RetainedFundedPurchaseChanges::class);
         $this->app->bind(BusinessHolders::class, RetainedBusinessHolders::class);
         $this->app->singleton(SyntheticDisbursementSources::class);

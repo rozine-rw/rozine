@@ -4565,6 +4565,37 @@ const rw: Catalog = {
     'investor.market.browse.empty_title': "Nta noti ihuye n'ibi byatoranyijwe",
     'investor.market.browse.empty_body':
         'Gerageza guhindura ibyatoranyijwe hejuru.',
+    'investor.market.resale.listings': 'Ibyashyizwe ku isoko',
+    'investor.market.resale.sell': 'Gurisha imigabane',
+    'investor.market.resale.sell_title': 'Gurisha imigabane ku isoko',
+    'investor.market.resale.buy': 'Gura',
+    'investor.market.resale.buy_title': 'Gura imigabane ya {name}',
+    'investor.market.resale.units_at':
+        'Imigabane {units} kuri {price} buri umwe',
+    'investor.market.resale.yours': 'Icyo washyizeho',
+    'investor.market.resale.reserved': 'Yafashwe',
+    'investor.market.resale.total': 'Igiteranyo',
+    'investor.market.resale.expires': 'Kugeza {when}',
+    'investor.market.resale.withdraw': 'Kuramo',
+    'investor.market.resale.reserved_for_you':
+        'Imigabane {units} yagufatiwe kugeza {when}. Emeza wishyure {amount} uvuye mu gikapu cyawe.',
+    'investor.market.resale.confirm': 'Emeza kugura',
+    'investor.market.resale.working': 'Birakorwa…',
+    'investor.market.resale.units': 'Imigabane',
+    'investor.market.resale.you_pay': 'Uzishyura {amount}',
+    'investor.market.resale.reserve_note':
+        'Gufata bigumisha aya mafaranga mu gikapu cyawe igihe gito mu gihe wemeza.',
+    'investor.market.resale.reserve': 'Fata imigabane',
+    'investor.market.resale.holding': 'Ishoramari',
+    'investor.market.resale.lot_option': '{name} · imigabane {units} iboneka',
+    'investor.market.resale.price': 'Igiciro kuri buri mugabane (RWF)',
+    'investor.market.resale.cap': 'Ntibirenze {cap} kuri buri mugabane',
+    'investor.market.resale.listing_total': 'Igiteranyo {amount}',
+    'investor.market.resale.list': 'Shyira ku isoko',
+    'investor.market.resale.trade_buy': 'Waguze · {name}',
+    'investor.market.resale.trade_sell': 'Wagurishije · {name}',
+    'investor.market.resale.refused':
+        'Ntibyakunze ({code}). Reba amakuru wongere ugerageze.',
     'investor.market.saved.empty_title': 'Nta noti irabikwa',
     'investor.market.saved.empty_body':
         'Kurura noti hejuru kugira ngo uyibike hano.',
@@ -6972,6 +7003,7 @@ const rw: Catalog = {
     'investor.wallet.c3.entry.withdrawal_in':
         'Byagarutse bivuye kuri {counterparty}',
     'investor.wallet.c3.entry.withdrawal_out': 'Kubikuza · {counterparty}',
+    'investor.wallet.c3.entry.repayment_in': 'Kwishyurwa · {counterparty}',
     'business.publish.intro':
         '{title} izagaragara ku bashoramari buri ntambwe iri hepfo imaze kuzuzwa. Gutangaza bikoresha imikono watanze mu isuzuma, nta kindi cyo gusinya hano.',
     'business.publish.release.awaiting':

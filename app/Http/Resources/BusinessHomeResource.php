@@ -66,8 +66,12 @@ class BusinessHomeResource extends JsonResource
         $ready = $visit === null ? [] : [['kind' => 'visit_ready', 'due_on' => $visit['due_on'], 'visit_from' => $visit['visit_from'], 'visit_by' => $visit['visit_by'],
             'ready' => count(array_intersect(array_column($visit['items'], 'key'), $visit['ticked'])), 'total' => count($visit['items']), 'link' => $repayments()]];
         $due = [];
+        $statement = $request->routeIs('api.*') ? null : $data['statement'] ?? null;
+        $paid = $statement === null ? [] : [strtolower((string) $statement['note']['id']) => array_column(array_filter($statement['schedule'],
+            fn (array $row): bool => $row['status'] === 'paid'), 'index')];
         foreach ($issued as $schedule) {
-            $next = array_find($schedule['instalments'], fn (array $row): bool => $row['due_on'] >= $today);
+            $settled = $paid[strtolower((string) $schedule['note_id'])] ?? [];
+            $next = array_find($schedule['instalments'], fn (array $row): bool => $row['due_on'] >= $today && ! in_array($row['index'], $settled, true));
             if ($next !== null) {
                 $due[] = ['kind' => 'repayment_due', 'amount' => $next['total'], 'note_title' => $schedule['title'], 'due_on' => $next['due_on'], 'link' => $repayments()];
             }
