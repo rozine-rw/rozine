@@ -226,7 +226,7 @@ export function DealPanel({
                             </SourceBadge>
                         }
                     >
-                        <AboutCard about={deal.about} />
+                        <AboutCard about={deal.about} story={deal.story} />
                     </Section>
 
                     {deal.audit !== null && (
@@ -239,9 +239,12 @@ export function DealPanel({
                         title={t('investor.deal.monthly_updates')}
                         variant="desk"
                         badge={
-                            <SourceBadge kind="verified" variant="desk">
-                                {t('investor.deal.audited')}
-                            </SourceBadge>
+                            /* No "Audited" claim on a section with no report yet (#594). */
+                            deal.updates.length > 0 ? (
+                                <SourceBadge kind="verified" variant="desk">
+                                    {t('investor.deal.audited')}
+                                </SourceBadge>
+                            ) : undefined
                         }
                     >
                         <UpdateList

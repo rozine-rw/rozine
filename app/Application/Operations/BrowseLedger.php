@@ -33,7 +33,7 @@ final readonly class BrowseLedger
 
     public function __construct(private LedgerJournal $journal, private AuthorizeStaffPermission $staff, private OperationRecords $operations) {}
 
-    /** @return array{entries: list<Entry>, total: int, next_before: string|null, entry: OpenedEntry|null} */
+    /** @return array{entries: list<Entry>, total: int, next_before: string|null, newer_before: string|null, entry: OpenedEntry|null} */
     public function handle(int $actorId, ?string $search, int $limit, ?string $entryId, ?string $before = null): array
     {
         $this->staff->check($actorId, 'ledger.view');

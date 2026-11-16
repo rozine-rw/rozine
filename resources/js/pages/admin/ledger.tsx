@@ -1,3 +1,4 @@
+import type { CancelToken } from '@inertiajs/core';
 import { Link, router } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import { AdminFrame } from '@/components/admin/admin-frame';
@@ -10,6 +11,7 @@ import {
     ShowMoreLink,
     TableCard,
 } from '@/components/admin/ui';
+import { useSearchAsYouType } from '@/hooks/use-search-as-you-type';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatCount, formatRwfShort } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
@@ -26,22 +28,25 @@ const GRID =
 export default function AdminLedger(props: AdminLedgerProps) {
     const { t } = useTranslation();
 
+    const runSearch = (
+        q: string,
+        onCancelToken: (token: CancelToken) => void,
+    ) =>
+        router.reload({
+            data: { q, entry: undefined, limit: undefined, before: undefined },
+            onCancelToken,
+        });
+    const typing = useSearchAsYouType(props.search, runSearch);
     const search = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        router.reload({
-            data: {
-                q: new FormData(event.currentTarget).get('q'),
-                entry: undefined,
-                limit: undefined,
-                before: undefined,
-            },
-        });
+        typing.submit(String(new FormData(event.currentTarget).get('q')));
     };
 
     return (
         <AdminFrame
             section="ledger"
             {...props}
+            searchable={false}
             overlay={
                 props.entry && (
                     <EntryDrawer key={props.entry.id} entry={props.entry} />
@@ -53,7 +58,10 @@ export default function AdminLedger(props: AdminLedgerProps) {
                 minWidth="min-w-[820px]"
                 className="shadow-[0_1px_2px_rgba(16,32,58,.04),0_14px_30px_-24px_rgba(16,32,58,.28)]"
                 footer={
-                    (props.more || props.older || props.newest) && (
+                    (props.more ||
+                        props.older ||
+                        props.newer ||
+                        props.newest) && (
                         <>
                             {props.more && (
                                 <ShowMoreLink link={props.more}>
@@ -65,6 +73,11 @@ export default function AdminLedger(props: AdminLedgerProps) {
                             {props.older && (
                                 <ShowMoreLink link={props.older}>
                                     {t('admin.ledger.older')}
+                                </ShowMoreLink>
+                            )}
+                            {props.newer && (
+                                <ShowMoreLink link={props.newer}>
+                                    {t('admin.ledger.newer')}
                                 </ShowMoreLink>
                             )}
                             {props.newest && (
@@ -120,6 +133,7 @@ export default function AdminLedger(props: AdminLedgerProps) {
                                 type="search"
                                 name="q"
                                 defaultValue={props.search}
+                                onChange={typing.onChange}
                                 aria-label={t('admin.ledger.search_label')}
                                 placeholder={t(
                                     'admin.ledger.search_placeholder',

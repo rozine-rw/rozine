@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -20,6 +21,10 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * web. An open draft with a signature on its current offer asks each signatory still to sign for
  * theirs, and tells everyone else on the mandate who it is waiting for. An open draft its evidence
  * does not yet qualify says what it is waiting on, so Today never reads "all caught up" over it.
+ *
+ * On the web, once a Note is issued Today names its next instalment, and from D−14 the visit-ready
+ * checklist with how many items are ticked, both linked to Repayments (QA #579). Such a Note is
+ * filed as repaying. The bearer transport carries neither: it has no Repayments read.
  */
 class BusinessHomeResource extends JsonResource
 {
@@ -33,7 +38,9 @@ class BusinessHomeResource extends JsonResource
         $business = (string) $entry['business_id'];
         $profile = $entry['profile'];
         $campaign = fn (string $id): array => self::link($request, 'business.campaigns.show', ['business' => $business, 'campaign' => $id]);
-        $notes = array_map(fn (array $note): array => ['id' => $note['campaign_id'], 'title' => $note['title'], 'status' => $note['status'],
+        $scheduled = $request->routeIs('api.*') ? [] : array_column($data['issued'] ?? [], 'note_id');
+        $notes = array_map(fn (array $note): array => ['id' => $note['campaign_id'], 'title' => $note['title'],
+            'status' => $note['status'] === 'funded' && in_array($note['campaign_id'], $scheduled, true) ? 'repaying' : $note['status'],
             'created_at' => $note['created_at'], 'funded_pct' => $note['funded_pct'], 'investors' => $note['investors'], 'raised' => $note['raised'],
             'target' => $note['target'], 'link' => $campaign($note['campaign_id'])], $raises['notes']);
         $live = array_find($notes, fn (array $note): bool => $note['status'] === 'active');
@@ -52,6 +59,20 @@ class BusinessHomeResource extends JsonResource
         $blocked = $entry['draft_blocked'] ?? null;
         $waiting = $blocked === null || $draft === null ? [] : [['kind' => 'application_blocked', 'title' => ($entry['draft_title'] ?? '') === '' ? null : $entry['draft_title'], 'code' => $blocked,
             'link' => self::link($request, 'business.applications.show', ['business' => $business, 'application' => $draft])]];
+        $repayments = fn (): array => self::link($request, 'business.repayments.show', ['business' => $business]);
+        $issued = $request->routeIs('api.*') ? [] : $data['issued'] ?? [];
+        $today = CarbonImmutable::now('Africa/Kigali')->toDateString();
+        $visit = $request->routeIs('api.*') ? null : $data['visit_ready'] ?? null;
+        $ready = $visit === null ? [] : [['kind' => 'visit_ready', 'due_on' => $visit['due_on'], 'visit_from' => $visit['visit_from'], 'visit_by' => $visit['visit_by'],
+            'ready' => count(array_intersect(array_column($visit['items'], 'key'), $visit['ticked'])), 'total' => count($visit['items']), 'link' => $repayments()]];
+        $due = [];
+        foreach ($issued as $schedule) {
+            $next = array_find($schedule['instalments'], fn (array $row): bool => $row['due_on'] >= $today);
+            if ($next !== null) {
+                $due[] = ['kind' => 'repayment_due', 'amount' => $next['total'], 'note_title' => $schedule['title'], 'due_on' => $next['due_on'], 'link' => $repayments()];
+            }
+        }
+        usort($due, fn (array $left, array $right): int => strcmp($left['due_on'], $right['due_on']));
         $audit = $data['audit_window'] ?? null;
         $window = $audit === null || $request->routeIs('api.*') ? [] : [['kind' => 'audit_window', 'month' => $audit['period'], 'window_open' => true,
             'days_left' => $audit['days_left'], 'sealed_by' => $audit['seal_by'], 'link' => self::link($request, 'business.audit-prep', ['business' => $business])]];
@@ -60,7 +81,7 @@ class BusinessHomeResource extends JsonResource
             'rating' => $raises['rating'], 'wallet' => ['available' => $data['wallet']['available']], 'unread_notifications' => $data['unread_notices'],
             'live_raise' => $live === null ? null : ['title' => $live['title'], 'funded_pct' => $live['funded_pct'], 'investors' => $live['investors'],
                 'raised' => $live['raised'], 'target' => $live['target'], 'link' => $live['link']],
-            'today' => [...$cosign, ...$signature, ...$waiting, ...$window, ...array_map(fn (array $released): array => ['kind' => 'application_approved', 'title' => $released['title'], 'fee' => ['currency' => 'RWF', 'amount' => '0'],
+            'today' => [...$cosign, ...$ready, ...$due, ...$signature, ...$waiting, ...$window, ...array_map(fn (array $released): array => ['kind' => 'application_approved', 'title' => $released['title'], 'fee' => ['currency' => 'RWF', 'amount' => '0'],
                 'link' => self::link($request, 'business.applications.publish.show', ['business' => $business, 'application' => $released['application_id']])], $raises['released'])],
             'capital' => [...$raises['capital'], 'repaid' => $data['wallet']['repaid'], 'on_time_pct' => null],
             'notes' => $notes, 'headroom' => $raises['sizing']['headroom'] ?? null,

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::index
-* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @see app/Http/Controllers/AuditorNoticesController.php:18
 * @route '/api/v1/auditor/notices'
 */
 const indexc2b30a0bab52a2f5447367ff7c924cb6 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ indexc2b30a0bab52a2f5447367ff7c924cb6.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::index
-* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @see app/Http/Controllers/AuditorNoticesController.php:18
 * @route '/api/v1/auditor/notices'
 */
 indexc2b30a0bab52a2f5447367ff7c924cb6.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ indexc2b30a0bab52a2f5447367ff7c924cb6.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::index
-* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @see app/Http/Controllers/AuditorNoticesController.php:18
 * @route '/api/v1/auditor/notices'
 */
 indexc2b30a0bab52a2f5447367ff7c924cb6.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ indexc2b30a0bab52a2f5447367ff7c924cb6.get = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::index
-* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @see app/Http/Controllers/AuditorNoticesController.php:18
 * @route '/api/v1/auditor/notices'
 */
 indexc2b30a0bab52a2f5447367ff7c924cb6.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ indexc2b30a0bab52a2f5447367ff7c924cb6.head = (options?: RouteQueryOptions): Rout
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::index
-* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @see app/Http/Controllers/AuditorNoticesController.php:18
 * @route '/api/v1/auditor/notices'
 */
 const indexc2b30a0bab52a2f5447367ff7c924cb6Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const indexc2b30a0bab52a2f5447367ff7c924cb6Form = (options?: RouteQueryOptions):
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::index
-* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @see app/Http/Controllers/AuditorNoticesController.php:18
 * @route '/api/v1/auditor/notices'
 */
 indexc2b30a0bab52a2f5447367ff7c924cb6Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ indexc2b30a0bab52a2f5447367ff7c924cb6Form.get = (options?: RouteQueryOptions): R
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::index
-* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @see app/Http/Controllers/AuditorNoticesController.php:18
 * @route '/api/v1/auditor/notices'
 */
 indexc2b30a0bab52a2f5447367ff7c924cb6Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -81,7 +81,7 @@ indexc2b30a0bab52a2f5447367ff7c924cb6Form.head = (options?: RouteQueryOptions): 
 indexc2b30a0bab52a2f5447367ff7c924cb6.form = indexc2b30a0bab52a2f5447367ff7c924cb6Form
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::index
-* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @see app/Http/Controllers/AuditorNoticesController.php:18
 * @route '/auditor/notices'
 */
 const index96b5f6ece5fea1d3cb0aa1bf19bce882 = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -96,7 +96,7 @@ index96b5f6ece5fea1d3cb0aa1bf19bce882.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::index
-* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @see app/Http/Controllers/AuditorNoticesController.php:18
 * @route '/auditor/notices'
 */
 index96b5f6ece5fea1d3cb0aa1bf19bce882.url = (options?: RouteQueryOptions) => {
@@ -105,7 +105,7 @@ index96b5f6ece5fea1d3cb0aa1bf19bce882.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::index
-* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @see app/Http/Controllers/AuditorNoticesController.php:18
 * @route '/auditor/notices'
 */
 index96b5f6ece5fea1d3cb0aa1bf19bce882.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -115,7 +115,7 @@ index96b5f6ece5fea1d3cb0aa1bf19bce882.get = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::index
-* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @see app/Http/Controllers/AuditorNoticesController.php:18
 * @route '/auditor/notices'
 */
 index96b5f6ece5fea1d3cb0aa1bf19bce882.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -125,7 +125,7 @@ index96b5f6ece5fea1d3cb0aa1bf19bce882.head = (options?: RouteQueryOptions): Rout
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::index
-* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @see app/Http/Controllers/AuditorNoticesController.php:18
 * @route '/auditor/notices'
 */
 const index96b5f6ece5fea1d3cb0aa1bf19bce882Form = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -135,7 +135,7 @@ const index96b5f6ece5fea1d3cb0aa1bf19bce882Form = (options?: RouteQueryOptions):
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::index
-* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @see app/Http/Controllers/AuditorNoticesController.php:18
 * @route '/auditor/notices'
 */
 index96b5f6ece5fea1d3cb0aa1bf19bce882Form.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -145,7 +145,7 @@ index96b5f6ece5fea1d3cb0aa1bf19bce882Form.get = (options?: RouteQueryOptions): R
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::index
-* @see app/Http/Controllers/AuditorNoticesController.php:17
+* @see app/Http/Controllers/AuditorNoticesController.php:18
 * @route '/auditor/notices'
 */
 index96b5f6ece5fea1d3cb0aa1bf19bce882Form.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -172,7 +172,7 @@ export const index = {
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::readAll
-* @see app/Http/Controllers/AuditorNoticesController.php:27
+* @see app/Http/Controllers/AuditorNoticesController.php:28
 * @route '/api/v1/auditor/notices/read-all'
 */
 const readAllfa68070cdc3fa45f41b55ee0836211f8 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -187,7 +187,7 @@ readAllfa68070cdc3fa45f41b55ee0836211f8.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::readAll
-* @see app/Http/Controllers/AuditorNoticesController.php:27
+* @see app/Http/Controllers/AuditorNoticesController.php:28
 * @route '/api/v1/auditor/notices/read-all'
 */
 readAllfa68070cdc3fa45f41b55ee0836211f8.url = (options?: RouteQueryOptions) => {
@@ -196,7 +196,7 @@ readAllfa68070cdc3fa45f41b55ee0836211f8.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::readAll
-* @see app/Http/Controllers/AuditorNoticesController.php:27
+* @see app/Http/Controllers/AuditorNoticesController.php:28
 * @route '/api/v1/auditor/notices/read-all'
 */
 readAllfa68070cdc3fa45f41b55ee0836211f8.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -206,7 +206,7 @@ readAllfa68070cdc3fa45f41b55ee0836211f8.post = (options?: RouteQueryOptions): Ro
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::readAll
-* @see app/Http/Controllers/AuditorNoticesController.php:27
+* @see app/Http/Controllers/AuditorNoticesController.php:28
 * @route '/api/v1/auditor/notices/read-all'
 */
 const readAllfa68070cdc3fa45f41b55ee0836211f8Form = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -216,7 +216,7 @@ const readAllfa68070cdc3fa45f41b55ee0836211f8Form = (options?: RouteQueryOptions
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::readAll
-* @see app/Http/Controllers/AuditorNoticesController.php:27
+* @see app/Http/Controllers/AuditorNoticesController.php:28
 * @route '/api/v1/auditor/notices/read-all'
 */
 readAllfa68070cdc3fa45f41b55ee0836211f8Form.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -227,7 +227,7 @@ readAllfa68070cdc3fa45f41b55ee0836211f8Form.post = (options?: RouteQueryOptions)
 readAllfa68070cdc3fa45f41b55ee0836211f8.form = readAllfa68070cdc3fa45f41b55ee0836211f8Form
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::readAll
-* @see app/Http/Controllers/AuditorNoticesController.php:27
+* @see app/Http/Controllers/AuditorNoticesController.php:28
 * @route '/auditor/notices/read-all'
 */
 const readAll6cb7ea9e3a6667e90a95201a71908eec = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -242,7 +242,7 @@ readAll6cb7ea9e3a6667e90a95201a71908eec.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::readAll
-* @see app/Http/Controllers/AuditorNoticesController.php:27
+* @see app/Http/Controllers/AuditorNoticesController.php:28
 * @route '/auditor/notices/read-all'
 */
 readAll6cb7ea9e3a6667e90a95201a71908eec.url = (options?: RouteQueryOptions) => {
@@ -251,7 +251,7 @@ readAll6cb7ea9e3a6667e90a95201a71908eec.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::readAll
-* @see app/Http/Controllers/AuditorNoticesController.php:27
+* @see app/Http/Controllers/AuditorNoticesController.php:28
 * @route '/auditor/notices/read-all'
 */
 readAll6cb7ea9e3a6667e90a95201a71908eec.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -261,7 +261,7 @@ readAll6cb7ea9e3a6667e90a95201a71908eec.post = (options?: RouteQueryOptions): Ro
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::readAll
-* @see app/Http/Controllers/AuditorNoticesController.php:27
+* @see app/Http/Controllers/AuditorNoticesController.php:28
 * @route '/auditor/notices/read-all'
 */
 const readAll6cb7ea9e3a6667e90a95201a71908eecForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -271,7 +271,7 @@ const readAll6cb7ea9e3a6667e90a95201a71908eecForm = (options?: RouteQueryOptions
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::readAll
-* @see app/Http/Controllers/AuditorNoticesController.php:27
+* @see app/Http/Controllers/AuditorNoticesController.php:28
 * @route '/auditor/notices/read-all'
 */
 readAll6cb7ea9e3a6667e90a95201a71908eecForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -293,7 +293,7 @@ export const readAll = {
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::read
-* @see app/Http/Controllers/AuditorNoticesController.php:22
+* @see app/Http/Controllers/AuditorNoticesController.php:23
 * @route '/api/v1/auditor/notices/{notice}/read'
 */
 const read6be2ccab75ac033bd4c295bbf929e875 = (args: { notice: string | number } | [notice: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -308,7 +308,7 @@ read6be2ccab75ac033bd4c295bbf929e875.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::read
-* @see app/Http/Controllers/AuditorNoticesController.php:22
+* @see app/Http/Controllers/AuditorNoticesController.php:23
 * @route '/api/v1/auditor/notices/{notice}/read'
 */
 read6be2ccab75ac033bd4c295bbf929e875.url = (args: { notice: string | number } | [notice: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -335,7 +335,7 @@ read6be2ccab75ac033bd4c295bbf929e875.url = (args: { notice: string | number } | 
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::read
-* @see app/Http/Controllers/AuditorNoticesController.php:22
+* @see app/Http/Controllers/AuditorNoticesController.php:23
 * @route '/api/v1/auditor/notices/{notice}/read'
 */
 read6be2ccab75ac033bd4c295bbf929e875.post = (args: { notice: string | number } | [notice: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -345,7 +345,7 @@ read6be2ccab75ac033bd4c295bbf929e875.post = (args: { notice: string | number } |
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::read
-* @see app/Http/Controllers/AuditorNoticesController.php:22
+* @see app/Http/Controllers/AuditorNoticesController.php:23
 * @route '/api/v1/auditor/notices/{notice}/read'
 */
 const read6be2ccab75ac033bd4c295bbf929e875Form = (args: { notice: string | number } | [notice: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -355,7 +355,7 @@ const read6be2ccab75ac033bd4c295bbf929e875Form = (args: { notice: string | numbe
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::read
-* @see app/Http/Controllers/AuditorNoticesController.php:22
+* @see app/Http/Controllers/AuditorNoticesController.php:23
 * @route '/api/v1/auditor/notices/{notice}/read'
 */
 read6be2ccab75ac033bd4c295bbf929e875Form.post = (args: { notice: string | number } | [notice: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -366,7 +366,7 @@ read6be2ccab75ac033bd4c295bbf929e875Form.post = (args: { notice: string | number
 read6be2ccab75ac033bd4c295bbf929e875.form = read6be2ccab75ac033bd4c295bbf929e875Form
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::read
-* @see app/Http/Controllers/AuditorNoticesController.php:22
+* @see app/Http/Controllers/AuditorNoticesController.php:23
 * @route '/auditor/notices/{notice}/read'
 */
 const read23f9cb2d9765d09c6fb2f193ef3c89ff = (args: { notice: string | number } | [notice: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -381,7 +381,7 @@ read23f9cb2d9765d09c6fb2f193ef3c89ff.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::read
-* @see app/Http/Controllers/AuditorNoticesController.php:22
+* @see app/Http/Controllers/AuditorNoticesController.php:23
 * @route '/auditor/notices/{notice}/read'
 */
 read23f9cb2d9765d09c6fb2f193ef3c89ff.url = (args: { notice: string | number } | [notice: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -408,7 +408,7 @@ read23f9cb2d9765d09c6fb2f193ef3c89ff.url = (args: { notice: string | number } | 
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::read
-* @see app/Http/Controllers/AuditorNoticesController.php:22
+* @see app/Http/Controllers/AuditorNoticesController.php:23
 * @route '/auditor/notices/{notice}/read'
 */
 read23f9cb2d9765d09c6fb2f193ef3c89ff.post = (args: { notice: string | number } | [notice: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -418,7 +418,7 @@ read23f9cb2d9765d09c6fb2f193ef3c89ff.post = (args: { notice: string | number } |
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::read
-* @see app/Http/Controllers/AuditorNoticesController.php:22
+* @see app/Http/Controllers/AuditorNoticesController.php:23
 * @route '/auditor/notices/{notice}/read'
 */
 const read23f9cb2d9765d09c6fb2f193ef3c89ffForm = (args: { notice: string | number } | [notice: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -428,7 +428,7 @@ const read23f9cb2d9765d09c6fb2f193ef3c89ffForm = (args: { notice: string | numbe
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::read
-* @see app/Http/Controllers/AuditorNoticesController.php:22
+* @see app/Http/Controllers/AuditorNoticesController.php:23
 * @route '/auditor/notices/{notice}/read'
 */
 read23f9cb2d9765d09c6fb2f193ef3c89ffForm.post = (args: { notice: string | number } | [notice: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

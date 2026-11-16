@@ -161,6 +161,17 @@ export type BusinessTodo =
           note_title: string;
           due_on: string;
           link: RouteLink;
+      }
+    | {
+          /** The D−14 visit-ready checklist for the next instalment, open on Repayments (QA #579). */
+          kind: 'visit_ready';
+          due_on: string;
+          visit_from: string;
+          visit_by: string;
+          /** Checklist items ticked as ready, of `total`. */
+          ready: number;
+          total: number;
+          link: RouteLink;
       };
 
 export type BusinessCapital = {
@@ -1346,6 +1357,8 @@ export type BusinessProfileProps = {
         accounts: LinkedAccount[];
         add: RouteAction | null;
         banks: { code: string; name: string }[];
+        /** Whether Rozine has opened payout linking at all; absent reads as open (#592). */
+        open?: boolean;
     } | null;
     /** Null while no legal document is published: the section shows its empty state. */
     legal: LegalDocument | null;
@@ -1437,6 +1450,8 @@ export type BusinessWalletMovement = BusinessWalletEntry['movement'];
  */
 export type BusinessWalletProps = BusinessServicingPageContract & {
     business: { id: string; name: string };
+    /** Whether Rozine has opened payout linking, so the wallet only points to Linked accounts when it can be done (#592); absent reads as open. */
+    linking_open?: boolean;
     wallet: BusinessWalletBalances;
     funding: {
         kind: 'deposit' | 'withdraw' | null;

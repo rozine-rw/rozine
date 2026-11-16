@@ -46,6 +46,7 @@ type FormProps = {
 
 const inertia = vi.hoisted(() => ({
     forms: [] as FormProps[],
+    staffConsole: null as { url: string; method: 'get' } | null,
     layoutProps: vi.fn(),
     state: {
         processing: false,
@@ -65,6 +66,18 @@ vi.mock('@inertiajs/react', () => ({
         <div data-testid="head">{title}</div>
     ),
     setLayoutProps: inertia.layoutProps,
+    Link: ({
+        children,
+        href,
+        ...props
+    }: Omit<ComponentProps<'a'>, 'href'> & {
+        href: string | { url: string };
+    }) => (
+        <a href={typeof href === 'string' ? href : href.url} {...props}>
+            {children}
+        </a>
+    ),
+    usePage: () => ({ props: { staff_console: inertia.staffConsole } }),
 }));
 
 vi.mock('@/components/input-error', () => ({
@@ -175,6 +188,24 @@ describe('authentication pages', () => {
             screen.getByRole('button', { name: /Confirm password/ }),
         ).toBeDisabled();
         expect(screen.getByTestId('spinner')).toBeInTheDocument();
+    });
+
+    it('gives a way back from the password check: settings, or the console for staff (#623)', () => {
+        const { unmount } = render(<ConfirmPassword />);
+
+        expect(
+            screen.getByRole('link', {
+                name: 'Cancel and go back to settings',
+            }),
+        ).toHaveAttribute('href', '/settings/profile');
+        unmount();
+
+        inertia.staffConsole = { url: '/admin/dashboard', method: 'get' };
+        render(<ConfirmPassword />);
+        inertia.staffConsole = null;
+        expect(
+            screen.getByRole('link', { name: 'Back to the Admin console' }),
+        ).toHaveAttribute('href', '/admin/dashboard');
     });
 
     it('renders forgot-password status, errors, processing, and login link', () => {

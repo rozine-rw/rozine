@@ -309,3 +309,10 @@ it('requotes a held reservation only while its window is open', function (): voi
     $this->travelTo($this->root->expires_at);
     expect($requotes)->toThrow(CommandRejection::class, 'RESERVATION_EXPIRED');
 });
+
+it('refuses to requote a reservation that is no longer held', function (): void {
+    ($this->release)();
+
+    expect(fn (): bool => app(PrimaryReservations::class)->requotes($this->campaign->id, $this->root->id, $this->investor['party']->id,
+        PrimaryReservationFixture::terms(...)))->toThrow(CommandRejection::class, 'RESERVATION_NOT_HELD');
+});

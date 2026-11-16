@@ -37,6 +37,7 @@ beforeEach(function (): void {
     // The platform fee and automatic disbursement migrations rebind the ledger kinds, so they come off first and go back last.
     // The secondary market rebinds the ledger entry sources, so it comes off before them.
     $this->repaymentDependants = [
+        require database_path('migrations/2026_11_14_120000_create_servicing_payouts.php'),
         require database_path('migrations/2026_11_11_060000_create_secondary_market_tables.php'),
         require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php'),
         require database_path('migrations/2026_10_16_161905_add_platform_fee_to_disbursements.php'),

@@ -413,7 +413,7 @@ export function PolicyPeek({
                                         `admin.policy.${item.key}`,
                                 )}
                             </dt>
-                            <dd className="mt-[3px] truncate text-[13.5px] font-bold tracking-[-.01em] text-rz-ink">
+                            <dd className="mt-[3px] text-[13.5px] leading-[1.3] font-bold tracking-[-.01em] break-words text-rz-ink">
                                 {policyValue(item, t)}
                             </dd>
                         </div>
@@ -566,6 +566,8 @@ export function TableCard({
     footer?: ReactNode;
     className?: string;
 }) {
+    const { t } = useTranslation();
+
     return (
         <div
             className={cn(
@@ -575,6 +577,13 @@ export function TableCard({
                 className,
             )}
         >
+            {/* A phone shows only the first columns, so say the rest are a swipe away (#608), unless there are no rows (#627). */}
+            {!empty && (
+                <p className="flex items-center justify-end gap-1 px-4 pt-2.5 text-[11px] font-semibold text-rz-muted lg:hidden">
+                    {t('admin.table.scroll_hint')}
+                    <span aria-hidden>→</span>
+                </p>
+            )}
             {/* Focusable so a keyboard can scroll a table wider than a phone (WCAG 2.1.1). */}
             <div
                 role="group"
@@ -582,9 +591,18 @@ export function TableCard({
                 tabIndex={0}
                 className="rz-hscroll overflow-x-auto focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-rz-focus-border"
             >
-                <div className={cn(minWidth, 'lg:min-w-0')}>
+                {/* With no rows there is nothing to the side, so nothing scrolls, and a phone shows the empty state
+                    without a column header squeezed above it; the card's own header and filters stay (#627). */}
+                <div
+                    data-testid="table-body"
+                    className={cn(empty ? 'min-w-0' : minWidth, 'lg:min-w-0')}
+                >
                     {header}
-                    <div role="table" aria-label={label}>
+                    <div
+                        role="table"
+                        aria-label={label}
+                        className={cn(empty && 'max-lg:hidden')}
+                    >
                         {children}
                     </div>
                 </div>

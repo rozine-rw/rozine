@@ -234,10 +234,10 @@ describe('Applications queue', () => {
                 name: 'Underwriting rules in effect',
             }),
         ).not.toBeInTheDocument();
-        expect(screen.getByText('No matches on this page')).toBeInTheDocument();
+        expect(screen.getByText('No matches')).toBeInTheDocument();
         expect(
             screen.getByText(
-                'Nothing in Applications Queue matches “zzz”. This search only looks inside the current page.',
+                'Nothing in Applications Queue matches “zzz”. Try a shorter or different term.',
             ),
         ).toBeInTheDocument();
     });
@@ -685,6 +685,68 @@ describe('Staff release', () => {
         expect(within(panel).queryByRole('button')).not.toBeInTheDocument();
     });
 
+    it('says what to do next for a failed check, and marks the checks it never reached', () => {
+        const fixture = props(releaseBlockedFixture);
+        releaseOf(fixture).gates = [
+            { key: 'engine', state: 'failed', cause: 'ENGINE_GATE_FAILED' },
+            {
+                key: 'authority',
+                state: 'failed',
+                cause: 'RELEASE_CHECK_NOT_COMPLETED',
+            },
+            {
+                key: 'report',
+                state: 'failed',
+                cause: 'RELEASE_CHECK_NOT_COMPLETED',
+            },
+        ];
+        render(<AdminApplications {...fixture} />);
+        const panel = screen.getByRole('region', {
+            name: 'Release for listing',
+        });
+
+        expect(
+            within(panel).getByText(
+                "The business's latest figures no longer support this note. The business gets a new quote and signs again.",
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(panel).getAllByText(
+                'Not checked until the Underwriting engine check passes.',
+            ),
+        ).toHaveLength(2);
+        expect(within(panel).getAllByText('Not checked')).toHaveLength(2);
+        expect(within(panel).getAllByText('Blocked')).toHaveLength(1);
+        expect(
+            within(panel).queryByText("This check couldn't be completed."),
+        ).not.toBeInTheDocument();
+        expect(within(panel).getByRole('status')).toHaveTextContent(
+            'The business sees the same reason on its Publish page.',
+        );
+    });
+
+    it('explains a check that stopped with nothing before it failing', () => {
+        const fixture = props(releaseBlockedFixture);
+        releaseOf(fixture).gates = [
+            {
+                key: 'engine',
+                state: 'failed',
+                cause: 'RELEASE_CHECK_NOT_COMPLETED',
+            },
+            { key: 'authority', state: 'passed', cause: null },
+            { key: 'report', state: 'passed', cause: null },
+        ];
+        render(<AdminApplications {...fixture} />);
+
+        expect(
+            screen.getByText("This check couldn't be completed."),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(/Open the application again to rerun it/),
+        ).toBeInTheDocument();
+        expect(screen.getByText('Blocked')).toBeInTheDocument();
+    });
+
     it('reads a cause it has no words for as a failed check, keeping the code on hover', () => {
         const fixture = props(releaseBlockedFixture);
         const gate = releaseOf(fixture).gates.find(
@@ -863,6 +925,7 @@ describe('The live staff applications index (#147)', () => {
                     before: undefined,
                     application: undefined,
                 },
+                onCancelToken: expect.any(Function),
             },
         ]);
     });
@@ -874,7 +937,9 @@ describe('The live staff applications index (#147)', () => {
 
         await user.type(screen.getByRole('searchbox'), 'Kigali{Enter}');
 
-        expect(inertia.reload).toEqual([{ data: { q: 'Kigali' } }]);
+        expect(inertia.reload).toEqual([
+            { data: { q: 'Kigali' }, onCancelToken: expect.any(Function) },
+        ]);
     });
 });
 

@@ -101,6 +101,7 @@ export default function AdminDisbursements(props: C3AdminDisbursementsProps) {
         <AdminFrame
             section="disbursements"
             {...props}
+            searchable={false}
             overlay={
                 props.disbursement && (
                     <DisbursementDrawer

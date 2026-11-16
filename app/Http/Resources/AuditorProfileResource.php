@@ -12,7 +12,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * and `allowed_actions` exactly as `AccreditationView` presents them, with the links and command
  * targets the page may use. Jobs done counts the partner's filed reports and the open-offers
  * badge comes from their work as Jobs reads it; the on-time share is their own track record. Facts
- * without a record yet stay null — the partner's firm, professional body and start year and the
+ * without a record yet stay null — the partner's firm and professional body and the
  * quality score — so the page
  * leaves them out rather than showing a stand-in. Every section of the design's menu is linked:
  * contact carries the account's own email, security whether two-factor sign-in is on, and legal
@@ -24,8 +24,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @phpstan-import-type Summary from \App\Application\Auditor\GetAuditEngagementSummary
  * @phpstan-import-type AuditApplication from \App\Application\Business\Contracts\BusinessApplicationStore
  * @phpstan-import-type Earnings from \App\Application\Auditor\Contracts\AuditorEarningsStore
+ * @phpstan-import-type TrackRecord from \App\Application\Auditor\Contracts\AuditorFiledReportStore
  *
- * @phpstan-type Page array{accreditation: Accreditation, certificate_id: string|null, name: string, email: string, two_factor: bool, section: string, engagement: Summary, jobs: array{data: list<AuditApplication>, next_cursor: string|null}, filed: int, on_time_pct?: int|null, earnings: Earnings}
+ * @phpstan-type Page array{accreditation: Accreditation, certificate_id: string|null, name: string, email: string, two_factor: bool, section: string, engagement: Summary, jobs: array{data: list<AuditApplication>, next_cursor: string|null}, filed: int, track_record?: TrackRecord, earnings: Earnings}
  */
 class AuditorProfileResource extends JsonResource
 {
@@ -57,9 +58,9 @@ class AuditorProfileResource extends JsonResource
             'allowed_actions' => $data['allowed_actions'],
             'engagement' => (new AuditorEngagementSummaryResource($page['engagement']))->resolve($request),
             'section' => in_array($section = self::ALIASES[$page['section']] ?? $page['section'], self::SECTIONS, true) ? $section : self::DEFAULT_SECTION,
-            'auditor' => ['name' => $page['name'], 'firm' => null, 'accreditation' => null, 'avatar_url' => null, 'since_year' => null],
+            'auditor' => ['name' => $page['name'], 'firm' => null, 'accreditation' => null, 'avatar_url' => null, 'since_year' => $page['track_record']['since_year'] ?? null],
             'quality_score' => null,
-            'on_time_pct' => $page['on_time_pct'] ?? null,
+            'on_time_pct' => $page['track_record']['on_time_pct'] ?? null,
             'jobs_done' => $page['filed'],
             'earnings' => AuditorPortfolioResource::earnings($page['earnings']),
             'contact' => ['email' => $page['email'], 'phone' => null, 'address' => null],

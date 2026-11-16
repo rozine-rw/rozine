@@ -450,7 +450,10 @@ it('reverses and reapplies only the assignment schema on the isolated test datab
     $heldReleasePrecision = require database_path('migrations/2026_10_30_190000_compare_held_release_cash_at_ledger_precision.php');
     $cartCheckouts = require database_path('migrations/2026_11_02_090000_create_investor_cart_checkouts.php');
     // The secondary market rebinds the ledger entry sources, so it comes off first and goes back last.
+    // Servicing payouts reference Business repayments and rebind the ledger kinds after the secondary market, so they come off before it and go back after it.
+    $servicingPayouts = require database_path('migrations/2026_11_14_120000_create_servicing_payouts.php');
     $secondaryMarket = require database_path('migrations/2026_11_11_060000_create_secondary_market_tables.php');
+    $servicingPayouts->down();
     $secondaryMarket->down();
     // Recycling withdrawn commitment claims rewrites check_primary_held_release again, so it comes off before the precision check.
     $withdrawnClaims = require database_path('migrations/2026_11_10_170000_recycle_withdrawn_commitment_claims.php');
@@ -555,6 +558,7 @@ it('reverses and reapplies only the assignment schema on the isolated test datab
     $cartCheckouts->up();
     $withdrawnClaims->up();
     $secondaryMarket->up();
+    $servicingPayouts->up();
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)
         ->and(DB::select($functionQuery))->toEqual($functions)->and(DB::select($constraintQuery))->toEqual($constraints);
