@@ -13,8 +13,11 @@
 #   4. Every required quality-gate job inside that run succeeded; a skipped or
 #      cancelled job is not a pass.
 #   5. The SHA reached the target branch through a merged pull request.
-#   6. That pull request carries an APPROVED review from someone other than its
-#      author, and that review names the pull request's final head SHA.
+#   6. Production only: that pull request carries an APPROVED review from
+#      someone other than its author, and that review names the pull request's
+#      final head SHA. Staging (uat) records such an approval when one exists
+#      but does not require it (owner decision, 16 Nov 2026); every evidence
+#      check above still applies to staging.
 #
 # Missing, failed, in-progress, stale, or mismatched evidence all exit non-zero.
 # There is no branch that admits a deployment on absent evidence.
@@ -209,10 +212,13 @@ approver="$(printf '%s' "${reviews_json}" | jq -sr \
     sort_by(.submitted_at) | last | .user.login // empty")" \
   || refuse "could not parse complete pull request review evidence."
 
-if [ -z "${approver}" ]; then
+if [ -n "${approver}" ]; then
+  echo "OK  non-author approval of the final candidate SHA recorded by '${approver}'."
+elif [ "${TARGET_BRANCH}" = uat ]; then
+  echo "OK  staging does not require a non-author approval; none is recorded for #${pull_number} at ${pull_head_sha}."
+else
   refuse "pull request #${pull_number} has no APPROVED review of its final head SHA ${pull_head_sha} from a developer other than its author ${pull_author}."
 fi
-echo "OK  non-author approval of the final candidate SHA recorded by '${approver}'."
 
 # ---------------------------------------------------------------------------
 # Attestation. This is the record the phase gate archives.
