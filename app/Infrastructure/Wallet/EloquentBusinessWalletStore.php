@@ -72,7 +72,7 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
                 $policy = $this->applicablePolicy();
                 $methods = $this->verifiedMethods($business['id']);
                 $partyId = (string) ($identity['party']['id'] ?? '');
-                $admitted = $methods->isNotEmpty() && $this->admission->admitsBusiness();
+                $admitted = $methods->isNotEmpty() && $this->admission->admitsBusiness($business['id']);
                 $allowed = array_values(array_filter([
                     $policy !== null && $admitted && $this->permits($business, $partyId, 'business.wallet.deposit') ? 'business.wallet.deposit' : null,
                     $admitted && $this->withdrawals->offered() && $this->permits($business, $partyId, 'business.wallet.withdraw') ? 'business.wallet.withdraw' : null,
@@ -170,7 +170,7 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
                     function (string $operationId) use ($wallet, $business, $partyId, $userId, $requestId, $amount, $methodId): OperationResult {
                         $data = ['wallet_id' => $wallet->id];
                         $policy = $this->applicablePolicy() ?? throw new CommandRejection('POLICY_INPUT_REQUIRED', data: $data);
-                        if (! $this->admission->admitsBusiness()) {
+                        if (! $this->admission->admitsBusiness($business['id'])) {
                             throw new CommandRejection('SYNTHETIC_BUSINESS_FUNDING_OFF', 403, data: $data);
                         }
                         $method = $this->verifiedMethods($business['id'])->firstWhere('id', $methodId)

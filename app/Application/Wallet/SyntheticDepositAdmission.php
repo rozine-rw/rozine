@@ -11,8 +11,9 @@ use App\Application\Wallet\Contracts\SyntheticWalletTesters;
 /**
  * Who may start a new synthetic deposit. On UAT only a named wallet tester may (asked again for every
  * deposit, beside the Investor role the deposit already requires), and a Business may link an account,
- * deposit and withdraw only while UAT's money simulation is on (Erastus, 14 Nov 2026), so it can be
- * paid its raise and repay it; local and testing keep their fixtures open. It decides new
+ * deposit and withdraw only while UAT's money simulation is on and names that Business
+ * (`UAT_MONEY_SIMULATION_BUSINESSES`; Erastus, 14 Nov 2026), so it can be paid its raise and repay it;
+ * an empty list admits no Business. Local and testing keep their fixtures open. It decides new
  * intents only: a deposit already accepted still settles to its outcome.
  */
 final class SyntheticDepositAdmission
@@ -25,9 +26,9 @@ final class SyntheticDepositAdmission
         return ! $this->onUat() || $this->testers->authorized($partyId);
     }
 
-    public function admitsBusiness(): bool
+    public function admitsBusiness(string $businessId): bool
     {
-        return ! $this->onUat() || $this->simulation->active();
+        return ! $this->onUat() || $this->simulation->covers($businessId);
     }
 
     private function onUat(): bool

@@ -68,7 +68,7 @@ final class EloquentBusinessWithdrawals implements BusinessWithdrawals
                     function (string $operationId) use ($wallet, $partyId, $userId, $requestId, $amount, $methodId): OperationResult {
                         $data = ['wallet_id' => $wallet->id];
                         $terms = $this->terms() ?? throw new CommandRejection('POLICY_INPUT_REQUIRED', data: $data);
-                        if (! $this->admission->admitsBusiness()) {
+                        if (! $this->admission->admitsBusiness($wallet->business_id)) {
                             throw new CommandRejection('SYNTHETIC_BUSINESS_FUNDING_OFF', 403, data: $data);
                         }
                         $method = BusinessFundingMethod::query()->where('business_id', $wallet->business_id)->whereKey(strtolower($methodId))
