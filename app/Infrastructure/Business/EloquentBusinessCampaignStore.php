@@ -278,14 +278,14 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
                 $evidence ??= $payload['public_evidence'] ?? null;
                 $closure = $this->closures->find($campaign->id);
                 $progress = $closure === null ? $this->progress->project($campaign->id, $payload)['progress'] : null;
-                if ($progress !== null && $progress['phase'] === 'funded') {
+                if ($progress !== null && in_array($progress['phase'], ['funded', 'disbursed'], true)) {
                     $funding = $this->fundings->find($campaign->id) ?? throw new RuntimeException('CAMPAIGN_FUNDING_INTEGRITY_FAILED');
                     $raised = $raised->plus($funding['principal']);
                     $investors = [...$investors, ...array_column($funding['commitments'], 'party_id')];
                 }
                 $committed = $closure['committed_refunded']['amount'] ?? $progress['committed']['amount'];
                 $notes[] = ['campaign_id' => $campaign->id, 'title' => $payload['title'], 'created_at' => $payload['recorded_at'],
-                    'status' => $closure !== null ? 'failed' : ($progress['phase'] === 'funded' ? 'funded' : 'active'),
+                    'status' => $closure !== null ? 'failed' : ($progress['phase'] === 'raising' ? 'active' : 'funded'),
                     'lifecycle' => $closure['phase'] ?? $progress['lifecycle'],
                     'funded_pct' => (float) (string) BigDecimal::of($committed)->multipliedBy(100)->dividedBy($payload['principal'], 1, RoundingMode::Down),
                     'investors' => $closure['investors'] ?? $progress['investors'],

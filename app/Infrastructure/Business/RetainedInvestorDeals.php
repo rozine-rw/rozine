@@ -111,7 +111,7 @@ final class RetainedInvestorDeals implements InvestorDealCatalogue
         $progress = $this->progress->project($campaignId, $payload)['progress'];
         $principal = BigInteger::of($payload['principal']);
         $total = $payload['quote']['units'];
-        $funded = $progress['phase'] === 'funded';
+        $funded = in_array($progress['phase'], ['funded', 'disbursed'], true);
         $raised = $progress['committed']['amount'];
         $card = ['campaign_id' => $campaignId, 'revision' => 1, 'name' => $evidence['business']['name'],
             'accent' => self::ACCENTS[hexdec(substr(hash('sha256', $payload['business_id']), 0, 6)) % count(self::ACCENTS)],
@@ -125,7 +125,12 @@ final class RetainedInvestorDeals implements InvestorDealCatalogue
             'units' => $funded ? ['total' => $total, 'available' => '0', 'reserved' => '0', 'committed' => $total]
                 : ['total' => $total, 'available' => $progress['units']['available'], 'reserved' => $progress['units']['reserved'], 'committed' => $progress['units']['committed']],
             'unit_price' => $payload['quote']['unit_price'], 'investors' => $progress['investors'],
-            'lifecycle' => $funded ? 'funded' : $progress['lifecycle'], 'restriction' => null,
+            'lifecycle' => match (true) {
+                $progress['phase'] === 'disbursed' => 'issued',
+                $funded && $progress['lifecycle'] === 'disbursing' => 'disbursing',
+                $funded => 'funded',
+                default => $progress['lifecycle'],
+            }, 'restriction' => null,
             'clock' => ['starts_at' => $payload['recorded_at'], 'expires_at' => $payload['expires_at']],
             'listing_fee' => $payload['listing_fee'], 'story' => $draft['story'],
             'rate_pct' => $payload['quote']['rate_pct'], 'term_months' => $payload['quote']['term_months']];
