@@ -10,7 +10,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /**
  * `InvestorProspectusProps` (investor-prospectus-v1): the signed prospectus behind one deal, with
  * its version, fingerprint and signer, the approved terms and the 3% platform fee, and which
- * use-of-funds lines and forecast months cite uploaded evidence. Back returns to the deal.
+ * use-of-funds lines and forecast months cite uploaded evidence. Back returns to the deal, and the
+ * PDF link downloads the same signed version.
  */
 class InvestorProspectusResource extends JsonResource
 {
@@ -31,7 +32,8 @@ class InvestorProspectusResource extends JsonResource
             'links' => ['deals' => self::link($request, 'investor.deals'), 'portfolio' => $page('investor.portfolio'), 'market' => $page('investor.market'),
                 'cart' => $page('investor.cart'), 'profile' => $page('investor.profile'), 'wallet' => null, 'notifications' => null,
                 'launcher' => self::link($request, $request->routeIs('api.*') ? 'identity.show' : 'dashboard'),
-                'back' => self::link($request, 'investor.deals.show', ['campaign' => $data['campaign_id']])]];
+                'back' => self::link($request, 'investor.deals.show', ['campaign' => $data['campaign_id']]),
+                'pdf' => self::link($request, 'investor.deals.prospectus_pdf', ['campaign' => $data['campaign_id']])]];
     }
 
     /**

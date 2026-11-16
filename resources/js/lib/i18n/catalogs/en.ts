@@ -4526,6 +4526,7 @@ const en = {
     'investor.deal.prospectus.read': 'Read',
     'investor.prospectus.title': '{name} prospectus',
     'investor.prospectus.back': 'Back to the deal',
+    'investor.prospectus.download': 'Download PDF',
     'investor.prospectus.signed':
         'Version {version}, signed by {name} on {date}',
     'investor.prospectus.fingerprint': 'Fingerprint {fingerprint}',

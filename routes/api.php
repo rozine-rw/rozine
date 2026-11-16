@@ -31,6 +31,7 @@ use App\Http\Controllers\InvestorMarketController;
 use App\Http\Controllers\InvestorNoticesController;
 use App\Http\Controllers\InvestorPrimaryController;
 use App\Http\Controllers\InvestorProspectusController;
+use App\Http\Controllers\InvestorProspectusPdfController;
 use App\Http\Controllers\InvestorRiskAcknowledgementController;
 use App\Http\Controllers\InvestorVerificationController;
 use App\Http\Controllers\InvestorWalletController;
@@ -225,6 +226,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
     Route::get('deals/{campaign}', [InvestorDealsController::class, 'show'])->whereUlid('campaign')->name('deals.show');
     Route::get('deals/{campaign}/checkout', [InvestorDealsController::class, 'checkout'])->whereUlid('campaign')->name('checkout');
     Route::get('deals/{campaign}/prospectus', InvestorProspectusController::class)->whereUlid('campaign')->name('deals.prospectus');
+    Route::get('deals/{campaign}/prospectus.pdf', InvestorProspectusPdfController::class)->whereUlid('campaign')->name('deals.prospectus_pdf');
     Route::post('deals/{campaign}/cart', [InvestorMarketController::class, 'addToCart'])->whereUlid('campaign')->name('cart_add');
     Route::post('cart/{campaign}/units', [InvestorMarketController::class, 'changeCartUnits'])->whereUlid('campaign')->name('cart_units');
     Route::post('cart/{campaign}/remove', [InvestorMarketController::class, 'removeFromCart'])->whereUlid('campaign')->name('cart_remove');
