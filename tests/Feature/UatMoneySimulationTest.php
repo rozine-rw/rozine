@@ -391,8 +391,8 @@ it('shows a resale on both sides: the buyer\'s units in Portfolio and both walle
     StaffFixture::provision($analyst, ['analyst'], 'Notes review.');
     $this->actingAs($analyst)->get(route('staff.notes.index', ['note' => $note['campaign']]))
         ->assertInertia(fn (Assert $page): Assert => $page->where('drawer.id', fn (string $id): bool => strtolower($id) === strtolower($note['campaign']))
-            ->where('drawer.holders', fn ($holders): bool => collect($holders)->contains(fn (array $row): bool => $row['bought'] && $row['units'] === '2' && $row['name'] === $buyer->name)
-                && collect($holders)->contains(fn (array $row): bool => ! $row['bought'] && $row['name'] === $seller->name && $row['units'] === (string) ($holding->units - 2)))
+            ->where('drawer.holders', fn (Collection $holders): bool => $holders->contains(fn (array $row): bool => $row['bought'] && $row['units'] === '2' && $row['name'] === $buyer->name)
+                && $holders->contains(fn (array $row): bool => ! $row['bought'] && $row['name'] === $seller->name && $row['units'] === (string) ($holding->units - 2)))
             ->where('drawer.close.url', route('staff.notes.index', [], false))
             ->where('notes.0.link.url', fn (string $url): bool => str_contains($url, 'note='))->etc());
     $this->actingAs($analyst)->get(route('staff.notes.index'))->assertInertia(fn (Assert $page): Assert => $page->where('drawer', null)->etc());

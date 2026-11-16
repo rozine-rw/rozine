@@ -92,7 +92,7 @@ it('counts a disbursement that closed with issued notes, net of its platform fee
     $disbursement = Disbursement::query()->sole();
 
     expect(($this->page)(paymentsStaff(['superadmin']))['stats'][2])
-        ->toBe(['key' => 'disbursed', 'value' => ['currency' => 'RWF', 'amount' => bcsub((string) $disbursement->amount, (string) $disbursement->platform_fee, 0)], 'count' => 1]);
+        ->toBe(['key' => 'disbursed', 'value' => ['currency' => 'RWF', 'amount' => (string) ((int) $disbursement->amount - (int) $disbursement->platform_fee)], 'count' => 1]);
 
     $this->travel(15)->days();
     $props = ($this->page)(paymentsStaff(['treasury']));
