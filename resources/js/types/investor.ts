@@ -1721,6 +1721,14 @@ export type InvestorNotice = {
           };
       }
     | {
+          kind: 'market.units_bought';
+          facts: Money & { units: string; title: string };
+      }
+    | {
+          kind: 'market.units_sold';
+          facts: Money & { units: string; fee: string; title: string };
+      }
+    | {
           kind: 'wallet.withdrawal_sent';
           facts: Money & { account: string; received: string };
       }

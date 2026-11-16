@@ -371,6 +371,56 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
         expect(items[1]).not.toHaveTextContent('Invalid Date');
     });
 
+    it('words a resale bought and sold with its units, amount and fee (QA #656)', async () => {
+        const user = userEvent.setup();
+        const inbox = notices();
+        const [first] = inbox.notices;
+
+        inbox.notices = [
+            {
+                ...first,
+                id: 'bought',
+                kind: 'market.units_bought',
+                facts: {
+                    amount: '9000',
+                    currency: 'RWF',
+                    units: '2',
+                    title: 'Kivu Harvest Ltd',
+                },
+            },
+            {
+                ...first,
+                id: 'sold',
+                kind: 'market.units_sold',
+                facts: {
+                    amount: '8820',
+                    currency: 'RWF',
+                    units: '1',
+                    fee: '180',
+                    title: 'Kivu Harvest Ltd',
+                },
+            },
+        ] as InvestorNotices['notices'];
+        render(<InvestorDeals {...deals()} />);
+        const panel = await openBell(user);
+
+        inertia.queue.push(answers({ data: inbox }));
+        await user.click(
+            screen.getByRole('button', { name: 'Notifications, 2 unread' }),
+        );
+
+        const items = await within(panel).findAllByRole('button', {
+            name: /Units/u,
+        });
+
+        expect(items[0]).toHaveTextContent(
+            'Units boughtYou bought 2 notes of Kivu Harvest Ltd on the market for RWF 9,000.',
+        );
+        expect(items[1]).toHaveTextContent(
+            'Units soldYour 1 note of Kivu Harvest Ltd sold. RWF 8,820 reached your wallet after the RWF 180 resale fee.',
+        );
+    });
+
     it('words a sent and a returned withdrawal with the account they went to', async () => {
         const user = userEvent.setup();
         const inbox = notices();

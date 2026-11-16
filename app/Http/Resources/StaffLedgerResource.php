@@ -38,6 +38,8 @@ class StaffLedgerResource extends JsonResource
         'business_withdrawal_hold' => 'withdrawal', 'business_withdrawal_payout' => 'withdrawal', 'business_withdrawal_return' => 'withdrawal',
         'primary_hold' => 'investment', 'primary_commit' => 'investment', 'primary_release' => 'investment', 'primary_refund' => 'investment',
         'primary_issue' => 'disbursement', 'disbursement_platform_fee' => 'platform_fee', 'business_repayment_debit' => 'repayment',
+        'servicing_payout' => 'distribution',
+        'secondary_hold' => 'secondary', 'secondary_release' => 'secondary', 'secondary_purchase' => 'secondary', 'secondary_sale' => 'secondary',
     ];
 
     /** Each platform account's name and code. */
@@ -45,7 +47,8 @@ class StaffLedgerResource extends JsonResource
         'deposit_clearing' => ['Deposit clearing (provider)', 'DEP-CLR'], 'deposit_fee_revenue' => ['Deposit fee revenue', 'DEP-FEE'],
         'disbursement_settlement' => ['Disbursement settlement', 'DSB-SET'], 'repayment_clearing' => ['Repayment clearing', 'RPY-CLR'],
         'withdrawal_clearing' => ['Withdrawal clearing (provider)', 'WDR-CLR'], 'platform_fee_revenue' => ['Platform fee revenue', 'PLT-FEE'],
-        'audit_partner_fee_payable' => ['Audit Partner fee payable', 'AUD-PAY'],
+        'audit_partner_fee_payable' => ['Audit Partner fee payable', 'AUD-PAY'], 'earnings_fee_revenue' => ['Earnings fee revenue', 'ERN-FEE'],
+        'secondary_settlement' => ['Resale settlement', 'SEC-SET'], 'secondary_fee_revenue' => ['Resale fee revenue', 'SEC-FEE'],
     ];
 
     /** Each wallet bucket's name and code. */

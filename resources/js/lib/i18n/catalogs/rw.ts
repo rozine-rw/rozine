@@ -1704,6 +1704,10 @@ const rw: Catalog = {
         'Ishami ry’iyubahirizwa ryemeje igenzura ry’umwirondoro',
     'admin.messaging.trigger.verification.rejected':
         'Ishami ry’iyubahirizwa risubije igenzura ry’umwirondoro',
+    'admin.messaging.trigger.market.units_bought':
+        'Kugura ku isoko rya kabiri birangiye',
+    'admin.messaging.trigger.market.units_sold':
+        'Imigabane umuntu yashyize ku isoko igurishijwe',
     'admin.messaging.trigger.wallet.payout_received':
         'Serivisi yishyura nyir’impapuro umugabane we w’ubwishyu',
     'admin.messaging.trigger.wallet.deposit_received':
@@ -2659,12 +2663,13 @@ const rw: Catalog = {
         "urugero: Ndabufata mu nama y'inguzanyo y'uyu munsi.",
     'admin.maker_checker.by': '{actor} · {at}',
     'admin.disbursements.policy_title': 'Amabwiriza yo kwishyura akurikizwa',
-    'admin.disbursements.title': 'Kwishyura bitegereje',
-    'admin.disbursements.table': 'Kwishyura bitegereje',
+    'admin.disbursements.title': 'Kwishyura',
+    'admin.disbursements.table': 'Kwishyura',
     'admin.disbursements.col.reference': 'Indango yo kwishyura',
     'admin.disbursements.col.note': 'Inyandiko',
     'admin.disbursements.col.recipient': 'Uwishyurwa',
     'admin.disbursements.col.amount': 'Amafaranga',
+    'admin.disbursements.net': '{amount} bihabwa ikigo',
     'admin.disbursements.col.due': 'Igihe',
     'admin.disbursements.col.actions': 'Imiterere · Ibikorwa',
     'admin.disbursements.state.ready': 'Bitegereje kwishyurwa byikora',
@@ -5431,6 +5436,7 @@ const rw: Catalog = {
     'investor.wallet.done.withdraw.failed':
         'Kubikuza {amount} ujyana kuri {method} ntibyakunze. Amafaranga yagarutse mu gikapu cyawe.',
     'investor.wallet.c3.credited': 'Byashyizweho',
+    'investor.wallet.c3.debited': 'Byishyuwe',
     'investor.wallet.processing': 'Birimo koherezwa…',
     'investor.wallet.refusal.TRADE_BELOW_MINIMUM':
         'Andika nibura amafaranga make yemewe',
@@ -7612,6 +7618,16 @@ const rw: Catalog = {
         'Ubukangurambaga bwarangiye budashyitse',
     'investor.notices.business.raise_expired.body':
         '{title} yarangiye igihe cyayo kigeze hamaze kwemezwa {committed} kuri {target}. Abashoramari basubijwe amafaranga yabo, nta kiguzi cyakwa.',
+    'investor.notices.market.units_bought.title': 'Imigabane yaguzwe',
+    'investor.notices.market.units_bought.body': {
+        one: 'Waguze umugabane {count} wa {title} ku isoko ku {amount}.',
+        other: 'Waguze imigabane {count} ya {title} ku isoko ku {amount}.',
+    },
+    'investor.notices.market.units_sold.title': 'Imigabane yagurishijwe',
+    'investor.notices.market.units_sold.body': {
+        one: "Umugabane wawe {count} wa {title} wagurishijwe. {amount} yageze mu gikapu cyawe nyuma y'amafaranga {fee} yo kugurisha.",
+        other: "Imigabane yawe {count} ya {title} yagurishijwe. {amount} yageze mu gikapu cyawe nyuma y'amafaranga {fee} yo kugurisha.",
+    },
     'investor.notices.wallet.payout_received.title': 'Ubwishyu bwakiriwe',
     'investor.notices.wallet.payout_received.body':
         '{net} yageze mu gikapu cyawe ivuye kuri {title}, igice {instalments}: {gross} ukuyemo {fee} y’amafaranga ku nyungu.',
@@ -8374,6 +8390,16 @@ const rw: Catalog = {
     'admin.notes.state.repaying': 'Irishyurwa',
     'admin.notes.state.failed': 'Ntiyagezweho',
     'admin.notes.more': 'Izindi nyandiko',
+    'admin.notes.open_named': 'Fungura {business}',
+    'admin.notes.drawer_label': 'Abafite inyandiko za {business}',
+    'admin.notes.holders': 'Abazifite ubu',
+    'admin.notes.holders_none': 'Nta migabane yatanzwe kugeza ubu.',
+    'admin.notes.holder_issued': 'Byatanzwe',
+    'admin.notes.holder_bought': 'Byaguzwe ku isoko',
+    'admin.notes.holder_units': {
+        one: 'Inyandiko {count}',
+        other: 'Inyandiko {count}',
+    },
     'admin.primary.title': 'Ubukusanyamari buri gukorwa',
     'admin.primary.caption':
         'Ubukusanyamari bwose butaruzura, ubushya mbere. Ubukusanyamari buzura cyangwa bukananirwa ku gihe cyabwo, bityo nta kugenzura kuri hano.',

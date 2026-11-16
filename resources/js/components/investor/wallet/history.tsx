@@ -523,7 +523,10 @@ export function WalletHistory({
                                                 {t(
                                                     entry.kind === 'withdrawal'
                                                         ? 'investor.wallet.c3.withdrawal.succeeded'
-                                                        : 'investor.wallet.c3.credited',
+                                                        : entry.direction ===
+                                                            'out'
+                                                          ? 'investor.wallet.c3.debited'
+                                                          : 'investor.wallet.c3.credited',
                                                 )}
                                             </span>
                                         </>
@@ -540,6 +543,12 @@ export function WalletHistory({
                                 </span>
                             </span>
                             <span className="text-[12.5px] font-semibold whitespace-nowrap text-rz-slate">
+                                {entry.movement === 'external' &&
+                                entry.kind === 'resale'
+                                    ? entry.direction === 'out'
+                                        ? '−'
+                                        : '+'
+                                    : ''}
                                 {formatRwf(entry.amount)}
                             </span>
                         </Link>

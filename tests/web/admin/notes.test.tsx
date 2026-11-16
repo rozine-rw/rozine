@@ -186,4 +186,73 @@ describe('Admin Notes', () => {
             screen.getByRole('table', { name: 'Notes' }),
         ).toBeInTheDocument();
     });
+
+    it('opens a note from its name and lists who holds its units now, bought lots marked (QA #646)', () => {
+        render(
+            <AdminNotes
+                {...props({
+                    notes: [
+                        note({
+                            link: {
+                                url: '/admin/notes?note=01k0000000000000000000aaaa',
+                                method: 'get',
+                            },
+                        }),
+                    ],
+                    drawer: {
+                        id: '01k0000000000000000000aaaa',
+                        reference: 'NTE-00AAAA',
+                        business: 'Ubuki Crafts',
+                        state: 'repaying',
+                        investors: 2,
+                        holders: [
+                            {
+                                name: 'Eric Habimana',
+                                units: '598',
+                                bought: false,
+                            },
+                            { name: 'Grace Uwase', units: '2', bought: true },
+                        ],
+                        close: { url: '/admin/notes', method: 'get' },
+                    },
+                })}
+            />,
+        );
+
+        expect(
+            screen.getByRole('link', { name: 'Open Ubuki Crafts' }),
+        ).toHaveAttribute(
+            'href',
+            '/admin/notes?note=01k0000000000000000000aaaa',
+        );
+        const holders = within(
+            screen.getByRole('dialog', { name: 'Ubuki Crafts note holders' }),
+        ).getAllByRole('listitem');
+        expect(holders[0]).toHaveTextContent('Eric Habimana');
+        expect(holders[0]).toHaveTextContent('Issued Holding');
+        expect(holders[0]).toHaveTextContent('598 notes');
+        expect(holders[1]).toHaveTextContent('Grace Uwase');
+        expect(holders[1]).toHaveTextContent('Bought on the market');
+        expect(holders[1]).toHaveTextContent('2 notes');
+    });
+
+    it('says when a note has no units issued yet', () => {
+        render(
+            <AdminNotes
+                {...props({
+                    drawer: {
+                        id: '01k0000000000000000000aaaa',
+                        reference: 'NTE-00AAAA',
+                        business: 'Ubuki Crafts',
+                        state: 'live',
+                        investors: 0,
+                        holders: [],
+                        close: { url: '/admin/notes', method: 'get' },
+                    },
+                })}
+            />,
+        );
+
+        expect(screen.getByText('No units issued yet.')).toBeInTheDocument();
+    });
 });

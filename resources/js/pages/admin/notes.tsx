@@ -1,5 +1,6 @@
-import { router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { AdminFrame } from '@/components/admin/admin-frame';
+import { Drawer, DrawerClose } from '@/components/admin/drawer';
 import { SearchEmpty } from '@/components/admin/search-empty';
 import {
     EmptyState,
@@ -17,6 +18,7 @@ import { formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
     AdminNotesProps,
+    NoteHoldersDrawer,
     NoteRegisterRow,
     NoteState,
     NotesSort,
@@ -58,9 +60,22 @@ function Row({ note }: { note: NoteRegisterRow }) {
     return (
         <div role="row" className={cn(GRID, ROW_RULE, 'items-center py-3.5')}>
             <div role="cell" className="min-w-0">
-                <div className="truncate text-[13px] font-bold text-rz-ink">
-                    {note.business}
-                </div>
+                {note.link !== undefined ? (
+                    <Link
+                        href={note.link}
+                        preserveScroll
+                        aria-label={t('admin.notes.open_named', {
+                            business: note.business,
+                        })}
+                        className="block truncate text-[13px] font-bold text-rz-ink hover:underline"
+                    >
+                        {note.business}
+                    </Link>
+                ) : (
+                    <div className="truncate text-[13px] font-bold text-rz-ink">
+                        {note.business}
+                    </div>
+                )}
                 <div className="mt-0.5 truncate text-[11px] text-rz-muted">
                     {[note.reference, note.sector].join(' · ')}
                 </div>
@@ -104,11 +119,81 @@ function Row({ note }: { note: NoteRegisterRow }) {
     );
 }
 
+/** Who holds a note's units now, largest first, with the lots bought on the market marked. */
+function HoldersDrawer({ drawer }: { drawer: NoteHoldersDrawer }) {
+    const { t } = useTranslation();
+
+    return (
+        <Drawer
+            label={t('admin.notes.drawer_label', { business: drawer.business })}
+            close={drawer.close}
+        >
+            <div className="flex shrink-0 items-start justify-between gap-3 border-b border-rz-hairline bg-rz-surface px-[18px] py-4">
+                <div className="min-w-0">
+                    <h2 className="truncate text-[17px] font-bold text-rz-ink">
+                        {drawer.business}
+                    </h2>
+                    <p className="mt-0.5 text-[11.5px] text-rz-muted">
+                        {[
+                            drawer.reference,
+                            t(`admin.notes.state.${drawer.state}`),
+                            t('admin.primary.investors', {
+                                count: drawer.investors,
+                            }),
+                        ].join(' · ')}
+                    </p>
+                </div>
+                <DrawerClose close={drawer.close} />
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto px-[18px] py-4">
+                <p className="text-[10.5px] font-bold tracking-[.05em] text-rz-muted uppercase">
+                    {t('admin.notes.holders')}
+                </p>
+                {drawer.holders.length === 0 ? (
+                    <p className="mt-3 text-[12.5px] text-rz-secondary">
+                        {t('admin.notes.holders_none')}
+                    </p>
+                ) : (
+                    <ul
+                        aria-label={t('admin.notes.holders')}
+                        className="mt-2 overflow-hidden rounded-xl border border-rz-hairline bg-rz-surface"
+                    >
+                        {drawer.holders.map((holder, index) => (
+                            <li
+                                key={`${holder.name}-${index}`}
+                                className="flex items-center justify-between gap-3 border-b border-rz-hairline px-3.5 py-3 last:border-b-0"
+                            >
+                                <span className="min-w-0">
+                                    <span className="block truncate text-[13px] font-semibold text-rz-ink">
+                                        {holder.name}
+                                    </span>
+                                    <span className="text-[11px] text-rz-muted">
+                                        {t(
+                                            holder.bought
+                                                ? 'admin.notes.holder_bought'
+                                                : 'admin.notes.holder_issued',
+                                        )}
+                                    </span>
+                                </span>
+                                <span className="shrink-0 text-[13px] font-bold text-rz-ink">
+                                    {t('admin.notes.holder_units', {
+                                        count: Number(holder.units),
+                                    })}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
+        </Drawer>
+    );
+}
+
 /**
  * Notes (`staff-notes-v1`, design Notes section): every published raise as a note, by where it
  * sits now, with the server's four figures and a count on every tab. The same rule counts the
  * dashboard's notes, and capital raised is its issued-Holding figure, so the two always agree.
- * Read-only: nothing here changes a note.
+ * Read-only: nothing here changes a note. Each note opens a drawer with who holds its units now.
  */
 export default function AdminNotes(props: AdminNotesProps) {
     const { t } = useTranslation();
@@ -190,6 +275,7 @@ export default function AdminNotes(props: AdminNotesProps) {
                     <Row key={note.id} note={note} />
                 ))}
             </TableCard>
+            {props.drawer != null && <HoldersDrawer drawer={props.drawer} />}
         </AdminFrame>
     );
 }

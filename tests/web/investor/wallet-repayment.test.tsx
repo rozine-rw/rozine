@@ -72,11 +72,11 @@ describe('Wallet repayments paid on to the Investor', () => {
             screen.getByRole('link', {
                 name: /Market purchase · Kivu Harvest Ltd/u,
             }),
-        ).toHaveTextContent('RWF 9,000');
+        ).toHaveTextContent('Paid−RWF 9,000');
         expect(
             screen.getByRole('link', {
                 name: /Market sale · Kivu Harvest Ltd/u,
             }),
-        ).toHaveTextContent('RWF 8,820');
+        ).toHaveTextContent('Credited+RWF 8,820');
     });
 });

@@ -18,7 +18,7 @@ namespace App\Application\Operations\Contracts;
  *   (cancelled or expired) or its disbursement failed to close.
  * - `disbursements_waiting`: funded disbursements that automatic payment has not queued yet: held,
  *   or waiting for a verified payout destination or recheck inputs.
- * - `disbursed`: the amount of every disbursement that closed with issued notes.
+ * - `disbursed`: what reached the Business from every disbursement that closed with issued notes (the amount less its platform fee).
  *
  * @phpstan-type Figures array{
  *     capital_raised: string, active_businesses: int, disbursements_waiting: int, disbursed: string,
@@ -43,6 +43,14 @@ interface OperationsDashboardStore
      * @return list<NoteState>
      */
     public function noteStates(): array;
+
+    /**
+     * Each Party's name as staff see it: the name on its first account.
+     *
+     * @param  list<string>  $partyIds
+     * @return array<string, string>
+     */
+    public function partyNames(array $partyIds): array;
 
     /**
      * Issued Holding principal per Kigali calendar bucket, oldest first, from `$from` (inclusive) to

@@ -14,7 +14,8 @@ use Illuminate\Support\Str;
  * every note, the raises still live, the notes repaying, and capital raised (issued Holding
  * principal, the dashboard's figure). Each tab carries its server count; the search matches the
  * reference, the business and the sector, the list is newest first or sorted largest first by
- * capital raised, yield, fill, investors or term, then the limit cuts it.
+ * capital raised, yield, fill, investors or term, then the limit cuts it. Each note opens a drawer
+ * listing who holds its units now (`drawer`), issued and bought on the market.
  *
  * @phpstan-import-type NoteRow from \App\Application\Operations\BrowseNotes
  */
@@ -25,12 +26,13 @@ class StaffNotesResource extends JsonResource
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        /** @var array{notes: list<NoteRow>, capital_raised: string, tab: string, search: string, sort: string, limit: int, roles: list<string>, permissions: list<string>} $resource */
+        /** @var array{notes: list<NoteRow>, capital_raised: string, tab: string, search: string, sort: string, limit: int, roles: list<string>, permissions: list<string>, open?: array{note: NoteRow, holders: list<array{name: string, units: string, bought: bool}>}|null} $resource */
         $resource = $this->resource;
         $items = array_map(fn (array $note): array => ['id' => $note['campaign_id'], 'reference' => 'NTE-'.Str::upper(Str::substr($note['campaign_id'], -6)),
             'business' => $note['name'], 'sector' => $note['industry'], 'state' => $note['state'], 'rate_pct' => $note['rate_pct'],
             'term_months' => $note['term_months'], 'funded_pct' => $note['funded_pct'], 'raised' => $note['raised'], 'target' => $note['target'],
             'investors' => $note['investors'], 'listed_at' => $note['live_at']], $resource['notes']);
+        $open = $resource['open'] ?? null;
         $sort = $resource['sort'];
         if ($sort !== 'newest') {
             $key = fn (array $item): BigDecimal => BigDecimal::of(match ($sort) {
@@ -49,6 +51,7 @@ class StaffNotesResource extends JsonResource
         $query = array_filter(['q' => $search === '' ? null : $search, 'sort' => $sort === 'newest' ? null : $sort]);
         $route = fn (array $parameters): array => ['url' => route('staff.notes.index', $parameters, false), 'method' => 'get'];
         $byState = fn (string $state): int => count(array_filter($items, fn (array $item): bool => $item['state'] === $state));
+        $here = array_filter([...$query, 'tab' => $resource['tab'] === 'all' ? null : $resource['tab'], 'limit' => $resource['limit'] === 50 ? null : $resource['limit']]);
 
         return ['contract_version' => 'staff-notes-v1', 'staff_access_version' => 'staff-access-v1', 'server_time' => now()->toIso8601String(),
             'allowed_actions' => [], 'viewer' => (new StaffViewerResource($resource['roles']))->resolve($request),
@@ -60,7 +63,10 @@ class StaffNotesResource extends JsonResource
                 ['key' => 'raised', 'value' => ['kind' => 'money', 'value' => ['currency' => 'RWF', 'amount' => $resource['capital_raised']]]]],
             'tabs' => array_map(fn (string $tab): array => ['key' => $tab, 'count' => $count($tab),
                 'link' => $route(array_filter([...$query, 'tab' => $tab === 'all' ? null : $tab])), 'active' => $tab === $resource['tab']], self::TABS),
-            'notes' => array_slice($shown, 0, $resource['limit']),
+            'notes' => array_map(fn (array $item): array => [...$item, 'link' => $route([...$here, 'note' => $item['id']])], array_slice($shown, 0, $resource['limit'])),
+            'drawer' => $open === null ? null : ['id' => $open['note']['campaign_id'], 'reference' => 'NTE-'.Str::upper(Str::substr($open['note']['campaign_id'], -6)),
+                'business' => $open['note']['name'], 'state' => $open['note']['state'], 'investors' => $open['note']['investors'],
+                'holders' => $open['holders'], 'close' => $route($here)],
             'pagination' => ['next' => count($shown) > $resource['limit'] && $resource['limit'] < 500
                 ? $route(array_filter([...$query, 'tab' => $resource['tab'] === 'all' ? null : $resource['tab'], 'limit' => 500])) : null]];
     }

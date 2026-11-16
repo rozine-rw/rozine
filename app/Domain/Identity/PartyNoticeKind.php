@@ -20,6 +20,8 @@ enum PartyNoticeKind: string
     case DepositReceived = 'wallet.deposit_received';
     case WithdrawalSent = 'wallet.withdrawal_sent';
     case PayoutReceived = 'wallet.payout_received';
+    case UnitsBought = 'market.units_bought';
+    case UnitsSold = 'market.units_sold';
     case WithdrawalReturned = 'wallet.withdrawal_returned';
     case RaiseRefunded = 'primary.refunded';
     case ReportPublished = 'primary.report_published';
@@ -93,7 +95,7 @@ enum PartyNoticeKind: string
             self::DepositReceived, self::WithdrawalSent, self::WithdrawalReturned, self::PayoutReceived, self::BusinessDepositReceived, self::BusinessWithdrawalSent,
             self::BusinessWithdrawalReturned => 'wallet',
             self::RaiseRefunded, self::RaiseFunded, self::BusinessRaiseExpired, self::BusinessRaiseFunded => 'fundraising',
-            self::CommitmentConfirmed, self::HoldingIssued => 'portfolio',
+            self::CommitmentConfirmed, self::HoldingIssued, self::UnitsBought, self::UnitsSold => 'portfolio',
             self::ReportPublished, self::BusinessReportSealed, self::BusinessReportReviewClosing, self::BusinessReportingWindowOpen,
             self::BusinessReadinessStageChanged, self::BusinessReadinessRequirementDue, self::BusinessReadinessRequirementClosing, self::BusinessReadinessRequirementOverdue => 'reporting',
             self::BusinessVisitReadyOpen, self::BusinessVisitReadyReminder => 'reporting',

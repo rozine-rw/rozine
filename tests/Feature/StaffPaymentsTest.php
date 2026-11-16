@@ -87,12 +87,12 @@ it('sums the last fourteen days of deposits and payouts, charts them per day and
         ->and(($this->page)(paymentsStaff(['treasury']), ['q' => 'nobody'])['payouts'])->toBe([]);
 });
 
-it('counts a disbursement that closed with issued notes, and leaves out movement older than fourteen days', function (): void {
+it('counts a disbursement that closed with issued notes, net of its platform fee, and leaves out movement older than fourteen days', function (): void {
     PrimaryIssuanceFixture::close();
     $disbursement = Disbursement::query()->sole();
 
     expect(($this->page)(paymentsStaff(['superadmin']))['stats'][2])
-        ->toBe(['key' => 'disbursed', 'value' => ['currency' => 'RWF', 'amount' => (string) $disbursement->amount], 'count' => 1]);
+        ->toBe(['key' => 'disbursed', 'value' => ['currency' => 'RWF', 'amount' => (string) ((int) $disbursement->amount - (int) $disbursement->platform_fee)], 'count' => 1]);
 
     $this->travel(15)->days();
     $props = ($this->page)(paymentsStaff(['treasury']));
