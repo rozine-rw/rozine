@@ -6990,6 +6990,7 @@ const fr: Catalog = {
         'Reçu de remboursement',
     'investor.wallet.c3.entry.withdrawal_in': 'Retour de {counterparty}',
     'investor.wallet.c3.entry.withdrawal_out': 'Retrait · {counterparty}',
+    'investor.wallet.c3.entry.repayment_in': 'Remboursement · {counterparty}',
     'business.publish.intro':
         "{title} sera visible des investisseurs dès que chaque étape ci-dessous sera remplie. La publication reprend les signatures données à la revue : il n'y a rien de plus à signer ici.",
     'business.publish.release.awaiting':
