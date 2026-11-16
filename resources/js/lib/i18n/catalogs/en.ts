@@ -4352,6 +4352,21 @@ const en = {
     'investor.nav.portfolio': 'Portfolio',
     'investor.nav.profile': 'Profile',
     'investor.market.order_detail.title': 'Order detail',
+    'investor.market.order_detail.status': 'Status',
+    'investor.market.order_detail.status_open': 'Open',
+    'investor.market.order_detail.status_reserved': 'Reserved by a buyer',
+    'investor.market.order_detail.status_reserved_for_you': 'Reserved for you',
+    'investor.market.order_detail.filled': 'Filled',
+    'investor.market.order_detail.side': 'Side',
+    'investor.market.order_detail.side_buy': 'Buy',
+    'investor.market.order_detail.side_sell': 'Sell',
+    'investor.market.order_detail.remaining': 'Units',
+    'investor.market.order_detail.price': 'Price per unit',
+    'investor.market.order_detail.amount_buy': 'You paid',
+    'investor.market.order_detail.amount_sell': 'You received',
+    'investor.market.order_detail.fee': 'Fee',
+    'investor.market.order_detail.settled': 'Settled',
+    'investor.market.order_detail.expires': 'Open until',
     'investor.market.order_detail.empty_title': 'No order selected',
     'investor.market.order_detail.empty_body':
         "Pick an order on the left to see why it has or hasn't filled.",
@@ -4386,6 +4401,7 @@ const en = {
     'investor.market.orders.sell': 'Sell Orders',
     'investor.market.orders.completed': 'Completed',
     'investor.market.orders.cancelled': 'Cancelled',
+    'investor.market.orders.filled': 'Filled orders',
     'investor.market.orders.empty': 'No orders in this tab.',
     'investor.market.browse_none.empty_title': 'No notes are for sale yet',
     'investor.market.browse_none.empty_body':
@@ -4419,6 +4435,13 @@ const en = {
     'investor.market.resale.listing_total': 'Listing total {amount}',
     'investor.market.resale.list': 'List for sale',
     'investor.market.resale.trade_buy': 'Bought · {name}',
+    'investor.market.resale.too_many': 'Only {count} units are listed.',
+    'investor.market.resale.bought': {
+        one: 'You bought {count} unit of {name} for {amount}.',
+        other: 'You bought {count} units of {name} for {amount}.',
+    },
+    'investor.market.resale.see_portfolio': 'See it in Portfolio',
+    'investor.market.resale.dismiss': 'Dismiss',
     'investor.market.resale.trade_sell': 'Sold · {name}',
     'investor.market.resale.refused':
         'That didn’t go through ({code}). Check the details and try again.',
@@ -5066,6 +5089,11 @@ const en = {
     'investor.portfolio.matures_line':
         'Matures {date} · {made}/{total} payments',
     'investor.portfolio.details': 'Details',
+    'investor.portfolio.bought.title': 'Bought on the market',
+    'investor.portfolio.bought.line': {
+        one: '{count} unit at {price} · bought {date}',
+        other: '{count} units at {price} each · bought {date}',
+    },
     'investor.portfolio.see_all': 'See all {count} more ›',
     'investor.portfolio.empty.active.title': 'Nothing held yet',
     'investor.portfolio.empty.active.body':
@@ -6711,6 +6739,8 @@ const en = {
     'investor.wallet.c3.settled_receipt.WITHDRAWAL_RETURNED': 'Return receipt',
     'investor.wallet.c3.entry.withdrawal_in': 'Returned from {counterparty}',
     'investor.wallet.c3.entry.withdrawal_out': 'Withdrawal · {counterparty}',
+    'investor.wallet.c3.entry.resale_out': 'Market purchase · {counterparty}',
+    'investor.wallet.c3.entry.resale_in': 'Market sale · {counterparty}',
     'investor.wallet.c3.entry.repayment_in': 'Repayment · {counterparty}',
     'business.publish.intro':
         "{title} goes live for investors once every step below is met. Publishing uses the signatures you gave at Review, so there's nothing more to sign here.",
@@ -7442,6 +7472,11 @@ const en = {
     'investor.holding.issue.title': 'Issue record',
     'investor.holding.issue.issued_at': 'Issued',
     'investor.holding.issue.effective_at': 'Payout effective',
+    'investor.holding.issue.resold': 'Sold on the market',
+    'investor.holding.issue.resold_value': {
+        one: '{count} note · {held} still held',
+        other: '{count} notes · {held} still held',
+    },
     'investor.holding.issue.effective_date': 'Effective date (Kigali)',
     'investor.holding.issue.schedule': 'Schedule',
     'investor.holding.issue.due': 'Due',

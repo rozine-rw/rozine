@@ -8,6 +8,7 @@ use App\Application\Secondary\Contracts\NoteUnitHolders;
 use App\Application\Secondary\Contracts\SecondaryNotes;
 use App\Domain\Secondary\HoldingLot;
 use App\Models\SecondaryTransfer;
+use App\Models\User;
 use Illuminate\Support\Collection;
 use RuntimeException;
 
@@ -51,6 +52,20 @@ final readonly class EloquentNoteUnitHolders implements NoteUnitHolders
 
         return $lot === null ? null : self::current($lot, SecondaryTransfer::query()->where('source_lot_type', $lotType)->where('source_lot_id', $lotId)
             ->orderBy('settled_at')->orderBy('id')->get());
+    }
+
+    public function boughtBy(int $userId): array
+    {
+        return array_values(array_filter(SecondaryTransfer::query()->where('buyer_party_id', User::query()->whereKey($userId)->whereNotNull('party_id')->select('party_id'))->orderByDesc('settled_at')->orderByDesc('id')->get()
+            ->map(fn (SecondaryTransfer $transfer): array => ['lot_id' => $transfer->id, 'note_id' => $transfer->business_campaign_id,
+                'units' => (string) $transfer->units, 'held_units' => (string) ($transfer->units - $this->soldFrom('secondary_transfer', $transfer->id)),
+                'price' => (string) $transfer->price, 'settled_at' => $transfer->settled_at->utc()->format(DATE_ATOM)])->all(),
+            fn (array $lot): bool => $lot['held_units'] !== '0'));
+    }
+
+    public function soldFrom(string $lotType, string $lotId): int
+    {
+        return (int) SecondaryTransfer::query()->where('source_lot_type', $lotType)->where('source_lot_id', strtolower($lotId))->sum('units');
     }
 
     /** @return Lot */

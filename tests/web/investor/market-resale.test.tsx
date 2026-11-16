@@ -154,4 +154,102 @@ describe('Market resale (BRS v3.0 §12)', () => {
             within(orders).getByRole('button', { name: 'Confirm purchase' }),
         ).toBeInTheDocument();
     });
+
+    it('keeps a filled buy under Buy Orders and opens its detail beside the list (QA #656)', async () => {
+        const user = userEvent.setup();
+
+        setWide(true);
+        render(<InvestorMarket {...page()} />);
+        await user.click(screen.getByRole('tab', { name: 'Orders' }));
+        const filled = screen.getByRole('list', { name: 'Filled orders' });
+
+        await user.click(
+            within(filled).getByRole('button', {
+                name: 'Bought · Kivu Harvest Ltd',
+            }),
+        );
+        const detail = screen.getByRole('complementary', {
+            name: 'Order detail',
+        });
+
+        expect(within(detail).getByText('Filled')).toBeInTheDocument();
+        expect(within(detail).getByText('You paid')).toBeInTheDocument();
+        expect(within(detail).getByText('RWF 50,000')).toBeInTheDocument();
+    });
+
+    it('opens a sell listing in the detail pane with Withdraw (QA #655)', async () => {
+        const user = userEvent.setup();
+
+        setWide(true);
+        render(<InvestorMarket {...page()} />);
+        await user.click(screen.getByRole('tab', { name: 'Orders' }));
+        await user.click(screen.getByRole('button', { name: 'Buy Orders' }));
+        await user.click(screen.getByRole('option', { name: 'Sell Orders' }));
+        const orders = screen.getByRole('list', { name: 'Sell Orders' });
+
+        await user.click(within(orders).getAllByRole('listitem')[0]);
+        const detail = screen.getByRole('complementary', {
+            name: 'Order detail',
+        });
+
+        expect(within(detail).getByText('Open')).toBeInTheDocument();
+        expect(
+            within(detail).getByRole('button', { name: 'Withdraw' }),
+        ).toBeInTheDocument();
+    });
+
+    it('opens an order as a sheet on a phone', async () => {
+        const user = userEvent.setup();
+
+        render(<InvestorMarket {...page()} />);
+        await user.click(screen.getByRole('tab', { name: 'Orders' }));
+        await user.click(
+            screen.getByRole('button', { name: 'Bought · Kivu Harvest Ltd' }),
+        );
+
+        expect(
+            within(
+                screen.getByRole('dialog', { name: 'Order detail' }),
+            ).getByText('You paid'),
+        ).toBeInTheDocument();
+    });
+
+    it('confirms a settled purchase with a link to the Portfolio (QA #656)', async () => {
+        const user = userEvent.setup();
+
+        inertia.queue.push(
+            answers({ status: 'completed', code: 'SECONDARY_SETTLED' }),
+        );
+        render(<InvestorMarket {...page()} />);
+        await user.click(
+            screen.getByRole('button', { name: 'Confirm purchase' }),
+        );
+        const status = await screen.findByRole('status');
+
+        expect(status).toHaveTextContent(/You bought \d+ units? of /);
+        expect(
+            within(status).getByRole('link', { name: 'See it in Portfolio' }),
+        ).toHaveAttribute('href', '/preview/investor-portfolio?tab=secondary');
+    });
+
+    it('says how many units are listed when more are asked for', async () => {
+        const user = userEvent.setup();
+
+        render(<InvestorMarket {...page()} />);
+        await user.click(screen.getAllByRole('button', { name: 'Buy' })[0]);
+        const sheet = screen.getByRole('dialog', {
+            name: 'Buy units of Kivu Harvest Ltd',
+        });
+        const units = within(sheet).getByLabelText('Units');
+
+        await user.clear(units);
+        await user.type(units, '41');
+
+        expect(within(sheet).getByRole('alert')).toHaveTextContent(
+            'Only 40 units are listed.',
+        );
+        expect(
+            within(sheet).getByRole('button', { name: 'Reserve units' }),
+        ).toBeDisabled();
+    });
 });

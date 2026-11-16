@@ -12,9 +12,16 @@ const HEADING = 'text-sm font-semibold text-rz-ink';
  * How a Holding was issued (C3 v2 §2d): the HOLDING_ISSUED receipt, the exact units, the local issue
  * time kept apart from the disbursement's authenticated effective instant and its Kigali effective
  * date, the purchased terms, and the schedule — the rights bound at confirmation, with the dates
- * attached at issue (H3, H17).
+ * attached at issue (H3, H17). Units since sold on the market are shown apart, with those still held.
  */
-export function IssueRecord({ issue }: { issue: IssuedHolding }) {
+export function IssueRecord({
+    issue,
+    resold = '0',
+}: {
+    issue: IssuedHolding;
+    /** Units of the Holding sold on the market since issue. */
+    resold?: string;
+}) {
     const { t, locale } = useTranslation();
     const rows: [string, string][] = [
         [
@@ -24,6 +31,17 @@ export function IssueRecord({ issue }: { issue: IssuedHolding }) {
                 ordinals: formatOrdinals(issue.ordinals),
             }),
         ],
+        ...(resold === '0'
+            ? []
+            : ([
+                  [
+                      t('investor.holding.issue.resold'),
+                      t('investor.holding.issue.resold_value', {
+                          count: Number(resold),
+                          held: Number(issue.units) - Number(resold),
+                      }),
+                  ],
+              ] as [string, string][])),
         [t('investor.primary.principal'), formatRwf(issue.principal)],
         [
             t('investor.holding.issue.issued_at'),

@@ -28,4 +28,15 @@ interface NoteUnitHolders
      * @return Lot|null
      */
     public function lot(string $noteId, string $lotType, string $lotId): ?array;
+
+    /**
+     * Every lot the user's Party bought on the market and still holds units of, newest first, with
+     * the units it still holds (resold units leave it) and the price per unit it paid.
+     *
+     * @return list<array{lot_id: string, note_id: string, units: string, held_units: string, price: string, settled_at: string}>
+     */
+    public function boughtBy(int $userId): array;
+
+    /** How many units of a lot its holder has sold on the market. */
+    public function soldFrom(string $lotType, string $lotId): int;
 }

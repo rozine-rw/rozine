@@ -8,6 +8,7 @@ use App\Application\Business\Contracts\InvestorDealCatalogue;
 use App\Application\Primary\Contracts\CampaignDisbursementProgress;
 use App\Application\Primary\Contracts\HoldingPayouts;
 use App\Application\Primary\Contracts\InvestorHoldings;
+use App\Application\Secondary\Contracts\NoteUnitHolders;
 use Brick\Math\BigDecimal;
 use Brick\Math\BigInteger;
 use Brick\Math\RoundingMode;
@@ -37,7 +38,9 @@ use RuntimeException;
  *     payouts: list<PayoutMonth>, industries: list<array{name: string, accent: string, amount: Money, share_pct: int}>,
  *     risk: list<array{band: string, share_pct: int}>,
  *     concentration: array{status: 'concentrated', business: string, share_pct: int}|array{status: 'balanced'}|null,
- *     commitments: list<array{id: string, deal_name: string, units: string, principal: Money, state: 'confirmed'|'funded', closing: array{stage: 'awaiting_disbursement'}|array{stage: 'in_flight', provider: 'pending'|'unknown'}|null}>}
+ *     commitments: list<array{id: string, deal_name: string, units: string, principal: Money, state: 'confirmed'|'funded', closing: array{stage: 'awaiting_disbursement'}|array{stage: 'in_flight', provider: 'pending'|'unknown'}|null}>,
+ *     bought: list<Bought>}
+ * @phpstan-type Bought array{lot_id: string, note_id: string, name: string, accent: string, industry: string, units: string, price: Money, paid: Money, bought_at: string}
  */
 final class GetInvestorPortfolio
 {
@@ -47,7 +50,7 @@ final class GetInvestorPortfolio
     private array $latest = [];
 
     public function __construct(private GetInvestorViewer $viewer, private InvestorHoldings $holdings, private InvestorDealCatalogue $catalogue,
-        private CampaignDisbursementProgress $disbursements, private HoldingPayouts $paid) {}
+        private CampaignDisbursementProgress $disbursements, private HoldingPayouts $paid, private NoteUnitHolders $lots) {}
 
     /**
      * Idle cash is the available wallet bucket as the ledger reports it, or null when there is
@@ -61,7 +64,9 @@ final class GetInvestorPortfolio
         /** @var Money|null $available */
         $available = $viewer['wallet']['wallet']['breakdown']['available'] ?? null;
         $positions = $viewer['wallet'] === null ? [] : $this->positions($userId);
-        $invested = array_reduce($positions, fn (BigInteger $sum, array $position): BigInteger => $sum->plus($position['holding']['principal']['amount']), BigInteger::zero());
+        $bought = $viewer['wallet'] === null ? [] : $this->bought($userId);
+        $primary = array_reduce($positions, fn (BigInteger $sum, array $position): BigInteger => $sum->plus($position['holding']['principal']['amount']), BigInteger::zero());
+        $invested = array_reduce($bought, fn (BigInteger $sum, array $lot): BigInteger => $sum->plus($lot['paid']['amount']), $primary);
         $payouts = $this->payouts($positions);
         $received = HoldingFigures::received(array_merge([], ...array_map(fn (array $position): array => $position['paid'], $positions)));
         $month = now()->setTimezone(HoldingFigures::ZONE)->format('Y-m');
@@ -72,15 +77,16 @@ final class GetInvestorPortfolio
         return ['identity_context_revision' => $viewer['identity_context_revision'], 'verified' => $viewer['wallet'] !== null,
             'idle' => $available === null || $available['amount'] === '0' ? null : $available,
             'holdings' => array_map(fn (array $position): array => self::summary($position, $this->latestUpdate($position['holding']['campaign_id'])), $positions),
-            'totals' => ['businesses' => count(array_unique(array_map(fn (array $position): string => $position['holding']['campaign_id'], $positions))),
+            'totals' => ['businesses' => count(array_unique([...array_map(fn (array $position): string => $position['holding']['campaign_id'], $positions),
+                ...array_map(fn (array $lot): string => $lot['note_id'], $bought)])),
                 'value' => HoldingFigures::money($invested->plus($received['return'])), 'invested' => HoldingFigures::money($invested),
                 'gain' => HoldingFigures::money($received['return']), 'this_month' => HoldingFigures::money($thisMonth['return']),
                 'projected_3m' => HoldingFigures::money($projected),
                 'next_payout' => $payouts === [] ? null : ['amount' => $payouts[0]['amount'], 'month' => $payouts[0]['month']],
                 'avg_monthly' => HoldingFigures::money($projected->dividedBy(3, RoundingMode::HalfUp))],
-            'payouts' => $payouts, 'industries' => $this->industries($positions, $invested), 'risk' => $this->risk($positions, $invested),
-            'concentration' => $this->concentration($positions, $invested),
-            'commitments' => $viewer['wallet'] === null ? [] : $this->commitments($userId)];
+            'payouts' => $payouts, 'industries' => $this->industries($positions, $primary), 'risk' => $this->risk($positions, $primary),
+            'concentration' => $this->concentration($positions, $primary),
+            'commitments' => $viewer['wallet'] === null ? [] : $this->commitments($userId), 'bought' => $bought];
     }
 
     /**
@@ -152,6 +158,24 @@ final class GetInvestorPortfolio
         }
 
         return $this->latest[$campaignId];
+    }
+
+    /**
+     * The units bought on the market and still held, newest first, at the price paid for them.
+     *
+     * @return list<Bought>
+     */
+    private function bought(int $userId): array
+    {
+        $bought = [];
+        foreach ($this->lots->boughtBy($userId) as $lot) {
+            $card = $this->card($lot['note_id']);
+            $bought[] = ['lot_id' => $lot['lot_id'], 'note_id' => $lot['note_id'], 'name' => $card['name'], 'accent' => $card['accent'], 'industry' => $card['industry'],
+                'units' => $lot['held_units'], 'price' => HoldingFigures::money(BigInteger::of($lot['price'])),
+                'paid' => HoldingFigures::money(BigInteger::of($lot['price'])->multipliedBy($lot['held_units'])), 'bought_at' => $lot['settled_at']];
+        }
+
+        return $bought;
     }
 
     /** @return list<HeldPosition> */

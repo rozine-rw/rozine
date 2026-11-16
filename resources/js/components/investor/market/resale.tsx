@@ -10,6 +10,7 @@ import type {
     MarketSellableLot,
     MarketTrade,
 } from '@/types/investor';
+import type { Money } from '@/types/money';
 import type { RouteAction } from '@/types/routing';
 
 const PRIMARY_BUTTON =
@@ -18,6 +19,9 @@ const SECONDARY_BUTTON =
     'h-9 rounded-[10px] border border-rz-border bg-rz-surface px-3.5 text-[12.5px] font-semibold text-rz-ink disabled:opacity-60';
 const FIELD =
     'mt-1 h-[42px] w-full rounded-xl border border-rz-border bg-rz-surface px-3 text-[14px] text-rz-ink';
+
+/** A purchase that has just settled, for the page to confirm. */
+export type SettledPurchase = { name: string; units: string; amount: Money };
 
 const money = (amount: number | string) => ({
     currency: 'RWF' as const,
@@ -108,10 +112,18 @@ export function ListingCard({
     listing,
     identityRevision,
     onBuy,
+    onSelect,
+    selected = false,
+    onSettled,
 }: {
     listing: MarketListing;
     identityRevision: number;
     onBuy: (listing: MarketListing) => void;
+    /** In Orders: opens this listing's detail. */
+    onSelect?: () => void;
+    selected?: boolean;
+    /** Told once a confirmed purchase has settled and the board reloaded. */
+    onSettled?: (bought: SettledPurchase) => void;
 }) {
     const { t, locale } = useTranslation();
     const command = useResaleCommand(identityRevision);
@@ -121,12 +133,33 @@ export function ListingCard({
     const { reserve, settle, withdraw } = listing.actions;
 
     return (
-        <li className="rounded-2xl border border-rz-hairline bg-rz-surface p-3.5 shadow-[0_10px_30px_-24px_rgba(20,45,95,.28)]">
+        <li
+            onClick={onSelect}
+            className={cn(
+                'rounded-2xl border bg-rz-surface p-3.5 shadow-[0_10px_30px_-24px_rgba(20,45,95,.28)]',
+                selected ? 'border-rz-accent-fill' : 'border-rz-hairline',
+                onSelect !== undefined && 'cursor-pointer',
+            )}
+        >
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                    <p className="truncate text-[14px] font-semibold text-rz-ink">
-                        {listing.deal_name}
-                    </p>
+                    {onSelect !== undefined ? (
+                        <button
+                            type="button"
+                            aria-pressed={selected}
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                onSelect();
+                            }}
+                            className="block max-w-full truncate text-left text-[14px] font-semibold text-rz-ink"
+                        >
+                            {listing.deal_name}
+                        </button>
+                    ) : (
+                        <p className="truncate text-[14px] font-semibold text-rz-ink">
+                            {listing.deal_name}
+                        </p>
+                    )}
                     <p className="mt-0.5 text-[12px] text-rz-secondary">
                         {t('investor.market.resale.units_at', {
                             units: listing.remaining_units,
@@ -194,12 +227,22 @@ export function ListingCard({
                         type="button"
                         className={cn(PRIMARY_BUTTON, 'mt-2.5')}
                         disabled={command.busy}
-                        onClick={() =>
-                            void command.send(settle, {
-                                reservation_id:
-                                    listing.reservation!.reservation_id,
-                            })
-                        }
+                        onClick={() => {
+                            const reservation = listing.reservation!;
+
+                            void command.send(
+                                settle,
+                                {
+                                    reservation_id: reservation.reservation_id,
+                                },
+                                () =>
+                                    onSettled?.({
+                                        name: listing.deal_name,
+                                        units: reservation.units,
+                                        amount: reservation.buyer_pays,
+                                    }),
+                            );
+                        }}
                     >
                         {command.busy
                             ? t('investor.market.resale.working')
@@ -226,7 +269,8 @@ export function BuySheet({
     const command = useResaleCommand(identityRevision);
     const [units, setUnits] = useState(listing.remaining_units);
     const count = wholeUnits(units);
-    const valid = count !== null && count <= Number(listing.remaining_units);
+    const tooMany = count !== null && count > Number(listing.remaining_units);
+    const valid = count !== null && !tooMany;
     const title = t('investor.market.resale.buy_title', {
         name: listing.deal_name,
     });
@@ -265,9 +309,20 @@ export function BuySheet({
                         inputMode="numeric"
                         value={units}
                         onChange={(event) => setUnits(event.target.value)}
+                        aria-invalid={tooMany || undefined}
                         className={FIELD}
                     />
                 </label>
+                {tooMany && (
+                    <p
+                        role="alert"
+                        className="mt-1.5 text-[12px] text-rz-danger-text"
+                    >
+                        {t('investor.market.resale.too_many', {
+                            count: Number(listing.remaining_units),
+                        })}
+                    </p>
+                )}
                 <p className="mt-3 text-[13px] text-rz-ink">
                     {t('investor.market.resale.you_pay', {
                         amount: formatRwf(
@@ -419,17 +474,48 @@ export function SellSheet({
 }
 
 /** A settled resale: bought or sold, units at price, and what was paid or received. */
-export function TradeRow({ trade }: { trade: MarketTrade }) {
+export function TradeRow({
+    trade,
+    onSelect,
+    selected = false,
+}: {
+    trade: MarketTrade;
+    /** In Orders: opens this trade's detail. */
+    onSelect?: () => void;
+    selected?: boolean;
+}) {
     const { t, locale } = useTranslation();
+    const label = t(`investor.market.resale.trade_${trade.side}`, {
+        name: trade.deal_name,
+    });
 
     return (
-        <li className="flex items-center justify-between gap-3 border-b border-[#eef2f9] py-3 last:border-b-0 dark:border-rz-divider">
+        <li
+            onClick={onSelect}
+            className={cn(
+                'flex items-center justify-between gap-3 border-b border-[#eef2f9] py-3 last:border-b-0 dark:border-rz-divider',
+                onSelect !== undefined && 'cursor-pointer',
+                selected && 'bg-rz-accent-soft',
+            )}
+        >
             <div className="min-w-0">
-                <p className="truncate text-[13.5px] font-semibold text-rz-ink">
-                    {t(`investor.market.resale.trade_${trade.side}`, {
-                        name: trade.deal_name,
-                    })}
-                </p>
+                {onSelect !== undefined ? (
+                    <button
+                        type="button"
+                        aria-pressed={selected}
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            onSelect();
+                        }}
+                        className="block max-w-full truncate text-left text-[13.5px] font-semibold text-rz-ink"
+                    >
+                        {label}
+                    </button>
+                ) : (
+                    <p className="truncate text-[13.5px] font-semibold text-rz-ink">
+                        {label}
+                    </p>
+                )}
                 <p className="mt-0.5 text-[11.5px] text-rz-secondary">
                     {t('investor.market.resale.units_at', {
                         units: trade.units,
@@ -443,5 +529,154 @@ export function TradeRow({ trade }: { trade: MarketTrade }) {
                 {formatRwf(trade.amount)}
             </p>
         </li>
+    );
+}
+
+/** One labelled fact in the order detail. */
+function DetailRow({ label, value }: { label: string; value: string }) {
+    return (
+        <div className="flex items-baseline justify-between gap-3 border-b border-[#eef2f9] py-2 last:border-b-0 dark:border-rz-divider">
+            <dt className="text-[12px] text-rz-secondary">{label}</dt>
+            <dd className="text-right text-[12.5px] font-semibold text-rz-ink">
+                {value}
+            </dd>
+        </div>
+    );
+}
+
+/**
+ * The detail of one order in Orders: a live listing (the seller's own, or the Investor's reservation)
+ * with its units, price, total, status and expiry and the command open on it, or a settled trade
+ * with what was paid or received and the fee.
+ */
+export function OrderDetail({
+    order,
+    identityRevision,
+}: {
+    order:
+        | { type: 'listing'; listing: MarketListing }
+        | { type: 'trade'; trade: MarketTrade };
+    identityRevision: number;
+}) {
+    const { t, locale } = useTranslation();
+    const command = useResaleCommand(identityRevision);
+
+    if (order.type === 'trade') {
+        const { trade } = order;
+
+        return (
+            <div>
+                <p className="text-[14px] font-semibold text-rz-ink">
+                    {trade.deal_name}
+                </p>
+                <dl className="mt-2">
+                    <DetailRow
+                        label={t('investor.market.order_detail.status')}
+                        value={t('investor.market.order_detail.filled')}
+                    />
+                    <DetailRow
+                        label={t('investor.market.order_detail.side')}
+                        value={t(
+                            `investor.market.order_detail.side_${trade.side}`,
+                        )}
+                    />
+                    <DetailRow
+                        label={t('investor.market.resale.units')}
+                        value={trade.units}
+                    />
+                    <DetailRow
+                        label={t('investor.market.order_detail.price')}
+                        value={formatRwf(trade.price)}
+                    />
+                    <DetailRow
+                        label={t(
+                            `investor.market.order_detail.amount_${trade.side}`,
+                        )}
+                        value={formatRwf(trade.amount)}
+                    />
+                    <DetailRow
+                        label={t('investor.market.order_detail.fee')}
+                        value={formatRwf(trade.fee)}
+                    />
+                    <DetailRow
+                        label={t('investor.market.order_detail.settled')}
+                        value={formatDateTime(trade.settled_at, locale)}
+                    />
+                </dl>
+            </div>
+        );
+    }
+
+    const { listing } = order;
+    const { withdraw } = listing.actions;
+    const status = listing.mine
+        ? listing.reserved
+            ? 'reserved'
+            : 'open'
+        : listing.reservation !== null
+          ? 'reserved_for_you'
+          : 'open';
+
+    return (
+        <div>
+            <p className="text-[14px] font-semibold text-rz-ink">
+                {listing.deal_name}
+            </p>
+            <dl className="mt-2">
+                <DetailRow
+                    label={t('investor.market.order_detail.status')}
+                    value={t(`investor.market.order_detail.status_${status}`)}
+                />
+                <DetailRow
+                    label={t('investor.market.order_detail.side')}
+                    value={t(
+                        `investor.market.order_detail.side_${listing.mine ? 'sell' : 'buy'}`,
+                    )}
+                />
+                <DetailRow
+                    label={t('investor.market.order_detail.remaining')}
+                    value={
+                        listing.reservation !== null && !listing.mine
+                            ? listing.reservation.units
+                            : listing.remaining_units
+                    }
+                />
+                <DetailRow
+                    label={t('investor.market.order_detail.price')}
+                    value={formatRwf(listing.price)}
+                />
+                <DetailRow
+                    label={t('investor.market.resale.total')}
+                    value={formatRwf(
+                        listing.reservation !== null && !listing.mine
+                            ? listing.reservation.buyer_pays
+                            : money(
+                                  Number(listing.remaining_units) *
+                                      Number(listing.price.amount),
+                              ),
+                    )}
+                />
+                <DetailRow
+                    label={t('investor.market.order_detail.expires')}
+                    value={formatDateTime(
+                        listing.reservation !== null && !listing.mine
+                            ? listing.reservation.expires_at
+                            : listing.expires_at,
+                        locale,
+                    )}
+                />
+            </dl>
+            {withdraw !== null && (
+                <button
+                    type="button"
+                    className={cn(SECONDARY_BUTTON, 'mt-3 w-full')}
+                    disabled={command.busy}
+                    onClick={() => void command.send(withdraw, {})}
+                >
+                    {t('investor.market.resale.withdraw')}
+                </button>
+            )}
+            <Refusal code={command.refusal} />
+        </div>
     );
 }
