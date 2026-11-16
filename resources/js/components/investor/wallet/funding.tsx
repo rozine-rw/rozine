@@ -1,6 +1,7 @@
 import { Link, router } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
+import { useRiskStatementsCleared } from '@/components/investor/risk-gate';
 import { POSITIVE_TEXT } from '@/components/investor/tokens';
 import { C3Notice } from '@/components/rozine/c3-notice';
 import { Icon } from '@/components/rozine/icon';
@@ -444,6 +445,7 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
         onSettled: dropQuotedAmount,
     });
     const sending = command.busy || command.settling;
+    const risksCleared = useRiskStatementsCleared();
 
     useEffect(() => () => window.clearTimeout(timer.current), []);
 
@@ -547,6 +549,11 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
         event.preventDefault();
 
         if (!ready || quote === null) {
+            return;
+        }
+
+        /* Adding money waits for the risk statements, asked here rather than on every wallet visit (#663). */
+        if (!risksCleared()) {
             return;
         }
 

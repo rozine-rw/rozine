@@ -250,6 +250,35 @@ describe('Wallet (C3)', () => {
         ).toHaveTextContent('RWF 1,733,485');
     });
 
+    it('asks for the risk statements on Deposit instead of on every wallet visit (#663)', () => {
+        inertia.shared = {
+            risk_acknowledgement: {
+                version: 'brs-3.0-kyc-r05',
+                statements_sha256: 'a'.repeat(64),
+                statements: [
+                    {
+                        key: 'total_loss',
+                        text: 'I can lose all the money I invest.',
+                    },
+                ],
+                identity_context_revision: 5,
+                action: {
+                    url: '/investor/risk-statements/acknowledgements',
+                    method: 'post',
+                },
+            },
+        };
+        const requested = vi.fn();
+        window.addEventListener('rozine:risk-statements', requested);
+
+        render(<InvestorWallet {...wallet(depositFixture)} />);
+        fireEvent.submit(screen.getByRole('form', { name: 'Add money' }));
+
+        expect(requested).toHaveBeenCalledTimes(1);
+        expect(inertia.calls).toHaveLength(0);
+        window.removeEventListener('rozine:risk-statements', requested);
+    });
+
     it('keeps "Sending deposit…" until the refresh lands, then confirms what was recorded and clears the quoted amount (#461)', async () => {
         window.history.replaceState(
             null,

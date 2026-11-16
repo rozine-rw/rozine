@@ -66,7 +66,7 @@ class StaffNotesResource extends JsonResource
             'notes' => array_map(fn (array $item): array => [...$item, 'link' => $route([...$here, 'note' => $item['id']])], array_slice($shown, 0, $resource['limit'])),
             'drawer' => $open === null ? null : ['id' => $open['note']['campaign_id'], 'reference' => 'NTE-'.Str::upper(Str::substr($open['note']['campaign_id'], -6)),
                 'business' => $open['note']['name'], 'state' => $open['note']['state'],
-                'investors' => count(array_unique(array_column($open['holders'], 'name'))),
+                'investors' => $open['note']['investors'],
                 'holders' => $open['holders'], 'close' => $route($here)],
             'pagination' => ['next' => count($shown) > $resource['limit'] && $resource['limit'] < 500
                 ? $route(array_filter([...$query, 'tab' => $resource['tab'] === 'all' ? null : $resource['tab'], 'limit' => 500])) : null]];

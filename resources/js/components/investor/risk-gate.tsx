@@ -1,22 +1,43 @@
 import { router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { RiskStatementsStep } from '@/components/investor/deals/risk-statements';
 import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
-import { portfolio, wallet as walletRoute } from '@/routes/investor';
+import { portfolio } from '@/routes/investor';
 import type { InvestorRiskAcknowledgementDue } from '@/types/investor';
 
 /**
  * Pages that put money toward an investment stay closed until the statements are acknowledged:
- * adding money to the wallet ("the wallet unlocks once it is ticked"), the cart and a deal's
- * checkout. Everything else only reads or returns the Investor's own money, so a holder can see
- * their balance, payouts and receipts and withdraw without them (#660).
+ * the cart and a deal's checkout. Everything else only reads or returns the Investor's own money,
+ * so a holder can see their balance, payouts and receipts and withdraw without them (#660).
+ * Adding money is gated where it is used, on Deposit, since wide screens show the deposit form on
+ * every wallet visit (#663).
  */
-const MONEY_PAGE =
-    /^\/investor\/(?:(?:cart|deals\/[^/?#]+\/checkout)(?:[/?#]|$)|wallet\?(?:[^#]*&)?kind=deposit(?:[&#]|$))/;
+const MONEY_PAGE = /^\/investor\/(?:cart|deals\/[^/?#]+\/checkout)(?:[/?#]|$)/;
 
-/** Where "Not now" goes from a closed page: a wallet deposit back to the wallet, the rest to Portfolio. */
-const WALLET_DEPOSIT = /^\/investor\/wallet\?/;
+/** Asks the open gate to show the statements for an action that adds money. */
+const REQUEST_EVENT = 'rozine:risk-statements';
+
+/**
+ * Before an action that adds money: true when nothing is due, otherwise the statements open
+ * (whatever "Not now" said earlier) and the action waits for them.
+ */
+export function useRiskStatementsCleared(): () => boolean {
+    const due = usePage().props.risk_acknowledgement as
+        | InvestorRiskAcknowledgementDue
+        | null
+        | undefined;
+
+    return () => {
+        if (!due) {
+            return true;
+        }
+
+        window.dispatchEvent(new Event(REQUEST_EVENT));
+
+        return false;
+    };
+}
 
 const laterKey = (version: string) => `rozine.risk-gate.later.${version}`;
 
@@ -43,8 +64,9 @@ function putOff(version: string): void {
  * to do. Accepting reloads the page, which then carries no prop.
  *
  * "Not now" puts them off for this visit, so an Investor can still read their portfolio,
- * holdings, deals, market and wallet (#644, #660). Adding money, the cart and checkout stay
- * behind the statements; there "Not now" goes back to the wallet or to Portfolio instead. They come back the next time the app opens.
+ * holdings, deals, market and wallet (#644, #660). The cart and checkout stay behind the
+ * statements, where "Not now" goes to Portfolio instead; Deposit opens them again before it sends,
+ * where "Not now" just closes them over the wallet (#663). They come back the next time the app opens.
  */
 export function RiskGate() {
     const page = usePage();
@@ -67,18 +89,27 @@ function Gate({
 }) {
     const { t } = useTranslation();
     const [later, setLater] = useState(() => wasPutOff(due.version));
+    const [requested, setRequested] = useState(false);
     const moneyPage = MONEY_PAGE.test(url);
-    const open = moneyPage || !later;
+    const open = moneyPage || requested || !later;
     const notNow = () => {
         putOff(due.version);
         setLater(true);
 
-        if (moneyPage) {
-            router.visit(
-                WALLET_DEPOSIT.test(url) ? walletRoute().url : portfolio().url,
-            );
+        if (requested) {
+            setRequested(false);
+        } else if (moneyPage) {
+            router.visit(portfolio().url);
         }
     };
+
+    useEffect(() => {
+        const request = () => setRequested(true);
+
+        window.addEventListener(REQUEST_EVENT, request);
+
+        return () => window.removeEventListener(REQUEST_EVENT, request);
+    }, []);
     const dialog = useModalDialog<HTMLDivElement>(notNow, open, true);
 
     if (!open) {
@@ -99,20 +130,26 @@ function Gate({
                     risks={{ ...due, acknowledged: false }}
                     action={due.action}
                     identityRevision={due.identity_context_revision}
-                    note={moneyPage ? t('investor.risk_gate.money_page') : null}
+                    note={
+                        requested
+                            ? t('investor.risk_gate.deposit')
+                            : moneyPage
+                              ? t('investor.risk_gate.money_page')
+                              : null
+                    }
                     secondary={
                         <button
                             type="button"
                             onClick={notNow}
                             className="mt-2 h-[44px] w-full rounded-xl border border-rz-border text-[13.5px] font-semibold text-rz-ink"
                         >
-                            {moneyPage
-                                ? t(
-                                      WALLET_DEPOSIT.test(url)
-                                          ? 'investor.risk_gate.later_wallet'
-                                          : 'investor.risk_gate.later_portfolio',
-                                  )
-                                : t('investor.risk_gate.later')}
+                            {t(
+                                requested
+                                    ? 'investor.risk_gate.later_wallet'
+                                    : moneyPage
+                                      ? 'investor.risk_gate.later_portfolio'
+                                      : 'investor.risk_gate.later',
+                            )}
                         </button>
                     }
                 />

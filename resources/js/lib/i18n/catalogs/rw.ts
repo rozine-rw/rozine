@@ -7727,6 +7727,8 @@ const rw: Catalog = {
     'investor.risk_gate.later': 'Si ubu',
     'investor.risk_gate.later_wallet': 'Si ubu, subira ku gikapu',
     'investor.risk_gate.later_portfolio': 'Si ubu, jya kuri Ishoramari ryanjye',
+    'investor.risk_gate.deposit':
+        'Kongera amafaranga mu gikapu bifunguka umaze kwemeza ibi.',
     'investor.risk_gate.money_page':
         "Kongeramo amafaranga, igitebo n'iyishyura bifunguka umaze kwemeza ibi.",
     'investor.checkout.c3.reserve_after_risks':
