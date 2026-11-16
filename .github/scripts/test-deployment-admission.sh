@@ -405,7 +405,25 @@ mv "${FIXTURES}/changed.json" "${FIXTURES}/runs.json"
 jq '.[0].base.ref = "uat"' "${FIXTURES}/pulls.json" > "${FIXTURES}/changed.json"
 mv "${FIXTURES}/changed.json" "${FIXTURES}/pulls.json"
 check "staging refuses missing original scope-bound evidence" refuse "staging scoped evidence/provenance validation failed"
+
+# Staging with valid scoped evidence: a stand-in for the scope selector returns
+# admitted POC evidence, so these cases reach the review step.
+mkdir -p "${WORKDIR}/staging-bin"
+cat > "${WORKDIR}/staging-bin/python3" <<'STUB'
+#!/usr/bin/env bash
+echo '{"scope":"poc","source_run":"99","source_attempt":"2","tree_sha":"t","required_jobs":["POC PHP safety and static checks"]}'
+STUB
+chmod +x "${WORKDIR}/staging-bin/python3"
+staging_check() { PATH="${WORKDIR}/staging-bin:${PATH}" check "$@"; }
+staging_check "staging admits an exact-head non-author approval" admit "non-author approval"
+write_reviews "[]"
+staging_check "staging admits a merged pull request without a non-author approval" admit "staging does not require a non-author approval"
+write_pulls "[]"
+staging_check "staging still refuses a direct push with no merged pull request" refuse "no merged pull request into uat"
 unset TEST_TARGET_BRANCH
+
+baseline; write_reviews "[]"
+check "production still refuses a pull request without a non-author approval" refuse "no APPROVED review"
 
 echo
 echo "${pass} passed, ${fail} failed"
