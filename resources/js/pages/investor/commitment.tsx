@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { InvestorShell } from '@/components/investor/investor-shell';
 import { CommitmentCard } from '@/components/investor/primary/commitment';
 import {
@@ -30,6 +30,18 @@ export default function InvestorCommitment({
     const { t } = useTranslation();
     const refusalText = useRefusalText();
     const [confirming, setConfirming] = useState(false);
+    const confirm = useRef<HTMLDivElement>(null);
+
+    /* The confirm opens below the fold on a phone: bring it into view and move focus to it (#593). */
+    useEffect(() => {
+        if (confirming) {
+            confirm.current?.scrollIntoView?.({
+                block: 'center',
+                behavior: 'smooth',
+            });
+            confirm.current?.focus({ preventScroll: true });
+        }
+    }, [confirming]);
     const command = useC3Command<'primary.cancel'>({
         actions: { 'primary.cancel': commitment?.actions.cancel ?? null },
         // A refusal has no commitment, so no command, and its lookup is never used.
@@ -100,6 +112,8 @@ export default function InvestorCommitment({
                             {cancellable &&
                                 (confirming ? (
                                     <div
+                                        ref={confirm}
+                                        tabIndex={-1}
                                         role="group"
                                         aria-label={t(
                                             'investor.primary.cancel_title',

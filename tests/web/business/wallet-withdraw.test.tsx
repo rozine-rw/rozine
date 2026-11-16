@@ -155,6 +155,25 @@ describe('Business wallet withdrawals (APP-B01, LED-R04)', () => {
         ).toHaveAttribute('href', `${props.shell_links.profile!.url}/linked`);
     });
 
+    it('does not send the business to Linked accounts while Rozine has not opened linking (#592)', () => {
+        const props = wallet();
+
+        props.funding.methods = [];
+        props.linking_open = false;
+        render(<BusinessWallet {...props} />);
+
+        const panel = screen.getByRole('region', { name: 'Withdraw' });
+
+        expect(panel).toHaveTextContent(
+            "Withdrawals aren't open yet. Rozine hasn't opened payout accounts for this wallet, so there is nothing to link or do now.",
+        );
+        expect(
+            within(panel).queryByRole('link', {
+                name: 'Go to Linked accounts',
+            }),
+        ).not.toBeInTheDocument();
+    });
+
     it('offers no link where the shell has no profile', () => {
         const props = wallet();
 

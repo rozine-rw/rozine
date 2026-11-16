@@ -517,6 +517,19 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
     const refusal = quote?.refusal ?? null;
     /* An amount outside the policy prices nothing, so nothing reads as credited. */
     const priced = quote !== null && refusal === null && amount !== '';
+    /** Only the limits: the policy's version id is for staff, not investors (#597). */
+    const limits = [
+        policy.minimum !== null &&
+            t('investor.wallet.c3.policy_minimum', {
+                amount: formatRwf(policy.minimum),
+            }),
+        policy.maximum !== null &&
+            t('investor.wallet.c3.policy_maximum', {
+                amount: formatRwf(policy.maximum),
+            }),
+    ]
+        .filter(Boolean)
+        .join(' · ');
     /* Only a quote for exactly the amount in the box can be sent, so a quick edit waits for its own. */
     const current =
         quote !== null &&
@@ -631,18 +644,11 @@ export function DepositPanel<Name extends string = 'wallet.deposit'>({
                     </dd>
                 </div>
             </dl>
-            <p className="mt-2 text-[10.5px] leading-[1.45] text-rz-secondary">
-                {t(
-                    policy.synthetic
-                        ? 'investor.wallet.c3.policy_synthetic'
-                        : 'investor.wallet.c3.policy',
-                    { version: policy.version },
-                )}
-                {policy.minimum !== null &&
-                    ` ${t('investor.wallet.c3.policy_minimum', { amount: formatRwf(policy.minimum) })}`}
-                {policy.maximum !== null &&
-                    ` ${t('investor.wallet.c3.policy_maximum', { amount: formatRwf(policy.maximum) })}`}
-            </p>
+            {limits !== '' && (
+                <p className="mt-2 text-[10.5px] leading-[1.45] text-rz-secondary">
+                    {limits}
+                </p>
+            )}
             {refusal !== null && (
                 <div
                     role="alert"
@@ -706,6 +712,8 @@ type WithdrawPanelProps<Name extends string> = {
     payload?: Record<string, unknown>;
     /** Where payout accounts are linked, offered while withdrawals are closed (QA #574). */
     linkedAccounts?: RouteLink | null;
+    /** False where Rozine has not opened payout linking yet: the panel says so rather than pointing to Linked accounts (#592). */
+    linkingOpen?: boolean;
 };
 
 /**
@@ -728,6 +736,7 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
     command: name = 'wallet.withdraw' as Name,
     payload = {},
     linkedAccounts = null,
+    linkingOpen = true,
 }: WithdrawPanelProps<Name>) {
     const { t } = useTranslation();
     const terms = funding.withdrawal;
@@ -820,11 +829,16 @@ export function WithdrawPanel<Name extends string = 'wallet.withdraw'>({
                     <Icon name="info" />
                     <span>
                         {funding.methods.length === 0
-                            ? t('investor.wallet.c3.withdraw_needs_account')
+                            ? linkingOpen
+                                ? t('investor.wallet.c3.withdraw_needs_account')
+                                : t(
+                                      'investor.wallet.c3.withdraw_linking_closed',
+                                  )
                             : terms === null
                               ? t('investor.wallet.c3.withdraw_not_cleared')
                               : t('investor.wallet.c3.withdraw_not_allowed')}
                         {funding.methods.length === 0 &&
+                            linkingOpen &&
                             linkedAccounts !== null && (
                                 <>
                                     {' '}

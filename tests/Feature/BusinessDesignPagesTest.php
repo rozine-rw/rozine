@@ -37,7 +37,7 @@ beforeEach(function (): void {
         $props = $this->actingAs($user)->get(route($route, $parameters))->assertOk()
             ->assertInertia(fn (Assert $page): Assert => $page->component($component))->viewData('page')['props'];
 
-        return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count', 'checkout_holds', 'risk_acknowledgement']));
+        return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count', 'checkout_holds', 'risk_acknowledgement', 'staff_console']));
     };
     $this->business = function (string $kind = 'organization', int $people = 2, string $code = 'COMPANY-001'): array {
         $authority = AuthorityFixture::make($kind, $people, $code, 1);
@@ -78,7 +78,7 @@ it('opens Profile on the verified registration and mandate, with every design se
     $banks = array_map(fn (string $code, string $name): array => ['code' => $code, 'name' => $name], array_keys(PayoutAccount::BANKS), PayoutAccount::BANKS);
 
     expect($props)->toMatchArray(['business' => ['name' => 'Synthetic business', 'address_line' => 'Kigali City, Gasabo', 'verified' => true, 'rating' => null],
-        'section' => 'company', 'landing' => true, 'linked' => ['add' => ['url' => "/business/{$business}/profile/linked-accounts", 'method' => 'post'], 'banks' => $banks, 'accounts' => []], 'legal' => null,
+        'section' => 'company', 'landing' => true, 'linked' => ['add' => ['url' => "/business/{$business}/profile/linked-accounts", 'method' => 'post'], 'banks' => $banks, 'open' => true, 'accounts' => []], 'legal' => null,
         'company' => ['name' => 'Synthetic business', 'email' => '', 'phone' => '', 'address' => ['province' => 'Kigali City', 'district' => 'Gasabo', 'sector' => '', 'cell' => '', 'street' => ''],
             'certificate' => null, 'signatories' => [], 'signatories_required' => 1],
         'actions' => ['save_company' => ($this->link)("/business/{$business}/profile/company", 'put')],
@@ -113,7 +113,7 @@ it('opens Profile on the verified registration and mandate, with every design se
     BusinessFundingMethod::factory()->unverified()->create(['business_id' => $business]);
     BusinessFundingMethod::factory()->create();
     expect(($this->props)($user, 'business.profile', ['business' => $business, 'section' => 'linked'], 'business/profile')['linked'])
-        ->toBe(['add' => ['url' => "/business/{$business}/profile/linked-accounts", 'method' => 'post'], 'banks' => $banks, 'accounts' => collect([
+        ->toBe(['add' => ['url' => "/business/{$business}/profile/linked-accounts", 'method' => 'post'], 'banks' => $banks, 'open' => true, 'accounts' => collect([
             ['id' => $momo->id, 'kind' => 'mobile_money', 'name' => 'MTN MoMo', 'detail' => '+250 788 ···· 456',
                 'unlink' => ['url' => "/business/{$business}/profile/linked-accounts/{$momo->id}/unlink", 'method' => 'post']],
             ['id' => $bank->id, 'kind' => 'bank', 'name' => 'Bank of Kigali', 'detail' => 'Account ····2231',

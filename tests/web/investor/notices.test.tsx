@@ -135,6 +135,20 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
                     reference: 'RZC-01K7NQ0C2Y',
                 },
             },
+            {
+                ...page.notices[0],
+                id: 'one-note',
+                kind: 'primary.commitment_confirmed',
+                facts: {
+                    business: 'Rugali Textiles',
+                    units: '1',
+                    amount: '5000',
+                    currency: 'RWF',
+                    fee_tier: 'standard',
+                    fee_rate_bps: '1500',
+                    reference: 'RZC-01K7NQ0C3Z',
+                },
+            },
         ] as InvestorNotices['notices'];
         render(<InvestorDeals {...deals()} />);
         inertia.queue.push(answers({ data: page }));
@@ -145,6 +159,11 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
 
         expect(item).toHaveTextContent(
             'Purchase confirmedYou committed RWF 500,000 to Umuganda Supply for 100 notes, at a 15.0% earnings fee. Reference RZC-01K7NQ0C2Y.',
+        );
+        expect(
+            within(panel).getByRole('button', { name: /Rugali/u }),
+        ).toHaveTextContent(
+            'You committed RWF 5,000 to Rugali Textiles for 1 note, at a 15.0% earnings fee.',
         );
     });
 

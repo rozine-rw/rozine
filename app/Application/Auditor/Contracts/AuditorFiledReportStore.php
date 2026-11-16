@@ -13,7 +13,7 @@ namespace App\Application\Auditor\Contracts;
  *
  * @phpstan-type FiledReport array{id: string, kind: string, period: string|null, business: string, district: string, sealed_at: string, due_at: string|null, published: bool, variance_pct: string|null}
  * @phpstan-type FiledReports array{data: list<FiledReport>, counts: array{all: int, published: int}}
- * @phpstan-type TrackRecord array{on_time_pct: int|null, clock_expiries: int, avg_variance_pct: string|null, variance_flagged: bool}
+ * @phpstan-type TrackRecord array{on_time_pct: int|null, clock_expiries: int, avg_variance_pct: string|null, variance_flagged: bool, since_year: int|null}
  */
 interface AuditorFiledReportStore
 {
@@ -30,7 +30,8 @@ interface AuditorFiledReportStore
      * The current Auditor's track record: the whole-percent share of their standing filed reports
      * that were sealed by their due date (rounded down, null before any report with a due date),
      * how many offers ran out on them without being accepted, and the weighted variance across
-     * those reports' money findings (one decimal, null before any money finding).
+     * those reports' money findings (one decimal, null before any money finding). It also gives the
+     * Kigali year they joined as an Auditor, when their auditor profile was opened (null before then).
      *
      * @return TrackRecord
      */

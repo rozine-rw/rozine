@@ -46,9 +46,13 @@ class AuditorFileResource extends JsonResource
         $operation = AuditorJobsResource::link($prefix.'reports.operations.show', ['request_id' => $placeholder]);
         $operation['url'] = str_replace($placeholder, '{request_id}', $operation['url']);
 
-        return [...AuditorJobsResource::envelope($file['jobs']['identity_context_revision']), 'allowed_actions' => [...$job['allowed_actions'], ...($canStart ? ['audit.start'] : []), ...(($review['verify'] ?? null) !== null ? ['statement.verify'] : [])],
+        $reportState = self::reportState($record['work']['report'] ?? null);
+        // A sealed report's file offers no conflict declaration: the work is done and the seal is never rewritten (#588).
+        $allowed = $reportState === null ? $job['allowed_actions'] : array_values(array_diff($job['allowed_actions'], ['conflict.declare']));
+
+        return [...AuditorJobsResource::envelope($file['jobs']['identity_context_revision']), 'allowed_actions' => [...$allowed, ...($canStart ? ['audit.start'] : []), ...(($review['verify'] ?? null) !== null ? ['statement.verify'] : [])],
             'engagement' => (new AuditorEngagementSummaryResource($file['jobs']['engagement']))->resolve($request),
-            'job' => [...$job, 'report_state' => self::reportState($record['work']['report'] ?? null)], 'actions' => [...AuditorJobsResource::actions($request, $job['id']),
+            'job' => [...$job, 'allowed_actions' => $allowed, 'report_state' => $reportState], 'actions' => [...AuditorJobsResource::actions($request, $job['id']),
                 'start' => $canStart ? ['url' => route($prefix.'reports.start', ['assignment' => $job['id']], false), 'method' => 'post'] : null],
             'application' => $record['application'] === null ? null : ['id' => $record['application']['id'], 'revision' => $record['application']['revision']],
             'decline_options' => AuditorJobsResource::declineOptions(),

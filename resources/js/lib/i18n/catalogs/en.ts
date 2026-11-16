@@ -151,6 +151,7 @@ const en = {
     'auth.verify_email.submit': 'Verify email',
     'auth.verify_email.resend': 'Send a new code',
     'auth.verify_email.log_out': 'Log out',
+    'auth.confirm_password.cancel': 'Cancel and go back to settings',
     'auth.confirm_password.head_title': 'Confirm password',
     'auth.confirm_password.layout_title': 'Confirm password',
     'auth.confirm_password.layout_description':
@@ -182,6 +183,34 @@ const en = {
     'suite.app.browse': 'Browse deals →',
     'suite.app.request_access': 'Request access →',
     'suite.app.add_access': 'Start investing →',
+    'suite.app.request_sent': 'Request sent ✓',
+    'suite.app.request_sent_summary':
+        'Rozine staff have your request and will contact you.',
+    'suite.app.verify_first': 'Verify your identity first →',
+    'suite.app.unavailable_reason.business_on_record':
+        'Your Business access is already on record with Rozine. Contact Rozine support to change it.',
+    'suite.app.unavailable_reason.auditor_account':
+        'Audit Partners can’t hold another Rozine role, so this Auditor account can’t ask for Business access.',
+    'suite.app.unavailable_reason.auditor_on_record':
+        'Your Auditor access is already on record with Rozine. Contact Rozine support to change it.',
+    'suite.app.unavailable_reason.auditor_only_role':
+        'Audit Partners can’t hold another Rozine role, so this account can’t ask for Auditor access.',
+    'suite.app.unavailable': 'Not available with your current access',
+    'suite.request_access.business.title': 'Request Business access',
+    'suite.request_access.business.body':
+        'Tell us which business you want to raise capital for. Rozine staff verify the business and you as its representative before Business access opens.',
+    'suite.request_access.business.organization': 'Business name',
+    'suite.request_access.business.reference': 'RDB company code (optional)',
+    'suite.request_access.auditor.title': 'Request Auditor access',
+    'suite.request_access.auditor.body':
+        'Audit Partners are licensed accountants. Rozine staff check your ICPAR licence before Auditor access opens. An Auditor account cannot also invest or raise capital.',
+    'suite.request_access.auditor.organization': 'Audit firm (optional)',
+    'suite.request_access.auditor.reference': 'ICPAR licence number',
+    'suite.request_access.phone': 'Phone number (optional)',
+    'suite.request_access.note': 'Anything staff should know (optional)',
+    'suite.request_access.submit': 'Send request',
+    'suite.request_access.sending': 'Sending…',
+    'suite.request_access.cancel': 'Cancel',
     'suite.app.investor.add':
         'Add Investor access to your verified identity. No second identity check.',
     'suite.add_investor.title': 'Add Investor access',
@@ -511,6 +540,9 @@ const en = {
     'business.home.company_code': 'RDB {code}',
     'business.home.rozine_rating': 'Rozine rating',
     'business.rating.pending': 'Pending audit',
+    'business.rating.pending_hint': 'Rated after your first audited month',
+    'business.rating.pending_next':
+        "Your rating appears once your first monthly report is audited. We'll tell you when your audit opens, so you can get the month's records ready.",
     'business.rating.band.strong': 'Strong',
     'business.rating.band.stable': 'Stable',
     'business.rating.band.weak': 'Weak',
@@ -583,6 +615,9 @@ const en = {
     'business.capital.subtitle':
         'Your all-time track record, across every note.',
     'business.capital.active_notes': '{count} active',
+    'business.capital.active_and_repaying':
+        '{active} active · {repaying} repaying',
+    'business.capital.repaying_notes': '{count} repaying',
     'business.capital.about': 'About {label}',
     'business.capital.close': 'Close',
     'business.capital.raised.label': 'Raised',
@@ -1132,7 +1167,9 @@ const en = {
     'business.profile.company.name': 'Company name',
     'business.profile.company.email': 'Business email',
     'business.profile.company.phone': 'Business phone',
-    'business.profile.company.phone_placeholder': '0788 123 456',
+    'business.profile.company.phone_placeholder': '07XX XXX XXX',
+    'business.profile.company.email_hint':
+        "Where Rozine sends the business's receipts, notices and statements.",
     'business.profile.company.address': 'Registered address',
     'business.profile.company.province': 'Province',
     'business.profile.company.district': 'District',
@@ -1174,8 +1211,11 @@ const en = {
     'business.profile.linked.add': '+ Link a payout account',
     'business.profile.linked.none':
         'No account linked yet. Link one to deposit and withdraw.',
-    'business.profile.linked.empty':
-        'No account linked yet. Linking opens once this account is cleared for money movement. Your payouts go to the verified account you link here.',
+    'business.profile.linked.closed':
+        "No account linked yet. Rozine hasn't opened payout accounts for businesses yet, so there is nothing for you to do now. Your balance stays safe in your wallet, and you'll be able to link an account in the business's name here once payouts open.",
+    'business.profile.linked.not_permitted':
+        'No account linked yet. Only a signatory who can withdraw for this business can link a payout account. Ask one of them to link it here.',
+    'business.profile.linked.ask_support': 'Questions? Ask Rozine support.',
     'business.profile.linked.footnote':
         "Only an account held in the business's registered name can be linked. Withdrawals go only to a linked account.",
     'business.profile.legal.updated': 'Last updated {date} · Version {version}',
@@ -1812,11 +1852,12 @@ const en = {
     'admin.section.events.subtitle':
         'Immutable record of every action — filter by actor, action or object',
     'admin.section.events.search': 'Search the trail…',
-    'admin.search.label': 'Search this page',
-    'admin.search.empty_title': 'No matches on this page',
+    'admin.search.label': 'Search this section',
+    'admin.search.empty_title': 'No matches',
     'admin.search.empty_body':
-        'Nothing in {section} matches “{term}”. This search only looks inside the current page.',
+        'Nothing in {section} matches “{term}”. Try a shorter or different term.',
     'admin.account.open': 'Account, {name}',
+    'settings.back_to_console': 'Back to the Admin console',
     'admin.account.close': 'Close account menu',
     'admin.account.sign_out': 'Sign out',
     'admin.role.analyst': 'Analyst',
@@ -2780,6 +2821,10 @@ const en = {
     'admin.businesses.onboard.title': 'Onboard a business',
     'admin.businesses.onboard.body':
         'Record a company from its RDB code, or a sole trader, with its official representative. The representative must already have a Rozine account with a verified identity. They get every role and permission on the first mandate. The change is logged with your name and reason.',
+    'admin.businesses.onboard.prefilled':
+        'Filled from an access request. Check each field and add the rest before you onboard.',
+    'admin.businesses.onboard.request_closed':
+        'That access request is already handled or no longer open, so nothing was filled in.',
     'admin.businesses.onboard.field.kind': 'Type of business',
     'admin.businesses.onboard.kind.organization': 'Company',
     'admin.businesses.onboard.kind.person': 'Sole trader',
@@ -3112,6 +3157,9 @@ const en = {
         'A legal hold keeps this account frozen. Only Compliance or Legal can release it.',
     'admin.parties.freeze': 'Freeze account',
     'admin.parties.release': 'Reactivate account',
+    'admin.parties.freeze_unavailable':
+        "Freezing isn't available for this account from the console yet, so there's no Freeze button here.",
+    'admin.table.scroll_hint': 'Swipe sideways to see every column.',
     'admin.parties.freeze_caption':
         "Freezing instantly revokes the account's access in the {app} app. Reversible at any time, and both the freeze and the release carry a reason and a name.",
     'admin.parties.restrictions': 'Freeze history',
@@ -3167,8 +3215,9 @@ const en = {
     'admin.ledger.col.debit': 'Debit',
     'admin.ledger.col.credit': 'Credit',
     'admin.ledger.open_named': 'Open entry {id}',
-    'admin.ledger.see_all': 'See all {count} entries',
-    'admin.ledger.older': 'Older entries',
+    'admin.ledger.see_all': 'Show more on this page ({count} in all)',
+    'admin.ledger.older': 'Next page: older entries',
+    'admin.ledger.newer': 'Previous page: newer entries',
     'admin.ledger.newest': 'Back to the newest',
     'admin.ledger.empty': 'No ledger entries in this range.',
     'admin.ledger.drawer_label': 'Ledger entry {id}',
@@ -4303,6 +4352,9 @@ const en = {
     'investor.market.orders.completed': 'Completed',
     'investor.market.orders.cancelled': 'Cancelled',
     'investor.market.orders.empty': 'No orders in this tab.',
+    'investor.market.browse_none.empty_title': 'No notes are for sale yet',
+    'investor.market.browse_none.empty_body':
+        'Notes appear here when investors list them for resale.',
     'investor.market.browse.empty_title': 'No notes match these filters',
     'investor.market.browse.empty_body': 'Try adjusting the filters above.',
     'investor.market.saved.empty_title': 'No saved notes yet',
@@ -4561,6 +4613,8 @@ const en = {
     'investor.deal.unit_times_one': '{price} × {count} note',
     'investor.deal.unit_times_other': '{price} × {count} notes',
     'investor.deal.expected_return': 'Expected return',
+    'investor.deal.fee_at_checkout': 'Shown at checkout',
+    'investor.deal.get_back_before_fee': 'Get back, before the fee',
     'investor.deal.total_at_maturity': 'Total repaid at maturity',
     'investor.deal.fewer_notes': 'One note fewer',
     'investor.deal.more_notes': 'One note more',
@@ -4585,7 +4639,6 @@ const en = {
     'investor.plus.tier.diamond': 'Diamond',
     'investor.checkout.maturity_value': 'Maturity value · {date}',
     'investor.checkout.wallet': 'Wallet',
-    'investor.checkout.funding_source': 'Funding source',
     'investor.checkout.wallet_available': 'Available: {amount}',
     'investor.checkout.pay_with': 'Pay with',
     'investor.checkout.wallet_line': '{wallet} · {amount} available',
@@ -6504,11 +6557,8 @@ const en = {
     'investor.wallet.c3.no_policy':
         "Deposits aren't available yet: no deposit policy has been set.",
     'investor.wallet.c3.credited_on_success': 'Credited once confirmed',
-    'investor.wallet.c3.policy_synthetic':
-        'Synthetic deposit policy {version} — preview figures, not live policy.',
-    'investor.wallet.c3.policy': 'Deposit policy {version}.',
-    'investor.wallet.c3.policy_minimum': 'Minimum {amount}.',
-    'investor.wallet.c3.policy_maximum': 'Maximum {amount}.',
+    'investor.wallet.c3.policy_minimum': 'Minimum {amount}',
+    'investor.wallet.c3.policy_maximum': 'Maximum {amount}',
     'investor.wallet.c3.deposit_between':
         'Enter an amount between {minimum} and {maximum}.',
     'investor.wallet.c3.deposit_at_least': 'Enter at least {amount}.',
@@ -6566,6 +6616,8 @@ const en = {
         "Withdrawals aren't open yet: this account has no verified payout account. Link one in your own name, then Rozine opens withdrawals once the account is cleared for money movement.",
     'investor.wallet.c3.withdraw_not_cleared':
         "Your payout account is verified. Withdrawals open once Rozine clears this account for money movement; you don't need to do anything else.",
+    'investor.wallet.c3.withdraw_linking_closed':
+        "Withdrawals aren't open yet. Rozine hasn't opened payout accounts for this wallet, so there is nothing to link or do now. Your balance stays safe here until it does.",
     'investor.wallet.c3.withdraw_not_allowed':
         'Your payout account is verified, but withdrawals from this wallet are not open to you right now. Contact Rozine support if you need to withdraw.',
     'investor.wallet.c3.withdraw_link_account': 'Go to Linked accounts',
@@ -6893,6 +6945,37 @@ const en = {
     'admin.applications.release.cause.RELEASE_CHECK_NOT_COMPLETED':
         "This check couldn't be completed.",
     'admin.applications.release.cause.other': "This check didn't pass.",
+    'admin.applications.release.gate_state.waiting': 'Not checked',
+    'admin.applications.release.cause.waiting':
+        'Not checked until the {check} check passes.',
+    'admin.applications.release.blocked_next':
+        "The business sees the same reason on its Publish page. Once it's fixed, the checks run again and Release appears here.",
+    'admin.applications.release.next.ENGINE_GATE_FAILED':
+        "The business's latest figures no longer support this note. The business gets a new quote and signs again.",
+    'admin.applications.release.next.AUTHORITY_CHANGED':
+        'The business signs again under its current signing mandate.',
+    'admin.applications.release.next.MANDATE_UNVERIFIED':
+        "The business's signing mandate needs verifying. Check it on the business profile.",
+    'admin.applications.release.next.REPORT_NOT_CURRENT':
+        'A new listing audit has to be sealed before release.',
+    'admin.applications.release.next.EXPOSURE_RESERVATION_REQUIRED':
+        'The business submits the application again, which reserves its borrowing.',
+    'admin.applications.release.next.SIGNATURES_REQUIRED':
+        'The remaining signatories sign at Review on the business account.',
+    'admin.applications.release.next.STAFF_RELEASE_REQUIRED':
+        'The business signed again after the release. Check the new terms, then release again.',
+    'admin.applications.release.next.TERMS_CHANGED':
+        'The business accepts the current terms and signs again.',
+    'admin.applications.release.next.FEE_DISCLOSURE_CHANGED':
+        'The business reads the current fee disclosure and signs again.',
+    'admin.applications.release.next.QUOTE_STALE':
+        'The business refreshes its quote and signs again.',
+    'admin.applications.release.next.RESTRICTION_ACTIVE':
+        "Review the restriction on the business profile. Release waits until it's lifted.",
+    'admin.applications.release.next.RELEASE_CHECK_NOT_COMPLETED':
+        'The check stopped before it finished. Open the application again to rerun it, and tell engineering if it keeps stopping.',
+    'admin.applications.release.next.other':
+        'Open the business profile to see what changed. The code on hover helps engineering trace it.',
     'admin.applications.release.blocked':
         "A check failed, so this application can't be released. Release never overrides a failed check.",
     'admin.applications.release.receipt': 'Release receipt',
@@ -7073,6 +7156,20 @@ const en = {
         'Flash audit at {business}, {location}. Accept by {time}.',
     'investor.notices.auditor.job_offered.body_routine':
         'Routine audit at {business}, {location}. Accept by {time}.',
+    'investor.notices.auditor.job_offered.body_statement_review':
+        'Statement review for {business}, {location}. Accept by {time}.',
+    'investor.notices.auditor.job_offered.type.flash': 'Flash audit',
+    'investor.notices.auditor.job_offered.type.routine': 'Routine audit',
+    'investor.notices.auditor.job_offered.type.statement_review':
+        'Statement review',
+    'investor.notices.auditor.job_offered.accepted':
+        '{job} at {business}, {location}. You accepted it.',
+    'investor.notices.auditor.job_offered.declined':
+        '{job} at {business}, {location}. You declined it.',
+    'investor.notices.auditor.job_offered.expired':
+        '{job} at {business}, {location}. The offer expired.',
+    'investor.notices.auditor.job_offered.withdrawn':
+        '{job} at {business}, {location}. The offer was withdrawn.',
     'investor.notices.business.report_sealed.title':
         'Audit report ready for review',
     'investor.notices.business.report_sealed.body':
@@ -7128,14 +7225,20 @@ const en = {
     'investor.notices.primary.refunded.body':
         'The {business} raise closed without reaching its target. {amount} is back in your wallet, with no fee.',
     'investor.notices.primary.raise_funded.title': 'Raise funded',
-    'investor.notices.primary.raise_funded.body':
-        'The {business} raise is fully funded. Your {amount} for {units} notes is set aside until the funds are sent.',
+    'investor.notices.primary.raise_funded.body': {
+        one: 'The {business} raise is fully funded. Your {amount} for {count} note is set aside until the funds are sent.',
+        other: 'The {business} raise is fully funded. Your {amount} for {count} notes is set aside until the funds are sent.',
+    },
     'investor.notices.primary.commitment_confirmed.title': 'Purchase confirmed',
-    'investor.notices.primary.commitment_confirmed.body':
-        'You committed {amount} to {business} for {units} notes, at a {rate}% earnings fee. Reference {reference}.',
+    'investor.notices.primary.commitment_confirmed.body': {
+        one: 'You committed {amount} to {business} for {count} note, at a {rate}% earnings fee. Reference {reference}.',
+        other: 'You committed {amount} to {business} for {count} notes, at a {rate}% earnings fee. Reference {reference}.',
+    },
     'investor.notices.primary.holding_issued.title': 'Investment confirmed',
-    'investor.notices.primary.holding_issued.body':
-        'Your {units} notes in {business} are issued: {amount} invested, {maturity} expected at maturity on {date}.',
+    'investor.notices.primary.holding_issued.body': {
+        one: 'Your {count} note in {business} is issued: {amount} invested, {maturity} expected at maturity on {date}.',
+        other: 'Your {count} notes in {business} are issued: {amount} invested, {maturity} expected at maturity on {date}.',
+    },
     'investor.notices.business.raise_funded.title': 'Raise fully funded',
     'investor.notices.business.raise_funded.body':
         '{title} reached its target of {principal}. Rozine now prepares the payout to your account.',
@@ -7166,6 +7269,10 @@ const en = {
     'investor.notices.verification.approved.title': 'You are verified',
     'investor.notices.verification.approved.body':
         'Your identity is verified and your wallet is ready to invest.',
+    'investor.notices.verification.approved.body_business':
+        'Your identity is verified. You can now apply for a raise.',
+    'investor.notices.verification.approved.body_auditor':
+        'Your identity is verified. You can now take audit jobs.',
     'investor.notices.verification.rejected.title':
         'Your identity details need another look',
     'investor.notices.verification.rejected.body':
@@ -7195,7 +7302,7 @@ const en = {
     'investor.primary.status.expired': "Didn't fill — refunded",
     'investor.primary.status.failed_closing': 'Closed — refunded',
     'investor.primary.status_body.confirmed':
-        "The raise is still open. Your commitment is final; if the raise doesn't fill, your money comes back to your wallet.",
+        "The raise is still open. You can withdraw this commitment for a full refund until the raise reaches 100%. If the raise doesn't fill, your money comes back to your wallet.",
     'investor.primary.status_body.awaiting_disbursement':
         'The raise is fully funded, so cancelling is locked. Notes are issued once the payout to the business is confirmed.',
     'investor.primary.status_body.in_flight_pending':
@@ -7231,7 +7338,8 @@ const en = {
     'investor.primary.terms': 'Terms',
     'investor.primary.maturity': 'Maturity date',
     'investor.primary.maturity_at_issue': 'Set when notes are issued',
-    'investor.primary.versions': 'Policy · disclosure',
+    'investor.primary.disclosure': 'Disclosure',
+    'investor.primary.disclosure_value': 'Version of {date}',
     'investor.primary.view_holding': 'View holding',
     'investor.primary.awaiting_issue': 'Awaiting issue',
     'investor.primary.awaiting_issue_note': 'Commitments, not yet holdings',
@@ -7245,6 +7353,9 @@ const en = {
         "Due dates are set when the notes are issued: the first falls one month after the payout's effective date.",
     'investor.primary.commitment_title': 'Commitment',
     'investor.primary.back_to_portfolio': 'Back to portfolio',
+    'investor.checkout.fee_about': 'about {amount}',
+    'investor.checkout.fee_estimate_note':
+        'The exact fee is worked out on each repayment once your notes are reserved, so it can differ by a few francs.',
     'investor.primary.cancel': 'Withdraw commitment',
     'investor.primary.cancel_title': 'Withdraw this commitment?',
     'investor.primary.cancel_body':
@@ -7936,6 +8047,43 @@ const en = {
         'A raise appears here once its publication is rated and live.',
     'admin.nav.reconciliation': 'Reconciliation',
     'admin.nav.coverage': 'Partner coverage',
+    'admin.nav.access_requests': 'Access requests',
+    'admin.section.access_requests.title': 'Access requests',
+    'admin.section.access_requests.subtitle':
+        'Business and Auditor access asked for from the launcher',
+    'admin.section.access_requests.search': 'Search…',
+    'admin.access_requests.title': 'Access requests',
+    'admin.access_requests.caption':
+        'People who asked for Business or Auditor access, newest first. Grant the role with Onboard business or in the Auditor Network.',
+    'admin.access_requests.table': 'Access requests',
+    'admin.access_requests.empty_title': 'No open access requests',
+    'admin.access_requests.empty_body':
+        'Requests sent from the launcher appear here until the person holds the role.',
+    'admin.access_requests.col.person': 'Person',
+    'admin.access_requests.col.role': 'Access',
+    'admin.access_requests.col.details': 'Details',
+    'admin.access_requests.col.sent': 'Sent',
+    'admin.access_requests.col.action': 'Grant',
+    'admin.access_requests.col.outcome': 'Membership',
+    'admin.access_requests.handled_title': 'Handled',
+    'admin.access_requests.handled_caption':
+        'Requests whose person now holds a membership of that role, with its status.',
+    'admin.access_requests.handled_table': 'Handled access requests',
+    'admin.access_requests.outcome.pending': 'Pending',
+    'admin.access_requests.outcome.active': 'Active',
+    'admin.access_requests.outcome.suspended': 'Suspended',
+    'admin.access_requests.outcome.revoked': 'Revoked',
+    'admin.access_requests.reference.business': 'RDB code {reference}',
+    'admin.access_requests.reference.auditor': 'ICPAR licence {reference}',
+    'admin.access_requests.grant.business': 'Onboard this business →',
+    'admin.access_requests.grant.auditor': 'Auditor Network →',
+    'admin.access_requests.identity.verified': 'Identity verified',
+    'admin.access_requests.identity.unverified': 'Identity not verified',
+    'admin.access_requests.time': '{time} CAT',
+    'admin.access_requests.handled_at': 'Role last updated {time} CAT',
+    'admin.access_requests.handled_empty_title': 'Nothing handled yet',
+    'admin.access_requests.handled_empty_body':
+        'Once the person holds the role they asked for, their request moves here with that membership’s status.',
     'admin.nav.reports': 'Reports',
     'admin.section.reconciliation.title': 'Reconciliation',
     'admin.section.reconciliation.subtitle':

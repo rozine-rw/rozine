@@ -140,6 +140,11 @@ describe('Wallet (C3)', () => {
         ).toHaveAttribute('aria-current', 'true');
         expect(history).toHaveTextContent('Deposit · Bank of Kigali');
         expect(
+            screen
+                .getAllByRole('link', { name: /Deals/u })
+                .some((link) => link.getAttribute('aria-current') === 'page'),
+        ).toBe(true);
+        expect(
             within(history).queryByRole('link', { name: 'Show older' }),
         ).not.toBeInTheDocument();
         expect(inertia.reload).not.toHaveBeenCalled();
@@ -154,8 +159,9 @@ describe('Wallet (C3)', () => {
         const panel = screen.getByRole('form', { name: 'Add money' });
 
         expect(panel).toHaveTextContent(
-            'Synthetic deposit policy synthetic-deposit-policy-0 — preview figures, not live policy. Minimum RWF 1,000. Maximum RWF 5,000,000.',
+            'Minimum RWF 1,000 · Maximum RWF 5,000,000',
         );
+        expect(panel).not.toHaveTextContent('synthetic-deposit-policy');
         expect(panel).toHaveTextContent('Credited once confirmedRWF 100,000');
         expect(panel).toHaveTextContent(
             'This records your deposit request. Nothing is credited until the payment is confirmed.',
@@ -876,7 +882,7 @@ describe('Wallet (C3)', () => {
         fireEvent.click(within(panel).getByRole('link', { name: 'Close' }));
     });
 
-    it('names a live policy plainly and reads an unlisted refusal generically', () => {
+    it("keeps a live policy's id to itself and reads an unlisted refusal generically", () => {
         const props = wallet(depositFixture);
 
         props.funding.policy = {
@@ -894,8 +900,8 @@ describe('Wallet (C3)', () => {
         render(<InvestorWallet {...props} />);
 
         expect(
-            screen.getByText('Deposit policy deposit-policy-1.'),
-        ).toBeInTheDocument();
+            screen.queryByText(/deposit-policy-1|Minimum|Maximum/u),
+        ).not.toBeInTheDocument();
         expect(
             screen.getByText(
                 'This request was refused. Refresh and try again.',

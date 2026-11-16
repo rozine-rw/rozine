@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::read_all
-* @see app/Http/Controllers/AuditorNoticesController.php:27
+* @see app/Http/Controllers/AuditorNoticesController.php:28
 * @route '/api/v1/auditor/notices/read-all'
 */
 export const read_all = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ read_all.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::read_all
-* @see app/Http/Controllers/AuditorNoticesController.php:27
+* @see app/Http/Controllers/AuditorNoticesController.php:28
 * @route '/api/v1/auditor/notices/read-all'
 */
 read_all.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ read_all.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::read_all
-* @see app/Http/Controllers/AuditorNoticesController.php:27
+* @see app/Http/Controllers/AuditorNoticesController.php:28
 * @route '/api/v1/auditor/notices/read-all'
 */
 read_all.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ read_all.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::read_all
-* @see app/Http/Controllers/AuditorNoticesController.php:27
+* @see app/Http/Controllers/AuditorNoticesController.php:28
 * @route '/api/v1/auditor/notices/read-all'
 */
 const read_allForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +45,7 @@ const read_allForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> 
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::read_all
-* @see app/Http/Controllers/AuditorNoticesController.php:27
+* @see app/Http/Controllers/AuditorNoticesController.php:28
 * @route '/api/v1/auditor/notices/read-all'
 */
 read_allForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -57,7 +57,7 @@ read_all.form = read_allForm
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::read
-* @see app/Http/Controllers/AuditorNoticesController.php:22
+* @see app/Http/Controllers/AuditorNoticesController.php:23
 * @route '/api/v1/auditor/notices/{notice}/read'
 */
 export const read = (args: { notice: string | number } | [notice: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -72,7 +72,7 @@ read.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::read
-* @see app/Http/Controllers/AuditorNoticesController.php:22
+* @see app/Http/Controllers/AuditorNoticesController.php:23
 * @route '/api/v1/auditor/notices/{notice}/read'
 */
 read.url = (args: { notice: string | number } | [notice: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -99,7 +99,7 @@ read.url = (args: { notice: string | number } | [notice: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::read
-* @see app/Http/Controllers/AuditorNoticesController.php:22
+* @see app/Http/Controllers/AuditorNoticesController.php:23
 * @route '/api/v1/auditor/notices/{notice}/read'
 */
 read.post = (args: { notice: string | number } | [notice: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -109,7 +109,7 @@ read.post = (args: { notice: string | number } | [notice: string | number ] | st
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::read
-* @see app/Http/Controllers/AuditorNoticesController.php:22
+* @see app/Http/Controllers/AuditorNoticesController.php:23
 * @route '/api/v1/auditor/notices/{notice}/read'
 */
 const readForm = (args: { notice: string | number } | [notice: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -119,7 +119,7 @@ const readForm = (args: { notice: string | number } | [notice: string | number ]
 
 /**
 * @see \App\Http\Controllers\AuditorNoticesController::read
-* @see app/Http/Controllers/AuditorNoticesController.php:22
+* @see app/Http/Controllers/AuditorNoticesController.php:23
 * @route '/api/v1/auditor/notices/{notice}/read'
 */
 readForm.post = (args: { notice: string | number } | [notice: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

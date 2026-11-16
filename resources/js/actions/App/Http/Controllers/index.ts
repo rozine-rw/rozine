@@ -68,6 +68,7 @@ import BusinessAcademyController from './BusinessAcademyController'
 import BusinessApplicationController from './BusinessApplicationController'
 import BusinessProspectusController from './BusinessProspectusController'
 import IdentityManagementController from './IdentityManagementController'
+import RoleAccessRequestController from './RoleAccessRequestController'
 import RoleBookmarkController from './RoleBookmarkController'
 import Settings from './Settings'
 import StaffNotesController from './StaffNotesController'
@@ -147,6 +148,7 @@ const Controllers = {
     BusinessApplicationController: Object.assign(BusinessApplicationController, BusinessApplicationController),
     BusinessProspectusController: Object.assign(BusinessProspectusController, BusinessProspectusController),
     IdentityManagementController: Object.assign(IdentityManagementController, IdentityManagementController),
+    RoleAccessRequestController: Object.assign(RoleAccessRequestController, RoleAccessRequestController),
     RoleBookmarkController: Object.assign(RoleBookmarkController, RoleBookmarkController),
     Settings: Object.assign(Settings, Settings),
     StaffNotesController: Object.assign(StaffNotesController, StaffNotesController),

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Domain\Auditor\AuditReportWindow;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\AuditAssignmentFixture;
@@ -60,12 +61,16 @@ it('puts a started monthly report on the clock, then awaiting co-signature, then
         'link' => ['url' => '/auditor/reports/'.$report->id, 'method' => 'get']];
     expect(auditorMonthly($user))->toBe(['windows' => [], 'reports' => [$card], 'desk_reviews' => []]);
     $file = '/auditor/jobs/'.$fixture['assignment']->id;
-    actingAs($user)->get($file)->assertOk()->assertInertia(fn (Assert $page): Assert => $page->component('auditor/file')->where('job.report_state', null));
+    actingAs($user)->get($file)->assertOk()->assertInertia(fn (Assert $page): Assert => $page->component('auditor/file')->where('job.report_state', null)
+        ->where('allowed_actions', fn (Collection $actions): bool => $actions->contains('conflict.declare')));
 
     AuditSealingFixture::seal($fixture);
     expect(auditorMonthly($user))->toBe(['windows' => [], 'reports' => [[...$card, 'status' => 'awaiting_cosign']], 'desk_reviews' => []]);
     // The file says the same as Jobs once sealed, so it runs no countdown (#490).
-    actingAs($user)->get($file)->assertOk()->assertInertia(fn (Assert $page): Assert => $page->component('auditor/file')->where('job.report_state', 'awaiting_cosign'));
+    actingAs($user)->get($file)->assertOk()->assertInertia(fn (Assert $page): Assert => $page->component('auditor/file')->where('job.report_state', 'awaiting_cosign')
+        // A sealed file offers no conflict declaration (#588).
+        ->where('allowed_actions', fn (Collection $actions): bool => ! $actions->contains('conflict.declare'))
+        ->where('job.allowed_actions', fn (Collection $actions): bool => ! $actions->contains('conflict.declare')));
 
     $business = ['business' => $fixture['audit']['business'], 'report' => $report->id];
     actingAs($fixture['audit']['authority']['users'][0])->post(route('business.audit-reports.dispute', $business), [

@@ -45,6 +45,29 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | UAT Money Simulation
+    |--------------------------------------------------------------------------
+    |
+    | Staging only (the `uat` profile with live money off; ignored everywhere
+    | else). Simulates money after funding so testers can run disbursement,
+    | repayments, Investor payouts and resale end to end with synthetic
+    | accounts. Resale is open while it is on. Opt-in: set
+    | UAT_MONEY_SIMULATION=true on staging to turn it on. Erastus, 14 Nov 2026.
+    |
+    */
+
+    'uat_money_simulation' => (bool) env('UAT_MONEY_SIMULATION', false),
+
+    /*
+    | The synthetic test Businesses the simulation may act on, as a comma-separated list of Business
+    | IDs. Only their funded raises disburse, only they can repay, and only their notes can be listed
+    | for resale. Empty means none.
+    */
+
+    'uat_money_simulation_businesses' => array_values(array_filter(array_map('trim', explode(',', (string) env('UAT_MONEY_SIMULATION_BUSINESSES', ''))))),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Debug Mode
     |--------------------------------------------------------------------------
     |

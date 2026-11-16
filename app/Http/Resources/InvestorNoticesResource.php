@@ -56,7 +56,7 @@ class InvestorNoticesResource extends JsonResource
         $inbox = $this->resource;
         $prefix = $request->routeIs('api.*') ? 'api.v1.' : '';
 
-        return ['unread' => $inbox['unread'],
+        return ['unread' => $inbox['unread'], 'server_time' => now()->toIso8601String(),
             'notices' => array_map(fn (array $notice): array => [...$notice,
                 'link' => $this->link($prefix, $this->destination($notice['kind'])[0],
                     array_map(fn (string $value): string => str_starts_with($value, ':') ? (string) $notice['facts'][substr($value, 1)] : $value,
@@ -76,7 +76,7 @@ class InvestorNoticesResource extends JsonResource
      * @param  array<string, string>  $parameters
      * @return array{url: string, method: 'get'}|null
      */
-    private function link(string $prefix, string $name, array $parameters): ?array
+    protected function link(string $prefix, string $name, array $parameters): ?array
     {
         return Route::has($prefix.$name) ? ['url' => route($prefix.$name, $parameters, false), 'method' => 'get'] : null;
     }

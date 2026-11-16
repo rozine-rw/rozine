@@ -55,7 +55,7 @@ describe('Commitment', () => {
         ).toBeInTheDocument();
         expect(
             screen.getByText(
-                "The raise is still open. Your commitment is final; if the raise doesn't fill, your money comes back to your wallet.",
+                "The raise is still open. You can withdraw this commitment for a full refund until the raise reaches 100%. If the raise doesn't fill, your money comes back to your wallet.",
             ),
         ).toBeInTheDocument();
 
@@ -73,9 +73,9 @@ describe('Commitment', () => {
         expect(page).toHaveTextContent(
             'Maturity dateSet when notes are issued',
         );
-        expect(page).toHaveTextContent(
-            'Policy · disclosuresynthetic-primary-policy-0 · disclosure-2026-09.1',
-        );
+        // No engineering policy ids on an investor screen (#593); this disclosure carries no date.
+        expect(page).not.toHaveTextContent('synthetic-primary-policy-0');
+        expect(page).not.toHaveTextContent('Disclosure');
         expect(page).toHaveTextContent('Total returnRWF 4,050');
 
         const receipt = screen.getByRole('region', {
@@ -93,6 +93,19 @@ describe('Commitment', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('names the disclosure by its date rather than its id (#593)', () => {
+        const page = props();
+
+        page.commitment!.terms.disclosure_version =
+            'primary-disclosure-2026-10-13';
+        render(<InvestorCommitment {...page} />);
+
+        expect(document.body).toHaveTextContent(
+            'DisclosureVersion of 13 Oct 2026',
+        );
+        expect(document.body).not.toHaveTextContent('primary-disclosure');
+    });
+
     it('cancels a confirmed commitment only after a second step, fee-free', async () => {
         const user = userEvent.setup();
 
@@ -104,6 +117,9 @@ describe('Commitment', () => {
         const step = screen.getByRole('group', {
             name: 'Withdraw this commitment?',
         });
+
+        // On a phone the confirm opens below the fold, so focus moves to it (#593).
+        expect(step).toHaveFocus();
 
         expect(step).toHaveTextContent(
             'Your full amount goes back to Available at once, with no fee. You can withdraw until the raise reaches 100%.',

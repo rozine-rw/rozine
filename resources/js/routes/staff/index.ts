@@ -17,6 +17,7 @@ import exceptions from './exceptions'
 import primaryMarket from './primary-market'
 import payments from './payments'
 import coverage from './coverage'
+import accessRequests from './access-requests'
 import complaints from './complaints'
 import systemHealth from './system-health'
 import investorVerifications from './investor-verifications'
@@ -123,6 +124,7 @@ const staffNamespace = {
     primaryMarket: Object.assign(primaryMarket, primaryMarket),
     payments: Object.assign(payments, payments),
     coverage: Object.assign(coverage, coverage),
+    accessRequests: Object.assign(accessRequests, accessRequests),
     complaints: Object.assign(complaints, complaints),
     systemHealth: Object.assign(systemHealth, systemHealth),
     investorVerifications: Object.assign(investorVerifications, investorVerifications),

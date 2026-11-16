@@ -202,6 +202,7 @@ function NoticesBell({ unread, href }: { unread: number; href: RouteLink }) {
                 <NoticesPanel
                     notices={notices}
                     onClose={() => setOpen(false)}
+                    audience="auditor"
                 />
             )}
         </>

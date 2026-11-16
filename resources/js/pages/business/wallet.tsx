@@ -209,6 +209,7 @@ export default function BusinessWallet(props: BusinessWalletProps) {
                         wide={false}
                         command="business.wallet.withdraw"
                         payload={{ business_id: props.business.id }}
+                        linkingOpen={props.linking_open !== false}
                         linkedAccounts={
                             props.shell_links.profile === null
                                 ? null

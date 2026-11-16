@@ -24,7 +24,7 @@ final class DispatchDisbursements
     /** @return array{claimed: int, sent: int} */
     public function handle(?string $intentId = null, int $limit = 25): array
     {
-        $this->guard->assertAllowed();
+        $this->guard->assertProviderAllowed();
         if ($this->store->transactionOpen()) {
             throw new LogicException('DISBURSEMENT_DISPATCH_TRANSACTION_OPEN: a provider is called only after the outermost commit.');
         }
