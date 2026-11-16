@@ -33,9 +33,9 @@ final class EloquentBusinessPayoutAccounts implements BusinessPayoutAccounts
     public function __construct(private WithBusinessAuthority $authority, private OperationJournal $journal, private PayoutAccountVerifier $verifier,
         private SyntheticDepositAdmission $admission, private PartyNotices $notices, private BusinessNoticeAudience $audience) {}
 
-    public function linkable(): bool
+    public function linkable(string $businessId): bool
     {
-        return $this->verifier->source() !== null && $this->admission->admitsBusiness();
+        return $this->verifier->source() !== null && $this->admission->admitsBusiness($businessId);
     }
 
     public function link(int $userId, int $contextRevision, string $businessId, string $requestId, array $input): array
@@ -52,7 +52,7 @@ final class EloquentBusinessPayoutAccounts implements BusinessPayoutAccounts
                     },
                     function () use ($business, $input): OperationResult {
                         $source = $this->verifier->source() ?? throw new CommandRejection('POLICY_INPUT_REQUIRED');
-                        if (! $this->admission->admitsBusiness()) {
+                        if (! $this->admission->admitsBusiness($business['id'])) {
                             throw new CommandRejection('SYNTHETIC_BUSINESS_FUNDING_OFF', 403);
                         }
                         $account = PayoutAccount::fromInput($input);

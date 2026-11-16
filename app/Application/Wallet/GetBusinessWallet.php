@@ -21,7 +21,7 @@ final class GetBusinessWallet
      */
     public function handle(int $userId, int $contextRevision, string $businessId, array $query = []): array
     {
-        return [...$this->store->page($userId, $contextRevision, $businessId, $query), 'linking_open' => $this->accounts->linkable()];
+        return [...$this->store->page($userId, $contextRevision, $businessId, $query), 'linking_open' => $this->accounts->linkable($businessId)];
     }
 
     /**

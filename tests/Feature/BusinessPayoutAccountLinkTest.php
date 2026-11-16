@@ -124,7 +124,7 @@ it('offers no linking where nothing can verify an account or on the test site, a
     $this->actingAs($authority['users'][0]);
     config(['isolation.live_money_enabled' => true]);
 
-    expect(app(BusinessPayoutAccounts::class)->linkable())->toBeFalse();
+    expect(app(BusinessPayoutAccounts::class)->linkable($business))->toBeFalse();
     $this->get(route('business.profile', ['business' => $business, 'section' => 'linked']))
         ->assertInertia(fn (Assert $page): Assert => $page->where('linked.add', null)->where('linked.banks', [])->where('linked.open', false));
     // The wallet says so too, so it doesn't send the business to an empty Linked accounts (#592).
@@ -136,8 +136,21 @@ it('offers no linking where nothing can verify an account or on the test site, a
     $isolation = Mockery::mock(EnvironmentIsolation::class.'[profile]', [app(), app('config')]);
     $isolation->allows(['profile' => 'uat']);
     app()->instance(EnvironmentIsolation::class, $isolation);
+    config(['app.uat_money_simulation' => false]);
     $this->post(route('business.profile.link', ['business' => $business]), ($this->account)())
         ->assertSessionHasErrors(['number' => 'Accounts cannot be linked on this test site.']);
 
     expect(BusinessFundingMethod::query()->where('business_id', $business)->exists())->toBeFalse();
+
+    // The switch alone opens nothing: a Business the simulation does not name still cannot link.
+    config(['app.uat_money_simulation' => true, 'app.uat_money_simulation_businesses' => []]);
+    expect(app(BusinessPayoutAccounts::class)->linkable($business))->toBeFalse();
+    $this->post(route('business.profile.link', ['business' => $business]), ($this->account)())
+        ->assertSessionHasErrors(['number' => 'Accounts cannot be linked on this test site.']);
+
+    // UAT's money simulation opens linking for the Businesses it names, so they can be paid a raise (Erastus, 14 Nov 2026).
+    config(['app.uat_money_simulation_businesses' => [$business]]);
+    expect(app(BusinessPayoutAccounts::class)->linkable($business))->toBeTrue();
+    $this->post(route('business.profile.link', ['business' => $business]), ($this->account)())->assertSessionHasNoErrors();
+    expect(BusinessFundingMethod::query()->where('business_id', $business)->whereNotNull('verified_at')->exists())->toBeTrue();
 });

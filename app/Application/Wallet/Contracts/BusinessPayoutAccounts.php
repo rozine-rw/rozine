@@ -12,8 +12,8 @@ namespace App\Application\Wallet\Contracts;
  */
 interface BusinessPayoutAccounts
 {
-    /** Whether an account can be linked at all here: a verifier exists and synthetic Business funding is on. */
-    public function linkable(): bool;
+    /** Whether this Business can link an account here: a verifier exists and synthetic funding is open to it. */
+    public function linkable(string $businessId): bool;
 
     /**
      * @param  array{type?: mixed, network?: mixed, bank?: mixed, number?: mixed}  $input

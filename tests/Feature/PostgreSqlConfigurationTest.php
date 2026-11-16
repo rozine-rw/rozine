@@ -171,8 +171,14 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     // The ledger-precision held release check rewrites check_primary_held_release, so it comes off first and goes back last.
     $heldReleasePrecision = require database_path('migrations/2026_10_30_190000_compare_held_release_cash_at_ledger_precision.php');
     // The secondary market rewrites the ledger's kind constraints and references command operations, so it comes off first and goes back last.
+    // Servicing payouts reference Business repayments and rebind the ledger kinds after the secondary market, so they come off before it and go back after it.
+    $servicingPayouts = require database_path('migrations/2026_11_14_120000_create_servicing_payouts.php');
     $secondaryMarket = require database_path('migrations/2026_11_11_060000_create_secondary_market_tables.php');
+    $servicingPayouts->down();
     $secondaryMarket->down();
+    // Role access requests reference parties, which are rebuilt below, so they come off first and go back last.
+    $roleAccessRequests = require database_path('migrations/2026_11_14_140000_create_role_access_requests_table.php');
+    $roleAccessRequests->down();
     // The visit-ready ticks reference business profiles, which are rebuilt below, so they come off first and go back last.
     $visitReadyTicks = require database_path('migrations/2026_11_12_100000_create_business_visit_ready_ticks_table.php');
     $visitReadyTicks->down();
@@ -501,8 +507,10 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         ->and(Schema::hasTable('business_monthly_submissions'))->toBeTrue()
         ->and(Schema::hasTable('business_academy_attempts'))->toBeTrue();
     $visitReadyTicks->up();
+    $roleAccessRequests->up();
     expect(Schema::hasTable('business_visit_ready_ticks'))->toBeTrue();
     $secondaryMarket->up();
+    $servicingPayouts->up();
     expect(Schema::hasColumn('business_photos', 'url'))->toBeTrue();
     expect(Schema::hasTable('investor_cart_lines'))->toBeTrue()
         ->and(DB::scalar("SELECT count(*) FROM pg_constraint WHERE conname = 'investor_cart_line_units'"))->toBe(1);

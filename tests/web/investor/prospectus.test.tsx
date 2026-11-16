@@ -118,6 +118,7 @@ const reader = (
         notifications: null,
         launcher: { url: '/dashboard', method: 'get' },
         back: { url: '/investor/deals/c1', method: 'get' },
+        pdf: { url: '/investor/deals/c1/prospectus.pdf', method: 'get' },
     },
     ...overrides,
 });
@@ -191,6 +192,13 @@ describe('Prospectus reader', () => {
         expect(
             screen.getAllByRole('link', { name: 'Back to the deal' })[0],
         ).toHaveAttribute('href', '/investor/deals/c1');
+        const download = screen.getByRole('link', { name: 'Download PDF' });
+
+        expect(download).toHaveAttribute(
+            'href',
+            '/investor/deals/c1/prospectus.pdf',
+        );
+        expect(download).toHaveAttribute('download');
 
         const terms = within(
             screen.getByRole('region', { name: 'Terms and fees' }),
