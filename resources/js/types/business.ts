@@ -1604,6 +1604,8 @@ export type BusinessInstalment = {
     dpd: number | null;
     paid_on: KigaliDate | null;
     late_fees: BusinessLateFeeLine[];
+    /** Opens the receipt of the repayment that paid this instalment; absent or null while unpaid. */
+    receipt?: RouteLink | null;
 };
 
 /**

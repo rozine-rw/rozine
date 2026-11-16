@@ -155,6 +155,11 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
         tile: 'bg-[rgba(12,24,48,.08)] text-[#0c1830] dark:text-rz-ink',
         icon: <path d="M12 19V5M5 12l7-7 7 7" {...stroke} />,
     },
+    'business.repayment_received': {
+        bar: 'bg-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
+    },
     'business.withdrawal_returned': {
         bar: 'bg-[#b07a12]',
         tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418]',
@@ -805,6 +810,12 @@ function body(
                 title: notice.facts.title,
                 amount: formatRwf(notice.facts),
                 months: notice.facts.term_months,
+            });
+        case 'business.repayment_received':
+            return t('investor.notices.business.repayment_received.body', {
+                amount: formatRwf(notice.facts),
+                title: notice.facts.title,
+                instalments: notice.facts.instalments,
             });
         case 'business.withdrawal_sent':
             return t('investor.notices.business.withdrawal_sent.body', {

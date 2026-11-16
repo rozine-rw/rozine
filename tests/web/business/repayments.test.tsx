@@ -181,6 +181,26 @@ describe('Business repayments (business-servicing-v1)', () => {
         ).toBeVisible();
     });
 
+    it('opens the receipt of the repayment that paid an instalment', () => {
+        const page = props(aheadFixture);
+        const receipt = {
+            url: '/business/01kbiz/wallet?receipt=01kc00000000000000000000r1',
+            method: 'get' as const,
+        };
+
+        page.schedule[0].receipt = receipt;
+        render(<BusinessRepayments {...page} />);
+
+        const schedule = within(sheet()).getByRole('region', {
+            name: 'Repayment schedule',
+        });
+        const links = within(schedule).getAllByRole('link');
+
+        expect(links).toHaveLength(1);
+        expect(links[0]).toHaveAttribute('href', receipt.url);
+        expect(links[0]).toHaveTextContent('#1 · paid');
+    });
+
     it('shows what is due today and pays it', async () => {
         render(<BusinessRepayments {...props(dueFixture)} />);
 

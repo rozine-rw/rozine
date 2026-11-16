@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Wallet;
 
 use App\Application\Business\Contracts\BusinessNoticeAudience;
+use App\Application\Business\Contracts\CampaignTitles;
 use App\Application\Business\Contracts\NoteServicing;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Identity\Contracts\PartyNotices;
@@ -58,7 +59,8 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
 {
     public function __construct(private WithBusinessAuthority $authority, private OperationJournal $journal, private CanonicalJson $json,
         private DepositProvider $provider, private SyntheticWalletGuard $guard, private NoteServicing $servicing, private SyntheticDepositAdmission $admission,
-        private PartyNotices $notices, private BusinessNoticeAudience $audience, private BusinessWithdrawals $withdrawals) {}
+        private PartyNotices $notices, private BusinessNoticeAudience $audience, private BusinessWithdrawals $withdrawals,
+        private CampaignTitles $titles) {}
 
     /**
      * @param  array{kind?: string|null, amount?: string|null, movement?: string|null, before?: string|null, receipt?: string|null, from?: string|null, to?: string|null}  $query
@@ -80,8 +82,11 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
                 $kind = in_array($query['kind'] ?? null, ['deposit', 'withdraw'], true) ? $query['kind'] : null;
                 $movement = ($query['movement'] ?? null) === 'internal' ? 'internal' : 'external';
                 $range = ['from' => $query['from'] ?? null, 'to' => $query['to'] ?? null];
-                $history = $wallet === null || $movement === 'internal' ? ['items' => [], 'next_before' => null]
-                    : $this->history($wallet, $query['before'] ?? null, $range['from'], $range['to']);
+                $history = match (true) {
+                    $wallet === null => ['items' => [], 'next_before' => null],
+                    $movement === 'internal' => $this->repaymentHistory($wallet, $query['before'] ?? null, $range['from'], $range['to']),
+                    default => $this->history($wallet, $query['before'] ?? null, $range['from'], $range['to']),
+                };
                 $withdrawals = $this->withdrawals->view($wallet?->id, $methods->isNotEmpty(), $kind === 'withdraw', $query['amount'] ?? null, $query['receipt'] ?? null);
 
                 return ['identity_context_revision' => $identity['context_revision'], 'allowed_actions' => $allowed,
@@ -240,9 +245,13 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
                         if ($this->available($wallet)->compareTo($offered['total']) < 0) {
                             throw new CommandRejection('INSUFFICIENT_AVAILABLE_FUNDS', 422, $quote->revision);
                         }
-                        $repayment = $this->recordRepayment($wallet, $partyId, $quote->noteId, $option, $offered['total'], $quote->revision,
+                        $repayment = $this->recordRepayment($wallet, $partyId, $quote->noteId, $quote->title, $option, $offered['total'], $quote->revision,
                             $operationId, $requestId, $userId, $offered['instalment_indexes']);
                         $revision = $this->servicing->applyRepayment($quote->noteId, $repayment->id, $option, $offered['total'], $quote->revision);
+                        $this->notices->record($this->audience->entityParty($business['id']), PartyNoticeKind::BusinessRepaymentReceived,
+                            ['amount' => $offered['total']->amount(), 'currency' => 'RWF', 'business_id' => $business['id'], 'repayment_id' => $repayment->id,
+                                'title' => $quote->title, 'instalments' => implode(', ', $offered['instalment_indexes'])],
+                            'business-repayment:'.$repayment->id);
 
                         return new OperationResult('REPAYMENT_RECEIVED', ['repayment_id' => $repayment->id, 'note_id' => $quote->noteId,
                             'receipt' => $this->repaymentReceipt($repayment, $revision)], $revision);
@@ -469,6 +478,33 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
     }
 
     /**
+     * Internal movements: each repayment paid from the wallet in the range, newest first, twenty to a page.
+     *
+     * @return array{items: list<array<string, mixed>>, next_before: string|null}
+     */
+    private function repaymentHistory(BusinessWallet $wallet, ?string $before, ?string $from, ?string $to): array
+    {
+        $repayments = $this->recordedBetween(BusinessRepayment::query()->where('wallet_id', $wallet->id), $from, $to)
+            ->when($before !== null, fn ($query) => $query->where('id', '<', $before))->orderByDesc('id')->limit(21)->get();
+        $page = $repayments->take(20);
+
+        return ['items' => array_values($page->map(fn (BusinessRepayment $repayment): array => $this->repaymentEntry($repayment))->all()),
+            'next_before' => $repayments->count() > 20 ? $page->last()?->id : null];
+    }
+
+    /** @return array<string, mixed> */
+    private function repaymentEntry(BusinessRepayment $repayment): array
+    {
+        // Repayments recorded before the title was sealed into the payload read it from the campaign.
+        $title = (string) ($repayment->payload['note_title'] ?? $this->titles->title(strtoupper($repayment->note_id)));
+        /** @var list<int> $indexes */
+        $indexes = $repayment->payload['instalment_indexes'];
+
+        return ['id' => $repayment->id, 'movement' => 'internal', 'kind' => 'repayment', 'direction' => 'out', 'amount' => WalletMoney::of($repayment->amount)->money(),
+            'note_title' => $title, 'instalment_indexes' => $indexes, 'occurred_at' => (string) $repayment->payload['recorded_at']];
+    }
+
+    /**
      * Rows recorded on or after `from` and on or before `to`, inclusive calendar days in the app timezone.
      *
      * @template TModel of \Illuminate\Database\Eloquent\Model
@@ -511,8 +547,13 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
             return ['type' => 'deposit', 'deposit' => $deposit[0]];
         }
         $credit = BusinessDepositCredit::query()->where('wallet_id', $wallet->id)->whereKey(strtolower($id))->first();
+        if ($credit !== null) {
+            return ['type' => 'entry', 'entry' => $this->historyEntry($credit), 'receipt' => $this->creditReceipt($credit)];
+        }
+        $repayment = BusinessRepayment::query()->where('wallet_id', $wallet->id)->whereKey(strtolower($id))->first();
 
-        return $credit === null ? null : ['type' => 'entry', 'entry' => $this->historyEntry($credit), 'receipt' => $this->creditReceipt($credit)];
+        return $repayment === null ? null : ['type' => 'entry', 'entry' => $this->repaymentEntry($repayment),
+            'receipt' => $this->repaymentReceipt($repayment, $repayment->servicing_revision + 1)];
     }
 
     /** @return array{id: string, kind: string, label: string, masked: string} */
@@ -655,7 +696,7 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
      *
      * @param  list<int>  $instalments
      */
-    private function recordRepayment(BusinessWallet $wallet, string $partyId, string $noteId, string $option, WalletMoney $amount, int $revision,
+    private function recordRepayment(BusinessWallet $wallet, string $partyId, string $noteId, string $noteTitle, string $option, WalletMoney $amount, int $revision,
         string $operationId, string $requestId, int $userId, array $instalments): BusinessRepayment
     {
         $recordedAt = now('UTC')->toImmutable()->startOfSecond();
@@ -663,7 +704,7 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
         $repayment->id = strtolower((string) Str::ulid());
         $payload = ['repayment_id' => $repayment->id, 'wallet_id' => $wallet->id, 'business_id' => $wallet->business_id, 'party_id' => $partyId,
             'note_id' => $noteId, 'operation_id' => $operationId, 'request_id' => strtolower($requestId), 'option' => $option, 'amount' => $amount->amount(),
-            'servicing_revision' => $revision, 'instalment_indexes' => $instalments, 'actor_user_id' => $userId, 'recorded_at' => $recordedAt->toIso8601String()];
+            'servicing_revision' => $revision, 'instalment_indexes' => $instalments, 'note_title' => $noteTitle, 'actor_user_id' => $userId, 'recorded_at' => $recordedAt->toIso8601String()];
         $repayment->forceFill(['wallet_id' => $wallet->id, 'business_id' => $wallet->business_id, 'party_id' => $partyId, 'note_id' => $noteId,
             'operation_id' => $operationId, 'request_id' => $payload['request_id'], 'option' => $option, 'amount' => $amount->amount(),
             'servicing_revision' => $revision, 'payload' => $payload, 'sha256' => hash('sha256', $this->json->encode($payload)), 'created_at' => $recordedAt])->save();

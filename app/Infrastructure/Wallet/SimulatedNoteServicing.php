@@ -116,7 +116,7 @@ final readonly class SimulatedNoteServicing implements NoteServicing, ServicingS
             foreach ($paid as $index => $paidBy) {
                 if ($paidBy === $repayment->id) {
                     $settled[$index] = ['on' => CarbonImmutable::parse((string) $repayment->payload['recorded_at'])->setTimezone('Africa/Kigali')->toDateString(),
-                        'allocated' => isset($payouts[$repayment->id])];
+                        'allocated' => isset($payouts[$repayment->id]), 'by' => $repayment->id];
                 }
             }
         }
@@ -133,7 +133,7 @@ final readonly class SimulatedNoteServicing implements NoteServicing, ServicingS
                 $repaid = $repaid->plus(WalletMoney::of($instalment->gross));
                 $status = $done['allocated'] ? 'paid' : 'processing';
                 $rows[] = ['index' => $instalment->index, 'due_on' => $dueOn, 'scheduled' => $scheduled, 'paid' => $scheduled,
-                    'outstanding' => self::components('0', '0'), 'status' => $status, 'dpd' => null, 'paid_on' => $done['on'], 'late_fees' => []];
+                    'outstanding' => self::components('0', '0'), 'status' => $status, 'dpd' => null, 'paid_on' => $done['on'], 'late_fees' => [], 'repayment_id' => $done['by']];
 
                 continue;
             }

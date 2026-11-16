@@ -50,6 +50,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Testing\Fluent\AssertableJson;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryHoldingFixture;
@@ -372,6 +373,31 @@ it('moves the raise on once its payout settles, and Home past a paid instalment'
     $this->actingAs($note['payer'])->get(route('business.show', $note['business']))
         ->assertInertia(fn (Assert $page): Assert => $page->where('today', fn (Collection $today): bool => $today->contains(fn (array $item): bool => $item['kind'] === 'repayment_due'
             && $item['due_on'] === $schedule->instalments[1]->dueDate))->etc());
+});
+
+it('lists a repayment in the Business wallet with its receipt, opens it from Repayments, and notifies the Business (QA #643)', function (): void {
+    $note = simulatedIssuedNote();
+    $schedule = app(RetainedNoteSchedules::class)->find($note['campaign']);
+    $gross = $schedule->instalments[0]->gross;
+    $this->actingAs($note['payer'])->postJson(route('business.repayments.pay', $note['business']),
+        ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, 'note_id' => $note['campaign'], 'option' => 'next_instalment',
+            'expected_servicing_revision' => 1, 'quoted_total' => ['currency' => 'RWF', 'amount' => $gross]])->assertOk();
+    $repayment = DB::table('business_repayments')->where('note_id', strtolower($note['campaign']))->sole();
+    $receipt = route('business.wallet.show', ['business' => $note['business'], 'receipt' => $repayment->id], false);
+
+    $this->actingAs($note['payer'])->get(route('business.wallet.show', ['business' => $note['business'], 'movement' => 'internal']))
+        ->assertInertia(fn (Assert $page): Assert => $page->has('history.items', 1)->where('history.items.0.id', $repayment->id)
+            ->where('history.items.0.kind', 'repayment')->where('history.items.0.direction', 'out')->where('history.items.0.amount.amount', $gross)
+            ->where('history.items.0.instalment_indexes', [1])->where('history.items.0.link.url', $receipt)->etc());
+    $this->actingAs($note['payer'])->get($receipt)
+        ->assertInertia(fn (Assert $page): Assert => $page->where('receipt.kind', 'repayment')->where('receipt.receipt.code', 'REPAYMENT_RECEIVED')
+            ->where('receipt.receipt.reference', 'RZR-'.strtoupper(substr($repayment->id, -10)))->etc());
+    $this->actingAs($note['payer'])->get(route('business.repayments.show', $note['business']))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('recent.0.link.url', $receipt)->where('schedule.0.receipt.url', $receipt)
+            ->where('schedule.1.receipt', null)->missing('schedule.0.repayment_id')->etc());
+    $this->actingAs($note['payer'])->getJson(route('business.notices.index', $note['business']))->assertOk()
+        ->assertJson(fn (AssertableJson $json): AssertableJson => $json->where('data.notices.0.kind', 'business.repayment_received')
+            ->where('data.notices.0.facts.amount', $gross)->where('data.notices.0.facts.instalments', '1')->where('data.notices.0.link.url', $receipt)->etc());
 });
 
 it('refuses a repayment whose payout cannot post, so nothing is collected without paying its holders', function (): void {

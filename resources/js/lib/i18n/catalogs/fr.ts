@@ -1748,6 +1748,8 @@ const fr: Catalog = {
         'Une levée atteint son objectif',
     'admin.messaging.trigger.business.disbursement_sent':
         'Les fonds sont versés sur le portefeuille de l’entreprise',
+    'admin.messaging.trigger.business.repayment_received':
+        'Une entreprise paie un remboursement depuis son portefeuille',
     'admin.messaging.trigger.business.withdrawal_sent':
         'Un retrait de l’entreprise est versé',
     'admin.messaging.trigger.business.withdrawal_returned':
@@ -3491,8 +3493,7 @@ const fr: Catalog = {
     'business.wallet.export.label': 'Télécharger le relevé',
     'business.wallet.export.pdf': 'Télécharger le PDF',
     'business.wallet.export.csv': 'Télécharger le CSV',
-    'business.wallet.caption':
-        'Frais, versements et décaissements sont réglés ici',
+    'business.wallet.caption': 'Dépôts et remboursements sont réglés ici',
     'business.wallet.deposit.button': 'Déposer',
     'business.wallet.withdraw.button': 'Retirer',
     'business.wallet.processing': 'Traitement…',
@@ -7489,6 +7490,9 @@ const fr: Catalog = {
     'investor.notices.business.application_approved.title': 'Demande approuvée',
     'investor.notices.business.application_approved.body':
         '{title} est approuvée pour {amount} sur {months} mois. Relisez et signez pour publier la levée.',
+    'investor.notices.business.repayment_received.title': 'Remboursement reçu',
+    'investor.notices.business.repayment_received.body':
+        '{amount} a été payé depuis votre portefeuille pour {title}, échéance {instalments}.',
     'investor.notices.business.withdrawal_sent.title': 'Retrait envoyé',
     'investor.notices.business.withdrawal_sent.body':
         '{amount} a été envoyé vers {account}.',

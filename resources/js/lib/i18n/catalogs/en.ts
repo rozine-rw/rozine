@@ -1655,6 +1655,8 @@ const en = {
         'A raise reaches its target',
     'admin.messaging.trigger.business.disbursement_sent':
         'Funds are released to the business wallet',
+    'admin.messaging.trigger.business.repayment_received':
+        'A business pays a repayment from its wallet',
     'admin.messaging.trigger.business.withdrawal_sent':
         'A business withdrawal is paid out',
     'admin.messaging.trigger.business.withdrawal_returned':
@@ -3329,7 +3331,7 @@ const en = {
     'business.wallet.export.label': 'Download statement',
     'business.wallet.export.pdf': 'Download PDF',
     'business.wallet.export.csv': 'Download CSV',
-    'business.wallet.caption': 'Fees, payouts & disbursements settle here',
+    'business.wallet.caption': 'Deposits & repayments settle here',
     'business.wallet.deposit.button': 'Deposit',
     'business.wallet.withdraw.button': 'Withdraw',
     'business.wallet.processing': 'Processing…',
@@ -7162,6 +7164,9 @@ const en = {
         'Application approved',
     'investor.notices.business.application_approved.body':
         '{title} is approved for {amount} over {months} months. Review and sign to publish the raise.',
+    'investor.notices.business.repayment_received.title': 'Repayment received',
+    'investor.notices.business.repayment_received.body':
+        '{amount} was paid from your wallet to {title}, instalment {instalments}.',
     'investor.notices.business.withdrawal_sent.title': 'Withdrawal sent',
     'investor.notices.business.withdrawal_sent.body':
         '{amount} was sent to {account}.',

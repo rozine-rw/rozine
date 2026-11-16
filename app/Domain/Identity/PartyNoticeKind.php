@@ -34,6 +34,7 @@ enum PartyNoticeKind: string
     case BusinessRaiseExpired = 'business.raise_expired';
     case BusinessRaiseFunded = 'business.raise_funded';
     case BusinessDisbursementSent = 'business.disbursement_sent';
+    case BusinessRepaymentReceived = 'business.repayment_received';
     case BusinessWithdrawalSent = 'business.withdrawal_sent';
     case BusinessWithdrawalReturned = 'business.withdrawal_returned';
     case BusinessReportSealed = 'business.report_sealed';
@@ -97,7 +98,7 @@ enum PartyNoticeKind: string
             self::BusinessVisitReadyOpen, self::BusinessVisitReadyReminder => 'reporting',
             self::PasswordChanged, self::PayoutAccountLinked, self::PayoutAccountUnlinked, self::NewDevice => 'security',
             self::BusinessApplicationApproved => 'underwriting',
-            self::BusinessDisbursementSent => 'payments',
+            self::BusinessDisbursementSent, self::BusinessRepaymentReceived => 'payments',
             self::AuditorAccreditationApproved, self::AuditorAccreditationRejected, self::AuditorJobOffered,
             self::AuditorAccreditationRenewalDue, self::AuditorReportReminder => 'audits',
             self::ComplaintAnswered, self::ComplaintResolved => 'support',

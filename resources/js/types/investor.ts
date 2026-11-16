@@ -1733,6 +1733,14 @@ export type InvestorNotice = {
           facts: Money & { title: string; term_months: string };
       }
     | {
+          kind: 'business.repayment_received';
+          facts: Money & {
+              repayment_id: string;
+              title: string;
+              instalments: string;
+          };
+      }
+    | {
           kind: 'business.withdrawal_sent';
           facts: Money & { account: string; received: string };
       }
