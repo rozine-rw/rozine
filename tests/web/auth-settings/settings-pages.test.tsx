@@ -37,6 +37,7 @@ const doubles = vi.hoisted(() => ({
             updated_at: '2026-01-01',
         },
     },
+    staffConsole: null as { url: string; method: 'get' } | null,
     forms: [] as FormProps[],
     state: {
         processing: false,
@@ -69,7 +70,9 @@ vi.mock('@inertiajs/react', () => ({
             {children}
         </a>
     ),
-    usePage: () => ({ props: { auth: doubles.auth } }),
+    usePage: () => ({
+        props: { auth: doubles.auth, staff_console: doubles.staffConsole },
+    }),
 }));
 
 vi.mock('@/components/appearance-tabs', () => ({
@@ -325,5 +328,22 @@ describe('settings pages and layout', () => {
         expect(
             screen.getByRole('button', { name: 'Security' }),
         ).not.toHaveClass('bg-muted');
+        expect(
+            screen.queryByRole('link', { name: /Admin console/u }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('gives staff their way back to the Admin console (#618)', () => {
+        doubles.staffConsole = { url: '/admin/dashboard', method: 'get' };
+        render(
+            <SettingsLayout>
+                <p>Settings content</p>
+            </SettingsLayout>,
+        );
+        doubles.staffConsole = null;
+
+        expect(
+            screen.getByRole('link', { name: 'Back to the Admin console' }),
+        ).toHaveAttribute('href', '/admin/dashboard');
     });
 });

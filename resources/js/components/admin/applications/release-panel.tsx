@@ -119,7 +119,7 @@ export function ReleasePanel({
                                 </span>
                                 {cause !== null && (
                                     <span
-                                        title={gate.cause ?? undefined}
+                                        title={String(gate.cause)}
                                         className={cn('text-[11.5px]', CAPTION)}
                                     >
                                         {waitingOn === undefined

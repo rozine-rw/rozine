@@ -48,7 +48,7 @@ it('onboards a company from its RDB code with its representative holding every r
         ->assertInertia(fn (Assert $page): Assert => $page->where('onboard', ['url' => '/admin/businesses/onboard', 'method' => 'post',
             'effective_at' => now('UTC')->format('Y-m-d\TH:i:s\Z'),
             'sectors' => ['Agriculture', 'Retail & trade', 'Logistics', 'Manufacturing', 'Services', 'Energy', 'Other'],
-            'districts' => config('rwanda.districts'), 'latest_year' => now()->year])->where('onboarded', null));
+            'districts' => config('rwanda.districts'), 'latest_year' => now()->year, 'prefill' => null, 'request_closed' => false])->where('onboarded', null));
     $response = $this->post('/admin/businesses/onboard', $input);
 
     $business = BusinessProfile::query()->sole();

@@ -85,7 +85,7 @@ export function PermissionMatrix({ rows }: { rows: PermissionMatrixRow[] }) {
                             role="cell"
                             className="min-w-0 text-[11.5px] text-rz-muted"
                         >
-                            <span className="block truncate">
+                            <span className="block leading-[1.4] break-words">
                                 {t(`admin.permission_detail.${row.key}`)}
                             </span>
                             {row.withheld && (

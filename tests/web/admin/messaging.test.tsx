@@ -194,6 +194,7 @@ describe('Messaging History', () => {
 
         expect(inertia.reload).toContainEqual({
             data: { q: 'Aline', before: undefined },
+            onCancelToken: expect.any(Function),
         });
     });
 

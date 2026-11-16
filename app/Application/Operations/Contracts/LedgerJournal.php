@@ -14,6 +14,8 @@ namespace App\Application\Operations\Contracts;
  * purchase, issue or repayment). A search matches an owner, the reference, the kind or the entry
  * id; `limit` caps the page while `total` counts every match. `before` pages back from an entry
  * id, and `next_before` names the entry the next older page starts after (null on the last page).
+ * `newer_before` names the entry the next newer page starts after: null on the newest page and on
+ * the page just after it, which pages forward to the newest.
  *
  * @phpstan-type Line array{
  *     direction: 'debit'|'credit', amount: string, account_id: string, account_kind: string,
@@ -25,7 +27,7 @@ namespace App\Application\Operations\Contracts;
  */
 interface LedgerJournal
 {
-    /** @return array{entries: list<Entry>, total: int, next_before: string|null} */
+    /** @return array{entries: list<Entry>, total: int, next_before: string|null, newer_before: string|null} */
     public function entries(?string $search, int $limit, ?string $before = null): array;
 
     /** @return list<Entry> */

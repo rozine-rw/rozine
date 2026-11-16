@@ -30,7 +30,7 @@ class ReconcileDisbursementPayouts extends Command
 
             return self::INVALID;
         }
-        if (! $guard->allowed()) {
+        if (! $guard->providerAllowed()) {
             $this->line('Disbursement reconciliation is unavailable here: no funding source or payout provider is configured.');
 
             return self::SUCCESS;

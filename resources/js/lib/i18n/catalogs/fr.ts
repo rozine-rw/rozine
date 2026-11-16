@@ -154,6 +154,7 @@ const fr: Catalog = {
     'auth.verify_email.submit': 'Vérifier l’e-mail',
     'auth.verify_email.resend': 'Envoyer un nouveau code',
     'auth.verify_email.log_out': 'Se déconnecter',
+    'auth.confirm_password.cancel': 'Annuler et revenir aux paramètres',
     'auth.confirm_password.head_title': 'Confirmer le mot de passe',
     'auth.confirm_password.layout_title': 'Confirmer le mot de passe',
     'auth.confirm_password.layout_description':
@@ -189,6 +190,36 @@ const fr: Catalog = {
     'suite.app.browse': 'Voir les offres →',
     'suite.app.request_access': "Demander l'accès →",
     'suite.app.add_access': 'Commencer à investir →',
+    'suite.app.request_sent': 'Demande envoyée ✓',
+    'suite.app.request_sent_summary':
+        'L’équipe Rozine a reçu votre demande et vous contactera.',
+    'suite.app.verify_first': 'Vérifiez d’abord votre identité →',
+    'suite.app.unavailable_reason.business_on_record':
+        'Votre accès Entreprise est déjà enregistré chez Rozine. Contactez le support Rozine pour le modifier.',
+    'suite.app.unavailable_reason.auditor_account':
+        'Les auditeurs partenaires ne peuvent pas avoir un autre rôle Rozine : ce compte Auditeur ne peut donc pas demander l’accès Entreprise.',
+    'suite.app.unavailable_reason.auditor_on_record':
+        'Votre accès Auditeur est déjà enregistré chez Rozine. Contactez le support Rozine pour le modifier.',
+    'suite.app.unavailable_reason.auditor_only_role':
+        'Les auditeurs partenaires ne peuvent pas avoir un autre rôle Rozine : ce compte ne peut donc pas demander l’accès Auditeur.',
+    'suite.app.unavailable': 'Indisponible avec votre accès actuel',
+    'suite.request_access.business.title': 'Demander l’accès Entreprise',
+    'suite.request_access.business.body':
+        'Indiquez l’entreprise pour laquelle vous souhaitez lever des fonds. L’équipe Rozine vérifie l’entreprise et vous, en tant que représentant, avant d’ouvrir l’accès Entreprise.',
+    'suite.request_access.business.organization': 'Nom de l’entreprise',
+    'suite.request_access.business.reference':
+        'Code RDB de l’entreprise (facultatif)',
+    'suite.request_access.auditor.title': 'Demander l’accès Auditeur',
+    'suite.request_access.auditor.body':
+        'Les partenaires d’audit sont des comptables agréés. L’équipe Rozine vérifie votre licence ICPAR avant d’ouvrir l’accès Auditeur. Un compte Auditeur ne peut ni investir ni lever des fonds.',
+    'suite.request_access.auditor.organization': 'Cabinet d’audit (facultatif)',
+    'suite.request_access.auditor.reference': 'Numéro de licence ICPAR',
+    'suite.request_access.phone': 'Numéro de téléphone (facultatif)',
+    'suite.request_access.note':
+        'Informations utiles pour l’équipe (facultatif)',
+    'suite.request_access.submit': 'Envoyer la demande',
+    'suite.request_access.sending': 'Envoi…',
+    'suite.request_access.cancel': 'Annuler',
     'suite.app.investor.add':
         "Ajoutez l'accès Investisseur à votre identité vérifiée. Aucune nouvelle vérification d'identité.",
     'suite.add_investor.title': "Ajouter l'accès Investisseur",
@@ -1930,11 +1961,12 @@ const fr: Catalog = {
     'admin.section.events.subtitle':
         'Registre immuable de chaque action — filtrer par auteur, action ou objet',
     'admin.section.events.search': 'Rechercher dans le journal…',
-    'admin.search.label': 'Rechercher sur cette page',
-    'admin.search.empty_title': 'Aucun résultat sur cette page',
+    'admin.search.label': 'Rechercher dans cette section',
+    'admin.search.empty_title': 'Aucun résultat',
     'admin.search.empty_body':
-        'Rien dans {section} ne correspond à « {term} ». Cette recherche ne porte que sur la page actuelle.',
+        'Rien dans {section} ne correspond à « {term} ». Essayez un terme plus court ou différent.',
     'admin.account.open': 'Compte, {name}',
+    'settings.back_to_console': 'Retour à la console d’administration',
     'admin.account.close': 'Fermer le menu du compte',
     'admin.account.sign_out': 'Se déconnecter',
     'admin.role.analyst': 'Analyste',
@@ -2936,6 +2968,10 @@ const fr: Catalog = {
     'admin.businesses.onboard.title': 'Intégrer une entreprise',
     'admin.businesses.onboard.body':
         'Enregistrez une société à partir de son code RDB, ou un entrepreneur individuel, avec son représentant officiel. Le représentant doit déjà avoir un compte Rozine avec une identité vérifiée. Il reçoit tous les rôles et toutes les autorisations du premier mandat. La modification est enregistrée avec votre nom et votre motif.',
+    'admin.businesses.onboard.prefilled':
+        'Rempli à partir d’une demande d’accès. Vérifiez chaque champ et complétez le reste avant d’intégrer.',
+    'admin.businesses.onboard.request_closed':
+        'Cette demande d’accès est déjà traitée ou n’est plus ouverte : rien n’a été pré-rempli.',
     'admin.businesses.onboard.field.kind': 'Type d’entreprise',
     'admin.businesses.onboard.kind.organization': 'Société',
     'admin.businesses.onboard.kind.person': 'Entrepreneur individuel',
@@ -3275,6 +3311,10 @@ const fr: Catalog = {
         'Une retenue légale maintient ce compte gelé. Seuls la conformité ou le juridique peuvent le lever.',
     'admin.parties.freeze': 'Geler le compte',
     'admin.parties.release': 'Réactiver le compte',
+    'admin.parties.freeze_unavailable':
+        "Le gel de ce compte n'est pas encore disponible dans la console : il n'y a donc pas de bouton Geler ici.",
+    'admin.table.scroll_hint':
+        'Faites défiler sur le côté pour voir toutes les colonnes.',
     'admin.parties.freeze_caption':
         "Le gel retire immédiatement l'accès du compte à l'application {app}. Réversible à tout moment ; le gel et la levée portent un motif et un nom.",
     'admin.parties.restrictions': 'Historique des gels',
@@ -3331,8 +3371,9 @@ const fr: Catalog = {
     'admin.ledger.col.debit': 'Débit',
     'admin.ledger.col.credit': 'Crédit',
     'admin.ledger.open_named': "Ouvrir l'écriture {id}",
-    'admin.ledger.see_all': 'Voir les {count} écritures',
-    'admin.ledger.older': 'Écritures plus anciennes',
+    'admin.ledger.see_all': 'Afficher plus sur cette page ({count} au total)',
+    'admin.ledger.older': 'Page suivante : écritures plus anciennes',
+    'admin.ledger.newer': 'Page précédente : écritures plus récentes',
     'admin.ledger.newest': 'Revenir aux plus récentes',
     'admin.ledger.empty': 'Aucune écriture sur cette période.',
     'admin.ledger.drawer_label': 'Écriture {id}',
@@ -8307,6 +8348,44 @@ const fr: Catalog = {
         'Une levée apparaît ici dès que sa publication est notée et ouverte.',
     'admin.nav.reconciliation': 'Rapprochement',
     'admin.nav.coverage': 'Couverture des partenaires',
+    'admin.nav.access_requests': 'Demandes d’accès',
+    'admin.section.access_requests.title': 'Demandes d’accès',
+    'admin.section.access_requests.subtitle':
+        'Accès Entreprise et Auditeur demandés depuis le lanceur',
+    'admin.section.access_requests.search': 'Rechercher…',
+    'admin.access_requests.title': 'Demandes d’accès',
+    'admin.access_requests.caption':
+        'Personnes ayant demandé l’accès Entreprise ou Auditeur, les plus récentes d’abord. Accordez le rôle via l’intégration d’entreprise ou dans le Réseau des auditeurs.',
+    'admin.access_requests.table': 'Demandes d’accès',
+    'admin.access_requests.empty_title': 'Aucune demande d’accès ouverte',
+    'admin.access_requests.empty_body':
+        'Les demandes envoyées depuis le lanceur apparaissent ici jusqu’à ce que la personne détienne le rôle.',
+    'admin.access_requests.col.person': 'Personne',
+    'admin.access_requests.col.role': 'Accès',
+    'admin.access_requests.col.details': 'Détails',
+    'admin.access_requests.col.sent': 'Envoyée',
+    'admin.access_requests.col.action': 'Accorder',
+    'admin.access_requests.col.outcome': 'Adhésion',
+    'admin.access_requests.handled_title': 'Traitées',
+    'admin.access_requests.handled_caption':
+        'Demandes dont la personne détient désormais une adhésion à ce rôle, avec son statut.',
+    'admin.access_requests.handled_table': 'Demandes d’accès traitées',
+    'admin.access_requests.outcome.pending': 'En attente',
+    'admin.access_requests.outcome.active': 'Active',
+    'admin.access_requests.outcome.suspended': 'Suspendue',
+    'admin.access_requests.outcome.revoked': 'Révoquée',
+    'admin.access_requests.reference.business': 'Code RDB {reference}',
+    'admin.access_requests.reference.auditor': 'Licence ICPAR {reference}',
+    'admin.access_requests.grant.business': 'Intégrer cette entreprise →',
+    'admin.access_requests.grant.auditor': 'Réseau des auditeurs →',
+    'admin.access_requests.identity.verified': 'Identité vérifiée',
+    'admin.access_requests.identity.unverified': 'Identité non vérifiée',
+    'admin.access_requests.time': '{time} CAT',
+    'admin.access_requests.handled_at': 'Rôle mis à jour le {time} CAT',
+    'admin.access_requests.handled_empty_title':
+        'Rien de traité pour l’instant',
+    'admin.access_requests.handled_empty_body':
+        'Dès que la personne détient le rôle demandé, sa demande passe ici avec le statut de cette adhésion.',
     'admin.nav.reports': 'Rapports',
     'admin.section.reconciliation.title': 'Rapprochement',
     'admin.section.reconciliation.subtitle':

@@ -151,6 +151,7 @@ const en = {
     'auth.verify_email.submit': 'Verify email',
     'auth.verify_email.resend': 'Send a new code',
     'auth.verify_email.log_out': 'Log out',
+    'auth.confirm_password.cancel': 'Cancel and go back to settings',
     'auth.confirm_password.head_title': 'Confirm password',
     'auth.confirm_password.layout_title': 'Confirm password',
     'auth.confirm_password.layout_description':
@@ -182,6 +183,34 @@ const en = {
     'suite.app.browse': 'Browse deals →',
     'suite.app.request_access': 'Request access →',
     'suite.app.add_access': 'Start investing →',
+    'suite.app.request_sent': 'Request sent ✓',
+    'suite.app.request_sent_summary':
+        'Rozine staff have your request and will contact you.',
+    'suite.app.verify_first': 'Verify your identity first →',
+    'suite.app.unavailable_reason.business_on_record':
+        'Your Business access is already on record with Rozine. Contact Rozine support to change it.',
+    'suite.app.unavailable_reason.auditor_account':
+        'Audit Partners can’t hold another Rozine role, so this Auditor account can’t ask for Business access.',
+    'suite.app.unavailable_reason.auditor_on_record':
+        'Your Auditor access is already on record with Rozine. Contact Rozine support to change it.',
+    'suite.app.unavailable_reason.auditor_only_role':
+        'Audit Partners can’t hold another Rozine role, so this account can’t ask for Auditor access.',
+    'suite.app.unavailable': 'Not available with your current access',
+    'suite.request_access.business.title': 'Request Business access',
+    'suite.request_access.business.body':
+        'Tell us which business you want to raise capital for. Rozine staff verify the business and you as its representative before Business access opens.',
+    'suite.request_access.business.organization': 'Business name',
+    'suite.request_access.business.reference': 'RDB company code (optional)',
+    'suite.request_access.auditor.title': 'Request Auditor access',
+    'suite.request_access.auditor.body':
+        'Audit Partners are licensed accountants. Rozine staff check your ICPAR licence before Auditor access opens. An Auditor account cannot also invest or raise capital.',
+    'suite.request_access.auditor.organization': 'Audit firm (optional)',
+    'suite.request_access.auditor.reference': 'ICPAR licence number',
+    'suite.request_access.phone': 'Phone number (optional)',
+    'suite.request_access.note': 'Anything staff should know (optional)',
+    'suite.request_access.submit': 'Send request',
+    'suite.request_access.sending': 'Sending…',
+    'suite.request_access.cancel': 'Cancel',
     'suite.app.investor.add':
         'Add Investor access to your verified identity. No second identity check.',
     'suite.add_investor.title': 'Add Investor access',
@@ -1823,11 +1852,12 @@ const en = {
     'admin.section.events.subtitle':
         'Immutable record of every action — filter by actor, action or object',
     'admin.section.events.search': 'Search the trail…',
-    'admin.search.label': 'Search this page',
-    'admin.search.empty_title': 'No matches on this page',
+    'admin.search.label': 'Search this section',
+    'admin.search.empty_title': 'No matches',
     'admin.search.empty_body':
-        'Nothing in {section} matches “{term}”. This search only looks inside the current page.',
+        'Nothing in {section} matches “{term}”. Try a shorter or different term.',
     'admin.account.open': 'Account, {name}',
+    'settings.back_to_console': 'Back to the Admin console',
     'admin.account.close': 'Close account menu',
     'admin.account.sign_out': 'Sign out',
     'admin.role.analyst': 'Analyst',
@@ -2791,6 +2821,10 @@ const en = {
     'admin.businesses.onboard.title': 'Onboard a business',
     'admin.businesses.onboard.body':
         'Record a company from its RDB code, or a sole trader, with its official representative. The representative must already have a Rozine account with a verified identity. They get every role and permission on the first mandate. The change is logged with your name and reason.',
+    'admin.businesses.onboard.prefilled':
+        'Filled from an access request. Check each field and add the rest before you onboard.',
+    'admin.businesses.onboard.request_closed':
+        'That access request is already handled or no longer open, so nothing was filled in.',
     'admin.businesses.onboard.field.kind': 'Type of business',
     'admin.businesses.onboard.kind.organization': 'Company',
     'admin.businesses.onboard.kind.person': 'Sole trader',
@@ -3123,6 +3157,9 @@ const en = {
         'A legal hold keeps this account frozen. Only Compliance or Legal can release it.',
     'admin.parties.freeze': 'Freeze account',
     'admin.parties.release': 'Reactivate account',
+    'admin.parties.freeze_unavailable':
+        "Freezing isn't available for this account from the console yet, so there's no Freeze button here.",
+    'admin.table.scroll_hint': 'Swipe sideways to see every column.',
     'admin.parties.freeze_caption':
         "Freezing instantly revokes the account's access in the {app} app. Reversible at any time, and both the freeze and the release carry a reason and a name.",
     'admin.parties.restrictions': 'Freeze history',
@@ -3178,8 +3215,9 @@ const en = {
     'admin.ledger.col.debit': 'Debit',
     'admin.ledger.col.credit': 'Credit',
     'admin.ledger.open_named': 'Open entry {id}',
-    'admin.ledger.see_all': 'See all {count} entries',
-    'admin.ledger.older': 'Older entries',
+    'admin.ledger.see_all': 'Show more on this page ({count} in all)',
+    'admin.ledger.older': 'Next page: older entries',
+    'admin.ledger.newer': 'Previous page: newer entries',
     'admin.ledger.newest': 'Back to the newest',
     'admin.ledger.empty': 'No ledger entries in this range.',
     'admin.ledger.drawer_label': 'Ledger entry {id}',
@@ -8009,6 +8047,43 @@ const en = {
         'A raise appears here once its publication is rated and live.',
     'admin.nav.reconciliation': 'Reconciliation',
     'admin.nav.coverage': 'Partner coverage',
+    'admin.nav.access_requests': 'Access requests',
+    'admin.section.access_requests.title': 'Access requests',
+    'admin.section.access_requests.subtitle':
+        'Business and Auditor access asked for from the launcher',
+    'admin.section.access_requests.search': 'Search…',
+    'admin.access_requests.title': 'Access requests',
+    'admin.access_requests.caption':
+        'People who asked for Business or Auditor access, newest first. Grant the role with Onboard business or in the Auditor Network.',
+    'admin.access_requests.table': 'Access requests',
+    'admin.access_requests.empty_title': 'No open access requests',
+    'admin.access_requests.empty_body':
+        'Requests sent from the launcher appear here until the person holds the role.',
+    'admin.access_requests.col.person': 'Person',
+    'admin.access_requests.col.role': 'Access',
+    'admin.access_requests.col.details': 'Details',
+    'admin.access_requests.col.sent': 'Sent',
+    'admin.access_requests.col.action': 'Grant',
+    'admin.access_requests.col.outcome': 'Membership',
+    'admin.access_requests.handled_title': 'Handled',
+    'admin.access_requests.handled_caption':
+        'Requests whose person now holds a membership of that role, with its status.',
+    'admin.access_requests.handled_table': 'Handled access requests',
+    'admin.access_requests.outcome.pending': 'Pending',
+    'admin.access_requests.outcome.active': 'Active',
+    'admin.access_requests.outcome.suspended': 'Suspended',
+    'admin.access_requests.outcome.revoked': 'Revoked',
+    'admin.access_requests.reference.business': 'RDB code {reference}',
+    'admin.access_requests.reference.auditor': 'ICPAR licence {reference}',
+    'admin.access_requests.grant.business': 'Onboard this business →',
+    'admin.access_requests.grant.auditor': 'Auditor Network →',
+    'admin.access_requests.identity.verified': 'Identity verified',
+    'admin.access_requests.identity.unverified': 'Identity not verified',
+    'admin.access_requests.time': '{time} CAT',
+    'admin.access_requests.handled_at': 'Role last updated {time} CAT',
+    'admin.access_requests.handled_empty_title': 'Nothing handled yet',
+    'admin.access_requests.handled_empty_body':
+        'Once the person holds the role they asked for, their request moves here with that membership’s status.',
     'admin.nav.reports': 'Reports',
     'admin.section.reconciliation.title': 'Reconciliation',
     'admin.section.reconciliation.subtitle':

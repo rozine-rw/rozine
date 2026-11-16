@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Domain\Disbursement\IssueSchedule;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -30,7 +32,7 @@ use Throwable;
  *
  * @phpstan-type Account array{id: int, label: string, email: string, mfa: bool}
  * @phpstan-type Scenario array{business: string, campaign: string|null, report: string|null, business_path: string}
- * @phpstan-type Pack array{version: int, created_at: string, accounts: list<Account>, scenarios: array<string, Scenario>}
+ * @phpstan-type Pack array{version: int, created_at: string, paid_at?: string, accounts: list<Account>, scenarios: array<string, Scenario>}
  */
 class CheckpointThreeSeeder extends Seeder
 {
@@ -63,17 +65,53 @@ class CheckpointThreeSeeder extends Seeder
         throw new LogicException('C3_MFA_ACCOUNT_REQUIRED: use an Auditor alias from this pack.');
     }
 
-    /** @return Pack */
-    public function prepare(): array
+    /**
+     * With $visitReady, a new pack pays the funded raise out on the day that puts its first
+     * instalment 12 to 14 days ahead (11 on 17 March in a common year), so the Business's visit-ready checklist (BRS v3 VIS-R03) is open.
+     *
+     * @return Pack
+     */
+    public function prepare(bool $visitReady = false): array
     {
         $this->guard->assertLocal();
 
         DB::select('SELECT pg_advisory_lock(962026, 3)');
         try {
-            return $this->stage();
+            return $this->stage($visitReady);
         } finally {
             DB::select('SELECT pg_advisory_unlock(962026, 3)');
         }
+    }
+
+    /**
+     * The payout instant that puts the first instalment 12 to 14 days after today in Kigali, inside
+     * the open-notice window. A due date on the 29th to 31st has no payout a month earlier when the
+     * previous month is shorter, because the schedule clamps to that month's last day. When all three
+     * days fall on such dates (17 March in a common year), it settles for the 28th, 11 days away,
+     * where the checklist is open and the reminder is due instead.
+     */
+    public static function visitReadyPayoutAt(): string
+    {
+        $today = CarbonImmutable::now(IssueSchedule::ZONE)->startOfDay();
+        foreach ([13, 12, 14] as $days) {
+            $due = $today->addDays($days);
+            if ($due->subMonthNoOverflow()->day === $due->day) {
+                break;
+            }
+            $due = $today->addDays(11);
+        }
+
+        return $due->subMonthNoOverflow()->setTime(10, 0)->utc()->toIso8601String();
+    }
+
+    /**
+     * The funded note's first instalment, when the pack was paid out for the visit-ready checklist.
+     *
+     * @param  array{paid_at?: string}  $pack
+     */
+    public static function firstDueOn(array $pack): ?string
+    {
+        return isset($pack['paid_at']) ? IssueSchedule::dates($pack['paid_at'], 1)->dueDates[0] : null;
     }
 
     /**
@@ -84,7 +122,7 @@ class CheckpointThreeSeeder extends Seeder
      *
      * @return Pack
      */
-    private function stage(): array
+    private function stage(bool $visitReady): array
     {
         $disk = Storage::disk('local');
         if ($disk->exists(self::PENDING) && ! User::query()->where('email', 'like', '%'.self::DOMAIN)->exists()) {
@@ -95,18 +133,24 @@ class CheckpointThreeSeeder extends Seeder
         }
         if ($disk->exists(self::PENDING)) {
             $pack = $this->readManifest(self::PENDING);
+            if ($visitReady && ! isset($pack['paid_at'])) {
+                throw new LogicException('C3_VISIT_READY_NEEDS_NEW_PACK: an unfinished pack was started without --visit-ready; rerun without it to finish, or reset the local database.');
+            }
         } elseif ($disk->exists(self::MANIFEST)) {
             $pack = $this->readManifest();
+            if ($visitReady && ! isset($pack['paid_at'])) {
+                throw new LogicException('C3_VISIT_READY_NEEDS_NEW_PACK: this pack was paid out without --visit-ready; reset the local database and rerun.');
+            }
             $this->writeGuide($pack);
 
             return $pack;
         } else {
-            $pack = $this->stageScenarios();
+            $pack = $this->stageScenarios($visitReady ? self::visitReadyPayoutAt() : null);
         }
 
         $campaign = $pack['scenarios']['funded']['campaign'];
         try {
-            PrimaryIssuanceFixture::finishFunded((string) $campaign, $pack['created_at']);
+            PrimaryIssuanceFixture::finishFunded((string) $campaign, $pack['paid_at'] ?? $pack['created_at']);
         } catch (Throwable $exception) {
             throw new LogicException('C3_PAYOUT_FAILED: progress is saved; rerun to resume the same campaign. '.$exception->getMessage(), 0, $exception);
         }
@@ -117,9 +161,9 @@ class CheckpointThreeSeeder extends Seeder
     }
 
     /** @return Pack */
-    private function stageScenarios(): array
+    private function stageScenarios(?string $paidAt): array
     {
-        return DB::transaction(function (): array {
+        return DB::transaction(function () use ($paidAt): array {
             if (User::query()->where('email', 'like', '%'.self::DOMAIN)->exists()) {
                 throw new LogicException('C3_RESERVED_ACCOUNT_COLLISION: restore the original manifest; existing accounts were not changed.');
             }
@@ -154,6 +198,9 @@ class CheckpointThreeSeeder extends Seeder
             $scenarios['monthly'] = ['business' => $business, 'campaign' => null, 'report' => $report,
                 'business_path' => route('business.audit-reports.show', ['business' => $business, 'report' => $report], false)];
             $pack = ['version' => 1, 'created_at' => now('UTC')->startOfSecond()->toIso8601String(), 'accounts' => $accounts, 'scenarios' => $scenarios];
+            if ($paidAt !== null) {
+                $pack['paid_at'] = $paidAt;
+            }
             DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
             DB::statement('SET CONSTRAINTS ALL DEFERRED');
             $this->writePack(self::PENDING, $pack);
@@ -268,6 +315,12 @@ class CheckpointThreeSeeder extends Seeder
             .'Business home]('.url($pack['scenarios']['live']['business_path']).")\n";
         $guide .= '- **Funded and paid out:** `business-funded'.self::DOMAIN.'` has an issued note; `investor-funded-1` and `investor-funded-2` hold it; `auditor-funded`'
             .' sees the platform fee share on Portfolio and Profile. [Business home]('.url($pack['scenarios']['funded']['business_path']).")\n";
+        $dueOn = self::firstDueOn($pack);
+        if ($dueOn !== null) {
+            $guide .= '- **Visit-ready checklist:** the funded note\'s first instalment is due '.$dueOn.', so `business-funded'.self::DOMAIN
+                .'` sees the checklist on Repayments. Run `php artisan business:remind-visit-ready` for the D−14 notice. [Repayments]('
+                .route('business.repayments.show', ['business' => $pack['scenarios']['funded']['business']]).")\n";
+        }
         $guide .= '- **Monthly report:** `business-monthly'.self::DOMAIN.'` co-signs or disputes it inside the 24-hour window. [Report]('
             .url($pack['scenarios']['monthly']['business_path']).")\n";
         if (! Storage::disk('local')->put(self::DIRECTORY.'/START-HERE.md', $guide)) {

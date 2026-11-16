@@ -121,9 +121,11 @@ it('never pays to a synthetically verified account where synthetic money is not 
     expect(($this->destinations)()->verified($business->id, $profile))->toBeNull();
 })->with([['production', false], ['demo', false], ['testing', true]]);
 
-it('leaves the disbursement binding unchanged: fixtures on testing, unavailable everywhere else', function (string $profile, string $expected): void {
+it('binds the disbursement destination: fixtures on testing, this producer on UAT while its money simulation is on, unavailable everywhere else', function (string $profile, bool $simulation, string $expected): void {
     app()->instance(EnvironmentIsolation::class, Mockery::mock(EnvironmentIsolation::class, ['profile' => $profile]));
+    config(['app.uat_money_simulation' => $simulation]);
 
     expect(get_class(app()->make(PayoutDestinations::class)))->toBe($expected);
-})->with([['testing', SyntheticDisbursementSources::class], ['uat', UnavailablePayoutDestinations::class],
-    ['demo', UnavailablePayoutDestinations::class], ['production', UnavailablePayoutDestinations::class]]);
+})->with([['testing', true, SyntheticDisbursementSources::class], ['uat', true, EloquentBusinessPayoutDestinations::class],
+    ['uat', false, UnavailablePayoutDestinations::class], ['demo', true, UnavailablePayoutDestinations::class],
+    ['production', true, UnavailablePayoutDestinations::class]]);

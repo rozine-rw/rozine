@@ -63,6 +63,7 @@ export type AdminOptionalSection =
     | 'complaints'
     | 'reports'
     | 'mail_testers'
+    | 'access_requests'
     | AdminPendingSection;
 
 /**
@@ -1046,6 +1047,14 @@ export type OnboardBusinessAction = RouteAction & {
     sectors: string[];
     districts: Record<string, string[]>;
     latest_year: number;
+    /** True when the link named an access request that is handled or no longer exists. */
+    request_closed: boolean;
+    /** Filled from an access request when staff open the form from one (#627). */
+    prefill: {
+        name: string;
+        rdb_code: string;
+        representative_email: string;
+    } | null;
 };
 
 export type AdminPartiesProps = AdminFrameShellProps & {
@@ -1147,7 +1156,9 @@ export type AdminLedgerProps = AdminShellProps & {
     more: RouteLink | null;
     /** The next older page, after the last row shown; null on the last page. */
     older: RouteLink | null;
-    /** Back to the newest page; null while on it. */
+    /** One page toward the newest (#623); null on the newest page. */
+    newer: RouteLink | null;
+    /** Back to the newest page, when that is more than one page away; null otherwise. */
     newest: RouteLink | null;
     entry: LedgerEntryDetail | null;
 };
@@ -2254,3 +2265,43 @@ export type AdminSystemHealthProps = AdminFrameShellProps &
         /** Worst first: critical, watch, healthy, then the untracked signals. */
         signals: HealthSignal[];
     };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Business and Auditor access requests from the launcher (#616)                               */
+/* ------------------------------------------------------------------------------------------ */
+
+export type AccessRequestRole = 'business' | 'auditor';
+
+/** One request as a person sent it from the launcher, with who sent it. */
+export type AccessRequestRow = {
+    id: string;
+    role: AccessRequestRole;
+    name: string;
+    email: string;
+    /** The business name; an Auditor may leave the firm blank. */
+    organization: string;
+    /** The RDB code a Business may give, or the ICPAR licence an Auditor must. */
+    reference: string | null;
+    phone: string | null;
+    note: string | null;
+    sent_at: string;
+    /**
+     * Null while the request is open. Once staff create the membership it asked for, that
+     * membership's status: the request is handled and leaves the open queue.
+     */
+    outcome: 'pending' | 'active' | 'suspended' | 'revoked' | null;
+    /** When that membership last changed (not when it was first granted); null while the request is open. */
+    handled_at: string | null;
+    /** Whether the requester's identity is verified, which granting the role needs. */
+    identity_verified: boolean;
+    /** Where staff grant this request: Onboard a business filled from it, or the Auditor Network. */
+    grant: RouteLink;
+};
+
+export type AdminAccessRequestsProps = AdminFrameShellProps & {
+    /** The kinds of request this viewer may act on. */
+    roles: AccessRequestRole[];
+    requests: AccessRequestRow[];
+    /** Where staff grant each kind: Onboard business, or the Auditor Network. */
+    links: Record<AccessRequestRole, RouteLink>;
+};

@@ -1,3 +1,4 @@
+import type { CancelToken } from '@inertiajs/core';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
@@ -9,6 +10,7 @@ import { MAIN_CONTENT_ID, SkipLink } from '@/components/rozine/skip-link';
 import { useChangeBeacon } from '@/hooks/use-change-beacon';
 import type { ChangeBeacon } from '@/hooks/use-change-beacon';
 import { useReconnectRefresh } from '@/hooks/use-reconnect-refresh';
+import { useSearchAsYouType } from '@/hooks/use-search-as-you-type';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import { logout } from '@/routes';
@@ -219,6 +221,15 @@ const GLYPHS: Record<AdminFrameSection, ReactNode> = {
             <circle cx="12" cy="10.5" r="2.2" />
         </>
     ),
+    access_requests: (
+        <>
+            <circle cx="10" cy="8" r="3.2" />
+            <path
+                d="M4 19c.8-3 3.2-4.6 6-4.6 1.2 0 2.3.3 3.2.8M18 13v6M15 16h6"
+                strokeLinecap="round"
+            />
+        </>
+    ),
     complaints: (
         <path
             d="M21 11.5a8.5 8.5 0 0 1-12.4 7.55L3.5 20.5l1.45-5.05A8.5 8.5 0 1 1 21 11.5Z"
@@ -288,7 +299,10 @@ const GROUPS: {
     items: AdminFrameSection[];
 }[] = [
     { group: null, items: ['today'] },
-    { group: 'accounts', items: ['businesses', 'investors', 'auditors'] },
+    {
+        group: 'accounts',
+        items: ['businesses', 'investors', 'auditors', 'access_requests'],
+    },
     {
         group: 'capital',
         items: ['applications', 'notes', 'primary_market', 'secondary_market'],
@@ -332,6 +346,8 @@ type AdminFrameProps = AdminFrameShellProps & {
      * the parameters a new search clears, such as a paging cursor or an open drawer.
      */
     searchQuery?: { param: string; clears: string[] };
+    /** False where the server applies no search, so the top bar shows no search box (#607). */
+    searchable?: boolean;
     /** A drawer over the content column. */
     overlay?: ReactNode;
     /** The live page's change beacon; a preview passes none, so nothing polls. */
@@ -352,6 +368,7 @@ export function AdminFrame({
     badges,
     search,
     searchQuery,
+    searchable = true,
     overlay,
     beacon,
     children,
@@ -362,23 +379,28 @@ export function AdminFrame({
     const [accountOpen, setAccountOpen] = useState(false);
     useReconnectRefresh();
     const title = t(`admin.section.${section}.title`);
+    /** The sidebar entry this page sits under, named before its title (#623). */
+    const parent = LIT_BY[section];
 
+    const runSearch = (
+        q: string,
+        onCancelToken: (token: CancelToken) => void,
+    ) => {
+        router.reload({
+            data:
+                searchQuery === undefined
+                    ? { q }
+                    : Object.fromEntries([
+                          [searchQuery.param, q],
+                          ...searchQuery.clears.map((key) => [key, undefined]),
+                      ]),
+            onCancelToken,
+        });
+    };
+    const typing = useSearchAsYouType(search, runSearch);
     const submitSearch = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const q = new FormData(event.currentTarget).get('q');
-
-        if (searchQuery === undefined) {
-            router.reload({ data: { q } });
-
-            return;
-        }
-
-        router.reload({
-            data: Object.fromEntries([
-                [searchQuery.param, q],
-                ...searchQuery.clears.map((key) => [key, undefined]),
-            ]),
-        });
+        typing.submit(String(new FormData(event.currentTarget).get('q')));
     };
 
     const sidebar = (
@@ -545,6 +567,15 @@ export function AdminFrame({
                                     />
                                 </svg>
                             </button>
+                            {parent && (
+                                <span
+                                    data-testid="frame-parent"
+                                    className="shrink-0 text-[13px] font-semibold text-rz-muted"
+                                >
+                                    {t(`admin.nav.${parent}`)}
+                                    <span aria-hidden> ›</span>
+                                </span>
+                            )}
                             <h1 className="truncate text-[15px] font-bold tracking-[-.01em] text-rz-ink">
                                 {title}
                             </h1>
@@ -554,43 +585,46 @@ export function AdminFrame({
                                 {t(`admin.section.${section}.subtitle`)}
                             </InfoTip>
                         </div>
-                        <form
-                            role="search"
-                            onSubmit={submitSearch}
-                            className="order-3 flex w-full items-center gap-2 rounded-[10px] border border-rz-hairline bg-rz-surface px-3 py-2 lg:order-none lg:w-[280px]"
-                        >
-                            <svg
-                                width="15"
-                                height="15"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                aria-hidden
+                        {searchable && (
+                            <form
+                                role="search"
+                                onSubmit={submitSearch}
+                                className="order-3 flex w-full items-center gap-2 rounded-[10px] border border-rz-hairline bg-rz-surface px-3 py-2 lg:order-none lg:w-[280px]"
                             >
-                                <circle
-                                    cx="11"
-                                    cy="11"
-                                    r="7"
-                                    stroke="#8a94a8"
-                                    strokeWidth="2"
+                                <svg
+                                    width="15"
+                                    height="15"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    aria-hidden
+                                >
+                                    <circle
+                                        cx="11"
+                                        cy="11"
+                                        r="7"
+                                        stroke="#8a94a8"
+                                        strokeWidth="2"
+                                    />
+                                    <path
+                                        d="m20 20-3-3"
+                                        stroke="#8a94a8"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                    />
+                                </svg>
+                                <input
+                                    type="search"
+                                    name="q"
+                                    defaultValue={search}
+                                    onChange={typing.onChange}
+                                    aria-label={t('admin.search.label')}
+                                    placeholder={t(
+                                        `admin.section.${section}.search`,
+                                    )}
+                                    className="min-w-0 flex-1 border-none bg-transparent text-[13px] text-rz-ink outline-none placeholder:text-rz-muted"
                                 />
-                                <path
-                                    d="m20 20-3-3"
-                                    stroke="#8a94a8"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                />
-                            </svg>
-                            <input
-                                type="search"
-                                name="q"
-                                defaultValue={search}
-                                aria-label={t('admin.search.label')}
-                                placeholder={t(
-                                    `admin.section.${section}.search`,
-                                )}
-                                className="min-w-0 flex-1 border-none bg-transparent text-[13px] text-rz-ink outline-none placeholder:text-rz-muted"
-                            />
-                        </form>
+                            </form>
+                        )}
                         <div className="relative">
                             <button
                                 type="button"

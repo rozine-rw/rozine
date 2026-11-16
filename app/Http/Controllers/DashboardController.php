@@ -8,6 +8,7 @@ use App\Application\Identity\AddInvestorAccess;
 use App\Application\Identity\GetIdentityContext;
 use App\Application\Identity\GetInvestorVerification;
 use App\Application\Identity\GetStaffAccess;
+use App\Application\Identity\RequestRoleAccess;
 use App\Http\Resources\IdentityContextResource;
 use App\Http\Resources\StaffAccessResource;
 use Illuminate\Http\Request;
@@ -19,9 +20,11 @@ class DashboardController extends Controller
     /**
      * The launcher. A person asked to verify their identity also gets where their own check stands,
      * so one already with Compliance is told it is under review instead of being asked again. A
-     * Business member who may add Investor access gets the terms they accept to do so.
+     * Business member who may add Investor access gets the terms they accept to do so. Business and
+     * Auditor access is asked for on the card itself (#616), so the launcher says which may be asked
+     * for and which were already sent.
      */
-    public function __invoke(Request $request, GetIdentityContext $identity, GetStaffAccess $staff, GetInvestorVerification $verification, AddInvestorAccess $investor): Response
+    public function __invoke(Request $request, GetIdentityContext $identity, GetStaffAccess $staff, GetInvestorVerification $verification, AddInvestorAccess $investor, RequestRoleAccess $access): Response
     {
         $userId = (int) $request->user()?->getAuthIdentifier();
         $context = $identity->handle($userId);
@@ -32,6 +35,7 @@ class DashboardController extends Controller
             'verification' => $context['code'] === 'IDENTITY_VERIFICATION_REQUIRED' ? $verification->stage($userId) : null,
             'investor_access' => in_array('identity.add_investor', $context['allowed_actions'], true) ? ['terms' => $investor->terms(),
                 'link' => ['url' => route('identity.investor-access.store', absolute: false), 'method' => 'post']] : null,
+            'access_requests' => [...$access->offer($userId), 'link' => ['url' => route('identity.access-requests.store', absolute: false), 'method' => 'post']],
         ]);
     }
 }
