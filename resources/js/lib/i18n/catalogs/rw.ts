@@ -7648,6 +7648,10 @@ const rw: Catalog = {
     'investor.checkout.risks.accept': 'Komeza',
     'investor.checkout.risks.failed':
         'Ntitwashoboye kubika igisubizo cyawe. Ongera ugerageze.',
+    'investor.risk_gate.later': 'Si ubu',
+    'investor.risk_gate.later_portfolio': 'Si ubu, jya kuri Ishoramari ryanjye',
+    'investor.risk_gate.money_page':
+        "Ikofi yawe, igitebo n'iyishyura bifunguka umaze kwemeza ibi.",
     'investor.checkout.c3.reserve_after_risks':
         "Banza wemeze amagambo y'ingaruka kugira ngo ubike.",
     'investor.checkout.c3.reserve_unavailable': 'Gufata ntibishoboka ubu.',

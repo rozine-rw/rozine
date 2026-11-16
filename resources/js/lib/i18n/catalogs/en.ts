@@ -7346,6 +7346,10 @@ const en = {
     'investor.checkout.risks.accept': 'Continue',
     'investor.checkout.risks.failed':
         "We couldn't record your answer. Try again.",
+    'investor.risk_gate.later': 'Not now',
+    'investor.risk_gate.later_portfolio': 'Not now, go to Portfolio',
+    'investor.risk_gate.money_page':
+        'Your wallet, cart and checkout open once you have confirmed these.',
     'investor.checkout.c3.reserve_after_risks':
         'Confirm the risk statements first to reserve.',
     'investor.checkout.c3.reserve_unavailable':
