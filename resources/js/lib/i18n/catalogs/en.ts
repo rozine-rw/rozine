@@ -1622,6 +1622,8 @@ const en = {
         'Compliance approves an identity check',
     'admin.messaging.trigger.verification.rejected':
         'Compliance sends an identity check back',
+    'admin.messaging.trigger.wallet.payout_received':
+        'Servicing pays a holder its share of a repayment',
     'admin.messaging.trigger.wallet.deposit_received':
         'The provider confirms a deposit',
     'admin.messaging.trigger.wallet.withdrawal_sent':
@@ -1655,6 +1657,8 @@ const en = {
         'A raise reaches its target',
     'admin.messaging.trigger.business.disbursement_sent':
         'Funds are released to the business wallet',
+    'admin.messaging.trigger.business.repayment_received':
+        'A business pays a repayment from its wallet',
     'admin.messaging.trigger.business.withdrawal_sent':
         'A business withdrawal is paid out',
     'admin.messaging.trigger.business.withdrawal_returned':
@@ -3329,7 +3333,7 @@ const en = {
     'business.wallet.export.label': 'Download statement',
     'business.wallet.export.pdf': 'Download PDF',
     'business.wallet.export.csv': 'Download CSV',
-    'business.wallet.caption': 'Fees, payouts & disbursements settle here',
+    'business.wallet.caption': 'Deposits & repayments settle here',
     'business.wallet.deposit.button': 'Deposit',
     'business.wallet.withdraw.button': 'Withdraw',
     'business.wallet.processing': 'Processing…',
@@ -3345,6 +3349,7 @@ const en = {
     'business.servicing.wallet.pending': '{amount} waiting to be confirmed',
     'business.servicing.wallet.to_repayments': 'Go to repayments',
     'business.servicing.wallet.movement': 'Movement type',
+    'business.servicing.wallet.filter.all': 'All',
     'business.servicing.wallet.filter.external': 'Deposits',
     'business.servicing.wallet.filter.internal': 'Repayments',
     'business.servicing.wallet.entry.deposit': 'Deposit · {counterparty}',
@@ -7162,6 +7167,9 @@ const en = {
         'Application approved',
     'investor.notices.business.application_approved.body':
         '{title} is approved for {amount} over {months} months. Review and sign to publish the raise.',
+    'investor.notices.business.repayment_received.title': 'Repayment received',
+    'investor.notices.business.repayment_received.body':
+        '{amount} was paid from your wallet to {title}, instalment {instalments}.',
     'investor.notices.business.withdrawal_sent.title': 'Withdrawal sent',
     'investor.notices.business.withdrawal_sent.body':
         '{amount} was sent to {account}.',
@@ -7274,6 +7282,9 @@ const en = {
         'Raise closed without full funding',
     'investor.notices.business.raise_expired.body':
         '{title} closed at its deadline with {committed} of {target} committed. Investors were refunded and no fee was charged.',
+    'investor.notices.wallet.payout_received.title': 'Payout received',
+    'investor.notices.wallet.payout_received.body':
+        '{net} reached your wallet from {title}, instalment {instalments}: {gross} less the {fee} earnings fee.',
     'investor.notices.wallet.deposit_received.title': 'Deposit received',
     'investor.notices.wallet.deposit_received.body':
         '{amount} is now in your wallet.',

@@ -32,8 +32,8 @@ class BusinessRepaymentsResource extends JsonResource
         $operation = route('business.repayments.operations.show', ['business' => $business, 'request_id' => $placeholder, 'command' => 'repayment.pay',
             'identity_context_revision' => $data['identity_context_revision']], false);
 
-        $lookup = fn (string $requestId): array => ['url' => route('business.repayments.operations.show', ['business' => $business, 'request_id' => $requestId,
-            'command' => 'repayment.pay', 'identity_context_revision' => $data['identity_context_revision']], false), 'method' => 'get'];
+        // A recorded repayment's receipt opens in the wallet, where the same debit is listed (QA #643).
+        $lookup = fn (string $repaymentId): array => ['url' => route('business.wallet.show', ['business' => $business, 'receipt' => $repaymentId], false), 'method' => 'get'];
         /** @var array<string, mixed>|null $statement */
         $statement = $data['statement'] ?? null;
         $servicing = $statement === null ? ['allowed_actions' => [], 'note' => null, 'servicing' => null, 'schedule' => [], 'ladder' => null, 'pay' => null, 'recent' => [], 'pay_action' => null]
@@ -51,7 +51,7 @@ class BusinessRepaymentsResource extends JsonResource
 
     /**
      * The repaying note's sheet: its servicing, schedule, what may be paid from the wallet now and
-     * its recent repayments, each with its receipt lookup.
+     * its recent repayments, each opening its receipt, as does each instalment a repayment paid.
      *
      * @param  array<string, mixed>  $statement
      * @param  array<string, mixed>  $available
@@ -72,9 +72,10 @@ class BusinessRepaymentsResource extends JsonResource
         $servicing = $statement['servicing'];
 
         return ['allowed_actions' => $options === [] ? [] : ['repayment.pay'], 'note' => $statement['note'], 'servicing' => $servicing,
-            'schedule' => $statement['schedule'], 'pay' => ['options' => $options, 'funding' => ['available' => $available, 'sufficient' => $sufficient,
-                'revision' => $servicing['revision']]],
-            'recent' => array_map(fn (array $row): array => [...array_diff_key($row, ['request_id' => true]), 'link' => $lookup((string) $row['request_id'])], $recent),
+            'schedule' => array_map(fn (array $row): array => [...array_diff_key($row, ['repayment_id' => true]),
+                'receipt' => isset($row['repayment_id']) ? $lookup((string) $row['repayment_id']) : null], $statement['schedule']), 'pay' => ['options' => $options, 'funding' => ['available' => $available, 'sufficient' => $sufficient,
+                    'revision' => $servicing['revision']]],
+            'recent' => array_map(fn (array $row): array => [...array_diff_key($row, ['request_id' => true]), 'link' => $lookup((string) $row['id'])], $recent),
             'pay_action' => $options === [] ? null : ['url' => $pay, 'method' => 'post']];
     }
 }

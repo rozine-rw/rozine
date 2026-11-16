@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Wallet;
 
+use App\Application\Business\Contracts\CampaignTitles;
 use App\Application\Business\Contracts\ServicingPayouts;
 use App\Application\Environment\UatMoneySimulation;
+use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Primary\Contracts\RetainedNoteSchedules;
 use App\Application\Primary\RetainedHoldingSchedule;
 use App\Application\Secondary\Contracts\NoteUnitHolders;
 use App\Application\Wallet\Contracts\WalletPostings;
+use App\Domain\Identity\PartyNoticeKind;
 use App\Models\BusinessRepayment;
 use App\Models\LedgerEntry;
 use App\Models\LedgerLine;
@@ -23,10 +26,10 @@ use RuntimeException;
 
 /**
  * Investor payouts on UAT while its money simulation is on (Erastus, 14 Nov 2026), until the
- * servicing domain (S4-C) replaces it. A repayment pays whole instalments, so its principal and
- * return are shared over the note's units as they are held when it is paid on (SEC-R07: a sold unit
- * pays its buyer), each lot by its units with the largest remainder going first, ties to the earlier
- * lot. The earnings fee is the rate the units' original Holding locked at checkout (INV-R04) on the
+ * servicing domain (S4-C) replaces it. A repayment pays whole instalments: each Holding's own
+ * scheduled principal and return for them, shared over the lots its units are held in when it is
+ * paid on (SEC-R07: a sold unit pays its buyer), each lot by its units with the largest remainder
+ * going first, ties to the earlier lot. The earnings fee is the rate the units' original Holding locked at checkout (INV-R04) on the
  * lot's return, half up (FEE-R01); principal is never charged. Each lot is one `servicing_payouts` row
  * and one `servicing_payout` entry: repayment clearing pays the gross, the holder's available balance
  * gets the net and `earnings_fee_revenue` the fee. Wallets lock in Party id order.
@@ -36,7 +39,7 @@ final readonly class SimulatedServicingPayouts implements ServicingPayouts
     public const string POLICY_VERSION = 'uat-simulation-v1';
 
     public function __construct(private RetainedNoteSchedules $schedules, private NoteUnitHolders $holders, private WalletPostings $wallets,
-        private CanonicalJson $json, private UatMoneySimulation $simulation) {}
+        private CanonicalJson $json, private UatMoneySimulation $simulation, private PartyNotices $notices, private CampaignTitles $titles) {}
 
     public function payOut(string $repaymentId): int
     {
@@ -55,18 +58,37 @@ final readonly class SimulatedServicingPayouts implements ServicingPayouts
             $schedule = $this->schedules->find($campaignId) ?? throw new RuntimeException('SERVICING_NOTE_NOT_ISSUED');
             /** @var list<int> $indexes */
             $indexes = $repayment->payload['instalment_indexes'];
-            $principal = BigInteger::zero();
-            $return = BigInteger::zero();
-            foreach ($schedule->instalments as $instalment) {
-                if (in_array($instalment->index, $indexes, true)) {
-                    $principal = $principal->plus($instalment->principal);
-                    $return = $return->plus($instalment->contractualReturn);
+            $lots = $this->holders->lots($campaignId);
+            // Each lot is paid from the Holding its units were issued in: that Holding's own scheduled
+            // rows for the instalments paid, shared over its lots by units (QA #645). A Holding never
+            // sold keeps exactly its schedule; the note's instalment is the sum of its Holdings' rows.
+            $groups = [];
+            foreach ($lots as $position => $lot) {
+                $groups[$this->holding($schedule->holdings, (int) $lot['ordinals'][0]['first'])][] = $position;
+            }
+            $principals = [];
+            $returns = [];
+            foreach ($schedule->holdings as $offset => $holding) {
+                $positions = $groups[$offset] ?? [];
+                if ($positions === []) {
+                    continue;
+                }
+                $principal = BigInteger::zero();
+                $return = BigInteger::zero();
+                foreach ($holding->instalments as $instalment) {
+                    if (in_array($instalment->index, $indexes, true)) {
+                        $principal = $principal->plus($instalment->principal);
+                        $return = $return->plus($instalment->contractualReturn);
+                    }
+                }
+                $units = array_map(fn (int $position): BigInteger => BigInteger::of($lots[$position]['units']), $positions);
+                foreach (self::share($principal, $units) as $at => $share) {
+                    $principals[$positions[$at]] = $share;
+                }
+                foreach (self::share($return, $units) as $at => $share) {
+                    $returns[$positions[$at]] = $share;
                 }
             }
-            $lots = $this->holders->lots($campaignId);
-            $units = array_map(fn (array $lot): BigInteger => BigInteger::of($lot['units']), $lots);
-            $principals = self::share($principal, $units);
-            $returns = self::share($return, $units);
 
             $locked = [];
             $parties = array_values(array_unique(array_map(fn (array $lot): string => $lot['party_id'], $lots)));
@@ -75,6 +97,7 @@ final readonly class SimulatedServicingPayouts implements ServicingPayouts
                 $locked[$party] = $this->wallets->lockForParty($party);
             }
             $paid = 0;
+            $received = [];
             foreach ($lots as $position => $lot) {
                 $rate = $this->rate($schedule->holdings, (int) $lot['ordinals'][0]['first']);
                 $fee = $returns[$position]->multipliedBy($rate)->dividedBy(10000, RoundingMode::HalfUp);
@@ -82,6 +105,16 @@ final readonly class SimulatedServicingPayouts implements ServicingPayouts
                 $net = $principals[$position]->plus($returns[$position])->minus($fee);
                 $this->post($repayment, $lot, $locked[$lot['party_id']]->walletId, $indexes, $principals[$position], $returns[$position], $fee, $net, $rate);
                 $paid++;
+                $sum = $received[$lot['party_id']] ?? ['gross' => BigInteger::zero(), 'fee' => BigInteger::zero(), 'net' => BigInteger::zero()];
+                $received[$lot['party_id']] = ['gross' => $sum['gross']->plus($principals[$position])->plus($returns[$position]),
+                    'fee' => $sum['fee']->plus($fee), 'net' => $sum['net']->plus($net)];
+            }
+            // Each holder hears once per repayment what reached its wallet (QA #645).
+            $title = $received === [] ? '' : $this->titles->title($campaignId);
+            foreach ($received as $party => $sum) {
+                $this->notices->record($party, PartyNoticeKind::PayoutReceived, ['amount' => (string) $sum['net'], 'currency' => 'RWF',
+                    'gross' => (string) $sum['gross'], 'fee' => (string) $sum['fee'], 'title' => $title, 'instalments' => implode(', ', $indexes)],
+                    'servicing-payout:'.$repayment->id.':'.$party);
             }
             DB::statement('SET CONSTRAINTS ledger_entries_balanced, ledger_lines_entry_balanced, ledger_entries_servicing_payout_bound, ledger_lines_entry_servicing_payout_bound, servicing_payouts_posted IMMEDIATE');
             DB::statement('SET CONSTRAINTS ledger_entries_balanced, ledger_lines_entry_balanced, ledger_entries_servicing_payout_bound, ledger_lines_entry_servicing_payout_bound, servicing_payouts_posted DEFERRED');
@@ -116,6 +149,24 @@ final readonly class SimulatedServicingPayouts implements ServicingPayouts
         }
 
         return array_values($shares);
+    }
+
+    /**
+     * The position of the Holding a unit ordinal was issued in.
+     *
+     * @param  list<RetainedHoldingSchedule>  $holdings
+     */
+    private function holding(array $holdings, int $ordinal): int
+    {
+        foreach ($holdings as $offset => $holding) {
+            foreach ($holding->ordinals as $range) {
+                if ($ordinal >= $range['first'] && $ordinal <= $range['last']) {
+                    return $offset;
+                }
+            }
+        }
+
+        throw new RuntimeException('SERVICING_LOT_HOLDING_UNKNOWN');
     }
 
     /**

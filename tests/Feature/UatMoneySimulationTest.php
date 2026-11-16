@@ -50,6 +50,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Testing\Fluent\AssertableJson;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryHoldingFixture;
@@ -374,6 +375,48 @@ it('moves the raise on once its payout settles, and Home past a paid instalment'
             && $item['due_on'] === $schedule->instalments[1]->dueDate))->etc());
 });
 
+it('lists a repayment in the Business wallet with its receipt, opens it from Repayments, and notifies the Business (QA #643)', function (): void {
+    $note = simulatedIssuedNote();
+    $schedule = app(RetainedNoteSchedules::class)->find($note['campaign']);
+    $gross = $schedule->instalments[0]->gross;
+    $this->actingAs($note['payer'])->postJson(route('business.repayments.pay', $note['business']),
+        ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, 'note_id' => $note['campaign'], 'option' => 'next_instalment',
+            'expected_servicing_revision' => 1, 'quoted_total' => ['currency' => 'RWF', 'amount' => $gross]])->assertOk();
+    $repayment = DB::table('business_repayments')->where('note_id', strtolower($note['campaign']))->sole();
+    $receipt = route('business.wallet.show', ['business' => $note['business'], 'receipt' => $repayment->id], false);
+
+    $this->actingAs($note['payer'])->get(route('business.wallet.show', ['business' => $note['business'], 'movement' => 'internal']))
+        ->assertInertia(fn (Assert $page): Assert => $page->has('history.items', 1)->where('history.items.0.id', $repayment->id)
+            ->where('history.items.0.kind', 'repayment')->where('history.items.0.direction', 'out')->where('history.items.0.amount.amount', $gross)
+            ->where('history.items.0.instalment_indexes', [1])->where('history.items.0.link.url', $receipt)->etc());
+    $all = $this->actingAs($note['payer'])->get(route('business.wallet.show', $note['business']))->viewData('page')['props']['history'];
+    $ids = array_column($all['items'], 'id');
+    $newestFirst = $ids;
+    rsort($newestFirst);
+    expect($all['movement'])->toBe('all')->and(array_column($all['filters'], 'key'))->toBe(['all', 'external', 'internal'])
+        ->and($ids)->toContain($repayment->id)->and($ids)->toBe($newestFirst);
+    $this->actingAs($note['payer'])->get($receipt)
+        ->assertInertia(fn (Assert $page): Assert => $page->where('receipt.kind', 'repayment')->where('receipt.receipt.code', 'REPAYMENT_RECEIVED')
+            ->where('receipt.receipt.reference', 'RZR-'.strtoupper(substr($repayment->id, -10)))->etc());
+    $this->actingAs($note['payer'])->get(route('business.repayments.show', $note['business']))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('recent.0.link.url', $receipt)->where('schedule.0.receipt.url', $receipt)
+            ->where('schedule.1.receipt', null)->missing('schedule.0.repayment_id')->etc());
+    $this->actingAs($note['payer'])->getJson(route('business.notices.index', $note['business']))->assertOk()
+        ->assertJson(fn (AssertableJson $json): AssertableJson => $json->where('data.notices.0.kind', 'business.repayment_received')
+            ->where('data.notices.0.facts.amount', $gross)->where('data.notices.0.facts.instalments', '1')->where('data.notices.0.link.url', $receipt)->etc());
+    $payout = DB::table('servicing_payouts')->where('repayment_id', $repayment->id)->where('party_id', $schedule->holdings[0]->partyId)->sole();
+    // An unsold Holding is paid exactly its own scheduled row, the split its schedule shows (QA #645).
+    expect([$payout->principal, $payout->contractual_return])
+        ->toBe([$schedule->holdings[0]->instalments[0]->principal, $schedule->holdings[0]->instalments[0]->contractualReturn]);
+    $holder = User::query()->where('party_id', $schedule->holdings[0]->partyId)->sole();
+    app()->forgetInstance(EnvironmentIsolation::class);
+    $this->actingAs($holder)->getJson(route('investor.notices'))->assertOk()
+        ->assertJson(fn (AssertableJson $json): AssertableJson => $json->where('data.notices.0.kind', 'wallet.payout_received')
+            ->where('data.notices.0.facts.amount', $payout->net)->where('data.notices.0.facts.fee', $payout->fee)
+            ->where('data.notices.0.facts.gross', (string) ((int) $payout->principal + (int) $payout->contractual_return))
+            ->where('data.notices.0.link.url', route('investor.wallet', [], false))->etc());
+});
+
 it('refuses a repayment whose payout cannot post, so nothing is collected without paying its holders', function (): void {
     $note = simulatedIssuedNote();
     $schedule = app(RetainedNoteSchedules::class)->find($note['campaign']);
@@ -441,6 +484,16 @@ it('pays a sold unit\'s share to whoever holds it at collection, and a later res
         ->and($bought->rate_bps)->toBe($seller->terms['earnings_fee']['rate_bps'])
         ->and((string) DB::table('servicing_payouts')->sum('principal'))->toBe($schedule->instalments[0]->principal)
         ->and(investorAvailable($buyer))->toBe((string) $bought->net);
+    // The resold Holding's own row is shared 1000:80 between seller and buyer, the unsold one is paid its row exactly,
+    // and together they reconcile to the repayment (QA #645).
+    $kept = DB::table('servicing_payouts')->where('lot_id', $seller->holdingId)->sole();
+    $other = DB::table('servicing_payouts')->where('lot_id', $schedule->holdings[1]->holdingId)->sole();
+    $row = $seller->instalments[0];
+    expect((int) $kept->principal + (int) $bought->principal)->toBe((int) $row->principal)
+        ->and((int) $kept->contractual_return + (int) $bought->contractual_return)->toBe((int) $row->contractualReturn)
+        ->and((int) $bought->principal)->toBe(intdiv((int) $row->principal * 80, 1080) + ((int) $row->principal * 80 % 1080 * 2 > 1080 ? 1 : 0))
+        ->and([$other->principal, $other->contractual_return])->toBe([$schedule->holdings[1]->instalments[0]->principal, $schedule->holdings[1]->instalments[0]->contractualReturn])
+        ->and((int) DB::table('servicing_payouts')->sum(DB::raw('principal + contractual_return')))->toBe((int) DB::table('business_repayments')->value('amount'));
 
     // The buyer resells all 80 units after collection: the repayment already paid stays with the holder at collection.
     $later = $this->createStub(NoteUnitHolders::class);

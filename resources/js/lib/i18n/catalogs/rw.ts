@@ -1704,6 +1704,8 @@ const rw: Catalog = {
         'Ishami ry’iyubahirizwa ryemeje igenzura ry’umwirondoro',
     'admin.messaging.trigger.verification.rejected':
         'Ishami ry’iyubahirizwa risubije igenzura ry’umwirondoro',
+    'admin.messaging.trigger.wallet.payout_received':
+        'Serivisi yishyura nyir’impapuro umugabane we w’ubwishyu',
     'admin.messaging.trigger.wallet.deposit_received':
         'Utanga serivisi yemeje kubitsa',
     'admin.messaging.trigger.wallet.withdrawal_sent':
@@ -1737,6 +1739,8 @@ const rw: Catalog = {
         'Ikusanya rigeze ku ntego yaryo',
     'admin.messaging.trigger.business.disbursement_sent':
         'Amafaranga yoherejwe mu ikofi y’ikigo',
+    'admin.messaging.trigger.business.repayment_received':
+        'Ikigo cyishyura inguzanyo kivuye mu gikapu cyacyo',
     'admin.messaging.trigger.business.withdrawal_sent':
         'Amafaranga ikigo cyabikuje yoherejwe',
     'admin.messaging.trigger.business.withdrawal_returned':
@@ -3477,8 +3481,7 @@ const rw: Catalog = {
     'business.wallet.export.label': 'Kuramo raporo y’ikofi',
     'business.wallet.export.pdf': 'Kuramo PDF',
     'business.wallet.export.csv': 'Kuramo CSV',
-    'business.wallet.caption':
-        'Amafaranga ya serivisi, ayishyurwa n’ayatanzwe anyura hano',
+    'business.wallet.caption': 'Amafaranga yashyizwemo n’ayishyuwe anyura hano',
     'business.wallet.deposit.button': 'Shyiramo',
     'business.wallet.withdraw.button': 'Bikuza',
     'business.wallet.processing': 'Birimo gukorwa…',
@@ -3495,6 +3498,7 @@ const rw: Catalog = {
     'business.servicing.wallet.pending': '{amount} bitegereje kwemezwa',
     'business.servicing.wallet.to_repayments': 'Jya ku kwishyura',
     'business.servicing.wallet.movement': "Ubwoko bw'igikorwa",
+    'business.servicing.wallet.filter.all': 'Byose',
     'business.servicing.wallet.filter.external': 'Ibyabikijwe',
     'business.servicing.wallet.filter.internal': 'Ibyishyuwe',
     'business.servicing.wallet.entry.deposit': 'Kubitsa · {counterparty}',
@@ -7461,6 +7465,9 @@ const rw: Catalog = {
     'investor.notices.business.application_approved.title': 'Ubusabe bwemejwe',
     'investor.notices.business.application_approved.body':
         '{title} yemerewe {amount} mu mezi {months}. Suzuma kandi usinye kugira ngo ikusanyamari ritangazwe.',
+    'investor.notices.business.repayment_received.title': 'Kwishyura kwakiriwe',
+    'investor.notices.business.repayment_received.body':
+        '{amount} yishyuwe ivuye mu gikapu cyawe kuri {title}, igice {instalments}.',
     'investor.notices.business.withdrawal_sent.title': 'Ibyabikujwe byoherejwe',
     'investor.notices.business.withdrawal_sent.body':
         '{amount} byoherejwe kuri {account}.',
@@ -7574,6 +7581,9 @@ const rw: Catalog = {
         'Ubukangurambaga bwarangiye budashyitse',
     'investor.notices.business.raise_expired.body':
         '{title} yarangiye igihe cyayo kigeze hamaze kwemezwa {committed} kuri {target}. Abashoramari basubijwe amafaranga yabo, nta kiguzi cyakwa.',
+    'investor.notices.wallet.payout_received.title': 'Ubwishyu bwakiriwe',
+    'investor.notices.wallet.payout_received.body':
+        '{net} yageze mu gikapu cyawe ivuye kuri {title}, igice {instalments}: {gross} ukuyemo {fee} y’amafaranga ku nyungu.',
     'investor.notices.wallet.deposit_received.title':
         'Amafaranga yashyizwe kuri konti',
     'investor.notices.wallet.deposit_received.body':

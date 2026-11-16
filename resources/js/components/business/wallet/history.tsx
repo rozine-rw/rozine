@@ -329,7 +329,7 @@ export function WalletHistory({
                         >
                             <DirectionTile direction={entry.direction} />
                             <span className="min-w-0 flex-1">
-                                <span className="block truncate text-[12.5px] font-semibold text-rz-ink">
+                                <span className="block text-[12.5px] font-semibold break-words text-rz-ink">
                                     {label(entry)}
                                 </span>
                                 <span className="mt-px block text-[11px] text-rz-secondary">

@@ -1715,6 +1715,8 @@ const fr: Catalog = {
         'La conformité approuve une vérification d’identité',
     'admin.messaging.trigger.verification.rejected':
         'La conformité renvoie une vérification d’identité',
+    'admin.messaging.trigger.wallet.payout_received':
+        'Le service verse à un détenteur sa part d’un remboursement',
     'admin.messaging.trigger.wallet.deposit_received':
         'Le prestataire confirme un dépôt',
     'admin.messaging.trigger.wallet.withdrawal_sent': 'Un retrait est versé',
@@ -1748,6 +1750,8 @@ const fr: Catalog = {
         'Une levée atteint son objectif',
     'admin.messaging.trigger.business.disbursement_sent':
         'Les fonds sont versés sur le portefeuille de l’entreprise',
+    'admin.messaging.trigger.business.repayment_received':
+        'Une entreprise paie un remboursement depuis son portefeuille',
     'admin.messaging.trigger.business.withdrawal_sent':
         'Un retrait de l’entreprise est versé',
     'admin.messaging.trigger.business.withdrawal_returned':
@@ -3491,8 +3495,7 @@ const fr: Catalog = {
     'business.wallet.export.label': 'Télécharger le relevé',
     'business.wallet.export.pdf': 'Télécharger le PDF',
     'business.wallet.export.csv': 'Télécharger le CSV',
-    'business.wallet.caption':
-        'Frais, versements et décaissements sont réglés ici',
+    'business.wallet.caption': 'Dépôts et remboursements sont réglés ici',
     'business.wallet.deposit.button': 'Déposer',
     'business.wallet.withdraw.button': 'Retirer',
     'business.wallet.processing': 'Traitement…',
@@ -3509,6 +3512,7 @@ const fr: Catalog = {
     'business.servicing.wallet.pending': '{amount} en attente de confirmation',
     'business.servicing.wallet.to_repayments': 'Aller aux remboursements',
     'business.servicing.wallet.movement': 'Type de mouvement',
+    'business.servicing.wallet.filter.all': 'Tout',
     'business.servicing.wallet.filter.external': 'Dépôts',
     'business.servicing.wallet.filter.internal': 'Remboursements',
     'business.servicing.wallet.entry.deposit': 'Dépôt · {counterparty}',
@@ -7489,6 +7493,9 @@ const fr: Catalog = {
     'investor.notices.business.application_approved.title': 'Demande approuvée',
     'investor.notices.business.application_approved.body':
         '{title} est approuvée pour {amount} sur {months} mois. Relisez et signez pour publier la levée.',
+    'investor.notices.business.repayment_received.title': 'Remboursement reçu',
+    'investor.notices.business.repayment_received.body':
+        '{amount} a été payé depuis votre portefeuille pour {title}, échéance {instalments}.',
     'investor.notices.business.withdrawal_sent.title': 'Retrait envoyé',
     'investor.notices.business.withdrawal_sent.body':
         '{amount} a été envoyé vers {account}.',
@@ -7601,6 +7608,9 @@ const fr: Catalog = {
         'Levée clôturée sans financement complet',
     'investor.notices.business.raise_expired.body':
         "{title} s'est clôturée à son échéance avec {committed} engagés sur {target}. Les investisseurs ont été remboursés et aucun frais n'a été prélevé.",
+    'investor.notices.wallet.payout_received.title': 'Paiement reçu',
+    'investor.notices.wallet.payout_received.body':
+        '{net} est arrivé dans votre portefeuille de {title}, échéance {instalments} : {gross} moins {fee} de frais sur les gains.',
     'investor.notices.wallet.deposit_received.title': 'Dépôt reçu',
     'investor.notices.wallet.deposit_received.body':
         '{amount} est maintenant dans votre portefeuille.',

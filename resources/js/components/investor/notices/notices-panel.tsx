@@ -30,6 +30,11 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
         tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
         icon: <path d="M12 5v14M5 12l7 7 7-7" {...stroke} />,
     },
+    'wallet.payout_received': {
+        bar: 'bg-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        icon: <path d="M4 17l5-5 4 4 7-7M14 9h6v6" {...stroke} />,
+    },
     'wallet.withdrawal_sent': {
         bar: 'bg-[#0c1830] dark:bg-rz-slate',
         tile: 'bg-[rgba(12,24,48,.08)] text-[#0c1830] dark:text-rz-ink',
@@ -154,6 +159,11 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
         bar: 'bg-[#0c1830] dark:bg-rz-slate',
         tile: 'bg-[rgba(12,24,48,.08)] text-[#0c1830] dark:text-rz-ink',
         icon: <path d="M12 19V5M5 12l7-7 7 7" {...stroke} />,
+    },
+    'business.repayment_received': {
+        bar: 'bg-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
     },
     'business.withdrawal_returned': {
         bar: 'bg-[#b07a12]',
@@ -683,6 +693,20 @@ function body(
             return t('investor.notices.wallet.deposit_received.body', {
                 amount: formatRwf(notice.facts),
             });
+        case 'wallet.payout_received':
+            return t('investor.notices.wallet.payout_received.body', {
+                net: formatRwf(notice.facts),
+                gross: formatRwf({
+                    currency: notice.facts.currency,
+                    amount: notice.facts.gross,
+                }),
+                fee: formatRwf({
+                    currency: notice.facts.currency,
+                    amount: notice.facts.fee,
+                }),
+                title: notice.facts.title,
+                instalments: notice.facts.instalments,
+            });
         case 'wallet.withdrawal_sent':
             return t('investor.notices.wallet.withdrawal_sent.body', {
                 amount: formatRwf({
@@ -805,6 +829,12 @@ function body(
                 title: notice.facts.title,
                 amount: formatRwf(notice.facts),
                 months: notice.facts.term_months,
+            });
+        case 'business.repayment_received':
+            return t('investor.notices.business.repayment_received.body', {
+                amount: formatRwf(notice.facts),
+                title: notice.facts.title,
+                instalments: notice.facts.instalments,
             });
         case 'business.withdrawal_sent':
             return t('investor.notices.business.withdrawal_sent.body', {
