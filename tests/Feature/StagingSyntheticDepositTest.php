@@ -159,12 +159,24 @@ it('refuses a new Business deposit on UAT while its money simulation is off and 
         ->and(BusinessDepositCredit::query()->count())->toBe(1)->and(WalletProviderEvent::query()->count())->toBe(0);
 });
 
-it('lets a Business deposit and withdraw on UAT while its money simulation is on, so it can repay a raise', function (): void {
+it('lets a Business deposit and withdraw on UAT only while its money simulation is on and names that Business, so it can repay a raise', function (): void {
     $business = stagingBusiness();
     asStaging();
     expect(config('app.uat_money_simulation'))->toBeFalse();
     config(['app.uat_money_simulation' => true]);
 
+    // The switch alone opens nothing: an empty list, or a list naming another Business, refuses deposits and withdrawals.
+    foreach ([[], [strtolower((string) Str::ulid())]] as $named) {
+        config(['app.uat_money_simulation_businesses' => $named]);
+        $this->actingAs($business['user'])->postJson(route('business.wallet.deposit', $business['business']->id), stagingDeposit($business['method'], '40000'))
+            ->assertForbidden()->assertJsonPath('code', 'SYNTHETIC_BUSINESS_FUNDING_OFF');
+        $this->postJson(route('business.wallet.withdraw', $business['business']->id), stagingDeposit($business['method'], '1000'))
+            ->assertForbidden()->assertJsonPath('code', 'SYNTHETIC_BUSINESS_FUNDING_OFF');
+        expect(app(GetBusinessWallet::class)->handle($business['user']->id, 1, $business['business']->id)['allowed_actions'])->toBe([])
+            ->and(BusinessDepositIntent::query()->count())->toBe(0);
+    }
+
+    config(['app.uat_money_simulation_businesses' => [strtoupper($business['business']->id)]]);
     $this->actingAs($business['user'])->postJson(route('business.wallet.deposit', $business['business']->id), stagingDeposit($business['method'], '40000'))->assertOk();
     expect(app(GetBusinessWallet::class)->handle($business['user']->id, 1, $business['business']->id)['allowed_actions'])->toBe(['business.wallet.deposit', 'business.wallet.withdraw'])
         ->and(BusinessDepositIntent::query()->count())->toBe(1);
