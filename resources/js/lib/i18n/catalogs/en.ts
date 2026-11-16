@@ -862,7 +862,7 @@ const en = {
         'Your registration details and your bank and mobile money statements, uploaded in the app. The app tells you if anything else is needed.\n\nThere is no application fee during the sandbox.',
     'business.help.capacity.how.q': 'How is the size of my note decided?',
     'business.help.capacity.how.a':
-        'Rozine works out the cash your business has left each month after operating costs, owner drawings and other debt payments, and sizes the note so that this cash covers the monthly instalment 1.5 times. A business that would cover it less than 1.25 times is not offered a note.\n\nA note is never more than 35% of your verified annual revenue, and is between RWF 3,000,000 and 100,000,000.',
+        'Rozine works out the cash your business has left each month after operating costs, owner drawings and other debt payments. Every actual monthly instalment on the amount you request must have at least 1.50 coverage. A request below 1.50 is rejected before sizing or other caps; it is not automatically reduced into an offer. Capacity for a smaller new request is separate.\n\nA note is never more than 35% of your verified annual revenue, and is between RWF 3,000,000 and 100,000,000.',
     'business.help.capacity.rate.q': 'What return will I pay?',
     'business.help.capacity.rate.a':
         'A total return of 10.0% to 15.0% of principal for the whole term, set by your rating, with a small premium for longer terms. It is fixed when the raise opens.\n\nA later change in your rating never changes the terms of a note already issued.',
@@ -1779,7 +1779,7 @@ const en = {
     'admin.engine.weak': 'Weak',
     'admin.engine.distressed': 'Distressed',
     'admin.design.engines.sizing.sub':
-        'All four limits apply and the lowest binds: capacity at the target DSCR, the amount asked, the largest raise and the exposure room left. A raise below the smallest is refused. The result is then stepped down until DSCR holds at the target, and rounded down to the issuance unit.',
+        'First reject the original request if any actual instalment has coverage below 1.50; a smaller amount cannot turn that rejection into an offer. For an affordable request, the lowest of cash-flow capacity, the amount asked, the largest raise and remaining exposure room applies. Refuse a raise below the minimum and recheck every instalment after issuance-unit rounding. Capacity for a smaller new request is separate.',
     'admin.design.ratings.movers.title': 'What moves a rating',
     'admin.design.ratings.movers.sub':
         'Each verified statement recomputes the financial inputs, so revenue and cash moving up or down move the rating. Repayments and monthly reports move conduct, and the caps hold a rating down while arrears, a reporting breach or a default stand. No staff override exists.',
@@ -2139,7 +2139,7 @@ const en = {
     'admin.decision.reason_code.CURRENT_RELEASE_REVIEW_REQUIRED':
         'Current release review required: a retained quote is not a current approval. Check the release gates below.',
     'admin.decision.reason_code.DSCR_BELOW_CUTOFF':
-        'Coverage below 1.25: cash flow cannot carry the instalment.',
+        'Coverage below 1.50: cash flow cannot carry every requested instalment with the required margin.',
     'admin.decision.reason_code.RESTRICTION_ACTIVE':
         'An active credit restriction blocks new borrowing.',
     'admin.applications.term_only': '{term}mo',
@@ -3721,7 +3721,7 @@ const en = {
     'business.rating.sizing.term': 'Term and rate sized on',
     'business.rating.sizing.term_value': '{months} months · {rate}% flat',
     'business.rating.sizing.explainer':
-        'Your capacity is what the cash your business keeps each month can repay with that margin of safety, capped by the lowest of the three limits above. Nobody at Rozine sets this number by hand. Headroom is that capacity less the raises you have signed since it was sized; every new application is sized again on fresh statements.',
+        'Your capacity is what the cash your business keeps each month can repay with that margin of safety, capped by the lowest of the three limits above. It can guide a smaller new request, but does not approve or automatically reduce a request whose instalments fail 1.50 coverage. Nobody at Rozine sets this number by hand. Headroom is that capacity less the raises you have signed since it was sized; every new application is sized again on fresh statements.',
     'business.rating.limits': 'Three limits · the lowest one applies',
     'business.rating.limit.cash_flow': 'What your cash carries',
     'business.rating.limit.cash_flow_detail':
@@ -7507,7 +7507,7 @@ const en = {
     'auditor.academy.lesson.numbers.topic1.option3': 'RWF 5,500,000',
     'auditor.academy.lesson.numbers.topic2.title': 'Coverage and the offer',
     'auditor.academy.lesson.numbers.topic2.body':
-        'Coverage is CFADS divided by the proposed instalment. The offer is the lowest of the request, the amount at 1.50 coverage, 35% of verified annual revenue and RWF 100,000,000. Your on-site checks confirm the records these numbers are built on.',
+        'Coverage is CFADS divided by each proposed monthly instalment. Reject the original request if any actual instalment has less than 1.50 coverage, before sizing or other caps. Capacity for a smaller new request is not an automatic counteroffer. An affordable offer remains limited by the request, cash-flow capacity, 35% of verified annual revenue and RWF 100,000,000. Your on-site checks confirm the records these numbers are built on.',
     'auditor.academy.lesson.numbers.topic2.q':
         'At what coverage does Rozine size an offer?',
     'auditor.academy.lesson.numbers.topic2.option1': '1.00',
