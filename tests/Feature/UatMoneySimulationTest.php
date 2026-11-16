@@ -43,6 +43,7 @@ use App\Models\BusinessMandate;
 use App\Models\Disbursement;
 use App\Models\DisbursementClosing;
 use App\Models\DisbursementIntent;
+use App\Models\SecondaryTransfer;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
@@ -321,6 +322,56 @@ it('lists, reserves, buys and withdraws resale units from the Market page on UAT
     $this->actingAs($seller)->postJson(route('investor.market_withdraw', $again), $command([]))->assertOk()->assertJsonPath('code', 'SECONDARY_LISTING_CANCELLED');
     $this->actingAs($seller)->postJson(route('investor.market_list'), $command(['lot_id' => $holding->holdingId, 'units' => '0', 'price' => $price]))
         ->assertUnprocessable();
+});
+
+it('shows a resale on both sides: the buyer\'s units in Portfolio and both wallets\' lines with receipts, and the seller\'s holding less what it sold (QA #656)', function (): void {
+    $buyer = InvestorWalletFixture::funded('2000000')['user'];
+    $note = simulatedIssuedNote();
+    $holding = app(RetainedNoteSchedules::class)->find($note['campaign'])->holdings[0];
+    $seller = User::query()->where('party_id', $holding->partyId)->sole();
+    $command = fn (array $input): array => ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, ...$input];
+    $title = app(CampaignTitles::class)->title($note['campaign']);
+    $cap = null;
+    $this->actingAs($seller)->get(route('investor.market'))->assertInertia(function (Assert $page) use (&$cap): Assert {
+        $cap = $page->toArray()['props']['market']['sellable'][0]['cap']['amount'];
+
+        return $page;
+    });
+    $price = (string) intdiv((int) $cap, 2);
+    $listed = $this->actingAs($seller)->postJson(route('investor.market_list'), $command(['lot_id' => $holding->holdingId, 'units' => '10', 'price' => $price]))
+        ->assertOk()->json('data.listing.listing_id');
+    $reservation = $this->actingAs($buyer)->postJson(route('investor.market_reserve', $listed), $command(['units' => '2']))
+        ->assertOk()->json('data.reservation.reservation_id');
+    $this->actingAs($buyer)->postJson(route('investor.market_settle', $listed), $command(['reservation_id' => $reservation]))->assertOk();
+    $transfer = SecondaryTransfer::query()->where('reservation_id', $reservation)->sole();
+    $paid = (string) ((int) $price * 2);
+
+    $bought = null;
+    $this->actingAs($buyer)->get(route('investor.wallet', ['movement' => 'external']))
+        ->assertInertia(function (Assert $page) use ($title, $paid, &$bought): Assert {
+            $bought = $page->toArray()['props']['history']['items'][0]['id'];
+
+            return $page->where('history.items.0.kind', 'resale')->where('history.items.0.direction', 'out')->where('history.items.0.amount.amount', $paid)
+                ->where('history.items.0.counterparty', $title)->where('history.items.0.units', '2')->etc();
+        });
+    $this->actingAs($buyer)->get(route('investor.wallet', ['receipt' => $bought]))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('receipt.receipt.code', 'SECONDARY_SETTLED')->where('receipt.receipt.amount.amount', $paid)
+            ->where('receipt.receipt.units', '2')->where('receipt.kind', 'resale')->etc());
+    $this->actingAs($seller)->get(route('investor.wallet', ['movement' => 'external']))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('history.items.0.kind', 'resale')->where('history.items.0.direction', 'in')
+            ->where('history.items.0.amount.amount', $transfer->seller_receives)->where('history.items.0.counterparty', $title)->etc());
+
+    // Reading what is held needs no simulation; off UAT, published audit seals verify against the test database.
+    app()->forgetInstance(EnvironmentIsolation::class);
+    config(['app.uat_money_simulation' => false]);
+    $this->actingAs($buyer)->get(route('investor.portfolio', ['tab' => 'secondary']))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('bought.0.lot_id', $transfer->id)->where('bought.0.units', '2')
+            ->where('bought.0.price.amount', $price)->where('bought.0.paid.amount', $paid)->where('bought.0.link.url', route('investor.market', [], false))
+            ->where('totals.businesses', 1)->where('totals.invested.amount', $paid)->etc());
+    $this->actingAs($buyer)->get(route('investor.portfolio'))->assertInertia(fn (Assert $page): Assert => $page->where('bought', [])->etc());
+
+    $this->actingAs($seller)->get(route('investor.holdings.show', $holding->holdingId))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('holding.resold_units', '2')->where('holding.issue.units', (string) $holding->units)->etc());
 });
 
 it('reads the Market closed, offering nothing, while resale is off', function (): void {

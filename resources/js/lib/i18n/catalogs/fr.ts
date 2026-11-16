@@ -4537,6 +4537,21 @@ const fr: Catalog = {
     'investor.nav.portfolio': 'Portefeuille',
     'investor.nav.profile': 'Profil',
     'investor.market.order_detail.title': "Détail de l'ordre",
+    'investor.market.order_detail.status': 'Statut',
+    'investor.market.order_detail.status_open': 'Ouvert',
+    'investor.market.order_detail.status_reserved': 'Réservé par un acheteur',
+    'investor.market.order_detail.status_reserved_for_you': 'Réservé pour vous',
+    'investor.market.order_detail.filled': 'Exécuté',
+    'investor.market.order_detail.side': 'Sens',
+    'investor.market.order_detail.side_buy': 'Achat',
+    'investor.market.order_detail.side_sell': 'Vente',
+    'investor.market.order_detail.remaining': 'Unités',
+    'investor.market.order_detail.price': 'Prix par unité',
+    'investor.market.order_detail.amount_buy': 'Vous avez payé',
+    'investor.market.order_detail.amount_sell': 'Vous avez reçu',
+    'investor.market.order_detail.fee': 'Frais',
+    'investor.market.order_detail.settled': 'Réglé',
+    'investor.market.order_detail.expires': "Ouvert jusqu'au",
     'investor.market.order_detail.empty_title': 'Aucun ordre sélectionné',
     'investor.market.order_detail.empty_body':
         'Choisissez un ordre à gauche pour voir pourquoi il a été exécuté ou non.',
@@ -4572,6 +4587,7 @@ const fr: Catalog = {
     'investor.market.orders.sell': 'Ordres de vente',
     'investor.market.orders.completed': 'Exécutés',
     'investor.market.orders.cancelled': 'Annulés',
+    'investor.market.orders.filled': 'Ordres exécutés',
     'investor.market.orders.empty': 'Aucun ordre dans cet onglet.',
     'investor.market.browse_none.empty_title':
         "Aucun titre n'est encore en vente",
@@ -4608,6 +4624,14 @@ const fr: Catalog = {
     'investor.market.resale.listing_total': 'Total de l’annonce {amount}',
     'investor.market.resale.list': 'Mettre en vente',
     'investor.market.resale.trade_buy': 'Acheté · {name}',
+    'investor.market.resale.too_many':
+        'Seulement {count} unités sont proposées.',
+    'investor.market.resale.bought': {
+        one: 'Vous avez acheté {count} unité de {name} pour {amount}.',
+        other: 'Vous avez acheté {count} unités de {name} pour {amount}.',
+    },
+    'investor.market.resale.see_portfolio': 'Voir dans le portefeuille',
+    'investor.market.resale.dismiss': 'Fermer',
     'investor.market.resale.trade_sell': 'Vendu · {name}',
     'investor.market.resale.refused':
         'Cela n’a pas abouti ({code}). Vérifiez et réessayez.',
@@ -5266,6 +5290,11 @@ const fr: Catalog = {
     'investor.portfolio.matures_line':
         'Échéance {date} · {made}/{total} versements',
     'investor.portfolio.details': 'Détails',
+    'investor.portfolio.bought.title': 'Achetées sur le marché',
+    'investor.portfolio.bought.line': {
+        one: '{count} unité à {price} · achetée le {date}',
+        other: '{count} unités à {price} chacune · achetées le {date}',
+    },
     'investor.portfolio.see_all': 'Voir les {count} autres ›',
     'investor.portfolio.empty.active.title': "Aucun avoir pour l'instant",
     'investor.portfolio.empty.active.body':
@@ -7024,6 +7053,10 @@ const fr: Catalog = {
         'Reçu de remboursement',
     'investor.wallet.c3.entry.withdrawal_in': 'Retour de {counterparty}',
     'investor.wallet.c3.entry.withdrawal_out': 'Retrait · {counterparty}',
+    'investor.wallet.c3.entry.resale_out':
+        'Achat sur le marché · {counterparty}',
+    'investor.wallet.c3.entry.resale_in':
+        'Vente sur le marché · {counterparty}',
     'investor.wallet.c3.entry.repayment_in': 'Remboursement · {counterparty}',
     'business.publish.intro':
         "{title} sera visible des investisseurs dès que chaque étape ci-dessous sera remplie. La publication reprend les signatures données à la revue : il n'y a rien de plus à signer ici.",
@@ -7771,6 +7804,11 @@ const fr: Catalog = {
     'investor.holding.issue.title': "Relevé d'émission",
     'investor.holding.issue.issued_at': 'Émis le',
     'investor.holding.issue.effective_at': 'Versement effectif',
+    'investor.holding.issue.resold': 'Vendues sur le marché',
+    'investor.holding.issue.resold_value': {
+        one: '{count} note · {held} encore détenues',
+        other: '{count} notes · {held} encore détenues',
+    },
     'investor.holding.issue.effective_date': "Date d'effet (Kigali)",
     'investor.holding.issue.schedule': 'Échéancier',
     'investor.holding.issue.due': 'Échéance',

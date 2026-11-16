@@ -479,7 +479,23 @@ export type InvestorPortfolioProps = {
     concentration: Concentration | null;
     /** Uninvested wallet cash, or null when there is none. */
     idle: Money | null;
+    /** Units bought on the market and still held, listed on the Secondary tab. */
+    bought?: BoughtLot[];
     links: InvestorAppLinks;
+};
+
+/** Units bought on the market and still held, at the price paid. */
+export type BoughtLot = {
+    lot_id: string;
+    note_id: string;
+    name: string;
+    accent: BusinessAccent;
+    industry: string;
+    units: string;
+    price: Money;
+    paid: Money;
+    bought_at: string;
+    link: RouteLink;
 };
 
 export type RecoveryStepState = 'done' | 'current' | 'pending';
@@ -1108,6 +1124,18 @@ export type WalletEntry =
           direction: 'in';
           amount: Money;
           counterparty: string;
+          occurred_at: string;
+          link: RouteLink;
+      }
+    | {
+          id: string;
+          movement: 'external';
+          /** A resale trade: paid for units bought on the market, or received (net of the fee) for units sold. */
+          kind: 'resale';
+          direction: 'in' | 'out';
+          amount: Money;
+          counterparty: string;
+          units: string;
           occurred_at: string;
           link: RouteLink;
       }
@@ -1997,6 +2025,8 @@ export type C3HoldingDetail = Omit<HoldingDetail, 'updates'> & {
     updates: MonthlyUpdateSummary[];
     /** The newest published monthly report, which sets the Holding's health; null before the first. */
     latest_report?: Pick<MonthlyUpdate, 'month' | 'status' | 'summary'> | null;
+    /** How many of the Holding's units were sold on the market. */
+    resold_units?: string;
     issue: IssuedHolding;
 };
 

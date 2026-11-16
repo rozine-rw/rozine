@@ -441,7 +441,9 @@ final class EloquentWalletStore implements WalletStore
             ->when($since !== null, fn ($query) => $query->where('created_at', '>=', $since))->orderByDesc('id')->limit(21)->get();
         $servicing = $this->servicingPayouts($wallet)->when($before !== null, fn ($query) => $query->where('id', '<', $before))
             ->when($since !== null, fn ($query) => $query->where('created_at', '>=', $since))->orderByDesc('id')->limit(21)->get();
-        $movements = [...$credits->all(), ...$payouts->all(), ...$servicing->all()];
+        $resale = $this->resaleSettlements($wallet)->when($before !== null, fn ($query) => $query->where('id', '<', $before))
+            ->when($since !== null, fn ($query) => $query->where('created_at', '>=', $since))->orderByDesc('id')->limit(21)->get();
+        $movements = [...$credits->all(), ...$payouts->all(), ...$servicing->all(), ...$resale->all()];
         usort($movements, fn (Model $left, Model $right): int => strcmp((string) $right->getKey(), (string) $left->getKey()));
         $page = array_slice($movements, 0, 20);
 
@@ -449,14 +451,19 @@ final class EloquentWalletStore implements WalletStore
         $pagePayouts = collect($page)->filter(fn (Model $entry): bool => $entry instanceof LedgerEntry && $entry->kind === 'withdrawal_payout');
         $pageServicing = $this->servicingEntries(array_values(collect($page)->filter(fn (Model $entry): bool => $entry instanceof LedgerEntry && $entry->kind === 'servicing_payout')->all()));
         $servicingById = array_column($pageServicing, null, 'id');
+        $resaleById = array_column($this->resaleEntries(array_values(collect($page)->filter(fn (Model $entry): bool => $entry instanceof LedgerEntry
+            && in_array($entry->kind, ['secondary_purchase', 'secondary_sale'], true))->all())), null, 'id');
         $intents = WalletDepositIntent::query()->whereKey($pageCredits->pluck('intent_id')->all())->get()->keyBy('id');
         $withdrawals = WalletWithdrawal::query()->whereKey($pagePayouts->pluck('source_id')->all())->get()->keyBy('id');
         $methodIds = [...$intents->pluck('method_id')->all(), ...$withdrawals->pluck('method_id')->all()];
         $methods = InvestorFundingMethod::query()->whereKey($methodIds)->get()->keyBy('id');
 
-        return ['items' => array_map(function (WalletDepositCredit|LedgerEntry $movement) use ($intents, $withdrawals, $methods, $servicingById): array {
+        return ['items' => array_map(function (WalletDepositCredit|LedgerEntry $movement) use ($intents, $withdrawals, $methods, $servicingById, $resaleById): array {
             if ($movement instanceof LedgerEntry && $movement->kind === 'servicing_payout') {
                 return $servicingById[$movement->id];
+            }
+            if ($movement instanceof LedgerEntry && isset($resaleById[$movement->id])) {
+                return $resaleById[$movement->id];
             }
             if ($movement instanceof WalletDepositCredit) {
                 $intent = $intents->get($movement->intent_id) ?? throw new RuntimeException('WALLET_DEPOSIT_INTEGRITY_FAILED');
@@ -573,6 +580,12 @@ final class EloquentWalletStore implements WalletStore
             $entry = $this->servicingEntries([$servicing])[0];
 
             return ['type' => 'entry', 'entry' => $entry, 'receipt' => $this->servicingReceipt($servicing, $entry)];
+        }
+        $resale = $this->resaleSettlements($wallet)->whereKey(strtolower($id))->first();
+        if ($resale !== null) {
+            $entry = $this->resaleEntries([$resale])[0];
+
+            return ['type' => 'entry', 'entry' => $entry, 'receipt' => $this->resaleReceipt($resale, $entry)];
         }
         $entry = LedgerEntry::query()->where('wallet_id', $wallet->id)->whereIn('kind', array_keys(self::INTERNAL))
             ->where('source_type', 'primary_reservation')->whereKey(strtolower($id))->first();
@@ -947,6 +960,60 @@ final class EloquentWalletStore implements WalletStore
     private function servicingPayouts(InvestorWallet $wallet): Builder
     {
         return LedgerEntry::query()->where('wallet_id', $wallet->id)->where('kind', 'servicing_payout')->where('source_type', 'servicing_payout');
+    }
+
+    /**
+     * The wallet's settled resale trades: what it paid for units bought on the market and what it
+     * received for units sold there.
+     *
+     * @return Builder<LedgerEntry>
+     */
+    private function resaleSettlements(InvestorWallet $wallet): Builder
+    {
+        return LedgerEntry::query()->where('wallet_id', $wallet->id)->whereIn('kind', ['secondary_purchase', 'secondary_sale'])
+            ->where('source_type', 'secondary_reservation');
+    }
+
+    /**
+     * Resale trades as the external history shows them: money out for units bought, at the price
+     * paid, and money in for units sold, net of the seller's fee, each named by the note's deal.
+     *
+     * @param  list<LedgerEntry>  $entries
+     * @return list<array<string, mixed>>
+     */
+    private function resaleEntries(array $entries): array
+    {
+        $transfers = DB::table('secondary_transfers')->whereIn('reservation_id', array_map(fn (LedgerEntry $entry): string => (string) $entry->source_id, $entries))
+            ->get(['reservation_id', 'business_campaign_id', 'units', 'gross', 'seller_receives'])->keyBy('reservation_id');
+        $titles = [];
+
+        return array_map(function (LedgerEntry $entry) use ($transfers, &$titles): array {
+            $transfer = $transfers->get($entry->source_id) ?? throw new RuntimeException('WALLET_ENTRY_INTEGRITY_FAILED');
+            $titles[$transfer->business_campaign_id] ??= $this->titles->title(strtoupper((string) $transfer->business_campaign_id));
+            $bought = $entry->kind === 'secondary_purchase';
+
+            return ['id' => $entry->id, 'movement' => 'external', 'kind' => 'resale', 'direction' => $bought ? 'out' : 'in',
+                'amount' => WalletMoney::of((string) ($bought ? $transfer->gross : $transfer->seller_receives))->money(),
+                'counterparty' => $titles[$transfer->business_campaign_id], 'units' => (string) $transfer->units,
+                'occurred_at' => (string) $entry->payload['recorded_at']];
+        }, $entries);
+    }
+
+    /**
+     * SECONDARY_SETTLED: the posting that paid for, or paid out, a resale trade, against the request
+     * that confirmed the purchase.
+     *
+     * @param  array<string, mixed>  $listed
+     * @return array<string, mixed>
+     */
+    private function resaleReceipt(LedgerEntry $entry, array $listed): array
+    {
+        $operationId = (string) $entry->origin_operation_id;
+        $terms = (string) DB::table('secondary_transfers')->where('reservation_id', $entry->source_id)->value('terms_version');
+
+        return ['receipt_id' => $entry->id, 'operation_id' => $operationId, 'request_id' => $this->operations->requestOf($operationId) ?? $operationId,
+            'code' => 'SECONDARY_SETTLED', 'recorded_at' => (string) $entry->payload['recorded_at'], 'amount' => $listed['amount'], 'units' => $listed['units'],
+            'reference' => $this->entryReference($entry), 'revision' => 1, 'policy_version' => $terms, 'disclosure_version' => null];
     }
 
     /**

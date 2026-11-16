@@ -57,6 +57,11 @@ const ENTRY_ICON: Record<
         tint: 'bg-[rgba(29,158,117,.10)]',
         tone: 'green',
     },
+    resale: {
+        icon: 'handshake',
+        tint: 'bg-rz-accent-soft',
+        tone: 'blue',
+    },
 };
 
 function EntryTile({
@@ -289,6 +294,13 @@ function entryLabel(
     t: ReturnType<typeof useTranslation>['t'],
     entry: WalletEntry,
 ): string {
+    if (entry.movement === 'external' && entry.kind === 'resale') {
+        return t(`investor.wallet.c3.entry.resale_${entry.direction}`, {
+            counterparty: entry.counterparty,
+            count: Number(entry.units),
+        });
+    }
+
     if (entry.movement === 'external' && entry.kind === 'repayment') {
         return t('investor.wallet.c3.entry.repayment_in', {
             counterparty: entry.counterparty,

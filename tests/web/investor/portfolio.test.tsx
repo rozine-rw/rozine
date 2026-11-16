@@ -237,6 +237,49 @@ describe('Portfolio', () => {
         ).toHaveAttribute('href', '/preview/investor-deals');
     });
 
+    it('lists units bought on the market on the Secondary tab (QA #656)', () => {
+        const props = portfolio(secondaryFixture);
+
+        props.bought = [
+            {
+                lot_id: 'lot-1',
+                note_id: 'note-1',
+                name: 'Kivu Harvest Ltd',
+                accent: props.industries[0]?.accent ?? 'blue',
+                industry: 'Agriculture',
+                units: '2',
+                price: { currency: 'RWF', amount: '4500' },
+                paid: { currency: 'RWF', amount: '9000' },
+                bought_at: '2026-11-16T16:16:00+00:00',
+                link: { url: '/investor/market', method: 'get' },
+            },
+        ];
+        render(<InvestorPortfolio {...props} />);
+
+        const section = screen.getByRole('region', {
+            name: 'Bought on the market',
+        });
+
+        expect(within(section).getByRole('link')).toHaveTextContent(
+            /Kivu Harvest Ltd2 units at RWF 4,500 each · bought .*RWF 9,000/u,
+        );
+        expect(screen.queryByText('Nothing here yet')).not.toBeInTheDocument();
+    });
+
+    it('shows units sold on the market on the Holding, with those still held (QA #656)', () => {
+        const props = holding(holdingMinimalFixture);
+
+        props.holding.resold_units = '2';
+        render(<InvestorHolding {...props} />);
+
+        expect(screen.getByText('Sold on the market')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                `2 notes · ${Number(props.holding.issue.units) - 2} still held`,
+            ),
+        ).toBeInTheDocument();
+    });
+
     it('renders the live empty portfolio with no empty breakdowns and no unlinked tab', () => {
         const props = portfolio(portfolioMinimalFixture);
 
