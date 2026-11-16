@@ -12,13 +12,17 @@ Rozine is not a lender. It takes no deposits, holds no credit risk on its balanc
 
 ## Status
 
-This repository currently contains **the governing business and brand documentation only**. Production code has not yet landed here.
+This repository contains the Laravel/Inertia application, its tests, and business and brand documentation. Implementation and QA are ongoing; this is not a declaration of full BRS compliance or production readiness.
 
 | | |
 |---|---|
-| **Phase** | Pre-build — BRS v1.0 baselined, prototype complete, production build-out starting |
-| **In this repo** | BRS, business plan, branding styles, logo asset library, Pulse landing pages |
+| **Phase** | Application implementation and QA, with BRS v3 reconciliation recorded in the [server contracts](docs/contracts/README.md) |
+| **In this repo** | Application source, tests, CI, contracts, BRS snapshots, business and brand assets, Pulse landing pages |
 | **Prior work** | A Next.js prototype covering all five apps exists in the history of the predecessor repository. It is **not** carried forward here. |
+
+**QA status, refreshed 16 November 2026:** #396 is closed following its [reported 3 November staging test](https://github.com/rozine-rw/rozine/issues/396#issuecomment-6596133832). #383 is also closed following Erastus's [10 November staging retest](https://github.com/rozine-rw/rozine/issues/383#issuecomment-6768909273). That retest reports a two-deal hold and release, expiry/sweep and a fresh quote, plus confirmation of one Rugali note into Awaiting issue. It does not demonstrate a two-deal confirmation or full BRS, prospectus, settlement or runtime acceptance. [#531](https://github.com/rozine-rw/rozine/issues/531) records usability follow-ups from the retest; check their current status before taking work. No staging test was rerun for this documentation update.
+
+The product overview below and bundled early BRS artifacts are historical context. For current confirmed decisions and outstanding acceptance limits, use the [BRS v3 contract reconciliation](docs/contracts/README.md); issue closure is not blanket compliance certification.
 
 ---
 
@@ -200,7 +204,7 @@ resources/
 
 The Pulse pages are self-contained bundles — markup, styles and content packed into a single self-extracting file, with no external dependency beyond web fonts. They are build output rather than reviewable source, so diffs on them are not meaningful; if the generating source exists, it belongs here alongside them.
 
-**Markdown is canonical.** The `.md` files are the source of truth: they diff cleanly, review in a pull request, and let requirement IDs be traced line by line. The PDFs are rendered copies kept for distribution to partners, auditors and the regulator. **Edit the Markdown; regenerate the PDF from it.** If the two ever disagree, the Markdown is correct and the PDF is stale.
+**Version precedence matters.** The bundled Markdown and rendered PDFs include historical BRS snapshots. Do not treat an older Markdown snapshot as an override of the governing BRS v3.0 supplied on 6 November or its later confirmed decisions. The [contract reconciliation](docs/contracts/README.md) records the applicable decisions and evidence limits; keep any future source/PDF update tied to its actual version.
 
 **The BRS governs.** It is the single reference against which the build is scoped, the compliance programme is evidenced, and delivery is accepted. Where any other artefact — including this README — conflicts with it, the BRS wins. Requirement IDs cited above (`BO‑n` objective, `BR‑n` rule, `FR‑n` functional, `DR‑n` data, `NFR‑n` non-functional, `IR‑n` integration, `CR‑n` compliance, `AC‑n` acceptance) are the canonical handles for tracing work back to it.
 

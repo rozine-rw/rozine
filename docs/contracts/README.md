@@ -1,6 +1,6 @@
 # Server contract handoff: #383 and #396
 
-Reconciled to governing **BRS v3.0 (6 November 2026)** on 9 November. This remains a documentation-only draft, not legal/CMA approval or runtime certification.
+Reconciled to governing **BRS v3.0 (6 November 2026)** on 9 November; delivery evidence refreshed 16 November. This PR changes documentation only, not legal/CMA approval or runtime certification.
 
 - [#383 — atomic whole-cart checkout](383-atomic-cart-checkout.md): v3 wallet commitment/withdrawal semantics, Pay acknowledgement, prospectus versions, material-change handling, immutable fee snapshots and retained engineering mechanisms.
 - [#396 — initial statement verification](396-initial-statement-verification.md): routine statement-review lifecycle from merged #434, separate baseline sealing, one-CPA sealing/disputes, guided visits and remaining v3 coverage.
@@ -21,7 +21,9 @@ V3 section 25 permits its explicitly proposed defaults unless told otherwise. Th
 
 ## Delivery and validation limits
 
-#396 is closed following its [3 November reported staging test](https://github.com/rozine-rw/rozine/issues/396#issuecomment-6596133832); #383 remains open with its [latest reported UI gaps](https://github.com/rozine-rw/rozine/issues/383#issuecomment-6604285360). No staging tests were rerun here. Inspect current implementation before treating historical gap lists as work to do.
+#396 is closed following its [3 November reported staging test](https://github.com/rozine-rw/rozine/issues/396#issuecomment-6596133832). #383 closed on 10 November after Erastus's [staging retest on UAT f5f26c2b](https://github.com/rozine-rw/rozine/issues/383#issuecomment-6768909273): the report records the fee-band header, a two-deal hold and release, expiry after the five-minute hold followed by sweep about 2–4 minutes later, and a fresh quote. Its confirmation example buys one Rugali note into Awaiting issue, not both deals together. [#531](https://github.com/rozine-rw/rozine/issues/531) records the resulting expiry-action, stale-total and busy-state usability follow-ups; inspect its current status before taking work.
+
+These are author-reported staging observations, not tests independently rerun here or proof of all-cart confirmation, full BRS compliance, prospectus binding, settlement or every runtime/concurrency acceptance case. Inspect current implementation before treating historical gap lists as work to do. The original publication/review SHAs in this handoff are historical snapshots, not the current PR head; obtain that head from GitHub before any exact-head review.
 
 The October source review remains historical evidence, not current v3 certification. This update reads the actual v3 PDF, current PR/issue discussions and merged #434 design. Acceptance matrices are future implementation checks, not executed tests. Preserve existing exact receipt/ledger constraints, source identity, immutable financial snapshots, actor permissions, atomicity and recovery. Final payload/schema design, repeat-opening repayment evidence and real PostgreSQL concurrency proof belong to implementation and exact-head review.
 
