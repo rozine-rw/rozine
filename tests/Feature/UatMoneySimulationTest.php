@@ -18,6 +18,7 @@ use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\RetainedNoteSchedules;
 use App\Application\Secondary\Contracts\NoteUnitHolders;
 use App\Application\Secondary\Contracts\SecondaryMarket;
+use App\Application\Secondary\Contracts\SecondaryNotes;
 use App\Application\Wallet\ApplyBusinessProviderOutcome;
 use App\Application\Wallet\Contracts\SyntheticEventSigner;
 use App\Application\Wallet\Contracts\WalletStore;
@@ -264,6 +265,82 @@ it('shows a holder the repayment paid on in its wallet, statement, holding page 
     $this->actingAs($investor)->get(route('investor.portfolio'))
         ->assertInertia(fn (Assert $page): Assert => $page->where('holdings.0.payments_made', 1)->where('holdings.0.gain.amount', (string) $return)
             ->where('totals.gain.amount', (string) $return)->where('totals.this_month.amount', (string) $return)->etc());
+});
+
+it('lists, reserves, buys and withdraws resale units from the Market page on UAT', function (): void {
+    $buyer = InvestorWalletFixture::funded('2000000')['user'];
+    $note = simulatedIssuedNote();
+    $schedule = app(RetainedNoteSchedules::class)->find($note['campaign']);
+    $holding = $schedule->holdings[0];
+    $seller = User::query()->where('party_id', $holding->partyId)->sole();
+    $command = fn (array $input): array => ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, ...$input];
+
+    $cap = null;
+    $this->actingAs($seller)->get(route('investor.market'))
+        ->assertInertia(function (Assert $page) use ($holding, &$cap): Assert {
+            $cap = $page->toArray()['props']['market']['sellable'][0]['cap']['amount'];
+
+            return $page->component('investor/market')->where('contract_version', 'investor-market-v1')->where('market.open', true)
+                ->where('market.sellable.0.lot_id', $holding->holdingId)->where('market.sellable.0.free_units', (string) $holding->units)
+                ->where('market.sellable.0.tradable', true)->where('market.listings', [])->where('actions.list.method', 'post')->etc();
+        });
+    $price = (string) intdiv((int) $cap, 2);
+    $listed = $this->actingAs($seller)->postJson(route('investor.market_list'), $command(['lot_id' => $holding->holdingId, 'units' => '10', 'price' => $price]))
+        ->assertOk()->assertJsonPath('code', 'SECONDARY_LISTED')->json('data.listing.listing_id');
+
+    $this->actingAs($seller)->get(route('investor.market'))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('market.listings.0.mine', true)->where('market.listings.0.actions.reserve', null)
+            ->where('market.listings.0.actions.withdraw.method', 'post')->where('market.sellable.0.free_units', (string) ($holding->units - 10))->etc());
+    $this->actingAs($buyer)->get(route('investor.market'))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('market.listings.0.listing_id', $listed)->where('market.listings.0.deal_name', app(CampaignTitles::class)->title($note['campaign']))
+            ->where('market.listings.0.remaining_units', '10')->where('market.listings.0.price.amount', $price)->where('market.listings.0.mine', false)
+            ->where('market.listings.0.actions.reserve.url', route('investor.market_reserve', $listed, false))->where('market.listings.0.actions.withdraw', null)
+            ->where('market.sellable', [])->where('actions.list', null)->etc());
+
+    $reservation = $this->actingAs($buyer)->postJson(route('investor.market_reserve', $listed), $command(['units' => '10']))
+        ->assertOk()->assertJsonPath('code', 'SECONDARY_RESERVED')->json('data.reservation.reservation_id');
+    $this->actingAs($buyer)->get(route('investor.market'))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('market.listings.0.reservation.reservation_id', $reservation)
+            ->where('market.listings.0.actions.settle.method', 'post')->where('market.listings.0.actions.reserve', null)->etc());
+    $this->actingAs($seller)->get(route('investor.market'))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('market.listings.0.reserved', true)->where('market.listings.0.mine', true)
+            ->where('market.listings.0.actions.settle', null)->etc());
+    $this->actingAs($buyer)->postJson(route('investor.market_settle', $listed), $command(['reservation_id' => $reservation]))
+        ->assertOk()->assertJsonPath('code', 'SECONDARY_SETTLED');
+
+    $this->actingAs($buyer)->get(route('investor.market'))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('market.listings', [])->where('market.trades.0.side', 'buy')->where('market.trades.0.units', '10')
+            ->where('market.sellable.0.free_units', '10')->etc());
+    $this->actingAs($seller)->get(route('investor.market'))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('market.trades.0.side', 'sell')->where('market.sellable.0.units', (string) ($holding->units - 10))->etc());
+
+    $again = $this->actingAs($seller)->postJson(route('investor.market_list'), $command(['lot_id' => $holding->holdingId, 'units' => '5', 'price' => $price]))
+        ->assertOk()->json('data.listing.listing_id');
+    $this->actingAs($seller)->postJson(route('investor.market_withdraw', $again), $command([]))->assertOk()->assertJsonPath('code', 'SECONDARY_LISTING_CANCELLED');
+    $this->actingAs($seller)->postJson(route('investor.market_list'), $command(['lot_id' => $holding->holdingId, 'units' => '0', 'price' => $price]))
+        ->assertUnprocessable();
+});
+
+it('reads the Market closed, offering nothing, while resale is off', function (): void {
+    $investor = InvestorWalletFixture::ready()['user'];
+
+    $this->actingAs($investor)->get(route('investor.market'))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('market', ['open' => false, 'listings' => [], 'sellable' => [], 'trades' => []])
+            ->where('actions.list', null)->where('links.wallet.url', route('investor.wallet', [], false))->etc());
+    $this->actingAs($investor)->postJson(route('investor.market_list'), ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1,
+        'lot_id' => strtolower((string) Str::ulid()), 'units' => '1', 'price' => '100'])->assertStatus(503)->assertJsonPath('code', 'SECONDARY_TRADING_DISABLED');
+});
+
+it('reopens resale and drops a paid instalment from the cap once its payouts post', function (): void {
+    $note = simulatedIssuedNote();
+    $schedule = app(RetainedNoteSchedules::class)->find($note['campaign']);
+    $postedThrough = fn (): ?string => DB::transaction(fn (): ?string => app(SecondaryNotes::class)->find($note['campaign'])['posted_through']);
+    expect($postedThrough())->toBeNull();
+    $this->actingAs($note['payer'])->postJson(route('business.repayments.pay', $note['business']),
+        ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, 'note_id' => $note['campaign'], 'option' => 'next_instalment',
+            'expected_servicing_revision' => 1, 'quoted_total' => ['currency' => 'RWF', 'amount' => $schedule->instalments[0]->gross]])->assertOk();
+
+    expect($postedThrough())->toBe($schedule->instalments[0]->dueDate);
 });
 
 it('refuses a repayment whose payout cannot post, so nothing is collected without paying its holders', function (): void {

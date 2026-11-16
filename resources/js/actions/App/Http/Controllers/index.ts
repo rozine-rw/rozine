@@ -55,6 +55,7 @@ import AuditorProfileController from './AuditorProfileController'
 import InvestorProfileController from './InvestorProfileController'
 import InvestorPortfolioController from './InvestorPortfolioController'
 import InvestorComplaintController from './InvestorComplaintController'
+import InvestorSecondaryController from './InvestorSecondaryController'
 import InvestorDealPhotoController from './InvestorDealPhotoController'
 import AuditorProcedureController from './AuditorProcedureController'
 import AuditorEngagementController from './AuditorEngagementController'
@@ -136,6 +137,7 @@ const Controllers = {
     InvestorProfileController: Object.assign(InvestorProfileController, InvestorProfileController),
     InvestorPortfolioController: Object.assign(InvestorPortfolioController, InvestorPortfolioController),
     InvestorComplaintController: Object.assign(InvestorComplaintController, InvestorComplaintController),
+    InvestorSecondaryController: Object.assign(InvestorSecondaryController, InvestorSecondaryController),
     InvestorDealPhotoController: Object.assign(InvestorDealPhotoController, InvestorDealPhotoController),
     AuditorProcedureController: Object.assign(AuditorProcedureController, AuditorProcedureController),
     AuditorEngagementController: Object.assign(AuditorEngagementController, AuditorEngagementController),
