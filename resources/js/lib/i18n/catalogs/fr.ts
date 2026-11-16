@@ -1715,6 +1715,10 @@ const fr: Catalog = {
         'La conformité approuve une vérification d’identité',
     'admin.messaging.trigger.verification.rejected':
         'La conformité renvoie une vérification d’identité',
+    'admin.messaging.trigger.market.units_bought':
+        'Un achat sur le marché secondaire est réglé',
+    'admin.messaging.trigger.market.units_sold':
+        "Les parts mises en vente d'un détenteur sont vendues",
     'admin.messaging.trigger.wallet.payout_received':
         'Le service verse à un détenteur sa part d’un remboursement',
     'admin.messaging.trigger.wallet.deposit_received':
@@ -2663,12 +2667,13 @@ const fr: Catalog = {
         'ex. Je le prends pour la séance de crédit du jour.',
     'admin.maker_checker.by': '{actor} · {at}',
     'admin.disbursements.policy_title': 'Règles de versement en vigueur',
-    'admin.disbursements.title': 'Décaissements en attente',
-    'admin.disbursements.table': 'Décaissements en attente',
+    'admin.disbursements.title': 'Décaissements',
+    'admin.disbursements.table': 'Décaissements',
     'admin.disbursements.col.reference': 'Réf. versement',
     'admin.disbursements.col.note': 'Titre',
     'admin.disbursements.col.recipient': 'Bénéficiaire',
     'admin.disbursements.col.amount': 'Montant',
+    'admin.disbursements.net': '{amount} versés à l’entreprise',
     'admin.disbursements.col.due': 'Échéance',
     'admin.disbursements.col.actions': 'État · Actions',
     'admin.disbursements.state.ready': 'En attente du paiement automatique',
@@ -5439,6 +5444,7 @@ const fr: Catalog = {
     'investor.wallet.done.withdraw.failed':
         "Le retrait de {amount} vers {method} n'a pas abouti. L'argent est de retour dans votre portefeuille.",
     'investor.wallet.c3.credited': 'Crédité',
+    'investor.wallet.c3.debited': 'Payé',
     'investor.wallet.processing': 'Envoi…',
     'investor.wallet.refusal.TRADE_BELOW_MINIMUM':
         'Saisissez au moins le montant minimum',
@@ -7641,6 +7647,16 @@ const fr: Catalog = {
         'Levée clôturée sans financement complet',
     'investor.notices.business.raise_expired.body':
         "{title} s'est clôturée à son échéance avec {committed} engagés sur {target}. Les investisseurs ont été remboursés et aucun frais n'a été prélevé.",
+    'investor.notices.market.units_bought.title': 'Parts achetées',
+    'investor.notices.market.units_bought.body': {
+        one: 'Vous avez acheté {count} part de {title} sur le marché pour {amount}.',
+        other: 'Vous avez acheté {count} parts de {title} sur le marché pour {amount}.',
+    },
+    'investor.notices.market.units_sold.title': 'Parts vendues',
+    'investor.notices.market.units_sold.body': {
+        one: 'Votre {count} part de {title} est vendue. {amount} a été crédité sur votre portefeuille après {fee} de frais de revente.',
+        other: 'Vos {count} parts de {title} sont vendues. {amount} a été crédité sur votre portefeuille après {fee} de frais de revente.',
+    },
     'investor.notices.wallet.payout_received.title': 'Paiement reçu',
     'investor.notices.wallet.payout_received.body':
         '{net} est arrivé dans votre portefeuille de {title}, échéance {instalments} : {gross} moins {fee} de frais sur les gains.',
@@ -8406,6 +8422,16 @@ const fr: Catalog = {
     'admin.notes.state.repaying': 'En remboursement',
     'admin.notes.state.failed': 'Échouée',
     'admin.notes.more': 'Plus de notes',
+    'admin.notes.open_named': 'Ouvrir {business}',
+    'admin.notes.drawer_label': 'Détenteurs de la note {business}',
+    'admin.notes.holders': 'Détenteurs actuels',
+    'admin.notes.holders_none': 'Aucune unité émise pour le moment.',
+    'admin.notes.holder_issued': 'Détention émise',
+    'admin.notes.holder_bought': 'Achetée sur le marché',
+    'admin.notes.holder_units': {
+        one: '{count} note',
+        other: '{count} notes',
+    },
     'admin.primary.title': 'Levées en cours',
     'admin.primary.caption':
         'Chaque levée encore ouverte, la plus récente d’abord. Une levée se remplit ou échoue selon son propre délai, il n’y a donc pas de modération ici.',

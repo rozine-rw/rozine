@@ -7,6 +7,7 @@ namespace App\Infrastructure\Secondary;
 use App\Application\Business\Contracts\CampaignTitles;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\AuthorizeStaffPermission;
+use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Primary\Contracts\InvestorHoldings;
 use App\Application\Secondary\Contracts\NoteUnitHolders;
@@ -16,6 +17,7 @@ use App\Application\Secondary\Contracts\SecondaryMarket;
 use App\Application\Secondary\Contracts\SecondaryMarketSweep;
 use App\Application\Secondary\Contracts\SecondaryNotes;
 use App\Application\Wallet\Contracts\WalletPostings;
+use App\Domain\Identity\PartyNoticeKind;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Domain\Secondary\HoldingLot;
@@ -66,7 +68,7 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
 
     public function __construct(private AuthorizeActiveRole $authority, private AuthorizeStaffPermission $staff, private OperationJournal $journal,
         private SecondaryNotes $notes, private NoteUnitHolders $holders, private InvestorHoldings $holdings, private WalletPostings $wallets, private SecondaryLedger $postings,
-        private CampaignTitles $titles) {}
+        private CampaignTitles $titles, private PartyNotices $notices) {}
 
     public function list(int $userId, int $contextRevision, string $holdingId, string $units, string $price, string $requestId): array
     {
@@ -338,6 +340,12 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
         $this->postings->sale($wallets[$row->seller_party_id], $quote->gross, $quote->sellerReceives, $quote->sellerFee, $reservationId, $reservation->operation_id);
         $reservation->forceFill(['ended' => 'settled', 'end_reason' => 'settled', 'ended_at' => $now])->save();
         $this->persist($row, $after, $now);
+        // Both sides hear that the trade settled: the buyer what it paid, the seller what reached its wallet (QA #656).
+        $title = $this->titles->title($row->business_campaign_id);
+        $this->notices->record($partyId, PartyNoticeKind::UnitsBought, ['amount' => (string) $quote->buyerPays, 'currency' => 'RWF',
+            'units' => (string) $quote->units, 'title' => $title], 'secondary-bought:'.$transfer->id);
+        $this->notices->record($row->seller_party_id, PartyNoticeKind::UnitsSold, ['amount' => (string) $quote->sellerReceives, 'currency' => 'RWF',
+            'units' => (string) $quote->units, 'fee' => (string) $quote->sellerFee, 'title' => $title], 'secondary-sold:'.$transfer->id);
 
         return new OperationResult('SECONDARY_SETTLED', ['transfer' => ['lot_id' => $transfer->id, 'note_id' => $transfer->business_campaign_id,
             'ordinals' => $moved->ranges, ...$quote->toArray(), 'settled_at' => $now->format(DateTimeInterface::ATOM)],

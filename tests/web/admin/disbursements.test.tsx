@@ -101,6 +101,22 @@ afterEach(() => {
 });
 
 describe('Disbursements queue', () => {
+    it('shows under the amount what the Business receives net of the platform fee (QA #646)', () => {
+        const page = props(queueFixture);
+        page.disbursements[0].platform_fee = {
+            fee: { currency: 'RWF', amount: '540000' },
+            audit_partner_share: { currency: 'RWF', amount: '216000' },
+            rozine_share: { currency: 'RWF', amount: '324000' },
+            payout: { currency: 'RWF', amount: '17460000' },
+            version: 'brs-2.0-fee-r01',
+        };
+        render(<AdminDisbursements {...page} />);
+
+        expect(
+            screen.getByText(/^RWF 17[.,]?\d*M to the business$/u),
+        ).toBeInTheDocument();
+    });
+
     it('lists each disbursement with its state and provider outcome, with no deadline', () => {
         render(<AdminDisbursements {...props(queueFixture)} />);
 
@@ -246,6 +262,7 @@ describe('Disbursement drawer', () => {
         };
         render(<AdminDisbursements {...page} />);
 
+        expect(screen.queryByText(/to the business$/u)).not.toBeInTheDocument();
         expect(
             within(drawer()).getByText(
                 '3% platform fee RWF 540,000, of which RWF 216,000 to the Audit Partner. The Business receives RWF 17,460,000.',

@@ -16,7 +16,8 @@ use stdClass;
  * is the Investor wallet's Party (named by its first account) or the Business wallet's profile. The
  * reference comes from the entry's source record: the deposit intent's or withdrawal's provider
  * reference (sealed at rest, so it is opened here and searched only by its exact SHA-256), or the
- * Business behind a primary reservation, commitment or repayment.
+ * Business behind a primary reservation, commitment, repayment, disbursement closing, servicing
+ * payout or resale reservation.
  *
  * @phpstan-import-type Entry from LedgerJournal
  * @phpstan-import-type Line from LedgerJournal
@@ -45,6 +46,17 @@ final readonly class EloquentLedgerJournal implements LedgerJournal
                 JOIN business_profiles ON business_profiles.id = business_campaigns.business_id WHERE primary_commitments.id = ledger_entries.source_id)
             WHEN 'business_repayment' THEN (SELECT business_profiles.profile->>'name' FROM business_repayments
                 JOIN business_profiles ON business_profiles.id = business_repayments.business_id WHERE business_repayments.id = ledger_entries.source_id)
+            WHEN 'disbursement_closing' THEN (SELECT business_profiles.profile->>'name' FROM disbursement_closings
+                JOIN disbursements ON disbursements.id = disbursement_closings.disbursement_id
+                JOIN business_campaigns ON business_campaigns.id = disbursements.business_campaign_id
+                JOIN business_profiles ON business_profiles.id = business_campaigns.business_id WHERE disbursement_closings.id = ledger_entries.source_id)
+            WHEN 'servicing_payout' THEN (SELECT business_profiles.profile->>'name' FROM servicing_payouts
+                JOIN business_campaigns ON business_campaigns.id = servicing_payouts.note_id
+                JOIN business_profiles ON business_profiles.id = business_campaigns.business_id WHERE servicing_payouts.id = ledger_entries.source_id)
+            WHEN 'secondary_reservation' THEN (SELECT business_profiles.profile->>'name' FROM secondary_reservations
+                JOIN secondary_listings ON secondary_listings.id = secondary_reservations.listing_id
+                JOIN business_campaigns ON business_campaigns.id = secondary_listings.business_campaign_id
+                JOIN business_profiles ON business_profiles.id = business_campaigns.business_id WHERE secondary_reservations.id = ledger_entries.source_id)
         END
         SQL;
 

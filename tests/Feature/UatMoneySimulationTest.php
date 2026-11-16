@@ -55,6 +55,7 @@ use Illuminate\Testing\Fluent\AssertableJson;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryHoldingFixture;
+use Tests\Support\StaffFixture;
 
 /*
  * Staging's simulated money after funding (Erastus, 14 Nov 2026): on UAT with live money off, a raise
@@ -218,6 +219,17 @@ it('lets the Business repay its note on UAT and pays each holder its share less 
             ->where('schedule.0.status', 'paid')->where('schedule.0.paid.total.amount', $first->gross)->where('pay.options.0.instalment_indexes', [2])
             ->where('recent.0.allocation', 'allocated')->where('recent.0.investors_paid', 2)->where('recent.0.amount.amount', $first->gross));
 
+    // Staff see the fee on earnings in Finance and each payout typed as an investor payout (QA #646).
+    $treasury = User::factory()->withTwoFactor()->create();
+    StaffFixture::provision($treasury, ['treasury'], 'Finance review.');
+    $fees = (string) $payouts->sum(fn (object $row): int => (int) $row->fee);
+    $this->actingAs($treasury)->get('/admin/finance')
+        ->assertInertia(fn (Assert $page): Assert => $page->where('streams.3.key', 'earnings_fee')->where('streams.3.collected.amount', $fees)
+            ->where('figures.revenue.amount', fn (string $amount): bool => (int) $amount >= (int) $fees)->etc());
+    $entry = DB::table('ledger_entries')->where('kind', 'servicing_payout')->value('id');
+    $this->actingAs($treasury)->get(route('staff.ledger.index', ['entry' => $entry]))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('entry.kind', 'distribution')->etc());
+
     // Paid on once, and a stale quote is refused.
     $this->actingAs($note['payer'])->postJson(route('business.repayments.pay', $note['business']),
         ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, 'note_id' => $note['campaign'], 'option' => 'next_instalment',
@@ -364,14 +376,41 @@ it('shows a resale on both sides: the buyer\'s units in Portfolio and both walle
     // Reading what is held needs no simulation; off UAT, published audit seals verify against the test database.
     app()->forgetInstance(EnvironmentIsolation::class);
     config(['app.uat_money_simulation' => false]);
+    // Both sides hear that the trade settled (QA #656).
+    $this->actingAs($buyer)->getJson(route('investor.notices'))->assertOk()
+        ->assertJson(fn (AssertableJson $json): AssertableJson => $json->where('data.notices.0.kind', 'market.units_bought')
+            ->where('data.notices.0.facts.units', '2')->where('data.notices.0.facts.amount', $paid)->where('data.notices.0.facts.title', $title)
+            ->where('data.notices.0.link.url', route('investor.portfolio', [], false))->etc());
+    $this->actingAs($seller)->getJson(route('investor.notices'))->assertOk()
+        ->assertJson(fn (AssertableJson $json): AssertableJson => $json->where('data.notices.0.kind', 'market.units_sold')
+            ->where('data.notices.0.facts.amount', $transfer->seller_receives)->where('data.notices.0.facts.fee', $transfer->seller_fee)
+            ->where('data.notices.0.link.url', route('investor.wallet', [], false))->etc());
+
+    // Staff open the note and see who holds its units now, the buyer's bought lot included (QA #646).
+    $analyst = User::factory()->withTwoFactor()->create();
+    StaffFixture::provision($analyst, ['analyst'], 'Notes review.');
+    $this->actingAs($analyst)->get(route('staff.notes.index', ['note' => $note['campaign']]))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('drawer.id', fn (string $id): bool => strtolower($id) === strtolower($note['campaign']))
+            ->where('drawer.holders', fn (Collection $holders): bool => $holders->contains(fn (array $row): bool => $row['bought'] && $row['units'] === '2' && $row['name'] === $buyer->name)
+                && $holders->contains(fn (array $row): bool => ! $row['bought'] && $row['name'] === $seller->name && $row['units'] === (string) ($holding->units - 2)))
+            ->where('drawer.close.url', route('staff.notes.index', [], false))
+            ->where('notes.0.link.url', fn (string $url): bool => str_contains($url, 'note='))->etc());
+    $this->actingAs($analyst)->get(route('staff.notes.index'))->assertInertia(fn (Assert $page): Assert => $page->where('drawer', null)->etc());
+
     $this->actingAs($buyer)->get(route('investor.portfolio', ['tab' => 'secondary']))
         ->assertInertia(fn (Assert $page): Assert => $page->where('bought.0.lot_id', $transfer->id)->where('bought.0.units', '2')
             ->where('bought.0.price.amount', $price)->where('bought.0.paid.amount', $paid)->where('bought.0.link.url', route('investor.market', [], false))
             ->where('totals.businesses', 1)->where('totals.invested.amount', $paid)->etc());
-    $this->actingAs($buyer)->get(route('investor.portfolio'))->assertInertia(fn (Assert $page): Assert => $page->where('bought', [])->etc());
+    $this->actingAs($buyer)->get(route('investor.portfolio'))->assertInertia(fn (Assert $page): Assert => $page->where('bought.0.lot_id', $transfer->id)
+        ->where('payouts', fn ($months): bool => count($months) > 0)->where('totals.next_payout', fn ($next): bool => $next !== null)->etc());
+    $this->actingAs($buyer)->get(route('investor.portfolio', ['tab' => 'matured']))->assertInertia(fn (Assert $page): Assert => $page->where('bought', [])->etc());
 
     $this->actingAs($seller)->get(route('investor.holdings.show', $holding->holdingId))
-        ->assertInertia(fn (Assert $page): Assert => $page->where('holding.resold_units', '2')->where('holding.issue.units', (string) $holding->units)->etc());
+        ->assertInertia(fn (Assert $page): Assert => $page->where('holding.resold_units', '2')->where('holding.issue.units', (string) $holding->units)
+            ->where('holding.invested.amount', (string) intdiv((int) $holding->principal * ($holding->units - 2), $holding->units))
+            ->where('holding.issue.principal.amount', $holding->principal)->etc());
+    $this->actingAs($seller)->get(route('investor.portfolio'))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('holdings.0.invested.amount', (string) intdiv((int) $holding->principal * ($holding->units - 2), $holding->units))->etc());
 });
 
 it('reads the Market closed, offering nothing, while resale is off', function (): void {

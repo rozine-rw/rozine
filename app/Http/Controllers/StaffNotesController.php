@@ -22,8 +22,11 @@ class StaffNotesController extends Controller
         $actorId = (int) $request->user()?->getAuthIdentifier();
         $page = $notes->handle($actorId);
         $staff = $access->handle($actorId);
+        $open = $request->validated('note');
+        $note = $open === null ? null : array_find($page['notes'], fn (array $row): bool => strtolower($row['campaign_id']) === strtolower((string) $open));
 
         return Inertia::render('admin/notes', (new StaffNotesResource([...$page, 'tab' => (string) $request->validated('tab', 'all'),
+            'open' => $note === null ? null : ['note' => $note, 'holders' => $notes->holders($actorId, $note['campaign_id'])],
             'search' => trim((string) $request->validated('q', '')), 'sort' => (string) $request->validated('sort', 'newest'), 'limit' => (int) $request->validated('limit', self::LIMIT),
             'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions']]))->resolve($request));
     }

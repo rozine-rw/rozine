@@ -1622,6 +1622,8 @@ const en = {
         'Compliance approves an identity check',
     'admin.messaging.trigger.verification.rejected':
         'Compliance sends an identity check back',
+    'admin.messaging.trigger.market.units_bought': 'A resale purchase settles',
+    'admin.messaging.trigger.market.units_sold': "A holder's listed units sell",
     'admin.messaging.trigger.wallet.payout_received':
         'Servicing pays a holder its share of a repayment',
     'admin.messaging.trigger.wallet.deposit_received':
@@ -2524,12 +2526,13 @@ const en = {
         "e.g. Picking this up for today's credit session.",
     'admin.maker_checker.by': '{actor} · {at}',
     'admin.disbursements.policy_title': 'Release rules in effect',
-    'admin.disbursements.title': 'Pending disbursements',
-    'admin.disbursements.table': 'Pending disbursements',
+    'admin.disbursements.title': 'Disbursements',
+    'admin.disbursements.table': 'Disbursements',
     'admin.disbursements.col.reference': 'Payout ref',
     'admin.disbursements.col.note': 'Note',
     'admin.disbursements.col.recipient': 'Recipient',
     'admin.disbursements.col.amount': 'Amount',
+    'admin.disbursements.net': '{amount} to the business',
     'admin.disbursements.col.due': 'Due',
     'admin.disbursements.col.actions': 'State · Actions',
     'admin.disbursements.state.ready': 'Waiting for automatic payment',
@@ -5236,6 +5239,7 @@ const en = {
     'investor.wallet.done.withdraw.failed':
         "The {amount} withdrawal to {method} didn't go through. The money is back in your wallet.",
     'investor.wallet.c3.credited': 'Credited',
+    'investor.wallet.c3.debited': 'Paid',
     'investor.wallet.processing': 'Sending…',
     'investor.wallet.refusal.TRADE_BELOW_MINIMUM':
         'Enter an amount of at least the minimum',
@@ -7312,6 +7316,16 @@ const en = {
         'Raise closed without full funding',
     'investor.notices.business.raise_expired.body':
         '{title} closed at its deadline with {committed} of {target} committed. Investors were refunded and no fee was charged.',
+    'investor.notices.market.units_bought.title': 'Units bought',
+    'investor.notices.market.units_bought.body': {
+        one: 'You bought {count} note of {title} on the market for {amount}.',
+        other: 'You bought {count} notes of {title} on the market for {amount}.',
+    },
+    'investor.notices.market.units_sold.title': 'Units sold',
+    'investor.notices.market.units_sold.body': {
+        one: 'Your {count} note of {title} sold. {amount} reached your wallet after the {fee} resale fee.',
+        other: 'Your {count} notes of {title} sold. {amount} reached your wallet after the {fee} resale fee.',
+    },
     'investor.notices.wallet.payout_received.title': 'Payout received',
     'investor.notices.wallet.payout_received.body':
         '{net} reached your wallet from {title}, instalment {instalments}: {gross} less the {fee} earnings fee.',
@@ -8097,6 +8111,16 @@ const en = {
     'admin.notes.state.repaying': 'Repaying',
     'admin.notes.state.failed': 'Failed',
     'admin.notes.more': 'More notes',
+    'admin.notes.open_named': 'Open {business}',
+    'admin.notes.drawer_label': '{business} note holders',
+    'admin.notes.holders': 'Holders now',
+    'admin.notes.holders_none': 'No units issued yet.',
+    'admin.notes.holder_issued': 'Issued Holding',
+    'admin.notes.holder_bought': 'Bought on the market',
+    'admin.notes.holder_units': {
+        one: '{count} note',
+        other: '{count} notes',
+    },
     'admin.primary.title': 'Live raises',
     'admin.primary.caption':
         'Every raise still filling, newest first. Raises fill or fail on their own clock, so there is no moderation here.',
