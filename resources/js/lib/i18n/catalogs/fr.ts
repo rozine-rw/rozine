@@ -7684,6 +7684,11 @@ const fr: Catalog = {
     'investor.checkout.risks.accept': 'Continuer',
     'investor.checkout.risks.failed':
         "Nous n'avons pas pu enregistrer votre réponse. Réessayez.",
+    'investor.risk_gate.later': 'Plus tard',
+    'investor.risk_gate.later_portfolio':
+        'Plus tard, voir mes placements (Portefeuille)',
+    'investor.risk_gate.money_page':
+        "Votre solde, votre panier et le paiement s'ouvrent une fois ces déclarations confirmées.",
     'investor.checkout.c3.reserve_after_risks':
         'Confirmez d’abord les déclarations de risque pour réserver.',
     'investor.checkout.c3.reserve_unavailable':
