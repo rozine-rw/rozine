@@ -280,16 +280,32 @@ export default function InvestorMarket({
         view === 'orders' ? (
             <>
                 <div className={wide ? 'px-1 pt-3' : 'px-5 pt-3.5'}>
-                    <FilterPill
-                        label={t('investor.market.orders.label')}
-                        value={orders}
-                        options={orderOptions}
-                        onChange={(value) => {
-                            setOrders(value);
-                            setSelected(null);
-                        }}
-                        className="w-[220px] max-w-[70%]"
-                    />
+                    <div
+                        role="tablist"
+                        aria-label={t('investor.market.orders.label')}
+                        className="flex gap-1 overflow-x-auto rounded-xl border border-rz-hairline bg-[#f3f6fc] p-1"
+                    >
+                        {orderOptions.map((option) => (
+                            <button
+                                key={option.value}
+                                type="button"
+                                role="tab"
+                                aria-selected={orders === option.value}
+                                onClick={() => {
+                                    setOrders(option.value);
+                                    setSelected(null);
+                                }}
+                                className={cn(
+                                    'flex-1 rounded-[9px] px-2 py-1.5 text-xs font-semibold whitespace-nowrap',
+                                    orders === option.value
+                                        ? 'bg-rz-surface text-rz-ink shadow-[0_1px_3px_rgba(20,45,95,.15)]'
+                                        : 'text-rz-secondary',
+                                )}
+                            >
+                                {option.label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
                 {wide ? (
                     <div className="mx-1 mt-3 mb-1 min-h-0 flex-1 overflow-y-auto rounded-2xl border border-rz-hairline bg-rz-surface p-3.5 shadow-[0_10px_30px_-22px_rgba(20,45,95,.28)]">

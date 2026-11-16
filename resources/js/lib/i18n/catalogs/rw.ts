@@ -1704,6 +1704,10 @@ const rw: Catalog = {
         'Ishami ry’iyubahirizwa ryemeje igenzura ry’umwirondoro',
     'admin.messaging.trigger.verification.rejected':
         'Ishami ry’iyubahirizwa risubije igenzura ry’umwirondoro',
+    'admin.messaging.trigger.market.units_bought':
+        'Kugura ku isoko rya kabiri birangiye',
+    'admin.messaging.trigger.market.units_sold':
+        'Imigabane umuntu yashyize ku isoko igurishijwe',
     'admin.messaging.trigger.wallet.payout_received':
         'Serivisi yishyura nyir’impapuro umugabane we w’ubwishyu',
     'admin.messaging.trigger.wallet.deposit_received':
@@ -7614,6 +7618,16 @@ const rw: Catalog = {
         'Ubukangurambaga bwarangiye budashyitse',
     'investor.notices.business.raise_expired.body':
         '{title} yarangiye igihe cyayo kigeze hamaze kwemezwa {committed} kuri {target}. Abashoramari basubijwe amafaranga yabo, nta kiguzi cyakwa.',
+    'investor.notices.market.units_bought.title': 'Imigabane yaguzwe',
+    'investor.notices.market.units_bought.body': {
+        one: 'Waguze umugabane {count} wa {title} ku isoko ku {amount}.',
+        other: 'Waguze imigabane {count} ya {title} ku isoko ku {amount}.',
+    },
+    'investor.notices.market.units_sold.title': 'Imigabane yagurishijwe',
+    'investor.notices.market.units_sold.body': {
+        one: "Umugabane wawe {count} wa {title} wagurishijwe. {amount} yageze mu gikapu cyawe nyuma y'amafaranga {fee} yo kugurisha.",
+        other: "Imigabane yawe {count} ya {title} yagurishijwe. {amount} yageze mu gikapu cyawe nyuma y'amafaranga {fee} yo kugurisha.",
+    },
     'investor.notices.wallet.payout_received.title': 'Ubwishyu bwakiriwe',
     'investor.notices.wallet.payout_received.body':
         '{net} yageze mu gikapu cyawe ivuye kuri {title}, igice {instalments}: {gross} ukuyemo {fee} y’amafaranga ku nyungu.',

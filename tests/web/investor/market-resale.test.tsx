@@ -183,8 +183,13 @@ describe('Market resale (BRS v3.0 §12)', () => {
         setWide(true);
         render(<InvestorMarket {...page()} />);
         await user.click(screen.getByRole('tab', { name: 'Orders' }));
-        await user.click(screen.getByRole('button', { name: 'Buy Orders' }));
-        await user.click(screen.getByRole('option', { name: 'Sell Orders' }));
+        const sides = screen.getByRole('tablist', { name: 'Orders' });
+        expect(
+            within(sides).getByRole('tab', { name: 'Buy Orders' }),
+        ).toHaveAttribute('aria-selected', 'true');
+        await user.click(
+            within(sides).getByRole('tab', { name: 'Sell Orders' }),
+        );
         const orders = screen.getByRole('list', { name: 'Sell Orders' });
 
         await user.click(within(orders).getAllByRole('listitem')[0]);

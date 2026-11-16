@@ -35,6 +35,16 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
         tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
         icon: <path d="M4 17l5-5 4 4 7-7M14 9h6v6" {...stroke} />,
     },
+    'market.units_bought': {
+        bar: 'bg-rz-accent-fill',
+        tile: 'bg-[rgba(36,99,235,.10)] text-rz-accent',
+        icon: <path d="M7 7h10v10M7 17L17 7" {...stroke} />,
+    },
+    'market.units_sold': {
+        bar: 'bg-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        icon: <path d="M17 17H7V7M17 7L7 17" {...stroke} />,
+    },
     'wallet.withdrawal_sent': {
         bar: 'bg-[#0c1830] dark:bg-rz-slate',
         tile: 'bg-[rgba(12,24,48,.08)] text-[#0c1830] dark:text-rz-ink',
@@ -706,6 +716,22 @@ function body(
                 }),
                 title: notice.facts.title,
                 instalments: notice.facts.instalments,
+            });
+        case 'market.units_bought':
+            return t('investor.notices.market.units_bought.body', {
+                count: Number(notice.facts.units),
+                amount: formatRwf(notice.facts),
+                title: notice.facts.title,
+            });
+        case 'market.units_sold':
+            return t('investor.notices.market.units_sold.body', {
+                count: Number(notice.facts.units),
+                amount: formatRwf(notice.facts),
+                fee: formatRwf({
+                    currency: notice.facts.currency,
+                    amount: notice.facts.fee,
+                }),
+                title: notice.facts.title,
             });
         case 'wallet.withdrawal_sent':
             return t('investor.notices.wallet.withdrawal_sent.body', {

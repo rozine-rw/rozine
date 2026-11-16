@@ -376,6 +376,16 @@ it('shows a resale on both sides: the buyer\'s units in Portfolio and both walle
     // Reading what is held needs no simulation; off UAT, published audit seals verify against the test database.
     app()->forgetInstance(EnvironmentIsolation::class);
     config(['app.uat_money_simulation' => false]);
+    // Both sides hear that the trade settled (QA #656).
+    $this->actingAs($buyer)->getJson(route('investor.notices'))->assertOk()
+        ->assertJson(fn (AssertableJson $json): AssertableJson => $json->where('data.notices.0.kind', 'market.units_bought')
+            ->where('data.notices.0.facts.units', '2')->where('data.notices.0.facts.amount', $paid)->where('data.notices.0.facts.title', $title)
+            ->where('data.notices.0.link.url', route('investor.portfolio', [], false))->etc());
+    $this->actingAs($seller)->getJson(route('investor.notices'))->assertOk()
+        ->assertJson(fn (AssertableJson $json): AssertableJson => $json->where('data.notices.0.kind', 'market.units_sold')
+            ->where('data.notices.0.facts.amount', $transfer->seller_receives)->where('data.notices.0.facts.fee', $transfer->seller_fee)
+            ->where('data.notices.0.link.url', route('investor.wallet', [], false))->etc());
+
     // Staff open the note and see who holds its units now, the buyer's bought lot included (QA #646).
     $analyst = User::factory()->withTwoFactor()->create();
     StaffFixture::provision($analyst, ['analyst'], 'Notes review.');

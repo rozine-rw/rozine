@@ -26,6 +26,8 @@ class InvestorNoticesResource extends JsonResource
         'wallet.withdrawal_sent' => ['investor.wallet', []],
         'wallet.withdrawal_returned' => ['investor.wallet', []],
         'wallet.payout_received' => ['investor.wallet', []],
+        'market.units_bought' => ['investor.portfolio', []],
+        'market.units_sold' => ['investor.wallet', []],
         'primary.refunded' => ['investor.wallet', []],
         'primary.report_published' => ['investor.portfolio', []],
         'primary.raise_funded' => ['investor.portfolio', []],
