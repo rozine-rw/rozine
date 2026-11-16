@@ -3512,6 +3512,7 @@ const fr: Catalog = {
     'business.servicing.wallet.pending': '{amount} en attente de confirmation',
     'business.servicing.wallet.to_repayments': 'Aller aux remboursements',
     'business.servicing.wallet.movement': 'Type de mouvement',
+    'business.servicing.wallet.filter.all': 'Tout',
     'business.servicing.wallet.filter.external': 'Dépôts',
     'business.servicing.wallet.filter.internal': 'Remboursements',
     'business.servicing.wallet.entry.deposit': 'Dépôt · {counterparty}',

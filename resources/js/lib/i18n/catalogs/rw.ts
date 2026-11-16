@@ -3498,6 +3498,7 @@ const rw: Catalog = {
     'business.servicing.wallet.pending': '{amount} bitegereje kwemezwa',
     'business.servicing.wallet.to_repayments': 'Jya ku kwishyura',
     'business.servicing.wallet.movement': "Ubwoko bw'igikorwa",
+    'business.servicing.wallet.filter.all': 'Byose',
     'business.servicing.wallet.filter.external': 'Ibyabikijwe',
     'business.servicing.wallet.filter.internal': 'Ibyishyuwe',
     'business.servicing.wallet.entry.deposit': 'Kubitsa · {counterparty}',

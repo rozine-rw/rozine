@@ -376,8 +376,8 @@ it('downloads the Business wallet statement with its deposit and paid withdrawal
     $page = $this->get(route('business.wallet.show', ['business' => $business, 'from' => $day($payout->created_at)]))->viewData('page')['props'];
     expect($page['history']['items'])->toBe([])
         ->and($page['history']['range'])->toBe(['from' => $day($payout->created_at), 'to' => null,
-            'base' => ['url' => '/business/'.$business.'/wallet?movement=external', 'method' => 'get']])
-        ->and($page['history']['filters'][1]['link']['url'])->toBe('/business/'.$business.'/wallet?movement=internal&from='.$day($payout->created_at))
+            'base' => ['url' => '/business/'.$business.'/wallet?movement=all', 'method' => 'get']])
+        ->and($page['history']['filters'][2]['link']['url'])->toBe('/business/'.$business.'/wallet?movement=internal&from='.$day($payout->created_at))
         ->and($page['exports']['csv']['url'])->toBe('/business/'.$business.'/wallet/statement.csv?from='.$day($payout->created_at));
     $page = $this->get(route('business.wallet.show', ['business' => $business, 'to' => $day($credit->getAttribute('created_at'))]))->viewData('page')['props'];
     expect(array_column($page['history']['items'], 'id'))->toBe([$credit->id])

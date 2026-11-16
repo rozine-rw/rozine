@@ -80,12 +80,13 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
                     $admitted && $this->withdrawals->offered() && $this->permits($business, $partyId, 'business.wallet.withdraw') ? 'business.wallet.withdraw' : null,
                 ]));
                 $kind = in_array($query['kind'] ?? null, ['deposit', 'withdraw'], true) ? $query['kind'] : null;
-                $movement = ($query['movement'] ?? null) === 'internal' ? 'internal' : 'external';
+                $movement = in_array($query['movement'] ?? null, ['external', 'internal'], true) ? $query['movement'] : 'all';
                 $range = ['from' => $query['from'] ?? null, 'to' => $query['to'] ?? null];
                 $history = match (true) {
                     $wallet === null => ['items' => [], 'next_before' => null],
                     $movement === 'internal' => $this->repaymentHistory($wallet, $query['before'] ?? null, $range['from'], $range['to']),
-                    default => $this->history($wallet, $query['before'] ?? null, $range['from'], $range['to']),
+                    $movement === 'external' => $this->history($wallet, $query['before'] ?? null, $range['from'], $range['to']),
+                    default => $this->allHistory($wallet, $query['before'] ?? null, $range['from'], $range['to']),
                 };
                 $withdrawals = $this->withdrawals->view($wallet?->id, $methods->isNotEmpty(), $kind === 'withdraw', $query['amount'] ?? null, $query['receipt'] ?? null);
 
@@ -475,6 +476,27 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
 
         return ['items' => array_values($page->map(fn (BusinessDepositCredit $credit): array => $this->historyEntry($credit))->all()),
             'next_before' => $credits->count() > 20 ? $page->last()?->id : null];
+    }
+
+    /**
+     * Every movement, deposits and repayments together, newest first, twenty to a page (QA #643).
+     * Both are ULID-keyed, so one `before` cursor pages through the merged list.
+     *
+     * @return array{items: list<array<string, mixed>>, next_before: string|null}
+     */
+    private function allHistory(BusinessWallet $wallet, ?string $before, ?string $from, ?string $to): array
+    {
+        $deposits = $this->history($wallet, $before, $from, $to)['items'];
+        $repayments = $this->repaymentHistory($wallet, $before, $from, $to)['items'];
+        $more = $this->recordedBetween(BusinessDepositCredit::query()->where('wallet_id', $wallet->id), $from, $to)
+            ->when($before !== null, fn ($query) => $query->where('id', '<', $before))->count()
+            + $this->recordedBetween(BusinessRepayment::query()->where('wallet_id', $wallet->id), $from, $to)
+                ->when($before !== null, fn ($query) => $query->where('id', '<', $before))->count() > 20;
+        $items = [...$deposits, ...$repayments];
+        usort($items, fn (array $left, array $right): int => strcmp((string) $right['id'], (string) $left['id']));
+        $page = array_slice($items, 0, 20);
+
+        return ['items' => $page, 'next_before' => $more && $page !== [] ? (string) $page[array_key_last($page)]['id'] : null];
     }
 
     /**

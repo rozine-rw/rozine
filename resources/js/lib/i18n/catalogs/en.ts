@@ -3349,6 +3349,7 @@ const en = {
     'business.servicing.wallet.pending': '{amount} waiting to be confirmed',
     'business.servicing.wallet.to_repayments': 'Go to repayments',
     'business.servicing.wallet.movement': 'Movement type',
+    'business.servicing.wallet.filter.all': 'All',
     'business.servicing.wallet.filter.external': 'Deposits',
     'business.servicing.wallet.filter.internal': 'Repayments',
     'business.servicing.wallet.entry.deposit': 'Deposit · {counterparty}',

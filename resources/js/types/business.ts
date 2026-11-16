@@ -1440,7 +1440,7 @@ export type BusinessWalletEntry =
           link: RouteLink;
       };
 
-export type BusinessWalletMovement = BusinessWalletEntry['movement'];
+export type BusinessWalletMovement = BusinessWalletEntry['movement'] | 'all';
 
 /**
  * `business.wallet.show`. Mirrors the C3 Investor wallet (v2 §2a): deposit through a verified

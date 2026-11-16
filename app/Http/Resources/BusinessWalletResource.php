@@ -33,7 +33,7 @@ class BusinessWalletResource extends JsonResource
             'deposits' => array_map(fn (array $deposit): array => self::deposit($request, $business, $context, $deposit), $data['deposits']),
             'withdrawals' => array_map(fn (array $withdrawal): array => self::withdrawal($request, $business, $context, $withdrawal), $data['withdrawals']),
             'history' => ['movement' => $movement,
-                'filters' => array_map(fn (string $key): array => ['key' => $key, 'active' => $key === $movement, 'link' => $wallet(['movement' => $key, ...$range])], ['external', 'internal']),
+                'filters' => array_map(fn (string $key): array => ['key' => $key, 'active' => $key === $movement, 'link' => $wallet(['movement' => $key, ...$range])], ['all', 'external', 'internal']),
                 'items' => array_map(fn (array $item): array => [...$item, 'link' => $wallet(['receipt' => $item['id']])], $data['history']['items']),
                 'pagination' => ['next' => $data['history']['next_before'] === null ? null : $wallet(['movement' => $movement, ...$range, 'before' => $data['history']['next_before']])],
                 'range' => ['from' => $range['from'] ?? null, 'to' => $range['to'] ?? null, 'base' => $wallet(['movement' => $movement])]],

@@ -389,6 +389,12 @@ it('lists a repayment in the Business wallet with its receipt, opens it from Rep
         ->assertInertia(fn (Assert $page): Assert => $page->has('history.items', 1)->where('history.items.0.id', $repayment->id)
             ->where('history.items.0.kind', 'repayment')->where('history.items.0.direction', 'out')->where('history.items.0.amount.amount', $gross)
             ->where('history.items.0.instalment_indexes', [1])->where('history.items.0.link.url', $receipt)->etc());
+    $all = $this->actingAs($note['payer'])->get(route('business.wallet.show', $note['business']))->viewData('page')['props']['history'];
+    $ids = array_column($all['items'], 'id');
+    $newestFirst = $ids;
+    rsort($newestFirst);
+    expect($all['movement'])->toBe('all')->and(array_column($all['filters'], 'key'))->toBe(['all', 'external', 'internal'])
+        ->and($ids)->toContain($repayment->id)->and($ids)->toBe($newestFirst);
     $this->actingAs($note['payer'])->get($receipt)
         ->assertInertia(fn (Assert $page): Assert => $page->where('receipt.kind', 'repayment')->where('receipt.receipt.code', 'REPAYMENT_RECEIVED')
             ->where('receipt.receipt.reference', 'RZR-'.strtoupper(substr($repayment->id, -10)))->etc());
@@ -478,6 +484,16 @@ it('pays a sold unit\'s share to whoever holds it at collection, and a later res
         ->and($bought->rate_bps)->toBe($seller->terms['earnings_fee']['rate_bps'])
         ->and((string) DB::table('servicing_payouts')->sum('principal'))->toBe($schedule->instalments[0]->principal)
         ->and(investorAvailable($buyer))->toBe((string) $bought->net);
+    // The resold Holding's own row is shared 1000:80 between seller and buyer, the unsold one is paid its row exactly,
+    // and together they reconcile to the repayment (QA #645).
+    $kept = DB::table('servicing_payouts')->where('lot_id', $seller->holdingId)->sole();
+    $other = DB::table('servicing_payouts')->where('lot_id', $schedule->holdings[1]->holdingId)->sole();
+    $row = $seller->instalments[0];
+    expect((int) $kept->principal + (int) $bought->principal)->toBe((int) $row->principal)
+        ->and((int) $kept->contractual_return + (int) $bought->contractual_return)->toBe((int) $row->contractualReturn)
+        ->and((int) $bought->principal)->toBe(intdiv((int) $row->principal * 80, 1080) + ((int) $row->principal * 80 % 1080 * 2 > 1080 ? 1 : 0))
+        ->and([$other->principal, $other->contractual_return])->toBe([$schedule->holdings[1]->instalments[0]->principal, $schedule->holdings[1]->instalments[0]->contractualReturn])
+        ->and((int) DB::table('servicing_payouts')->sum(DB::raw('principal + contractual_return')))->toBe((int) DB::table('business_repayments')->value('amount'));
 
     // The buyer resells all 80 units after collection: the repayment already paid stays with the holder at collection.
     $later = $this->createStub(NoteUnitHolders::class);
