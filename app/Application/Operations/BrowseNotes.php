@@ -45,8 +45,8 @@ final readonly class BrowseNotes
     }
 
     /**
-     * Who holds a note's units now, largest first: each issued Holding still holding units and each
-     * lot bought on the market, by its holder's name.
+     * Who holds a note's units now, largest first: each holder's issued units and the units it bought
+     * on the market, by its name.
      *
      * @return list<array{name: string, units: string, bought: bool}>
      */
@@ -55,10 +55,16 @@ final readonly class BrowseNotes
         $this->staff->check($actorId, 'primary.view');
         $lots = $this->lots->lots($noteId);
         $names = $this->dashboard->partyNames(array_values(array_unique(array_column($lots, 'party_id'))));
-        $holders = array_map(fn (array $lot): array => ['name' => $names[$lot['party_id']] ?? '—', 'units' => $lot['units'],
-            'bought' => $lot['lot_type'] === 'secondary_transfer'], $lots);
+        // One row per holder and way in: a holder's lots bought on the market add up to one row.
+        $holders = [];
+        foreach ($lots as $lot) {
+            $bought = $lot['lot_type'] === 'secondary_transfer';
+            $key = $lot['party_id'].($bought ? ':bought' : ':issued');
+            $holders[$key] = ['name' => $names[$lot['party_id']] ?? '—', 'units' => (string) ((int) ($holders[$key]['units'] ?? 0) + (int) $lot['units']),
+                'bought' => $bought, 'party' => $lot['party_id']];
+        }
         usort($holders, fn (array $left, array $right): int => (int) $right['units'] <=> (int) $left['units']);
 
-        return $holders;
+        return array_map(fn (array $row): array => ['name' => $row['name'], 'units' => $row['units'], 'bought' => $row['bought']], $holders);
     }
 }

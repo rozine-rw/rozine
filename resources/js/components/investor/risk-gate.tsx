@@ -3,15 +3,20 @@ import { useState } from 'react';
 import { RiskStatementsStep } from '@/components/investor/deals/risk-statements';
 import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
-import { portfolio } from '@/routes/investor';
+import { portfolio, wallet as walletRoute } from '@/routes/investor';
 import type { InvestorRiskAcknowledgementDue } from '@/types/investor';
 
 /**
- * Pages that move money stay closed until the statements are acknowledged: the wallet ("the
- * wallet unlocks once it is ticked"), the cart and a deal's checkout. Everything else only reads.
+ * Pages that put money toward an investment stay closed until the statements are acknowledged:
+ * adding money to the wallet ("the wallet unlocks once it is ticked"), the cart and a deal's
+ * checkout. Everything else only reads or returns the Investor's own money, so a holder can see
+ * their balance, payouts and receipts and withdraw without them (#660).
  */
 const MONEY_PAGE =
-    /^\/investor\/(wallet|cart|deals\/[^/?#]+\/checkout)(?:[/?#]|$)/;
+    /^\/investor\/(?:(?:cart|deals\/[^/?#]+\/checkout)(?:[/?#]|$)|wallet\?(?:[^#]*&)?kind=deposit(?:[&#]|$))/;
+
+/** Where "Not now" goes from a closed page: a wallet deposit back to the wallet, the rest to Portfolio. */
+const WALLET_DEPOSIT = /^\/investor\/wallet\?/;
 
 const laterKey = (version: string) => `rozine.risk-gate.later.${version}`;
 
@@ -38,8 +43,8 @@ function putOff(version: string): void {
  * to do. Accepting reloads the page, which then carries no prop.
  *
  * "Not now" puts them off for this visit, so an Investor can still read their portfolio,
- * holdings, deals and market (#644). The wallet, cart and checkout stay behind the statements;
- * there "Not now" goes to Portfolio instead. They come back the next time the app opens.
+ * holdings, deals, market and wallet (#644, #660). Adding money, the cart and checkout stay
+ * behind the statements; there "Not now" goes back to the wallet or to Portfolio instead. They come back the next time the app opens.
  */
 export function RiskGate() {
     const page = usePage();
@@ -69,7 +74,9 @@ function Gate({
         setLater(true);
 
         if (moneyPage) {
-            router.visit(portfolio().url);
+            router.visit(
+                WALLET_DEPOSIT.test(url) ? walletRoute().url : portfolio().url,
+            );
         }
     };
     const dialog = useModalDialog<HTMLDivElement>(notNow, open, true);
@@ -100,7 +107,11 @@ function Gate({
                             className="mt-2 h-[44px] w-full rounded-xl border border-rz-border text-[13.5px] font-semibold text-rz-ink"
                         >
                             {moneyPage
-                                ? t('investor.risk_gate.later_portfolio')
+                                ? t(
+                                      WALLET_DEPOSIT.test(url)
+                                          ? 'investor.risk_gate.later_wallet'
+                                          : 'investor.risk_gate.later_portfolio',
+                                  )
                                 : t('investor.risk_gate.later')}
                         </button>
                     }

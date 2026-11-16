@@ -335,7 +335,7 @@ export function WalletHistory({
                                 <span className="mt-px block text-[11px] text-rz-secondary">
                                     {formatDate(entry.occurred_at, locale)}
                                     {entry.movement === 'internal' &&
-                                        ` · ${t('business.servicing.wallet.instalments', { list: entry.instalment_indexes.join(', ') })}`}
+                                        ` · ${t('business.servicing.wallet.instalments', { count: entry.instalment_indexes.length, list: entry.instalment_indexes.map((index) => `#${index}`).join(', ') })}`}
                                 </span>
                             </span>
                             <span className="text-[12.5px] font-semibold whitespace-nowrap text-rz-slate">

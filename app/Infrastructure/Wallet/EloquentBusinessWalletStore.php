@@ -752,7 +752,8 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
     }
 
     /**
-     * REPAYMENT_RECEIVED: the Business paid this amount toward the note; allocation follows separately.
+     * REPAYMENT_RECEIVED: the Business paid this amount toward the note; allocation follows separately,
+     * and the receipt names the servicing policy the holders' payouts were made under once they are.
      *
      * @return array<string, mixed>
      */
@@ -761,7 +762,8 @@ final class EloquentBusinessWalletStore implements BusinessWalletStore
         return ['receipt_id' => $repayment->id, 'operation_id' => $repayment->operation_id, 'request_id' => $repayment->request_id,
             'code' => 'REPAYMENT_RECEIVED', 'recorded_at' => $repayment->payload['recorded_at'], 'amount' => WalletMoney::of($repayment->amount)->money(),
             'units' => null, 'reference' => 'RZR-'.strtoupper(substr($repayment->id, -10)), 'revision' => $revision,
-            'policy_version' => null, 'disclosure_version' => null];
+            // The servicing policy its payouts to holders were made under, once they are (QA #659).
+            'policy_version' => DB::table('servicing_payouts')->where('repayment_id', $repayment->id)->value('policy_version'), 'disclosure_version' => null];
     }
 
     /**

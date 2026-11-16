@@ -143,6 +143,12 @@ export default function InvestorPortfolio(
                 {props.tab === 'active' && (
                     <AwaitingIssue commitments={props.commitments} />
                 )}
+                {/* The note belongs to the awaiting group, so it sits right under it (QA #656). */}
+                {props.holdings.length === 0 && awaiting && (
+                    <p className="px-1 pt-1 text-center text-[12.5px] leading-normal text-rz-secondary">
+                        {t('investor.portfolio.empty.active.awaiting')}
+                    </p>
+                )}
                 {shown.map((holding) => (
                     <HoldingCard key={holding.id} holding={holding} />
                 ))}
@@ -168,11 +174,6 @@ export default function InvestorPortfolio(
                             {t('investor.portfolio.see_all', { count: more })}
                         </button>
                     </div>
-                )}
-                {props.holdings.length === 0 && awaiting && (
-                    <p className="px-1 pt-1 text-center text-[12.5px] leading-normal text-rz-secondary">
-                        {t('investor.portfolio.empty.active.awaiting')}
-                    </p>
                 )}
                 {props.holdings.length === 0 &&
                     !awaiting &&

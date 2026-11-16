@@ -138,8 +138,8 @@ class StaffSectionController extends Controller
     }
 
     /**
-     * Finance's figures for whoever may read the ledger: all fee revenue and the primary market's
-     * part of it, and one row per stream with its rate, who pays it and what the ledger holds for
+     * Finance's figures for whoever may read the ledger: all fee revenue, the primary market's part
+     * of it, the fee on investors' earnings and the resale fee, and one row per stream with its rate, who pays it and what the ledger holds for
      * it, the fee on earnings and the resale fee included. A withdrawal fee and a loss reserve do not
      * exist (LED-R04, GEN-R01), so they show as none.
      *
@@ -154,7 +154,7 @@ class StaffSectionController extends Controller
 
         return ['figures' => ['revenue' => $money((string) BigInteger::of($revenue['platform_fee'])->plus($revenue['deposit_fees'])
             ->plus($revenue['earnings_fee'])->plus($revenue['resale_fee'])),
-            'primary' => $money($revenue['platform_fee'])],
+            'primary' => $money($revenue['platform_fee']), 'investor_fees' => $money($revenue['earnings_fee']), 'secondary' => $money($revenue['resale_fee'])],
             'streams' => [['key' => 'platform_fee', 'rate' => $rate('platform_fee'), 'paid_by' => 'business', 'collected' => $money($revenue['platform_fee'])],
                 ['key' => 'audit_partner_share', 'rate' => $rate('cpa_share'), 'paid_by' => 'business', 'collected' => $money($revenue['audit_partner_share'])],
                 ['key' => 'deposit_fees', 'rate' => null, 'paid_by' => 'investor', 'collected' => $money($revenue['deposit_fees'])],

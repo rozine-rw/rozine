@@ -3357,7 +3357,10 @@ const en = {
     'business.servicing.wallet.filter.internal': 'Repayments',
     'business.servicing.wallet.entry.deposit': 'Deposit · {counterparty}',
     'business.servicing.wallet.entry.repayment': 'Repayment · {note}',
-    'business.servicing.wallet.instalments': 'Instalments {list}',
+    'business.servicing.wallet.instalments': {
+        one: 'Instalment {list}',
+        other: 'Instalments {list}',
+    },
     'business.servicing.wallet.empty': 'Nothing here yet.',
     'business.servicing.wallet.older': 'Show more',
     'business.servicing.wallet.receipt.label': 'Transaction receipt',
@@ -4214,6 +4217,13 @@ const en = {
         "Pays instalment {list} early, at its scheduled amount. There's no discount for paying early.",
     'business.servicing.repay.wallet_has':
         'Your wallet has {amount} available.',
+    'business.servicing.repay.confirm_title': 'Confirm this payment',
+    'business.servicing.repay.confirm_body.due_now':
+        "{amount} leaves your wallet for instalment {list}, with any late fees. It goes to your investors and can't be undone.",
+    'business.servicing.repay.confirm_body.next_instalment':
+        "{amount} leaves your wallet to pay instalment {list} early. There's no discount for paying early, and it can't be undone.",
+    'business.servicing.repay.confirm_cancel': 'Cancel',
+    'business.servicing.repay.confirm_cta': 'Confirm {amount}',
     'business.servicing.repay.pay_cta': 'Pay {amount}',
     'business.servicing.repay.short':
         "There isn't enough in your wallet for this payment.",
@@ -4416,14 +4426,19 @@ const en = {
     'investor.market.resale.sell_title': 'Sell units on the market',
     'investor.market.resale.buy': 'Buy',
     'investor.market.resale.buy_title': 'Buy units of {name}',
-    'investor.market.resale.units_at': '{units} units at {price} each',
+    'investor.market.resale.units_at': {
+        one: '{units} unit at {price} each',
+        other: '{units} units at {price} each',
+    },
     'investor.market.resale.yours': 'Your listing',
     'investor.market.resale.reserved': 'Reserved',
     'investor.market.resale.total': 'Total',
     'investor.market.resale.expires': 'Listed until {when}',
     'investor.market.resale.withdraw': 'Withdraw',
-    'investor.market.resale.reserved_for_you':
-        '{units} units reserved for you until {when}. Confirm to pay {amount} from your wallet.',
+    'investor.market.resale.reserved_for_you': {
+        one: '{units} unit reserved for you until {when}. Confirm to pay {amount} from your wallet.',
+        other: '{units} units reserved for you until {when}. Confirm to pay {amount} from your wallet.',
+    },
     'investor.market.resale.confirm': 'Confirm purchase',
     'investor.market.resale.working': 'Working…',
     'investor.market.resale.units': 'Units',
@@ -4432,13 +4447,19 @@ const en = {
         'Reserving holds this cash in your wallet for a short time while you confirm.',
     'investor.market.resale.reserve': 'Reserve units',
     'investor.market.resale.holding': 'Holding',
-    'investor.market.resale.lot_option': '{name} · {units} units free',
+    'investor.market.resale.lot_option': {
+        one: '{name} · {units} unit free',
+        other: '{name} · {units} units free',
+    },
     'investor.market.resale.price': 'Price per unit (RWF)',
     'investor.market.resale.cap': 'At most {cap} per unit',
     'investor.market.resale.listing_total': 'Listing total {amount}',
     'investor.market.resale.list': 'List for sale',
     'investor.market.resale.trade_buy': 'Bought · {name}',
-    'investor.market.resale.too_many': 'Only {count} units are listed.',
+    'investor.market.resale.too_many': {
+        one: 'Only {count} unit is listed.',
+        other: 'Only {count} units are listed.',
+    },
     'investor.market.resale.bought': {
         one: 'You bought {count} unit of {name} for {amount}.',
         other: 'You bought {count} units of {name} for {amount}.',
@@ -7402,9 +7423,10 @@ const en = {
     'investor.checkout.risks.failed':
         "We couldn't record your answer. Try again.",
     'investor.risk_gate.later': 'Not now',
+    'investor.risk_gate.later_wallet': 'Not now, back to Wallet',
     'investor.risk_gate.later_portfolio': 'Not now, go to Portfolio',
     'investor.risk_gate.money_page':
-        'Your wallet, cart and checkout open once you have confirmed these.',
+        'Adding money, your cart and checkout open once you have confirmed these.',
     'investor.checkout.c3.reserve_after_risks':
         'Confirm the risk statements first to reserve.',
     'investor.checkout.c3.reserve_unavailable':
@@ -7492,6 +7514,9 @@ const en = {
         other: '{count} notes · {held} still held',
     },
     'investor.holding.issue.effective_date': 'Effective date (Kigali)',
+    'investor.holding.issue.paid_on': 'Paid {date}',
+    'investor.holding.issue.paid_early': 'Paid early {date}',
+    'investor.holding.issue.paid_net': '{amount} net',
     'investor.holding.issue.schedule': 'Schedule',
     'investor.holding.issue.due': 'Due',
     /**
