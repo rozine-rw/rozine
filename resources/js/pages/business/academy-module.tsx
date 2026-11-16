@@ -97,6 +97,10 @@ function Flashcards({
     const [known, setKnown] = useState<number[]>([]);
     const [missed, setMissed] = useState<number[]>([]);
     const [feedback, setFeedback] = useState<'known' | 'learning' | null>(null);
+    /** Each rating's changes, newest last, so Previous can undo exactly the last one. */
+    const [ratings, setRatings] = useState<
+        { queueLength: number; addedKnown: boolean; addedMissed: boolean }[]
+    >([]);
     const done = position >= queue.length;
     const index = queue[position];
     const card = done ? null : cards[index];
@@ -116,17 +120,32 @@ function Flashcards({
         setTurned(false);
         setKnown([]);
         setMissed([]);
+        setRatings([]);
         setFeedback(null);
     };
 
+    /**
+     * Rates the current card. A card earns its star once, however often it comes round; a card
+     * still being learned is queued again at the end of the deck.
+     */
     const rate = (knewIt: boolean) => {
-        if (knewIt) {
-            setKnown([...known, index]);
-        } else {
-            if (!missed.includes(index)) {
-                setMissed([...missed, index]);
-            }
+        const addedKnown = knewIt && !known.includes(index);
+        const addedMissed = !knewIt && !missed.includes(index);
 
+        setRatings([
+            ...ratings,
+            { queueLength: queue.length, addedKnown, addedMissed },
+        ]);
+
+        if (addedKnown) {
+            setKnown([...known, index]);
+        }
+
+        if (addedMissed) {
+            setMissed([...missed, index]);
+        }
+
+        if (!knewIt) {
             setQueue([...queue, index]);
         }
 
@@ -135,9 +154,24 @@ function Flashcards({
         setTurned(false);
     };
 
+    /** Steps back one card and undoes its rating: its star, its miss and any retry it queued. */
     const back = () => {
         const previous = queue[position - 1];
-        setKnown(known.filter((cardIndex) => cardIndex !== previous));
+        const last = ratings[ratings.length - 1];
+
+        if (last !== undefined) {
+            if (last.addedKnown) {
+                setKnown(known.filter((cardIndex) => cardIndex !== previous));
+            }
+
+            if (last.addedMissed) {
+                setMissed(missed.filter((cardIndex) => cardIndex !== previous));
+            }
+
+            setQueue(queue.slice(0, last.queueLength));
+            setRatings(ratings.slice(0, -1));
+        }
+
         setPosition(position - 1);
         setTurned(false);
         setFeedback(null);

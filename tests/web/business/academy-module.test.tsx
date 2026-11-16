@@ -179,6 +179,78 @@ describe('Academy module', () => {
         expect(screen.getByLabelText('0 stars')).toBeInTheDocument();
     });
 
+    it('undoes a Still learning rating on Previous, so a card is never counted twice', async () => {
+        const user = userEvent.setup();
+
+        render(<BusinessAcademyModule {...props()} />);
+
+        await user.click(button('Show answer'));
+        await user.click(button('Got it'));
+        await user.click(button('Show answer'));
+        await user.click(button('Still learning'));
+        await user.click(button('Previous'));
+        expect(screen.getByText('Card 2 of 9')).toBeInTheDocument();
+        expect(screen.getByLabelText('1 star')).toBeInTheDocument();
+
+        /* Changing the mind to Got it drops the retry the miss had queued. */
+        await user.click(button('Show answer'));
+        await user.click(button('Got it'));
+        expect(screen.getByLabelText('2 stars')).toBeInTheDocument();
+
+        for (let card = 3; card <= 9; card++) {
+            await user.click(button('Show answer'));
+            await user.click(button('Got it'));
+        }
+
+        expect(screen.queryByText(/^Practice again/u)).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('heading', { name: 'Deck complete!' }),
+        ).toBeInTheDocument();
+        expect(screen.getByLabelText('9 stars')).toBeInTheDocument();
+        expect(
+            screen.getByText('You knew 9 of 9 cards on the first try.'),
+        ).toBeInTheDocument();
+    });
+
+    it('drops the retry a repeated miss queued when it is stepped back over', async () => {
+        const user = userEvent.setup();
+
+        render(<BusinessAcademyModule {...props()} />);
+
+        await user.click(button('Show answer'));
+        await user.click(button('Still learning'));
+
+        for (let card = 2; card <= 9; card++) {
+            await user.click(button('Show answer'));
+            await user.click(button('Got it'));
+        }
+
+        /* Missed again on its retry, then stepped back over: that second retry is dropped too. */
+        expect(
+            screen.getByText('Practice again: 1 card to go'),
+        ).toBeInTheDocument();
+        await user.click(button('Show answer'));
+        await user.click(button('Still learning'));
+        expect(
+            screen.getByText('Practice again: 1 card to go'),
+        ).toBeInTheDocument();
+        await user.click(button('Previous'));
+        expect(
+            screen.getByText('Practice again: 1 card to go'),
+        ).toBeInTheDocument();
+        expect(screen.getByLabelText('8 stars')).toBeInTheDocument();
+        await user.click(button('Show answer'));
+        await user.click(button('Got it'));
+
+        expect(
+            screen.getByRole('heading', { name: 'Deck complete!' }),
+        ).toBeInTheDocument();
+        expect(screen.getByLabelText('9 stars')).toBeInTheDocument();
+        expect(
+            screen.getByText('You knew 8 of 9 cards on the first try.'),
+        ).toBeInTheDocument();
+    });
+
     it('lets a learner skip the cards to an open test and come back to them', async () => {
         const user = userEvent.setup();
 
