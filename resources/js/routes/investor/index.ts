@@ -577,6 +577,284 @@ marketForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 market.form = marketForm
 
 /**
+* @see \App\Http\Controllers\InvestorSecondaryController::market_list
+* @see app/Http/Controllers/InvestorSecondaryController.php:18
+* @route '/investor/market/listings'
+*/
+export const market_list = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: market_list.url(options),
+    method: 'post',
+})
+
+market_list.definition = {
+    methods: ["post"],
+    url: '/investor/market/listings',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\InvestorSecondaryController::market_list
+* @see app/Http/Controllers/InvestorSecondaryController.php:18
+* @route '/investor/market/listings'
+*/
+market_list.url = (options?: RouteQueryOptions) => {
+    return market_list.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorSecondaryController::market_list
+* @see app/Http/Controllers/InvestorSecondaryController.php:18
+* @route '/investor/market/listings'
+*/
+market_list.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: market_list.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorSecondaryController::market_list
+* @see app/Http/Controllers/InvestorSecondaryController.php:18
+* @route '/investor/market/listings'
+*/
+const market_listForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: market_list.url(options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorSecondaryController::market_list
+* @see app/Http/Controllers/InvestorSecondaryController.php:18
+* @route '/investor/market/listings'
+*/
+market_listForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: market_list.url(options),
+    method: 'post',
+})
+
+market_list.form = market_listForm
+
+/**
+* @see \App\Http\Controllers\InvestorSecondaryController::market_reserve
+* @see app/Http/Controllers/InvestorSecondaryController.php:25
+* @route '/investor/market/listings/{listing}/reserve'
+*/
+export const market_reserve = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: market_reserve.url(args, options),
+    method: 'post',
+})
+
+market_reserve.definition = {
+    methods: ["post"],
+    url: '/investor/market/listings/{listing}/reserve',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\InvestorSecondaryController::market_reserve
+* @see app/Http/Controllers/InvestorSecondaryController.php:25
+* @route '/investor/market/listings/{listing}/reserve'
+*/
+market_reserve.url = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { listing: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            listing: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        listing: args.listing,
+    }
+
+    return market_reserve.definition.url
+            .replace('{listing}', parsedArgs.listing.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorSecondaryController::market_reserve
+* @see app/Http/Controllers/InvestorSecondaryController.php:25
+* @route '/investor/market/listings/{listing}/reserve'
+*/
+market_reserve.post = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: market_reserve.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorSecondaryController::market_reserve
+* @see app/Http/Controllers/InvestorSecondaryController.php:25
+* @route '/investor/market/listings/{listing}/reserve'
+*/
+const market_reserveForm = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: market_reserve.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorSecondaryController::market_reserve
+* @see app/Http/Controllers/InvestorSecondaryController.php:25
+* @route '/investor/market/listings/{listing}/reserve'
+*/
+market_reserveForm.post = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: market_reserve.url(args, options),
+    method: 'post',
+})
+
+market_reserve.form = market_reserveForm
+
+/**
+* @see \App\Http\Controllers\InvestorSecondaryController::market_settle
+* @see app/Http/Controllers/InvestorSecondaryController.php:31
+* @route '/investor/market/listings/{listing}/settle'
+*/
+export const market_settle = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: market_settle.url(args, options),
+    method: 'post',
+})
+
+market_settle.definition = {
+    methods: ["post"],
+    url: '/investor/market/listings/{listing}/settle',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\InvestorSecondaryController::market_settle
+* @see app/Http/Controllers/InvestorSecondaryController.php:31
+* @route '/investor/market/listings/{listing}/settle'
+*/
+market_settle.url = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { listing: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            listing: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        listing: args.listing,
+    }
+
+    return market_settle.definition.url
+            .replace('{listing}', parsedArgs.listing.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorSecondaryController::market_settle
+* @see app/Http/Controllers/InvestorSecondaryController.php:31
+* @route '/investor/market/listings/{listing}/settle'
+*/
+market_settle.post = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: market_settle.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorSecondaryController::market_settle
+* @see app/Http/Controllers/InvestorSecondaryController.php:31
+* @route '/investor/market/listings/{listing}/settle'
+*/
+const market_settleForm = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: market_settle.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorSecondaryController::market_settle
+* @see app/Http/Controllers/InvestorSecondaryController.php:31
+* @route '/investor/market/listings/{listing}/settle'
+*/
+market_settleForm.post = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: market_settle.url(args, options),
+    method: 'post',
+})
+
+market_settle.form = market_settleForm
+
+/**
+* @see \App\Http\Controllers\InvestorSecondaryController::market_withdraw
+* @see app/Http/Controllers/InvestorSecondaryController.php:37
+* @route '/investor/market/listings/{listing}/withdraw'
+*/
+export const market_withdraw = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: market_withdraw.url(args, options),
+    method: 'post',
+})
+
+market_withdraw.definition = {
+    methods: ["post"],
+    url: '/investor/market/listings/{listing}/withdraw',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \App\Http\Controllers\InvestorSecondaryController::market_withdraw
+* @see app/Http/Controllers/InvestorSecondaryController.php:37
+* @route '/investor/market/listings/{listing}/withdraw'
+*/
+market_withdraw.url = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { listing: args }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            listing: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        listing: args.listing,
+    }
+
+    return market_withdraw.definition.url
+            .replace('{listing}', parsedArgs.listing.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\InvestorSecondaryController::market_withdraw
+* @see app/Http/Controllers/InvestorSecondaryController.php:37
+* @route '/investor/market/listings/{listing}/withdraw'
+*/
+market_withdraw.post = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: market_withdraw.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorSecondaryController::market_withdraw
+* @see app/Http/Controllers/InvestorSecondaryController.php:37
+* @route '/investor/market/listings/{listing}/withdraw'
+*/
+const market_withdrawForm = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: market_withdraw.url(args, options),
+    method: 'post',
+})
+
+/**
+* @see \App\Http\Controllers\InvestorSecondaryController::market_withdraw
+* @see app/Http/Controllers/InvestorSecondaryController.php:37
+* @route '/investor/market/listings/{listing}/withdraw'
+*/
+market_withdrawForm.post = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+    action: market_withdraw.url(args, options),
+    method: 'post',
+})
+
+market_withdraw.form = market_withdrawForm
+
+/**
 * @see \App\Http\Controllers\InvestorMarketController::cart
 * @see app/Http/Controllers/InvestorMarketController.php:33
 * @route '/investor/cart'
@@ -1608,6 +1886,10 @@ const investor = {
     profile: Object.assign(profile, profile937a89),
     complaints: Object.assign(complaints, complaints),
     market: Object.assign(market, market),
+    market_list: Object.assign(market_list, market_list),
+    market_reserve: Object.assign(market_reserve, market_reserve),
+    market_settle: Object.assign(market_settle, market_settle),
+    market_withdraw: Object.assign(market_withdraw, market_withdraw),
     cart: Object.assign(cart, cart),
     cart_add: Object.assign(cart_add, cart_add),
     cart_units: Object.assign(cart_units, cart_units),

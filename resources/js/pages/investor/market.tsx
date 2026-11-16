@@ -1,11 +1,17 @@
 import { useState } from 'react';
 import { InvestorShell } from '@/components/investor/investor-shell';
 import { FilterPill } from '@/components/investor/market/filter-pill';
+import {
+    BuySheet,
+    ListingCard,
+    SellSheet,
+    TradeRow,
+} from '@/components/investor/market/resale';
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import { useWide } from '@/lib/investor/use-wide';
 import { cn } from '@/lib/utils';
-import type { InvestorShellPageProps } from '@/types/investor';
+import type { InvestorMarketProps, MarketListing } from '@/types/investor';
 
 const VIEWS = ['browse', 'orders', 'saved'] as const;
 const PERFORMANCE = [
@@ -31,11 +37,18 @@ type View = (typeof VIEWS)[number];
 
 /**
  * Market (MVP-INVESTOR-SCR-06, design L1694–1830): trading active Rozine Notes before maturity, with
- * the design's Browse, Orders and Saved views. Secondary trading has no listing, order or watchlist
- * read yet, so each view shows the design's empty state (SCR-06-ST-01 "empty book") and no action
- * that would need a command.
+ * the design's Browse, Orders and Saved views. Browse lists the live resale listings (BRS v3.0 §12),
+ * each bought by reserving units and then confirming the purchase; Sell lists units of a held lot
+ * at a price no higher than the note's cap. Orders shows the Investor's own reservations, listings
+ * and settled trades. With nothing listed, or trading closed, each view shows the design's empty
+ * state (SCR-06-ST-01 "empty book"). Saved has no watchlist read yet.
  */
-export default function InvestorMarket({ links }: InvestorShellPageProps) {
+export default function InvestorMarket({
+    links,
+    market,
+    actions,
+    identity_context_revision: identityRevision,
+}: InvestorMarketProps) {
     const { t } = useTranslation();
     const wide = useWide();
     const [view, setView] = useState<View>('browse');
@@ -44,9 +57,28 @@ export default function InvestorMarket({ links }: InvestorShellPageProps) {
     const [status, setStatus] = useState<(typeof STATUS)[number]>('all');
     const [industry, setIndustry] = useState<(typeof INDUSTRY)[number]>('all');
     const [orders, setOrders] = useState<(typeof ORDERS)[number]>('buy');
-    /** With every filter on All, nothing is listed at all, so the filters are not to blame (#597). */
+    const [buying, setBuying] = useState<MarketListing | null>(null);
+    const [selling, setSelling] = useState(false);
+    /** Every live listing is active; the board carries no performance or industry facts to narrow by. */
     const filtered =
-        performance !== 'all' || status !== 'all' || industry !== 'all';
+        performance !== 'all' ||
+        (status !== 'all' && status !== 'active') ||
+        industry !== 'all';
+    const browsing = filtered ? [] : market.listings;
+    const ordered =
+        orders === 'buy'
+            ? market.listings.filter((listing) => listing.reservation !== null)
+            : orders === 'sell'
+              ? market.listings.filter((listing) => listing.mine)
+              : [];
+    const card = (listing: MarketListing) => (
+        <ListingCard
+            key={listing.listing_id}
+            listing={listing}
+            identityRevision={identityRevision}
+            onBuy={setBuying}
+        />
+    );
     const empty =
         view === 'saved' ? 'saved' : filtered ? 'browse' : 'browse_none';
     const performanceOptions = PERFORMANCE.map((value) => ({
@@ -114,6 +146,15 @@ export default function InvestorMarket({ links }: InvestorShellPageProps) {
                     {t('investor.market.subtitle')}
                 </p>
             )}
+            {actions.list !== null && (
+                <button
+                    type="button"
+                    onClick={() => setSelling(true)}
+                    className="mt-2.5 h-9 rounded-[10px] border border-rz-border bg-rz-surface px-3.5 text-[12.5px] font-semibold text-rz-ink"
+                >
+                    {t('investor.market.resale.sell')}
+                </button>
+            )}
             {tabs}
         </div>
     );
@@ -127,6 +168,23 @@ export default function InvestorMarket({ links }: InvestorShellPageProps) {
             </p>
         </div>
     );
+    const orderList =
+        orders === 'completed' && market.trades.length > 0 ? (
+            <ul aria-label={t('investor.market.orders.completed')}>
+                {market.trades.map((trade) => (
+                    <TradeRow key={trade.transfer_id} trade={trade} />
+                ))}
+            </ul>
+        ) : ordered.length > 0 ? (
+            <ul
+                aria-label={t(`investor.market.orders.${orders}`)}
+                className="mt-3 flex flex-col gap-2.5"
+            >
+                {ordered.map(card)}
+            </ul>
+        ) : (
+            noOrders
+        );
     const body =
         view === 'orders' ? (
             <>
@@ -141,10 +199,10 @@ export default function InvestorMarket({ links }: InvestorShellPageProps) {
                 </div>
                 {wide ? (
                     <div className="mx-1 mt-3 mb-1 min-h-0 flex-1 overflow-y-auto rounded-2xl border border-rz-hairline bg-rz-surface p-3.5 shadow-[0_10px_30px_-22px_rgba(20,45,95,.28)]">
-                        {noOrders}
+                        {orderList}
                     </div>
                 ) : (
-                    <div className="px-5">{noOrders}</div>
+                    <div className="px-5 pb-6">{orderList}</div>
                 )}
             </>
         ) : (
@@ -180,22 +238,53 @@ export default function InvestorMarket({ links }: InvestorShellPageProps) {
                         className="flex-1"
                     />
                 </div>
-                <div className="flex flex-1 flex-col items-center justify-center px-[22px] py-16 text-center">
-                    <span
-                        aria-hidden
-                        className="flex size-[72px] items-center justify-center rounded-[20px] bg-[rgba(194,102,31,.10)] text-[26px]"
+                {view === 'browse' && browsing.length > 0 ? (
+                    <ul
+                        aria-label={t('investor.market.resale.listings')}
+                        className={cn(
+                            'mt-3 flex flex-col gap-2.5 overflow-y-auto',
+                            wide ? 'min-h-0 flex-1 px-1 pb-2' : 'px-5 pb-6',
+                        )}
                     >
-                        {view === 'saved' ? '🔖' : '🗂'}
-                    </span>
-                    <p className="mt-4 text-[17px] font-semibold text-rz-ink">
-                        {t(`investor.market.${empty}.empty_title`)}
-                    </p>
-                    <p className="mt-1.5 max-w-[240px] text-[13px] leading-normal text-rz-secondary">
-                        {t(`investor.market.${empty}.empty_body`)}
-                    </p>
-                </div>
+                        {browsing.map(card)}
+                    </ul>
+                ) : (
+                    <div className="flex flex-1 flex-col items-center justify-center px-[22px] py-16 text-center">
+                        <span
+                            aria-hidden
+                            className="flex size-[72px] items-center justify-center rounded-[20px] bg-[rgba(194,102,31,.10)] text-[26px]"
+                        >
+                            {view === 'saved' ? '🔖' : '🗂'}
+                        </span>
+                        <p className="mt-4 text-[17px] font-semibold text-rz-ink">
+                            {t(`investor.market.${empty}.empty_title`)}
+                        </p>
+                        <p className="mt-1.5 max-w-[240px] text-[13px] leading-normal text-rz-secondary">
+                            {t(`investor.market.${empty}.empty_body`)}
+                        </p>
+                    </div>
+                )}
             </>
         );
+    const sheets = (
+        <>
+            {buying !== null && (
+                <BuySheet
+                    listing={buying}
+                    identityRevision={identityRevision}
+                    onClose={() => setBuying(null)}
+                />
+            )}
+            {selling && actions.list !== null && (
+                <SellSheet
+                    lots={market.sellable}
+                    action={actions.list}
+                    identityRevision={identityRevision}
+                    onClose={() => setSelling(false)}
+                />
+            )}
+        </>
+    );
 
     return (
         <InvestorShell
@@ -205,9 +294,10 @@ export default function InvestorMarket({ links }: InvestorShellPageProps) {
         >
             {wide ? (
                 <div className="grid h-full grid-cols-[minmax(0,1fr)_300px] gap-[18px] px-[18px] py-4">
-                    <div className="flex min-h-0 min-w-0 flex-col">
+                    <div className="relative flex min-h-0 min-w-0 flex-col">
                         {header}
                         {body}
+                        {sheets}
                     </div>
                     <aside
                         aria-label={t('investor.market.order_detail.title')}
@@ -241,6 +331,7 @@ export default function InvestorMarket({ links }: InvestorShellPageProps) {
                 <div className="flex min-h-full flex-col">
                     {header}
                     {body}
+                    {sheets}
                 </div>
             )}
         </InvestorShell>

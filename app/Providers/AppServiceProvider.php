@@ -126,6 +126,7 @@ use App\Application\Primary\Contracts\RetainedNoteSchedules;
 use App\Application\Primary\Contracts\RiskAcknowledgements;
 use App\Application\Pulse\Contracts\PulseSignupRepository;
 use App\Application\Secondary\Contracts\NoteUnitHolders;
+use App\Application\Secondary\Contracts\SecondaryBoard;
 use App\Application\Secondary\Contracts\SecondaryLedger;
 use App\Application\Secondary\Contracts\SecondaryMarket;
 use App\Application\Secondary\Contracts\SecondaryMarketSweep;
@@ -264,6 +265,7 @@ use App\Infrastructure\Pulse\EloquentPulseSignupRepository;
 use App\Infrastructure\Secondary\EloquentNoteUnitHolders;
 use App\Infrastructure\Secondary\EloquentSecondaryMarket;
 use App\Infrastructure\Secondary\RetainedSecondaryNotes;
+use App\Infrastructure\Secondary\SimulatedSecondaryBoard;
 use App\Infrastructure\Secondary\SimulatedSecondaryMarket;
 use App\Infrastructure\Secondary\UnavailableSecondaryMarket;
 use App\Infrastructure\Wallet\EloquentBusinessPayoutAccounts;
@@ -462,6 +464,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(SecondaryMarket::class, fn (): SecondaryMarket => match (true) {
             config('app.secondary_trading') === true => $this->app->make(EloquentSecondaryMarket::class),
             $this->app->make(UatMoneySimulation::class)->active() => new SimulatedSecondaryMarket($this->app->make(EloquentSecondaryMarket::class),
+                $this->app->make(UatMoneySimulation::class)),
+            default => $this->app->make(UnavailableSecondaryMarket::class),
+        });
+        $this->app->bind(SecondaryBoard::class, fn (): SecondaryBoard => match (true) {
+            config('app.secondary_trading') === true => $this->app->make(EloquentSecondaryMarket::class),
+            $this->app->make(UatMoneySimulation::class)->active() => new SimulatedSecondaryBoard($this->app->make(EloquentSecondaryMarket::class),
                 $this->app->make(UatMoneySimulation::class)),
             default => $this->app->make(UnavailableSecondaryMarket::class),
         });
