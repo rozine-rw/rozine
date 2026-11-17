@@ -12,6 +12,7 @@ use App\Application\Evidence\ReadStatementOriginal;
 use App\Application\Evidence\RecordStatementTranscription;
 use App\Application\Identity\ChangeMembership;
 use App\Application\Operations\Contracts\CanonicalJson;
+use App\Domain\Auditor\AuditEngagementState;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
 use App\Models\AuditEngagementAcceptance;
@@ -43,7 +44,8 @@ it('requires an accepted assignment and leaves missing audit evidence explicitly
     $json = app(CanonicalJson::class);
     $engagement = AuditEngagementAcceptance::query()->where('party_id', $user->party_id)->firstOrFail();
     expect($file['assignment'])->toBe(['id' => $offer->id, 'business_id' => $fixture['business'], 'party_id' => $user->party_id,
-        'revision' => 2, 'kind' => 'flash', 'original_dispatch_at' => $offer->state['original_dispatch_at'], 'business_revision' => 1,
+        'revision' => 2, 'kind' => 'flash', 'original_dispatch_at' => $offer->state['original_dispatch_at'],
+        'period' => AuditEngagementState::period($offer->state), 'business_revision' => 1,
         'engagement' => ['id' => $engagement->id, 'release_id' => $engagement->audit_engagement_release_id,
             'release_revision' => $engagement->release_revision, 'release_sha256' => $engagement->release_sha256,
             'accepted_at' => $engagement->payload['accepted_at'], 'sha256' => $engagement->sha256], 'mandate_version' => 1,
