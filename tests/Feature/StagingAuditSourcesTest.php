@@ -3,15 +3,20 @@
 declare(strict_types=1);
 
 use App\Application\Auditor\Contracts\AuditSourceFactsStore;
+use App\Application\Auditor\GetAuditProcedureSources;
 use App\Application\Auditor\GetAuditSourceFacts;
+use App\Application\Auditor\WithAcceptedAuditAssignment;
 use App\Application\Environment\EnvironmentIsolation;
+use App\Domain\Auditor\AuditEngagementState;
 use App\Domain\Auditor\Wgs84Distance;
 use App\Infrastructure\Auditor\EloquentAuditSourceFactsStore;
 use App\Models\AuditLocation;
 use App\Models\AuditSourceSnapshot;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
+use Tests\Support\AuditSealingFixture as SealingFixture;
 use Tests\Support\AuditSourceFactsFixture as Fixture;
 
 /*
@@ -105,4 +110,24 @@ it('skips an accepted audit whose Auditor has no sign-in account, and returns no
     config(['app.uat_money_simulation' => false]);
     expect(app(AuditSourceFactsStore::class)->recordSimulated())->toBe([]);
     $this->assertDatabaseCount('audit_source_snapshots', 0);
+});
+
+it('reads the latest verified month for a simulated Business\'s monthly audit of the month still running', function (): void {
+    $fixture = SealingFixture::ready(kind: 'monthly');
+    $user = $fixture['user'];
+    $assignment = app(WithAcceptedAuditAssignment::class)->handle($user->id, 1, $fixture['assignment']->id, fn (array $accepted): array => $accepted);
+    $sources = fn (string $period): array => app(GetAuditProcedureSources::class)->handle($user->id, 1, $assignment, 'monthly', $period);
+    $verified = $sources(AuditEngagementState::period($fixture['assignment']->refresh()->state));
+    $running = CarbonImmutable::parse($verified['monthly']['period'] ?? '')->addMonth()->format('Y-m');
+
+    expect($verified['monthly'])->not->toBeNull()
+        ->and($sources($running))->toMatchArray(['verification' => null, 'monthly' => null]);
+
+    asStagingAuditDemo($fixture['audit']['business']);
+    $simulated = $sources($running);
+    expect($simulated['verification'])->toBe($verified['verification'])
+        ->and($simulated['monthly'])->toBe([...$verified['monthly'] ?? [], 'period' => $running]);
+
+    asStagingAuditDemo('01m6dz3t0wemrqac36j094k19b');
+    expect($sources($running)['monthly'])->toBeNull();
 });
