@@ -19,7 +19,7 @@ final class UnderwritingEvidenceFixture
     /** @return array{requested_principal: string, tenor_months: int, accepted_principal: string|null, months: list<MonthInput>, last_complete_month: string, first_repayment_month: string, recurring_owner_draw: string, obligations: list<ObligationInput>, history: History, restriction_active: bool} */
     public static function application(): array
     {
-        return ['requested_principal' => '12000000', 'tenor_months' => 6, 'accepted_principal' => null,
+        return ['requested_principal' => '10800000', 'tenor_months' => 6, 'accepted_principal' => null,
             'months' => self::months(), 'last_complete_month' => '2026-08', 'first_repayment_month' => '2026-09',
             'recurring_owner_draw' => '0', 'obligations' => [], 'restriction_active' => false,
             'history' => ['has_rozine_history' => false, 'repeat_eligibility' => null, 'instalment_conduct' => null, 'report_conduct' => null,

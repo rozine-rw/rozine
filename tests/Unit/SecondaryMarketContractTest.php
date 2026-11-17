@@ -35,6 +35,43 @@ it('caps the asking price at the remaining contractual payouts per unit, rounded
         ->and(fn () => PriceCap::requireWithin('2778', $cap))->toThrow(SecondaryViolation::class, 'PRICE_ABOVE_CAP');
 });
 
+it('allows a resale ask below or at all remaining contractual payouts under BRS v3', function (string $price): void {
+    $cap = PriceCap::perUnit(array_fill(0, 3, ['principal' => '800', 'return' => '150']), '1');
+    $at = secondaryKigali('2026-10-01 10:00');
+    $listing = SecondaryListing::open('listing-v3', 'seller', 'holding-v3', '1', '1', $price, $cap, openWindow(), $at);
+
+    expect((string) $cap)->toBe('2850')
+        ->and((string) PriceCap::requireWithin($price, $cap))->toBe($price)
+        ->and($listing->price)->toBe($price)
+        ->and($listing->reprice($price, $cap, openWindow(), $at)->price)->toBe($price);
+})->with(['discounted' => ['2778'], 'at cap' => ['2850']]);
+
+it('rejects a resale ask one franc above remaining contractual payouts when opening or repricing', function (): void {
+    $cap = PriceCap::perUnit(array_fill(0, 3, ['principal' => '800', 'return' => '150']), '1');
+    $at = secondaryKigali('2026-10-01 10:00');
+    $listing = SecondaryListing::open('listing-v3', 'seller', 'holding-v3', '1', '1', '2778', $cap, openWindow(), $at);
+
+    expect(fn () => PriceCap::requireWithin('2851', $cap))->toThrow(SecondaryViolation::class, 'PRICE_ABOVE_CAP')
+        ->and(fn () => SecondaryListing::open('other-v3', 'seller', 'holding-v3', '1', '1', '2851', $cap, openWindow(), $at))
+        ->toThrow(SecondaryViolation::class, 'PRICE_ABOVE_CAP')
+        ->and(fn () => $listing->reprice('2851', $cap, openWindow(), $at))->toThrow(SecondaryViolation::class, 'PRICE_ABOVE_CAP');
+});
+
+it('recalculates the resale cap from only the contractual payouts still unpaid', function (): void {
+    $remaining = array_fill(0, 3, ['principal' => '800', 'return' => '150']);
+    $before = PriceCap::perUnit($remaining, '1');
+    $after = PriceCap::perUnit(array_slice($remaining, 1), '1');
+    $at = secondaryKigali('2026-10-01 10:00');
+    $listing = SecondaryListing::open('listing-v3', 'seller', 'holding-v3', '1', '1', '2850', $before, openWindow(), $at);
+
+    expect((string) $before)->toBe('2850')
+        ->and((string) $after)->toBe('1900')
+        ->and($listing->reprice('1900', $after, openWindow(), $at)->price)->toBe('1900')
+        ->and($listing->reprice('1800', $after, openWindow(), $at)->price)->toBe('1800')
+        ->and(fn () => $listing->reprice('1901', $after, openWindow(), $at))->toThrow(SecondaryViolation::class, 'PRICE_ABOVE_CAP')
+        ->and(fn () => $listing->reprice('2850', $after, openWindow(), $at))->toThrow(SecondaryViolation::class, 'PRICE_ABOVE_CAP');
+});
+
 it('refuses prices and quantities that are not positive whole numbers', function (string $value): void {
     expect(fn () => PriceCap::requireWithin($value, BigInteger::of(5000)))->toThrow(SecondaryViolation::class, 'INVALID_PRICE')
         ->and(fn () => SettlementQuote::of($value, '100'))->toThrow(SecondaryViolation::class, 'INVALID_UNITS');

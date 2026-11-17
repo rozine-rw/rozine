@@ -33,7 +33,7 @@ it('recalculates and signs from fresh audited evidence at the inclusive 45-day b
         ->and($quote->sha256)->toBe(hash('sha256', app(CanonicalJson::class)->encode($quote->payload)));
     $owner = $fixture['audit']['authority']['users'][0];
     app(SaveBusinessApplication::class)->handle($owner->id, 1, $fixture['audit']['business'], $fixture['application']->id,
-        3, BusinessApplicationFixture::fields('12000000'), 'review', (string) Str::uuid());
+        3, BusinessApplicationFixture::fields('10800000'), 'review', (string) Str::uuid());
     expect(BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture))['code'])->toBe('APPLICATION_SUBMITTED');
     $this->travelTo(CarbonImmutable::parse('2026-10-15T22:00:00Z'));
     expect(BusinessQuoteFixture::review($fixture)['application']['status'])->toBe('submitted')
@@ -48,7 +48,7 @@ it('withdraws signing authority at the 46th Kigali day without changing the hist
     $request = (string) Str::uuid();
     $receipt = BusinessQuoteFixture::evaluate($fixture, request: $request);
     app(SaveBusinessApplication::class)->handle($owner->id, 1, $fixture['audit']['business'], $fixture['application']->id,
-        3, BusinessApplicationFixture::fields('12000000'), 'review', (string) Str::uuid());
+        3, BusinessApplicationFixture::fields('10800000'), 'review', (string) Str::uuid());
     $accepted = BusinessQuoteFixture::acceptance($fixture);
     $before = BusinessApplicationQuote::query()->firstOrFail()->getRawOriginal();
     $this->travelTo(CarbonImmutable::parse('2026-10-15T22:00:00Z'));

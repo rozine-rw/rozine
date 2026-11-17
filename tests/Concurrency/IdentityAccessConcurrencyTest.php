@@ -1804,7 +1804,7 @@ it('serializes draft autosave against final submission and requires fresh intent
     $save = function () use ($fixture): void {
         $result = app(SaveBusinessApplication::class)->handle($fixture['audit']['authority']['users'][0]->id, 1,
             $fixture['audit']['business'], $fixture['application']->id, 4,
-            [...BusinessApplicationFixture::fields('12000000'), 'title' => 'Changed during signing'], null, (string) Str::uuid());
+            [...BusinessApplicationFixture::fields('10800000'), 'title' => 'Changed during signing'], null, (string) Str::uuid());
         if ($result['code'] === 'VERSION_CONFLICT') {
             throw new CommandRejection('VERSION_CONFLICT');
         }
@@ -1823,7 +1823,7 @@ it('serializes draft autosave against final submission and requires fresh intent
     expect($application->revision)->toBe(5)
         ->and(BusinessApplicationSubmission::query()->count())->toBe($submitted ? 1 : 0)
         ->and(BusinessApplicationSignature::query()->count())->toBe($submitted ? 1 : 0)
-        ->and($application->draft['title'])->toBe($submitted ? BusinessApplicationFixture::fields('12000000')['title'] : 'Changed during signing')
+        ->and($application->draft['title'])->toBe($submitted ? BusinessApplicationFixture::fields('10800000')['title'] : 'Changed during signing')
         ->and($application->current_quote_id === null)->toBe(! $submitted);
 });
 

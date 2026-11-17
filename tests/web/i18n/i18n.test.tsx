@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { render, screen } from '@testing-library/react';
+import { render, renderHook, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vite-plus/test';
+import { useDecisionReason } from '@/components/admin/applications/application-status';
 import I18nProvider from '@/components/i18n-provider';
 import { useTranslation } from '@/hooks/use-translation';
 import {
@@ -102,6 +103,63 @@ describe('catalog loading', () => {
         );
         expect(entry).toContain("fr: () => import('@/lib/i18n/catalogs/fr'),");
         expect(entry).toContain("rw: () => import('@/lib/i18n/catalogs/rw'),");
+    });
+});
+
+describe('underwriting policy copy', () => {
+    it.each(LOCALES)('explains the single cutoff to staff in %s', (locale) => {
+        const { result } = renderHook(() => useDecisionReason(), {
+            wrapper: ({ children }) => (
+                <I18nProvider locale={locale}>{children}</I18nProvider>
+            ),
+        });
+
+        const reason = result.current({
+            code: 'reject',
+            reason_code: 'DSCR_BELOW_CUTOFF',
+            reason: 'Legacy server explanation',
+        });
+
+        expect(reason).toBe(
+            catalogFor(locale)['admin.decision.reason_code.DSCR_BELOW_CUTOFF'],
+        );
+        expect(reason).toMatch(/1[.,]50/u);
+        expect(reason).not.toMatch(/1[.,]25|Legacy server explanation/u);
+    });
+
+    it.each(LOCALES)(
+        'keeps eligibility and sizing explanations consistent in %s',
+        (locale) => {
+            const catalog = catalogFor(locale);
+            const codes = [
+                'business.help.capacity.how.a',
+                'admin.design.engines.sizing.sub',
+                'business.rating.sizing.explainer',
+                'auditor.academy.lesson.numbers.topic2.body',
+            ] as const;
+
+            for (const code of codes) {
+                expect(catalog[code]).toMatch(/1[.,]50/u);
+                expect(catalog[code]).not.toMatch(/1[.,]25/u);
+            }
+
+            // This answer is deliberately wrong; it is not an eligibility cutoff.
+            expect(
+                catalog['auditor.academy.lesson.numbers.topic2.option3'],
+            ).toMatch(/1[.,]25/u);
+        },
+    );
+
+    it('distinguishes rejection from capacity for a smaller new request', () => {
+        expect(en['business.help.capacity.how.a']).toContain(
+            'rejected before sizing or other caps',
+        );
+        expect(en['business.help.capacity.how.a']).toContain(
+            'not automatically reduced into an offer',
+        );
+        expect(en['auditor.academy.lesson.numbers.topic2.body']).toContain(
+            'Capacity for a smaller new request is not an automatic counteroffer',
+        );
     });
 });
 

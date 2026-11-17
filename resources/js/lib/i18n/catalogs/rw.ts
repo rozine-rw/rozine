@@ -1169,7 +1169,7 @@ const rw: Catalog = {
         "Amakuru y'iyandikwa ry'ubucuruzi bwawe n'inyandiko za banki na mobile money, wohereza muri porogaramu. Porogaramu ikumenyesha niba hari ikindi gikenewe.\n\nNta mafaranga yo gusaba yishyurwa muri iki gihe cy'igerageza.",
     'business.help.capacity.how.q': "Ingano y'inyandiko yanjye igenwa gute?",
     'business.help.capacity.how.a':
-        "Rozine ibara amafaranga ubucuruzi bwawe busigarana buri kwezi nyuma y'ibikorwa, ibyo nyirabwo afata n'indi myenda yishyurwa, ikagena ingano y'inyandiko ku buryo ayo mafaranga angana n'inshuro 1.5 z'icyiciro cya buri kwezi. Ubucuruzi bwaba munsi y'inshuro 1.25 ntibuhabwa inyandiko.\n\nInyandiko ntirenga 35% by'amafaranga yinjiye ku mwaka yagenzuwe, kandi iri hagati ya RWF 3,000,000 na 100,000,000.",
+        'Rozine ibara amafaranga ubucuruzi bwawe busigarana buri kwezi nyuma y’ibikorwa, ibyo nyirabwo afata n’indi myenda yishyurwa. Ayo mafaranga agomba kuba nibura inshuro 1,50 z’ubwishyu bwa buri kwezi ku mubare wasabye. Ubusabe buri munsi ya 1,50 burangwa mbere yo kugena ingano cyangwa gukoresha izindi mbibi; ntibuhita bugabanywa ngo bwemerwe. Ubushobozi bwo gusaba umubare muto mu busabe bushya buratandukanye.\n\nInyandiko ntirenga 35% by’amafaranga yinjiye ku mwaka yagenzuwe, kandi iri hagati ya RWF 3,000,000 na 100,000,000.',
     'business.help.capacity.rate.q': 'Nzishyura inyungu ingana iki?',
     'business.help.capacity.rate.a':
         "Inyungu yose iri hagati ya 10.0% na 15.0% by'igishoro mu gihe cyose, igenwa n'amanota yawe, hakiyongeraho gato ku bihe birebire. Igenwa igihe ikusanya rifunguwe.\n\nIhinduka ry'amanota yawe nyuma ntirihindura amasezerano y'inyandiko yamaze gutangwa.",
@@ -2181,7 +2181,7 @@ const rw: Catalog = {
     'admin.engine.weak': 'Bidakomeye',
     'admin.engine.distressed': 'Mu bibazo',
     'admin.design.engines.sizing.sub':
-        "Imipaka ine yose irakurikizwa, iya hasi ni yo ikurikizwa: ubushobozi kuri DSCR igamijwe, amafaranga yasabwe, ubusabe bunini n'umwanya usigaye. Ubusabe buri munsi y'ubuto bwemewe buranga. Nyuma amafaranga aragabanywa kugeza DSCR igamijwe yubahirijwe, akazengurutswa ku rugero rwo gutanga.",
+        'Banza wange ubusabe bw’umwimerere niba ubushobozi bwo kwishyura icyiciro icyo ari cyo cyose buri munsi ya 1,50; kugabanya umubare ntibihindura ubwo busabe ngo bwemerwe. Ku busabe bushobora kwishyurwa, hakoreshwa umubare muto mu bushobozi bw’amafaranga asigara, ayasabwe, ingano ntarengwa n’umwanya w’umwenda usigaye. Wange ingano iri munsi y’iyemewe kandi wongere ugenzure buri cyiciro nyuma yo kugabanya ingano ku bice by’inyandiko. Ubushobozi bwo gusaba umubare muto mu busabe bushya buratandukanye.',
     'admin.design.ratings.movers.title': 'Ibihindura amanota',
     'admin.design.ratings.movers.sub':
         "Buri raporo y'imari yemejwe isubiramo ibipimo by'imari, bityo kuzamuka cyangwa kugabanuka kw'amafaranga yinjiye bihindura amanota. Kwishyura na raporo za buri kwezi bihindura imyitwarire, kandi imipaka igumisha amanota hasi igihe hari ibirarane, kutubahiriza raporo cyangwa kunanirwa kwishyura. Nta mukozi ushobora kubihindura.",
@@ -2568,7 +2568,7 @@ const rw: Catalog = {
     'admin.decision.reason_code.CURRENT_RELEASE_REVIEW_REQUIRED':
         'Hakenewe isuzuma ryo kurekura riri gukorwa: igiciro cyabitswe si icyemezo kiriho. Reba amagenzura yo kurekura ari hepfo.',
     'admin.decision.reason_code.DSCR_BELOW_CUTOFF':
-        'Ubwishingizi buri munsi ya 1,25: amafaranga yinjira ntashobora kwishyura igice.',
+        'Ubushobozi buri munsi ya 1,50: amafaranga asigara ntahagije kwishyura buri cyiciro cyasabwe hamwe n’ikinyuranyo gisabwa.',
     'admin.decision.reason_code.RESTRICTION_ACTIVE':
         "Inzitizi y'inguzanyo iriho ibuza kongera kuguza.",
     'admin.applications.term_only': 'Amezi {term}',
@@ -4214,7 +4214,7 @@ const rw: Catalog = {
     'business.rating.sizing.term_value':
         'Amezi {months} · {rate}% ku giciro kimwe',
     'business.rating.sizing.explainer':
-        'Ubushobozi bwawe ni ibyo amafaranga ubucuruzi bwawe busigarana buri kwezi bushobora kwishyura bufite iyo ngwate, bugarukira ku mbibi ntoya muri eshatu ziri hejuru. Nta muntu wo muri Rozine ushyiraho uyu mubare n’intoki. Ubushobozi busigaye ni ubwo bushobozi ukuyemo ibyo wasabye ugasinya kuva bwabarwa; buri busabe bushya bwongera kubarwa ku nyandiko nshya za konti.',
+        'Ubushobozi bwawe ni ibyo amafaranga ubucuruzi bwawe busigarana buri kwezi bushobora kwishyura bufite iyo ngwate, bugarukira ku mbibi ntoya muri eshatu ziri hejuru. Bushobora kuyobora ubusabe bushya bw’umubare muto, ariko ntibwemeza cyangwa ngo buhite bugabanya ubusabe bufite icyiciro kitageza ku bushobozi bwa 1,50. Nta muntu wo muri Rozine ushyiraho uyu mubare n’intoki. Ubushobozi busigaye ni ubwo bushobozi ukuyemo ibyo wasabye ugasinya kuva bwabarwa; buri busabe bushya bwongera kubarwa ku nyandiko nshya za konti.',
     'business.rating.limits': 'Imbibi eshatu · ntoya ni yo ikurikizwa',
     'business.rating.limit.cash_flow': 'Ibyo amafaranga yawe yishyura',
     'business.rating.limit.cash_flow_detail':
@@ -8904,7 +8904,7 @@ const rw: Catalog = {
     'auditor.academy.lesson.numbers.topic2.title':
         'Ubushobozi bwo kwishyura n’itangwa',
     'auditor.academy.lesson.numbers.topic2.body':
-        'Ubushobozi bwo kwishyura ni CFADS igabanyijwe n’umubare w’ubwishyu bwa buri kwezi busabwa. Itangwa ni rito kurusha ibindi muri ibi: ayasabwe, ayo ubushobozi bwa 1.50 bwemera, 35% by’amafaranga yinjiye ku mwaka yagenzuwe, na RWF 100,000,000. Igenzura ukora aho bukorera ryemeza inyandiko iyo mibare ishingiyeho.',
+        'Ubushobozi bwo kwishyura ni CFADS igabanyijwe n’ubwishyu bwa buri kwezi busabwa. Wange ubusabe bw’umwimerere niba icyiciro icyo ari cyo cyose kiri munsi y’ubushobozi bwa 1,50, mbere yo kugena ingano cyangwa gukoresha izindi mbibi. Ubushobozi bwo gusaba umubare muto mu busabe bushya si uguhita ugabanya ubusabe bwanzwe ngo bwemerwe. Itangwa rishobora kwishyurwa rigarukira ku byasabwe, ubushobozi bw’amafaranga asigara, 35% by’amafaranga yinjiye ku mwaka yagenzuwe na RWF 100,000,000. Igenzura ukora aho bukorera ryemeza inyandiko iyo mibare ishingiyeho.',
     'auditor.academy.lesson.numbers.topic2.q':
         'Rozine igena itangwa ishingiye ku bushobozi bungana iki?',
     'auditor.academy.lesson.numbers.topic2.option1': '1.00',

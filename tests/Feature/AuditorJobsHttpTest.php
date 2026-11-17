@@ -332,11 +332,11 @@ it('keeps submitted application facts in an Auditor file when a legacy draft is 
     expect($save->handle($owner->id, 1, $fixture['business'], $later, 1, [...BusinessApplicationFixture::fields('15000000'), 'term_months' => 3, 'use_of_funds' => ['inventory']], 'raise', (string) Str::uuid())['code'])->toBe('APPLICATION_SAVED');
     Sanctum::actingAs($fixture['partners'][0]['user'], ['auditor:read']);
     $this->getJson('/api/v1/auditor/jobs/'.$assignment->id)->assertOk()
-        ->assertJsonPath('data.file.raise.requested.amount', '12000000')->assertJsonPath('data.file.raise.term_months', 6)->assertJsonPath('data.file.raise.use_of_funds', 'equipment');
+        ->assertJsonPath('data.file.raise.requested.amount', '10800000')->assertJsonPath('data.file.raise.term_months', 6)->assertJsonPath('data.file.raise.use_of_funds', 'equipment');
     expect($save->handle($owner->id, 1, $fixture['business'], $later, 2, BusinessApplicationFixture::fields('20000000'), 'raise', (string) Str::uuid())['code'])->toBe('APPLICATION_SAVED');
     $this->getJson('/api/v1/auditor/jobs')->assertOk()->assertJsonPath('data.assigned.0.id', $assignment->id);
     $this->getJson('/api/v1/auditor/jobs/'.$assignment->id)->assertOk()
-        ->assertJsonPath('data.file.raise.requested.amount', '12000000')->assertJsonPath('data.file.raise.term_months', 6);
+        ->assertJsonPath('data.file.raise.requested.amount', '10800000')->assertJsonPath('data.file.raise.term_months', 6);
 });
 
 it('shows a closed offer as a refusal and an unknown offer as not found when read in the browser', function (): void {
