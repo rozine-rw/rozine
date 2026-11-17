@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Auditor;
 
+use App\Application\Environment\UatMoneySimulation;
 use App\Application\Evidence\GetAuditStatements;
 use App\Application\Evidence\GetAuditStatementVerification;
 use App\Domain\Auditor\AuditMonthlyFacts;
@@ -19,7 +20,7 @@ use App\Domain\Auditor\AuditMonthlyFacts;
  */
 final class GetAuditProcedureSources
 {
-    public function __construct(private GetAuditStatementVerification $statements, private GetAuditStatements $files, private AuditMonthlyFacts $monthly, private GetAuditSourceFacts $facts) {}
+    public function __construct(private GetAuditStatementVerification $statements, private GetAuditStatements $files, private AuditMonthlyFacts $monthly, private GetAuditSourceFacts $facts, private UatMoneySimulation $simulation) {}
 
     /**
      * Called while the report store holds this exact accepted assignment's authority.
@@ -44,6 +45,15 @@ final class GetAuditProcedureSources
         $current = $verification !== null && $verification['current'];
         $monthly = $current && $file['transcription'] !== null
             ? $this->monthly->project($period, $verification['payload']['observations'], $file['transcription']['payload']['statements']) : null;
+        // Staging demo only (UAT money simulation): a monthly audit opened for the month still running
+        // has no verified statement month yet, so it reads the latest verified month before it.
+        if ($monthly === null && $current && $file['transcription'] !== null && $period !== null && $kind === 'monthly'
+            && $this->simulation->covers($assignment['business_id'])) {
+            $earlier = array_filter(array_column($verification['payload']['observations'], 'month'), fn (string $month): bool => $month < $period);
+            $latest = $earlier === [] ? null : max($earlier);
+            $projected = $latest === null ? null : $this->monthly->project($latest, $verification['payload']['observations'], $file['transcription']['payload']['statements']);
+            $monthly = $projected === null ? null : [...$projected, 'period' => $period];
+        }
 
         // The verified history the baseline visit checks month by month (BRS v3 VIS-R02), newest first.
         $history = [];

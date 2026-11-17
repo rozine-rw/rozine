@@ -27,7 +27,6 @@ use App\Domain\Operations\OperationResult;
 use App\Models\AuditReport;
 use App\Models\AuditReportSeal;
 use App\Models\AuditReportVersion;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as Query;
 use RuntimeException;
@@ -200,7 +199,7 @@ final class EloquentAuditReportStore implements AuditReportStore
                                     return $this->receipt('AUDIT_REPORT_RESUMED', $report);
                                 }
                                 $period = $current['kind'] === 'routine' && isset($current['original_dispatch_at'])
-                                    ? CarbonImmutable::parse($current['original_dispatch_at'])->setTimezone('Africa/Kigali')->startOfMonth()->subMonth()->format('Y-m') : null;
+                                    ? AuditEngagementState::period($current) : null;
                                 $binding = ['assignment' => ['id' => $current['id'], 'revision' => $current['revision'], 'party_id' => $current['party_id']],
                                     'engagement' => $current['engagement'], 'application' => $application, 'period' => $period];
                                 // A late visit (AUD-R08) follows its own short procedure. Otherwise the first Flash visit
