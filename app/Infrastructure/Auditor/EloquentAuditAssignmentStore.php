@@ -617,11 +617,16 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             $existing = AuditAssignment::query()->where('business_id', $businessId)->orderByDesc('id')->lockForUpdate()->first();
             $candidates = $this->finish($existing, null, $candidates, $context);
             $month = now('Africa/Kigali')->startOfMonth();
+            // A month a caller opened early (staging) is not this month's own dispatch.
             $dispatched = AuditAssignment::query()->where('business_id', $businessId)->where('created_at', '>=', $month->utc())->get(['id', 'state'])
-                ->contains(fn (AuditAssignment $record): bool => $record->state['kind'] === 'routine'
+                ->contains(fn (AuditAssignment $record): bool => $record->state['kind'] === 'routine' && ! isset($record->state['period'])
                     && AuditEngagementState::purpose($record->state) === AuditEngagementState::PURPOSE_MONTHLY);
-            // A month named by the caller is opened beside this month's own dispatch, never over an open engagement.
-            if (($existing !== null && ! self::finished($existing)) || ($dispatched && $period === null)) {
+            // A month named by the caller is opened beside this month's own dispatch, never over an open
+            // engagement, and never twice for the same month.
+            $opened = $period !== null && AuditAssignment::query()->where('business_id', $businessId)->where('status', '!=', 'withdrawn')->get(['id', 'state'])
+                ->contains(fn (AuditAssignment $record): bool => AuditEngagementState::purpose($record->state) === AuditEngagementState::PURPOSE_MONTHLY
+                    && AuditEngagementState::period($record->state) === $period);
+            if (($existing !== null && ! self::finished($existing)) || ($dispatched && $period === null) || $opened) {
                 return null;
             }
             $record = new AuditAssignment;

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Environment\UatMoneySimulation;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -36,5 +37,8 @@ Schedule::command('secondary:expire')->everyMinute()->withoutOverlapping(5);
 Schedule::command('disbursements:reconcile')->everyMinute()->withoutOverlapping(5);
 
 Schedule::command('staging:record-audit-sources')->everyMinute()->withoutOverlapping(5);
+
+Schedule::command('staging:open-monthly-audit')->everyFiveMinutes()->withoutOverlapping(10)
+    ->when(fn (): bool => app(UatMoneySimulation::class)->active());
 
 Schedule::command('changes:prune')->daily()->withoutOverlapping(60);
