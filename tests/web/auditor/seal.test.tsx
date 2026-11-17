@@ -1627,3 +1627,16 @@ describe('Seal — monthly filings', () => {
         expect(screen.queryAllByRole('dialog')).toHaveLength(1);
     });
 });
+
+describe('Seal — a completed engagement opened from Portfolio (QA #674)', () => {
+    it('renders a flash report whose engagement has no running deadline', () => {
+        const page = props(seal);
+
+        page.audit = { ...page.audit, deadline: null };
+        render(<AuditorAudit {...page} />);
+
+        expect(
+            screen.getByRole('heading', { name: page.audit.business }),
+        ).toBeInTheDocument();
+    });
+});

@@ -668,7 +668,11 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         $report = is_string($reportId) ? DB::table('audit_reports')->join('audit_report_publications', 'audit_report_publications.audit_report_id', '=', 'audit_reports.id')
             ->where('audit_reports.id', $reportId)->first(['audit_reports.kind', 'audit_report_publications.published_at']) : null;
         if ($report !== null && $report->published_at !== null) {
-            $entries[] = ['id' => (string) $reportId, 'at' => $at((string) $report->published_at), 'actor' => 'Audit Partner',
+            // On UAT the simulated review is recorded at its window's end, which may still be to come: the
+            // report was published before the release that bound it, so it never reads later than that.
+            $published = CarbonImmutable::parse((string) $report->published_at);
+            $bound = $release === null ? CarbonImmutable::now('UTC') : CarbonImmutable::parse((string) $release->payload['recorded_at']);
+            $entries[] = ['id' => (string) $reportId, 'at' => $at(($published->isAfter($bound) ? $bound : $published)->toIso8601String()), 'actor' => 'Audit Partner',
                 'action' => ['code' => 'report.publish', 'label' => 'Evidence re-verified · '.str_replace('_', ' ', (string) $report->kind).' audit sealed', 'tone' => 'purple'],
                 'reason' => 'Report RPT-'.strtoupper(substr((string) $reportId, -8)).' verified the newest months against the business\'s records; the verified history carries over (REP-R04).'];
         }

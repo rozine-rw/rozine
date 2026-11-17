@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Business;
 
+use App\Application\Business\Contracts\BusinessExposureStore;
 use App\Application\Business\Contracts\StaffApplicationQueue;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Domain\Operations\CommandRejection;
@@ -22,7 +23,7 @@ final class EloquentStaffApplicationQueue implements StaffApplicationQueue
     /** Engine outcomes that refuse an application outright (UW-R03), as opposed to evidence still missing. */
     private const REJECTIONS = ['DSCR_BELOW_CUTOFF', 'RESTRICTION_ACTIVE'];
 
-    public function __construct(private CanonicalJson $json, private RetainedStaffUnderwritingBasis $underwriting) {}
+    public function __construct(private CanonicalJson $json, private RetainedStaffUnderwritingBasis $underwriting, private BusinessExposureStore $exposures) {}
 
     /** @return array<string, mixed> */
     public function page(string $tab, string $search, ?string $before, int $limit, ?string $applicationId): array
@@ -139,7 +140,8 @@ final class EloquentStaffApplicationQueue implements StaffApplicationQueue
         $quote = $payload['review']['quote'];
         $draft = $payload['review']['application']['draft'];
         $evidence = $payload['public_evidence'];
-        $capacity = self::capacity(BusinessApplicationQuote::query()->whereKey($submission->business_application_quote_id)->first()?->payload, $quote['principal']['amount']);
+        $capacity = self::capacity(BusinessApplicationQuote::query()->whereKey($submission->business_application_quote_id)->first()?->payload, $quote['principal']['amount'],
+            array_column($this->exposures->current($application->business_id), 'id'));
 
         return ['id' => $application->id, 'business' => $evidence['business']['name'], 'sector' => $evidence['business']['industry'],
             'note_title' => $draft['title'], 'requested' => $quote['requested_principal'], 'term_months' => $quote['term_months'],
@@ -154,13 +156,15 @@ final class EloquentStaffApplicationQueue implements StaffApplicationQueue
 
     /**
      * How much of the Business's exposure limit (35% of a year's revenue, REP-R05) its existing exposure
-     * and this raise take together, and the notes and exposure it already owed when the quote was made,
-     * from the engine's retained quote.
+     * and this raise take together, and the notes and exposure it still owes, from the engine's retained
+     * quote. A commitment the quote counted that has since been released, such as a note repaid in full,
+     * is no longer owed, so it is left out.
      *
      * @param  array<string, mixed>|null  $quote
+     * @param  list<string>  $current  the ids of the Business's commitments now
      * @return array{used_pct: int|null, active_notes: int|null, outstanding: array{currency: string, amount: string}|null}
      */
-    private static function capacity(?array $quote, string $principal): array
+    private static function capacity(?array $quote, string $principal, array $current): array
     {
         $limit = $quote['result']['cash_flow']['exposure_limit'] ?? null;
         $committed = $quote['result']['cash_flow']['committed_exposure'] ?? null;
@@ -170,8 +174,13 @@ final class EloquentStaffApplicationQueue implements StaffApplicationQueue
         }
         $limit = BigRational::of($limit['numerator'].'/'.$limit['denominator']);
         $owed = BigRational::of($committed['numerator'].'/'.$committed['denominator']);
+        $released = array_filter($commitments, fn (mixed $commitment): bool => is_array($commitment) && ! in_array($commitment['id'] ?? null, $current, true));
+        foreach ($released as $commitment) {
+            $owed = $owed->minus((string) $commitment['principal']);
+        }
+        $owed = BigRational::max($owed, 0);
 
         return ['used_pct' => $limit->isPositive() ? $owed->plus($principal)->multipliedBy(100)->dividedBy($limit)->toScale(0, RoundingMode::HalfUp)->toInt() : null,
-            'active_notes' => count($commitments), 'outstanding' => ['currency' => 'RWF', 'amount' => (string) $owed->toScale(0, RoundingMode::HalfUp)->toBigInteger()]];
+            'active_notes' => count($commitments) - count($released), 'outstanding' => ['currency' => 'RWF', 'amount' => (string) $owed->toScale(0, RoundingMode::HalfUp)->toBigInteger()]];
     }
 }

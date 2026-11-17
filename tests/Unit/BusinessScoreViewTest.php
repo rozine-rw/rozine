@@ -63,11 +63,12 @@ function repeatRaiseSizing(array $current): array
 it('deducts a repeat raise\'s earlier funding once, since the newer quote already counted it', function () use ($money): void {
     $listed = repeatRaiseSizing([['id' => 'first', 'principal' => '6000000']]);
     $funded = repeatRaiseSizing([['id' => 'first', 'principal' => '6000000'], ['id' => 'second', 'principal' => '3000000']]);
-    // A quoted commitment released since is not given back.
+    // A quoted commitment released since, such as a note repaid in full, is no longer owed (QA #672).
     $released = repeatRaiseSizing([['id' => 'second', 'principal' => '3000000']]);
 
     expect($listed['limits'][1]['binding'])->toBeTrue()->and($listed['approved'])->toBe($money('14000000'))
         ->and($listed['headroom'])->toBe($money('14000000'))
         ->and($funded['headroom'])->toBe($money('11000000'))
-        ->and($released['headroom'])->toBe($money('11000000'));
+        ->and($released['limits'][1])->toBe(['key' => 'exposure', 'value' => $money('20000000'), 'binding' => true, 'limit' => $money('20000000'), 'committed' => $money('0')])
+        ->and($released['approved'])->toBe($money('20000000'))->and($released['headroom'])->toBe($money('17000000'));
 });

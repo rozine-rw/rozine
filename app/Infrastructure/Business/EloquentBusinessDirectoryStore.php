@@ -87,7 +87,13 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
             return self::entry((string) $closure['id'], $closure['closed_at'], (string) ($closure['name'] ?? 'System'),
                 $command, $title($campaign), null);
         });
-        $history = [...array_values($mandates), ...$published->values()->all(), ...$closed->values()->all()];
+        // Each published audit report re-verified the Business's newest months (REP-R04).
+        $reports = array_map(fn (object $report): array => self::entry((string) $report->id, self::occurred((string) $report->published_at), 'Audit Partner', 'report.publish',
+            str_replace('_', ' ', (string) $report->kind).' audit sealed', 'Report RPT-'.strtoupper(substr((string) $report->id, -8)).' verified the newest months against the business\'s records.'),
+            DB::table('audit_reports')->join('audit_report_publications', 'audit_report_publications.audit_report_id', '=', 'audit_reports.id')
+                ->where('audit_reports.business_id', $businessId)->where('audit_report_publications.status', 'published')
+                ->get(['audit_reports.id', 'audit_reports.kind', 'audit_report_publications.published_at'])->all());
+        $history = [...array_values($mandates), ...$published->values()->all(), ...$closed->values()->all(), ...$reports];
         usort($history, fn (array $first, array $second): int => [$second['at'], $second['id']] <=> [$first['at'], $first['id']]);
 
         return ['row' => $this->row($record, $this->ratings([$businessId])),
@@ -181,9 +187,21 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
     }
 
     /**
+     * When a report's publication happened. On UAT the simulated review closes at its window's end,
+     * recorded at that future instant so the retained history stays one the database accepts; it is
+     * shown as now until that instant passes, never as a time still to come.
+     */
+    private static function occurred(string $publishedAt): string
+    {
+        $at = CarbonImmutable::parse($publishedAt);
+
+        return $at->isFuture() ? now('UTC')->toIso8601String() : $at->toIso8601String();
+    }
+
+    /**
      * One history entry, its stored instant as UTC ISO 8601 so entries sort as text.
      *
-     * @param  'business.authority.configure'|'business.authority.revoke'|'campaign.publish'|'campaign.cancel'|'campaign.expire'|'campaign.failed_closing'  $command
+     * @param  'business.authority.configure'|'business.authority.revoke'|'campaign.publish'|'campaign.cancel'|'campaign.expire'|'campaign.failed_closing'|'report.publish'  $command
      * @return HistoryEntry
      */
     private static function entry(string $id, mixed $at, string $actor, string $command, ?string $subject, ?string $reason): array
