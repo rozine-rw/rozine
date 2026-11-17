@@ -658,7 +658,7 @@ const en = {
         'Unique investors backing your notes. Anyone who invested in more than one of your notes is counted once.',
     'business.capital.repaid.label': 'Repaid',
     'business.capital.repaid.about':
-        'Total returns (yield) you’ve paid out to investors across all your notes to date.',
+        'Principal and returns you’ve repaid to investors across all your notes to date.',
     'business.capital.on_time.label': 'On-time',
     'business.capital.on_time.about':
         'Share of your scheduled repayments made on or before their due date, all-time.',
@@ -673,7 +673,7 @@ const en = {
     'business.note.status.active': 'Active',
     'business.note.status.funded': 'Funded',
     'business.note.status.repaying': 'Repaying',
-    'business.note.status.completed': 'Completed',
+    'business.note.status.completed': 'Repaid',
     'business.note.status.failed': 'Failed',
     'business.note.funded': 'funded',
     'business.note.investors': '{count} investors',
@@ -8137,6 +8137,7 @@ const en = {
     'admin.notes.state.funded': 'Funded',
     'admin.notes.state.repaying': 'Repaying',
     'admin.notes.state.failed': 'Failed',
+    'admin.notes.state.matured': 'Matured',
     'admin.notes.more': 'More notes',
     'admin.notes.open_named': 'Open {business}',
     'admin.notes.drawer_label': '{business} note holders',

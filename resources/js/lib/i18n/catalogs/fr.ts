@@ -676,7 +676,7 @@ const fr: Catalog = {
         'Investisseurs distincts qui soutiennent vos notes. Quiconque a investi dans plusieurs de vos notes est compté une fois.',
     'business.capital.repaid.label': 'Remboursé',
     'business.capital.repaid.about':
-        'Total des rendements versés aux investisseurs sur toutes vos notes à ce jour.',
+        'Capital et rendements remboursés aux investisseurs sur toutes vos notes à ce jour.',
     'business.capital.on_time.label': 'À temps',
     'business.capital.on_time.about':
         "Part de vos remboursements prévus effectués à ou avant l'échéance, depuis le début.",
@@ -691,7 +691,7 @@ const fr: Catalog = {
     'business.note.status.active': 'Active',
     'business.note.status.funded': 'Financée',
     'business.note.status.repaying': 'En remboursement',
-    'business.note.status.completed': 'Terminée',
+    'business.note.status.completed': 'Remboursée',
     'business.note.status.failed': 'Échouée',
     'business.note.funded': 'financé',
     'business.note.investors': '{count} investisseurs',
@@ -8447,6 +8447,7 @@ const fr: Catalog = {
     'admin.notes.state.funded': 'Financée',
     'admin.notes.state.repaying': 'En remboursement',
     'admin.notes.state.failed': 'Échouée',
+    'admin.notes.state.matured': 'Échue',
     'admin.notes.more': 'Plus de notes',
     'admin.notes.open_named': 'Ouvrir {business}',
     'admin.notes.drawer_label': 'Détenteurs de la note {business}',

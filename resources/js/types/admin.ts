@@ -1709,7 +1709,7 @@ export type NotesSort =
  * before its payout closes, `repaying` once its notes issued, `failed` when it closed unfunded or
  * its payout failed. `matured` is a tab only: servicing records no final repayment yet.
  */
-export type NoteState = 'live' | 'funded' | 'repaying' | 'failed';
+export type NoteState = 'live' | 'funded' | 'repaying' | 'matured' | 'failed';
 
 export type NotesTabKey = 'all' | 'live' | 'repaying' | 'matured' | 'failed';
 

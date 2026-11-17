@@ -674,7 +674,7 @@ const rw: Catalog = {
         'Abashoramari batandukanye bashyigikiye impapuro zawe. Uwashoye muri nyinshi abarwa rimwe.',
     'business.capital.repaid.label': 'Byishyuwe',
     'business.capital.repaid.about':
-        'Inyungu zose wishyuye abashoramari ku mpapuro zawe zose kugeza ubu.',
+        'Igishoro n’inyungu wishyuye abashoramari ku mpapuro zawe zose kugeza ubu.',
     'business.capital.on_time.label': 'Ku gihe',
     'business.capital.on_time.about':
         "Igipimo cy'ubwishyu bwakozwe ku gihe cyangwa mbere yacyo, kuva watangira.",
@@ -689,7 +689,7 @@ const rw: Catalog = {
     'business.note.status.active': 'Irakora',
     'business.note.status.funded': 'Yuzuye',
     'business.note.status.repaying': 'Irishyurwa',
-    'business.note.status.completed': 'Yarangiye',
+    'business.note.status.completed': 'Yishyuwe',
     'business.note.status.failed': 'Yananiranye',
     'business.note.funded': 'byakusanyijwe',
     'business.note.investors': 'Abashoramari {count}',
@@ -8414,6 +8414,7 @@ const rw: Catalog = {
     'admin.notes.state.funded': 'Yuzuye',
     'admin.notes.state.repaying': 'Irishyurwa',
     'admin.notes.state.failed': 'Ntiyagezweho',
+    'admin.notes.state.matured': 'Yarangiye',
     'admin.notes.more': 'Izindi nyandiko',
     'admin.notes.open_named': 'Fungura {business}',
     'admin.notes.drawer_label': 'Abafite inyandiko za {business}',

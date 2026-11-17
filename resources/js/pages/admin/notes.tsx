@@ -45,11 +45,12 @@ const STAT_ACCENT: Record<NotesStatKey, number> = {
     raised: 6,
 };
 
-/** The state chip's tint: blue while raising, ink once full, green repaying, red failed. */
+/** The state chip's tint: blue while raising, ink once full, green repaying, grey matured, red failed. */
 const STATE_TONE: Record<NoteState, string> = {
     live: 'bg-[rgba(30,58,255,.10)] text-[#1e3aff] dark:text-[#99a3ff]',
     funded: 'bg-[rgba(20,40,168,.10)] text-[#1428a8] dark:text-[#99a3ff]',
     repaying: 'bg-[rgba(29,158,117,.12)] text-[#157357] dark:text-[#4cc497]',
+    matured: 'bg-[rgba(105,116,138,.10)] text-rz-secondary',
     failed: 'bg-[rgba(229,72,77,.10)] text-rz-danger-text',
 };
 

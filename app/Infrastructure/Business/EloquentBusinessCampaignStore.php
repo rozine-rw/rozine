@@ -11,6 +11,7 @@ use App\Application\Business\Contracts\BusinessExposureStore;
 use App\Application\Business\Contracts\BusinessNoticeAudience;
 use App\Application\Business\Contracts\CampaignClosureEvidence;
 use App\Application\Business\Contracts\PublishedCampaignEvidence;
+use App\Application\Business\Contracts\ServicingRecord;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\IdentityRepository;
@@ -52,7 +53,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         private WithBusinessAuthority $authority, private AuthorizeStaffPermission $staff, private IdentityRepository $identities,
         private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures, private PublishedCampaignEvidence $publications, private PrimaryReservations $primary, private CampaignProgress $progress, private CampaignFundingEvidence $fundings,
         private ChangeFeed $changes, private PartyNotices $notices, private BusinessNoticeAudience $audience,
-        private RetainedStaffUnderwritingBasis $underwriting, private BusinessScoreView $scores) {}
+        private RetainedStaffUnderwritingBasis $underwriting, private BusinessScoreView $scores, private ServicingRecord $servicing) {}
 
     /** @return array<string, mixed> */
     public function release(int $userId, string $applicationId, int $expectedRevision, string $reason, string $requestId): array
@@ -240,14 +241,14 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
     /**
      * The verified financials behind the Business's rating, from the bank and mobile-money statements
      * its newest rated application was underwritten on: average monthly revenue, net operating cash
-     * per month and the net margin over that window, and the principal of its funded notes, none of
-     * which has been repaid before servicing begins. Null before the Business has a rating.
+     * per month and the net margin over that window, and the principal of its funded notes not yet
+     * repaid in full (`ServicingRecord`). Null before the Business has a rating.
      *
      * @param  array<string, mixed>|null  $evidence
      * @return array{avg_monthly_revenue: array{currency: string, amount: string}, net_cash_month: array{currency: string, amount: string},
      *     net_margin_percent: string, outstanding: array{currency: string, amount: string}}|null
      */
-    private static function financials(?array $evidence, BigInteger $raised): ?array
+    private static function financials(?array $evidence, BigInteger $outstanding): ?array
     {
         $months = $evidence['period']['months'] ?? 0;
         $revenue = $evidence['totals']['revenue']['amount'] ?? null;
@@ -260,7 +261,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         return ['avg_monthly_revenue' => $money(BigDecimal::of($revenue)->dividedBy($months, 2, RoundingMode::HalfUp)),
             'net_cash_month' => $money(BigDecimal::of($net)->dividedBy($months, 2, RoundingMode::HalfUp)),
             'net_margin_percent' => (string) BigDecimal::of($net)->multipliedBy(100)->dividedBy($revenue, 1, RoundingMode::HalfUp),
-            'outstanding' => ['currency' => 'RWF', 'amount' => (string) $raised]];
+            'outstanding' => ['currency' => 'RWF', 'amount' => (string) $outstanding]];
     }
 
     /** @return array<string, mixed> */
@@ -271,6 +272,9 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             $rating = $evidence = $rated = null;
             $raised = BigInteger::zero();
             $investors = [];
+            $record = $this->servicing->forBusiness($businessId);
+            $repaid = array_column($record['repaid'], 'campaign_id');
+            $outstanding = BigInteger::zero();
             foreach (BusinessCampaign::query()->where('business_id', $businessId)->orderByDesc('live_at')->orderByDesc('id')->get() as $campaign) {
                 $payload = $this->publications->find($campaign->id);
                 $rated ??= isset($payload['public_evidence']['rating']) ? $campaign->business_application_id : null;
@@ -281,11 +285,12 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
                 if ($progress !== null && in_array($progress['phase'], ['funded', 'disbursed'], true)) {
                     $funding = $this->fundings->find($campaign->id) ?? throw new RuntimeException('CAMPAIGN_FUNDING_INTEGRITY_FAILED');
                     $raised = $raised->plus($funding['principal']);
+                    $outstanding = in_array($campaign->id, $repaid, true) ? $outstanding : $outstanding->plus($funding['principal']);
                     $investors = [...$investors, ...array_column($funding['commitments'], 'party_id')];
                 }
                 $committed = $closure['committed_refunded']['amount'] ?? $progress['committed']['amount'];
                 $notes[] = ['campaign_id' => $campaign->id, 'title' => $payload['title'], 'created_at' => $payload['recorded_at'],
-                    'status' => $closure !== null ? 'failed' : ($progress['phase'] === 'raising' ? 'active' : 'funded'),
+                    'status' => $closure !== null ? 'failed' : ($progress['phase'] === 'raising' ? 'active' : (in_array($campaign->id, $repaid, true) ? 'completed' : 'funded')),
                     'lifecycle' => $closure['phase'] ?? $progress['lifecycle'],
                     'funded_pct' => (float) (string) BigDecimal::of($committed)->multipliedBy(100)->dividedBy($payload['principal'], 1, RoundingMode::Down),
                     'investors' => $closure['investors'] ?? $progress['investors'],
@@ -304,13 +309,14 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             $basis = $rated === null ? null : $this->underwriting->forBusiness(BusinessApplication::query()->findOrFail($rated));
 
             return ['rating' => $rating === null ? null : ['band' => $rating['band'], 'score' => $rating['score']], 'notes' => $notes,
-                'financials' => self::financials($evidence, $raised),
+                'financials' => self::financials($evidence, $outstanding),
                 'factors' => $basis === null ? null : BusinessScoreView::factors($basis['components']),
                 'sizing' => $basis === null ? null : $this->scores->sizing($basis['cash_flow'], $basis['pricing'], $basis['raw_capacity'], $basis['term_months'],
                     $basis['accepted_commitments'], $this->exposures->current($businessId)),
                 'released' => $released->map(fn (BusinessApplication $application): array => ['application_id' => $application->id, 'title' => $application->draft['title']])->values()->all(),
                 'capital' => ['raised' => ['currency' => 'RWF', 'amount' => (string) $raised], 'investors' => count(array_unique($investors)),
-                    'active_notes' => count(array_filter($notes, fn (array $note): bool => $note['status'] === 'funded'))]];
+                    'active_notes' => count(array_filter($notes, fn (array $note): bool => $note['status'] === 'funded'))],
+                'on_time_pct' => $record['instalments_paid'] === 0 ? null : intdiv($record['paid_on_time'] * 100, $record['instalments_paid'])];
         });
     }
 

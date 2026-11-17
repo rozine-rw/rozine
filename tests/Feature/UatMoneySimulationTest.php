@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\Contracts\BusinessExposureStore;
 use App\Application\Business\Contracts\CampaignTitles;
+use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Business\Contracts\ServicingPayouts;
+use App\Application\Business\Contracts\ServicingRecord;
 use App\Application\Business\Contracts\ServicingStatements;
 use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\Contracts\PayoutDestinations;
@@ -560,6 +563,59 @@ it('reads repaid once every instalment is paid, and offers nothing more', functi
         ->assertInertia(fn (Assert $page): Assert => $page->where('servicing.state', 'repaid')->where('servicing.next', null)->where('servicing.progress.repaid_pct', '100.0')
             ->where('allowed_actions', [])->where('actions.pay', null)->where('pay.options', []));
     expect((string) DB::table('servicing_payouts')->sum('principal'))->toBe($schedule->principal);
+});
+
+it('files a note repaid in full as repaid on Home and the staff screens, scores it on time, and frees its principal from capacity (QA #672)', function (): void {
+    $note = simulatedIssuedNote('20000000');
+    $schedule = app(RetainedNoteSchedules::class)->find($note['campaign']);
+    $reservation = (string) BusinessCampaign::query()->whereKey($note['campaign'])->value('exposure_reservation_id');
+    expect(array_column(app(BusinessExposureStore::class)->current($note['business']), 'id'))->toContain($reservation);
+
+    // Every instalment paid early, one at a time.
+    foreach ($schedule->instalments as $offset => $instalment) {
+        $this->actingAs($note['payer'])->postJson(route('business.repayments.pay', $note['business']),
+            ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, 'note_id' => $note['campaign'], 'option' => 'next_instalment',
+                'expected_servicing_revision' => $offset + 1, 'quoted_total' => ['currency' => 'RWF', 'amount' => $instalment->gross]])->assertOk();
+    }
+    expect(app(ServicingRecord::class)->forBusiness($note['business']))->toBe(['repaid' => [['campaign_id' => $note['campaign'],
+        'exposure_reservation_id' => $reservation, 'principal' => $schedule->principal]],
+        'instalments_paid' => count($schedule->instalments), 'paid_on_time' => count($schedule->instalments)]);
+
+    $this->actingAs($note['payer'])->get(route('business.show', $note['business']))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('notes.0.status', 'completed')->where('capital.active_notes', 0)
+            ->where('capital.on_time_pct', 100)->where('today', fn (Collection $today): bool => ! $today->contains('kind', 'repayment_due'))->etc());
+    // Its principal is no longer owed, so it no longer counts against capacity, while the note itself stays readable.
+    expect(array_column(app(BusinessExposureStore::class)->current($note['business']), 'id'))->not->toContain($reservation)
+        ->and(DB::transaction(fn (): array => app(PrimaryCampaignSource::class)->lockRetained($note['campaign']))['id'])->toBe($note['campaign']);
+
+    $analyst = User::factory()->withTwoFactor()->create();
+    StaffFixture::provision($analyst, ['analyst'], 'Repaid note review.');
+    $this->actingAs($analyst)->get(route('staff.businesses.index', ['business' => $note['business']]))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('party.stats.0.value.value', 0)->where('party.list.rows.0.detail.value', 'completed')
+            ->where('party.list.rows.0.tone', 'grey')->etc());
+    // The register reads each deal's sealed reports, which checks this test database is a dedicated one.
+    $isolation = Mockery::mock(EnvironmentIsolation::class.'[profile,assertSafeConfiguration]', [app(), app('config')]);
+    $isolation->allows(['profile' => 'uat', 'assertSafeConfiguration' => null]);
+    app()->instance(EnvironmentIsolation::class, $isolation);
+    $this->actingAs($analyst)->get(route('staff.notes.index', ['tab' => 'matured']))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('notes.0.id', $note['campaign'])->where('notes.0.state', 'matured')->etc());
+});
+
+it('counts an instalment paid after its due date as late', function (): void {
+    $note = simulatedIssuedNote('20000000');
+    $schedule = app(RetainedNoteSchedules::class)->find($note['campaign']);
+    $this->travelTo(CarbonImmutable::parse(substr($schedule->instalments[1]->dueDate, 0, 10).' 12:00', 'Africa/Kigali'));
+    $this->actingAs($note['payer'])->postJson(route('business.repayments.pay', $note['business']),
+        ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, 'note_id' => $note['campaign'], 'option' => 'due_now',
+            'expected_servicing_revision' => 1, 'quoted_total' => ['currency' => 'RWF', 'amount' => (string) ((int) $schedule->instalments[0]->gross + (int) $schedule->instalments[1]->gross)]])
+        ->assertOk();
+
+    expect(app(ServicingRecord::class)->forBusiness($note['business']))->toBe(['repaid' => [], 'instalments_paid' => 2, 'paid_on_time' => 1]);
+    $this->actingAs($note['payer'])->get(route('business.show', $note['business']))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('notes.0.status', 'repaying')->where('capital.on_time_pct', 50)->etc());
+    // Outside the simulation nothing has been repaid or paid.
+    app()->forgetInstance(EnvironmentIsolation::class);
+    expect(app(ServicingRecord::class)->forBusiness($note['business']))->toBe(['repaid' => [], 'instalments_paid' => 0, 'paid_on_time' => 0]);
 });
 
 it('pays a sold unit\'s share to whoever holds it at collection, and a later resale moves nothing already paid', function (): void {
