@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Domain\Auditor\AuditProcedure;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -16,7 +15,7 @@ class AuditorProcedureResource extends JsonResource
     {
         /** @var array<string, mixed> $page */
         $page = $this->resource;
-        /** @var array{difference: string|null, parts: array{cash: string|null, costs?: string|null, drawings?: string|null}, causes: list<string>, loans_max: int, cost_categories: list<string>, loan_uses: list<string>, change_kinds: list<string>, premises_tenures: list<string>, assets_max: int, late_reasons: list<string>} $options */
+        /** @var array{difference: string|null, parts: array{cash: string|null, costs?: string|null, drawings?: string|null}, verified_costs: string|null, causes: list<string>, loans_max: int, cost_categories: list<string>, loan_uses: list<string>, change_kinds: list<string>, premises_tenures: list<string>, assets_max: int, late_reasons: list<string>} $options */
         $options = [...$page['monthly'], ...$page['baseline'], ...$page['late']];
         $report = $page['report'];
         // The review step lists the statements on file, as the job file does once the work is the partner's.
@@ -84,7 +83,7 @@ class AuditorProcedureResource extends JsonResource
      * @param  array<string, mixed>  $sources
      * @param  array<string, mixed>  $file
      * @param  array<string, mixed>  $variance
-     * @param  array{difference: string|null, parts: array{cash: string|null, costs?: string|null, drawings?: string|null}, causes: list<string>, loans_max: int, cost_categories: list<string>, loan_uses: list<string>, change_kinds: list<string>, premises_tenures: list<string>, assets_max: int, late_reasons: list<string>}  $monthly
+     * @param  array{difference: string|null, parts: array{cash: string|null, costs?: string|null, drawings?: string|null}, verified_costs: string|null, causes: list<string>, loans_max: int, cost_categories: list<string>, loan_uses: list<string>, change_kinds: list<string>, premises_tenures: list<string>, assets_max: int, late_reasons: list<string>}  $monthly
      * @param  array<string, mixed>|null  $seal
      * @param  array<string, mixed>|null  $reasonOptions
      * @param  array{url: string, method: string}|null  $upload
@@ -153,7 +152,7 @@ class AuditorProcedureResource extends JsonResource
             'differences' => ['step' => 'differences', 'reported' => AuditorJobsResource::money($sources['reported_cash']),
                 'observed' => AuditorJobsResource::money($report['draft']['fields']['count']['cash'] ?? null),
                 'cash_difference' => AuditorJobsResource::money($monthly['parts']['cash']),
-                'declared' => $this->declaredParts($report['draft']['fields'], $sources, $monthly['parts']),
+                'declared' => $this->declaredParts($report['draft']['fields'], $sources, $monthly['parts'], $monthly['verified_costs']),
                 'difference' => AuditorJobsResource::money($monthly['difference']),
                 'causes' => $monthly['causes'], 'explanations' => array_map(fn (array $explanation): array => [
                     'cause' => $explanation['cause'], 'amount' => $explanation['amount']], $fields['explanations'] ?? [])],
@@ -169,18 +168,18 @@ class AuditorProcedureResource extends JsonResource
      * @param  array<string, mixed>  $fields
      * @param  array<string, mixed>  $sources
      * @param  array<string, string|null>  $parts
+     * @param  string|null  $verifiedCosts  the CPA's six cost categories, summed
      * @return list<array{key: string, declared: array<string, string>|null, verified: array<string, string>|null, difference: array<string, string>|null}>
      */
-    private function declaredParts(array $fields, array $sources, array $parts): array
+    private function declaredParts(array $fields, array $sources, array $parts, ?string $verifiedCosts): array
     {
         $declared = $sources['declared'] ?? null;
         if (! is_array($declared)) {
             return [];
         }
-        $costs = $fields['costs']['costs'] ?? null;
 
         return [['key' => 'costs', 'declared' => AuditorJobsResource::money($declared['costs_total']),
-            'verified' => AuditorJobsResource::money(is_array($costs) ? AuditProcedure::total($costs) : null),
+            'verified' => AuditorJobsResource::money($verifiedCosts),
             'difference' => AuditorJobsResource::money($parts['costs'] ?? null)],
             ['key' => 'drawings', 'declared' => AuditorJobsResource::money($declared['drawings']),
                 'verified' => AuditorJobsResource::money($fields['drawings']['owner_drawings'] ?? null),

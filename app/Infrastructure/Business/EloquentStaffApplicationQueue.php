@@ -11,7 +11,6 @@ use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationRelease;
 use App\Models\BusinessApplicationSubmission;
-use Brick\Math\BigInteger;
 use Brick\Math\BigRational;
 use Brick\Math\RoundingMode;
 use Illuminate\Database\Eloquent\Builder;
@@ -154,8 +153,9 @@ final class EloquentStaffApplicationQueue implements StaffApplicationQueue
     }
 
     /**
-     * How much of the Business's exposure limit (35% of a year's revenue, REP-R05) this raise takes, and
-     * the notes it already owed when the quote was made, from the engine's retained quote.
+     * How much of the Business's exposure limit (35% of a year's revenue, REP-R05) its existing exposure
+     * and this raise take together, and the notes and exposure it already owed when the quote was made,
+     * from the engine's retained quote.
      *
      * @param  array<string, mixed>|null  $quote
      * @return array{used_pct: int|null, active_notes: int|null, outstanding: array{currency: string, amount: string}|null}
@@ -163,14 +163,15 @@ final class EloquentStaffApplicationQueue implements StaffApplicationQueue
     private static function capacity(?array $quote, string $principal): array
     {
         $limit = $quote['result']['cash_flow']['exposure_limit'] ?? null;
+        $committed = $quote['result']['cash_flow']['committed_exposure'] ?? null;
         $commitments = $quote['accepted_commitments'] ?? null;
-        if (! is_array($limit) || ! is_array($commitments)) {
+        if (! is_array($limit) || ! is_array($committed) || ! is_array($commitments)) {
             return ['used_pct' => null, 'active_notes' => null, 'outstanding' => null];
         }
         $limit = BigRational::of($limit['numerator'].'/'.$limit['denominator']);
-        $owed = array_reduce($commitments, fn (BigInteger $sum, array $commitment): BigInteger => $sum->plus((string) $commitment['principal']), BigInteger::zero());
+        $owed = BigRational::of($committed['numerator'].'/'.$committed['denominator']);
 
-        return ['used_pct' => $limit->isPositive() ? BigRational::of($principal)->multipliedBy(100)->dividedBy($limit)->toScale(0, RoundingMode::HalfUp)->toInt() : null,
-            'active_notes' => count($commitments), 'outstanding' => ['currency' => 'RWF', 'amount' => (string) $owed]];
+        return ['used_pct' => $limit->isPositive() ? $owed->plus($principal)->multipliedBy(100)->dividedBy($limit)->toScale(0, RoundingMode::HalfUp)->toInt() : null,
+            'active_notes' => count($commitments), 'outstanding' => ['currency' => 'RWF', 'amount' => (string) $owed->toScale(0, RoundingMode::HalfUp)->toBigInteger()]];
     }
 }

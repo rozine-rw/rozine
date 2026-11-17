@@ -14,7 +14,7 @@ use Brick\Math\BigDecimal;
  * supplied by protected application ports; none of them are accepted from a step's form.
  *
  * @phpstan-type Source array{id: string, revision: int, sha256: string}
- * @phpstan-type Sources array{verification: Source|null, check_in: Source|null, photos: Source|null, declaration: Source|null, reported_stock: string|null, reported_cash: string|null, reported_units: string|null, financial_proofs: list<string>, inventory_proofs: list<string>, extra_photos: list<string>, ledger_sources?: array<string, Source>, declared?: Declared|null}
+ * @phpstan-type Sources array{verification: Source|null, check_in: Source|null, photos: Source|null, declaration: Source|null, reported_stock: string|null, reported_cash: string|null, reported_units: string|null, financial_proofs: list<string>, inventory_proofs: list<string>, extra_photos: list<string>, ledger_sources?: array<string, Source>, declared?: Declared|null, submission?: Source|null}
  * @phpstan-type Declared array{costs: array<string, string>, costs_total: string, drawings: string}
  * @phpstan-type Draft array{note: string, completed_steps: list<string>, fields: array<string, array<string, mixed>>, sources?: array<string, array<string, Source>>, documents?: list<array{id: string, revision: int, sha256: string, replaces: string|null}>}
  */
@@ -436,6 +436,12 @@ final class AuditProcedure
                 }, 409);
             }
             $pins[$key] = $pin;
+        }
+
+        // The Business's monthly declaration, once sent, is compared on these steps: a declaration that
+        // arrives after them changes their sources, so the CPA re-checks before sealing.
+        if (in_array($step, ['costs', 'drawings', 'differences'], true) && ($sources['submission'] ?? null) !== null) {
+            $pins['submission'] = $sources['submission'];
         }
 
         return $step === 'ledger' ? [...$pins, ...$sources['ledger_sources'] ?? []] : $pins;

@@ -65,7 +65,8 @@ final class BuildAuditReportPreview
                 'observed' => $fields['operational_status'], 'evidence_ids' => $sources['photos'] === null ? [] : [$sources['photos']['id']]];
             $requiresNote = $requiresNote || $fields['operational_status'] !== 'active';
         }
-        $sourcePins = array_intersect_key($sources, array_flip(['verification', 'check_in', 'photos', 'declaration']));
+        $sourcePins = array_filter(array_intersect_key($sources, array_flip(['verification', 'check_in', 'photos', 'declaration', 'submission'])),
+            fn (?array $pin, string $key): bool => $key !== 'submission' || $pin !== null, ARRAY_FILTER_USE_BOTH);
         $originals = array_map(fn (array $document): array => ['id' => $document['id'], 'sha256' => $document['sha256'], 'kind' => 'statement'], $sources['documents']);
         foreach ($sources['ledger_documents'] ?? [] as $document) {
             $originals[] = ['id' => $document['id'], 'sha256' => $document['sha256'], 'kind' => 'ledger'];

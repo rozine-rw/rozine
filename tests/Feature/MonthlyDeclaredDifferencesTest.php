@@ -53,6 +53,12 @@ it('compares verified costs and drawings with the declaration, explains every di
         ->assertJsonPath('data.stage.categories.0.amount.amount', '400000');
 
     $save = fn (string $step, array $fields): array => app(SaveAuditReportStep::class)->handle($user->id, 1, $report->id, $report->refresh()->revision, $step, $fields, (string) Str::uuid());
+    // The declaration arrived after the CPA passed the costs step, so the draft cannot seal until those steps are checked again.
+    expect($page['unavailable'])->toBe('AUDIT_PROCEDURE_SOURCE_CHANGED')
+        ->and($save('differences', ['explanations' => []])['code'])->toBe('AUDIT_PROCEDURE_SOURCE_CHANGED');
+    expect($save('costs', ['costs' => ['stock' => '400000', 'staff' => '250000', 'premises' => '80000', 'transport' => '30000', 'taxes' => '20000', 'other' => '0']])['code'])->toBe('AUDIT_STEP_SAVED')
+        ->and($save('drawings', ['owner_drawings' => '0'])['code'])->toBe('AUDIT_STEP_SAVED')
+        ->and($save('loans', ['loans' => []])['code'])->toBe('AUDIT_STEP_SAVED');
     $refused = $save('differences', ['explanations' => []]);
     expect($refused['code'])->toBe('AUDIT_DIFFERENCE_UNEXPLAINED')
         ->and($refused['field_errors'])->toBe(['explanations' => ['Explain the whole difference of RWF 7000, to the franc.']]);

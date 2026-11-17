@@ -328,7 +328,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
     {
         $seal = rescue(fn (): AuditReportSeal => $this->seal($publication), null, false);
         $monthly = $seal?->payload['sources']['monthly'] ?? null;
-        /** @var list<array{code: string, observed?: mixed}> $findings */
+        /** @var list<array{code: string, measure?: string, observed?: mixed}> $findings */
         $findings = $seal?->payload['report']['findings'] ?? [];
         $operational = array_find($findings, fn (array $finding): bool => $finding['code'] === 'OPERATIONAL_STATUS_OBSERVED');
         $note = AuditReportSignature::query()->where('audit_report_publication_id', $publication->id)->orderBy('id')->get()
@@ -342,7 +342,9 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
             'inflow' => (string) $monthly['inflow'], 'outflow' => (string) $monthly['outflow'], 'net' => (string) $monthly['net'],
             'verified_out' => is_array($costs) && is_string($drawings) ? AuditProcedure::total([...array_values($costs), $drawings]) : null,
             'operational_status' => (string) ($operational['observed'] ?? 'active'),
-            'differences' => array_any($findings, fn (array $finding): bool => str_ends_with($finding['code'], '_DIFFERENCE')),
+            // Cash and stock gaps put a deal on watch; a cost or drawings gap against the declaration is record keeping, read by Record Gap.
+            'differences' => array_any($findings, fn (array $finding): bool => str_ends_with($finding['code'], '_DIFFERENCE')
+                && ! in_array($finding['measure'] ?? null, ['costs', 'owner_drawings'], true)),
             'auditor' => ['name' => (string) $seal->payload['auditor_name'], 'licence' => (string) $seal->payload['report']['licence'],
                 'sealed_on' => substr((string) $seal->payload['sealed_at'], 0, 10)],
             'auditor_note' => (string) $seal->payload['report']['draft']['note'], 'business_note' => $note ?? ''];
