@@ -2708,6 +2708,26 @@ describe('Apply — submitted', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('names the 1.5× last-repaid-note limit when it sized a repeat raise', () => {
+        const page = props(submittedStep);
+        const quote = page.quote as Extract<
+            NonNullable<typeof page.quote>,
+            { status: 'ready' }
+        >;
+
+        page.quote = {
+            ...quote,
+            reason_codes: ['REPEAT_GROWTH_CAPPED', 'DSCR_SCALED'],
+        };
+        render(<BusinessApply {...page} />);
+
+        expect(
+            screen.getByRole('region', { name: 'Your offer' }),
+        ).toHaveTextContent(
+            'Capped at 1.5 times the last note you repaid in full (you asked for RWF 35,000,000).',
+        );
+    });
+
     it('shows the note ID once the server has issued one', () => {
         const page = props(submittedStep);
 

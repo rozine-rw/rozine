@@ -870,6 +870,8 @@ const rw: Catalog = {
         'Yagenwe ku buryo amafaranga yinjira yishyura buri gice inshuro 1.5 (wasabye {requested}).',
     'business.apply.offer.sized.REPEAT_MONTHLY_DSCR_SCALED':
         'Yagenwe ku buryo amafaranga ya buri kwezi yishyura ibyo kwezi (wasabye {requested}).',
+    'business.apply.offer.sized.REPEAT_GROWTH_CAPPED':
+        'Ntirenga inshuro 1.5 z’inyandiko wishyuye yose ubushize (wasabye {requested}).',
     'business.apply.offer.sized.PRINCIPAL_MAX_CAPPED':
         'Ntirenga RWF 100M kuri buri nyandiko (wasabye {requested}).',
     'business.apply.submitted.timeline': 'Aho ubusabe bugeze',

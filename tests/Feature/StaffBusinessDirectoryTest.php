@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Business\Contracts\BusinessDirectoryStore;
 use App\Application\Business\Contracts\BusinessExposureStore;
+use App\Application\Business\Contracts\ServicingRecord;
 use App\Models\BusinessCampaign;
 use App\Models\BusinessCampaignClosure;
 use App\Models\BusinessMandate;
@@ -127,6 +128,28 @@ test('rows carry real notes, ratings and KYC, and the chips, sectors, sort and s
     foreach (['healthy', 'watch', 'distressed', 'frozen', 'everyone'] as $chip) {
         $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['chip' => $chip]))->assertSessionHasErrors('chip');
     }
+});
+
+test('a note repaid in full is not active, so it neither counts nor sorts its Business above one with a live note', function (): void {
+    $repaid = businessDirectoryNote('Akagera Dairy', 'Agriculture', ['title' => 'Cooling tanks']);
+    $live = businessDirectoryNote('Bugesera Grain', 'Agriculture', ['title' => 'Silo']);
+    app()->instance(ServicingRecord::class, new class($repaid->business_id, [$repaid->id]) implements ServicingRecord
+    {
+        /** @param  list<string>  $notes */
+        public function __construct(private string $businessId, private array $notes) {}
+
+        public function forBusiness(string $businessId): array
+        {
+            return ['repaid' => $businessId === $this->businessId ? array_map(fn (string $note): array => ['campaign_id' => $note,
+                'exposure_reservation_id' => (string) Str::ulid(), 'principal' => '5000000'], $this->notes) : [], 'instalments_paid' => 0, 'paid_on_time' => 0];
+        }
+    });
+
+    $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['sort' => 'active_notes']))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('stats.2.value.value', 1)
+            ->where('directory.rows', fn (Collection $rows): bool => $rows->pluck('active_notes', 'name')->all() === ['Bugesera Grain' => 1, 'Akagera Dairy' => 0]));
+    $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['business' => $live->business_id]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('party.list.rows.0.detail.value', 'active'));
 });
 
 test("a Business's 360 carries its notes, rating, KYC and history, and an unknown Business is not found", function (): void {

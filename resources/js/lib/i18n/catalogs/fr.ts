@@ -874,6 +874,8 @@ const fr: Catalog = {
         'Calibré pour que votre trésorerie couvre chaque remboursement 1,5 fois (vous avez demandé {requested}).',
     'business.apply.offer.sized.REPEAT_MONTHLY_DSCR_SCALED':
         'Calibré pour que la trésorerie de chaque mois couvre ses remboursements (vous avez demandé {requested}).',
+    'business.apply.offer.sized.REPEAT_GROWTH_CAPPED':
+        'Plafonné à 1,5 fois la dernière note remboursée en totalité (vous avez demandé {requested}).',
     'business.apply.offer.sized.PRINCIPAL_MAX_CAPPED':
         'Plafonné au maximum de 100 M RWF par note (vous avez demandé {requested}).',
     'business.apply.submitted.timeline': 'Avancement de la demande',

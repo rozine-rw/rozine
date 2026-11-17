@@ -849,6 +849,8 @@ const en = {
         'Sized so your cash flow covers each repayment 1.5 times (you asked for {requested}).',
     'business.apply.offer.sized.REPEAT_MONTHLY_DSCR_SCALED':
         'Sized so every month’s cash flow covers that month’s repayments (you asked for {requested}).',
+    'business.apply.offer.sized.REPEAT_GROWTH_CAPPED':
+        'Capped at 1.5 times the last note you repaid in full (you asked for {requested}).',
     'business.apply.offer.sized.PRINCIPAL_MAX_CAPPED':
         'Capped at the RWF 100M maximum per note (you asked for {requested}).',
     'business.apply.submitted.timeline': 'Application progress',
