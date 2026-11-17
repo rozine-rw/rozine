@@ -28,6 +28,15 @@ interface AuditSourceFactsStore
     public function recordFixture(int $actorId, string $assignmentId, int $assignmentRevision, int $expectedRevision, ?array $facts, string $sourceReference, string $reason, string $requestId): array;
 
     /**
+     * Staging-only (UAT money simulation): publishes the first synthetic source revision for the
+     * exact current accepted assignment of a simulated Business, as its accepted Auditor. Returns
+     * the snapshot id, or null when the assignment is no longer accepted or already has one.
+     *
+     * @param  array<string, mixed>  $facts
+     */
+    public function recordSimulated(int $actorId, string $assignmentId, array $facts, string $reason): ?string;
+
+    /**
      * Holds current accepted-assignment authority through the read.
      *
      * @return SourceFacts|null

@@ -8,6 +8,7 @@ use App\Application\Auditor\Contracts\AuditSourceFactsStore;
 use App\Application\Auditor\WithAcceptedAuditAssignment;
 use App\Application\Business\WithBusinessReview;
 use App\Application\Environment\EnvironmentIsolation;
+use App\Application\Environment\UatMoneySimulation;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
@@ -17,6 +18,7 @@ use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Models\AuditAssignment;
 use App\Models\AuditSourceSnapshot;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Staff publication locks the Business before the assignment, the same order every accepted
@@ -35,6 +37,7 @@ final class EloquentAuditSourceFactsStore implements AuditSourceFactsStore
         private AuditSourceFacts $facts,
         private OperationJournal $journal,
         private CanonicalJson $json,
+        private UatMoneySimulation $simulation,
     ) {}
 
     /**
@@ -83,6 +86,34 @@ final class EloquentAuditSourceFactsStore implements AuditSourceFactsStore
                         'status' => $record->status, 'source_kind' => AuditSourceFacts::SOURCE_KIND, 'sha256' => $record->sha256,
                         'assignment_id' => $record->assignment_id, 'assignment_revision' => $record->assignment_revision]], $record->revision);
                 });
+        });
+    }
+
+    /** @param  array<string, mixed>  $facts */
+    public function recordSimulated(int $actorId, string $assignmentId, array $facts, string $reason): ?string
+    {
+        $this->isolation->assertSeedingAllowed();
+
+        return DB::transaction(function () use ($actorId, $assignmentId, $facts, $reason): ?string {
+            $assignment = AuditAssignment::query()->lockForUpdate()->find($assignmentId);
+            if ($assignment === null || $assignment->status !== 'accepted' || $assignment->party_id === null) {
+                return null;
+            }
+            if (! $this->simulation->covers($assignment->business_id)) {
+                throw new CommandRejection('UAT_SIMULATION_BUSINESS_REQUIRED', 403);
+            }
+            if (AuditSourceSnapshot::query()->where('assignment_id', $assignment->id)->where('assignment_revision', $assignment->revision)->exists()) {
+                return null;
+            }
+            $record = new AuditSourceSnapshot;
+            $record->forceFill(['assignment_id' => $assignment->id, 'business_id' => $assignment->business_id,
+                'assignment_revision' => $assignment->revision, 'party_id' => $assignment->party_id, 'revision' => 1,
+                'status' => 'available', 'source_kind' => AuditSourceFacts::SOURCE_KIND,
+                'source_reference' => 'synthetic:uat-money-simulation', 'procedure_version' => AuditEngagementDocuments::PROCEDURE,
+                'facts' => $this->facts->normalize($facts, now()->toDateTimeImmutable()), 'actor_user_id' => $actorId, 'reason' => $reason]);
+            $record->forceFill(['sha256' => $this->digest($record)])->save();
+
+            return $record->id;
         });
     }
 
