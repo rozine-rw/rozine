@@ -40,7 +40,6 @@ use App\Models\AuditorProfile;
 use App\Models\AuditReport;
 use App\Models\AuditReportPublication;
 use App\Models\AuditReportSeal;
-use Carbon\CarbonImmutable;
 use Closure;
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -361,7 +360,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             'accept_by' => $state['accept_by'], 'complete_by' => $state['complete_by'], 'visit_by' => $state['visit_by'], 'allowed_actions' => $actions,
             // A monthly visit audits the Kigali month before the one it was first dispatched in.
             'period' => $state['kind'] === 'routine' && AuditEngagementState::purpose($state) === AuditEngagementState::PURPOSE_MONTHLY
-                ? CarbonImmutable::parse($state['original_dispatch_at'])->setTimezone('Africa/Kigali')->startOfMonth()->subMonth()->format('Y-m') : null,
+                ? AuditEngagementState::period($state) : null,
             'purpose' => AuditEngagementState::purpose($state)];
     }
 
@@ -412,7 +411,8 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                 $review = AuditorIndependenceReview::query()->where('business_id', $record->business_id)->where('party_id', $candidate['id'])->firstOrFail();
 
                 return $operation(['id' => $record->id, 'business_id' => $record->business_id, 'party_id' => $candidate['id'],
-                    'revision' => $revision, 'kind' => $record->state['kind'], 'original_dispatch_at' => $record->state['original_dispatch_at'], 'business_revision' => $context['business']['revision'],
+                    'revision' => $revision, 'kind' => $record->state['kind'], 'original_dispatch_at' => $record->state['original_dispatch_at'],
+                    'period' => AuditEngagementState::period($record->state), 'business_revision' => $context['business']['revision'],
                     'engagement' => $candidate['engagement'],
                     'mandate_version' => $context['business']['mandate_version'], 'mandate_sha256' => hash('sha256', $this->json->encode($context['business']['mandate'])),
                     'independence' => ['id' => $review->id, 'revision' => $review->revision, 'checked_at' => $review->state['checked_at'],
@@ -611,22 +611,24 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         return $count;
     }
 
-    public function requestMonthly(string $businessId): ?string
+    public function requestMonthly(string $businessId, ?string $period = null): ?string
     {
-        return $this->scope(null, null, $businessId, true, function (array $context, array $candidates) use ($businessId): ?string {
+        return $this->scope(null, null, $businessId, true, function (array $context, array $candidates) use ($businessId, $period): ?string {
             $existing = AuditAssignment::query()->where('business_id', $businessId)->orderByDesc('id')->lockForUpdate()->first();
             $candidates = $this->finish($existing, null, $candidates, $context);
             $month = now('Africa/Kigali')->startOfMonth();
             $dispatched = AuditAssignment::query()->where('business_id', $businessId)->where('created_at', '>=', $month->utc())->get(['id', 'state'])
                 ->contains(fn (AuditAssignment $record): bool => $record->state['kind'] === 'routine'
                     && AuditEngagementState::purpose($record->state) === AuditEngagementState::PURPOSE_MONTHLY);
-            if (($existing !== null && ! self::finished($existing)) || $dispatched) {
+            // A month named by the caller is opened beside this month's own dispatch, never over an open engagement.
+            if (($existing !== null && ! self::finished($existing)) || ($dispatched && $period === null)) {
                 return null;
             }
             $record = new AuditAssignment;
             $record->forceFill(['business_id' => $businessId, 'revision' => 0]);
-            $state = $this->offer($this->states->start('routine', now()->toDateTimeImmutable()), $context, $candidates);
-            $period = $month->subMonth()->format('Y-m');
+            $start = $this->states->start('routine', now()->toDateTimeImmutable());
+            $state = $this->offer($period === null ? $start : [...$start, 'period' => $period], $context, $candidates);
+            $period ??= $month->subMonth()->format('Y-m');
             $this->persist($record, $state, null, 'audit.assignment.schedule', 'Monthly audit for '.$period.'.', $candidates, $context);
             $this->notices->record($context['business']['entity_party_id'], PartyNoticeKind::BusinessReportingWindowOpen, [
                 'business' => (string) $context['business']['profile']['name'], 'business_id' => $businessId, 'period' => $period,

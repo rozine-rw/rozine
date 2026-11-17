@@ -34,7 +34,7 @@ final class EloquentBusinessAuditWindows implements BusinessAuditWindows
         if ($assignment === null || $assignment->state['kind'] !== 'routine' || AuditEngagementState::purpose($assignment->state) !== AuditEngagementState::PURPOSE_MONTHLY) {
             return null;
         }
-        $period = CarbonImmutable::parse($assignment->state['original_dispatch_at'])->setTimezone('Africa/Kigali')->startOfMonth()->subMonth()->format('Y-m');
+        $period = AuditEngagementState::period($assignment->state);
         $sealBy = CarbonImmutable::parse((string) $this->window->dueAt($period));
         if ($now->greaterThan($sealBy)) {
             return null;

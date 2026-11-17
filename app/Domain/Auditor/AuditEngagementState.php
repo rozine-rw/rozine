@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Domain\Auditor;
 
 use App\Domain\Operations\CommandRejection;
+use Carbon\CarbonImmutable;
 use DateTimeImmutable;
 
 /**
- * @phpstan-type State array{kind: string, status: string, party_id: string|null, original_dispatch_at: string, offered_at: string|null, accepted_at: string|null, accept_by: string|null, complete_by: string|null, visit_by: string|null, attempt: int, tried: list<string>, operations_reason: string|null, purpose?: string, arrears_instalment?: string, closed_at?: string, completed_at?: string, withdrawn_at?: string}
+ * @phpstan-type State array{kind: string, status: string, party_id: string|null, original_dispatch_at: string, offered_at: string|null, accepted_at: string|null, accept_by: string|null, complete_by: string|null, visit_by: string|null, attempt: int, tried: list<string>, operations_reason: string|null, purpose?: string, period?: string, arrears_instalment?: string, closed_at?: string, completed_at?: string, withdrawn_at?: string}
  */
 final class AuditEngagementState
 {
@@ -30,6 +31,17 @@ final class AuditEngagementState
     public static function purpose(array $state): string
     {
         return $state['purpose'] ?? self::PURPOSE_MONTHLY;
+    }
+
+    /**
+     * The Kigali month a routine visit audits: the month before the one it was first dispatched in,
+     * unless the engagement names its month itself (the staging demo's own month).
+     *
+     * @param  array{original_dispatch_at: string, period?: string}  $state
+     */
+    public static function period(array $state): string
+    {
+        return $state['period'] ?? CarbonImmutable::parse($state['original_dispatch_at'])->setTimezone('Africa/Kigali')->startOfMonth()->subMonth()->format('Y-m');
     }
 
     /** @return State */

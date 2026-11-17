@@ -19,7 +19,7 @@ use Closure;
  * @phpstan-type OperationsCase array{audit_reviews: list<array{report_id: string, status: string, due_at?: string|null, publication_available?: bool, unavailable_reason?: string|null}>, id: string, business_id: string, revision: int, kind: string, status: string, original_dispatch_at: string, complete_by: string|null, attempt: int, operations_reason: string|null, closed_at: string|null, allowed_actions: list<string>}
  * @phpstan-type OfferOutcome array{outcome: 'open'|'accepted'|'declined'|'expired'|'withdrawn', type: 'flash'|'routine'|'statement_review', held: bool}
  * @phpstan-type Assignment array{id: string, business_id: string, revision: int, state: State}
- * @phpstan-type AcceptedAssignment array{id: string, business_id: string, party_id: string, revision: int, kind: string, original_dispatch_at?: string, business_revision: int, mandate_version: int, mandate_sha256: string, engagement: Acceptance, independence: array{id: string, revision: int, checked_at: string, evidence_reference: string, sha256: string}, accreditation: array{profile_revision: int, status: string, licence: string|null, expires_on: string|null, checked_at: string|null}}
+ * @phpstan-type AcceptedAssignment array{id: string, business_id: string, party_id: string, revision: int, kind: string, original_dispatch_at?: string, period?: string, business_revision: int, mandate_version: int, mandate_sha256: string, engagement: Acceptance, independence: array{id: string, revision: int, checked_at: string, evidence_reference: string, sha256: string}, accreditation: array{profile_revision: int, status: string, licence: string|null, expires_on: string|null, checked_at: string|null}}
  */
 interface AuditAssignmentStore
 {
@@ -140,8 +140,10 @@ interface AuditAssignmentStore
     /**
      * Trusted scheduler only: dispatches the Business's routine audit once per Kigali month and returns
      * the new assignment, or null when an engagement is still open, closed or already dispatched this month.
+     * A named `$period` (`YYYY-MM`) audits that month instead, beside this month's own dispatch; only the
+     * staging demo names one.
      */
-    public function requestMonthly(string $businessId): ?string;
+    public function requestMonthly(string $businessId, ?string $period = null): ?string;
 
     /**
      * Trusted scheduler only: dispatches an unannounced Flash audit to the Business and returns the new
