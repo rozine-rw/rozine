@@ -311,9 +311,10 @@ it('completes the isolated factual procedure and previews only the persisted rep
         } elseif ($step === 'cash_sales') {
             expect($current['stage'])->toBe(['step' => 'cash_sales', 'undeposited_cash_sales' => null]);
         } elseif ($step === 'costs') {
-            expect($current['stage'])->toBe(['step' => 'costs', 'categories' => array_map(fn (string $category): array => ['key' => $category, 'amount' => null], AuditProcedure::COST_CATEGORIES)]);
+            expect($current['stage'])->toBe(['step' => 'costs', 'categories' => array_map(fn (string $category): array => ['key' => $category, 'amount' => null, 'declared' => null], AuditProcedure::COST_CATEGORIES),
+                'declared_total' => null]);
         } elseif ($step === 'drawings') {
-            expect($current['stage'])->toBe(['step' => 'drawings', 'owner_drawings' => null]);
+            expect($current['stage'])->toBe(['step' => 'drawings', 'owner_drawings' => null, 'declared' => null]);
         } elseif ($step === 'loans') {
             expect($current['stage'])->toBe(['step' => 'loans', 'max' => AuditProcedure::MAX_OTHER_LOANS, 'loans' => []]);
         } elseif ($step === 'staff') {

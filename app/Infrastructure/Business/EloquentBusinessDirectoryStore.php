@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Business;
 
 use App\Application\Business\Contracts\BusinessDirectoryStore;
+use App\Application\Business\Contracts\ServicingRecord;
 use App\Models\BusinessCampaign;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
@@ -22,6 +23,8 @@ use RuntimeException;
  */
 final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
 {
+    public function __construct(private ServicingRecord $servicing) {}
+
     /** @return Directory */
     public function directory(string $chip, string $sort, string $sector, string $search, int $limit): array
     {
@@ -33,17 +36,18 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
             $businesses->where('sector', $sector);
         }
         $totals = (clone $businesses)->selectRaw('count(*) AS everyone, coalesce(sum(active_notes), 0) AS notes, coalesce(sum(raised), 0)::text AS raised')->first();
+        $repaid = array_sum(array_map($this->repaid(...), (clone $businesses)->pluck('business_id')->map(fn (mixed $id): string => (string) $id)->all()));
         $ratings = $this->ratings(array_values((clone $businesses)->pluck('business_id')->map(fn (mixed $id): string => (string) $id)->all()));
         $matching = (clone $businesses)->count();
         $sort === 'name' ? $businesses->orderBy('name') : $businesses->orderByDesc($sort)->orderBy('name');
         $everyone = (int) ($totals->everyone ?? 0);
         $scores = array_map(fn (array $rating): string => $rating['score'], array_values($ratings));
 
-        return ['rows' => array_values(array_map(fn (object $row): array => self::row($row, $ratings),
+        return ['rows' => array_values(array_map(fn (object $row): array => $this->row($row, $ratings),
             $businesses->orderBy('business_id')->limit($limit)->get()->all())),
             'matching' => $matching,
             'counts' => ['all' => $everyone],
-            'active_notes' => (int) ($totals->notes ?? 0), 'raised' => (string) ($totals->raised ?? '0'),
+            'active_notes' => (int) ($totals->notes ?? 0) - $repaid, 'raised' => (string) ($totals->raised ?? '0'),
             'average_score' => $scores === [] ? null : (string) array_reduce($scores, fn (BigDecimal $sum, string $score): BigDecimal => $sum->plus($score), BigDecimal::zero())
                 ->dividedBy(count($scores), 1, RoundingMode::HalfUp),
             'sectors' => array_values(array_map(fn (mixed $sector): string => (string) $sector,
@@ -59,6 +63,9 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
         }
         $campaigns = BusinessCampaign::query()->where('business_id', $businessId)->orderByDesc('live_at')->orderByDesc('id')->get();
         $funded = DB::table('primary_campaign_fundings')->where('business_id', $businessId)->pluck('business_campaign_id')->all();
+        $issued = DB::table('disbursements')->join('disbursement_closings', 'disbursement_closings.disbursement_id', '=', 'disbursements.id')
+            ->where('disbursements.business_id', $businessId)->where('disbursement_closings.kind', 'issued')->pluck('disbursements.business_campaign_id')->all();
+        $repaid = array_column($this->servicing->forBusiness($businessId)['repaid'], 'campaign_id');
         $closures = DB::table('business_campaign_closures')->leftJoin('users', 'users.id', '=', 'business_campaign_closures.actor_user_id')
             ->where('business_id', $businessId)->get(['business_campaign_closures.id', 'business_campaign_id', 'phase', 'closed_at', 'users.name'])
             ->keyBy('business_campaign_id');
@@ -84,10 +91,22 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
         $history = [...array_values($mandates), ...$published->values()->all(), ...$closed->values()->all()];
         usort($history, fn (array $first, array $second): int => [$second['at'], $second['id']] <=> [$first['at'], $first['id']]);
 
-        return ['row' => self::row($record, $this->ratings([$businessId])),
+        return ['row' => $this->row($record, $this->ratings([$businessId])),
             'notes' => array_values($campaigns->map(fn (BusinessCampaign $campaign): array => ['id' => $campaign->id, 'title' => $title($campaign),
-                'status' => $closures->has($campaign->id) ? 'failed' : (in_array($campaign->id, $funded, true) ? 'funded' : 'active')])->all()),
+                'status' => match (true) {
+                    $closures->has($campaign->id) => 'failed',
+                    in_array($campaign->id, $repaid, true) => 'completed',
+                    in_array($campaign->id, $issued, true) => 'repaying',
+                    in_array($campaign->id, $funded, true) => 'funded',
+                    default => 'active',
+                }])->all()),
             'history' => $history];
+    }
+
+    /** How many of the Business's notes are repaid in full, so no longer active. */
+    private function repaid(string $businessId): int
+    {
+        return count($this->servicing->forBusiness($businessId)['repaid']);
     }
 
     /**
@@ -163,7 +182,7 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
      * @param  array<string, Rating>  $ratings
      * @return DirectoryRow
      */
-    private static function row(object $record, array $ratings): array
+    private function row(object $record, array $ratings): array
     {
         $row = (array) $record;
         $id = (string) $row['business_id'];
@@ -171,6 +190,6 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
         return ['business_id' => $id, 'name' => (string) $row['name'], 'sector' => (string) $row['sector'], 'district' => (string) $row['district'],
             'company_code' => $row['company_code'] === null ? null : (string) $row['company_code'],
             'kyc' => $row['kyc'] === 'verified' ? 'verified' : 'pending', 'rating' => $ratings[$id] ?? null,
-            'active_notes' => (int) $row['active_notes'], 'investors' => (int) $row['investors'], 'raised' => (string) $row['raised']];
+            'active_notes' => (int) $row['active_notes'] - $this->repaid($id), 'investors' => (int) $row['investors'], 'raised' => (string) $row['raised']];
     }
 }

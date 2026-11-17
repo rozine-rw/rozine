@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Application\Auditor;
 
+use App\Application\Business\Contracts\MonthlySubmissionStore;
 use App\Application\Environment\UatMoneySimulation;
 use App\Application\Evidence\GetAuditStatements;
 use App\Application\Evidence\GetAuditStatementVerification;
+use App\Application\Operations\Contracts\CanonicalJson;
 use App\Domain\Auditor\AuditMonthlyFacts;
 
 /**
@@ -15,12 +17,13 @@ use App\Domain\Auditor\AuditMonthlyFacts;
  * @phpstan-import-type Monthly from AuditMonthlyFacts
  * @phpstan-import-type AcceptedAssignment from \App\Application\Auditor\Contracts\AuditAssignmentStore
  * @phpstan-import-type SourceFacts from \App\Application\Auditor\Contracts\AuditSourceFactsStore
+ * @phpstan-import-type Declared from \App\Domain\Auditor\AuditProcedure
  *
- * @phpstan-type Projection array{verification: Source|null, check_in: Source|null, photos: Source|null, declaration: Source|null, reported_stock: string|null, reported_cash: string|null, reported_units: string|null, financial_proofs: list<string>, inventory_proofs: list<string>, extra_photos: list<string>, documents: list<Document>, ledger_documents?: list<Document>, ledger_sources?: array<string, Source>, monthly: Monthly|null, history: list<array{month: string, inflow: string, outflow: string}>, licence: string, source_facts: SourceFacts|null, authority: array{mandate_version: int, mandate_sha256: string, profile_revision: int, engagement_id: string}}
+ * @phpstan-type Projection array{verification: Source|null, check_in: Source|null, photos: Source|null, declaration: Source|null, reported_stock: string|null, reported_cash: string|null, reported_units: string|null, financial_proofs: list<string>, inventory_proofs: list<string>, extra_photos: list<string>, documents: list<Document>, ledger_documents?: list<Document>, ledger_sources?: array<string, Source>, monthly: Monthly|null, declared?: Declared|null, submission?: Source|null, history: list<array{month: string, inflow: string, outflow: string}>, licence: string, source_facts: SourceFacts|null, authority: array{mandate_version: int, mandate_sha256: string, profile_revision: int, engagement_id: string}}
  */
 final class GetAuditProcedureSources
 {
-    public function __construct(private GetAuditStatementVerification $statements, private GetAuditStatements $files, private AuditMonthlyFacts $monthly, private GetAuditSourceFacts $facts, private UatMoneySimulation $simulation) {}
+    public function __construct(private GetAuditStatementVerification $statements, private GetAuditStatements $files, private AuditMonthlyFacts $monthly, private GetAuditSourceFacts $facts, private UatMoneySimulation $simulation, private MonthlySubmissionStore $submissions, private CanonicalJson $json) {}
 
     /**
      * Called while the report store holds this exact accepted assignment's authority.
@@ -55,6 +58,14 @@ final class GetAuditProcedureSources
             $monthly = $projected === null ? null : [...$projected, 'period' => $period];
         }
 
+        // What the Business declared for the month (BRS v3 VIS-R04), which the CPA's costs and owner
+        // drawings are verified against and whose differences step 9 explains.
+        $sent = $kind === 'monthly' && $period !== null ? $this->submissions->find($assignment['business_id'], $period) : null;
+        $declared = $sent === null ? null : ['costs' => $sent['figures']['costs'], 'costs_total' => $sent['figures']['costs_total'],
+            'drawings' => $sent['figures']['paid_to_owners']];
+        $submission = $sent === null ? null : ['id' => 'monthly-submission:'.$assignment['business_id'].':'.$sent['period'], 'revision' => 1,
+            'sha256' => hash('sha256', $this->json->encode(['period' => $sent['period'], 'submitted_at' => $sent['submitted_at'], 'declared' => $declared]))];
+
         // The verified history the baseline visit checks month by month (BRS v3 VIS-R02), newest first.
         $history = [];
         foreach ($current ? $verification['payload']['observations'] : [] as $observation) {
@@ -71,6 +82,6 @@ final class GetAuditProcedureSources
             'extra_photos' => array_column($facts['photos']['extra'] ?? [], 'id'),
             'authority' => ['mandate_version' => $assignment['mandate_version'], 'mandate_sha256' => $assignment['mandate_sha256'],
                 'profile_revision' => $assignment['accreditation']['profile_revision'], 'engagement_id' => $assignment['engagement']['id']],
-            'documents' => $file['evidence']['documents'], 'monthly' => $monthly, 'history' => array_slice($history, 0, 36), 'licence' => $file['assignment']['accreditation']['licence'], 'source_facts' => $facts];
+            'documents' => $file['evidence']['documents'], 'monthly' => $monthly, 'declared' => $declared, 'submission' => $submission, 'history' => array_slice($history, 0, 36), 'licence' => $file['assignment']['accreditation']['licence'], 'source_facts' => $facts];
     }
 }

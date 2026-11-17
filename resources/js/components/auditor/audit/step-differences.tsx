@@ -61,6 +61,7 @@ export function StepDifferences({
     );
     const left = total - explained;
     const none = total === BigInt(0);
+    const declared = stage.declared.length > 0;
 
     const send = (event: FormEvent) =>
         submit(event, {
@@ -77,9 +78,13 @@ export function StepDifferences({
             <StepHeading
                 title={t('auditor.differences.title')}
                 lead={t(
-                    none
-                        ? 'auditor.differences.lead_none'
-                        : 'auditor.differences.lead',
+                    declared
+                        ? none
+                            ? 'auditor.differences.lead_none_declared'
+                            : 'auditor.differences.lead_declared'
+                        : none
+                          ? 'auditor.differences.lead_none'
+                          : 'auditor.differences.lead',
                 )}
             />
             <dl className="mt-4 grid grid-cols-3 gap-2 rounded-2xl border border-rz-border bg-rz-surface p-[13px] text-[11px]">
@@ -87,7 +92,7 @@ export function StepDifferences({
                     [
                         ['reported', stage.reported],
                         ['observed', stage.observed],
-                        ['difference', stage.difference],
+                        ['difference', stage.cash_difference],
                     ] as const
                 ).map(([key, money]) => (
                     <div key={key}>
@@ -102,6 +107,51 @@ export function StepDifferences({
                     </div>
                 ))}
             </dl>
+            {declared && (
+                <section className="mt-3 rounded-2xl border border-rz-border bg-rz-surface p-[13px] text-[12px]">
+                    <h3 className="text-[10.5px] font-bold tracking-[.06em] text-rz-secondary uppercase">
+                        {t('auditor.differences.parts')}
+                    </h3>
+                    <ul className="mt-1.5 flex flex-col gap-1.5">
+                        {stage.declared.map((part) => (
+                            <li
+                                key={part.key}
+                                className="flex items-start justify-between gap-3"
+                            >
+                                <span className="text-rz-secondary">
+                                    {t(`auditor.differences.part.${part.key}`, {
+                                        declared:
+                                            part.declared === null
+                                                ? t(
+                                                      'auditor.differences.not_recorded',
+                                                  )
+                                                : formatRwf(part.declared),
+                                        verified:
+                                            part.verified === null
+                                                ? t(
+                                                      'auditor.differences.not_recorded',
+                                                  )
+                                                : formatRwf(part.verified),
+                                    })}
+                                </span>
+                                <span className="shrink-0 font-bold text-rz-ink tabular-nums">
+                                    {part.difference === null
+                                        ? t('auditor.differences.unavailable')
+                                        : formatRwf(part.difference)}
+                                </span>
+                            </li>
+                        ))}
+                        <li className="flex items-center justify-between gap-3 border-t border-rz-border pt-1.5 font-bold text-rz-ink">
+                            <span>{t('auditor.differences.total')}</span>
+                            <span className="tabular-nums">
+                                {stage.difference === null
+                                    ? t('auditor.differences.unavailable')
+                                    : formatRwf(stage.difference)}
+                            </span>
+                        </li>
+                    </ul>
+                </section>
+            )}
             {!none && (
                 <>
                     <fieldset className="mt-4 flex flex-col gap-2">

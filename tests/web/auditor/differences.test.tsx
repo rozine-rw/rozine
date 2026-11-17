@@ -31,6 +31,46 @@ const amount = (cause: string) =>
 beforeEach(() => inertia.reset());
 
 describe('Audit procedure — explain the monthly difference', () => {
+    it('adds the costs and drawings differences from the declaration to the total (QA #674)', () => {
+        render(
+            <AuditorAudit
+                {...page((stage) => ({
+                    ...stage,
+                    declared: [
+                        {
+                            key: 'costs',
+                            declared: { currency: 'RWF', amount: '790000' },
+                            verified: { currency: 'RWF', amount: '780000' },
+                            difference: { currency: 'RWF', amount: '10000' },
+                        },
+                        {
+                            key: 'drawings',
+                            declared: { currency: 'RWF', amount: '120000' },
+                            verified: null,
+                            difference: null,
+                        },
+                    ],
+                    difference: { currency: 'RWF', amount: '36000' },
+                }))}
+            />,
+        );
+        expect(
+            within(sheet()).getByText(
+                'Costs: declared RWF 790,000, verified RWF 780,000',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(sheet()).getByText(
+                'Owner drawings: declared RWF 120,000, verified not recorded',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(sheet()).getByText('Total to explain'),
+        ).toBeInTheDocument();
+        expect(within(sheet()).getByText('RWF 36,000')).toBeInTheDocument();
+        expect(within(sheet()).getByText('RWF 26,000')).toBeInTheDocument();
+    });
+
     it('shows the reported, counted and difference figures with the saved amounts', () => {
         render(<AuditorAudit {...page()} />);
         expect(within(sheet()).getByText('RWF 1,210,000')).toBeInTheDocument();
@@ -123,6 +163,7 @@ describe('Audit procedure — explain the monthly difference', () => {
                     ...stage,
                     reported: null,
                     observed: null,
+                    cash_difference: null,
                     difference: null,
                     explanations: [],
                 }))}

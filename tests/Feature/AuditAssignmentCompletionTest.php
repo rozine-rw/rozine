@@ -48,6 +48,16 @@ it('completes a published engagement on the next request so the business can be 
         ->toThrow(CommandRejection::class, 'ASSIGNMENT_NOT_FOUND');
 });
 
+it('still opens a sealed report from the partner portfolio after its engagement completed (QA #674)', function (): void {
+    $fixture = Fixture::ready();
+    Fixture::seal($fixture);
+    Fixture::publish($fixture);
+    AuditAssignmentFixture::request($fixture['audit'], 'routine');
+    expect($fixture['assignment']->refresh()->status)->toBe('completed');
+
+    $this->actingAs($fixture['user'])->get(route('auditor.reports.show', ['report' => $fixture['report']->id]))->assertOk();
+});
+
 it('resumes an engagement whose sealed report is not yet published', function (): void {
     $fixture = Fixture::ready();
     Fixture::seal($fixture);

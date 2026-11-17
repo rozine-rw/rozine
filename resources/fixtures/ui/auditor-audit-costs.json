@@ -86,11 +86,19 @@
                     "amount": {
                         "currency": "RWF",
                         "amount": "400000"
+                    },
+                    "declared": {
+                        "currency": "RWF",
+                        "amount": "410000"
                     }
                 },
                 {
                     "key": "staff",
                     "amount": {
+                        "currency": "RWF",
+                        "amount": "250000"
+                    },
+                    "declared": {
                         "currency": "RWF",
                         "amount": "250000"
                     }
@@ -100,11 +108,19 @@
                     "amount": {
                         "currency": "RWF",
                         "amount": "80000"
+                    },
+                    "declared": {
+                        "currency": "RWF",
+                        "amount": "80000"
                     }
                 },
                 {
                     "key": "transport",
                     "amount": {
+                        "currency": "RWF",
+                        "amount": "30000"
+                    },
+                    "declared": {
                         "currency": "RWF",
                         "amount": "30000"
                     }
@@ -114,13 +130,22 @@
                     "amount": {
                         "currency": "RWF",
                         "amount": "20000"
+                    },
+                    "declared": {
+                        "currency": "RWF",
+                        "amount": "20000"
                     }
                 },
                 {
                     "key": "other",
-                    "amount": null
+                    "amount": null,
+                    "declared": null
                 }
-            ]
+            ],
+            "declared_total": {
+                "currency": "RWF",
+                "amount": "790000"
+            }
         },
         "can_continue": false,
         "hint": "Record what the visit found, then continue.",

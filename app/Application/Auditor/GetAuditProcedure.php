@@ -51,7 +51,7 @@ final class GetAuditProcedure
             'variance' => ['ledger' => $this->variance->compare($page['sources']['reported_stock'], $observed['observed_stock'] ?? null),
                 'cash' => $this->variance->compare($page['sources']['reported_cash'], $observed['cash'] ?? null),
                 'stock' => $this->variance->compare($page['sources']['reported_units'], $observed['stock_units'] ?? null)],
-            'monthly' => ['difference' => $this->procedure->cashDifference($draft, $page['sources']), 'causes' => AuditProcedure::DIFFERENCE_CAUSES,
+            'monthly' => ['difference' => $this->procedure->differenceTotal($draft, $page['sources']), 'parts' => $this->procedure->differences($draft, $page['sources']), 'verified_costs' => is_array($draft['fields']['costs']['costs'] ?? null) ? AuditProcedure::total($draft['fields']['costs']['costs']) : null, 'causes' => AuditProcedure::DIFFERENCE_CAUSES,
                 'loans_max' => AuditProcedure::MAX_OTHER_LOANS, 'cost_categories' => AuditProcedure::COST_CATEGORIES, 'loan_uses' => AuditProcedure::LOAN_USES, 'change_kinds' => AuditProcedure::CHANGE_KINDS],
             'baseline' => ['premises_tenures' => AuditProcedure::PREMISES_TENURES, 'assets_max' => AuditProcedure::MAX_ASSETS],
             'late' => ['late_reasons' => AuditProcedure::LATE_REASONS],
