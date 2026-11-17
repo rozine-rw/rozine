@@ -5,15 +5,13 @@ declare(strict_types=1);
 use App\Application\Auditor\Contracts\AuditSourceFactsStore;
 use App\Application\Auditor\GetAuditSourceFacts;
 use App\Application\Environment\EnvironmentIsolation;
-use App\Console\Commands\RecordStagingAuditSources;
 use App\Domain\Auditor\Wgs84Distance;
-use App\Domain\Operations\CommandRejection;
+use App\Infrastructure\Auditor\EloquentAuditSourceFactsStore;
 use App\Models\AuditLocation;
 use App\Models\AuditSourceSnapshot;
 use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
-use Illuminate\Support\Str;
 use Tests\Support\AuditSourceFactsFixture as Fixture;
 
 /*
@@ -68,9 +66,9 @@ it('records a check-in at the premises and both required photos for a simulated 
 });
 
 it('falls back to a Kigali point where the Business has no verified premises', function (): void {
-    $facts = RecordStagingAuditSources::facts((string) Str::ulid(), '2026-11-17T11:55:00Z');
+    $facts = EloquentAuditSourceFactsStore::simulatedFacts(null, '2026-11-17T11:55:00Z');
 
-    expect($facts['check_in'])->toBe(['at' => '2026-11-17T11:55:00Z', 'position' => [...RecordStagingAuditSources::KIGALI, 'accuracy_m' => 12], 'review_required' => false]);
+    expect($facts['check_in'])->toBe(['at' => '2026-11-17T11:55:00Z', 'position' => [...EloquentAuditSourceFactsStore::KIGALI, 'accuracy_m' => 12], 'review_required' => false]);
 });
 
 it('records nothing for another Business, where the simulation is off, or where fixtures are not allowed', function (): void {
@@ -97,25 +95,14 @@ it('runs every minute on the scheduler and once from its migration', function ()
     $this->assertDatabaseCount('audit_source_snapshots', 1);
 });
 
-it('records only for a current accepted audit of a simulated Business, as its Auditor', function (): void {
+it('skips an accepted audit whose Auditor has no sign-in account, and returns nothing while the simulation is off', function (): void {
     $fixture = Fixture::accepted();
-    $facts = RecordStagingAuditSources::facts($fixture['audit']['business'], now('UTC')->subMinutes(5)->format('Y-m-d\TH:i:s\Z'));
-    $actor = $fixture['partner']['user']->id;
-    asStagingAuditDemo('01m6dz3t0wemrqac36j094k19b');
-    $store = app(AuditSourceFactsStore::class);
-    expect(fn () => $store->recordSimulated($actor, $fixture['assignment']->id, $facts, 'Demo.'))
-        ->toThrow(CommandRejection::class, 'UAT_SIMULATION_BUSINESS_REQUIRED');
-
     asStagingAuditDemo($fixture['audit']['business']);
-    expect($store->recordSimulated($actor, (string) Str::ulid(), $facts, 'Demo.'))->toBeNull()
-        ->and($store->recordSimulated($actor, $fixture['assignment']->id, $facts, 'Demo.'))->toBeString()
-        ->and($store->recordSimulated($actor, $fixture['assignment']->id, $facts, 'Demo.'))->toBeNull();
+    User::query()->whereKey($fixture['partner']['user']->id)->update(['party_id' => null]);
 
-    // An Auditor with no sign-in account is skipped rather than recorded under someone else.
-    $orphan = Fixture::accepted();
-    asStagingAuditDemo($orphan['audit']['business']);
-    User::query()->whereKey($orphan['partner']['user']->id)->update(['party_id' => null]);
     [$code, $output] = recordDemoAuditSources();
     expect($code)->toBe(0)->and($output)->toBe('');
-    $this->assertDatabaseCount('audit_source_snapshots', 1);
+    config(['app.uat_money_simulation' => false]);
+    expect(app(AuditSourceFactsStore::class)->recordSimulated())->toBe([]);
+    $this->assertDatabaseCount('audit_source_snapshots', 0);
 });
