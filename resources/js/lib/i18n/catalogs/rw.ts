@@ -4249,6 +4249,11 @@ const rw: Catalog = {
         '{limit} (35% by’ibyinjira by’umwaka) ukuyemo {committed} usanzwe ufitiye abandi',
     'business.rating.limit.exposure_lift':
         'Ongera ibyinjira, cyangwa wishyure ibyo ufitiye abandi',
+    'business.rating.limit.repeat_growth': 'Ukwiyongera ku nyandiko iheruka',
+    'business.rating.limit.repeat_growth_detail':
+        'Inshuro 1.5 z’inyandiko ya {last} wishyuye yose ubushize',
+    'business.rating.limit.repeat_growth_lift':
+        'Ishyura iyi yose kugira ngo ikurikira ibe nini',
     'business.rating.limit.policy_max': 'Igipimo ntarengwa',
     'business.rating.limit.policy_max_detail':
         'Igipimo ntarengwa cy’ubusabe bumwe',

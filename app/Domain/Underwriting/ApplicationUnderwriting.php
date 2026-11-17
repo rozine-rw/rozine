@@ -20,7 +20,7 @@ use Brick\Math\BigRational;
  */
 final class ApplicationUnderwriting
 {
-    public const VERSION = 'application-underwriting-2';
+    public const VERSION = 'application-underwriting-2-repeat-growth';
 
     public function __construct(
         private CashFlowEvidence $evidence,

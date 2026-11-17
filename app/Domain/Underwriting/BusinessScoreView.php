@@ -63,9 +63,10 @@ final class BusinessScoreView
      * @param  Ratio  $rawCapacity
      * @param  list<Commitment>  $quoted  the commitments the quote counted
      * @param  list<Commitment>  $current  the Business's commitments now
+     * @param  string|null  $lastRepaidPrincipal  the last note the Business repaid in full: a repeat raise grows to at most 1.5 times it (REP-R05)
      * @return array<string, mixed>
      */
-    public function sizing(array $cashFlow, array $pricing, array $rawCapacity, int $termMonths, array $quoted, array $current): array
+    public function sizing(array $cashFlow, array $pricing, array $rawCapacity, int $termMonths, array $quoted, array $current, ?string $lastRepaidPrincipal = null): array
     {
         $cfads = self::rational($cashFlow['cfads']);
         $currentIds = array_column($current, 'id');
@@ -73,13 +74,14 @@ final class BusinessScoreView
         $committed = BigRational::max(self::rational($cashFlow['committed_exposure'])->minus($released), 0);
         $room = self::rational($cashFlow['remaining_room'])->plus($released);
         $limits = ['cash_flow' => BigInteger::max(0, ExactFinancialValue::halfUp(self::rational($rawCapacity))), 'exposure' => BigInteger::max(0, ExactFinancialValue::floor($room)),
+            ...($lastRepaidPrincipal === null ? [] : ['repeat_growth' => ExactFinancialValue::floor(ExactFinancialValue::amount($lastRepaidPrincipal)->toBigRational()->multipliedBy(LoanCapacity::REPEAT_GROWTH))]),
             'policy_max' => BigInteger::of(LoanCapacity::MAXIMUM_PRINCIPAL)];
         $ceiling = BigInteger::min(...array_values($limits));
         $binding = array_find_key($limits, fn (BigInteger $limit): bool => $limit->isEqualTo($ceiling));
         $approved = BigInteger::zero();
         if ($ceiling->isGreaterThanOrEqualTo(LoanCapacity::MINIMUM_PRINCIPAL)) {
             $offer = $this->capacity->evaluate((string) $ceiling, $termMonths, self::rational($pricing['fraction']), $cfads, $room,
-                array_map(fn (array $month): BigRational => self::rational($month['cfads']), $cashFlow['repeat_projections']))['offer'];
+                array_map(fn (array $month): BigRational => self::rational($month['cfads']), $cashFlow['repeat_projections']), lastRepaidPrincipal: $lastRepaidPrincipal)['offer'];
             $approved = BigInteger::of($offer['principal']['amount'] ?? '0');
         }
         $counted = array_column($quoted, 'principal', 'id');
@@ -93,6 +95,8 @@ final class BusinessScoreView
                 ['key' => 'exposure', 'value' => ExactFinancialValue::money($limits['exposure']), 'binding' => $binding === 'exposure',
                     'limit' => ExactFinancialValue::money(ExactFinancialValue::floor(self::rational($cashFlow['exposure_limit']))),
                     'committed' => ExactFinancialValue::money(ExactFinancialValue::halfUp($committed))],
+                ...($lastRepaidPrincipal === null ? [] : [['key' => 'repeat_growth', 'value' => ExactFinancialValue::money($limits['repeat_growth']),
+                    'binding' => $binding === 'repeat_growth', 'last' => ExactFinancialValue::money(ExactFinancialValue::amount($lastRepaidPrincipal))]]),
                 ['key' => 'policy_max', 'value' => ExactFinancialValue::money($limits['policy_max']), 'binding' => $binding === 'policy_max'],
             ],
             'approved' => ExactFinancialValue::money($approved), 'headroom' => ExactFinancialValue::money($headroom)];

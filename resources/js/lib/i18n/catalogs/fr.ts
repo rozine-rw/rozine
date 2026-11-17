@@ -4265,6 +4265,11 @@ const fr: Catalog = {
         '{limit} (35 % du chiffre d’affaires annuel) moins {committed} déjà dus',
     'business.rating.limit.exposure_lift':
         'Augmentez votre chiffre d’affaires, ou remboursez ce que vous devez',
+    'business.rating.limit.repeat_growth': 'Croissance sur votre dernière note',
+    'business.rating.limit.repeat_growth_detail':
+        '1,5 × la note de {last} remboursée en dernier en totalité',
+    'business.rating.limit.repeat_growth_lift':
+        'Remboursez cette levée en totalité pour faire grandir la suivante',
     'business.rating.limit.policy_max': 'Plafond réglementaire',
     'business.rating.limit.policy_max_detail':
         'Plafond absolu pour toute levée',

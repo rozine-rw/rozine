@@ -31,7 +31,7 @@ return new class extends Migration
                 continue;
             }
             Artisan::call('staging:open-monthly-audit', ['business' => $businessId, '--unsimulated' => true]);
-            if (str_contains(Artisan::output(), 'opened (')) {
+            if (preg_match('/: monthly audit for \d{4}-\d{2} opened \(/', Artisan::output()) === 1) {
                 return;
             }
         }

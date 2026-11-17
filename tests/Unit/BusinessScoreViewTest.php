@@ -72,3 +72,13 @@ it('deducts a repeat raise\'s earlier funding once, since the newer quote alread
         ->and($released['limits'][1])->toBe(['key' => 'exposure', 'value' => $money('20000000'), 'binding' => true, 'limit' => $money('20000000'), 'committed' => $money('0')])
         ->and($released['approved'])->toBe($money('20000000'))->and($released['headroom'])->toBe($money('17000000'));
 });
+
+it('names 1.5 times the last repaid note as a limit, and sizes to it when it is the lowest (REP-R05)', function () use ($ratio, $money): void {
+    $sizing = (new BusinessScoreView(new LoanCapacity))->sizing(['cfads' => $ratio('10000000'), 'exposure_limit' => $ratio('20000000'),
+        'committed_exposure' => $ratio('0'), 'remaining_room' => $ratio('20000000'), 'repeat_projections' => []],
+        ['percent' => '13.0', 'fraction' => $ratio('13', '100')], $ratio('50000000'), 6, [], [], '6000000');
+
+    expect($sizing['limits'][2])->toBe(['key' => 'repeat_growth', 'value' => $money('9000000'), 'binding' => true, 'last' => $money('6000000')])
+        ->and(array_column($sizing['limits'], 'binding'))->toBe([false, false, true, false])
+        ->and($sizing['approved'])->toBe($money('9000000'))->and($sizing['headroom'])->toBe($money('9000000'));
+});
