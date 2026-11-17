@@ -28,7 +28,7 @@ class StaffApplicationsResource extends JsonResource
             $release = (new StaffApplicationReleaseResource($page['release_page']))->resolve($request)['release'];
             $review = [...$page['selected'], 'state' => $release['state'] === 'released' ? 'approved' : 'submitted',
                 'underwriting_basis' => $page['underwriting_basis'],
-                'factors' => [], 'audit' => ['state' => null, 'sealed_at' => null], 'reviewer' => null, 'trail' => [],
+                'factors' => [], 'audit' => ['state' => null, 'sealed_at' => null], 'reviewer' => null, 'trail' => $page['release_page']['trail'] ?? [],
                 'links' => ['close' => $link($position), 'business' => $business], 'actions' => (object) [], 'release' => $release];
         }
         $name = $request->user()->name;

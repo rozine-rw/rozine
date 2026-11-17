@@ -1,9 +1,89 @@
 import { Link } from '@inertiajs/react';
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
+import { formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { RouteLink } from '@/types';
-import type { ApplicationSubmission } from '@/types/business';
+import type { ApplicationQuote, ApplicationSubmission } from '@/types/business';
+
+type ReadyQuote = Extract<ApplicationQuote, { status: 'ready' }>;
+
+/** The limit that sized the offer (REP-R05), the tightest first, from the engine's reason codes. */
+const SIZING_CODES = [
+    'EXPOSURE_CAPPED',
+    'DSCR_SCALED',
+    'REPEAT_MONTHLY_DSCR_SCALED',
+    'PRINCIPAL_MAX_CAPPED',
+] as const;
+
+function sizedBy(
+    quote: ReadyQuote,
+): (typeof SIZING_CODES)[number] | 'chosen' | 'capacity' | 'requested' {
+    if (quote.principal.amount !== quote.offered_principal.amount) {
+        return 'chosen';
+    }
+
+    return (
+        SIZING_CODES.find((code) => quote.reason_codes.includes(code)) ??
+        (quote.principal.amount === quote.requested_principal.amount
+            ? 'requested'
+            : 'capacity')
+    );
+}
+
+/** What the business signed for, in francs: nobody commits without seeing what it costs. */
+function OfferSummary({ quote }: { quote: ReadyQuote }) {
+    const { t } = useTranslation();
+    const rows: [string, string][] = [
+        [t('business.apply.offer.principal'), formatRwf(quote.principal)],
+        [
+            t('business.apply.offer.instalment'),
+            quote.schedule[0] === undefined
+                ? '—'
+                : t('business.apply.offer.instalment_value', {
+                      amount: formatRwf(quote.schedule[0].amount),
+                      count: quote.term_months,
+                  }),
+        ],
+        [
+            t('business.apply.offer.return'),
+            t('business.apply.offer.return_value', {
+                amount: formatRwf(quote.interest),
+                rate: quote.rate_pct,
+            }),
+        ],
+        [t('business.apply.offer.total'), formatRwf(quote.total)],
+    ];
+
+    return (
+        <section
+            aria-label={t('business.apply.offer.title')}
+            className="mt-4 rounded-2xl border border-rz-border bg-rz-surface p-4 text-left"
+        >
+            <h2 className="text-[13.5px] font-semibold text-rz-ink">
+                {t('business.apply.offer.title')}
+            </h2>
+            <dl className="mt-2.5 divide-y divide-rz-border">
+                {rows.map(([label, value]) => (
+                    <div
+                        key={label}
+                        className="flex justify-between gap-3 py-2 text-[12.5px]"
+                    >
+                        <dt className="text-rz-secondary">{label}</dt>
+                        <dd className="text-right font-semibold text-rz-ink">
+                            {value}
+                        </dd>
+                    </div>
+                ))}
+            </dl>
+            <p className="mt-2 text-xs leading-[1.55] text-rz-secondary">
+                {t(`business.apply.offer.sized.${sizedBy(quote)}`, {
+                    requested: formatRwf(quote.requested_principal),
+                })}
+            </p>
+        </section>
+    );
+}
 
 /**
  * "Your application has been submitted" (design L603–627), with the application's audit timeline.
@@ -12,9 +92,12 @@ import type { ApplicationSubmission } from '@/types/business';
  */
 export function Submitted({
     submission,
+    quote = null,
     home,
 }: {
     submission: ApplicationSubmission;
+    /** The offer the business signed, from its retained submission. */
+    quote?: ReadyQuote | null;
     home: RouteLink;
 }) {
     const { t } = useTranslation();
@@ -69,6 +152,8 @@ export function Submitted({
                     </p>
                 )}
             </div>
+
+            {quote !== null && <OfferSummary quote={quote} />}
 
             <div className="mt-4 rounded-2xl border border-rz-border bg-rz-surface p-4 text-left">
                 <div className="flex items-start gap-[11px]">

@@ -12,9 +12,11 @@ use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessProfile;
 use App\Models\StaffAccount;
 use App\Models\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use Illuminate\Testing\Fluent\AssertableJson;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
 use Tests\Support\AuditSealingFixture;
@@ -44,10 +46,11 @@ it('projects the same retained queue and current release gates through web and A
             ->where('contract_version', 'staff-applications-v1')->has('applications', 1)
             ->where('applications.0.id', $id)->where('applications.0.requested.amount', '12000000')
             ->where('applications.0.rate_pct', BusinessApplicationSubmission::query()->where('business_application_id', $id)->firstOrFail()->payload['review']['quote']['rate_pct'])
-            ->where('applications.0.state', 'submitted')->where('applications.0.capacity_used_pct', null)
+            ->where('applications.0.state', 'submitted')->where('applications.0.capacity_used_pct', fn (int $used): bool => $used > 0 && $used <= 100)
             ->where('applications.0.approve_link', null)->where('tabs.0.count', 1)->where('tabs.1.count', 0)
             ->where('nav.today.url', '/admin/dashboard')->where('nav.businesses.url', '/admin/businesses')->where('nav.ledger.url', '/admin/ledger')->where('policy', [['key' => 'target_dscr', 'value' => '1.50×'], ['key' => 'listing_audit', 'value' => '', 'term' => 'every_deal'], ['key' => 'audit_routing', 'value' => '≥ 1.25×'], ['key' => 'rate_band', 'value' => '10–15%']])
-            ->where('review.release.allowed_actions', ['application.release'])->where('review.capacity.outstanding', null)
+            ->where('review.release.allowed_actions', ['application.release'])->where('review.capacity.outstanding', ['currency' => 'RWF', 'amount' => '0'])
+            ->where('review.capacity.active_notes', 0)->where('review.decision.code', 'review')
             ->where('review.links.business', ['url' => '/admin/businesses?business='.$fixture['application']->business_id, 'method' => 'get'])->where('review.audit.state', null)->where('review.factors', [])
             ->missing('review.acceptance')->missing('review.actor_user_id')->missing('review.application.draft')->missing('roles'));
     $props = $web->inertiaPage()['props'];
@@ -86,6 +89,36 @@ it('moves released applications to approved and preserves that history when curr
         ->assertJsonPath('data.applications.0.state', 'approved')->assertJsonPath('data.review.state', 'approved')
         ->assertJsonPath('data.review.release.state', 'released')->assertJsonPath('data.review.release.allowed_actions', [])
         ->assertJsonPath('data.review.release.gates.0.cause', 'RESTRICTION_ACTIVE');
+});
+
+it('shows a listed raise as approved with its release amount and decision trail, whatever changes after listing (QA #673)', function (): void {
+    $fixture = AuditSealingFixture::ready();
+    AuditSealingFixture::seal($fixture);
+    AuditSealingFixture::publish($fixture);
+    $staff = $fixture['audit']['staff'];
+    $id = $fixture['application']->id;
+    $store = app(BusinessCampaignStore::class);
+    $released = $store->release($staff->id, $id, 0, 'Reviewed current evidence.', (string) Str::uuid());
+    $principal = (string) BusinessApplicationRelease::query()->sole()->payload['binding']['principal'];
+    expect($released['data']['receipt']['amount'])->toEqual(['currency' => 'RWF', 'amount' => $principal]);
+    $store->publish($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'], $id, $fixture['application']->refresh()->revision,
+        'listing-fee-waiver-1', (string) Str::uuid());
+    // A change after listing no longer reads as a blocked release.
+    BusinessCreditFactsFixture::record($staff, $fixture['audit']['business'], 1, facts: [...BusinessCreditFactsFixture::facts(), 'restriction_active' => true]);
+
+    $this->actingAs($staff)->getJson(route('api.v1.staff.applications.index', ['tab' => 'approved', 'application' => $id]))->assertOk()
+        ->assertJsonPath('data.review.decision.code', 'approve')->assertJsonPath('data.review.release.state', 'released')
+        ->assertJsonPath('data.review.release.gates.*.state', ['passed', 'passed', 'passed'])
+        ->assertJsonPath('data.review.release.receipt.amount', ['currency' => 'RWF', 'amount' => $principal])
+        ->assertJsonPath('data.review.trail.3.action.code', 'application.submit')
+        ->assertJson(fn (AssertableJson $json): AssertableJson => $json->where('data.review.trail', function (Collection $trail) use ($staff): bool {
+            $entries = $trail->keyBy('action.code');
+
+            return $entries->keys()->sort()->values()->all() === ['application.release', 'application.submit', 'campaign.publish', 'report.publish']
+                && $entries['application.release']['actor'] === $staff->name && $entries['application.release']['reason'] === 'Reviewed current evidence.'
+                && str_contains((string) $entries['report.publish']['reason'], 'REP-R04')
+                && $trail->pluck('at')->all() === $trail->pluck('at')->sortDesc()->values()->all();
+        })->etc());
 });
 
 it('paginates submitted applications without exposing drafts and preserves filters and return position', function (): void {

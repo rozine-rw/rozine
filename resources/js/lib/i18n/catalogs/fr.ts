@@ -855,6 +855,27 @@ const fr: Catalog = {
     'business.apply.submitted.funded_title': 'Une fois entièrement financée',
     'business.apply.submitted.funded_body':
         "Les fonds arrivent sur le compte bancaire lié de l'entreprise dans les 24 heures suivant la clôture. Ce jour devient votre date d'échéance mensuelle, chaque mois jusqu'au remboursement total.",
+    'business.apply.offer.title': 'Votre offre',
+    'business.apply.offer.principal': 'Capital',
+    'business.apply.offer.instalment': 'Mensualité',
+    'business.apply.offer.instalment_value': '{amount} × {count} mois',
+    'business.apply.offer.return': 'Rendement des investisseurs',
+    'business.apply.offer.return_value': '{amount} ({rate} % fixe)',
+    'business.apply.offer.total': 'Total à rembourser',
+    'business.apply.offer.sized.requested':
+        'Vous levez la totalité des {requested} demandés : ils respectent votre trésorerie, 35 % de votre chiffre d’affaires annuel moins ce que vous devez déjà, et le maximum de 100 M RWF.',
+    'business.apply.offer.sized.capacity':
+        'Calibré selon ce que votre entreprise peut supporter (vous avez demandé {requested}).',
+    'business.apply.offer.sized.chosen':
+        'Vous avez choisi de lever moins que le montant offert.',
+    'business.apply.offer.sized.EXPOSURE_CAPPED':
+        'Plafonné à 35 % de votre chiffre d’affaires annuel moins le capital Rozine encore dû (vous avez demandé {requested}).',
+    'business.apply.offer.sized.DSCR_SCALED':
+        'Calibré pour que votre trésorerie couvre chaque remboursement 1,5 fois (vous avez demandé {requested}).',
+    'business.apply.offer.sized.REPEAT_MONTHLY_DSCR_SCALED':
+        'Calibré pour que la trésorerie de chaque mois couvre ses remboursements (vous avez demandé {requested}).',
+    'business.apply.offer.sized.PRINCIPAL_MAX_CAPPED':
+        'Plafonné au maximum de 100 M RWF par note (vous avez demandé {requested}).',
     'business.apply.submitted.timeline': 'Avancement de la demande',
     'business.apply.submitted.stage.submitted': 'Soumise',
     'business.apply.submitted.stage.under_review': 'En examen',

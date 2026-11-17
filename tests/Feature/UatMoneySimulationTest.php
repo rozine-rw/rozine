@@ -599,6 +599,14 @@ it('files a note repaid in full as repaid on Home and the staff screens, scores 
     app()->instance(EnvironmentIsolation::class, $isolation);
     $this->actingAs($analyst)->get(route('staff.notes.index', ['tab' => 'matured']))->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->where('notes.0.id', $note['campaign'])->where('notes.0.state', 'matured')->etc());
+    $this->actingAs($analyst)->get('/admin/dashboard')->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('funnel.3', ['stage' => 'repaying', 'count' => 0, 'width_pct' => 0])
+            ->where('funnel.4.stage', 'matured')->where('funnel.4.count', 1)->etc());
+    // Repayments still shows the repaid note's schedule beside its repaid statement.
+    asUatProfile($note['business']);
+    $this->actingAs($note['payer'])->get(route('business.repayments.show', $note['business']))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('servicing.state', 'repaid')
+            ->where('issued.0.note_id', $note['campaign'])->etc());
 });
 
 it('counts an instalment paid after its due date as late', function (): void {

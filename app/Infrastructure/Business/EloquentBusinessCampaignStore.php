@@ -37,6 +37,7 @@ use App\Models\BusinessProfile;
 use Brick\Math\BigDecimal;
 use Brick\Math\BigInteger;
 use Brick\Math\RoundingMode;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -99,7 +100,7 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
                             ], 'business-application-approved:'.$application->id, $this->audience->recipients($application->business_id));
 
                             return new OperationResult('APPLICATION_RELEASED', ['application_id' => $application->id, 'business_id' => $application->business_id,
-                                'receipt' => $this->receipt($release->id, $payload, 'APPLICATION_RELEASED')], 1);
+                                'receipt' => $this->receipt($release->id, $payload, 'APPLICATION_RELEASED', (string) $payload['binding']['principal'])], 1);
                         });
                 });
         });
@@ -603,14 +604,21 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         $cause = null;
         $gates = array_fill_keys(['engine', 'authority', 'report'], 'RELEASE_CHECK_NOT_COMPLETED');
         $prerequisites = ['signatures_retained' => false, 'quote_current' => false, 'terms_current' => false];
+        $listed = $release !== null && $campaign !== null;
         try {
-            $this->accepted->withReleaseInput($application->business_id, $application->id, function (array $input) use ($release): void {
-                if ($release !== null && $this->json->encode($release->payload['binding']) !== $this->json->encode($this->binding($input))) {
-                    throw new CommandRejection('STAFF_RELEASE_REQUIRED');
-                }
-            }, function (string $gate) use (&$gates): void {
-                $gates[$gate] = null;
-            });
+            // Once listed, the raise stands on the checks its release passed: what changes after listing
+            // (a newer monthly report, a repaid note) no longer gates a release that already happened.
+            if ($listed) {
+                $gates = array_fill_keys(['engine', 'authority', 'report'], null);
+            } else {
+                $this->accepted->withReleaseInput($application->business_id, $application->id, function (array $input) use ($release): void {
+                    if ($release !== null && $this->json->encode($release->payload['binding']) !== $this->json->encode($this->binding($input))) {
+                        throw new CommandRejection('STAFF_RELEASE_REQUIRED');
+                    }
+                }, function (string $gate) use (&$gates): void {
+                    $gates[$gate] = null;
+                });
+            }
         } catch (CommandRejection $failure) {
             $cause = $failure->reason;
             $gate = match ($cause) {
@@ -624,7 +632,8 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             $gates['authority'] = $cause;
         }
         try {
-            $prerequisites = $this->accepted->publicationPrerequisites($application->business_id, $application->id);
+            $prerequisites = $listed ? ['signatures_retained' => true, 'quote_current' => true, 'terms_current' => true]
+                : $this->accepted->publicationPrerequisites($application->business_id, $application->id);
         } catch (IdentityViolation) {
             $gates['authority'] = 'AUTHORITY_CHANGED';
         }
@@ -633,8 +642,51 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
             'title' => $application->draft['title'], 'draft' => $application->draft], 'review' => $submission?->payload['review'],
             'public_evidence' => $submission?->payload['public_evidence'], 'submitted_at' => $submission?->payload['submitted_at'],
             'fee_disclosure' => ['version' => self::FEE_VERSION, 'text' => 'The listing fee is waived for the MVP. You pay RWF 0 to publish.'],
-            'cause' => $cause, 'gates' => $gates, 'prerequisites' => $prerequisites, 'release' => $release === null ? null : $this->receipt($release->id, $release->payload, 'APPLICATION_RELEASED'),
-            'listing' => $campaign === null ? null : ['id' => $campaign->id, 'receipt' => $this->receipt($campaign->id, $this->publications->find($campaign->id), 'LISTING_PUBLISHED')]];
+            'cause' => $cause, 'gates' => $gates, 'prerequisites' => $prerequisites,
+            'release' => $release === null ? null : $this->receipt($release->id, $release->payload, 'APPLICATION_RELEASED', (string) ($release->payload['binding']['principal'] ?? '0')),
+            'listing' => $campaign === null ? null : ['id' => $campaign->id, 'receipt' => $this->receipt($campaign->id, $this->publications->find($campaign->id), 'LISTING_PUBLISHED')],
+            'trail' => $this->trail($submission, $release, $campaign)];
+    }
+
+    /**
+     * What happened to the application, newest first: its signed submission, the listing audit that
+     * re-verified its evidence (REP-R04: a repeat issuer's new months are verified, its history carries
+     * over), staff's release and its listing.
+     *
+     * @return list<array{id: string, at: string, actor: string, action: array{code: string, label: string, tone: string}, reason: string|null}>
+     */
+    private function trail(?BusinessApplicationSubmission $submission, ?BusinessApplicationRelease $release, ?BusinessCampaign $campaign): array
+    {
+        $at = fn (string $instant): string => CarbonImmutable::parse($instant)->utc()->toIso8601String();
+        $names = DB::table('users')->whereIn('id', array_filter([$release?->actor_user_id, $campaign?->actor_user_id]))->pluck('name', 'id');
+        $entries = [];
+        if ($submission !== null) {
+            $entries[] = ['id' => $submission->id, 'at' => $at((string) $submission->payload['submitted_at']), 'actor' => (string) ($submission->payload['public_evidence']['business']['name'] ?? ''),
+                'action' => ['code' => 'application.submit', 'label' => 'Signed and submitted', 'tone' => 'blue'], 'reason' => null];
+        }
+        $reportId = $release?->payload['binding']['report']['id'] ?? null;
+        $report = is_string($reportId) ? DB::table('audit_reports')->join('audit_report_publications', 'audit_report_publications.audit_report_id', '=', 'audit_reports.id')
+            ->where('audit_reports.id', $reportId)->first(['audit_reports.kind', 'audit_report_publications.published_at']) : null;
+        if ($report !== null && $report->published_at !== null) {
+            $entries[] = ['id' => (string) $reportId, 'at' => $at((string) $report->published_at), 'actor' => 'Audit Partner',
+                'action' => ['code' => 'report.publish', 'label' => 'Evidence re-verified · '.str_replace('_', ' ', (string) $report->kind).' audit sealed', 'tone' => 'purple'],
+                'reason' => 'Report RPT-'.strtoupper(substr((string) $reportId, -8)).' verified the newest months against the business\'s records; the verified history carries over (REP-R04).'];
+        }
+        if ($release !== null) {
+            $entries[] = ['id' => $release->id, 'at' => $at((string) $release->payload['recorded_at']), 'actor' => (string) ($names[$release->actor_user_id] ?? 'Staff'),
+                'action' => ['code' => 'application.release', 'label' => 'Approved · RWF '.number_format((int) ($release->payload['binding']['principal'] ?? 0)), 'tone' => 'green'],
+                'reason' => ($release->payload['reason'] ?? '') === '' ? null : (string) $release->payload['reason']];
+        }
+        $listing = $campaign === null ? null : $this->publications->find($campaign->id);
+        if ($campaign !== null && is_string($listing['recorded_at'] ?? null)) {
+            $entries[] = ['id' => $campaign->id, 'at' => $at($listing['recorded_at']), 'actor' => (string) ($names[$campaign->actor_user_id] ?? 'Business'),
+                'action' => ['code' => 'campaign.publish', 'label' => 'Published to investors', 'tone' => 'green'], 'reason' => null];
+        }
+        // Newest first; entries at the same instant keep the order they happened in.
+        $order = array_flip(array_keys($entries));
+        uksort($entries, fn (int $first, int $second): int => [$entries[$second]['at'], $order[$second]] <=> [$entries[$first]['at'], $order[$first]]);
+
+        return array_values($entries);
     }
 
     private function releaseRecord(BusinessApplication $application): ?BusinessApplicationRelease
@@ -668,10 +720,10 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
     /** @param array<string, mixed> $payload
      * @return array<string, mixed>
      */
-    private function receipt(string $id, array $payload, string $code): array
+    private function receipt(string $id, array $payload, string $code, string $amount = '0'): array
     {
         return ['receipt_id' => $id, 'operation_id' => $payload['operation_id'], 'request_id' => $payload['request_id'], 'code' => $code, 'recorded_at' => $payload['recorded_at'],
-            'amount' => ['currency' => 'RWF', 'amount' => '0'], 'units' => null, 'reference' => $id, 'revision' => 1,
+            'amount' => ['currency' => 'RWF', 'amount' => $amount], 'units' => null, 'reference' => $id, 'revision' => 1,
             'policy_version' => 'engineering-2026-09-23.4', 'disclosure_version' => $payload['fee_disclosure_version'] ?? null];
     }
 }

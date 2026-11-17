@@ -851,6 +851,27 @@ const rw: Catalog = {
     'business.apply.submitted.funded_title': 'Nirimara kuzura',
     'business.apply.submitted.funded_body':
         "Amafaranga agera kuri konti ya banki y'ubucuruzi mu masaha 24 nyuma yo gufunga. Uwo munsi uba itariki yo kwishyura buri kwezi kugeza byose byishyuwe.",
+    'business.apply.offer.title': 'Icyo wahawe',
+    'business.apply.offer.principal': 'Igishoro',
+    'business.apply.offer.instalment': 'Kwishyura buri kwezi',
+    'business.apply.offer.instalment_value': '{amount} × amezi {count}',
+    'business.apply.offer.return': 'Inyungu y’abashoramari',
+    'business.apply.offer.return_value': '{amount} ({rate}% idahinduka)',
+    'business.apply.offer.total': 'Igiteranyo cyo kwishyura',
+    'business.apply.offer.sized.requested':
+        'Urimo gukusanya {requested} yose wasabye: ihuye n’amafaranga yinjira, 35% by’ibyo winjiza ku mwaka ukuyemo ibyo ugifitiye Rozine, n’ntarengwa ya RWF 100M.',
+    'business.apply.offer.sized.capacity':
+        'Yagenwe ku bushobozi bw’ubucuruzi bwawe (wasabye {requested}).',
+    'business.apply.offer.sized.chosen':
+        'Wahisemo gukusanya munsi y’ayo wahawe.',
+    'business.apply.offer.sized.EXPOSURE_CAPPED':
+        'Ntirenga 35% by’ibyo winjiza ku mwaka ukuyemo igishoro cya Rozine ukibereyemo (wasabye {requested}).',
+    'business.apply.offer.sized.DSCR_SCALED':
+        'Yagenwe ku buryo amafaranga yinjira yishyura buri gice inshuro 1.5 (wasabye {requested}).',
+    'business.apply.offer.sized.REPEAT_MONTHLY_DSCR_SCALED':
+        'Yagenwe ku buryo amafaranga ya buri kwezi yishyura ibyo kwezi (wasabye {requested}).',
+    'business.apply.offer.sized.PRINCIPAL_MAX_CAPPED':
+        'Ntirenga RWF 100M kuri buri nyandiko (wasabye {requested}).',
     'business.apply.submitted.timeline': 'Aho ubusabe bugeze',
     'business.apply.submitted.stage.submitted': 'Yoherejwe',
     'business.apply.submitted.stage.under_review': 'Irasuzumwa',
