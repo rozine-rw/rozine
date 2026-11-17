@@ -658,7 +658,7 @@ const en = {
         'Unique investors backing your notes. Anyone who invested in more than one of your notes is counted once.',
     'business.capital.repaid.label': 'Repaid',
     'business.capital.repaid.about':
-        'Total returns (yield) you’ve paid out to investors across all your notes to date.',
+        'Principal and returns you’ve repaid to investors across all your notes to date.',
     'business.capital.on_time.label': 'On-time',
     'business.capital.on_time.about':
         'Share of your scheduled repayments made on or before their due date, all-time.',
@@ -673,7 +673,7 @@ const en = {
     'business.note.status.active': 'Active',
     'business.note.status.funded': 'Funded',
     'business.note.status.repaying': 'Repaying',
-    'business.note.status.completed': 'Completed',
+    'business.note.status.completed': 'Repaid',
     'business.note.status.failed': 'Failed',
     'business.note.funded': 'funded',
     'business.note.investors': '{count} investors',
@@ -830,6 +830,27 @@ const en = {
     'business.apply.submitted.funded_title': 'Once fully funded',
     'business.apply.submitted.funded_body':
         'Funds reach your linked business bank account within 24 hours of closing. That day becomes your monthly repayment due date, repeating every month until the total is fully repaid.',
+    'business.apply.offer.title': 'Your offer',
+    'business.apply.offer.principal': 'Principal',
+    'business.apply.offer.instalment': 'Monthly instalment',
+    'business.apply.offer.instalment_value': '{amount} × {count} months',
+    'business.apply.offer.return': 'Investor return',
+    'business.apply.offer.return_value': '{amount} ({rate}% flat)',
+    'business.apply.offer.total': 'Total to repay',
+    'business.apply.offer.sized.requested':
+        'You are raising the full {requested} you asked for: it fits your cash flow, 35% of your yearly revenue less what you already owe, and the RWF 100M maximum.',
+    'business.apply.offer.sized.capacity':
+        'Sized to what your business can carry (you asked for {requested}).',
+    'business.apply.offer.sized.chosen':
+        'You chose to raise less than the amount offered.',
+    'business.apply.offer.sized.EXPOSURE_CAPPED':
+        'Capped at 35% of your yearly revenue less the Rozine principal you still owe (you asked for {requested}).',
+    'business.apply.offer.sized.DSCR_SCALED':
+        'Sized so your cash flow covers each repayment 1.5 times (you asked for {requested}).',
+    'business.apply.offer.sized.REPEAT_MONTHLY_DSCR_SCALED':
+        'Sized so every month’s cash flow covers that month’s repayments (you asked for {requested}).',
+    'business.apply.offer.sized.PRINCIPAL_MAX_CAPPED':
+        'Capped at the RWF 100M maximum per note (you asked for {requested}).',
     'business.apply.submitted.timeline': 'Application progress',
     'business.apply.submitted.stage.submitted': 'Submitted',
     'business.apply.submitted.stage.under_review': 'Under review',
@@ -6158,6 +6179,17 @@ const en = {
     'auditor.differences.observed': 'Counted',
     'auditor.differences.difference': 'Difference',
     'auditor.differences.unavailable': 'Unavailable',
+    'auditor.differences.lead_declared':
+        'Split the gaps in cash, costs and owner drawings across their causes, to the franc.',
+    'auditor.differences.lead_none_declared':
+        'Cash, costs and owner drawings all match, so there is nothing to explain.',
+    'auditor.differences.parts': 'Also to explain',
+    'auditor.differences.part.costs':
+        'Costs: declared {declared}, verified {verified}',
+    'auditor.differences.part.drawings':
+        'Owner drawings: declared {declared}, verified {verified}',
+    'auditor.differences.not_recorded': 'not recorded',
+    'auditor.differences.total': 'Total to explain',
     'auditor.differences.causes': 'Causes',
     'auditor.differences.amount': 'Amount for {cause}',
     'auditor.differences.balanced': 'The whole difference is explained.',
@@ -6185,6 +6217,14 @@ const en = {
     'auditor.costs.category.transport': 'Transport',
     'auditor.costs.category.taxes': 'Taxes and fees',
     'auditor.costs.category.other': 'Other',
+    'auditor.costs.declared': 'Declared {amount}',
+    'auditor.costs.declared_total': 'Business declared',
+    'auditor.costs.verified_gap': 'Difference from the declaration',
+    'auditor.costs.use_declared': 'Start from the declared figures',
+    'auditor.costs.declared_hint':
+        'The business declared these figures for the month. Check each one against the statements and receipts and correct it; any difference is explained in step 9.',
+    'auditor.costs.not_declared':
+        'The business has not sent its figures for this month, so there is nothing to compare.',
     'auditor.costs.total': 'Total costs',
     'auditor.costs.hint': 'Enter 0 for a category with no cost this month.',
     'auditor.history.title': 'Trading history',
@@ -6253,6 +6293,12 @@ const en = {
     'auditor.drawings.lead':
         'What the owners took out of the business this month, from the statements and the cash book.',
     'auditor.drawings.amount': 'Taken by the owners this month',
+    'auditor.drawings.declared': 'Business declared {amount} paid to owners.',
+    'auditor.drawings.use_declared': 'Start from the declared figure',
+    'auditor.drawings.declared_hint':
+        'Check it against the statements and cash book and correct it; any difference is explained in step 9.',
+    'auditor.drawings.not_declared':
+        'The business has not sent its figures for this month, so there is nothing to compare.',
     'auditor.drawings.hint': 'Enter 0 if the owners took nothing.',
     'auditor.loans.title': 'Other loans',
     'auditor.loans.lead':
@@ -8137,6 +8183,7 @@ const en = {
     'admin.notes.state.funded': 'Funded',
     'admin.notes.state.repaying': 'Repaying',
     'admin.notes.state.failed': 'Failed',
+    'admin.notes.state.matured': 'Matured',
     'admin.notes.more': 'More notes',
     'admin.notes.open_named': 'Open {business}',
     'admin.notes.drawer_label': '{business} note holders',

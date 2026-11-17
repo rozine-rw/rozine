@@ -76,8 +76,13 @@ interface BusinessApplicationStore
     /** @return Application|null */
     public function current(int $userId, int $contextRevision, string $businessId): ?array;
 
-    /** @return AuditApplication */
-    public function audit(int $userId, int $contextRevision, string $assignmentId, ?string $applicationId = null): array;
+    /**
+     * The application an audit engagement reviews. `$completed` admits the partner's completed
+     * engagement, so a sealed report stays readable after the next audit opens (QA #674).
+     *
+     * @return AuditApplication
+     */
+    public function audit(int $userId, int $contextRevision, string $assignmentId, ?string $applicationId = null, bool $completed = false): array;
 
     /**
      * Holds current accepted-assignment authority through the caller's effect. This private

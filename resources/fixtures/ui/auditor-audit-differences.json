@@ -105,7 +105,12 @@
                     "cause": "personal_spending",
                     "amount": "20000"
                 }
-            ]
+            ],
+            "cash_difference": {
+                "currency": "RWF",
+                "amount": "26000"
+            },
+            "declared": []
         },
         "can_continue": false,
         "hint": "Give each cause an amount until the whole difference is explained.",

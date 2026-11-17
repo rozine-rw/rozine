@@ -37,6 +37,26 @@ const COMMAND = {
 beforeEach(() => inertia.reset());
 
 describe('Audit procedure — owner drawings', () => {
+    it('shows the declared drawings and starts from them only when asked (QA #674)', () => {
+        render(<AuditorAudit {...page(drawings)} />);
+        const amount = within(sheet()).getByLabelText(
+            /Taken by the owners this month/u,
+        );
+        expect(
+            within(sheet()).getByText(
+                /Business declared RWF 120,000 paid to owners\./u,
+            ),
+        ).toBeInTheDocument();
+        expect(amount).toHaveValue('150,000');
+
+        fireEvent.click(
+            within(sheet()).getByRole('button', {
+                name: 'Start from the declared figure',
+            }),
+        );
+        expect(amount).toHaveValue('120,000');
+    });
+
     it('posts the drawings as whole francs', () => {
         render(<AuditorAudit {...page(drawings)} />);
         const amount = within(sheet()).getByLabelText(

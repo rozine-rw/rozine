@@ -60,6 +60,7 @@ use RuntimeException;
  * @phpstan-import-type Terms from \App\Domain\Business\MandateAuthority
  * @phpstan-import-type EvaluationExpectation from BusinessApplicationStore
  * @phpstan-import-type Selection from UnderwritingObservationWindow
+ * @phpstan-import-type Work from \App\Application\Auditor\Contracts\AuditAssignmentStore
  * @phpstan-import-type AuditBinding from BusinessApplicationStore
  * @phpstan-import-type AcceptedAssignment from \App\Application\Auditor\Contracts\AuditAssignmentStore
  */
@@ -942,18 +943,29 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
     }
 
     /** @return AuditApplication */
-    public function audit(int $userId, int $contextRevision, string $assignmentId, ?string $applicationId = null): array
+    public function audit(int $userId, int $contextRevision, string $assignmentId, ?string $applicationId = null, bool $completed = false): array
     {
-        return $this->assignments->handle($userId, $contextRevision, $assignmentId, function (array $work) use ($applicationId): array {
-            $application = BusinessApplication::query()->where('business_id', $work['assignment']['business_id'])
-                ->when($applicationId !== null, fn (Builder $query): Builder => $query->whereKey($applicationId))
-                ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END', ['submitted'])->orderByDesc('id')->first();
+        return $completed
+            ? $this->assignments->read($userId, $contextRevision, $assignmentId, fn (array $work): array => $this->auditApplication($work, $applicationId))
+            : $this->assignments->handle($userId, $contextRevision, $assignmentId, fn (array $work): array => $this->auditApplication($work, $applicationId));
+    }
 
-            return ['work' => $work, 'application' => $application === null ? null : ['id' => $application->id, 'revision' => $application->revision,
-                'status' => $application->status,
-                'title' => $application->draft['title'], 'target' => $application->draft['target'], 'term_months' => $application->draft['term_months'],
-                'use_of_funds' => $application->draft['use_of_funds']]];
-        });
+    /**
+     * The application a CPA audits for the assignment's Business: the one named, else the submitted one, else the newest.
+     *
+     * @param  Work  $work
+     * @return AuditApplication
+     */
+    private function auditApplication(array $work, ?string $applicationId): array
+    {
+        $application = BusinessApplication::query()->where('business_id', $work['assignment']['business_id'])
+            ->when($applicationId !== null, fn (Builder $query): Builder => $query->whereKey($applicationId))
+            ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END', ['submitted'])->orderByDesc('id')->first();
+
+        return ['work' => $work, 'application' => $application === null ? null : ['id' => $application->id, 'revision' => $application->revision,
+            'status' => $application->status,
+            'title' => $application->draft['title'], 'target' => $application->draft['target'], 'term_months' => $application->draft['term_months'],
+            'use_of_funds' => $application->draft['use_of_funds']]];
     }
 
     /**

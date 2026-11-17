@@ -2682,6 +2682,16 @@ describe('Apply — submitted', () => {
         ).toBeInTheDocument();
         expect(screen.queryByText(/^Note ID/u)).not.toBeInTheDocument();
 
+        // What was signed, in francs, and the limit that sized it (QA #673).
+        const offer = screen.getByRole('region', { name: 'Your offer' });
+        expect(offer).toHaveTextContent('RWF 33,915,000');
+        expect(offer).toHaveTextContent('RWF 6,268,622 × 6 months');
+        expect(offer).toHaveTextContent('RWF 3,696,735 (10.9% flat)');
+        expect(offer).toHaveTextContent('RWF 37,611,735');
+        expect(offer).toHaveTextContent(
+            'Sized to what your business can carry (you asked for RWF 35,000,000).',
+        );
+
         const stages = within(
             screen.getByRole('list', { name: 'Application progress' }),
         ).getAllByRole('listitem');

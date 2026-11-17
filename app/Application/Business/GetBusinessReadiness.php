@@ -64,7 +64,7 @@ final class GetBusinessReadiness
             'milestones' => ReadinessMilestones::assess(['stage' => $readiness['stage'],
                 'company' => $business['entity_kind'] === 'organization' && $business['profile']['company_code'] !== null,
                 'established_year' => $business['profile']['established_year'],
-                'notes' => count(array_filter($notes, fn (array $note): bool => $note['status'] === 'funded')),
+                'notes' => count(array_filter($notes, fn (array $note): bool => in_array($note['status'], ['funded', 'completed'], true))),
                 'audited' => in_array('F4', array_column(array_filter($requirements, fn (array $row): bool => $row['status'] === 'met'), 'code'), true)],
                 now('Africa/Kigali')->toDateTimeImmutable())];
     }

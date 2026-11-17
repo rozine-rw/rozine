@@ -41,7 +41,7 @@ final readonly class GetBusinessRepayments
         $home = $this->home->handle($userId, $contextRevision, $businessId);
         $issued = [];
         foreach ($home['raises']['notes'] as $note) {
-            $schedule = $note['status'] === 'funded' ? $this->schedules->find((string) $note['campaign_id']) : null;
+            $schedule = in_array($note['status'], ['funded', 'completed'], true) ? $this->schedules->find((string) $note['campaign_id']) : null;
             if ($schedule === null || $schedule->businessId !== (string) $home['entry']['business_id']) {
                 continue;
             }

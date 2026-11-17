@@ -74,14 +74,15 @@ interface AuditAssignmentStore
 
     /**
      * Holds current offered/accepted assignment authority through a minimal case-summary read.
-     * Original evidence still requires withAccepted.
+     * Original evidence still requires withAccepted. `$completed` also admits the partner's own
+     * completed engagement, for reading a report it sealed after the next audit opened.
      *
      * @template TResult
      *
      * @param  Closure(Work): TResult  $operation
      * @return TResult
      */
-    public function withCurrent(int $userId, int $contextRevision, string $assignmentId, Closure $operation): mixed;
+    public function withCurrent(int $userId, int $contextRevision, string $assignmentId, Closure $operation, bool $completed = false): mixed;
 
     /**
      * Hold current accepted-assignment authority through the protected operation.

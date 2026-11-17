@@ -676,7 +676,7 @@ const fr: Catalog = {
         'Investisseurs distincts qui soutiennent vos notes. Quiconque a investi dans plusieurs de vos notes est compté une fois.',
     'business.capital.repaid.label': 'Remboursé',
     'business.capital.repaid.about':
-        'Total des rendements versés aux investisseurs sur toutes vos notes à ce jour.',
+        'Capital et rendements remboursés aux investisseurs sur toutes vos notes à ce jour.',
     'business.capital.on_time.label': 'À temps',
     'business.capital.on_time.about':
         "Part de vos remboursements prévus effectués à ou avant l'échéance, depuis le début.",
@@ -691,7 +691,7 @@ const fr: Catalog = {
     'business.note.status.active': 'Active',
     'business.note.status.funded': 'Financée',
     'business.note.status.repaying': 'En remboursement',
-    'business.note.status.completed': 'Terminée',
+    'business.note.status.completed': 'Remboursée',
     'business.note.status.failed': 'Échouée',
     'business.note.funded': 'financé',
     'business.note.investors': '{count} investisseurs',
@@ -855,6 +855,27 @@ const fr: Catalog = {
     'business.apply.submitted.funded_title': 'Une fois entièrement financée',
     'business.apply.submitted.funded_body':
         "Les fonds arrivent sur le compte bancaire lié de l'entreprise dans les 24 heures suivant la clôture. Ce jour devient votre date d'échéance mensuelle, chaque mois jusqu'au remboursement total.",
+    'business.apply.offer.title': 'Votre offre',
+    'business.apply.offer.principal': 'Capital',
+    'business.apply.offer.instalment': 'Mensualité',
+    'business.apply.offer.instalment_value': '{amount} × {count} mois',
+    'business.apply.offer.return': 'Rendement des investisseurs',
+    'business.apply.offer.return_value': '{amount} ({rate} % fixe)',
+    'business.apply.offer.total': 'Total à rembourser',
+    'business.apply.offer.sized.requested':
+        'Vous levez la totalité des {requested} demandés : ils respectent votre trésorerie, 35 % de votre chiffre d’affaires annuel moins ce que vous devez déjà, et le maximum de 100 M RWF.',
+    'business.apply.offer.sized.capacity':
+        'Calibré selon ce que votre entreprise peut supporter (vous avez demandé {requested}).',
+    'business.apply.offer.sized.chosen':
+        'Vous avez choisi de lever moins que le montant offert.',
+    'business.apply.offer.sized.EXPOSURE_CAPPED':
+        'Plafonné à 35 % de votre chiffre d’affaires annuel moins le capital Rozine encore dû (vous avez demandé {requested}).',
+    'business.apply.offer.sized.DSCR_SCALED':
+        'Calibré pour que votre trésorerie couvre chaque remboursement 1,5 fois (vous avez demandé {requested}).',
+    'business.apply.offer.sized.REPEAT_MONTHLY_DSCR_SCALED':
+        'Calibré pour que la trésorerie de chaque mois couvre ses remboursements (vous avez demandé {requested}).',
+    'business.apply.offer.sized.PRINCIPAL_MAX_CAPPED':
+        'Plafonné au maximum de 100 M RWF par note (vous avez demandé {requested}).',
     'business.apply.submitted.timeline': 'Avancement de la demande',
     'business.apply.submitted.stage.submitted': 'Soumise',
     'business.apply.submitted.stage.under_review': 'En examen',
@@ -6397,6 +6418,17 @@ const fr: Catalog = {
     'auditor.differences.observed': 'Compté',
     'auditor.differences.difference': 'Écart',
     'auditor.differences.unavailable': 'Indisponible',
+    'auditor.differences.lead_declared':
+        'Répartissez les écarts de trésorerie, de charges et de prélèvements entre leurs causes, au franc près.',
+    'auditor.differences.lead_none_declared':
+        'La trésorerie, les charges et les prélèvements concordent : il n’y a rien à expliquer.',
+    'auditor.differences.parts': 'À expliquer aussi',
+    'auditor.differences.part.costs':
+        'Charges : déclaré {declared}, vérifié {verified}',
+    'auditor.differences.part.drawings':
+        'Prélèvements des propriétaires : déclaré {declared}, vérifié {verified}',
+    'auditor.differences.not_recorded': 'non saisi',
+    'auditor.differences.total': 'Total à expliquer',
     'auditor.differences.causes': 'Causes',
     'auditor.differences.amount': 'Montant pour {cause}',
     'auditor.differences.balanced': 'L’écart entier est expliqué.',
@@ -6425,6 +6457,14 @@ const fr: Catalog = {
     'auditor.costs.category.transport': 'Transport',
     'auditor.costs.category.taxes': 'Impôts et frais',
     'auditor.costs.category.other': 'Autres',
+    'auditor.costs.declared': 'Déclaré {amount}',
+    'auditor.costs.declared_total': 'Déclaré par l’entreprise',
+    'auditor.costs.verified_gap': 'Écart avec la déclaration',
+    'auditor.costs.use_declared': 'Partir des chiffres déclarés',
+    'auditor.costs.declared_hint':
+        'L’entreprise a déclaré ces chiffres pour le mois. Vérifiez chacun avec les relevés et les reçus et corrigez-le ; tout écart s’explique à l’étape 9.',
+    'auditor.costs.not_declared':
+        'L’entreprise n’a pas envoyé ses chiffres pour ce mois, il n’y a donc rien à comparer.',
     'auditor.costs.total': 'Total des charges',
     'auditor.costs.hint':
         'Saisissez 0 pour une catégorie sans charge ce mois-ci.',
@@ -6494,6 +6534,13 @@ const fr: Catalog = {
     'auditor.drawings.lead':
         'Ce que les propriétaires ont retiré de l’entreprise ce mois-ci, d’après les relevés et le livre de caisse.',
     'auditor.drawings.amount': 'Retiré par les propriétaires ce mois-ci',
+    'auditor.drawings.declared':
+        'L’entreprise a déclaré {amount} versés aux propriétaires.',
+    'auditor.drawings.use_declared': 'Partir du chiffre déclaré',
+    'auditor.drawings.declared_hint':
+        'Vérifiez-le avec les relevés et le livre de caisse et corrigez-le ; tout écart s’explique à l’étape 9.',
+    'auditor.drawings.not_declared':
+        'L’entreprise n’a pas envoyé ses chiffres pour ce mois, il n’y a donc rien à comparer.',
     'auditor.drawings.hint':
         'Saisissez 0 si les propriétaires n’ont rien retiré.',
     'auditor.loans.title': 'Autres prêts',
@@ -8447,6 +8494,7 @@ const fr: Catalog = {
     'admin.notes.state.funded': 'Financée',
     'admin.notes.state.repaying': 'En remboursement',
     'admin.notes.state.failed': 'Échouée',
+    'admin.notes.state.matured': 'Échue',
     'admin.notes.more': 'Plus de notes',
     'admin.notes.open_named': 'Ouvrir {business}',
     'admin.notes.drawer_label': 'Détenteurs de la note {business}',

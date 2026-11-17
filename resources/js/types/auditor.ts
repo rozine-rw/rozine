@@ -1035,6 +1035,8 @@ export type CountStage = {
 export type DrawingsStage = {
     step: 'drawings';
     owner_drawings: Money | null;
+    /** What the business declared paid to owners for the month (BRS v3 VIS-R04); null when it sent nothing. */
+    declared: Money | null;
 };
 
 /** One loan the business owes anyone other than its Rozine note. */
@@ -1138,7 +1140,14 @@ export type CostCategory =
 
 export type CostsStage = {
     step: 'costs';
-    categories: { key: CostCategory; amount: Money | null }[];
+    /** Each category as the CPA verified it, beside what the business declared (BRS v3 VIS-R04). */
+    categories: {
+        key: CostCategory;
+        amount: Money | null;
+        declared: Money | null;
+    }[];
+    /** The business's declared total; null when it sent no figures for the month. */
+    declared_total: Money | null;
 };
 
 /** The staff count as the CPA checked it on the RSSB total page (BRS v3 VIS-R01 step 10). */
@@ -1196,6 +1205,19 @@ export type DifferencesStage = {
     step: 'differences';
     reported: Money | null;
     observed: Money | null;
+    /** The cash part of the difference alone. */
+    cash_difference: Money | null;
+    /**
+     * Costs and owner drawings as verified against the business's declaration, each with its
+     * difference; empty when the business declared nothing for the month.
+     */
+    declared: {
+        key: 'costs' | 'drawings';
+        declared: Money | null;
+        verified: Money | null;
+        difference: Money | null;
+    }[];
+    /** The whole difference to explain: cash plus every declared part. */
     difference: Money | null;
     causes: DifferenceCause[];
     explanations: { cause: DifferenceCause; amount: string }[];

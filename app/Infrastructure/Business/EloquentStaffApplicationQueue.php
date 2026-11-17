@@ -11,6 +11,8 @@ use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationQuote;
 use App\Models\BusinessApplicationRelease;
 use App\Models\BusinessApplicationSubmission;
+use Brick\Math\BigRational;
+use Brick\Math\RoundingMode;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use RuntimeException;
@@ -137,13 +139,39 @@ final class EloquentStaffApplicationQueue implements StaffApplicationQueue
         $quote = $payload['review']['quote'];
         $draft = $payload['review']['application']['draft'];
         $evidence = $payload['public_evidence'];
+        $capacity = self::capacity(BusinessApplicationQuote::query()->whereKey($submission->business_application_quote_id)->first()?->payload, $quote['principal']['amount']);
 
         return ['id' => $application->id, 'business' => $evidence['business']['name'], 'sector' => $evidence['business']['industry'],
             'note_title' => $draft['title'], 'requested' => $quote['requested_principal'], 'term_months' => $quote['term_months'],
-            'rate_pct' => $quote['rate_pct'], 'capacity_used_pct' => null, 'rating' => $evidence['rating'], 'submitted_at' => $payload['submitted_at'],
+            'rate_pct' => $quote['rate_pct'], 'capacity_used_pct' => $capacity['used_pct'], 'rating' => $evidence['rating'], 'submitted_at' => $payload['submitted_at'],
             'state' => $release === null ? 'submitted' : 'approved',
-            'decision' => ['code' => 'review', 'reason' => '', 'reason_code' => 'CURRENT_RELEASE_REVIEW_REQUIRED'],
-            'capacity' => ['used_pct' => null, 'approved' => $quote['offered_principal'], 'active_notes' => null, 'outstanding' => null],
+            'decision' => $release === null ? ['code' => 'review', 'reason' => '', 'reason_code' => 'CURRENT_RELEASE_REVIEW_REQUIRED']
+                : ['code' => 'approve', 'reason' => '', 'reason_code' => 'APPLICATION_RELEASED'],
+            'capacity' => ['used_pct' => $capacity['used_pct'], 'approved' => $quote['offered_principal'], 'active_notes' => $capacity['active_notes'],
+                'outstanding' => $capacity['outstanding']],
             'use_of_funds' => implode(', ', $draft['use_of_funds'])];
+    }
+
+    /**
+     * How much of the Business's exposure limit (35% of a year's revenue, REP-R05) its existing exposure
+     * and this raise take together, and the notes and exposure it already owed when the quote was made,
+     * from the engine's retained quote.
+     *
+     * @param  array<string, mixed>|null  $quote
+     * @return array{used_pct: int|null, active_notes: int|null, outstanding: array{currency: string, amount: string}|null}
+     */
+    private static function capacity(?array $quote, string $principal): array
+    {
+        $limit = $quote['result']['cash_flow']['exposure_limit'] ?? null;
+        $committed = $quote['result']['cash_flow']['committed_exposure'] ?? null;
+        $commitments = $quote['accepted_commitments'] ?? null;
+        if (! is_array($limit) || ! is_array($committed) || ! is_array($commitments)) {
+            return ['used_pct' => null, 'active_notes' => null, 'outstanding' => null];
+        }
+        $limit = BigRational::of($limit['numerator'].'/'.$limit['denominator']);
+        $owed = BigRational::of($committed['numerator'].'/'.$committed['denominator']);
+
+        return ['used_pct' => $limit->isPositive() ? $owed->plus($principal)->multipliedBy(100)->dividedBy($limit)->toScale(0, RoundingMode::HalfUp)->toInt() : null,
+            'active_notes' => count($commitments), 'outstanding' => ['currency' => 'RWF', 'amount' => (string) $owed->toScale(0, RoundingMode::HalfUp)->toBigInteger()]];
     }
 }

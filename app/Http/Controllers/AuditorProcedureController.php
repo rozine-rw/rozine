@@ -49,7 +49,8 @@ class AuditorProcedureController extends Controller
         $page = $procedure->handle($userId, $revision, (string) $request->route('report'),
             $request->safe()->only(['observed_stock', 'cash', 'stock_units']), $request->validated('step'));
         $resource = new AuditorProcedureResource([...$page,
-            'file' => $applications->handle($userId, $revision, $page['report']['assignment_id'], $page['report']['application_id']),
+            // A sealed report stays readable once the next audit completes its engagement (QA #674).
+            'file' => $applications->handle($userId, $revision, $page['report']['assignment_id'], $page['report']['application_id'], $page['report']['status'] !== 'draft'),
             'jobs' => [...$jobs->handle($userId, $revision), 'identity_context_revision' => $revision, 'limit' => 25,
                 'engagement' => $engagements->handle($userId, $revision)]]);
 

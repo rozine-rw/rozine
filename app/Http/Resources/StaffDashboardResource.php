@@ -48,7 +48,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @phpstan-type Dashboard array{
  *     figures: array{capital_raised: string, active_businesses: int, disbursements_waiting: int, disbursed: string,
  *         notes: array{live: int, funded: int, repaying: int, failed: int}},
- *     verified_investors: int, kyc_awaiting: int, applications_pending: int|null, frozen_accounts: int, pending: list<array<string, mixed>>,
+ *     matured: int|null, verified_investors: int, kyc_awaiting: int, applications_pending: int|null, frozen_accounts: int, pending: list<array<string, mixed>>,
  *     sectors: list<array{sector: string, principal: string, notes: int, campaigns: list<string>, at_risk: bool}>,
  *     health: array{total: int, healthy: int, watch: int, distressed: null},
  *     capital: array{from: string|null, to: string|null, grain: string, bars: list<Bar>}
@@ -74,7 +74,7 @@ class StaffDashboardResource extends JsonResource
         $healthyPct = $health['total'] === 0 ? 0 : intdiv($health['healthy'] * 100, $health['total']);
         $reviews = in_array('applications.review', $permissions, true);
         $funnel = ['submitted' => $board['applications_pending'], 'live' => $notes['live'], 'funded' => $notes['funded'],
-            'repaying' => $notes['repaying'], 'matured' => null, 'failed' => $notes['failed']];
+            'repaying' => $notes['repaying'], 'matured' => $board['matured'], 'failed' => $notes['failed']];
         $widest = max([0, ...array_filter($funnel, fn (?int $stage): bool => $stage !== null)]);
 
         return ['contract_version' => 'staff-dashboard-v1', 'server_time' => now()->toIso8601String(),

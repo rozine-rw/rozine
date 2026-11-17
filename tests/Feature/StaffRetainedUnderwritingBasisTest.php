@@ -75,7 +75,7 @@ it('selects the exact original scorecard and provenance only for the selected st
     $this->actingAs($staff);
     $web = $this->get(route('staff.applications.index', ['application' => $application->id]))->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->where('review.underwriting_basis', $expected)
-            ->where('review.factors', [])->where('review.audit.state', null)->where('review.reviewer', null)->where('review.trail', [])
+            ->where('review.factors', [])->where('review.audit.state', null)->where('review.reviewer', null)->where('review.trail.0.action.code', 'application.submit')->has('review.trail', 1)
             ->missing('applications.0.underwriting_basis')->missing('review.underwriting_basis.inputs')
             ->missing('review.underwriting_basis.result')->missing('review.underwriting_basis.agreement'));
     Sanctum::actingAs($staff, ['staff:applications:read']);

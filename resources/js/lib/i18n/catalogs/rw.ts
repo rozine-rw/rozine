@@ -674,7 +674,7 @@ const rw: Catalog = {
         'Abashoramari batandukanye bashyigikiye impapuro zawe. Uwashoye muri nyinshi abarwa rimwe.',
     'business.capital.repaid.label': 'Byishyuwe',
     'business.capital.repaid.about':
-        'Inyungu zose wishyuye abashoramari ku mpapuro zawe zose kugeza ubu.',
+        'Igishoro n’inyungu wishyuye abashoramari ku mpapuro zawe zose kugeza ubu.',
     'business.capital.on_time.label': 'Ku gihe',
     'business.capital.on_time.about':
         "Igipimo cy'ubwishyu bwakozwe ku gihe cyangwa mbere yacyo, kuva watangira.",
@@ -689,7 +689,7 @@ const rw: Catalog = {
     'business.note.status.active': 'Irakora',
     'business.note.status.funded': 'Yuzuye',
     'business.note.status.repaying': 'Irishyurwa',
-    'business.note.status.completed': 'Yarangiye',
+    'business.note.status.completed': 'Yishyuwe',
     'business.note.status.failed': 'Yananiranye',
     'business.note.funded': 'byakusanyijwe',
     'business.note.investors': 'Abashoramari {count}',
@@ -851,6 +851,27 @@ const rw: Catalog = {
     'business.apply.submitted.funded_title': 'Nirimara kuzura',
     'business.apply.submitted.funded_body':
         "Amafaranga agera kuri konti ya banki y'ubucuruzi mu masaha 24 nyuma yo gufunga. Uwo munsi uba itariki yo kwishyura buri kwezi kugeza byose byishyuwe.",
+    'business.apply.offer.title': 'Icyo wahawe',
+    'business.apply.offer.principal': 'Igishoro',
+    'business.apply.offer.instalment': 'Kwishyura buri kwezi',
+    'business.apply.offer.instalment_value': '{amount} × amezi {count}',
+    'business.apply.offer.return': 'Inyungu y’abashoramari',
+    'business.apply.offer.return_value': '{amount} ({rate}% idahinduka)',
+    'business.apply.offer.total': 'Igiteranyo cyo kwishyura',
+    'business.apply.offer.sized.requested':
+        'Urimo gukusanya {requested} yose wasabye: ihuye n’amafaranga yinjira, 35% by’ibyo winjiza ku mwaka ukuyemo ibyo ugifitiye Rozine, n’ntarengwa ya RWF 100M.',
+    'business.apply.offer.sized.capacity':
+        'Yagenwe ku bushobozi bw’ubucuruzi bwawe (wasabye {requested}).',
+    'business.apply.offer.sized.chosen':
+        'Wahisemo gukusanya munsi y’ayo wahawe.',
+    'business.apply.offer.sized.EXPOSURE_CAPPED':
+        'Ntirenga 35% by’ibyo winjiza ku mwaka ukuyemo igishoro cya Rozine ukibereyemo (wasabye {requested}).',
+    'business.apply.offer.sized.DSCR_SCALED':
+        'Yagenwe ku buryo amafaranga yinjira yishyura buri gice inshuro 1.5 (wasabye {requested}).',
+    'business.apply.offer.sized.REPEAT_MONTHLY_DSCR_SCALED':
+        'Yagenwe ku buryo amafaranga ya buri kwezi yishyura ibyo kwezi (wasabye {requested}).',
+    'business.apply.offer.sized.PRINCIPAL_MAX_CAPPED':
+        'Ntirenga RWF 100M kuri buri nyandiko (wasabye {requested}).',
     'business.apply.submitted.timeline': 'Aho ubusabe bugeze',
     'business.apply.submitted.stage.submitted': 'Yoherejwe',
     'business.apply.submitted.stage.under_review': 'Irasuzumwa',
@@ -6383,6 +6404,17 @@ const rw: Catalog = {
     'auditor.differences.observed': 'Ibyabazwe',
     'auditor.differences.difference': 'Itandukaniro',
     'auditor.differences.unavailable': 'Ntibihari',
+    'auditor.differences.lead_declared':
+        'Gabanya itandukaniro ry’amafaranga, ry’amafaranga yakoreshejwe n’ibyo ba nyirabwo bakuyemo mu mpamvu zaryo, kugeza ku ifaranga.',
+    'auditor.differences.lead_none_declared':
+        'Amafaranga, ayakoreshejwe n’ibyo ba nyirabwo bakuyemo birahura, nta cyo gusobanura.',
+    'auditor.differences.parts': 'Ibindi byo gusobanura',
+    'auditor.differences.part.costs':
+        'Amafaranga yakoreshejwe: yatangajwe {declared}, yagenzuwe {verified}',
+    'auditor.differences.part.drawings':
+        'Ibyo ba nyirabwo bakuyemo: byatangajwe {declared}, byagenzuwe {verified}',
+    'auditor.differences.not_recorded': 'ntibyanditswe',
+    'auditor.differences.total': 'Igiteranyo cyo gusobanura',
     'auditor.differences.causes': 'Impamvu',
     'auditor.differences.amount': 'Umubare kuri {cause}',
     'auditor.differences.balanced': 'Itandukaniro ryose ryasobanuwe.',
@@ -6412,6 +6444,14 @@ const rw: Catalog = {
     'auditor.costs.category.transport': 'Ingendo',
     'auditor.costs.category.taxes': 'Imisoro n’amahoro',
     'auditor.costs.category.other': 'Ibindi',
+    'auditor.costs.declared': 'Byatangajwe {amount}',
+    'auditor.costs.declared_total': 'Byatangajwe n’ubucuruzi',
+    'auditor.costs.verified_gap': 'Itandukaniro n’ibyatangajwe',
+    'auditor.costs.use_declared': 'Hera ku mibare yatangajwe',
+    'auditor.costs.declared_hint':
+        'Ubucuruzi bwatangaje iyi mibare y’uku kwezi. Genzura buri mubare ukoresheje raporo za banki n’inyemezabwishyu, uwukosore; itandukaniro ryose risobanurwa ku ntambwe ya 9.',
+    'auditor.costs.not_declared':
+        'Ubucuruzi ntiburohereza imibare y’uku kwezi, nta cyo kugereranya.',
     'auditor.costs.total': 'Igiteranyo cy’amafaranga yakoreshejwe',
     'auditor.costs.hint':
         'Andika 0 ku cyiciro kitagize amafaranga yakoreshejwe uku kwezi.',
@@ -6482,6 +6522,13 @@ const rw: Catalog = {
     'auditor.drawings.lead':
         'Ibyo ba nyir’ubucuruzi bakuyemo muri uku kwezi, ukurikije raporo n’igitabo cy’amafaranga.',
     'auditor.drawings.amount': 'Ibyakuwemo na ba nyirabwo muri uku kwezi',
+    'auditor.drawings.declared':
+        'Ubucuruzi bwatangaje {amount} byahawe ba nyirabwo.',
+    'auditor.drawings.use_declared': 'Hera ku mubare watangajwe',
+    'auditor.drawings.declared_hint':
+        'Wugenzure ukoresheje raporo za banki n’igitabo cy’amafaranga, uwukosore; itandukaniro ryose risobanurwa ku ntambwe ya 9.',
+    'auditor.drawings.not_declared':
+        'Ubucuruzi ntiburohereza imibare y’uku kwezi, nta cyo kugereranya.',
     'auditor.drawings.hint': 'Andika 0 niba ba nyirabwo nta cyo bakuyemo.',
     'auditor.loans.title': 'Indi myenda',
     'auditor.loans.lead':
@@ -8414,6 +8461,7 @@ const rw: Catalog = {
     'admin.notes.state.funded': 'Yuzuye',
     'admin.notes.state.repaying': 'Irishyurwa',
     'admin.notes.state.failed': 'Ntiyagezweho',
+    'admin.notes.state.matured': 'Yarangiye',
     'admin.notes.more': 'Izindi nyandiko',
     'admin.notes.open_named': 'Fungura {business}',
     'admin.notes.drawer_label': 'Abafite inyandiko za {business}',

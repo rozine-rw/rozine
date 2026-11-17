@@ -54,6 +54,7 @@ use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Business\Contracts\PublishedCampaignEvidence;
 use App\Application\Business\Contracts\ReadinessRequirementStore;
 use App\Application\Business\Contracts\ServicingPayouts;
+use App\Application\Business\Contracts\ServicingRecord;
 use App\Application\Business\Contracts\ServicingStatements;
 use App\Application\Business\Contracts\StaffApplicationQueue;
 use App\Application\Business\Contracts\UpcomingInstalments;
@@ -201,6 +202,7 @@ use App\Infrastructure\Business\RetainedCampaignPublication;
 use App\Infrastructure\Business\RetainedInvestorDeals;
 use App\Infrastructure\Business\SimulatedCommittedRaiseFunding;
 use App\Infrastructure\Business\UnavailableNoteServicing;
+use App\Infrastructure\Business\UnavailableServicingRecord;
 use App\Infrastructure\Disbursement\EloquentCampaignDisbursementProgress;
 use App\Infrastructure\Disbursement\EloquentDisbursedCampaigns;
 use App\Infrastructure\Disbursement\EloquentDisbursementClosingEvidence;
@@ -285,6 +287,7 @@ use App\Infrastructure\Wallet\EloquentWalletPostings;
 use App\Infrastructure\Wallet\EloquentWalletStore;
 use App\Infrastructure\Wallet\SimulatedNoteServicing;
 use App\Infrastructure\Wallet\SimulatedServicingPayouts;
+use App\Infrastructure\Wallet\SimulatedServicingRecord;
 use App\Infrastructure\Wallet\SyntheticDepositProvider;
 use App\Infrastructure\Wallet\SyntheticDepositSettlement;
 use App\Infrastructure\Wallet\SyntheticPayoutAccountVerifier;
@@ -402,6 +405,8 @@ class AppServiceProvider extends ServiceProvider
             ? $this->app->make(SimulatedNoteServicing::class) : new UnavailableNoteServicing;
         $this->app->bind(NoteServicing::class, $servicing);
         $this->app->bind(ServicingStatements::class, $servicing);
+        $this->app->bind(ServicingRecord::class, fn (): ServicingRecord => $this->app->make(UatMoneySimulation::class)->active()
+            ? $this->app->make(SimulatedServicingRecord::class) : new UnavailableServicingRecord);
         $this->app->bind(CampaignTitles::class, PublishedCampaignTitles::class);
         $this->app->bind(ServicingPayouts::class, fn (): ServicingPayouts => $this->app->make(UatMoneySimulation::class)->active()
             ? $this->app->make(SimulatedServicingPayouts::class) : new UnavailableServicingPayouts);

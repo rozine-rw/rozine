@@ -53,7 +53,7 @@ class StaffBusinessDirectoryResource extends JsonResource
     ];
 
     /** A note's tone beside its state in the 360's list. */
-    private const NOTE_TONES = ['active' => 'green', 'funded' => 'blue', 'failed' => 'red'];
+    private const NOTE_TONES = ['active' => 'green', 'funded' => 'blue', 'repaying' => 'green', 'completed' => 'grey', 'failed' => 'red'];
 
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
