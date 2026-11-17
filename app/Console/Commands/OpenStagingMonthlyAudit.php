@@ -15,7 +15,8 @@ use Throwable;
  * staging demo can show a Business sending its monthly figures and an auditor's visit and seal without
  * waiting for the month to end. The engagement audits the current month and goes to an
  * eligible partner exactly as the scheduler's dispatch would. It refuses for any other Business and
- * wherever the simulation is off, and opens nothing over an engagement that is still open.
+ * wherever the simulation is off, opens nothing over an engagement that is still open, and opens a
+ * month once, so the scheduler can retry it every few minutes until an open audit finishes.
  */
 class OpenStagingMonthlyAudit extends Command
 {
@@ -55,7 +56,7 @@ class OpenStagingMonthlyAudit extends Command
                 continue;
             }
             $this->line($assignment === null
-                ? $businessId.': an audit engagement is still open, so no monthly audit was opened.'
+                ? $businessId.': no monthly audit was opened: an audit engagement is still open, or this month\'s was already opened.'
                 : $businessId.': monthly audit for '.$period.' opened ('.$assignment.').');
         }
 

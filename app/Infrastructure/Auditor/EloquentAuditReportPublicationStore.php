@@ -13,6 +13,7 @@ use App\Application\Auditor\Contracts\PublishedMonthlyReports;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Business\Contracts\BusinessNoticeAudience;
 use App\Application\Business\WithBusinessAuthority;
+use App\Application\Environment\UatMoneySimulation;
 use App\Application\Evidence\Contracts\StatementStore;
 use App\Application\Evidence\WithBusinessStatementVerification;
 use App\Application\Identity\AuthorizeStaffPermission;
@@ -52,7 +53,8 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
         private OperationJournal $journal, private CanonicalJson $json, private AuditReportWindow $window, private AuditSourceFactsStore $sourceFacts,
         private MonthlyReportReview $reviewPolicy, private StatementStore $statements,
         private BusinessAuthorityStore $businesses, private AuthorizeStaffPermission $staff,
-        private PartyNotices $notices, private BusinessNoticeAudience $audience, private BusinessHolders $holders) {}
+        private PartyNotices $notices, private BusinessNoticeAudience $audience, private BusinessHolders $holders,
+        private UatMoneySimulation $simulation) {}
 
     /** How long before a monthly review window closes the Business is reminded (BRS NTF-R01). */
     private const int CLOSING_REMINDER_HOURS = 2;
@@ -719,8 +721,10 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
     /** @return array{inspected: int, published: int, blocked: array<string, string>, next_cursor: string|null} */
     public function advanceDue(int $limit = 100, ?string $after = null): array
     {
+        // Staging demo only (UAT money simulation): a simulated Business's review window ends at once.
+        $simulated = $this->simulation->active() ? array_map(fn (mixed $id): string => strtolower(trim((string) $id)), (array) config('app.uat_money_simulation_businesses')) : [];
         $ids = AuditReportPublication::query()->whereIn('policy_version', MonthlyReportReview::REVIEW_POLICIES)->where('status', 'pending')
-            ->where('due_at', '<=', now('UTC'))->when($after !== null, fn ($query) => $query->where('id', '>', $after))
+            ->where(fn ($query) => $query->where('due_at', '<=', now('UTC'))->orWhereIn('business_id', $simulated))->when($after !== null, fn ($query) => $query->where('id', '>', $after))
             ->orderBy('id')->limit(max(1, min(100, $limit)))->get(['id', 'business_id', 'audit_report_id']);
         $published = 0;
         $blocked = [];
@@ -730,16 +734,19 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                     function (array $business, ?array $verification) use ($candidate): int {
                         $publication = AuditReportPublication::query()->whereKey($candidate->id)->lockForUpdate()->firstOrFail();
                         $this->reviewData($publication);
-                        if (! $this->reviewPolicy->mayAutoApprove($publication->status, $publication->due_at->toIso8601String(), now()->toDateTimeImmutable())) {
+                        // The simulated review closes at its window's end, recorded at that time so the retained
+                        // history stays one the database accepts (auto-approval only once the window has ended).
+                        $early = $this->simulation->covers($publication->business_id) && $publication->due_at->isFuture();
+                        $at = $early ? $publication->due_at->utc()->toImmutable() : now('UTC')->toImmutable();
+                        if (! $this->reviewPolicy->mayAutoApprove($publication->status, $publication->due_at->toIso8601String(), $at->toDateTimeImmutable())) {
                             return 0;
                         }
 
                         return $this->withCurrentEvidence($publication, $this->seal($publication), $business, $verification,
-                            function (bool $current) use ($publication): int {
+                            function (bool $current) use ($publication, $at): int {
                                 if (! $current) {
                                     throw new CommandRejection('AUDIT_PUBLICATION_UNAVAILABLE');
                                 }
-                                $at = now('UTC')->toImmutable();
                                 $this->event($publication, 'report.auto_approve', 'system', null, null, ['published_reason' => 'auto_approved'], at: $at);
                                 $publication->forceFill(['revision' => $publication->revision + 1, 'status' => 'published',
                                     'published_at' => $at, 'published_reason' => 'auto_approved'])->save();

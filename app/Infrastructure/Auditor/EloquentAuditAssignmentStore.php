@@ -620,8 +620,12 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
             $dispatched = AuditAssignment::query()->where('business_id', $businessId)->where('created_at', '>=', $month->utc())->get(['id', 'state'])
                 ->contains(fn (AuditAssignment $record): bool => $record->state['kind'] === 'routine'
                     && AuditEngagementState::purpose($record->state) === AuditEngagementState::PURPOSE_MONTHLY);
-            // A month named by the caller is opened beside this month's own dispatch, never over an open engagement.
-            if (($existing !== null && ! self::finished($existing)) || ($dispatched && $period === null)) {
+            // A month named by the caller is opened beside this month's own dispatch, never over an open
+            // engagement, and never twice for the same month.
+            $opened = $period !== null && AuditAssignment::query()->where('business_id', $businessId)->get(['id', 'state'])
+                ->contains(fn (AuditAssignment $record): bool => AuditEngagementState::purpose($record->state) === AuditEngagementState::PURPOSE_MONTHLY
+                    && AuditEngagementState::period($record->state) === $period);
+            if (($existing !== null && ! self::finished($existing)) || ($dispatched && $period === null) || $opened) {
                 return null;
             }
             $record = new AuditAssignment;

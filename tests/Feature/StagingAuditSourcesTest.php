@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Auditor\Contracts\AuditSourceFactsStore;
 use App\Application\Auditor\GetAuditProcedureSources;
 use App\Application\Auditor\GetAuditSourceFacts;
+use App\Application\Auditor\ReviewAuditPublication;
 use App\Application\Auditor\WithAcceptedAuditAssignment;
 use App\Application\Environment\EnvironmentIsolation;
 use App\Domain\Auditor\AuditEngagementState;
@@ -12,6 +13,7 @@ use App\Domain\Auditor\Wgs84Distance;
 use App\Domain\Operations\CommandRejection;
 use App\Infrastructure\Auditor\EloquentAuditSourceFactsStore;
 use App\Models\AuditLocation;
+use App\Models\AuditReportPublication;
 use App\Models\AuditSourceSnapshot;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -147,4 +149,20 @@ it('reports an assignment that cannot take the capture and carries on with the o
     expect($code)->toBe(0)->and($output)->toContain($fixture['assignment']->id)->not->toContain($broken['assignment']->id);
     Exceptions::assertReported(CommandRejection::class);
     $this->assertDatabaseCount('audit_source_snapshots', 1);
+});
+
+it('ends a simulated Business\'s review window at once so its sealed report publishes', function (): void {
+    $fixture = SealingFixture::ready();
+    SealingFixture::seal($fixture);
+    $publication = AuditReportPublication::query()->where('audit_report_id', $fixture['report']->id)->sole();
+    expect($publication->status)->toBe('pending')->and($publication->due_at->isFuture())->toBeTrue();
+
+    asStagingAuditDemo('01m6dz3t0wemrqac36j094k19b');
+    expect(app(ReviewAuditPublication::class)->advanceDue(100)['published'])->toBe(0)
+        ->and($publication->refresh()->status)->toBe('pending');
+
+    asStagingAuditDemo($fixture['audit']['business']);
+    expect(app(ReviewAuditPublication::class)->advanceDue(100)['published'])->toBe(1)
+        ->and($publication->refresh()->status)->toBe('published')
+        ->and($publication->published_reason)->toBe('auto_approved');
 });

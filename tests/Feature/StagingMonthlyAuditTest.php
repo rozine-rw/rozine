@@ -9,6 +9,7 @@ use App\Domain\Auditor\AuditEngagementState;
 use App\Models\AuditAssignment;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Schedule;
 use Tests\Support\AuditAssignmentFixture as Fixture;
 
 /*
@@ -107,4 +108,21 @@ it('reports a simulated Business it cannot open an audit for, without failing th
 
     expect($code)->toBe(1)->and($output)->toContain('01m6dz3t0wemrqac36j094k19b: the monthly audit could not be opened');
     expect(AuditAssignment::query()->count())->toBe(0);
+});
+
+it('opens each month once, so the scheduler can retry it until an open audit finishes', function (): void {
+    $fixture = Fixture::make(1);
+    asStagingDemo($fixture['business']);
+    openDemoAudit();
+    $this->travel(5)->hours();
+
+    [$code, $output] = openDemoAudit();
+
+    expect($code)->toBe(0)->and($output)->toContain('no monthly audit was opened')
+        ->and(AuditAssignment::query()->where('business_id', $fixture['business'])->count())->toBe(1);
+    $events = collect(Schedule::events())->filter(fn ($event): bool => str_contains((string) $event->command, 'staging:open-monthly-audit'));
+    expect($events)->toHaveCount(1)->and($events->first()->expression)->toBe('*/5 * * * *')
+        ->and($events->first()->filtersPass(app()))->toBeTrue();
+    config(['app.uat_money_simulation' => false]);
+    expect($events->first()->filtersPass(app()))->toBeFalse();
 });
