@@ -99,3 +99,12 @@ it('opens the demo month as the deploy migrates on staging', function (): void {
 
     expect(AuditAssignment::query()->where('business_id', $fixture['business'])->sole()->state['period'] ?? null)->toBe('2026-11');
 });
+
+it('reports a simulated Business it cannot open an audit for, without failing the deploy migration', function (): void {
+    asStagingDemo('01m6dz3t0wemrqac36j094k19b');
+    [$code, $output] = openDemoAudit();
+    (require database_path('migrations/2026_11_17_120000_open_uat_demo_monthly_audit.php'))->up();
+
+    expect($code)->toBe(1)->and($output)->toContain('01m6dz3t0wemrqac36j094k19b: the monthly audit could not be opened');
+    expect(AuditAssignment::query()->count())->toBe(0);
+});

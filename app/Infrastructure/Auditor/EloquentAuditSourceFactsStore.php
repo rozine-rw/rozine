@@ -21,6 +21,7 @@ use App\Models\AuditLocation;
 use App\Models\AuditSourceSnapshot;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 /**
  * Staff publication locks the Business before the assignment, the same order every accepted
@@ -112,31 +113,43 @@ final class EloquentAuditSourceFactsStore implements AuditSourceFactsStore
             if (! $this->simulation->covers($candidate->business_id)) {
                 continue;
             }
-            $id = DB::transaction(function () use ($candidate, $at): ?string {
-                $assignment = AuditAssignment::query()->lockForUpdate()->findOrFail($candidate->id);
-                $actorId = User::query()->where('party_id', $assignment->party_id)->orderBy('id')->value('id');
-                if ($assignment->status !== 'accepted' || $assignment->party_id === null || ! is_int($actorId)
-                    || AuditSourceSnapshot::query()->where('assignment_id', $assignment->id)->where('assignment_revision', $assignment->revision)->exists()) {
-                    return null;
-                }
-                $premises = AuditLocation::query()->where('business_id', $assignment->business_id)->first()?->state['point'] ?? null;
-                $record = new AuditSourceSnapshot;
-                $record->forceFill(['assignment_id' => $assignment->id, 'business_id' => $assignment->business_id,
-                    'assignment_revision' => $assignment->revision, 'party_id' => $assignment->party_id, 'revision' => 1,
-                    'status' => 'available', 'source_kind' => AuditSourceFacts::SOURCE_KIND,
-                    'source_reference' => 'synthetic:uat-money-simulation', 'procedure_version' => AuditEngagementDocuments::PROCEDURE,
-                    'facts' => $this->facts->normalize(self::simulatedFacts($premises, $at), now()->toDateTimeImmutable()), 'actor_user_id' => $actorId,
-                    'reason' => 'Staging demo: synthetic on-site check-in and photos for the UAT money simulation.']);
-                $record->forceFill(['sha256' => $this->digest($record)])->save();
+            try {
+                $id = $this->recordSimulatedCapture($candidate->id, $at);
+            } catch (Throwable $exception) {
+                // One assignment that cannot take the capture never holds up the others or the deploy.
+                report($exception);
 
-                return $record->id;
-            });
+                continue;
+            }
             if ($id !== null) {
                 $recorded[$candidate->id] = $id;
             }
         }
 
         return $recorded;
+    }
+
+    private function recordSimulatedCapture(string $assignmentId, string $at): ?string
+    {
+        return DB::transaction(function () use ($assignmentId, $at): ?string {
+            $assignment = AuditAssignment::query()->lockForUpdate()->findOrFail($assignmentId);
+            $actorId = User::query()->where('party_id', $assignment->party_id)->orderBy('id')->value('id');
+            if ($assignment->status !== 'accepted' || $assignment->party_id === null || ! is_int($actorId)
+                || AuditSourceSnapshot::query()->where('assignment_id', $assignment->id)->where('assignment_revision', $assignment->revision)->exists()) {
+                return null;
+            }
+            $premises = AuditLocation::query()->where('business_id', $assignment->business_id)->first()?->state['point'] ?? null;
+            $record = new AuditSourceSnapshot;
+            $record->forceFill(['assignment_id' => $assignment->id, 'business_id' => $assignment->business_id,
+                'assignment_revision' => $assignment->revision, 'party_id' => $assignment->party_id, 'revision' => 1,
+                'status' => 'available', 'source_kind' => AuditSourceFacts::SOURCE_KIND,
+                'source_reference' => 'synthetic:uat-money-simulation', 'procedure_version' => AuditEngagementDocuments::PROCEDURE,
+                'facts' => $this->facts->normalize(self::simulatedFacts($premises, $at), now()->toDateTimeImmutable()), 'actor_user_id' => $actorId,
+                'reason' => 'Staging demo: synthetic on-site check-in and photos for the UAT money simulation.']);
+            $record->forceFill(['sha256' => $this->digest($record)])->save();
+
+            return $record->id;
+        });
     }
 
     /**

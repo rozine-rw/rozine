@@ -9,12 +9,14 @@ use App\Application\Auditor\WithAcceptedAuditAssignment;
 use App\Application\Environment\EnvironmentIsolation;
 use App\Domain\Auditor\AuditEngagementState;
 use App\Domain\Auditor\Wgs84Distance;
+use App\Domain\Operations\CommandRejection;
 use App\Infrastructure\Auditor\EloquentAuditSourceFactsStore;
 use App\Models\AuditLocation;
 use App\Models\AuditSourceSnapshot;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Schedule;
 use Tests\Support\AuditSealingFixture as SealingFixture;
 use Tests\Support\AuditSourceFactsFixture as Fixture;
@@ -130,4 +132,19 @@ it('reads the latest verified month for a simulated Business\'s monthly audit of
 
     asStagingAuditDemo('01m6dz3t0wemrqac36j094k19b');
     expect($sources($running)['monthly'])->toBeNull();
+});
+
+it('reports an assignment that cannot take the capture and carries on with the others', function (): void {
+    $broken = Fixture::accepted();
+    $fixture = Fixture::accepted();
+    asStagingAuditDemo($broken['audit']['business'], $fixture['audit']['business']);
+    $premises = AuditLocation::query()->where('business_id', $broken['audit']['business'])->sole();
+    $premises->forceFill(['state' => [...$premises->state, 'point' => ['latitude' => 'not-a-latitude', 'longitude' => '30.0619']]])->saveQuietly();
+    Exceptions::fake();
+
+    [$code, $output] = recordDemoAuditSources();
+
+    expect($code)->toBe(0)->and($output)->toContain($fixture['assignment']->id)->not->toContain($broken['assignment']->id);
+    Exceptions::assertReported(CommandRejection::class);
+    $this->assertDatabaseCount('audit_source_snapshots', 1);
 });

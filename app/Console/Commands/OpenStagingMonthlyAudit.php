@@ -8,6 +8,7 @@ use App\Application\Auditor\Contracts\AuditAssignmentStore;
 use App\Application\Environment\UatMoneySimulation;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
+use Throwable;
 
 /**
  * Opens this Kigali month's monthly audit now for a Business the UAT money simulation names, so the
@@ -43,7 +44,16 @@ class OpenStagingMonthlyAudit extends Command
 
                 continue;
             }
-            $assignment = $store->requestMonthly($businessId, $period);
+            try {
+                $assignment = $store->requestMonthly($businessId, $period);
+            } catch (Throwable $exception) {
+                // One unready Business never fails the deploy migration that runs this.
+                report($exception);
+                $this->components->error($businessId.': the monthly audit could not be opened ('.$exception->getMessage().').');
+                $status = self::FAILURE;
+
+                continue;
+            }
             $this->line($assignment === null
                 ? $businessId.': an audit engagement is still open, so no monthly audit was opened.'
                 : $businessId.': monthly audit for '.$period.' opened ('.$assignment.').');
