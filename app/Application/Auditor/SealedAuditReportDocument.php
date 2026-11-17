@@ -21,6 +21,7 @@ final readonly class SealedAuditReportDocument
 
     /** How each sealed measure reads. */
     private const array MEASURES = ['stock_value' => 'Stock value (RWF)', 'cash' => 'Cash (RWF)', 'stock_units' => 'Stock units',
+        'costs' => 'Costs (RWF)', 'owner_drawings' => 'Owner drawings (RWF)',
         'operational_status' => 'Operational status'];
 
     /** @param  SealedReport  $report */

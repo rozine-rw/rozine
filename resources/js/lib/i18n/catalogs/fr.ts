@@ -6418,6 +6418,17 @@ const fr: Catalog = {
     'auditor.differences.observed': 'Compté',
     'auditor.differences.difference': 'Écart',
     'auditor.differences.unavailable': 'Indisponible',
+    'auditor.differences.lead_declared':
+        'Répartissez les écarts de trésorerie, de charges et de prélèvements entre leurs causes, au franc près.',
+    'auditor.differences.lead_none_declared':
+        'La trésorerie, les charges et les prélèvements concordent : il n’y a rien à expliquer.',
+    'auditor.differences.parts': 'À expliquer aussi',
+    'auditor.differences.part.costs':
+        'Charges : déclaré {declared}, vérifié {verified}',
+    'auditor.differences.part.drawings':
+        'Prélèvements des propriétaires : déclaré {declared}, vérifié {verified}',
+    'auditor.differences.not_recorded': 'non saisi',
+    'auditor.differences.total': 'Total à expliquer',
     'auditor.differences.causes': 'Causes',
     'auditor.differences.amount': 'Montant pour {cause}',
     'auditor.differences.balanced': 'L’écart entier est expliqué.',
@@ -6446,6 +6457,14 @@ const fr: Catalog = {
     'auditor.costs.category.transport': 'Transport',
     'auditor.costs.category.taxes': 'Impôts et frais',
     'auditor.costs.category.other': 'Autres',
+    'auditor.costs.declared': 'Déclaré {amount}',
+    'auditor.costs.declared_total': 'Déclaré par l’entreprise',
+    'auditor.costs.verified_gap': 'Écart avec la déclaration',
+    'auditor.costs.use_declared': 'Partir des chiffres déclarés',
+    'auditor.costs.declared_hint':
+        'L’entreprise a déclaré ces chiffres pour le mois. Vérifiez chacun avec les relevés et les reçus et corrigez-le ; tout écart s’explique à l’étape 9.',
+    'auditor.costs.not_declared':
+        'L’entreprise n’a pas envoyé ses chiffres pour ce mois, il n’y a donc rien à comparer.',
     'auditor.costs.total': 'Total des charges',
     'auditor.costs.hint':
         'Saisissez 0 pour une catégorie sans charge ce mois-ci.',
@@ -6515,6 +6534,13 @@ const fr: Catalog = {
     'auditor.drawings.lead':
         'Ce que les propriétaires ont retiré de l’entreprise ce mois-ci, d’après les relevés et le livre de caisse.',
     'auditor.drawings.amount': 'Retiré par les propriétaires ce mois-ci',
+    'auditor.drawings.declared':
+        'L’entreprise a déclaré {amount} versés aux propriétaires.',
+    'auditor.drawings.use_declared': 'Partir du chiffre déclaré',
+    'auditor.drawings.declared_hint':
+        'Vérifiez-le avec les relevés et le livre de caisse et corrigez-le ; tout écart s’explique à l’étape 9.',
+    'auditor.drawings.not_declared':
+        'L’entreprise n’a pas envoyé ses chiffres pour ce mois, il n’y a donc rien à comparer.',
     'auditor.drawings.hint':
         'Saisissez 0 si les propriétaires n’ont rien retiré.',
     'auditor.loans.title': 'Autres prêts',

@@ -15,7 +15,8 @@ use Brick\Math\RoundingMode;
  * Record Gap compares what the Business declared for a month (VIS-R04) with what its published
  * report verified: (|declared − verified money in| + |declared − verified money out|) ÷ (verified
  * money in + verified money out). Declared money out is the six cost categories plus what was paid
- * to owners, since a report verifies every outflow.
+ * to owners; verified money out is the costs and owner drawings the CPA verified (VIS-R01 steps 5
+ * and 7), or the statements' outflow on a report sealed before those steps were recorded.
  *
  * Forecast Error compares each forecast with the verified money in of the month it forecast:
  * |forecast − verified| ÷ verified. Its bias says whether the forecasts ran above or below.
@@ -46,14 +47,16 @@ final class ReadinessSignals
 
     /**
      * The verified months of published reports, newest report first as the port lists them: each
-     * period once, at its newest report, with its inflow as money in and its outflow as money out.
+     * period once, at its newest report, with its inflow as money in and, as money out, the costs
+     * and drawings its CPA verified, else its outflow.
      *
-     * @param  list<array{period: string, inflow: string, outflow: string}>  $reports
+     * @param  list<array{period: string, inflow: string, outflow: string, verified_out?: string|null}>  $reports
      * @return list<Verified>
      */
     public static function verified(array $reports): array
     {
-        $months = array_map(fn (array $report): array => ['period' => $report['period'], 'revenue' => $report['inflow'], 'costs' => $report['outflow']], $reports);
+        $months = array_map(fn (array $report): array => ['period' => $report['period'], 'revenue' => $report['inflow'],
+            'costs' => $report['verified_out'] ?? $report['outflow']], $reports);
 
         return array_values(array_column(array_reverse($months), null, 'period'));
     }

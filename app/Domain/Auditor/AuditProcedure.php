@@ -14,7 +14,8 @@ use Brick\Math\BigDecimal;
  * supplied by protected application ports; none of them are accepted from a step's form.
  *
  * @phpstan-type Source array{id: string, revision: int, sha256: string}
- * @phpstan-type Sources array{verification: Source|null, check_in: Source|null, photos: Source|null, declaration: Source|null, reported_stock: string|null, reported_cash: string|null, reported_units: string|null, financial_proofs: list<string>, inventory_proofs: list<string>, extra_photos: list<string>, ledger_sources?: array<string, Source>}
+ * @phpstan-type Sources array{verification: Source|null, check_in: Source|null, photos: Source|null, declaration: Source|null, reported_stock: string|null, reported_cash: string|null, reported_units: string|null, financial_proofs: list<string>, inventory_proofs: list<string>, extra_photos: list<string>, ledger_sources?: array<string, Source>, declared?: Declared|null}
+ * @phpstan-type Declared array{costs: array<string, string>, costs_total: string, drawings: string}
  * @phpstan-type Draft array{note: string, completed_steps: list<string>, fields: array<string, array<string, mixed>>, sources?: array<string, array<string, Source>>, documents?: list<array{id: string, revision: int, sha256: string, replaces: string|null}>}
  */
 final class AuditProcedure
@@ -189,6 +190,70 @@ final class AuditProcedure
     }
 
     /**
+     * Each difference step 9 explains (BRS v3 VIS-R01), as a non-negative whole-franc amount: the
+     * cash counted against the statements, and, when the Business declared the month (VIS-R04), the
+     * costs and owner drawings the CPA verified against what it declared. A part is null until both
+     * of its sides are known; costs and drawings are left out when nothing was declared.
+     *
+     * @param  Draft  $draft
+     * @param  Sources  $sources
+     * @return array{cash: string|null, costs?: string|null, drawings?: string|null}
+     */
+    public function differences(array $draft, array $sources): array
+    {
+        $parts = ['cash' => $this->cashDifference($draft, $sources)];
+        $declared = $sources['declared'] ?? null;
+        if ($declared !== null) {
+            $costs = $draft['fields']['costs']['costs'] ?? null;
+            $parts['costs'] = is_array($costs) ? $this->gap(self::total($costs), $declared['costs_total']) : null;
+            $drawings = $draft['fields']['drawings']['owner_drawings'] ?? null;
+            $parts['drawings'] = is_string($drawings) ? $this->gap($drawings, $declared['drawings']) : null;
+        }
+
+        return $parts;
+    }
+
+    /**
+     * The whole difference step 9 must explain to the franc: the sum of every part, null while any
+     * part is still unknown.
+     *
+     * @param  Draft  $draft
+     * @param  Sources  $sources
+     */
+    public function differenceTotal(array $draft, array $sources): ?string
+    {
+        $total = BigDecimal::zero();
+        foreach ($this->differences($draft, $sources) as $part) {
+            if ($part === null) {
+                return null;
+            }
+            $total = $total->plus(BigDecimal::of($part));
+        }
+
+        return (string) $total;
+    }
+
+    /**
+     * The sum of whole-franc amounts.
+     *
+     * @param  array<array-key, mixed>  $amounts
+     */
+    public static function total(array $amounts): string
+    {
+        $total = BigDecimal::zero();
+        foreach ($amounts as $amount) {
+            $total = $total->plus(ExactFinancialValue::amount((string) $amount));
+        }
+
+        return (string) $total;
+    }
+
+    private function gap(string $verified, string $declared): string
+    {
+        return (string) ExactFinancialValue::amount($verified)->minus(ExactFinancialValue::amount($declared))->abs();
+    }
+
+    /**
      * @param  array<string, mixed>  $input
      * @param  Sources  $sources
      * @param  Draft  $draft
@@ -325,7 +390,7 @@ final class AuditProcedure
             return ['changes' => $this->changes($input['changes'])];
         }
         if ($step === 'differences') {
-            return ['explanations' => $this->explanations($input['explanations'], $this->cashDifference($draft, $sources)
+            return ['explanations' => $this->explanations($input['explanations'], $this->differenceTotal($draft, $sources)
                 ?? throw new CommandRejection('AUDIT_DECLARATION_REQUIRED', 409))];
         }
         if ($step === 'photos') {

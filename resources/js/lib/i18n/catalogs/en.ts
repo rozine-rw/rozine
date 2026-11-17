@@ -6179,6 +6179,17 @@ const en = {
     'auditor.differences.observed': 'Counted',
     'auditor.differences.difference': 'Difference',
     'auditor.differences.unavailable': 'Unavailable',
+    'auditor.differences.lead_declared':
+        'Split the gaps in cash, costs and owner drawings across their causes, to the franc.',
+    'auditor.differences.lead_none_declared':
+        'Cash, costs and owner drawings all match, so there is nothing to explain.',
+    'auditor.differences.parts': 'Also to explain',
+    'auditor.differences.part.costs':
+        'Costs: declared {declared}, verified {verified}',
+    'auditor.differences.part.drawings':
+        'Owner drawings: declared {declared}, verified {verified}',
+    'auditor.differences.not_recorded': 'not recorded',
+    'auditor.differences.total': 'Total to explain',
     'auditor.differences.causes': 'Causes',
     'auditor.differences.amount': 'Amount for {cause}',
     'auditor.differences.balanced': 'The whole difference is explained.',
@@ -6206,6 +6217,14 @@ const en = {
     'auditor.costs.category.transport': 'Transport',
     'auditor.costs.category.taxes': 'Taxes and fees',
     'auditor.costs.category.other': 'Other',
+    'auditor.costs.declared': 'Declared {amount}',
+    'auditor.costs.declared_total': 'Business declared',
+    'auditor.costs.verified_gap': 'Difference from the declaration',
+    'auditor.costs.use_declared': 'Start from the declared figures',
+    'auditor.costs.declared_hint':
+        'The business declared these figures for the month. Check each one against the statements and receipts and correct it; any difference is explained in step 9.',
+    'auditor.costs.not_declared':
+        'The business has not sent its figures for this month, so there is nothing to compare.',
     'auditor.costs.total': 'Total costs',
     'auditor.costs.hint': 'Enter 0 for a category with no cost this month.',
     'auditor.history.title': 'Trading history',
@@ -6274,6 +6293,12 @@ const en = {
     'auditor.drawings.lead':
         'What the owners took out of the business this month, from the statements and the cash book.',
     'auditor.drawings.amount': 'Taken by the owners this month',
+    'auditor.drawings.declared': 'Business declared {amount} paid to owners.',
+    'auditor.drawings.use_declared': 'Start from the declared figure',
+    'auditor.drawings.declared_hint':
+        'Check it against the statements and cash book and correct it; any difference is explained in step 9.',
+    'auditor.drawings.not_declared':
+        'The business has not sent its figures for this month, so there is nothing to compare.',
     'auditor.drawings.hint': 'Enter 0 if the owners took nothing.',
     'auditor.loans.title': 'Other loans',
     'auditor.loans.lead':

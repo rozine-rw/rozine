@@ -683,10 +683,10 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
                 'action' => ['code' => 'campaign.publish', 'label' => 'Published to investors', 'tone' => 'green'], 'reason' => null];
         }
         // Newest first; entries at the same instant keep the order they happened in.
-        $order = array_flip(array_keys($entries));
-        uksort($entries, fn (int $first, int $second): int => [$entries[$second]['at'], $order[$second]] <=> [$entries[$first]['at'], $order[$first]]);
+        $indexed = array_map(null, array_keys($entries), $entries);
+        usort($indexed, fn (array $first, array $second): int => [$second[1]['at'], $second[0]] <=> [$first[1]['at'], $first[0]]);
 
-        return array_values($entries);
+        return array_column($indexed, 1);
     }
 
     private function releaseRecord(BusinessApplication $application): ?BusinessApplicationRelease

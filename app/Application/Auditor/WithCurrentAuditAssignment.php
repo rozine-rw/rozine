@@ -22,4 +22,17 @@ final class WithCurrentAuditAssignment
     {
         return $this->store->withCurrent($userId, $contextRevision, $assignmentId, $operation);
     }
+
+    /**
+     * Reads only: also admits the partner's completed engagement, whose sealed report stays theirs to open.
+     *
+     * @template TResult
+     *
+     * @param  Closure(Work): TResult  $operation
+     * @return TResult
+     */
+    public function read(int $userId, int $contextRevision, string $assignmentId, Closure $operation): mixed
+    {
+        return $this->store->withCurrent($userId, $contextRevision, $assignmentId, $operation, true);
+    }
 }

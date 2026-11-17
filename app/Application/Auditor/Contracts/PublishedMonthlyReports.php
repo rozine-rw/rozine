@@ -7,9 +7,11 @@ namespace App\Application\Auditor\Contracts;
 /**
  * The Investor-facing facts of a Business's published monthly audit reports (FR-103, FR-110):
  * only reports whose seal is still valid and whose bank statements reconciled to monthly figures.
- * No Auditor original, photo, location or statement leaves this port (H9).
+ * No Auditor original, photo, location or statement leaves this port (H9). `verified_out` is the month's
+ * costs plus owner drawings as the CPA verified them (BRS v3 VIS-R01 steps 5 and 7), null on a report
+ * sealed before those steps were recorded.
  *
- * @phpstan-type PublishedMonthlyReport array{report_id: string, period: string, inflow: string, outflow: string, net: string,
+ * @phpstan-type PublishedMonthlyReport array{report_id: string, period: string, inflow: string, outflow: string, net: string, verified_out?: string|null,
  *     operational_status: string, differences: bool, auditor: array{name: string, licence: string, sealed_on: string},
  *     auditor_note: string, business_note: string}
  */

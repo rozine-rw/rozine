@@ -297,13 +297,13 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
      * @param  Closure(Work): TResult  $operation
      * @return TResult
      */
-    public function withCurrent(int $userId, int $contextRevision, string $assignmentId, Closure $operation): mixed
+    public function withCurrent(int $userId, int $contextRevision, string $assignmentId, Closure $operation, bool $completed = false): mixed
     {
         $partyId = $this->actorPartyId($userId);
 
         return $this->scope($userId, $contextRevision, $this->businessId($assignmentId, $partyId), true,
-            function (array $context, array $candidates) use ($assignmentId, $operation): mixed {
-                [$record, $candidate] = $this->current($context, $candidates, $assignmentId);
+            function (array $context, array $candidates) use ($assignmentId, $operation, $completed): mixed {
+                [$record, $candidate] = $this->current($context, $candidates, $assignmentId, $completed);
                 $profile = $context['business']['profile'];
                 $view = $this->view($record, $candidate);
                 $report = $record->status === 'accepted' ? AuditReport::query()

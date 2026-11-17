@@ -83,6 +83,10 @@
             "owner_drawings": {
                 "currency": "RWF",
                 "amount": "150000"
+            },
+            "declared": {
+                "currency": "RWF",
+                "amount": "120000"
             }
         },
         "can_continue": false,

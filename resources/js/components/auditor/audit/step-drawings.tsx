@@ -8,11 +8,14 @@ import {
 import type { StepContext } from '@/components/auditor/audit/parts';
 import { FieldError } from '@/components/rozine/form';
 import { useTranslation } from '@/hooks/use-translation';
+import { formatRwf } from '@/lib/rozine/format';
 import type { DrawingsStage } from '@/types/auditor';
 
 /**
  * Owner drawings (BRS v3 VIS-R01 step 7): what the owners took out of the business this month, in
- * whole francs, as the CPA saw it in the statements and the cash book. Nothing taken is 0.
+ * whole francs, as the CPA saw it in the statements and the cash book. Nothing taken is 0. What
+ * the Business declared paid to owners (VIS-R04) is shown beside it; the CPA may start from it but
+ * confirms the figure, and any difference is explained in step 9.
  */
 export function StepDrawings({
     stage,
@@ -33,6 +36,29 @@ export function StepDrawings({
                 title={t('auditor.drawings.title')}
                 lead={t('auditor.drawings.lead')}
             />
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-[10px] bg-rz-accent-soft px-3 py-2.5 text-[11.5px] text-rz-ink">
+                <span className="min-w-0 flex-1">
+                    {stage.declared === null
+                        ? t('auditor.drawings.not_declared')
+                        : `${t('auditor.drawings.declared', {
+                              amount: formatRwf(stage.declared),
+                          })} ${t('auditor.drawings.declared_hint')}`}
+                </span>
+                {stage.declared !== null && (
+                    <button
+                        type="button"
+                        onClick={() =>
+                            form.setData(
+                                'owner_drawings',
+                                stage.declared?.amount ?? '0',
+                            )
+                        }
+                        className="rounded-lg border border-rz-border bg-rz-surface px-2.5 py-1.5 text-[11.5px] font-semibold text-rz-ink"
+                    >
+                        {t('auditor.drawings.use_declared')}
+                    </button>
+                )}
+            </div>
             <label className="mt-4 flex items-center justify-between gap-3 rounded-[10px] border border-rz-border bg-rz-surface px-3 py-2.5">
                 <span className="text-[12.5px] font-semibold text-rz-ink">
                     {t('auditor.drawings.amount')}

@@ -104,6 +104,67 @@ describe('Audit procedure — cash sales not deposited', () => {
 });
 
 describe('Audit procedure — costs in six categories', () => {
+    it('shows each declared figure and starts from them only when asked (QA #674)', () => {
+        render(<AuditorAudit {...page(costs)} />);
+        expect(
+            within(sheet()).getByText('Declared RWF 410,000'),
+        ).toBeInTheDocument();
+        expect(within(sheet()).getByText('RWF 790,000')).toBeInTheDocument();
+        expect(within(sheet()).getByText('RWF 10,000')).toBeInTheDocument();
+        expect(
+            within(sheet()).getByLabelText(/^Stock and supplies/u),
+        ).toHaveValue('400,000');
+
+        fireEvent.click(
+            within(sheet()).getByRole('button', {
+                name: 'Start from the declared figures',
+            }),
+        );
+        expect(
+            within(sheet()).getByLabelText(/^Stock and supplies/u),
+        ).toHaveValue('410,000');
+        expect(within(sheet()).getByLabelText(/^Other/u)).toHaveValue('0');
+        proceed();
+
+        expect(inertia.calls[0].body).toEqual({
+            costs: {
+                stock: '410000',
+                staff: '250000',
+                premises: '80000',
+                transport: '30000',
+                taxes: '20000',
+                other: '0',
+            },
+            step: 'costs',
+            ...command(7),
+        });
+    });
+
+    it('says when the business declared nothing to compare', () => {
+        render(
+            <AuditorAudit
+                {...page<CostsStage>(costs, (stage) => ({
+                    ...stage,
+                    declared_total: null,
+                    categories: stage.categories.map((category) => ({
+                        ...category,
+                        declared: null,
+                    })),
+                }))}
+            />,
+        );
+        expect(
+            within(sheet()).getByText(
+                'The business has not sent its figures for this month, so there is nothing to compare.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(sheet()).queryByRole('button', {
+                name: 'Start from the declared figures',
+            }),
+        ).not.toBeInTheDocument();
+    });
+
     it('lists the six categories, totals them and posts every amount', () => {
         render(<AuditorAudit {...page(costs)} />);
         const stock = within(sheet()).getByLabelText(/Stock and supplies/u);

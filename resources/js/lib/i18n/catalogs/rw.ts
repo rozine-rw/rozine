@@ -6404,6 +6404,17 @@ const rw: Catalog = {
     'auditor.differences.observed': 'Ibyabazwe',
     'auditor.differences.difference': 'Itandukaniro',
     'auditor.differences.unavailable': 'Ntibihari',
+    'auditor.differences.lead_declared':
+        'Gabanya itandukaniro ry’amafaranga, ry’amafaranga yakoreshejwe n’ibyo ba nyirabwo bakuyemo mu mpamvu zaryo, kugeza ku ifaranga.',
+    'auditor.differences.lead_none_declared':
+        'Amafaranga, ayakoreshejwe n’ibyo ba nyirabwo bakuyemo birahura, nta cyo gusobanura.',
+    'auditor.differences.parts': 'Ibindi byo gusobanura',
+    'auditor.differences.part.costs':
+        'Amafaranga yakoreshejwe: yatangajwe {declared}, yagenzuwe {verified}',
+    'auditor.differences.part.drawings':
+        'Ibyo ba nyirabwo bakuyemo: byatangajwe {declared}, byagenzuwe {verified}',
+    'auditor.differences.not_recorded': 'ntibyanditswe',
+    'auditor.differences.total': 'Igiteranyo cyo gusobanura',
     'auditor.differences.causes': 'Impamvu',
     'auditor.differences.amount': 'Umubare kuri {cause}',
     'auditor.differences.balanced': 'Itandukaniro ryose ryasobanuwe.',
@@ -6433,6 +6444,14 @@ const rw: Catalog = {
     'auditor.costs.category.transport': 'Ingendo',
     'auditor.costs.category.taxes': 'Imisoro n’amahoro',
     'auditor.costs.category.other': 'Ibindi',
+    'auditor.costs.declared': 'Byatangajwe {amount}',
+    'auditor.costs.declared_total': 'Byatangajwe n’ubucuruzi',
+    'auditor.costs.verified_gap': 'Itandukaniro n’ibyatangajwe',
+    'auditor.costs.use_declared': 'Hera ku mibare yatangajwe',
+    'auditor.costs.declared_hint':
+        'Ubucuruzi bwatangaje iyi mibare y’uku kwezi. Genzura buri mubare ukoresheje raporo za banki n’inyemezabwishyu, uwukosore; itandukaniro ryose risobanurwa ku ntambwe ya 9.',
+    'auditor.costs.not_declared':
+        'Ubucuruzi ntiburohereza imibare y’uku kwezi, nta cyo kugereranya.',
     'auditor.costs.total': 'Igiteranyo cy’amafaranga yakoreshejwe',
     'auditor.costs.hint':
         'Andika 0 ku cyiciro kitagize amafaranga yakoreshejwe uku kwezi.',
@@ -6503,6 +6522,13 @@ const rw: Catalog = {
     'auditor.drawings.lead':
         'Ibyo ba nyir’ubucuruzi bakuyemo muri uku kwezi, ukurikije raporo n’igitabo cy’amafaranga.',
     'auditor.drawings.amount': 'Ibyakuwemo na ba nyirabwo muri uku kwezi',
+    'auditor.drawings.declared':
+        'Ubucuruzi bwatangaje {amount} byahawe ba nyirabwo.',
+    'auditor.drawings.use_declared': 'Hera ku mubare watangajwe',
+    'auditor.drawings.declared_hint':
+        'Wugenzure ukoresheje raporo za banki n’igitabo cy’amafaranga, uwukosore; itandukaniro ryose risobanurwa ku ntambwe ya 9.',
+    'auditor.drawings.not_declared':
+        'Ubucuruzi ntiburohereza imibare y’uku kwezi, nta cyo kugereranya.',
     'auditor.drawings.hint': 'Andika 0 niba ba nyirabwo nta cyo bakuyemo.',
     'auditor.loans.title': 'Indi myenda',
     'auditor.loans.lead':
