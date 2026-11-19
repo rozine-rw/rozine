@@ -4716,6 +4716,27 @@ const fr: Catalog = {
     'investor.market.resale.closed_title': 'Annonce · {name}',
     'investor.market.resale.see_cancelled': 'Voir dans Annulées',
     'investor.market.resale.trade_sell': 'Vendu · {name}',
+    'investor.market.resale.refusal.holding_limit': {
+        one: 'Un investisseur peut détenir au plus la moitié d’une levée. Vous pouvez encore acheter jusqu’à {count} part de cette note.',
+        other: 'Un investisseur peut détenir au plus la moitié d’une levée. Vous pouvez encore acheter jusqu’à {count} parts de cette note.',
+    },
+    'investor.market.resale.refusal.holding_full':
+        'Un investisseur peut détenir au plus la moitié d’une levée, et vous avez déjà atteint cette limite pour cette note.',
+    'investor.market.resale.refusal.price_cap':
+        'Le prix dépasse le plafond de {cap} par part.',
+    'investor.market.resale.refusal.not_held':
+        'Vous n’avez pas autant de parts libres à mettre en vente.',
+    'investor.market.resale.refusal.not_listed':
+        'Il n’y a plus autant de parts en vente. Choisissez moins de parts.',
+    'investor.market.resale.refusal.own_listing':
+        'Vous ne pouvez pas acheter votre propre annonce.',
+    'investor.market.resale.refusal.reserved':
+        'Un autre acheteur réserve ces parts en ce moment. Réessayez dans un instant.',
+    'investor.market.resale.refusal.closed': 'Cette annonce est fermée.',
+    'investor.market.resale.refusal.reservation_ended':
+        'Votre réservation a pris fin. Réservez à nouveau les parts pour les acheter.',
+    'investor.market.resale.refusal.paused':
+        'Les échanges sur cette note sont suspendus pour le moment. Réessayez plus tard.',
     'investor.market.resale.refused':
         'Cela n’a pas abouti ({code}). Vérifiez et réessayez.',
     'investor.market.saved.empty_title':
