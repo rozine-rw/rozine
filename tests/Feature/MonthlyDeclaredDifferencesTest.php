@@ -61,14 +61,21 @@ it('compares verified costs and drawings with the declaration, explains every di
         ->and($save('loans', ['loans' => []])['code'])->toBe('AUDIT_STEP_SAVED');
     $refused = $save('differences', ['explanations' => []]);
     expect($refused['code'])->toBe('AUDIT_DIFFERENCE_UNEXPLAINED')
-        ->and($refused['field_errors'])->toBe(['explanations' => ['Explain the whole difference of RWF 7000, to the franc.']]);
+        ->and($refused['field_errors'])->toBe(['explanations' => ['Explain the whole difference of RWF 7,000, to the franc.']]);
     $explained = [['cause' => 'personal_spending', 'amount' => '2000'], ['cause' => 'entry_error', 'amount' => '5000']];
     expect($save('differences', ['explanations' => $explained])['code'])->toBe('AUDIT_STEP_SAVED');
     foreach (['staff' => ['staff_count' => '6', 'rssb_checked' => true], 'expiries' => ['tax_clearance_expires_on' => '2027-03-31', 'rssb_clearance_expires_on' => '2027-06-30'],
-        'loan_use' => ['loan_use' => 'as_planned', 'loan_use_note' => ''], 'changes' => ['changes' => ['new_debt' => false, 'director_change' => false, 'ownership_change' => false, 'legal_claim' => false]],
+        // An optional note left empty arrives as null once the request is trimmed (QA #674).
+        'loan_use' => ['loan_use' => 'as_planned', 'loan_use_note' => null], 'changes' => ['changes' => ['new_debt' => false, 'director_change' => false, 'ownership_change' => false, 'legal_claim' => false]],
         'photos' => ['titles' => ['extra-1' => 'Stock room']], 'seal' => ['note' => 'Costs and drawings differ from the declaration.']] as $step => $fields) {
         expect($save($step, $fields)['code'])->toBe('AUDIT_STEP_SAVED');
     }
+
+    // The seal step lists what will be signed before the note (QA #674).
+    $this->actingAs($user)->getJson(route('api.v1.auditor.reports.show', ['report' => $report->id, 'step' => 'seal']))->assertOk()
+        ->assertJsonFragment(['label' => 'Costs', 'value' => 'Declared RWF 785,000, verified RWF 780,000', 'tone' => 'flag'])
+        ->assertJsonFragment(['label' => 'Owner drawings', 'value' => 'Declared RWF 2,000, verified RWF 0', 'tone' => 'flag'])
+        ->assertJsonFragment(['label' => 'Cash balance', 'tone' => 'ok']);
 
     expect(Fixture::seal(Fixture::prepare([...$fixture, 'report' => $report->refresh()]))['code'])->toBe('AUDIT_SEALED');
     /** @var list<array<string, mixed>> $findings */

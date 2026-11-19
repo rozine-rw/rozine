@@ -6,6 +6,7 @@ use App\Application\Business\Contracts\BusinessCampaignStore;
 use App\Application\Business\SaveBusinessApplication;
 use App\Application\Identity\ConfigureStaffAccess;
 use App\Application\Operations\Contracts\CanonicalJson;
+use App\Models\AuditReportSeal;
 use App\Models\BusinessApplication;
 use App\Models\BusinessApplicationRelease;
 use App\Models\BusinessApplicationSubmission;
@@ -123,9 +124,10 @@ it('shows a listed raise as approved with its release amount and decision trail,
 
 });
 
-it('never dates a re-verification in the future, as a simulated review recorded at its window\'s end would read (QA #673)', function (): void {
+it('dates a re-verification when its report was sealed, never in the future as a simulated review recorded at its window\'s end would read (QA #673)', function (): void {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
+    $sealedAt = AuditReportSeal::query()->sole()->created_at->utc()->toIso8601String();
     // The report's publication lies an hour ahead of the release, as the UAT simulation records it.
     $this->travel(2)->hours();
     AuditSealingFixture::publish($fixture);
@@ -136,12 +138,12 @@ it('never dates a re-verification in the future, as a simulated review recorded 
 
     $this->actingAs($staff)->getJson(route('api.v1.staff.applications.index', ['tab' => 'approved', 'application' => $fixture['application']->id]))->assertOk()
         ->assertJson(fn (AssertableJson $json): AssertableJson => $json->where('data.review.trail',
-            fn (Collection $trail): bool => $trail->keyBy('action.code')['report.publish']['at'] === $releasedAt)->etc());
+            fn (Collection $trail): bool => $trail->keyBy('action.code')['report.publish']['at'] === $sealedAt && $sealedAt < $releasedAt)->etc());
     // The Business's 360 lists the re-verification too.
     $this->getJson(route('api.v1.staff.businesses.index', ['business' => $fixture['audit']['business']]))->assertOk()
         ->assertJson(fn (AssertableJson $json): AssertableJson => $json->where('data.party.history', fn (Collection $history): bool => $history->contains(
             fn (array $entry): bool => $entry['action']['code'] === 'report.publish' && str_starts_with($entry['action']['label'], 'Evidence re-verified')
-                && $entry['at'] === now('UTC')->toIso8601String()))->etc());
+                && $entry['at'] === $sealedAt))->etc());
 });
 
 it('paginates submitted applications without exposing drafts and preserves filters and return position', function (): void {
