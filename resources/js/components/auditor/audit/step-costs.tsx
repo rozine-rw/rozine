@@ -41,8 +41,14 @@ export function StepCosts({
         0n,
     );
     const declared = stage.declared_total;
+    // No difference to show until the auditor has entered a figure (QA #674).
+    const entered = stage.categories.some(
+        (category) => (form.data.costs[category.key] ?? '') !== '',
+    );
     const gap =
-        declared === null ? null : total - BigInt(declared.amount || '0');
+        declared === null || !entered
+            ? null
+            : total - BigInt(declared.amount || '0');
     const startFromDeclared = () =>
         form.setData(
             'costs',
@@ -130,19 +136,23 @@ export function StepCosts({
                     {t('common.currency.rwf')} {groupDigits(total.toString())}
                 </span>
             </p>
-            {declared !== null && gap !== null && (
+            {declared !== null && (
                 <dl className="mt-1 flex flex-col gap-0.5 px-3 text-[11.5px] text-rz-secondary">
                     <div className="flex items-center justify-between">
                         <dt>{t('auditor.costs.declared_total')}</dt>
                         <dd className="tabular-nums">{formatRwf(declared)}</dd>
                     </div>
-                    <div className="flex items-center justify-between">
-                        <dt>{t('auditor.costs.verified_gap')}</dt>
-                        <dd className="font-semibold text-rz-ink tabular-nums">
-                            {t('common.currency.rwf')}{' '}
-                            {groupDigits((gap < 0n ? -gap : gap).toString())}
-                        </dd>
-                    </div>
+                    {gap !== null && (
+                        <div className="flex items-center justify-between">
+                            <dt>{t('auditor.costs.verified_gap')}</dt>
+                            <dd className="font-semibold text-rz-ink tabular-nums">
+                                {t('common.currency.rwf')}{' '}
+                                {groupDigits(
+                                    (gap < 0n ? -gap : gap).toString(),
+                                )}
+                            </dd>
+                        </div>
+                    )}
                 </dl>
             )}
             <p className="mt-2 text-[11.5px] text-rz-secondary">

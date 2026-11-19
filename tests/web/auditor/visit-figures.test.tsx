@@ -140,6 +140,34 @@ describe('Audit procedure — costs in six categories', () => {
         });
     });
 
+    it('shows no difference from the declaration until a figure is typed (QA #674)', () => {
+        render(
+            <AuditorAudit
+                {...page<CostsStage>(costs, (stage) => ({
+                    ...stage,
+                    categories: stage.categories.map((category) => ({
+                        ...category,
+                        amount: null,
+                    })),
+                }))}
+            />,
+        );
+        expect(
+            within(sheet()).getByText('Business declared'),
+        ).toBeInTheDocument();
+        expect(
+            within(sheet()).queryByText('Difference from the declaration'),
+        ).not.toBeInTheDocument();
+
+        fireEvent.change(
+            within(sheet()).getByLabelText(/^Stock and supplies/u),
+            { target: { value: '400000' } },
+        );
+        expect(
+            within(sheet()).getByText('Difference from the declaration'),
+        ).toBeInTheDocument();
+    });
+
     it('says when the business declared nothing to compare', () => {
         render(
             <AuditorAudit

@@ -218,12 +218,14 @@ it('ends a simulated Business\'s review window at once so its sealed report publ
         ->and($publication->published_reason)->toBe('auto_approved');
 });
 
-it('dates a simulated review\'s re-verification when it published, not at the window end it records (QA #673)', function (): void {
+it('dates a simulated review\'s re-verification when its report was sealed, not at the window end it records (QA #673)', function (): void {
     $fixture = SealingFixture::ready();
     SealingFixture::seal($fixture);
+    $sealedAt = now('UTC')->toIso8601String();
+    // QA's flash report was sealed at 15:35 and published at 16:20: Activity names the seal, as its label says.
+    $this->travel(45)->minutes();
     asStagingAuditDemo($fixture['audit']['business']);
     app(ReviewAuditPublication::class)->advanceDue(100);
-    $publishedAt = now('UTC')->toIso8601String();
     $publication = AuditReportPublication::query()->where('audit_report_id', $fixture['report']->id)->sole();
     expect($publication->published_at->isFuture())->toBeTrue();
 
@@ -231,5 +233,5 @@ it('dates a simulated review\'s re-verification when it published, not at the wi
     $history = app(BusinessDirectoryStore::class)->business($fixture['audit']['business'])['history'] ?? [];
     $entry = array_values(array_filter($history, fn (array $entry): bool => $entry['command'] === 'report.publish'));
 
-    expect(array_column($entry, 'at'))->toBe([$publishedAt]);
+    expect(array_column($entry, 'at'))->toBe([$sealedAt]);
 });

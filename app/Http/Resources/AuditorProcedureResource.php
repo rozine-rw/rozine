@@ -270,17 +270,23 @@ class AuditorProcedureResource extends JsonResource
     private function seal(array $report, array $sources, array $seal, ?array $reasonOptions, bool $mfaConfirmed): array
     {
         $findings = [];
+        $summary = [];
         foreach ($seal['findings'] as $index => $finding) {
             $values = AuditorJobsResource::figures(array_intersect_key($finding, array_flip(['reported', 'observed', 'difference'])));
-            $findings[] = ['code' => $finding['code'], 'no' => (string) ($index + 1),
-                'title' => match ($finding['measure']) {
-                    'stock_value' => __('Stock value'), 'cash' => __('Cash balance'), 'stock_units' => __('Inventory units'), 'costs' => __('Costs'), 'owner_drawings' => __('Owner drawings'), default => __('Operating status'),
-                }, 'body' => isset($finding['reported'])
-                    ? __('Reported: :reported. Observed: :observed. Difference: :difference.', $values)
-                    : __('Observed status: :observed.', $values), 'evidence_ids' => $finding['evidence_ids']];
+            $title = match ($finding['measure']) {
+                'stock_value' => __('Stock value'), 'cash' => __('Cash balance'), 'stock_units' => __('Inventory units'), 'costs' => __('Costs'), 'owner_drawings' => __('Owner drawings'), default => __('Operating status'),
+            };
+            $findings[] = ['code' => $finding['code'], 'no' => (string) ($index + 1), 'title' => $title, 'body' => isset($finding['reported'])
+                ? __('Reported: :reported. Observed: :observed. Difference: :difference.', $values)
+                : __('Observed status: :observed.', $values), 'evidence_ids' => $finding['evidence_ids']];
+            // What the auditor is about to sign, at a glance on the step itself (QA #674).
+            $money = in_array($finding['measure'], ['stock_value', 'cash', 'costs', 'owner_drawings'], true) ? 'RWF ' : '';
+            $summary[] = ! isset($finding['reported']) ? ['label' => $title, 'value' => (string) $values['observed'], 'tone' => 'neutral']
+                : ($finding['difference'] === '0' ? ['label' => $title, 'value' => __('Matches: :value', ['value' => $money.$values['observed']]), 'tone' => 'ok']
+                    : ['label' => $title, 'value' => __('Declared :reported, verified :observed', ['reported' => $money.$values['reported'], 'observed' => $money.$values['observed']]), 'tone' => 'flag']);
         }
 
-        return ['step' => 'seal', 'summary' => [], 'note' => ['required' => $seal['note_required'],
+        return ['step' => 'seal', 'summary' => $summary, 'note' => ['required' => $seal['note_required'],
             'why' => $seal['note_required'] ? __('Explain the observed differences or operating status.') : __('Add any factual explanation for the report.'),
             'value' => $report['draft']['note'], 'min' => $seal['note_required'] ? 1 : 0, 'max' => 100],
             'findings' => $findings, 'evidence' => $this->evidence($sources), 'procedure_version' => $seal['payload']['procedure_version'],
