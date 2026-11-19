@@ -239,6 +239,12 @@ it('lets the Business repay its note on UAT and pays each holder its share less 
     }
     $this->actingAs($treasury)->get(route('staff.ledger.index', ['entry' => $entry]))
         ->assertInertia(fn (Assert $page): Assert => $page->where('entry.kind', 'distribution')->etc());
+    // The disbursement's outbound leg is found by the bank it paid, as the Disbursements drawer names it (QA #663).
+    $issued = DB::table('ledger_entries')->where('kind', 'disbursement_platform_fee')->value('id');
+    foreach (['Bank of Kigali', 'bank of kigali', 'Account ····6789'] as $search) {
+        $this->actingAs($treasury)->get(route('staff.ledger.index', ['q' => $search]))
+            ->assertInertia(fn (Assert $page): Assert => $page->where('entries', fn (Collection $rows): bool => $rows->contains('id', $issued))->etc());
+    }
 
     // Paid on once, and a stale quote is refused.
     $this->actingAs($note['payer'])->postJson(route('business.repayments.pay', $note['business']),

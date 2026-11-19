@@ -17,7 +17,8 @@ use stdClass;
  * reference comes from the entry's source record: the deposit intent's or withdrawal's provider
  * reference (sealed at rest, so it is opened here and searched only by its exact SHA-256), or the
  * Business behind a primary reservation, commitment, repayment, disbursement closing, servicing
- * payout or resale reservation.
+ * payout or resale reservation. A disbursement closing is also found by its payout's bank reference
+ * or masked bank destination.
  *
  * @phpstan-import-type Entry from LedgerJournal
  * @phpstan-import-type Line from LedgerJournal
@@ -60,6 +61,21 @@ final readonly class EloquentLedgerJournal implements LedgerJournal
         END
         SQL;
 
+    /**
+     * The SQL reading one column (`%1$s`) of a disbursement closing's payout: its intent (the bank
+     * reference, sealed at rest so searched by SHA-256) or the bank account it paid
+     * (`business_funding_methods`, e.g. "Bank of Kigali" and "Account ····7890"), so staff can find
+     * the outbound leg by either (QA #663).
+     */
+    private const string PAYOUT = <<<'SQL'
+        CASE ledger_entries.source_type
+            WHEN 'disbursement_closing' THEN (SELECT %1$s FROM disbursement_closings
+                JOIN disbursement_intents ON disbursement_intents.disbursement_id = disbursement_closings.disbursement_id
+                LEFT JOIN business_funding_methods ON business_funding_methods.id = disbursement_intents.destination_id
+                WHERE disbursement_closings.id = ledger_entries.source_id)
+        END
+        SQL;
+
     /** The SQL naming a wallet's owner. */
     private const string OWNER = <<<'SQL'
         COALESCE(
@@ -95,6 +111,8 @@ final readonly class EloquentLedgerJournal implements LedgerJournal
             $query->where(fn (Builder $match) => $match->whereIn('ledger_entries.kind', $kinds)->orWhereRaw('lower(ledger_entries.id) like ?', [$like])
                 ->orWhereRaw('lower(ledger_entries.kind) like ?', [$like])
                 ->orWhereRaw('lower(('.self::BUSINESS.')) like ?', [$like])
+                ->orWhereRaw('lower(('.sprintf(self::PAYOUT, "business_funding_methods.label || ' ' || business_funding_methods.masked").')) like ?', [$like])
+                ->orWhereRaw('('.sprintf(self::PAYOUT, 'disbursement_intents.provider_reference_sha256').') = ?', [hash('sha256', trim((string) $search))])
                 ->orWhereRaw('('.sprintf(self::SEALED, 'provider_reference_sha256').') = ?', [hash('sha256', trim((string) $search))])
                 ->orWhereRaw('lower(('.sprintf(self::OWNER, 'ledger_entries.wallet_id').')) like ?', [$like]));
         });
