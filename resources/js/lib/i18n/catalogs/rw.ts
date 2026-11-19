@@ -4577,6 +4577,11 @@ const rw: Catalog = {
     'investor.market.order_detail.title': "Ibisobanuro by'ibwiriza",
     'investor.market.order_detail.status': 'Uko bihagaze',
     'investor.market.order_detail.status_open': 'Birafunguye',
+    'investor.market.order_detail.status_withdrawn': 'Byakuweho',
+    'investor.market.order_detail.status_cancelled': 'Byahagaritswe na Rozine',
+    'investor.market.order_detail.status_expired': 'Igihe cyarangiye',
+    'investor.market.order_detail.listed': 'Imigabane yashyizwe ku isoko',
+    'investor.market.order_detail.ended': 'Byarangiye',
     'investor.market.order_detail.status_reserved': 'Byafashwe n’umuguzi',
     'investor.market.order_detail.status_reserved_for_you': 'Byagufatiwe',
     'investor.market.order_detail.filled': 'Byarangiye',
@@ -4647,6 +4652,18 @@ const rw: Catalog = {
     'investor.market.resale.total': 'Igiteranyo',
     'investor.market.resale.expires': 'Kugeza {when}',
     'investor.market.resale.withdraw': 'Kuramo',
+    'investor.market.resale.withdraw_confirm': {
+        one: 'Ukuraho iri tangazo? Umugabane {units} usubira mu migabane yawe.',
+        other: 'Ukuraho iri tangazo? Imigabane {units} isubira mu migabane yawe.',
+    },
+    'investor.market.resale.withdraw_yes': 'Yego, kuraho',
+    'investor.market.resale.withdraw_keep': 'Rigumeho',
+    'investor.market.resale.units_reserved':
+        '{available} irahari · {reserved} yafashwe n’umuguzi',
+    'investor.market.resale.free_only': {
+        one: 'Ufite umugabane {count} wonyine ushobora gushyira ku isoko.',
+        other: 'Ufite imigabane {count} gusa ushobora gushyira ku isoko.',
+    },
     'investor.market.resale.reserved_for_you': {
         one: 'Umugabane {units} wagufatiwe kugeza {when}. Emeza wishyure {amount} uvuye mu gikapu cyawe.',
         other: 'Imigabane {units} yagufatiwe kugeza {when}. Emeza wishyure {amount} uvuye mu gikapu cyawe.',
@@ -4678,6 +4695,12 @@ const rw: Catalog = {
     },
     'investor.market.resale.see_portfolio': 'Bireba mu ishoramari',
     'investor.market.resale.dismiss': 'Funga',
+    'investor.market.resale.withdrawn': {
+        one: 'Itangazo ryakuweho. Umugabane {count} wa {name} wasubiye mu migabane yawe.',
+        other: 'Itangazo ryakuweho. Imigabane {count} ya {name} yasubiye mu migabane yawe.',
+    },
+    'investor.market.resale.closed_title': 'Itangazo · {name}',
+    'investor.market.resale.see_cancelled': 'Reba mu Byahagaritswe',
     'investor.market.resale.trade_sell': 'Wagurishije · {name}',
     'investor.market.resale.refused':
         'Ntibyakunze ({code}). Reba amakuru wongere ugerageze.',

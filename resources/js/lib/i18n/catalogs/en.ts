@@ -4400,6 +4400,11 @@ const en = {
     'investor.market.order_detail.title': 'Order detail',
     'investor.market.order_detail.status': 'Status',
     'investor.market.order_detail.status_open': 'Open',
+    'investor.market.order_detail.status_withdrawn': 'Withdrawn',
+    'investor.market.order_detail.status_cancelled': 'Cancelled by Rozine',
+    'investor.market.order_detail.status_expired': 'Expired',
+    'investor.market.order_detail.listed': 'Units listed',
+    'investor.market.order_detail.ended': 'Ended',
     'investor.market.order_detail.status_reserved': 'Reserved by a buyer',
     'investor.market.order_detail.status_reserved_for_you': 'Reserved for you',
     'investor.market.order_detail.filled': 'Filled',
@@ -4468,6 +4473,18 @@ const en = {
     'investor.market.resale.total': 'Total',
     'investor.market.resale.expires': 'Listed until {when}',
     'investor.market.resale.withdraw': 'Withdraw',
+    'investor.market.resale.withdraw_confirm': {
+        one: 'Withdraw this listing? Its {units} unit goes back to your holding.',
+        other: 'Withdraw this listing? Its {units} units go back to your holding.',
+    },
+    'investor.market.resale.withdraw_yes': 'Yes, withdraw',
+    'investor.market.resale.withdraw_keep': 'Keep listing',
+    'investor.market.resale.units_reserved':
+        '{available} available · {reserved} reserved by a buyer',
+    'investor.market.resale.free_only': {
+        one: 'You have {count} unit free to list.',
+        other: 'You have {count} units free to list.',
+    },
     'investor.market.resale.reserved_for_you': {
         one: '{units} unit reserved for you until {when}. Confirm to pay {amount} from your wallet.',
         other: '{units} units reserved for you until {when}. Confirm to pay {amount} from your wallet.',
@@ -4499,6 +4516,12 @@ const en = {
     },
     'investor.market.resale.see_portfolio': 'See it in Portfolio',
     'investor.market.resale.dismiss': 'Dismiss',
+    'investor.market.resale.withdrawn': {
+        one: 'Listing withdrawn. {count} unit of {name} is back in your holding.',
+        other: 'Listing withdrawn. {count} units of {name} are back in your holding.',
+    },
+    'investor.market.resale.closed_title': 'Listing · {name}',
+    'investor.market.resale.see_cancelled': 'See it in Cancelled',
     'investor.market.resale.trade_sell': 'Sold · {name}',
     'investor.market.resale.refused':
         'That didn’t go through ({code}). Check the details and try again.',

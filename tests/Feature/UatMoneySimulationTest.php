@@ -331,7 +331,7 @@ it('lists, reserves, buys and withdraws resale units from the Market page on UAT
             ->where('market.listings.0.actions.settle.method', 'post')->where('market.listings.0.actions.reserve', null)->etc());
     $this->actingAs($seller)->get(route('investor.market'))
         ->assertInertia(fn (Assert $page): Assert => $page->where('market.listings.0.reserved', true)->where('market.listings.0.mine', true)
-            ->where('market.listings.0.actions.settle', null)->etc());
+            ->where('market.listings.0.reserved_units', '10')->where('market.listings.0.actions.settle', null)->etc());
     $this->actingAs($buyer)->postJson(route('investor.market_settle', $listed), $command(['reservation_id' => $reservation]))
         ->assertOk()->assertJsonPath('code', 'SECONDARY_SETTLED');
 
@@ -344,6 +344,11 @@ it('lists, reserves, buys and withdraws resale units from the Market page on UAT
     $again = $this->actingAs($seller)->postJson(route('investor.market_list'), $command(['lot_id' => $holding->holdingId, 'units' => '5', 'price' => $price]))
         ->assertOk()->json('data.listing.listing_id');
     $this->actingAs($seller)->postJson(route('investor.market_withdraw', $again), $command([]))->assertOk()->assertJsonPath('code', 'SECONDARY_LISTING_CANCELLED');
+    // A withdrawn listing stays under Orders → Cancelled (QA #663).
+    $this->actingAs($seller)->get(route('investor.market'))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('market.closed.0.listing_id', $again)->where('market.closed.0.state', 'cancelled')
+            ->where('market.closed.0.cancelled_by', 'seller')->where('market.closed.0.listed_units', '5')->where('market.closed.0.price.amount', $price)->etc());
+    $this->actingAs($buyer)->get(route('investor.market'))->assertInertia(fn (Assert $page): Assert => $page->where('market.closed', [])->etc());
     $this->actingAs($seller)->postJson(route('investor.market_list'), $command(['lot_id' => $holding->holdingId, 'units' => '0', 'price' => $price]))
         ->assertUnprocessable();
 });

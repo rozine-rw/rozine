@@ -1191,6 +1191,8 @@ export type MarketListing = {
     mine: boolean;
     /** Held by another buyer's live reservation. */
     reserved: boolean;
+    /** Units held by a live reservation, anyone's ('0' when none). */
+    reserved_units?: string;
     /** The Investor's own live reservation of it, if any. */
     reservation: {
         reservation_id: string;
@@ -1230,6 +1232,19 @@ export type MarketTrade = {
     settled_at: string;
 };
 
+/** One of the Investor's own listings that ended unsold: withdrawn, cancelled by staff or a halt, or expired. */
+export type MarketClosedListing = {
+    listing_id: string;
+    deal_name: string;
+    listed_units: string;
+    remaining_units: string;
+    price: Money;
+    listed_at: string;
+    state: 'cancelled' | 'expired';
+    cancelled_by: 'seller' | 'staff' | 'halt' | null;
+    ended_at: string;
+};
+
 /** `investor-market-v1`: the Market page with the resale board. */
 export type InvestorMarketProps = InvestorShellPageProps & {
     contract_version: 'investor-market-v1';
@@ -1239,6 +1254,8 @@ export type InvestorMarketProps = InvestorShellPageProps & {
         listings: MarketListing[];
         sellable: MarketSellableLot[];
         trades: MarketTrade[];
+        /** Newest first; absent from older payloads. */
+        closed?: MarketClosedListing[];
     };
     actions: { list: RouteAction | null };
 };

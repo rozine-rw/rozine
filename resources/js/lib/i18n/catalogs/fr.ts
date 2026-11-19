@@ -4587,6 +4587,11 @@ const fr: Catalog = {
     'investor.market.order_detail.title': "Détail de l'ordre",
     'investor.market.order_detail.status': 'Statut',
     'investor.market.order_detail.status_open': 'Ouvert',
+    'investor.market.order_detail.status_withdrawn': 'Retirée',
+    'investor.market.order_detail.status_cancelled': 'Annulée par Rozine',
+    'investor.market.order_detail.status_expired': 'Expirée',
+    'investor.market.order_detail.listed': 'Parts proposées',
+    'investor.market.order_detail.ended': 'Terminée',
     'investor.market.order_detail.status_reserved': 'Réservé par un acheteur',
     'investor.market.order_detail.status_reserved_for_you': 'Réservé pour vous',
     'investor.market.order_detail.filled': 'Exécuté',
@@ -4659,6 +4664,18 @@ const fr: Catalog = {
     'investor.market.resale.total': 'Total',
     'investor.market.resale.expires': 'Annoncée jusqu’au {when}',
     'investor.market.resale.withdraw': 'Retirer',
+    'investor.market.resale.withdraw_confirm': {
+        one: 'Retirer cette annonce ? Sa {units} part retourne dans votre détention.',
+        other: 'Retirer cette annonce ? Ses {units} parts retournent dans votre détention.',
+    },
+    'investor.market.resale.withdraw_yes': 'Oui, retirer',
+    'investor.market.resale.withdraw_keep': 'Garder l’annonce',
+    'investor.market.resale.units_reserved':
+        '{available} disponibles · {reserved} réservées par un acheteur',
+    'investor.market.resale.free_only': {
+        one: 'Vous avez {count} part libre à proposer.',
+        other: 'Vous avez {count} parts libres à proposer.',
+    },
     'investor.market.resale.reserved_for_you': {
         one: '{units} part réservée pour vous jusqu’au {when}. Confirmez pour payer {amount} depuis votre portefeuille.',
         other: '{units} parts réservées pour vous jusqu’au {when}. Confirmez pour payer {amount} depuis votre portefeuille.',
@@ -4690,6 +4707,12 @@ const fr: Catalog = {
     },
     'investor.market.resale.see_portfolio': 'Voir dans le portefeuille',
     'investor.market.resale.dismiss': 'Fermer',
+    'investor.market.resale.withdrawn': {
+        one: 'Annonce retirée. {count} part de {name} est revenue dans votre détention.',
+        other: 'Annonce retirée. {count} parts de {name} sont revenues dans votre détention.',
+    },
+    'investor.market.resale.closed_title': 'Annonce · {name}',
+    'investor.market.resale.see_cancelled': 'Voir dans Annulées',
     'investor.market.resale.trade_sell': 'Vendu · {name}',
     'investor.market.resale.refused':
         'Cela n’a pas abouti ({code}). Vérifiez et réessayez.',

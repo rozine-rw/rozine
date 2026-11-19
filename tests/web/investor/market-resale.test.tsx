@@ -256,5 +256,105 @@ describe('Market resale (BRS v3.0 §12)', () => {
         expect(
             within(sheet).getByRole('button', { name: 'Reserve units' }),
         ).toBeDisabled();
+        // No price is shown for an amount that can't be bought (QA #663 item 4).
+        expect(within(sheet).queryByText(/You pay/)).not.toBeInTheDocument();
+    });
+
+    it('says why a sell listing is refused: too many units, or a price above the cap (QA #663 item 3)', async () => {
+        const user = userEvent.setup();
+
+        render(<InvestorMarket {...page()} />);
+        await user.click(screen.getByRole('button', { name: 'Sell units' }));
+        const sheet = screen.getByRole('dialog', {
+            name: 'Sell units on the market',
+        });
+        const free = page().market.sellable[0].free_units;
+
+        await user.type(
+            within(sheet).getByLabelText('Units'),
+            String(Number(free) + 1),
+        );
+        expect(within(sheet).getByRole('alert')).toHaveTextContent(
+            `You have ${free} units free to list.`,
+        );
+        expect(
+            within(sheet).queryByText(/Listing total/),
+        ).not.toBeInTheDocument();
+
+        await user.clear(within(sheet).getByLabelText('Units'));
+        await user.type(within(sheet).getByLabelText('Units'), '1');
+        await user.clear(within(sheet).getByLabelText('Price per unit (RWF)'));
+        await user.type(
+            within(sheet).getByLabelText('Price per unit (RWF)'),
+            '5500',
+        );
+        expect(within(sheet).getByRole('alert')).toHaveTextContent(
+            'At most RWF 5,400 per unit',
+        );
+    });
+
+    it('shows how many units are still available while another buyer holds some (QA #663 item 5)', () => {
+        const props = page();
+
+        props.market.listings[0].reserved_units = '15';
+        render(<InvestorMarket {...props} />);
+        const card = within(
+            screen.getByRole('list', { name: 'Resale listings' }),
+        ).getAllByRole('listitem')[0];
+
+        expect(
+            within(card).getByText('25 available · 15 reserved by a buyer'),
+        ).toBeInTheDocument();
+    });
+
+    it('asks before withdrawing a listing, then confirms it and keeps it under Cancelled (QA #663 item 1)', async () => {
+        const user = userEvent.setup();
+
+        inertia.queue.push(
+            answers({
+                status: 'completed',
+                code: 'SECONDARY_LISTING_CANCELLED',
+            }),
+        );
+        render(<InvestorMarket {...page()} />);
+        const mine = within(
+            screen.getByRole('list', { name: 'Resale listings' }),
+        ).getAllByRole('listitem')[2];
+
+        await user.click(
+            within(mine).getByRole('button', { name: 'Withdraw' }),
+        );
+        expect(inertia.calls).toHaveLength(0);
+        await user.click(
+            within(mine).getByRole('button', { name: 'Keep listing' }),
+        );
+        expect(inertia.calls).toHaveLength(0);
+        await user.click(
+            within(mine).getByRole('button', { name: 'Withdraw' }),
+        );
+        await user.click(
+            within(mine).getByRole('button', { name: 'Yes, withdraw' }),
+        );
+
+        expect(inertia.calls[0]?.url).toMatch(/\/withdraw$/u);
+        const status = await screen.findByRole('status');
+
+        expect(status).toHaveTextContent(/Listing withdrawn\. \d+ units? of /);
+        await user.click(
+            within(status).getByRole('button', { name: 'See it in Cancelled' }),
+        );
+        const cancelled = screen.getByRole('list', { name: 'Cancelled' });
+
+        expect(within(cancelled).getByText('Withdrawn')).toBeInTheDocument();
+        await user.click(
+            within(cancelled).getByRole('button', {
+                name: /Listing · Kivu Harvest Ltd/u,
+            }),
+        );
+        expect(
+            within(
+                screen.getByRole('dialog', { name: 'Order detail' }),
+            ).getByText('Units listed'),
+        ).toBeInTheDocument();
     });
 });

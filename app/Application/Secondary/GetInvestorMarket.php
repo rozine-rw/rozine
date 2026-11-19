@@ -24,7 +24,7 @@ final class GetInvestorMarket
         $viewer = $this->viewer->handle($userId, $contextRevision);
 
         return ['identity_context_revision' => $viewer['identity_context_revision'], 'verification' => $viewer['verification'],
-            'market' => $viewer['wallet'] === null ? ['open' => false, 'listings' => [], 'sellable' => [], 'trades' => []]
+            'market' => $viewer['wallet'] === null ? ['open' => false, 'listings' => [], 'sellable' => [], 'trades' => [], 'closed' => []]
                 : $this->board->board($userId, $viewer['identity_context_revision'])];
     }
 }

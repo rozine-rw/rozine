@@ -6,6 +6,7 @@ import { formatDateTime, formatRwf } from '@/lib/rozine/format';
 import { readErrorCode } from '@/lib/rozine/operation';
 import { cn } from '@/lib/utils';
 import type {
+    MarketClosedListing,
     MarketListing,
     MarketSellableLot,
     MarketTrade,
@@ -22,6 +23,9 @@ const FIELD =
 
 /** A purchase that has just settled, for the page to confirm. */
 export type SettledPurchase = { name: string; units: string; amount: Money };
+
+/** A listing the Investor has just withdrawn, for the page to confirm. */
+export type WithdrawnListing = { name: string; units: string };
 
 const money = (amount: number | string) => ({
     currency: 'RWF' as const,
@@ -104,6 +108,85 @@ function Refusal({ code }: { code: string | null }) {
 }
 
 /**
+ * Withdraw with a confirm step: the first press asks, the second sends; the page is told once the
+ * board has reloaded so it can say the listing was withdrawn (QA #663).
+ */
+function WithdrawControl({
+    action,
+    listing,
+    identityRevision,
+    onWithdrawn,
+    wide = false,
+}: {
+    action: RouteAction;
+    listing: MarketListing;
+    identityRevision: number;
+    onWithdrawn?: (withdrawn: WithdrawnListing) => void;
+    wide?: boolean;
+}) {
+    const { t } = useTranslation();
+    const command = useResaleCommand(identityRevision);
+    const [confirming, setConfirming] = useState(false);
+
+    if (!confirming) {
+        return (
+            <button
+                type="button"
+                className={cn(SECONDARY_BUTTON, wide && 'mt-3 w-full')}
+                onClick={(event) => {
+                    event.stopPropagation();
+                    setConfirming(true);
+                }}
+            >
+                {t('investor.market.resale.withdraw')}
+            </button>
+        );
+    }
+
+    return (
+        <div
+            className={cn('rounded-xl bg-rz-warning-tint p-3', wide && 'mt-3')}
+            onClick={(event) => event.stopPropagation()}
+        >
+            <p className="text-[12.5px] text-rz-ink">
+                {t('investor.market.resale.withdraw_confirm', {
+                    count: Number(listing.remaining_units),
+                    units: listing.remaining_units,
+                })}
+            </p>
+            <div className="mt-2.5 flex gap-2">
+                <button
+                    type="button"
+                    className={cn(SECONDARY_BUTTON, 'flex-1')}
+                    disabled={command.busy}
+                    onClick={() =>
+                        void command.send(action, {}, () =>
+                            onWithdrawn?.({
+                                name: listing.deal_name,
+                                units: listing.remaining_units,
+                            }),
+                        )
+                    }
+                >
+                    {command.busy
+                        ? t('investor.market.resale.working')
+                        : t('investor.market.resale.withdraw_yes')}
+                </button>
+                <button
+                    type="button"
+                    className={cn(SECONDARY_BUTTON, 'flex-1')}
+                    disabled={command.busy}
+                    onClick={() => setConfirming(false)}
+                >
+                    {t('investor.market.resale.withdraw_keep')}
+                </button>
+            </div>
+            <Refusal code={command.refusal} />
+        </div>
+    );
+}
+
+/**
  * A live listing: the deal, the units left and the price per unit, with its expiry. Someone
  * else's can be bought; the Investor's own reservation can be confirmed; their own listing can be
  * withdrawn.
@@ -115,6 +198,7 @@ export function ListingCard({
     onSelect,
     selected = false,
     onSettled,
+    onWithdrawn,
 }: {
     listing: MarketListing;
     identityRevision: number;
@@ -124,12 +208,19 @@ export function ListingCard({
     selected?: boolean;
     /** Told once a confirmed purchase has settled and the board reloaded. */
     onSettled?: (bought: SettledPurchase) => void;
+    /** Told once the Investor's own listing is withdrawn and the board reloaded. */
+    onWithdrawn?: (withdrawn: WithdrawnListing) => void;
 }) {
     const { t, locale } = useTranslation();
     const command = useResaleCommand(identityRevision);
     const total = money(
         Number(listing.remaining_units) * Number(listing.price.amount),
     );
+    /** Units another buyer holds in a live reservation; the Investor's own reservation is shown below. */
+    const heldByOthers =
+        listing.reservation === null
+            ? Number(listing.reserved_units ?? '0')
+            : 0;
     const { reserve, settle, withdraw } = listing.actions;
 
     return (
@@ -167,6 +258,20 @@ export function ListingCard({
                             price: formatRwf(listing.price),
                         })}
                     </p>
+                    {heldByOthers > 0 && (
+                        <p className="mt-0.5 text-[12px] text-rz-warning-text">
+                            {t('investor.market.resale.units_reserved', {
+                                available: String(
+                                    Math.max(
+                                        0,
+                                        Number(listing.remaining_units) -
+                                            heldByOthers,
+                                    ),
+                                ),
+                                reserved: String(heldByOthers),
+                            })}
+                        </p>
+                    )}
                 </div>
                 {listing.mine ? (
                     <span className="shrink-0 rounded-full bg-rz-accent-soft px-2 py-0.5 text-[11px] font-semibold text-rz-accent-text">
@@ -202,14 +307,12 @@ export function ListingCard({
                     </button>
                 )}
                 {withdraw !== null && (
-                    <button
-                        type="button"
-                        className={SECONDARY_BUTTON}
-                        disabled={command.busy}
-                        onClick={() => void command.send(withdraw, {})}
-                    >
-                        {t('investor.market.resale.withdraw')}
-                    </button>
+                    <WithdrawControl
+                        action={withdraw}
+                        listing={listing}
+                        identityRevision={identityRevision}
+                        onWithdrawn={onWithdrawn}
+                    />
                 )}
             </div>
             {listing.reservation !== null && settle !== null && (
@@ -326,13 +429,15 @@ export function BuySheet({
                         })}
                     </p>
                 )}
-                <p className="mt-3 text-[13px] text-rz-ink">
-                    {t('investor.market.resale.you_pay', {
-                        amount: formatRwf(
-                            money((count ?? 0) * Number(listing.price.amount)),
-                        ),
-                    })}
-                </p>
+                {valid && (
+                    <p className="mt-3 text-[13px] text-rz-ink">
+                        {t('investor.market.resale.you_pay', {
+                            amount: formatRwf(
+                                money(count * Number(listing.price.amount)),
+                            ),
+                        })}
+                    </p>
+                )}
                 <p className="mt-1 text-[11.5px] text-rz-secondary">
                     {t('investor.market.resale.reserve_note')}
                 </p>
@@ -372,12 +477,16 @@ export function SellSheet({
     const [price, setPrice] = useState(lot?.cap.amount ?? '');
     const count = wholeUnits(units);
     const perUnit = wholeUnits(price);
+    const tooMany =
+        lot !== null && count !== null && count > Number(lot.free_units);
+    const overCap =
+        lot !== null && perUnit !== null && perUnit > Number(lot.cap.amount);
     const valid =
         lot !== null &&
         count !== null &&
-        count <= Number(lot.free_units) &&
+        !tooMany &&
         perUnit !== null &&
-        perUnit <= Number(lot.cap.amount);
+        !overCap;
     const title = t('investor.market.resale.sell_title');
 
     return (
@@ -438,30 +547,52 @@ export function SellSheet({
                         value={units}
                         onChange={(event) => setUnits(event.target.value)}
                         placeholder={lot?.free_units}
+                        aria-invalid={tooMany || undefined}
                         className={FIELD}
                     />
                 </label>
+                {tooMany && lot !== null && (
+                    <p
+                        role="alert"
+                        className="mt-1.5 text-[12px] text-rz-danger-text"
+                    >
+                        {t('investor.market.resale.free_only', {
+                            count: Number(lot.free_units),
+                        })}
+                    </p>
+                )}
                 <label className="mt-3 block text-[12px] font-semibold text-rz-ink">
                     {t('investor.market.resale.price')}
                     <input
                         inputMode="numeric"
                         value={price}
                         onChange={(event) => setPrice(event.target.value)}
+                        aria-invalid={overCap || undefined}
                         className={FIELD}
                     />
                 </label>
                 {lot !== null && (
-                    <p className="mt-1.5 text-[11.5px] text-rz-secondary">
+                    <p
+                        role={overCap ? 'alert' : undefined}
+                        className={cn(
+                            'mt-1.5',
+                            overCap
+                                ? 'text-[12px] text-rz-danger-text'
+                                : 'text-[11.5px] text-rz-secondary',
+                        )}
+                    >
                         {t('investor.market.resale.cap', {
                             cap: formatRwf(lot.cap),
                         })}
                     </p>
                 )}
-                <p className="mt-3 text-[13px] text-rz-ink">
-                    {t('investor.market.resale.listing_total', {
-                        amount: formatRwf(money((count ?? 0) * (perUnit ?? 0))),
-                    })}
-                </p>
+                {valid && (
+                    <p className="mt-3 text-[13px] text-rz-ink">
+                        {t('investor.market.resale.listing_total', {
+                            amount: formatRwf(money(count * perUnit)),
+                        })}
+                    </p>
+                )}
                 <button
                     type="submit"
                     className={cn(PRIMARY_BUTTON, 'mt-4')}
@@ -557,14 +688,50 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 export function OrderDetail({
     order,
     identityRevision,
+    onWithdrawn,
 }: {
     order:
         | { type: 'listing'; listing: MarketListing }
-        | { type: 'trade'; trade: MarketTrade };
+        | { type: 'trade'; trade: MarketTrade }
+        | { type: 'closed'; listing: MarketClosedListing };
     identityRevision: number;
+    onWithdrawn?: (withdrawn: WithdrawnListing) => void;
 }) {
     const { t, locale } = useTranslation();
-    const command = useResaleCommand(identityRevision);
+
+    if (order.type === 'closed') {
+        const { listing } = order;
+
+        return (
+            <div>
+                <p className="text-[14px] font-semibold text-rz-ink">
+                    {listing.deal_name}
+                </p>
+                <dl className="mt-2">
+                    <DetailRow
+                        label={t('investor.market.order_detail.status')}
+                        value={t(closedStatus(listing))}
+                    />
+                    <DetailRow
+                        label={t('investor.market.order_detail.side')}
+                        value={t('investor.market.order_detail.side_sell')}
+                    />
+                    <DetailRow
+                        label={t('investor.market.order_detail.listed')}
+                        value={listing.listed_units}
+                    />
+                    <DetailRow
+                        label={t('investor.market.order_detail.price')}
+                        value={formatRwf(listing.price)}
+                    />
+                    <DetailRow
+                        label={t('investor.market.order_detail.ended')}
+                        value={formatDateTime(listing.ended_at, locale)}
+                    />
+                </dl>
+            </div>
+        );
+    }
 
     if (order.type === 'trade') {
         const { trade } = order;
@@ -672,16 +839,80 @@ export function OrderDetail({
                 />
             </dl>
             {withdraw !== null && (
-                <button
-                    type="button"
-                    className={cn(SECONDARY_BUTTON, 'mt-3 w-full')}
-                    disabled={command.busy}
-                    onClick={() => void command.send(withdraw, {})}
-                >
-                    {t('investor.market.resale.withdraw')}
-                </button>
+                <WithdrawControl
+                    action={withdraw}
+                    listing={listing}
+                    identityRevision={identityRevision}
+                    onWithdrawn={onWithdrawn}
+                    wide
+                />
             )}
-            <Refusal code={command.refusal} />
         </div>
+    );
+}
+
+/** The label key for why a listing ended unsold. */
+function closedStatus(
+    listing: MarketClosedListing,
+):
+    | 'investor.market.order_detail.status_expired'
+    | 'investor.market.order_detail.status_withdrawn'
+    | 'investor.market.order_detail.status_cancelled' {
+    if (listing.state === 'expired') {
+        return 'investor.market.order_detail.status_expired';
+    }
+
+    return listing.cancelled_by === 'seller'
+        ? 'investor.market.order_detail.status_withdrawn'
+        : 'investor.market.order_detail.status_cancelled';
+}
+
+/** One of the Investor's listings that ended unsold, under Orders → Cancelled. */
+export function ClosedRow({
+    listing,
+    onSelect,
+    selected = false,
+}: {
+    listing: MarketClosedListing;
+    onSelect: () => void;
+    selected?: boolean;
+}) {
+    const { t, locale } = useTranslation();
+
+    return (
+        <li>
+            <button
+                type="button"
+                aria-pressed={selected}
+                onClick={onSelect}
+                className={cn(
+                    'flex w-full items-start justify-between gap-3 border-b border-rz-hairline py-3 text-left',
+                    selected && 'bg-rz-accent-soft',
+                )}
+            >
+                <span className="min-w-0">
+                    <span className="block truncate text-[13.5px] font-semibold text-rz-ink">
+                        {t('investor.market.resale.closed_title', {
+                            name: listing.deal_name,
+                        })}
+                    </span>
+                    <span className="mt-0.5 block text-[12px] text-rz-secondary">
+                        {t('investor.market.resale.units_at', {
+                            units: listing.listed_units,
+                            count: Number(listing.listed_units),
+                            price: formatRwf(listing.price),
+                        })}
+                    </span>
+                </span>
+                <span className="shrink-0 text-right">
+                    <span className="block text-[12px] font-semibold text-rz-secondary">
+                        {t(closedStatus(listing))}
+                    </span>
+                    <span className="mt-0.5 block text-[11px] text-rz-secondary">
+                        {formatDateTime(listing.ended_at, locale)}
+                    </span>
+                </span>
+            </button>
+        </li>
     );
 }

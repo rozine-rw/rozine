@@ -62,7 +62,8 @@
                         },
                         "settle": null,
                         "withdraw": null
-                    }
+                    },
+                    "reserved_units": "0"
                 },
                 {
                     "listing_id": "01kc0000000000000000000002",
@@ -97,7 +98,8 @@
                             "method": "post"
                         },
                         "withdraw": null
-                    }
+                    },
+                    "reserved_units": "10"
                 },
                 {
                     "listing_id": "01kc0000000000000000000003",
@@ -120,7 +122,8 @@
                             "url": "/investor/market/listings/01kc0000000000000000000003/withdraw",
                             "method": "post"
                         }
-                    }
+                    },
+                    "reserved_units": "0"
                 }
             ],
             "sellable": [
@@ -156,6 +159,22 @@
                         "amount": "0"
                     },
                     "settled_at": "2026-11-15T10:00:00+00:00"
+                }
+            ],
+            "closed": [
+                {
+                    "listing_id": "01kc0000000000000000000009",
+                    "deal_name": "Kivu Harvest Ltd",
+                    "listed_units": "5",
+                    "remaining_units": "5",
+                    "price": {
+                        "currency": "RWF",
+                        "amount": "5000"
+                    },
+                    "listed_at": "2026-11-15T08:00:00+00:00",
+                    "state": "cancelled",
+                    "cancelled_by": "seller",
+                    "ended_at": "2026-11-15T09:30:00+00:00"
                 }
             ]
         },

@@ -5,12 +5,16 @@ import { LocalSheet, SheetClose } from '@/components/investor/local-sheet';
 import { FilterPill } from '@/components/investor/market/filter-pill';
 import {
     BuySheet,
+    ClosedRow,
     ListingCard,
     OrderDetail,
     SellSheet,
     TradeRow,
 } from '@/components/investor/market/resale';
-import type { SettledPurchase } from '@/components/investor/market/resale';
+import type {
+    SettledPurchase,
+    WithdrawnListing,
+} from '@/components/investor/market/resale';
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import { useWide } from '@/lib/investor/use-wide';
@@ -69,6 +73,10 @@ export default function InvestorMarket({
     /** The order whose detail is open in Orders: a listing or a settled trade, by id. */
     const [selected, setSelected] = useState<string | null>(null);
     const [settled, setSettled] = useState<SettledPurchase | null>(null);
+    const [withdrawn, setWithdrawn] = useState<WithdrawnListing | null>(null);
+    const closed = market.closed ?? [];
+    /** Listings that ended unsold stay under Cancelled (QA #663). */
+    const cancelled = orders === 'cancelled' ? closed : [];
     /** Every live listing is active; the board carries no performance or industry facts to narrow by. */
     const filtered =
         performance !== 'all' ||
@@ -93,6 +101,8 @@ export default function InvestorMarket({
         null;
     const selectedTrade =
         market.trades.find((trade) => trade.transfer_id === selected) ?? null;
+    const selectedClosed =
+        closed.find((listing) => listing.listing_id === selected) ?? null;
     const detail =
         view !== 'orders'
             ? null
@@ -100,14 +110,25 @@ export default function InvestorMarket({
               ? ({ type: 'listing', listing: selectedListing } as const)
               : selectedTrade !== null
                 ? ({ type: 'trade', trade: selectedTrade } as const)
-                : null;
+                : selectedClosed !== null
+                  ? ({ type: 'closed', listing: selectedClosed } as const)
+                  : null;
+    const onWithdrawn = (listing: WithdrawnListing) => {
+        setSelected(null);
+        setSettled(null);
+        setWithdrawn(listing);
+    };
     const card = (listing: MarketListing) => (
         <ListingCard
             key={listing.listing_id}
             listing={listing}
             identityRevision={identityRevision}
             onBuy={setBuying}
-            onSettled={setSettled}
+            onSettled={(bought) => {
+                setWithdrawn(null);
+                setSettled(bought);
+            }}
+            onWithdrawn={onWithdrawn}
             onSelect={
                 view === 'orders'
                     ? () => setSelected(listing.listing_id)
@@ -206,7 +227,7 @@ export default function InvestorMarket({
         </div>
     );
     const orderList =
-        ordered.length > 0 || filled.length > 0 ? (
+        ordered.length > 0 || filled.length > 0 || cancelled.length > 0 ? (
             <>
                 {ordered.length > 0 && (
                     <ul
@@ -235,11 +256,23 @@ export default function InvestorMarket({
                         ))}
                     </ul>
                 )}
+                {cancelled.length > 0 && (
+                    <ul aria-label={t('investor.market.orders.cancelled')}>
+                        {cancelled.map((listing) => (
+                            <ClosedRow
+                                key={listing.listing_id}
+                                listing={listing}
+                                onSelect={() => setSelected(listing.listing_id)}
+                                selected={selected === listing.listing_id}
+                            />
+                        ))}
+                    </ul>
+                )}
             </>
         ) : (
             noOrders
         );
-    const notice = settled !== null && (
+    const withdrawnNotice = withdrawn !== null && (
         <div
             role="status"
             className={cn(
@@ -248,27 +281,26 @@ export default function InvestorMarket({
             )}
         >
             <p className="text-[12.5px] text-rz-ink">
-                {t('investor.market.resale.bought', {
-                    count: Number(settled.units),
-                    name: settled.name,
-                    amount: formatRwf(settled.amount),
+                {t('investor.market.resale.withdrawn', {
+                    count: Number(withdrawn.units),
+                    name: withdrawn.name,
                 })}
             </p>
             <div className="mt-1.5 flex gap-4">
-                {links.portfolio !== null && (
-                    <Link
-                        href={{
-                            url: `${links.portfolio.url}?tab=secondary`,
-                            method: 'get',
-                        }}
-                        className="text-[12.5px] font-semibold text-rz-accent-app-text"
-                    >
-                        {t('investor.market.resale.see_portfolio')}
-                    </Link>
-                )}
                 <button
                     type="button"
-                    onClick={() => setSettled(null)}
+                    onClick={() => {
+                        setView('orders');
+                        setOrders('cancelled');
+                        setWithdrawn(null);
+                    }}
+                    className="text-[12.5px] font-semibold text-rz-accent-app-text"
+                >
+                    {t('investor.market.resale.see_cancelled')}
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setWithdrawn(null)}
                     className="text-[12.5px] font-semibold text-rz-secondary"
                 >
                     {t('investor.market.resale.dismiss')}
@@ -276,6 +308,45 @@ export default function InvestorMarket({
             </div>
         </div>
     );
+    const notice =
+        withdrawnNotice ||
+        (settled !== null && (
+            <div
+                role="status"
+                className={cn(
+                    'mt-3 rounded-xl border border-[rgba(29,158,117,.25)] bg-[rgba(29,158,117,.08)] p-3',
+                    wide ? 'mx-1' : 'mx-5',
+                )}
+            >
+                <p className="text-[12.5px] text-rz-ink">
+                    {t('investor.market.resale.bought', {
+                        count: Number(settled.units),
+                        name: settled.name,
+                        amount: formatRwf(settled.amount),
+                    })}
+                </p>
+                <div className="mt-1.5 flex gap-4">
+                    {links.portfolio !== null && (
+                        <Link
+                            href={{
+                                url: `${links.portfolio.url}?tab=secondary`,
+                                method: 'get',
+                            }}
+                            className="text-[12.5px] font-semibold text-rz-accent-app-text"
+                        >
+                            {t('investor.market.resale.see_portfolio')}
+                        </Link>
+                    )}
+                    <button
+                        type="button"
+                        onClick={() => setSettled(null)}
+                        className="text-[12.5px] font-semibold text-rz-secondary"
+                    >
+                        {t('investor.market.resale.dismiss')}
+                    </button>
+                </div>
+            </div>
+        ));
     const body =
         view === 'orders' ? (
             <>
@@ -427,6 +498,7 @@ export default function InvestorMarket({
                                         <OrderDetail
                                             order={detail}
                                             identityRevision={identityRevision}
+                                            onWithdrawn={onWithdrawn}
                                         />
                                     </div>
                                 ) : (
@@ -473,6 +545,7 @@ export default function InvestorMarket({
                                     <OrderDetail
                                         order={detail}
                                         identityRevision={identityRevision}
+                                        onWithdrawn={onWithdrawn}
                                     />
                                 </div>
                             </div>
