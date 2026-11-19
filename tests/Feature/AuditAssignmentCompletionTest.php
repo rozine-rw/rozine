@@ -14,6 +14,7 @@ use App\Models\AuditAssignment;
 use App\Models\AuditAssignmentVersion;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\AuditAssignmentFixture;
 use Tests\Support\AuditorFixture;
 use Tests\Support\AuditSealingFixture as Fixture;
@@ -55,7 +56,8 @@ it('still opens a sealed report from the partner portfolio after its engagement 
     AuditAssignmentFixture::request($fixture['audit'], 'routine');
     expect($fixture['assignment']->refresh()->status)->toBe('completed');
 
-    $this->actingAs($fixture['user'])->get(route('auditor.reports.show', ['report' => $fixture['report']->id]))->assertOk();
+    $this->actingAs($fixture['user'])->get(route('auditor.reports.show', ['report' => $fixture['report']->id]))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('audit.deadline', null)->etc());
 });
 
 it('resumes an engagement whose sealed report is not yet published', function (): void {

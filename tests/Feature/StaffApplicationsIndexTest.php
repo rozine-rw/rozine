@@ -12,6 +12,7 @@ use App\Models\BusinessApplicationSubmission;
 use App\Models\BusinessProfile;
 use App\Models\StaffAccount;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -119,6 +120,28 @@ it('shows a listed raise as approved with its release amount and decision trail,
                 && str_contains((string) $entries['report.publish']['reason'], 'REP-R04')
                 && $trail->pluck('at')->all() === $trail->pluck('at')->sortDesc()->values()->all();
         })->etc());
+
+});
+
+it('never dates a re-verification in the future, as a simulated review recorded at its window\'s end would read (QA #673)', function (): void {
+    $fixture = AuditSealingFixture::ready();
+    AuditSealingFixture::seal($fixture);
+    // The report's publication lies an hour ahead of the release, as the UAT simulation records it.
+    $this->travel(2)->hours();
+    AuditSealingFixture::publish($fixture);
+    $this->travel(-1)->hours();
+    $staff = $fixture['audit']['staff'];
+    app(BusinessCampaignStore::class)->release($staff->id, $fixture['application']->id, 0, 'Reviewed current evidence.', (string) Str::uuid());
+    $releasedAt = CarbonImmutable::parse((string) BusinessApplicationRelease::query()->sole()->payload['recorded_at'])->utc()->toIso8601String();
+
+    $this->actingAs($staff)->getJson(route('api.v1.staff.applications.index', ['tab' => 'approved', 'application' => $fixture['application']->id]))->assertOk()
+        ->assertJson(fn (AssertableJson $json): AssertableJson => $json->where('data.review.trail',
+            fn (Collection $trail): bool => $trail->keyBy('action.code')['report.publish']['at'] === $releasedAt)->etc());
+    // The Business's 360 lists the re-verification too.
+    $this->getJson(route('api.v1.staff.businesses.index', ['business' => $fixture['audit']['business']]))->assertOk()
+        ->assertJson(fn (AssertableJson $json): AssertableJson => $json->where('data.party.history', fn (Collection $history): bool => $history->contains(
+            fn (array $entry): bool => $entry['action']['code'] === 'report.publish' && str_starts_with($entry['action']['label'], 'Evidence re-verified')
+                && $entry['at'] === now('UTC')->toIso8601String()))->etc());
 });
 
 it('paginates submitted applications without exposing drafts and preserves filters and return position', function (): void {

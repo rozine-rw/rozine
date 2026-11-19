@@ -10,6 +10,8 @@ type ReadyQuote = Extract<ApplicationQuote, { status: 'ready' }>;
 
 /** The limit that sized the offer (REP-R05), the tightest first, from the engine's reason codes. */
 const SIZING_CODES = [
+    // Emitted only when it is the tightest limit of all.
+    'REPEAT_GROWTH_CAPPED',
     'EXPOSURE_CAPPED',
     'DSCR_SCALED',
     'REPEAT_MONTHLY_DSCR_SCALED',

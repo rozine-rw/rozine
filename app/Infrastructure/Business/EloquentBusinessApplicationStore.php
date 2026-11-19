@@ -13,6 +13,7 @@ use App\Application\Business\Contracts\BusinessApplicationStore;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Business\Contracts\BusinessCreditFactsStore;
 use App\Application\Business\Contracts\BusinessExposureStore;
+use App\Application\Business\Contracts\ServicingRecord;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Evidence\Contracts\StatementStore;
 use App\Application\Evidence\WithBusinessStatementVerification;
@@ -89,6 +90,7 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
         private StatementStore $statements,
         private PublishedApplicationReport $publishedReports,
         private ChangeFeed $changes,
+        private ServicingRecord $servicing,
     ) {}
 
     /**
@@ -139,7 +141,7 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
                 }
                 $window = $this->observationWindow($verification, $credit, now('UTC')->toImmutable());
                 $principal = $quote->payload['result']['capacity']['offer']['principal']['amount'];
-                $result = $this->calculate($application->draft['target'], $application->draft['term_months'], $verification, $credit,
+                $result = $this->calculate($business['id'], $application->draft['target'], $application->draft['term_months'], $verification, $credit,
                     $quote->payload['accepted_principal'], $window, $quote->payload['accepted_commitments']);
                 if (! $result['eligible'] || $this->json->encode($result) !== $this->json->encode($quote->payload['result'])
                     || $principal !== $reservation->principal) {
@@ -414,7 +416,7 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
                             $window = $this->observationWindow($verification, $credit, $now);
                             $calendar = $window['calendar'];
                             $commitments = $this->exposures->current($business['id']);
-                            $result = $this->calculate($draft['target'], $draft['term_months'], $verification, $credit, $acceptedPrincipal, $window, $commitments);
+                            $result = $this->calculate($business['id'], $draft['target'], $draft['term_months'], $verification, $credit, $acceptedPrincipal, $window, $commitments);
                             $prior = BusinessApplicationQuote::query()->where('business_application_id', $application->id)->orderByDesc('revision')->first();
                             $quote = new BusinessApplicationQuote;
                             $quote->id = (string) Str::ulid();
@@ -823,21 +825,28 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
      * @param  Verification|null  $verification
      * @param  CreditSnapshot|null  $credit
      * @param  Selection  $window
+     *                             A Business with a note repaid in full raises at most 1.5 times its last one (REP-R05); the key is
+     *                             left out otherwise, so a first raise's replay record is unchanged.
      * @param  list<array{id: string, principal: string}>  $commitments
      * @return array<string, mixed>
      */
-    private function calculate(string $requestedPrincipal, int $tenorMonths, ?array $verification, ?array $credit, ?string $acceptedPrincipal, array $window, array $commitments): array
+    private function calculate(string $businessId, string $requestedPrincipal, int $tenorMonths, ?array $verification, ?array $credit, ?string $acceptedPrincipal, array $window, array $commitments): array
     {
         if ($verification === null || ! $verification['current'] || ! $window['fresh']) {
             return ['eligible' => false, 'code' => 'UNDERWRITING_EVIDENCE_REQUIRED'];
         }
         $verified = $verification['payload'];
+        $inputs = ['requested_principal' => $requestedPrincipal, 'tenor_months' => $tenorMonths,
+            'accepted_principal' => $acceptedPrincipal, 'accepted_commitments' => $commitments, 'months' => $window['months'], ...$window['calendar'],
+            'recurring_owner_draw' => $verified['review']['recurring_owner_draw'],
+            'obligations' => [...$verified['review']['obligations'], ...($credit['facts']['obligations'] ?? [])],
+            'history' => $credit['facts']['history'] ?? null, 'restriction_active' => $credit['facts']['restriction_active'] ?? false];
+        $repaid = $this->servicing->forBusiness($businessId)['repaid'];
+        if ($repaid !== []) {
+            $inputs['last_repaid_principal'] = $repaid[array_key_last($repaid)]['principal'];
+        }
         try {
-            return $this->underwriting->evaluate(['requested_principal' => $requestedPrincipal, 'tenor_months' => $tenorMonths,
-                'accepted_principal' => $acceptedPrincipal, 'accepted_commitments' => $commitments, 'months' => $window['months'], ...$window['calendar'],
-                'recurring_owner_draw' => $verified['review']['recurring_owner_draw'],
-                'obligations' => [...$verified['review']['obligations'], ...($credit['facts']['obligations'] ?? [])],
-                'history' => $credit['facts']['history'] ?? null, 'restriction_active' => $credit['facts']['restriction_active'] ?? false]);
+            return $this->underwriting->evaluate($inputs);
         } catch (UnderwritingViolation $failure) {
             throw new CommandRejection($failure->reasonCode, 422, fieldErrors: [
                 $acceptedPrincipal === null ? 'target' : 'accepted_principal' => ['Choose a permitted principal on the RWF 5,000 note grid.'],

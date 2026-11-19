@@ -1379,7 +1379,8 @@ export type AuditProcedureProps = AuditorPageContract & {
         distance_km: string;
         /** The audited month for a monthly report. */
         month: string | null;
-        deadline: Deadline;
+        /** Null once the engagement is no longer running, such as a completed one opened read-only. */
+        deadline: Deadline | null;
         revision: number;
         reassigned_from: string | null;
         /** Set on a linked amendment: the published report it amends, which stays unchanged. */

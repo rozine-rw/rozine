@@ -1523,6 +1523,8 @@ export type BusinessWalletProps = BusinessServicingPageContract & {
 export type CapacityLimit = { value: Money; binding: boolean } & (
     | { key: 'cash_flow' }
     | { key: 'exposure'; limit: Money; committed: Money }
+    /** A repeat raise grows to at most 1.5 times the last note repaid in full (REP-R05). */
+    | { key: 'repeat_growth'; last: Money }
     | { key: 'policy_max' }
 );
 

@@ -870,6 +870,8 @@ const rw: Catalog = {
         'Yagenwe ku buryo amafaranga yinjira yishyura buri gice inshuro 1.5 (wasabye {requested}).',
     'business.apply.offer.sized.REPEAT_MONTHLY_DSCR_SCALED':
         'Yagenwe ku buryo amafaranga ya buri kwezi yishyura ibyo kwezi (wasabye {requested}).',
+    'business.apply.offer.sized.REPEAT_GROWTH_CAPPED':
+        'Ntirenga inshuro 1.5 z’inyandiko wishyuye yose ubushize (wasabye {requested}).',
     'business.apply.offer.sized.PRINCIPAL_MAX_CAPPED':
         'Ntirenga RWF 100M kuri buri nyandiko (wasabye {requested}).',
     'business.apply.submitted.timeline': 'Aho ubusabe bugeze',
@@ -4247,6 +4249,11 @@ const rw: Catalog = {
         '{limit} (35% by’ibyinjira by’umwaka) ukuyemo {committed} usanzwe ufitiye abandi',
     'business.rating.limit.exposure_lift':
         'Ongera ibyinjira, cyangwa wishyure ibyo ufitiye abandi',
+    'business.rating.limit.repeat_growth': 'Ukwiyongera ku nyandiko iheruka',
+    'business.rating.limit.repeat_growth_detail':
+        'Inshuro 1.5 z’inyandiko ya {last} wishyuye yose ubushize',
+    'business.rating.limit.repeat_growth_lift':
+        'Ishyura iyi yose kugira ngo ikurikira ibe nini',
     'business.rating.limit.policy_max': 'Igipimo ntarengwa',
     'business.rating.limit.policy_max_detail':
         'Igipimo ntarengwa cy’ubusabe bumwe',

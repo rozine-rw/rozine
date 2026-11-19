@@ -63,11 +63,22 @@ function repeatRaiseSizing(array $current): array
 it('deducts a repeat raise\'s earlier funding once, since the newer quote already counted it', function () use ($money): void {
     $listed = repeatRaiseSizing([['id' => 'first', 'principal' => '6000000']]);
     $funded = repeatRaiseSizing([['id' => 'first', 'principal' => '6000000'], ['id' => 'second', 'principal' => '3000000']]);
-    // A quoted commitment released since is not given back.
+    // A quoted commitment released since, such as a note repaid in full, is no longer owed (QA #672).
     $released = repeatRaiseSizing([['id' => 'second', 'principal' => '3000000']]);
 
     expect($listed['limits'][1]['binding'])->toBeTrue()->and($listed['approved'])->toBe($money('14000000'))
         ->and($listed['headroom'])->toBe($money('14000000'))
         ->and($funded['headroom'])->toBe($money('11000000'))
-        ->and($released['headroom'])->toBe($money('11000000'));
+        ->and($released['limits'][1])->toBe(['key' => 'exposure', 'value' => $money('20000000'), 'binding' => true, 'limit' => $money('20000000'), 'committed' => $money('0')])
+        ->and($released['approved'])->toBe($money('20000000'))->and($released['headroom'])->toBe($money('17000000'));
+});
+
+it('names 1.5 times the last repaid note as a limit, and sizes to it when it is the lowest (REP-R05)', function () use ($ratio, $money): void {
+    $sizing = (new BusinessScoreView(new LoanCapacity))->sizing(['cfads' => $ratio('10000000'), 'exposure_limit' => $ratio('20000000'),
+        'committed_exposure' => $ratio('0'), 'remaining_room' => $ratio('20000000'), 'repeat_projections' => []],
+        ['percent' => '13.0', 'fraction' => $ratio('13', '100')], $ratio('50000000'), 6, [], [], '6000000');
+
+    expect($sizing['limits'][2])->toBe(['key' => 'repeat_growth', 'value' => $money('9000000'), 'binding' => true, 'last' => $money('6000000')])
+        ->and(array_column($sizing['limits'], 'binding'))->toBe([false, false, true, false])
+        ->and($sizing['approved'])->toBe($money('9000000'))->and($sizing['headroom'])->toBe($money('9000000'));
 });

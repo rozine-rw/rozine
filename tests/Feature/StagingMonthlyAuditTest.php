@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Schedule;
 use Tests\Support\AuditAssignmentFixture as Fixture;
+use Tests\Support\AuditSealingFixture;
 
 /*
  * The staging demo's monthly audit: on UAT with the money simulation on, a simulated Business's
@@ -32,7 +33,7 @@ function asStagingDemo(string ...$businesses): void
 /**
  * Runs the staging command, returning its exit code and output.
  *
- * @param  array<string, string>  $arguments
+ * @param  array<string, string|bool>  $arguments
  * @return array{0: int, 1: string}
  */
 function openDemoAudit(array $arguments = []): array
@@ -125,4 +126,33 @@ it('opens each month once, so the scheduler can retry it until an open audit fin
         ->and($events->first()->filtersPass(app()))->toBeTrue();
     config(['app.uat_money_simulation' => false]);
     expect($events->first()->filtersPass(app()))->toBeFalse();
+});
+
+it('opens a named Business the simulation does not name only when asked to, still only on UAT', function (): void {
+    $fixture = Fixture::make(1);
+    asStagingDemo('01m6dz3t0wemrqac36j094k19b');
+
+    [$code, $output] = openDemoAudit(['business' => $fixture['business'], '--unsimulated' => true]);
+    expect($code)->toBe(0)->and($output)->toContain('monthly audit for 2026-11 opened')
+        ->and(AuditAssignment::query()->where('business_id', $fixture['business'])->sole()->state['period'] ?? null)->toBe('2026-11');
+
+    config(['app.uat_money_simulation' => false]);
+    [$code, $output] = openDemoAudit(['business' => $fixture['business'], '--unsimulated' => true]);
+    expect($code)->toBe(1)->and($output)->toContain('UAT_SIMULATION_OFF');
+});
+
+it('opens a second demo month for the Business whose flash audit published last, once, on UAT only', function (): void {
+    $sealed = AuditSealingFixture::ready();
+    AuditSealingFixture::seal($sealed);
+    AuditSealingFixture::publish($sealed);
+    $business = $sealed['audit']['business'];
+    $migration = require database_path('migrations/2026_11_17_190000_open_uat_second_demo_monthly_audit.php');
+
+    $migration->up();
+    expect(AuditAssignment::query()->where('business_id', $business)->get()->filter(fn (AuditAssignment $record): bool => ($record->state['period'] ?? null) === '2026-11'))->toHaveCount(0);
+
+    asStagingDemo('01m6dz3t0wemrqac36j094k19b');
+    $migration->up();
+    $migration->up();
+    expect(AuditAssignment::query()->where('business_id', $business)->get()->filter(fn (AuditAssignment $record): bool => ($record->state['period'] ?? null) === '2026-11'))->toHaveCount(1);
 });

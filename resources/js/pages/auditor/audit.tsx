@@ -300,7 +300,7 @@ function AuditSheet(props: AuditProcedureProps) {
                 district={audit.district}
                 distanceKm={audit.distance_km}
                 serverTime={props.server_time}
-                dueAt={audit.deadline.due_at}
+                dueAt={audit.deadline?.due_at ?? null}
                 steps={steps}
                 clock={!terminal}
             />

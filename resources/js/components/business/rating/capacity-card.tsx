@@ -34,6 +34,10 @@ export function CapacityCard({
                     limit: formatRwf(limit.limit),
                     committed: formatRwf(limit.committed),
                 });
+            case 'repeat_growth':
+                return t('business.rating.limit.repeat_growth_detail', {
+                    last: formatRwf(limit.last),
+                });
             default:
                 return t('business.rating.limit.policy_max_detail');
         }
