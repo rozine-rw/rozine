@@ -49,9 +49,10 @@ final class GetAuditProcedureSources
         $monthly = $current && $file['transcription'] !== null
             ? $this->monthly->project($period, $verification['payload']['observations'], $file['transcription']['payload']['statements']) : null;
         // Staging demo only (UAT money simulation): a monthly audit opened for the month still running
-        // has no verified statement month yet, so it reads the latest verified month before it.
+        // (for a simulated Business, or by staging:open-monthly-audit for any) has no verified statement
+        // month yet, so it reads the latest verified month before it.
         if ($monthly === null && $current && $file['transcription'] !== null && $period !== null && $kind === 'monthly'
-            && $this->simulation->covers($assignment['business_id'])) {
+            && $this->simulation->coversAudit($assignment['business_id'], $assignment)) {
             $earlier = array_filter(array_column($verification['payload']['observations'], 'month'), fn (string $month): bool => $month < $period);
             $latest = $earlier === [] ? null : max($earlier);
             $projected = $latest === null ? null : $this->monthly->project($latest, $verification['payload']['observations'], $file['transcription']['payload']['statements']);

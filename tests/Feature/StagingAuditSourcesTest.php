@@ -136,6 +136,38 @@ it('reads the latest verified month for a simulated Business\'s monthly audit of
     expect($sources($running)['monthly'])->toBeNull();
 });
 
+it('reads the latest verified month for a monthly audit staging opened for any Business, on UAT only', function (): void {
+    $fixture = SealingFixture::ready(kind: 'monthly');
+    $user = $fixture['user'];
+    $assignment = app(WithAcceptedAuditAssignment::class)->handle($user->id, 1, $fixture['assignment']->id, fn (array $accepted): array => $accepted);
+    $verified = app(GetAuditProcedureSources::class)->handle($user->id, 1, $assignment, 'monthly', $assignment['period'] ?? null);
+    // staging:open-monthly-audit opens the month the audit is dispatched in; the scheduler never does.
+    $running = CarbonImmutable::parse($assignment['original_dispatch_at'] ?? '')->setTimezone('Africa/Kigali')->format('Y-m');
+    $opened = [...$assignment, 'period' => $running];
+    $sources = fn (): array => app(GetAuditProcedureSources::class)->handle($user->id, 1, $opened, 'monthly', $running);
+
+    asStagingAuditDemo('01m6dz3t0wemrqac36j094k19b');
+    expect($sources()['monthly'])->toBe([...$verified['monthly'] ?? [], 'period' => $running])
+        ->and(app(GetAuditProcedureSources::class)->handle($user->id, 1, $assignment, 'monthly', $running)['monthly'])->toBeNull();
+
+    config(['app.uat_money_simulation' => false]);
+    expect($sources()['monthly'])->toBeNull();
+});
+
+it('records the capture for a monthly audit staging opened for a Business the simulation does not name', function (): void {
+    $fixture = Fixture::accepted();
+    $unopened = Fixture::accepted();
+    $state = $fixture['assignment']->state;
+    $running = CarbonImmutable::parse($state['original_dispatch_at'])->setTimezone('Africa/Kigali')->format('Y-m');
+    $fixture['assignment']->forceFill(['state' => [...$state, 'period' => $running]])->saveQuietly();
+    asStagingAuditDemo('01m6dz3t0wemrqac36j094k19b');
+
+    [$code, $output] = recordDemoAuditSources();
+
+    expect($code)->toBe(0)->and($output)->toContain($fixture['assignment']->id)->not->toContain($unopened['assignment']->id);
+    $this->assertDatabaseCount('audit_source_snapshots', 1);
+});
+
 it('reports an assignment that cannot take the capture and carries on with the others', function (): void {
     $broken = Fixture::accepted();
     $fixture = Fixture::accepted();

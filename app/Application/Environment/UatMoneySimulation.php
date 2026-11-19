@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Environment;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Config\Repository;
 
 /**
@@ -32,5 +33,25 @@ final readonly class UatMoneySimulation
 
         return $this->active() && is_array($named)
             && in_array(strtolower($businessId), array_map(fn (mixed $id): string => strtolower(trim((string) $id)), $named), true);
+    }
+
+    /**
+     * Whether a demo audit's synthetic capture and statement month apply: a simulated Business's audit,
+     * or a monthly audit `staging:open-monthly-audit` opened, even for a Business the simulation does not
+     * name (an audit moves no money). Only that command opens the month an audit was dispatched in; the
+     * scheduler always audits the month before.
+     *
+     * @param  array{original_dispatch_at?: string, period?: string}  $engagement
+     */
+    public function coversAudit(string $businessId, array $engagement): bool
+    {
+        if ($this->covers($businessId)) {
+            return true;
+        }
+        if (! $this->active() || ! isset($engagement['period'], $engagement['original_dispatch_at'])) {
+            return false;
+        }
+
+        return $engagement['period'] >= CarbonImmutable::parse($engagement['original_dispatch_at'])->setTimezone('Africa/Kigali')->format('Y-m');
     }
 }
