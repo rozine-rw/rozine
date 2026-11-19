@@ -4437,9 +4437,8 @@ const rw: Catalog = {
     'business.servicing.repay.recent': 'Ibyishyuwe vuba',
     'business.servicing.repay.row.due':
         '#{index} · bigomba kwishyurwa ku wa {date}',
-    'business.servicing.repay.row.paid': '#{index} · byishyuwe ku wa {date}',
     'business.servicing.repay.row.paid_due':
-        '#{index} · igihe {due} · byishyuwe {date}',
+        '#{index} · bigomba kwishyurwa ku wa {due} · byishyuwe ku wa {date}',
     'business.servicing.repay.early': "Mbere y'igihe",
     'business.servicing.repay.status.paid': 'Byishyuwe',
     'business.servicing.repay.status.processing': 'Biri gutunganywa',

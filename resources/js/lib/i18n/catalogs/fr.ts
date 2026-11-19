@@ -4455,9 +4455,8 @@ const fr: Catalog = {
     'business.servicing.repay.receipt_done': 'Terminé',
     'business.servicing.repay.recent': 'Remboursements récents',
     'business.servicing.repay.row.due': 'n° {index} · échéance le {date}',
-    'business.servicing.repay.row.paid': 'n° {index} · payé le {date}',
     'business.servicing.repay.row.paid_due':
-        '#{index} · échéance {due} · payé le {date}',
+        'n° {index} · échéance le {due} · payé le {date}',
     'business.servicing.repay.early': 'En avance',
     'business.servicing.repay.status.paid': 'Payé',
     'business.servicing.repay.status.processing': 'En traitement',
