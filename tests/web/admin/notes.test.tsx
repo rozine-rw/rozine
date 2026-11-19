@@ -117,6 +117,14 @@ describe('Admin Notes', () => {
         );
     });
 
+    it('wraps a long reference and sector line instead of cutting it off (QA #705)', () => {
+        render(<AdminNotes {...props()} />);
+
+        const line = screen.getAllByText('NTE-00AAAA · Agriculture')[0];
+        expect(line).not.toHaveClass('truncate');
+        expect(line).toHaveClass('[overflow-wrap:anywhere]');
+    });
+
     it("sorts by the design's orders and drops the sort for newest first", () => {
         render(<AdminNotes {...props({ sort: 'funded' })} />);
 
