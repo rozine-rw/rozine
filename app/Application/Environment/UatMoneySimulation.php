@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Environment;
 
 use Carbon\CarbonImmutable;
+use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Contracts\Config\Repository;
 
 /**
@@ -38,20 +39,25 @@ final readonly class UatMoneySimulation
     /**
      * Whether a demo audit's synthetic capture and statement month apply: a simulated Business's audit,
      * or a monthly audit `staging:open-monthly-audit` opened, even for a Business the simulation does not
-     * name (an audit moves no money). Only that command opens the month an audit was dispatched in; the
-     * scheduler always audits the month before.
+     * name (an audit moves no money). Only that command opens a routine audit for the very month it was
+     * dispatched in; the scheduler always audits the month before. An unreadable dispatch time is not one.
      *
-     * @param  array{original_dispatch_at?: string, period?: string}  $engagement
+     * @param  array{kind?: string, original_dispatch_at?: string, period?: string}  $engagement
      */
     public function coversAudit(string $businessId, array $engagement): bool
     {
         if ($this->covers($businessId)) {
             return true;
         }
-        if (! $this->active() || ! isset($engagement['period'], $engagement['original_dispatch_at'])) {
+        if (! $this->active() || ($engagement['kind'] ?? null) !== 'routine' || ! isset($engagement['period'], $engagement['original_dispatch_at'])) {
+            return false;
+        }
+        try {
+            $dispatched = CarbonImmutable::parse($engagement['original_dispatch_at'])->setTimezone('Africa/Kigali')->format('Y-m');
+        } catch (InvalidFormatException) {
             return false;
         }
 
-        return $engagement['period'] >= CarbonImmutable::parse($engagement['original_dispatch_at'])->setTimezone('Africa/Kigali')->format('Y-m');
+        return $engagement['period'] === $dispatched;
     }
 }
