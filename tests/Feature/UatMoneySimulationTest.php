@@ -464,6 +464,60 @@ it('shows a resale on both sides: the buyer\'s units in Portfolio and both walle
         ->assertInertia(fn (Assert $page): Assert => $page->where('holdings.0.invested.amount', (string) intdiv((int) $holding->principal * ($holding->units - 2), $holding->units))->etc());
 });
 
+it('shows an instalment paid early before a resale as the seller\'s on the bought lot, and a repaid note as repaid with nothing to sell (QA #663)', function (): void {
+    $buyer = InvestorWalletFixture::funded('2000000')['user'];
+    $note = simulatedIssuedNote('20000000');
+    $schedule = app(RetainedNoteSchedules::class)->find($note['campaign']);
+    $holding = $schedule->holdings[0];
+    $seller = User::query()->where('party_id', $holding->partyId)->sole();
+    $command = fn (array $input): array => ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, ...$input];
+    $pay = fn (int $offset) => $this->actingAs($note['payer'])->postJson(route('business.repayments.pay', $note['business']),
+        ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, 'note_id' => $note['campaign'], 'option' => 'next_instalment',
+            'expected_servicing_revision' => $offset + 1, 'quoted_total' => ['currency' => 'RWF', 'amount' => $schedule->instalments[$offset]->gross]])->assertOk();
+    // The first instalment is paid early, before its due date, and only then are units resold.
+    $pay(0);
+    $cap = null;
+    $this->actingAs($seller)->get(route('investor.market'))->assertInertia(function (Assert $page) use (&$cap): Assert {
+        $cap = $page->toArray()['props']['market']['sellable'][0]['cap']['amount'];
+
+        return $page;
+    });
+    $listed = $this->actingAs($seller)->postJson(route('investor.market_list'), $command(['lot_id' => $holding->holdingId, 'units' => '2', 'price' => (string) intdiv((int) $cap, 2)]))
+        ->assertOk()->json('data.listing.listing_id');
+    $reservation = $this->actingAs($buyer)->postJson(route('investor.market_reserve', $listed), $command(['units' => '2']))->assertOk()->json('data.reservation.reservation_id');
+    $this->actingAs($buyer)->postJson(route('investor.market_settle', $listed), $command(['reservation_id' => $reservation]))->assertOk();
+    $transfer = SecondaryTransfer::query()->where('reservation_id', $reservation)->sole();
+    // Off UAT, published audit seals verify against the test database, so the pages read there.
+    $offUat = function (): void {
+        app()->forgetInstance(EnvironmentIsolation::class);
+        config(['app.uat_money_simulation' => false]);
+    };
+
+    $offUat();
+    $this->actingAs($buyer)->get(route('investor.lots.show', $transfer->id))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('lot.schedule.0.status', 'before_purchase')->where('lot.schedule.1.status', 'upcoming')
+            ->where('lot.next_payment.due_on', fn (string $due): bool => str_starts_with($due, $schedule->instalments[1]->dueDate))
+            ->where('lot.payments_made', 0)->where('lot.payments_total', count($schedule->instalments))->where('lot.repaid', false)->etc());
+    // The Business counts who holds its notes now, the buyer included, as its raise page does.
+    $this->actingAs($note['payer'])->get(route('business.show', $note['business']))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('capital.investors', 3)->etc());
+
+    asUatProfile($note['business']);
+    foreach (array_keys($schedule->instalments) as $offset) {
+        if ($offset > 0) {
+            $pay($offset);
+        }
+    }
+    $offUat();
+    $this->actingAs($buyer)->get(route('investor.lots.show', $transfer->id))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('lot.repaid', true)->where('lot.next_payment', null)
+            ->where('lot.payments_made', count($schedule->instalments) - 1)->etc());
+    // A repaid note has nothing left to sell, for the original holder or the buyer, while the Market stays open.
+    asUatProfile($note['business']);
+    $this->actingAs($seller)->get(route('investor.market'))->assertInertia(fn (Assert $page): Assert => $page->where('market.open', true)->where('market.sellable', [])->etc());
+    $this->actingAs($buyer)->get(route('investor.market'))->assertInertia(fn (Assert $page): Assert => $page->where('market.open', true)->where('market.sellable', [])->etc());
+});
+
 it('reads the Market closed, offering nothing, while resale is off', function (): void {
     $investor = InvestorWalletFixture::ready()['user'];
 
