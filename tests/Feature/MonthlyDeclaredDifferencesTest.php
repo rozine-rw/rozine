@@ -77,7 +77,8 @@ it('compares verified costs and drawings with the declaration, explains every di
     expect($bar[0]['link']['url'] ?? null)->toBe(route('api.v1.auditor.reports.show', ['report' => $report->id, 'step' => $bar[0]['key']], false))
         ->and(array_column(array_filter($bar, fn (array $step): bool => $step['state'] !== 'done'), 'link'))->each->toBeNull();
     $this->actingAs($user)->getJson(route('api.v1.auditor.reports.show', ['report' => $report->id, 'step' => 'seal']))->assertOk()
-        ->assertJsonFragment(['label' => 'Costs', 'value' => 'Declared RWF 785,000, verified RWF 780,000 · Personal spending from the business RWF 2,000 · Entry error RWF 5,000', 'tone' => 'flag'])
+        ->assertJsonFragment(['label' => 'Costs', 'value' => 'Declared RWF 785,000, verified RWF 780,000', 'tone' => 'flag'])
+        ->assertJsonFragment(['label' => 'Explained in step 9', 'value' => 'Personal spending from the business RWF 2,000 · Entry error RWF 5,000', 'tone' => 'neutral'])
         ->assertJsonFragment(['label' => 'Owner drawings', 'value' => 'Declared RWF 2,000, verified RWF 0', 'tone' => 'flag'])
         ->assertJsonFragment(['label' => 'Cash balance', 'tone' => 'ok']);
 
