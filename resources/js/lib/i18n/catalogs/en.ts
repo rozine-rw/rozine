@@ -2499,6 +2499,7 @@ const en = {
     'admin.review.yield_value': '{rate}% flat',
     'admin.review.capacity_title': 'Capacity used by this raise',
     'admin.review.capacity_approved': 'Approved capacity {amount}',
+    'admin.review.capacity_other': '{amount} other loans',
     'admin.review.capacity_existing': '{count} active notes · {amount} out',
     'admin.review.factors_title': 'Rating breakdown',
     'admin.review.factors_caption': 'From the underwriting engine · read-only',
@@ -4088,6 +4089,8 @@ const en = {
     'business.rating.limit.exposure': 'Exposure limit',
     'business.rating.limit.exposure_detail':
         '{limit} (35% of a year’s revenue) less {committed} you already owe',
+    'business.rating.limit.exposure_detail_other':
+        '{limit} (35% of a year’s revenue) less {committed} you already owe, {other} of it other loans on your verified statements',
     'business.rating.limit.exposure_lift':
         'Grow your revenue, or repay what you owe',
     'business.rating.limit.repeat_growth': 'Growth on your last note',

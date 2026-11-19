@@ -2638,6 +2638,7 @@ const fr: Catalog = {
     'admin.review.yield_value': '{rate} % fixe',
     'admin.review.capacity_title': 'Capacité utilisée par cette levée',
     'admin.review.capacity_approved': 'Capacité approuvée {amount}',
+    'admin.review.capacity_other': '{amount} d’autres prêts',
     'admin.review.capacity_existing':
         '{count} titres actifs · {amount} en cours',
     'admin.review.factors_title': 'Détail de la notation',
@@ -4265,6 +4266,8 @@ const fr: Catalog = {
     'business.rating.limit.exposure': 'Limite d’exposition',
     'business.rating.limit.exposure_detail':
         '{limit} (35 % du chiffre d’affaires annuel) moins {committed} déjà dus',
+    'business.rating.limit.exposure_detail_other':
+        '{limit} (35 % du chiffre d’affaires annuel) moins {committed} déjà dus, dont {other} d’autres prêts sur vos relevés vérifiés',
     'business.rating.limit.exposure_lift':
         'Augmentez votre chiffre d’affaires, ou remboursez ce que vous devez',
     'business.rating.limit.repeat_growth': 'Croissance sur votre dernière note',

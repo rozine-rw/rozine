@@ -254,6 +254,10 @@
                 "outstanding": {
                     "currency": "RWF",
                     "amount": "79300000"
+                },
+                "other_debts": {
+                    "currency": "RWF",
+                    "amount": "0"
                 }
             },
             "factors": [

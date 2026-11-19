@@ -24,7 +24,8 @@ it('sizes capacity on the engine offer at the lowest limit, less commitments acc
 
     expect($sizing)->toBe(['cash_per_month' => $money('1000000'), 'target_cover' => '1.50', 'term_months' => 6, 'rate_percent' => '13.0',
         'limits' => [['key' => 'cash_flow', 'value' => $money('3539823'), 'binding' => true],
-            ['key' => 'exposure', 'value' => $money('8000000'), 'binding' => false, 'limit' => $money('10000000'), 'committed' => $money('2000000')],
+            ['key' => 'exposure', 'value' => $money('8000000'), 'binding' => false, 'limit' => $money('10000000'), 'committed' => $money('2000000'),
+                'other_debts' => $money('2000000')],
             ['key' => 'policy_max', 'value' => $money('100000000'), 'binding' => false]],
         'approved' => $money('3535000'), 'headroom' => $money('2535000')]);
 });
@@ -69,7 +70,7 @@ it('deducts a repeat raise\'s earlier funding once, since the newer quote alread
     expect($listed['limits'][1]['binding'])->toBeTrue()->and($listed['approved'])->toBe($money('14000000'))
         ->and($listed['headroom'])->toBe($money('14000000'))
         ->and($funded['headroom'])->toBe($money('11000000'))
-        ->and($released['limits'][1])->toBe(['key' => 'exposure', 'value' => $money('20000000'), 'binding' => true, 'limit' => $money('20000000'), 'committed' => $money('0')])
+        ->and($released['limits'][1])->toBe(['key' => 'exposure', 'value' => $money('20000000'), 'binding' => true, 'limit' => $money('20000000'), 'committed' => $money('0'), 'other_debts' => $money('0')])
         ->and($released['approved'])->toBe($money('20000000'))->and($released['headroom'])->toBe($money('17000000'));
 });
 
@@ -81,4 +82,13 @@ it('names 1.5 times the last repaid note as a limit, and sizes to it when it is 
     expect($sizing['limits'][2])->toBe(['key' => 'repeat_growth', 'value' => $money('9000000'), 'binding' => true, 'last' => $money('6000000')])
         ->and(array_column($sizing['limits'], 'binding'))->toBe([false, false, true, false])
         ->and($sizing['approved'])->toBe($money('9000000'))->and($sizing['headroom'])->toBe($money('9000000'));
+});
+
+it('tells other loans on the verified evidence apart from a repaid note, which is no longer owed (QA #672)', function () use ($ratio, $money): void {
+    // The quote counted a RWF 6M note and RWF 3M of other loans; the note has since been repaid in full.
+    $sizing = (new BusinessScoreView(new LoanCapacity))->sizing(['cfads' => $ratio('10000000'), 'exposure_limit' => $ratio('30275000'),
+        'committed_exposure' => $ratio('9000000'), 'remaining_room' => $ratio('21275000'), 'repeat_projections' => []],
+        ['percent' => '13.0', 'fraction' => $ratio('13', '100')], $ratio('50000000'), 6, [['id' => 'repaid', 'principal' => '6000000']], []);
+
+    expect($sizing['limits'][1])->toMatchArray(['committed' => $money('3000000'), 'other_debts' => $money('3000000'), 'value' => $money('27275000')]);
 });
