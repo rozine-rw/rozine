@@ -37,7 +37,7 @@ class StaffLedgerResource extends JsonResource
         'withdrawal_hold' => 'withdrawal', 'withdrawal_payout' => 'withdrawal', 'withdrawal_return' => 'withdrawal',
         'business_withdrawal_hold' => 'withdrawal', 'business_withdrawal_payout' => 'withdrawal', 'business_withdrawal_return' => 'withdrawal',
         'primary_hold' => 'investment', 'primary_commit' => 'investment', 'primary_release' => 'investment', 'primary_refund' => 'investment',
-        'primary_issue' => 'disbursement', 'disbursement_platform_fee' => 'platform_fee', 'business_repayment_debit' => 'repayment',
+        'primary_issue' => 'disbursement', 'disbursement_payout' => 'disbursement', 'disbursement_platform_fee' => 'platform_fee', 'business_repayment_debit' => 'repayment',
         'servicing_payout' => 'distribution',
         'secondary_hold' => 'secondary', 'secondary_release' => 'secondary', 'secondary_purchase' => 'secondary', 'secondary_sale' => 'secondary',
     ];

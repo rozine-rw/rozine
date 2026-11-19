@@ -62,6 +62,7 @@ use App\Application\Business\Contracts\VisitReadyTicks;
 use App\Application\Disbursement\Contracts\DisbursedCampaigns;
 use App\Application\Disbursement\Contracts\DisbursementClosingEvidence;
 use App\Application\Disbursement\Contracts\DisbursementFeeFacts;
+use App\Application\Disbursement\Contracts\DisbursementPayoutLedger;
 use App\Application\Disbursement\Contracts\DisbursementStore;
 use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\Contracts\PayoutDestinations;
@@ -276,6 +277,7 @@ use App\Infrastructure\Wallet\EloquentBusinessPayoutAccounts;
 use App\Infrastructure\Wallet\EloquentBusinessPayoutDestinations;
 use App\Infrastructure\Wallet\EloquentBusinessWalletStore;
 use App\Infrastructure\Wallet\EloquentBusinessWithdrawals;
+use App\Infrastructure\Wallet\EloquentDisbursementPayoutLedger;
 use App\Infrastructure\Wallet\EloquentPayoutAccounts;
 use App\Infrastructure\Wallet\EloquentPlatformFeeLedger;
 use App\Infrastructure\Wallet\EloquentPrimaryCashReceipts;
@@ -493,6 +495,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(DisbursementStore::class, EloquentDisbursementStore::class);
         $this->app->bind(PlatformFeeLedger::class, EloquentPlatformFeeLedger::class);
+        $this->app->bind(DisbursementPayoutLedger::class, EloquentDisbursementPayoutLedger::class);
         $this->app->bind(NoteAuditPartner::class, EloquentNoteAuditPartner::class);
         $this->app->bind(DisbursementClosingEvidence::class, EloquentDisbursementClosingEvidence::class);
         $this->app->bind(CampaignDisbursementProgress::class, EloquentCampaignDisbursementProgress::class);
