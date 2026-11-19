@@ -451,9 +451,12 @@ export function BuySheet({
 }) {
     const { t } = useTranslation();
     const command = useResaleCommand(identityRevision);
-    const [units, setUnits] = useState(listing.remaining_units);
+    /** Units no other buyer holds: another buyer's reservation keeps only its own units (SEC-R04, SEC-R05). */
+    const heldByOthers = Number(listing.reserved_units ?? '0');
+    const free = Math.max(0, Number(listing.remaining_units) - heldByOthers);
+    const [units, setUnits] = useState(String(free));
     const count = wholeUnits(units);
-    const tooMany = count !== null && count > Number(listing.remaining_units);
+    const tooMany = count !== null && count > free;
     const valid = count !== null && !tooMany;
     const title = t('investor.market.resale.buy_title', {
         name: listing.deal_name,
@@ -503,9 +506,13 @@ export function BuySheet({
                         role="alert"
                         className="mt-1.5 text-[12px] text-rz-danger-text"
                     >
-                        {t('investor.market.resale.too_many', {
-                            count: Number(listing.remaining_units),
-                        })}
+                        {heldByOthers > 0
+                            ? t('investor.market.resale.too_many_free', {
+                                  count: free,
+                              })
+                            : t('investor.market.resale.too_many', {
+                                  count: free,
+                              })}
                     </p>
                 )}
                 {valid && (

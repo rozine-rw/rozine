@@ -24,13 +24,16 @@ it('installs the provider reference registry behind in-flight deposit writers wi
     // Servicing payouts reference Business repayments and rebind the ledger kinds after the secondary market, so they come off before it and go back after it.
     $servicingPayouts = require database_path('migrations/2026_11_14_120000_create_servicing_payouts.php');
     $disbursementPayouts = require database_path('migrations/2026_11_19_180000_add_disbursement_payout_entries.php');
+    $concurrentReservations = require database_path('migrations/2026_11_19_200000_allow_concurrent_secondary_reservations.php');
     $secondaryMarket = require database_path('migrations/2026_11_11_060000_create_secondary_market_tables.php');
+    $concurrentReservations->down();
     $disbursementPayouts->down();
     $servicingPayouts->down();
     $secondaryMarket->down();
     $secondaryMarket->up();
     $servicingPayouts->up();
     $disbursementPayouts->up();
+    $concurrentReservations->up();
     $installed = $shape();
     $businessDeposits = require database_path('migrations/2026_10_03_120000_create_business_deposit_records.php');
     $businessRepayments = require database_path('migrations/2026_10_04_100000_create_business_repayment_records.php');
@@ -38,7 +41,7 @@ it('installs the provider reference registry behind in-flight deposit writers wi
     $platformFee = require database_path('migrations/2026_10_16_161905_add_platform_fee_to_disbursements.php');
     $automaticDisbursement = require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php');
     $restore = function () use ($migration, $businessDeposits, $businessRepayments, $businessWithdrawals, $platformFee, $automaticDisbursement,
-        $secondaryMarket, $servicingPayouts, $disbursementPayouts): void {
+        $secondaryMarket, $servicingPayouts, $disbursementPayouts, $concurrentReservations): void {
         if (! Schema::hasTable('provider_references')) {
             $migration->up();
         }
@@ -50,7 +53,9 @@ it('installs the provider reference registry behind in-flight deposit writers wi
         $secondaryMarket->up();
         $servicingPayouts->up();
         $disbursementPayouts->up();
+        $concurrentReservations->up();
     };
+    $concurrentReservations->down();
     $disbursementPayouts->down();
     $servicingPayouts->down();
     $secondaryMarket->down();

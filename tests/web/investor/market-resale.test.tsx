@@ -388,6 +388,34 @@ describe('Market resale (BRS v3.0 §12)', () => {
         ).toBeInTheDocument();
     });
 
+    it('lets another buyer buy only the units no one holds while a reservation is open (QA #663 retest)', async () => {
+        const user = userEvent.setup();
+        const props = page();
+
+        props.market.listings[0].reserved_units = '15';
+        render(<InvestorMarket {...props} />);
+        const card = within(
+            screen.getByRole('list', { name: 'Resale listings' }),
+        ).getAllByRole('listitem')[0];
+
+        expect(within(card).queryByText('Reserved')).not.toBeInTheDocument();
+        await user.click(within(card).getByRole('button', { name: 'Buy' }));
+        const sheet = screen.getByRole('dialog', {
+            name: 'Buy units of Kivu Harvest Ltd',
+        });
+        const units = within(sheet).getByLabelText('Units');
+
+        expect(units).toHaveValue('25');
+        await user.clear(units);
+        await user.type(units, '26');
+        expect(within(sheet).getByRole('alert')).toHaveTextContent(
+            'Only 25 units are free while another buyer holds the rest.',
+        );
+        expect(
+            within(sheet).getByRole('button', { name: 'Reserve units' }),
+        ).toBeDisabled();
+    });
+
     it('asks before withdrawing a listing, then confirms it and keeps it under Cancelled (QA #663 item 1)', async () => {
         const user = userEvent.setup();
 

@@ -1190,8 +1190,9 @@ export type MarketListing = {
     /** The Investor's own listing. */
     mine: boolean;
     /** Held by another buyer's live reservation. */
+    /** Other buyers' reservations hold every unit still listed, so there is nothing to buy right now. */
     reserved: boolean;
-    /** Units held by a live reservation, anyone's ('0' when none). */
+    /** Units other buyers hold in live reservations ('0' when none); the rest stays buyable. */
     reserved_units?: string;
     /** The Investor's own live reservation of it, if any. */
     reservation: {
