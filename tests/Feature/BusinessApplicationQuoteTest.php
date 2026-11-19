@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\Contracts\ServicingRecord;
 use App\Application\Business\EvaluateBusinessApplication;
 use App\Application\Business\FindBusinessOperation;
 use App\Application\Business\GetBusinessApplicationQuote;
@@ -58,6 +59,27 @@ it('publishes one immutable replayable quote with a minimal public offer and exa
     expect(BusinessApplicationVersion::query()->where('business_application_id', $fixture['application']->id)->where('revision', 3)->firstOrFail()->snapshot['quote_id'] ?? null)->toBe($quote->id);
     $this->assertDatabaseCount('business_application_quotes', 1);
     expect(fn () => BusinessQuoteFixture::evaluate($fixture, accepted: '5000000', request: $request))->toThrow(CommandRejection::class, 'IDEMPOTENCY_CONFLICT');
+});
+
+it('caps a repeat raise at 1.5 times the last note repaid in full, and refuses to accept more (REP-R05)', function (): void {
+    $fixture = BusinessQuoteFixture::make();
+    app()->instance(ServicingRecord::class, new class implements ServicingRecord
+    {
+        public function forBusiness(string $businessId): array
+        {
+            return ['repaid' => [['campaign_id' => 'older', 'exposure_reservation_id' => 'older-reservation', 'principal' => '20000000'],
+                ['campaign_id' => 'latest', 'exposure_reservation_id' => 'latest-reservation', 'principal' => '6000000']], 'instalments_paid' => 12, 'paid_on_time' => 12];
+        }
+    });
+
+    $result = BusinessQuoteFixture::evaluate($fixture);
+    expect($result['data']['quote']['principal']['amount'])->toBe('9000000')
+        ->and($result['data']['quote']['offered_principal']['amount'])->toBe('9000000')
+        ->and($result['data']['quote']['reason_codes'])->toContain('REPEAT_GROWTH_CAPPED');
+    $payload = BusinessApplicationQuote::query()->firstOrFail()->payload;
+    expect($payload['result']['inputs']['last_repaid_principal'])->toBe('6000000')
+        ->and(app(ApplicationUnderwriting::class)->evaluate($payload['result']['inputs']))->toBe($payload['result']);
+    expect(BusinessQuoteFixture::evaluate($fixture, 3, '9005000'))->toMatchArray(['status' => 'rejected', 'code' => 'INVALID_ACCEPTED_PRINCIPAL', 'http_status' => 422]);
 });
 
 it('keeps the original request and maximum offer when publishing a lower accepted amount', function (): void {

@@ -50,6 +50,7 @@ class StaffBusinessDirectoryResource extends JsonResource
         'campaign.publish' => ['Note published', 'green'], 'campaign.cancel' => ['Note cancelled', 'red'],
         'campaign.expire' => ['Note closed unfunded at its deadline', 'amber'],
         'campaign.failed_closing' => ['Funded note closed after failure', 'red'],
+        'report.publish' => ['Evidence re-verified', 'purple'],
     ];
 
     /** A note's tone beside its state in the 360's list. */

@@ -89,3 +89,13 @@ it('denies repeat offers with a weak or missing month and preserves a strong-mon
     expect((new LoanCapacity)->evaluate('12000000', 6, BigRational::of('121/1000'), BigRational::of(3000000), BigRational::of(100000000), $positive)['code'])->toBe('CAPACITY_BELOW_MINIMUM');
     expect(fn () => (new LoanCapacity)->evaluate('12000000', 6, BigRational::of('121/1000'), BigRational::of(3000000), BigRational::of(100000000), [BigRational::of(3000000)]))->toThrow(UnderwritingViolation::class, 'UNDERWRITING_EVIDENCE_REQUIRED');
 });
+
+it('caps a repeat offer at 1.5 times the last note repaid in full, and says so only when that cap is the tightest', function (): void {
+    $capped = (new LoanCapacity)->evaluate('12000000', 6, BigRational::of('121/1000'), BigRational::of(3000000), BigRational::of(100000000), lastRepaidPrincipal: '5003333');
+    expect($capped['rounded_candidate']['amount'])->toBe('7504999')->and($capped['offer']['principal']['amount'])->toBe('7500000')
+        ->and($capped['reason_codes'])->toBe(['DSCR_SCALED', 'REPEAT_GROWTH_CAPPED', 'ISSUANCE_UNIT_QUANTIZED']);
+    $roomy = (new LoanCapacity)->evaluate('12000000', 6, BigRational::of('121/1000'), BigRational::of(3000000), BigRational::of(100000000), lastRepaidPrincipal: '20000000');
+    expect($roomy['offer']['principal']['amount'])->toBe('10700000')->and($roomy['reason_codes'])->not->toContain('REPEAT_GROWTH_CAPPED');
+    expect(fn () => (new LoanCapacity)->evaluate('12000000', 6, BigRational::of('121/1000'), BigRational::of(3000000), BigRational::of(100000000), acceptedPrincipal: '7505000', lastRepaidPrincipal: '5003333'))
+        ->toThrow(UnderwritingViolation::class, 'INVALID_ACCEPTED_PRINCIPAL');
+});

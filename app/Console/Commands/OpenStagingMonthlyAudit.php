@@ -14,7 +14,8 @@ use Throwable;
  * Opens this Kigali month's monthly audit now for a Business the UAT money simulation names, so the
  * staging demo can show a Business sending its monthly figures and an auditor's visit and seal without
  * waiting for the month to end. The engagement audits the current month and goes to an
- * eligible partner exactly as the scheduler's dispatch would. It refuses for any other Business and
+ * eligible partner exactly as the scheduler's dispatch would. It refuses for any other Business, unless
+ * one is named with `--unsimulated` (QA needs a second demo month once the first is sealed), and
  * wherever the simulation is off, opens nothing over an engagement that is still open, and opens a
  * month once, so the scheduler can retry it every few minutes until an open audit finishes.
  */
@@ -22,7 +23,8 @@ class OpenStagingMonthlyAudit extends Command
 {
     protected $hidden = true;
 
-    protected $signature = 'staging:open-monthly-audit {business? : One simulated Business id; every simulated Business when left out}';
+    protected $signature = 'staging:open-monthly-audit {business? : One simulated Business id; every simulated Business when left out}
+        {--unsimulated : Let the named Business be one the simulation does not name (an audit moves no money)}';
 
     protected $description = 'Open this month\'s monthly audit now for the UAT money simulation\'s Businesses (UAT only)';
 
@@ -39,7 +41,7 @@ class OpenStagingMonthlyAudit extends Command
         $status = self::SUCCESS;
         foreach ($businesses as $businessId) {
             $businessId = strtolower(trim((string) $businessId));
-            if (! $simulation->covers($businessId)) {
+            if (! $simulation->covers($businessId) && ! ($this->option('unsimulated') && $this->argument('business') !== null)) {
                 $this->components->error('UAT_SIMULATION_BUSINESS_REQUIRED: '.$businessId.' is not a simulated Business, so nothing was opened.');
                 $status = self::FAILURE;
 

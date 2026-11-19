@@ -849,6 +849,8 @@ const en = {
         'Sized so your cash flow covers each repayment 1.5 times (you asked for {requested}).',
     'business.apply.offer.sized.REPEAT_MONTHLY_DSCR_SCALED':
         'Sized so every month’s cash flow covers that month’s repayments (you asked for {requested}).',
+    'business.apply.offer.sized.REPEAT_GROWTH_CAPPED':
+        'Capped at 1.5 times the last note you repaid in full (you asked for {requested}).',
     'business.apply.offer.sized.PRINCIPAL_MAX_CAPPED':
         'Capped at the RWF 100M maximum per note (you asked for {requested}).',
     'business.apply.submitted.timeline': 'Application progress',
@@ -4086,6 +4088,11 @@ const en = {
         '{limit} (35% of a year’s revenue) less {committed} you already owe',
     'business.rating.limit.exposure_lift':
         'Grow your revenue, or repay what you owe',
+    'business.rating.limit.repeat_growth': 'Growth on your last note',
+    'business.rating.limit.repeat_growth_detail':
+        '1.5× the {last} note you last repaid in full',
+    'business.rating.limit.repeat_growth_lift':
+        'Repay this raise in full to grow the next one',
     'business.rating.limit.policy_max': 'Policy maximum',
     'business.rating.limit.policy_max_detail':
         'Hard ceiling on any single raise',

@@ -124,6 +124,33 @@ describe('Financial health', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('names 1.5× the last repaid note as the limit when it binds (REP-R05)', () => {
+        const page = props(ratingFixture);
+        const sizing = page.sizing as CapacitySizing;
+
+        sizing.limits = [
+            ...sizing.limits.map((limit) => ({ ...limit, binding: false })),
+            {
+                key: 'repeat_growth',
+                value: { currency: 'RWF', amount: '9000000' },
+                binding: true,
+                last: { currency: 'RWF', amount: '6000000' },
+            },
+        ];
+        render(<BusinessRating {...page} />);
+
+        const sheet = within(healthSheet());
+
+        expect(
+            sheet.getByText('What is limiting you: Growth on your last note'),
+        ).toBeInTheDocument();
+        expect(
+            sheet.getAllByText(
+                '1.5× the RWF 6,000,000 note you last repaid in full',
+            ).length,
+        ).toBeGreaterThan(0);
+    });
+
     it('names the first limit when none is marked, and the policy maximum when it binds', () => {
         const page = props(ratingFixture);
         const sizing = page.sizing as CapacitySizing;

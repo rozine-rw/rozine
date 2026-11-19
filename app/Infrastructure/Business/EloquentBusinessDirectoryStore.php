@@ -28,7 +28,7 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
     /** @return Directory */
     public function directory(string $chip, string $sort, string $sector, string $search, int $limit): array
     {
-        $businesses = DB::query()->fromSub($this->businesses(), 'businesses');
+        $businesses = DB::query()->fromSub($this->businesses($this->repaidNotes()), 'businesses');
         if ($search !== '') {
             $businesses->whereLike('name', '%'.addcslashes($search, '%_\\').'%');
         }
@@ -36,7 +36,6 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
             $businesses->where('sector', $sector);
         }
         $totals = (clone $businesses)->selectRaw('count(*) AS everyone, coalesce(sum(active_notes), 0) AS notes, coalesce(sum(raised), 0)::text AS raised')->first();
-        $repaid = array_sum(array_map($this->repaid(...), (clone $businesses)->pluck('business_id')->map(fn (mixed $id): string => (string) $id)->all()));
         $ratings = $this->ratings(array_values((clone $businesses)->pluck('business_id')->map(fn (mixed $id): string => (string) $id)->all()));
         $matching = (clone $businesses)->count();
         $sort === 'name' ? $businesses->orderBy('name') : $businesses->orderByDesc($sort)->orderBy('name');
@@ -47,7 +46,7 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
             $businesses->orderBy('business_id')->limit($limit)->get()->all())),
             'matching' => $matching,
             'counts' => ['all' => $everyone],
-            'active_notes' => (int) ($totals->notes ?? 0) - $repaid, 'raised' => (string) ($totals->raised ?? '0'),
+            'active_notes' => (int) ($totals->notes ?? 0), 'raised' => (string) ($totals->raised ?? '0'),
             'average_score' => $scores === [] ? null : (string) array_reduce($scores, fn (BigDecimal $sum, string $score): BigDecimal => $sum->plus($score), BigDecimal::zero())
                 ->dividedBy(count($scores), 1, RoundingMode::HalfUp),
             'sectors' => array_values(array_map(fn (mixed $sector): string => (string) $sector,
@@ -57,7 +56,7 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
     /** @return Detail|null */
     public function business(string $businessId): ?array
     {
-        $record = DB::query()->fromSub($this->businesses(), 'businesses')->where('business_id', $businessId)->first();
+        $record = DB::query()->fromSub($this->businesses(array_column($this->servicing->forBusiness($businessId)['repaid'], 'campaign_id')), 'businesses')->where('business_id', $businessId)->first();
         if ($record === null) {
             return null;
         }
@@ -88,7 +87,13 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
             return self::entry((string) $closure['id'], $closure['closed_at'], (string) ($closure['name'] ?? 'System'),
                 $command, $title($campaign), null);
         });
-        $history = [...array_values($mandates), ...$published->values()->all(), ...$closed->values()->all()];
+        // Each published audit report re-verified the Business's newest months (REP-R04).
+        $reports = array_map(fn (object $report): array => self::entry((string) $report->id, self::occurred((string) $report->published_at), 'Audit Partner', 'report.publish',
+            str_replace('_', ' ', (string) $report->kind).' audit sealed', 'Report RPT-'.strtoupper(substr((string) $report->id, -8)).' verified the newest months against the business\'s records.'),
+            DB::table('audit_reports')->join('audit_report_publications', 'audit_report_publications.audit_report_id', '=', 'audit_reports.id')
+                ->where('audit_reports.business_id', $businessId)->where('audit_report_publications.status', 'published')
+                ->get(['audit_reports.id', 'audit_reports.kind', 'audit_report_publications.published_at'])->all());
+        $history = [...array_values($mandates), ...$published->values()->all(), ...$closed->values()->all(), ...$reports];
         usort($history, fn (array $first, array $second): int => [$second['at'], $second['id']] <=> [$first['at'], $first['id']]);
 
         return ['row' => $this->row($record, $this->ratings([$businessId])),
@@ -103,25 +108,40 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
             'history' => $history];
     }
 
-    /** How many of the Business's notes are repaid in full, so no longer active. */
-    private function repaid(string $businessId): int
+    /**
+     * Every note repaid in full, across every Business, so no longer active. Excluding them in SQL keeps
+     * the active-notes sort, each row and the totals in agreement.
+     *
+     * @return list<string>
+     */
+    private function repaidNotes(): array
     {
-        return count($this->servicing->forBusiness($businessId)['repaid']);
+        $repaid = [];
+        foreach (DB::table('business_profiles')->pluck('id') as $businessId) {
+            array_push($repaid, ...array_column($this->servicing->forBusiness((string) $businessId)['repaid'], 'campaign_id'));
+        }
+
+        return $repaid;
     }
 
     /**
      * Every Business whose authority is recorded, one row each, with its figures. KYC is verified
      * once the identity writer has verified the Business's own Party, as of the application clock:
      * a future-dated verification is not yet verified. The clock is bound rather than read from
-     * PostgreSQL's now(), which is the start of the surrounding transaction.
+     * PostgreSQL's now(), which is the start of the surrounding transaction. Notes repaid in full are
+     * not active.
+     *
+     * @param  list<string>  $repaid
      */
-    private function businesses(): Builder
+    private function businesses(array $repaid): Builder
     {
+        $notRepaid = $repaid === [] ? '' : 'AND c.id NOT IN ('.implode(', ', array_fill(0, count($repaid), '?')).')';
+
         return DB::table('business_profiles AS bp')->join('parties', 'parties.id', '=', 'bp.entity_party_id')
             ->selectRaw("bp.id AS business_id, bp.profile->>'name' AS name, bp.profile->>'industry' AS sector, bp.profile->>'district' AS district,
                 bp.profile->>'company_code' AS company_code,
                 CASE WHEN parties.verified_at IS NOT NULL AND parties.verified_at <= ? THEN 'verified' ELSE 'pending' END AS kyc,
-                (SELECT count(*) FROM business_campaigns c WHERE c.business_id = bp.id
+                (SELECT count(*) FROM business_campaigns c WHERE c.business_id = bp.id {$notRepaid}
                     AND NOT EXISTS (SELECT 1 FROM business_campaign_closures x WHERE x.business_campaign_id = c.id)) AS active_notes,
                 (SELECT count(DISTINCT backer.party_id) FROM (
                     SELECT r.party_id FROM primary_campaign_fundings f JOIN primary_funding_commitments fc ON fc.funding_id = f.id
@@ -130,7 +150,7 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
                     UNION SELECT r.party_id FROM primary_commitments pc JOIN primary_reservations r ON r.id = pc.primary_reservation_id
                         JOIN business_campaigns c ON c.id = r.business_campaign_id
                         WHERE c.business_id = bp.id AND NOT EXISTS (SELECT 1 FROM business_campaign_closures x WHERE x.business_campaign_id = c.id)) AS backer) AS investors,
-                coalesce((SELECT sum(f.principal) FROM primary_campaign_fundings f WHERE f.business_id = bp.id), 0) AS raised", [now()]);
+                coalesce((SELECT sum(f.principal) FROM primary_campaign_fundings f WHERE f.business_id = bp.id), 0) AS raised", [now(), ...$repaid]);
     }
 
     /**
@@ -167,9 +187,21 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
     }
 
     /**
+     * When a report's publication happened. On UAT the simulated review closes at its window's end,
+     * recorded at that future instant so the retained history stays one the database accepts; it is
+     * shown as now until that instant passes, never as a time still to come.
+     */
+    private static function occurred(string $publishedAt): string
+    {
+        $at = CarbonImmutable::parse($publishedAt);
+
+        return $at->isFuture() ? now('UTC')->toIso8601String() : $at->toIso8601String();
+    }
+
+    /**
      * One history entry, its stored instant as UTC ISO 8601 so entries sort as text.
      *
-     * @param  'business.authority.configure'|'business.authority.revoke'|'campaign.publish'|'campaign.cancel'|'campaign.expire'|'campaign.failed_closing'  $command
+     * @param  'business.authority.configure'|'business.authority.revoke'|'campaign.publish'|'campaign.cancel'|'campaign.expire'|'campaign.failed_closing'|'report.publish'  $command
      * @return HistoryEntry
      */
     private static function entry(string $id, mixed $at, string $actor, string $command, ?string $subject, ?string $reason): array
@@ -190,6 +222,6 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
         return ['business_id' => $id, 'name' => (string) $row['name'], 'sector' => (string) $row['sector'], 'district' => (string) $row['district'],
             'company_code' => $row['company_code'] === null ? null : (string) $row['company_code'],
             'kyc' => $row['kyc'] === 'verified' ? 'verified' : 'pending', 'rating' => $ratings[$id] ?? null,
-            'active_notes' => (int) $row['active_notes'] - $this->repaid($id), 'investors' => (int) $row['investors'], 'raised' => (string) $row['raised']];
+            'active_notes' => (int) $row['active_notes'], 'investors' => (int) $row['investors'], 'raised' => (string) $row['raised']];
     }
 }
