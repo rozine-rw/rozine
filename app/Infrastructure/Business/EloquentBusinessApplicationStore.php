@@ -604,7 +604,7 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
                         $application = $this->application($businessId, $applicationId);
                         $submitted = $application->status === 'submitted' ? $this->submittedSnapshot($application) : null;
                         $quote = $application->status === 'submitted' ? null : $this->currentQuote($application, $business, $verification, $credit);
-                        $review = $submitted === null ? $this->reviewForQuote($application, $business, $quote, $release) : $submitted['review'];
+                        $review = $submitted === null ? $this->reviewForQuote($application, $business, $quote, $release) : $this->submittedReview($application);
                         $pending = $this->pendingApplication($businessId, $applicationId);
 
                         return ['review' => $review, 'business_id' => $businessId, 'identity_context_revision' => $contextRevision,
