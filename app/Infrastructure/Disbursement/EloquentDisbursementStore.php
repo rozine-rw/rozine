@@ -6,6 +6,7 @@ namespace App\Infrastructure\Disbursement;
 
 use App\Application\Auditor\Contracts\NoteAuditPartner;
 use App\Application\Business\Contracts\BusinessNoticeAudience;
+use App\Application\Disbursement\Contracts\DisbursementPayoutLedger;
 use App\Application\Disbursement\Contracts\DisbursementStore;
 use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\Contracts\PayoutDestinations;
@@ -78,7 +79,8 @@ final class EloquentDisbursementStore implements DisbursementStore
     public function __construct(private FundedCampaigns $funding, private PayoutDestinations $destinations,
         private PayoutProvider $provider, private AuthorizeStaffPermission $staff, private OperationJournal $journal, private CanonicalJson $json,
         private EnvironmentIsolation $isolation, private FundedPurchaseChanges $purchases, private PartyNotices $notices,
-        private BusinessNoticeAudience $audience, private PlatformFeeLedger $fees, private NoteAuditPartner $auditPartners) {}
+        private BusinessNoticeAudience $audience, private PlatformFeeLedger $fees, private NoteAuditPartner $auditPartners,
+        private DisbursementPayoutLedger $payouts) {}
 
     public function page(int $userId, ?string $disbursementId, ?string $before, int $limit): array
     {
@@ -356,6 +358,8 @@ final class EloquentDisbursementStore implements DisbursementStore
             // opened before the fee rule carries none.
             $disbursement->fee_version === null || $this->fees->post($disbursement->id, $disbursement->business_id, $closingId, $intent->operation_id,
                 PlatformFee::of($disbursement->amount), $this->auditPartners->forCampaign($disbursement->business_campaign_id));
+            // What the Business was sent leaves disbursement settlement for the provider (QA #663).
+            $this->payouts->post($disbursement->business_id, $closingId, $intent->operation_id, (string) $intent->amount);
             $this->appendEvent($disbursement, $state->revision + 1, 'succeeded', null, null, null, ['closing_id' => $closingId]);
             // The Business is told the funds reached its verified account (BRS v2.0 NTF-R01); a
             // synthetic payout's business has no profile and tells nobody.
