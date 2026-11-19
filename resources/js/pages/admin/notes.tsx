@@ -77,7 +77,7 @@ function Row({ note }: { note: NoteRegisterRow }) {
                         {note.business}
                     </div>
                 )}
-                <div className="mt-0.5 truncate text-[11px] text-rz-muted">
+                <div className="mt-0.5 text-[11px] [overflow-wrap:anywhere] text-rz-muted">
                     {[note.reference, note.sector].join(' · ')}
                 </div>
             </div>
