@@ -37,6 +37,7 @@ use Closure;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -138,16 +139,19 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
         $rows = SecondaryListingRecord::query()->where('state', 'open')->where('expires_at', '>', $now)->orderByDesc('listed_at')->limit(50)->get();
         $listings = [];
         foreach ($rows as $row) {
-            $live = $this->liveReservation($row, $now);
-            if ($this->restore($row, $live)->at($now)->state !== 'open') {
+            $live = $this->liveReservations($row, $now);
+            $current = $this->restore($row, $live)->at($now);
+            if ($current->state !== 'open') {
                 continue;
             }
-            $mine = $live !== null && $live->buyer_party_id === $partyId;
+            $own = $live->first(fn (SecondaryReservationRecord $reservation): bool => $reservation->buyer_party_id === $partyId);
+            $othersHold = (int) $live->filter(fn (SecondaryReservationRecord $reservation): bool => $reservation->buyer_party_id !== $partyId)->sum('units');
             $listings[] = ['listing_id' => $row->id, 'note_id' => $row->business_campaign_id, 'deal_name' => $name($row->business_campaign_id),
                 'remaining_units' => (string) $row->remaining_units, 'price' => self::money($row->price),
                 'listed_at' => $row->listed_at->utc()->format(DateTimeInterface::ATOM), 'expires_at' => $row->expires_at->utc()->format(DateTimeInterface::ATOM),
-                'mine' => $row->seller_party_id === $partyId, 'reserved' => $live !== null && ! $mine, 'reserved_units' => $live === null ? '0' : (string) $live->units,
-                'reservation' => $mine ? $this->presentReservation($live) : null];
+                // Other buyers' reservations hold only their own units; the rest stays buyable (SEC-R04, SEC-R05).
+                'mine' => $row->seller_party_id === $partyId, 'reserved' => $own === null && $current->unreservedUnits() === '0', 'reserved_units' => (string) $othersHold,
+                'reservation' => $own === null ? null : $this->presentReservation($own)];
         }
 
         return $listings;
@@ -179,7 +183,7 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
                     continue;
                 }
                 $listed = SecondaryListingRecord::query()->where('lot_type', $lot['lot_type'])->where('lot_id', $lot['lot_id'])->where('state', 'open')->get()
-                    ->sum(fn (SecondaryListingRecord $row): int => $this->restore($row, $this->liveReservation($row, $now))->at($now)->state === 'open' ? $row->remaining_units : 0);
+                    ->sum(fn (SecondaryListingRecord $row): int => $this->restore($row, $this->liveReservations($row, $now))->at($now)->state === 'open' ? $row->remaining_units : 0);
                 $lots[] = ['lot_id' => $lot['lot_id'], 'note_id' => $noteId, 'deal_name' => $name($noteId), 'units' => $lot['units'],
                     'free_units' => (string) max(0, (int) $lot['units'] - $listed), 'cap' => self::money((string) $cap), 'tradable' => $tradable];
             }
@@ -258,16 +262,16 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
         foreach ($candidates as $candidate) {
             [$wasReleased, $wasExpired] = DB::transaction(function () use ($candidate, $at): array {
                 $this->lockNote($candidate->business_campaign_id);
-                $outcome = [false, false];
+                $outcome = [0, false];
                 // A command may have closed the listing since it was selected; only a listing still open is swept.
                 foreach (SecondaryListingRecord::query()->whereKey($candidate->id)->where('state', 'open')->lockForUpdate()->get() as $row) {
-                    $open = SecondaryReservationRecord::query()->where('listing_id', $row->id)->whereNull('ended')->first();
+                    $lapsed = SecondaryReservationRecord::query()->where('listing_id', $row->id)->whereNull('ended')->where('expires_at', '<=', $at)->count();
                     // A reservation made before the seven days ran out still holds the listing open until it lapses (SEC-R05).
                     $current = $this->restore($row, $this->releaseLapsed($row, $at))->at($at);
                     if ($current->state === 'expired') {
                         $this->persist($row, $current, $at);
                     }
-                    $outcome = [$open !== null && $open->expires_at <= $at, $current->state === 'expired'];
+                    $outcome = [$lapsed, $current->state === 'expired'];
                 }
 
                 return $outcome;
@@ -295,7 +299,7 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
         }
         $note = $this->note($noteId);
         $listed = SecondaryListingRecord::query()->where('lot_type', $lotType)->where('lot_id', $lotId)->where('state', 'open')->get()
-            ->sum(fn (SecondaryListingRecord $row): int => $this->restore($row, $this->liveReservation($row, $now))->at($now)->state === 'open' ? $row->remaining_units : 0);
+            ->sum(fn (SecondaryListingRecord $row): int => $this->restore($row, $this->liveReservations($row, $now))->at($now)->state === 'open' ? $row->remaining_units : 0);
         $free = (string) max(0, (int) $lot['units'] - $listed);
         $cap = $this->cap($note);
         $window = $this->window($note);
@@ -321,11 +325,12 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
         $held = $this->heldUnits($partyId, $row->business_campaign_id, $now);
         $reservationId = strtolower((string) Str::ulid());
         $cap = $this->cap($note);
-        $listing = $this->decide(fn (): SecondaryListing => $this->restore($row, $open)->reserve($reservationId, $partyId, $units, $note['raise_units'], $held,
+        $before = $this->restore($row, $open)->at($now);
+        $listing = $this->decide(fn (): SecondaryListing => $before->reserve($reservationId, $partyId, $units, $note['raise_units'], $held,
             $cap, $window, $now), ['PRICE_ABOVE_CAP' => ['cap' => self::money((string) $cap)], 'HOLDING_LIMIT_EXCEEDED' => ['maximum_units' => (string) TradingWindow::buyerRoom($note['raise_units'], $held)],
-                'UNITS_NOT_LISTED' => ['listed_units' => (string) $row->remaining_units], 'TRADING_PAUSED' => $this->paused($window, $now),
-                'LISTING_RESERVED' => ['reserved_until' => $open?->expires_at->utc()->format(DateTimeInterface::ATOM)]]);
-        $reservation = $listing->reservation ?? throw new SecondaryViolation('RESERVATION_NOT_OPEN');
+                'UNITS_NOT_LISTED' => ['listed_units' => $before->unreservedUnits()], 'TRADING_PAUSED' => $this->paused($window, $now),
+                'LISTING_RESERVED' => ['reserved_until' => $this->firstLapse($open)]]);
+        $reservation = $listing->reservation($reservationId) ?? throw new SecondaryViolation('RESERVATION_NOT_OPEN');
         $gross = BigInteger::of($reservation['units'])->multipliedBy($row->price);
         $record = new SecondaryReservationRecord;
         $record->forceFill(['id' => $reservationId, 'listing_id' => $row->id, 'buyer_party_id' => $partyId, 'business_campaign_id' => $row->business_campaign_id,
@@ -334,7 +339,7 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
         $this->postings->hold($this->wallets->lockForParty($partyId), $gross, $reservationId, $operationId);
         $row->forceFill(['updated_at' => $now])->save();
 
-        return new OperationResult('SECONDARY_RESERVED', ['reservation' => $this->presentReservation($record), 'listing' => $this->present($row, $now)], 1);
+        return new OperationResult('SECONDARY_RESERVED', ['reservation' => $this->presentReservation($record), 'listing' => $this->present($row, $now, $partyId)], 1);
     }
 
     private function settleReservation(string $partyId, string $listingId, string $reservationId): OperationResult
@@ -348,7 +353,7 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
         $note = $this->note($row->business_campaign_id);
         $window = $this->window($note);
         $cap = $this->cap($note);
-        ['listing' => $after, 'quote' => $quote] = $this->decide(fn (): array => $this->restore($row, $reservation)->settle($reservationId, $cap, $window, $now),
+        ['listing' => $after, 'quote' => $quote] = $this->decide(fn (): array => $this->restore($row, $this->liveReservations($row, $now))->settle($reservationId, $cap, $window, $now),
             ['TRADING_PAUSED' => $this->paused($window, $now), 'PRICE_ABOVE_CAP' => ['cap' => self::money((string) $cap)]]);
         $lot = $this->holders->lot($row->business_campaign_id, $row->lot_type, $row->lot_id);
         $moved = $this->decide(fn (): HoldingLot => HoldingLot::of($lot['ordinals'] ?? [])->split((string) $quote->units)['moved']);
@@ -387,7 +392,7 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
             throw new CommandRejection('LISTING_NOT_FOUND', 404);
         }
         $open = $this->releaseLapsed($row, $now);
-        $reserved = ['LISTING_RESERVED' => ['reserved_until' => $open?->expires_at->utc()->format(DateTimeInterface::ATOM)]];
+        $reserved = ['LISTING_RESERVED' => ['reserved_until' => $this->lastLapse($open)]];
         if ($price === null) {
             $this->persist($row, $this->decide(fn (): SecondaryListing => $this->restore($row, $open)->cancel($now), $reserved), $now);
 
@@ -408,7 +413,7 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
         $row = $this->openRow($listingId);
         $open = $this->releaseLapsed($row, $now);
         $this->persist($row, $this->decide(fn (): SecondaryListing => $this->restore($row, $open)->cancelByStaff($reason, $now),
-            ['LISTING_RESERVED' => ['reserved_until' => $open?->expires_at->utc()->format(DateTimeInterface::ATOM)]]), $now);
+            ['LISTING_RESERVED' => ['reserved_until' => $this->lastLapse($open)]]), $now);
 
         return new OperationResult('SECONDARY_LISTING_CANCELLED', ['listing' => $this->present($row, $now)], 1);
     }
@@ -439,9 +444,8 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
             ->orderBy('id')->pluck('id');
         foreach ($listings as $listingId) {
             $row = $this->lockListing($listingId);
-            $open = SecondaryReservationRecord::query()->where('listing_id', $row->id)->whereNull('ended')->first();
-            $current = $this->restore($row, $this->liveReservation($row, $now))->at($now);
-            if ($open !== null) {
+            $current = $this->restore($row, $this->liveReservations($row, $now))->at($now);
+            foreach (SecondaryReservationRecord::query()->where('listing_id', $row->id)->whereNull('ended')->orderBy('id')->get() as $open) {
                 $this->release($open, $open->expires_at <= $now ? 'lapsed' : 'halted', $now);
                 $released++;
             }
@@ -603,23 +607,49 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
         return (string) ($held + $reserved);
     }
 
-    /** The listing's reservation that has not ended and has not yet lapsed, if any. */
-    private function liveReservation(SecondaryListingRecord $row, DateTimeImmutable $at): ?SecondaryReservationRecord
+    /**
+     * The listing's reservations that have not ended and have not yet lapsed.
+     *
+     * @return Collection<int, SecondaryReservationRecord>
+     */
+    private function liveReservations(SecondaryListingRecord $row, DateTimeImmutable $at): Collection
     {
-        return SecondaryReservationRecord::query()->where('listing_id', $row->id)->whereNull('ended')->where('expires_at', '>', $at)->first();
+        return SecondaryReservationRecord::query()->where('listing_id', $row->id)->whereNull('ended')->where('expires_at', '>', $at)->orderBy('id')->get();
     }
 
-    /** Releases the listing's reservation if it has lapsed, and returns the reservation still open. */
-    private function releaseLapsed(SecondaryListingRecord $row, DateTimeImmutable $at): ?SecondaryReservationRecord
+    /**
+     * Releases every reservation on the listing that has lapsed, and returns those still open.
+     *
+     * @return Collection<int, SecondaryReservationRecord>
+     */
+    private function releaseLapsed(SecondaryListingRecord $row, DateTimeImmutable $at): Collection
     {
-        $open = SecondaryReservationRecord::query()->where('listing_id', $row->id)->whereNull('ended')->first();
-        if ($open !== null && $open->expires_at <= $at) {
-            $this->release($open, 'lapsed', $at);
-
-            return null;
+        $open = SecondaryReservationRecord::query()->where('listing_id', $row->id)->whereNull('ended')->orderBy('id')->get();
+        foreach ($open->filter(fn (SecondaryReservationRecord $reservation): bool => $reservation->expires_at <= $at) as $lapsed) {
+            $this->release($lapsed, 'lapsed', $at);
         }
 
-        return $open;
+        return $open->filter(fn (SecondaryReservationRecord $reservation): bool => $reservation->expires_at > $at)->values();
+    }
+
+    /**
+     * When the first open reservation ends, for a buyer told that every unit is held.
+     *
+     * @param  Collection<int, SecondaryReservationRecord>  $open
+     */
+    private function firstLapse(Collection $open): ?string
+    {
+        return $open->min(fn (SecondaryReservationRecord $reservation): string => $reservation->expires_at->utc()->format(DateTimeInterface::ATOM));
+    }
+
+    /**
+     * When the last open reservation ends, for a seller who can act only once none remain.
+     *
+     * @param  Collection<int, SecondaryReservationRecord>  $open
+     */
+    private function lastLapse(Collection $open): ?string
+    {
+        return $open->max(fn (SecondaryReservationRecord $reservation): string => $reservation->expires_at->utc()->format(DateTimeInterface::ATOM));
     }
 
     /** @param 'lapsed'|'halted' $why */
@@ -630,7 +660,8 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
         $reservation->forceFill(['ended' => 'released', 'end_reason' => $why, 'ended_at' => $at])->save();
     }
 
-    private function restore(SecondaryListingRecord $row, ?SecondaryReservationRecord $open): SecondaryListing
+    /** @param  iterable<SecondaryReservationRecord>  $open */
+    private function restore(SecondaryListingRecord $row, iterable $open): SecondaryListing
     {
         /** @var 'open'|'sold'|'cancelled'|'expired' $state */
         $state = $row->state;
@@ -639,8 +670,8 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
 
         return SecondaryListing::restore($row->id, $row->seller_party_id, $row->lot_id, (string) $row->listed_units, (string) $row->remaining_units, $row->price,
             $row->listed_at->toDateTimeImmutable(), $row->expires_at->toDateTimeImmutable(), $state,
-            $open === null ? null : ['id' => $open->id, 'buyer_party_id' => $open->buyer_party_id, 'units' => (string) $open->units,
-                'expires_at' => $open->expires_at->toDateTimeImmutable()], $cancellation);
+            array_values(array_map(fn (SecondaryReservationRecord $reservation): array => ['id' => $reservation->id, 'buyer_party_id' => $reservation->buyer_party_id,
+                'units' => (string) $reservation->units, 'expires_at' => $reservation->expires_at->toDateTimeImmutable()], [...$open])), $cancellation);
     }
 
     private function persist(SecondaryListingRecord $row, SecondaryListing $listing, DateTimeImmutable $at): void
@@ -649,17 +680,24 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
             'cancelled_by' => $listing->cancellation['by'] ?? null, 'cancel_reason' => $listing->cancellation['reason'] ?? null, 'updated_at' => $at])->save();
     }
 
-    /** @return array<string, mixed> */
-    private function present(SecondaryListingRecord $row, DateTimeImmutable $at): array
+    /**
+     * The listing after a command. Its `reservation` is the caller's own when it holds one; otherwise
+     * the one that ends last, which is when the seller may act on the listing again.
+     *
+     * @return array<string, mixed>
+     */
+    private function present(SecondaryListingRecord $row, DateTimeImmutable $at, ?string $partyId = null): array
     {
-        $open = $row->state === 'open' ? $this->liveReservation($row, $at) : null;
+        $open = $row->state === 'open' ? $this->liveReservations($row, $at) : new Collection;
+        $shown = $open->first(fn (SecondaryReservationRecord $reservation): bool => $reservation->buyer_party_id === $partyId)
+            ?? $open->sortBy(fn (SecondaryReservationRecord $reservation): string => $reservation->expires_at->utc()->format(DateTimeInterface::ATOM))->last();
 
         return ['listing_id' => $row->id, 'note_id' => $row->business_campaign_id, 'lot_id' => $row->lot_id, 'listed_units' => (string) $row->listed_units,
             'remaining_units' => (string) $row->remaining_units, 'price' => self::money($row->price),
             'listed_at' => $row->listed_at->utc()->format(DateTimeInterface::ATOM), 'expires_at' => $row->expires_at->utc()->format(DateTimeInterface::ATOM),
             'state' => $this->restore($row, $open)->at($at)->state,
             'cancellation' => $row->cancelled_by === null ? null : ['by' => $row->cancelled_by, 'reason' => $row->cancel_reason],
-            'reservation' => $open === null ? null : $this->presentReservation($open), 'terms_version' => $row->terms_version];
+            'reservation' => $shown === null ? null : $this->presentReservation($shown), 'terms_version' => $row->terms_version];
     }
 
     /** @return array{reservation_id: string, units: string, price: array{currency: string, amount: string}, buyer_pays: array{currency: string, amount: string}, expires_at: string} */

@@ -16,6 +16,7 @@ use App\Models\SecondaryTransfer;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -379,18 +380,51 @@ it('refuses resale postings the database cannot bind to a reservation', function
         ->and(fn () => SecondaryListingRecord::query()->sole()->forceFill(['listed_units' => 11])->save())->toThrow(QueryException::class);
 });
 
-it('rolls back cleanly before any resale activity, and refuses once a listing exists', function (): void {
-    $migration = require database_path('migrations/2026_11_11_060000_create_secondary_market_tables.php');
+// The rollback test lives in SecondaryMarketRollbackTest: it must run before any note is issued.
+
+it('lets several buyers each hold part of one listing, and refuses to roll that back (SEC-R04, SEC-R05)', function (): void {
+    $listing = ($this->list)('10', '5000')['data']['listing'];
+    $second = InvestorWalletFixture::funded('1000000');
+    $third = InvestorWalletFixture::funded('1000000');
+    ($this->reserve)($listing['listing_id'], '4');
+    $this->travel(1)->minutes();
+    $others = ($this->reserve)($listing['listing_id'], '6', $second['user']);
+    $late = ($this->reserve)($listing['listing_id'], '1', $third['user']);
+    $board = fn (User $viewer): array => collect(DB::transaction(fn (): array => $this->market->board($viewer->id, 1))['listings'])
+        ->firstWhere('listing_id', $listing['listing_id']);
+
+    expect($others)->toMatchArray(['code' => 'SECONDARY_RESERVED', 'data' => ['reservation' => $others['data']['reservation'],
+        'listing' => [...$others['data']['listing'], 'reservation' => $others['data']['reservation']]]])
+        ->and($late)->toMatchArray(['code' => 'LISTING_RESERVED', 'data' => ['reserved_until' => '2026-10-10T08:05:00+00:00']])
+        ->and(Arr::only($board($third['user']), ['reserved', 'reserved_units', 'reservation']))->toBe(['reserved' => true, 'reserved_units' => '10', 'reservation' => null])
+        ->and(Arr::only($board($second['user']), ['reserved', 'reserved_units']))->toBe(['reserved' => false, 'reserved_units' => '4'])
+        ->and($board($second['user'])['reservation']['units'])->toBe('6');
+
+    $concurrent = require database_path('migrations/2026_11_19_200000_allow_concurrent_secondary_reservations.php');
+    expect(fn () => $concurrent->down())->toThrow(QueryException::class, 'more than one open reservation require a forward migration');
+});
+
+it('settles the part each buyer holds on its own, and releases every open reservation on a halt (SEC-R04, SEC-R08)', function (): void {
+    $listing = ($this->list)('10', '5000')['data']['listing'];
+    $second = InvestorWalletFixture::funded('1000000');
+    $mine = ($this->reserve)($listing['listing_id'], '4')['data']['reservation'];
+    ($this->reserve)($listing['listing_id'], '6', $second['user']);
+
+    $settled = $this->market->settle($this->buyer['user']->id, 1, $listing['listing_id'], $mine['reservation_id'], (string) Str::uuid());
     ($this->flush)();
-    $migration->down();
+    $cancel = $this->market->amend($this->seller->id, 1, $listing['listing_id'], null, (string) Str::uuid());
 
-    expect(DB::table('permissions')->where('name', 'secondary.halt')->exists())->toBeFalse()
-        ->and(DB::selectOne("SELECT to_regclass('secondary_listings') AS name")->name)->toBeNull();
+    expect($settled['data']['listing'])->toMatchArray(['remaining_units' => '6', 'state' => 'open'])
+        ->and($settled['data']['listing']['reservation']['units'])->toBe('6')
+        ->and($cancel['code'])->toBe('LISTING_RESERVED')
+        ->and(($this->bucket)($second['party']->id, 'investor_held'))->toBe('30000');
 
-    $migration->up();
-    ($this->list)('10', '2700');
+    $halt = $this->market->halt(($this->compliance)()->id, $this->noteId, 'Suspected wash trading.', (string) Str::uuid());
+    ($this->flush)();
 
-    expect(fn () => $migration->down())->toThrow(QueryException::class, 'Recorded resale activity requires a forward migration');
+    expect($halt['data'])->toMatchArray(['cancelled_listings' => 1, 'released_reservations' => 1])
+        ->and(($this->bucket)($second['party']->id, 'investor_held'))->toBe('0')
+        ->and(SecondaryReservationRecord::query()->whereNull('ended')->count())->toBe(0);
 });
 
 it('refuses commands on lots, listings and reasons that do not exist', function (): void {

@@ -4508,6 +4508,10 @@ const en = {
     'investor.market.resale.listing_total': 'Listing total {amount}',
     'investor.market.resale.list': 'List for sale',
     'investor.market.resale.trade_buy': 'Bought · {name}',
+    'investor.market.resale.too_many_free': {
+        one: 'Only {count} unit is free while another buyer holds the rest.',
+        other: 'Only {count} units are free while another buyer holds the rest.',
+    },
     'investor.market.resale.too_many': {
         one: 'Only {count} unit is listed.',
         other: 'Only {count} units are listed.',

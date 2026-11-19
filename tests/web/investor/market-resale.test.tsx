@@ -15,15 +15,21 @@ import {
     setWide,
 } from './inertia-mock';
 
-type ResponseReader = (response: { status: number; data: unknown }) => unknown;
+type ErrorReader = (error: {
+    response: { status: number; data: unknown };
+}) => unknown;
 
-/* The response readers the resale command installs while a command is out, as Inertia's http. */
-const responses = vi.hoisted(() => ({ readers: [] as ResponseReader[] }));
+/*
+ * The error readers the resale command installs while a command is out, as Inertia's http: its
+ * own client rejects a 422 and hands it to these before `useHttp` turns it into field errors.
+ */
+const responses = vi.hoisted(() => ({ readers: [] as ErrorReader[] }));
 
 vi.mock('@inertiajs/core', async (importOriginal) => ({
     ...(await importOriginal<typeof InertiaCore>()),
     http: {
-        onResponse: (reader: ResponseReader) => {
+        onResponse: () => () => undefined,
+        onError: (reader: ErrorReader) => {
             responses.readers.push(reader);
 
             return () => {
@@ -40,7 +46,7 @@ const refuses =
     (body: unknown): Responder =>
     () => {
         responses.readers.forEach((read) =>
-            read({ status: 422, data: JSON.stringify(body) }),
+            read({ response: { status: 422, data: JSON.stringify(body) } }),
         );
 
         return Promise.resolve(undefined);
@@ -380,6 +386,34 @@ describe('Market resale (BRS v3.0 §12)', () => {
         expect(
             within(card).getByText('25 available · 15 reserved by a buyer'),
         ).toBeInTheDocument();
+    });
+
+    it('lets another buyer buy only the units no one holds while a reservation is open (QA #663 retest)', async () => {
+        const user = userEvent.setup();
+        const props = page();
+
+        props.market.listings[0].reserved_units = '15';
+        render(<InvestorMarket {...props} />);
+        const card = within(
+            screen.getByRole('list', { name: 'Resale listings' }),
+        ).getAllByRole('listitem')[0];
+
+        expect(within(card).queryByText('Reserved')).not.toBeInTheDocument();
+        await user.click(within(card).getByRole('button', { name: 'Buy' }));
+        const sheet = screen.getByRole('dialog', {
+            name: 'Buy units of Kivu Harvest Ltd',
+        });
+        const units = within(sheet).getByLabelText('Units');
+
+        expect(units).toHaveValue('25');
+        await user.clear(units);
+        await user.type(units, '26');
+        expect(within(sheet).getByRole('alert')).toHaveTextContent(
+            'Only 25 units are free while another buyer holds the rest.',
+        );
+        expect(
+            within(sheet).getByRole('button', { name: 'Reserve units' }),
+        ).toBeDisabled();
     });
 
     it('asks before withdrawing a listing, then confirms it and keeps it under Cancelled (QA #663 item 1)', async () => {

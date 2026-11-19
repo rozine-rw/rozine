@@ -1,10 +1,10 @@
-import { http as transport } from '@inertiajs/core';
 import { router, useHttp } from '@inertiajs/react';
 import { useState } from 'react';
 import { LocalSheet, SheetClose } from '@/components/investor/local-sheet';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDateTime, formatRwf } from '@/lib/rozine/format';
 import { readErrorCode, readErrorData } from '@/lib/rozine/operation';
+import { readValidationBodies } from '@/lib/rozine/validation-body';
 import { cn } from '@/lib/utils';
 import type {
     MarketClosedListing,
@@ -73,17 +73,9 @@ export function useResaleCommand(identityRevision: number) {
         onDone?: () => void,
     ): Promise<boolean> => {
         let failure: MarketRefusal | null = null;
-        /*
-         * useHttp hands a 422 over as field errors only, so the refusal's code and facts are read
-         * from the response itself while this command is out (QA: a reserve over the holding
-         * limit showed only REQUEST_FAILED).
-         */
-        const stopReading = transport.onResponse((response) => {
-            if (response.status === 422) {
-                failure = readRefusal(response.data);
-            }
-
-            return response;
+        /* A 422's code and facts are read from the response itself while this command is out. */
+        const stopReading = readValidationBodies((data) => {
+            failure = readRefusal(data);
         });
 
         setBusy(true);
@@ -459,9 +451,12 @@ export function BuySheet({
 }) {
     const { t } = useTranslation();
     const command = useResaleCommand(identityRevision);
-    const [units, setUnits] = useState(listing.remaining_units);
+    /** Units no other buyer holds: another buyer's reservation keeps only its own units (SEC-R04, SEC-R05). */
+    const heldByOthers = Number(listing.reserved_units ?? '0');
+    const free = Math.max(0, Number(listing.remaining_units) - heldByOthers);
+    const [units, setUnits] = useState(String(free));
     const count = wholeUnits(units);
-    const tooMany = count !== null && count > Number(listing.remaining_units);
+    const tooMany = count !== null && count > free;
     const valid = count !== null && !tooMany;
     const title = t('investor.market.resale.buy_title', {
         name: listing.deal_name,
@@ -511,9 +506,13 @@ export function BuySheet({
                         role="alert"
                         className="mt-1.5 text-[12px] text-rz-danger-text"
                     >
-                        {t('investor.market.resale.too_many', {
-                            count: Number(listing.remaining_units),
-                        })}
+                        {heldByOthers > 0
+                            ? t('investor.market.resale.too_many_free', {
+                                  count: free,
+                              })
+                            : t('investor.market.resale.too_many', {
+                                  count: free,
+                              })}
                     </p>
                 )}
                 {valid && (
