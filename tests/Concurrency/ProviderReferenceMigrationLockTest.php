@@ -23,11 +23,14 @@ it('installs the provider reference registry behind in-flight deposit writers wi
     // rollback tests in the same database can leave its tables without those kinds, so reinstall it before the baseline.
     // Servicing payouts reference Business repayments and rebind the ledger kinds after the secondary market, so they come off before it and go back after it.
     $servicingPayouts = require database_path('migrations/2026_11_14_120000_create_servicing_payouts.php');
+    $disbursementPayouts = require database_path('migrations/2026_11_19_180000_add_disbursement_payout_entries.php');
     $secondaryMarket = require database_path('migrations/2026_11_11_060000_create_secondary_market_tables.php');
+    $disbursementPayouts->down();
     $servicingPayouts->down();
     $secondaryMarket->down();
     $secondaryMarket->up();
     $servicingPayouts->up();
+    $disbursementPayouts->up();
     $installed = $shape();
     $businessDeposits = require database_path('migrations/2026_10_03_120000_create_business_deposit_records.php');
     $businessRepayments = require database_path('migrations/2026_10_04_100000_create_business_repayment_records.php');
@@ -35,7 +38,7 @@ it('installs the provider reference registry behind in-flight deposit writers wi
     $platformFee = require database_path('migrations/2026_10_16_161905_add_platform_fee_to_disbursements.php');
     $automaticDisbursement = require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php');
     $restore = function () use ($migration, $businessDeposits, $businessRepayments, $businessWithdrawals, $platformFee, $automaticDisbursement,
-        $secondaryMarket, $servicingPayouts): void {
+        $secondaryMarket, $servicingPayouts, $disbursementPayouts): void {
         if (! Schema::hasTable('provider_references')) {
             $migration->up();
         }
@@ -46,7 +49,9 @@ it('installs the provider reference registry behind in-flight deposit writers wi
         $automaticDisbursement->up();
         $secondaryMarket->up();
         $servicingPayouts->up();
+        $disbursementPayouts->up();
     };
+    $disbursementPayouts->down();
     $servicingPayouts->down();
     $secondaryMarket->down();
     $automaticDisbursement->down();
