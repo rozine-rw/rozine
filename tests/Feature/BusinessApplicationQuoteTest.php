@@ -107,7 +107,9 @@ it('names the 1.5 times limit on an application signed before the limit existed,
     expect($signed['repeat_growth_limit'] ?? null)->toBeNull();
 
     app()->instance(ServicingRecord::class, repaidServicing([$signed['principal']['amount']]));
-    expect(BusinessQuoteFixture::quote($fixture)['repeat_growth_limit'] ?? null)->not->toBeNull();
+    expect(BusinessQuoteFixture::quote($fixture)['repeat_growth_limit'] ?? null)->not->toBeNull()
+        // The application page reads the signed review, which names it too.
+        ->and(BusinessQuoteFixture::review($fixture)['quote']['repeat_growth_limit'] ?? null)->toEqual(BusinessQuoteFixture::quote($fixture)['repeat_growth_limit'] ?? 'missing');
     app()->instance(ServicingRecord::class, repaidServicing(['20000000', '3000000']));
     expect(BusinessQuoteFixture::quote($fixture))->toHaveKey('repeat_growth_limit', null);
 });

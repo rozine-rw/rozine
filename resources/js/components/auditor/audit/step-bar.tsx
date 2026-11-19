@@ -27,13 +27,13 @@ export function StepBar({
     return (
         <ol
             aria-label={t('auditor.audit.steps')}
-            className="mt-3.5 flex gap-1.5"
+            className="mt-3.5 flex gap-1.5 overflow-x-auto pb-1"
         >
             {steps.map((step) => (
                 <li
                     key={step.key}
                     aria-current={step.state === 'current' ? 'step' : undefined}
-                    className="flex-1"
+                    className="min-w-[56px] flex-1"
                 >
                     <span
                         aria-hidden

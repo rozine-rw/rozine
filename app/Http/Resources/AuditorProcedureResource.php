@@ -273,6 +273,7 @@ class AuditorProcedureResource extends JsonResource
     {
         $findings = [];
         $summary = [];
+        $causes = [];
         foreach ($seal['findings'] as $index => $finding) {
             $values = AuditorJobsResource::figures(array_intersect_key($finding, array_flip(['reported', 'observed', 'difference'])));
             $title = match ($finding['measure']) {
@@ -285,9 +286,14 @@ class AuditorProcedureResource extends JsonResource
             $money = in_array($finding['measure'], ['stock_value', 'cash', 'costs', 'owner_drawings'], true) ? 'RWF ' : '';
             $summary[] = ! isset($finding['reported']) ? ['label' => $title, 'value' => (string) $values['observed'], 'tone' => 'neutral']
                 : ($finding['difference'] === '0' ? ['label' => $title, 'value' => __('Matches: :value', ['value' => $money.$values['observed']]), 'tone' => 'ok']
-                    : ['label' => $title, 'value' => implode(' · ', [__('Declared :reported, verified :observed', ['reported' => $money.$values['reported'], 'observed' => $money.$values['observed']]),
-                        // The causes step 9 gave this difference (QA #685).
-                        ...array_map(fn (array $part): string => self::causeLabel($part['cause']).' '.$money.AuditorJobsResource::figures(['amount' => $part['amount']])['amount'], $finding['explained_by'] ?? [])]), 'tone' => 'flag']);
+                    : ['label' => $title, 'value' => __('Declared :reported, verified :observed', ['reported' => $money.$values['reported'], 'observed' => $money.$values['observed']]), 'tone' => 'flag']);
+            foreach ($finding['explained_by'] ?? [] as $part) {
+                $causes[] = self::causeLabel($part['cause']).' RWF '.AuditorJobsResource::figures(['amount' => $part['amount']])['amount'];
+            }
+        }
+        // Step 9 explains the whole difference at once, not each gap, so its causes are listed once (QA #685).
+        if ($causes !== []) {
+            $summary[] = ['label' => __('Explained in step 9'), 'value' => implode(' · ', $causes), 'tone' => 'neutral'];
         }
 
         return ['step' => 'seal', 'summary' => $summary, 'note' => ['required' => $seal['note_required'],
