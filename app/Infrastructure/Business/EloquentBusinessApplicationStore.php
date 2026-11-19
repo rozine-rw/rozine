@@ -452,13 +452,7 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
                 function (?array $credit) use ($business, $verification, $businessId, $applicationId): ?array {
                     $application = $this->application($businessId, $applicationId);
                     if ($application->status === 'submitted') {
-                        $submitted = $this->submittedReview($application)['quote'];
-                        // A quote signed before the 1.5x limit existed carries none: name the limit when the offer is within it (QA #673).
-                        if (is_array($submitted) && ($submitted['status'] ?? null) === 'ready' && ($submitted['repeat_growth_limit'] ?? null) === null) {
-                            $submitted['repeat_growth_limit'] = $this->repeatGrowthLimit($businessId, null, $submitted['principal']['amount']);
-                        }
-
-                        return $submitted;
+                        return $this->submittedReview($application)['quote'];
                     }
                     $quote = $this->currentQuote($application, $business, $verification, $credit);
 
@@ -807,7 +801,14 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
     /** @return array<string, mixed> */
     private function submittedReview(BusinessApplication $application): array
     {
-        return $this->submittedSnapshot($application)['review'];
+        $review = $this->submittedSnapshot($application)['review'];
+        $quote = $review['quote'] ?? null;
+        // A quote signed before the 1.5x limit existed carries none: name the limit when the offer is within it (QA #673).
+        if (is_array($quote) && ($quote['status'] ?? null) === 'ready' && ($quote['repeat_growth_limit'] ?? null) === null) {
+            $review['quote']['repeat_growth_limit'] = $this->repeatGrowthLimit($application->business_id, null, $quote['principal']['amount']);
+        }
+
+        return $review;
     }
 
     /** @return array<string, mixed> */
