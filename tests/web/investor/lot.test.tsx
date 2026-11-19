@@ -50,4 +50,18 @@ describe('Bought lot (QA #663 item 2)', () => {
         expect(within(rows[1]).getByText(/^Paid /)).toBeInTheDocument();
         expect(within(rows[2]).getByText(/^Due /)).toBeInTheDocument();
     });
+
+    it('shows a repaid lot as repaid in full, with nothing to resell', () => {
+        const props = page();
+        props.lot.repaid = true;
+        props.lot.next_payment = null;
+        render(<InvestorLot {...props} />);
+
+        expect(screen.getByText('Repaid in full')).toBeInTheDocument();
+        expect(screen.queryByText(/^Matures /)).not.toBeInTheDocument();
+        expect(screen.getByText('No payment ahead')).toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', { name: 'Resell on the market' }),
+        ).not.toBeInTheDocument();
+    });
 });

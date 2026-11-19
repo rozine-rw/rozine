@@ -140,9 +140,16 @@ export default function InvestorLot(props: InvestorLotProps) {
                         <Tile
                             label={t('investor.lot.units_held')}
                             value={lot.units}
-                            sub={t('investor.lot.matures', {
-                                date: formatDate(lot.matures_on, locale),
-                            })}
+                            sub={
+                                lot.repaid
+                                    ? t('investor.lot.repaid')
+                                    : t('investor.lot.matures', {
+                                          date: formatDate(
+                                              lot.matures_on,
+                                              locale,
+                                          ),
+                                      })
+                            }
                         />
                         <Tile
                             label={t('investor.lot.received')}
@@ -182,12 +189,14 @@ export default function InvestorLot(props: InvestorLotProps) {
                             ))}
                         </ul>
                     </section>
-                    <Link
-                        href={links.market}
-                        className="mt-5 flex h-11 items-center justify-center rounded-xl border border-rz-border bg-rz-surface text-[13.5px] font-bold text-rz-ink"
-                    >
-                        {t('investor.lot.resell')}
-                    </Link>
+                    {lot.repaid ? null : (
+                        <Link
+                            href={links.market}
+                            className="mt-5 flex h-11 items-center justify-center rounded-xl border border-rz-border bg-rz-surface text-[13.5px] font-bold text-rz-ink"
+                        >
+                            {t('investor.lot.resell')}
+                        </Link>
+                    )}
                 </div>
             </div>
         </InvestorShell>

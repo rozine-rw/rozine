@@ -154,8 +154,8 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
     }
 
     /**
-     * Every lot the Party holds, primary and bought, with the units not already listed and the
-     * note's price cap now; `tradable` is whether the note's trading window is open.
+     * Every lot the Party holds, primary and bought, on a note not yet repaid, with the units not
+     * already listed and the note's price cap now; `tradable` is whether the note's trading window is open.
      *
      * @param  Closure(string): string  $name
      * @return list<SellableLot>
@@ -167,7 +167,9 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
         $lots = [];
         foreach ($noteIds as $noteId) {
             $note = $this->notes->find($noteId);
-            if ($note === null) {
+            // A note whose every instalment has posted is repaid: nothing is left to sell (QA #663).
+            if ($note === null || ($note['posted_through'] !== null && $note['instalments'] !== []
+                && substr($note['instalments'][count($note['instalments']) - 1]['due_on'], 0, 10) <= $note['posted_through'])) {
                 continue;
             }
             $cap = $this->cap($note);

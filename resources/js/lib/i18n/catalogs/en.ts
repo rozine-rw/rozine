@@ -5180,6 +5180,7 @@ const en = {
     'investor.lot.next_payment': 'NEXT PAYMENT',
     'investor.lot.no_next': 'No payment ahead',
     'investor.lot.matures': 'Matures {date}',
+    'investor.lot.repaid': 'Repaid in full',
     'investor.lot.schedule': 'Payment schedule',
     'investor.lot.instalment': 'Payment {index}',
     'investor.lot.status.paid': 'Paid {date}',

@@ -5373,6 +5373,7 @@ const rw: Catalog = {
     'investor.lot.next_payment': 'KWISHYURWA GUKURIKIRA',
     'investor.lot.no_next': 'Nta kwishyurwa gutegerejwe',
     'investor.lot.matures': 'Birangira {date}',
+    'investor.lot.repaid': 'Byishyuwe byose',
     'investor.lot.schedule': 'Gahunda yo kwishyurwa',
     'investor.lot.instalment': 'Kwishyurwa {index}',
     'investor.lot.status.paid': 'Byishyuwe {date}',

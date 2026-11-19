@@ -303,7 +303,9 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
                     $funding = $this->fundings->find($campaign->id) ?? throw new RuntimeException('CAMPAIGN_FUNDING_INTEGRITY_FAILED');
                     $raised = $raised->plus($funding['principal']);
                     $outstanding = in_array($campaign->id, $repaid, true) ? $outstanding : $outstanding->plus($funding['principal']);
-                    $investors = [...$investors, ...array_column($funding['commitments'], 'party_id')];
+                    // Who holds the note's units now, resale buyers included, as the raise page counts them (QA #663).
+                    $lots = array_filter($this->unitHolders->lots($campaign->id), fn (array $lot): bool => (int) $lot['units'] > 0);
+                    $investors = [...$investors, ...array_column($lots !== [] ? $lots : $funding['commitments'], 'party_id')];
                 }
                 $committed = $closure['committed_refunded']['amount'] ?? $progress['committed']['amount'];
                 $notes[] = ['campaign_id' => $campaign->id, 'title' => $payload['title'], 'created_at' => $payload['recorded_at'],
