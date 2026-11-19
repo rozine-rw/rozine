@@ -99,6 +99,13 @@ it('splits a platform fee between Rozine revenue and the Audit Partner payable, 
         ->and(fn () => JournalEntry::platformFee(WalletMoney::of('360000'), WalletMoney::of('360000')))->toThrow(WalletViolation::class, 'PLATFORM_FEE_SPLIT_INVALID');
 });
 
+it('sends a disbursement payout from settlement to the provider clearing account (QA #663)', function (): void {
+    $entry = JournalEntry::disbursementPayout(WalletMoney::of('10476000'));
+    expect($entry->kind)->toBe('disbursement_payout')
+        ->and(journalLines($entry))->toBe([['disbursement_settlement', 'debit', '10476000'], ['withdrawal_clearing', 'credit', '10476000']])
+        ->and(fn () => JournalEntry::disbursementPayout(WalletMoney::zero()))->toThrow(WalletViolation::class);
+});
+
 it('has no Rozine account that could pay for or receive a note (BRS GEN-R01)', function (): void {
     $rozineAccounts = array_values(array_filter(JournalLine::ACCOUNTS,
         fn (string $account): bool => ! str_starts_with($account, 'investor_') && ! str_starts_with($account, 'business_')));

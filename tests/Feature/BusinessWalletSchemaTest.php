@@ -120,7 +120,7 @@ it('derives an owner for exactly the wallet kinds every ledger constraint admits
         'investor_withdrawing' => 'investor', 'platform_fee_revenue' => null, 'repayment_clearing' => null, 'secondary_fee_revenue' => null,
         'secondary_settlement' => null, 'withdrawal_clearing' => null])
         ->and($entryOwners)->toBe(['business_deposit_credit' => 'business', 'business_repayment_debit' => 'business',
-            'business_withdrawal_hold' => 'business', 'business_withdrawal_payout' => 'business', 'business_withdrawal_return' => 'business', 'deposit_credit' => 'investor', 'disbursement_platform_fee' => 'business', 'primary_commit' => 'investor',
+            'business_withdrawal_hold' => 'business', 'business_withdrawal_payout' => 'business', 'business_withdrawal_return' => 'business', 'deposit_credit' => 'investor', 'disbursement_payout' => 'business', 'disbursement_platform_fee' => 'business', 'primary_commit' => 'investor',
             'primary_hold' => 'investor', 'primary_issue' => 'investor', 'primary_refund' => 'investor', 'primary_release' => 'investor',
             'secondary_hold' => 'investor', 'secondary_purchase' => 'investor', 'secondary_release' => 'investor', 'secondary_sale' => 'investor', 'servicing_payout' => 'investor',
             'withdrawal_hold' => 'investor', 'withdrawal_payout' => 'investor', 'withdrawal_return' => 'investor']);

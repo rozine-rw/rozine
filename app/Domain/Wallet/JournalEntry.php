@@ -90,6 +90,17 @@ final readonly class JournalEntry
     }
 
     /**
+     * A disbursement's payout (QA #663): the net the Business was sent, the principal less the
+     * platform fee, leaves disbursement settlement for the provider's clearing account, as a paid
+     * withdrawal does, so the settlement account holds nothing once the note is issued.
+     */
+    public static function disbursementPayout(WalletMoney $net): self
+    {
+        return self::balanced('disbursement_payout', [new JournalLine('disbursement_settlement', 'debit', $net),
+            new JournalLine('withdrawal_clearing', 'credit', $net)]);
+    }
+
+    /**
      * A primary movement: the source bucket is debited and the destination credited by the same
      * amount. Between the Investor's own buckets (hold, commit, release, refund) the total never
      * changes; an issue moves committed principal out to the system settlement account, so it

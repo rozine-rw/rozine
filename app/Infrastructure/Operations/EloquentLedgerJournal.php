@@ -17,8 +17,9 @@ use stdClass;
  * reference comes from the entry's source record: the deposit intent's or withdrawal's provider
  * reference (sealed at rest, so it is opened here and searched only by its exact SHA-256), or the
  * Business behind a primary reservation, commitment, repayment, disbursement closing, servicing
- * payout or resale reservation. A disbursement closing is also found by its payout's bank reference
- * or masked bank destination.
+ * payout or resale reservation. A disbursement closing is also found by its payout's bank reference,
+ * masked bank destination or its disbursement's `DSB-` reference, and any entry by an amount one of
+ * its lines moved.
  *
  * @phpstan-import-type Entry from LedgerJournal
  * @phpstan-import-type Line from LedgerJournal
@@ -93,7 +94,7 @@ final readonly class EloquentLedgerJournal implements LedgerJournal
         'wallet deposit' => ['deposit_credit', 'business_deposit_credit'],
         'withdrawal' => ['withdrawal_hold', 'withdrawal_payout', 'withdrawal_return', 'business_withdrawal_hold', 'business_withdrawal_payout', 'business_withdrawal_return'],
         'investment' => ['primary_hold', 'primary_commit', 'primary_release', 'primary_refund'],
-        'disbursement' => ['primary_issue'],
+        'disbursement' => ['primary_issue', 'disbursement_payout'],
         'platform fee' => ['disbursement_platform_fee'],
         'repayment' => ['business_repayment_debit'],
         'investor payout' => ['servicing_payout'],
@@ -114,7 +115,13 @@ final readonly class EloquentLedgerJournal implements LedgerJournal
                 ->orWhereRaw('lower(('.sprintf(self::PAYOUT, "business_funding_methods.label || ' ' || business_funding_methods.masked").')) like ?', [$like])
                 ->orWhereRaw('('.sprintf(self::PAYOUT, 'disbursement_intents.provider_reference_sha256').') = ?', [hash('sha256', trim((string) $search))])
                 ->orWhereRaw('('.sprintf(self::SEALED, 'provider_reference_sha256').') = ?', [hash('sha256', trim((string) $search))])
-                ->orWhereRaw('lower(('.sprintf(self::OWNER, 'ledger_entries.wallet_id').')) like ?', [$like]));
+                ->orWhereRaw('lower(('.sprintf(self::OWNER, 'ledger_entries.wallet_id').')) like ?', [$like])
+                // The disbursement's own reference as staff read it on Disbursements, e.g. "DSB-B5JG30PJ" (QA #663).
+                ->orWhereRaw("('dsb-' || lower(right((".sprintf(self::PAYOUT, 'disbursement_closings.disbursement_id').'), 8))) = ?', [$term])
+                // An amount, as staff type it ("5,820,000", "RWF 5820000"), finds every entry with a line of exactly that.
+                ->when(preg_match('/^(rwf\s*)?\d[\d,\s]*$/', $term) === 1, fn (Builder $amount) => $amount->orWhereExists(fn (Builder $line) => $line
+                    ->selectRaw('1')->from('ledger_lines')->whereColumn('ledger_lines.entry_id', 'ledger_entries.id')
+                    ->where('ledger_lines.amount', (string) preg_replace('/\D/', '', $term)))));
         });
         $limit = max(1, $limit);
         $rows = $this->select(clone $matching)->when($before !== null, fn (Builder $query) => $query->where('ledger_entries.id', '<', $before))
