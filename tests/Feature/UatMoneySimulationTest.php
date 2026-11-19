@@ -424,11 +424,32 @@ it('shows a resale on both sides: the buyer\'s units in Portfolio and both walle
 
     $this->actingAs($buyer)->get(route('investor.portfolio', ['tab' => 'secondary']))
         ->assertInertia(fn (Assert $page): Assert => $page->where('bought.0.lot_id', $transfer->id)->where('bought.0.units', '2')
-            ->where('bought.0.price.amount', $price)->where('bought.0.paid.amount', $paid)->where('bought.0.link.url', route('investor.market', [], false))
+            ->where('bought.0.price.amount', $price)->where('bought.0.paid.amount', $paid)->where('bought.0.link.url', route('investor.lots.show', $transfer->id, false))
             ->where('totals.businesses', 1)->where('totals.invested.amount', $paid)->etc());
     $this->actingAs($buyer)->get(route('investor.portfolio'))->assertInertia(fn (Assert $page): Assert => $page->where('bought.0.lot_id', $transfer->id)
         ->where('payouts', fn ($months): bool => count($months) > 0)->where('totals.next_payout', fn ($next): bool => $next !== null)->etc());
     $this->actingAs($buyer)->get(route('investor.portfolio', ['tab' => 'matured']))->assertInertia(fn (Assert $page): Assert => $page->where('bought', [])->etc());
+
+    // The bought lot opens its own page: what it cost, its schedule for the units held, and what it is paid (QA #663 item 2).
+    $schedule = app(RetainedNoteSchedules::class)->find($note['campaign']);
+    $this->actingAs($buyer)->get(route('investor.lots.show', $transfer->id))
+        ->assertInertia(fn (Assert $page): Assert => $page->component('investor/lot')->where('contract_version', 'investor-lot-v1')
+            ->where('lot.lot_id', $transfer->id)->where('lot.units', '2')->where('lot.paid.amount', $paid)->where('lot.price.amount', $price)
+            ->where('lot.received.amount', '0')->where('lot.payments_made', 0)->has('lot.schedule', count($schedule->instalments))
+            ->where('lot.schedule.0.status', 'upcoming')->where('lot.next_payment', fn ($next): bool => $next !== null)
+            ->where('links.back.url', route('investor.portfolio', ['tab' => 'secondary'], false))->etc());
+    $this->actingAs($seller)->get(route('investor.lots.show', $transfer->id))->assertNotFound();
+    $this->actingAs($buyer)->get(route('investor.lots.show', strtolower((string) Str::ulid())))->assertNotFound();
+    asUatProfile(...config('app.uat_money_simulation_businesses'));
+    $this->actingAs($note['payer'])->postJson(route('business.repayments.pay', $note['business']),
+        ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, 'note_id' => $note['campaign'], 'option' => 'next_instalment',
+            'expected_servicing_revision' => 1, 'quoted_total' => ['currency' => 'RWF', 'amount' => $schedule->instalments[0]->gross]])->assertOk();
+    app()->forgetInstance(EnvironmentIsolation::class);
+    config(['app.uat_money_simulation' => false]);
+    $lotPayout = DB::table('servicing_payouts')->where('lot_type', 'secondary_transfer')->where('lot_id', $transfer->id)->sole();
+    $this->actingAs($buyer)->get(route('investor.lots.show', $transfer->id))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('lot.schedule.0.status', 'paid')->where('lot.schedule.0.net.amount', (string) $lotPayout->net)
+            ->where('lot.received.amount', (string) $lotPayout->net)->where('lot.payments_made', 1)->etc());
 
     $this->actingAs($seller)->get(route('investor.holdings.show', $holding->holdingId))
         ->assertInertia(fn (Assert $page): Assert => $page->where('holding.resold_units', '2')->where('holding.issue.units', (string) $holding->units)
@@ -442,7 +463,7 @@ it('reads the Market closed, offering nothing, while resale is off', function ()
     $investor = InvestorWalletFixture::ready()['user'];
 
     $this->actingAs($investor)->get(route('investor.market'))
-        ->assertInertia(fn (Assert $page): Assert => $page->where('market', ['open' => false, 'listings' => [], 'sellable' => [], 'trades' => []])
+        ->assertInertia(fn (Assert $page): Assert => $page->where('market', ['open' => false, 'listings' => [], 'sellable' => [], 'trades' => [], 'closed' => []])
             ->where('actions.list', null)->where('links.wallet.url', route('investor.wallet', [], false))->etc());
     $this->actingAs($investor)->postJson(route('investor.market_list'), ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1,
         'lot_id' => strtolower((string) Str::ulid()), 'units' => '1', 'price' => '100'])->assertStatus(503)->assertJsonPath('code', 'SECONDARY_TRADING_DISABLED');

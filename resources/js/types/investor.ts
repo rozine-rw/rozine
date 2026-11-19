@@ -2066,6 +2066,33 @@ export type C3InvestorHoldingProps = InvestorPageContract & {
     };
 };
 
+/** One instalment of a bought lot: paid to it, paid to the seller before the purchase, or still to come. */
+export type LotInstalment = {
+    index: number;
+    due_on: string;
+    /** What the instalment pays on the units held, net of the earnings fee. */
+    expected: Money;
+    status: 'paid' | 'before_purchase' | 'upcoming';
+    paid_on: string | null;
+    net: Money | null;
+};
+
+/** The bought-lot page (`investor-lot-v1`): one lot bought on the market, its cost, payouts and schedule. */
+export type InvestorLotProps = {
+    contract_version: 'investor-lot-v1';
+    identity_context_revision: number;
+    server_time: string;
+    lot: BoughtLot & {
+        received: Money;
+        payments_made: number;
+        payments_total: number;
+        next_payment: { amount: Money; due_on: string } | null;
+        matures_on: string;
+        schedule: LotInstalment[];
+    };
+    links: InvestorAppLinks & { back: RouteLink; changes?: RouteLink | null };
+};
+
 /* ------------------------------------------------------------------------------------------ */
 /* Checkpoint 4: investor-servicing-v1 (C4 contract proposal v1 §4c, §4f)                      */
 /* ------------------------------------------------------------------------------------------ */
