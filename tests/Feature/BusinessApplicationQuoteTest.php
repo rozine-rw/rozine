@@ -83,6 +83,34 @@ it('caps a repeat raise at 1.5 times the last note repaid in full, and refuses t
     expect(BusinessQuoteFixture::evaluate($fixture, 3, '9005000'))->toMatchArray(['status' => 'rejected', 'code' => 'INVALID_ACCEPTED_PRINCIPAL', 'http_status' => 422]);
 });
 
+/** @param  list<string>  $principals */
+function repaidServicing(array $principals): ServicingRecord
+{
+    return new class($principals) implements ServicingRecord
+    {
+        /** @param  list<string>  $principals */
+        public function __construct(private array $principals) {}
+
+        public function forBusiness(string $businessId): array
+        {
+            return ['repaid' => array_map(fn (string $principal, int $index): array => ['campaign_id' => "repaid-{$index}",
+                'exposure_reservation_id' => "reservation-{$index}", 'principal' => $principal], $this->principals, array_keys($this->principals)),
+                'instalments_paid' => 6, 'paid_on_time' => 6];
+        }
+    };
+}
+
+it('names the 1.5 times limit on a quote made before the limit existed, only when the offer is within it (QA #673)', function (): void {
+    $fixture = BusinessQuoteFixture::make();
+    BusinessQuoteFixture::evaluate($fixture);
+    expect(BusinessApplicationQuote::query()->firstOrFail()->payload['result']['inputs'])->not->toHaveKey('last_repaid_principal');
+
+    app()->instance(ServicingRecord::class, repaidServicing(['10000000']));
+    expect(BusinessQuoteFixture::quote($fixture)['repeat_growth_limit'] ?? null)->toEqual(['currency' => 'RWF', 'amount' => '15000000']);
+    app()->instance(ServicingRecord::class, repaidServicing(['20000000', '6000000']));
+    expect(BusinessQuoteFixture::quote($fixture))->toHaveKey('repeat_growth_limit', null);
+});
+
 it('keeps the original request and maximum offer when publishing a lower accepted amount', function (): void {
     $fixture = BusinessQuoteFixture::make();
     $first = BusinessQuoteFixture::evaluate($fixture);

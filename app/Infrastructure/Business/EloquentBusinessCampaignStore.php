@@ -667,11 +667,13 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         }
         $reportId = $release?->payload['binding']['report']['id'] ?? null;
         $report = is_string($reportId) ? DB::table('audit_reports')->join('audit_report_publications', 'audit_report_publications.audit_report_id', '=', 'audit_reports.id')
-            ->where('audit_reports.id', $reportId)->first(['audit_reports.kind', 'audit_report_publications.published_at']) : null;
+            ->leftJoin('audit_report_seals', 'audit_report_seals.audit_report_id', '=', 'audit_reports.id')
+            ->where('audit_reports.id', $reportId)->first(['audit_reports.kind', 'audit_report_publications.published_at', 'audit_report_seals.created_at as sealed_at']) : null;
         if ($report !== null && $report->published_at !== null) {
-            // On UAT the simulated review is recorded at its window's end, which may still be to come: the
-            // report was published before the release that bound it, so it never reads later than that.
-            $published = CarbonImmutable::parse((string) $report->published_at);
+            // Dated when the report was sealed, as its label says. On UAT the simulated review is recorded at its
+            // window's end, which may still be to come: the report was published before the release that bound it,
+            // so it never reads later than that.
+            $published = CarbonImmutable::parse((string) ($report->sealed_at ?? $report->published_at));
             $bound = $release === null ? CarbonImmutable::now('UTC') : CarbonImmutable::parse((string) $release->payload['recorded_at']);
             $entries[] = ['id' => (string) $reportId, 'at' => $at(($published->isAfter($bound) ? $bound : $published)->toIso8601String()), 'actor' => 'Audit Partner',
                 'action' => ['code' => 'report.publish', 'label' => 'Evidence re-verified · '.str_replace('_', ' ', (string) $report->kind).' audit sealed', 'tone' => 'purple'],

@@ -477,7 +477,7 @@ final class AuditProcedure
             $total = $total->plus(BigDecimal::of($amount));
         }
         if (! $total->isEqualTo(BigDecimal::of($difference))) {
-            throw new CommandRejection('AUDIT_DIFFERENCE_UNEXPLAINED', 422, fieldErrors: ['explanations' => ['Explain the whole difference of RWF '.$difference.', to the franc.']]);
+            throw new CommandRejection('AUDIT_DIFFERENCE_UNEXPLAINED', 422, fieldErrors: ['explanations' => ['Explain the whole difference of RWF '.preg_replace('/\B(?=(\d{3})+(?!\d))/', ',', $difference).', to the franc.']]);
         }
         $ordered = [];
         foreach (self::DIFFERENCE_CAUSES as $cause) {
@@ -641,6 +641,8 @@ final class AuditProcedure
 
     private function text(mixed $value, string $field, int $max, bool $required): string
     {
+        // A field left empty reaches us as null once the framework trims the request: an optional one is then blank.
+        $value ??= '';
         if (! is_string($value) || ! mb_check_encoding($value, 'UTF-8') || mb_strlen($value) > $max
             || preg_match('/[\p{Cc}\p{Cf}]/u', $value) || ($required && trim($value) === '')) {
             throw new CommandRejection('AUDIT_STEP_INPUT_INVALID', 422, fieldErrors: [$field => ['Use plain text of at most '.$max.' characters.']]);

@@ -1046,6 +1046,16 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
         $instalments = array_values($offer['instalments']);
         // A repeat raise is also limited to 1.5 times the last note repaid in full (REP-R05), binding or not.
         $lastRepaid = $result['inputs']['last_repaid_principal'] ?? null;
+        if (! is_string($lastRepaid) && ! array_key_exists('last_repaid_principal', $result['inputs'])) {
+            // A quote signed before the limit existed did not record it: name it only when the offer is within it.
+            $repaid = $this->servicing->forBusiness($payload['business_id'])['repaid'];
+            $lastRepaid = $repaid === [] ? null : $repaid[array_key_last($repaid)]['principal'];
+        }
+        $growthLimit = is_string($lastRepaid) ? (string) ExactFinancialValue::floor(
+            ExactFinancialValue::amount($lastRepaid)->toBigRational()->multipliedBy(LoanCapacity::REPEAT_GROWTH)) : null;
+        if ($growthLimit !== null && ExactFinancialValue::amount($offer['principal']['amount'])->isGreaterThan($growthLimit)) {
+            $growthLimit = null;
+        }
 
         return ['status' => 'ready', 'quote_id' => $quote->id, 'quote_revision' => $quote->revision,
             'policy_version' => $payload['policy_version'], 'evidence_version' => $payload['evidence']['sha256'],
@@ -1058,8 +1068,7 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
             'schedule' => array_map(fn (int $index, array $amount): array => ['instalment' => $index + 1, 'amount' => $amount],
                 array_keys($instalments), $instalments),
             'reason_codes' => $result['capacity']['reason_codes'],
-            'repeat_growth_limit' => is_string($lastRepaid) ? ['currency' => 'RWF', 'amount' => (string) ExactFinancialValue::floor(
-                ExactFinancialValue::amount($lastRepaid)->toBigRational()->multipliedBy(LoanCapacity::REPEAT_GROWTH))] : null,
+            'repeat_growth_limit' => $growthLimit === null ? null : ['currency' => 'RWF', 'amount' => $growthLimit],
             'rate_basis' => ['band' => strtolower($result['scorecard']['band']), 'floor_pct' => '10.0', 'cap_pct' => '15.0',
                 'term_premium' => $result['pricing']['premium_percentage_points']]];
     }

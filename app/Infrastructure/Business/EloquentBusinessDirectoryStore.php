@@ -87,12 +87,15 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
             return self::entry((string) $closure['id'], $closure['closed_at'], (string) ($closure['name'] ?? 'System'),
                 $command, $title($campaign), null);
         });
-        // Each published audit report re-verified the Business's newest months (REP-R04).
-        $reports = array_map(fn (object $report): array => self::entry((string) $report->id, self::occurred((string) $report->published_at, (string) $report->updated_at), 'Audit Partner', 'report.publish',
+        // Each published audit report re-verified the Business's newest months (REP-R04), dated when it was sealed.
+        $reports = array_map(fn (object $report): array => self::entry((string) $report->id, $report->sealed_at !== null ? CarbonImmutable::parse((string) $report->sealed_at)->toIso8601String()
+            : self::occurred((string) $report->published_at, (string) $report->updated_at), 'Audit Partner', 'report.publish',
             str_replace('_', ' ', (string) $report->kind).' audit sealed', 'Report RPT-'.strtoupper(substr((string) $report->id, -8)).' verified the newest months against the business\'s records.'),
             DB::table('audit_reports')->join('audit_report_publications', 'audit_report_publications.audit_report_id', '=', 'audit_reports.id')
+                ->leftJoin('audit_report_seals', 'audit_report_seals.audit_report_id', '=', 'audit_reports.id')
                 ->where('audit_reports.business_id', $businessId)->where('audit_report_publications.status', 'published')
-                ->get(['audit_reports.id', 'audit_reports.kind', 'audit_report_publications.published_at', 'audit_report_publications.updated_at'])->all());
+                ->get(['audit_reports.id', 'audit_reports.kind', 'audit_report_publications.published_at', 'audit_report_publications.updated_at',
+                    'audit_report_seals.created_at as sealed_at'])->all());
         $history = [...array_values($mandates), ...$published->values()->all(), ...$closed->values()->all(), ...$reports];
         usort($history, fn (array $first, array $second): int => [$second['at'], $second['id']] <=> [$first['at'], $first['id']]);
 
