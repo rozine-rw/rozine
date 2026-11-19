@@ -839,6 +839,8 @@ const en = {
     'business.apply.offer.total': 'Total to repay',
     'business.apply.offer.sized.requested':
         'You are raising the full {requested} you asked for: it fits your cash flow, 35% of your yearly revenue less what you already owe, and the RWF 100M maximum.',
+    'business.apply.offer.sized.requested_repeat':
+        'You are raising the full {requested} you asked for: it fits your cash flow, 35% of your yearly revenue less what you already owe, {limit} (1.5 times the last note you repaid in full), and the RWF 100M maximum.',
     'business.apply.offer.sized.capacity':
         'Sized to what your business can carry (you asked for {requested}).',
     'business.apply.offer.sized.chosen':

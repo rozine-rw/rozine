@@ -664,6 +664,8 @@ export type ApplicationQuote =
           schedule: ScheduleInstalment[];
           /** Stable codes for how the offer was reached (e.g. resized); support and audit only. */
           reason_codes: string[];
+          /** A repeat raise's 1.5× the last note repaid in full (REP-R05), binding or not; null on a first raise. */
+          repeat_growth_limit: Money | null;
           rate_basis: {
               band: RatingBand | null;
               floor_pct: string;

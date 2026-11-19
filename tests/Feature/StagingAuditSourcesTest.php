@@ -7,6 +7,7 @@ use App\Application\Auditor\GetAuditProcedureSources;
 use App\Application\Auditor\GetAuditSourceFacts;
 use App\Application\Auditor\ReviewAuditPublication;
 use App\Application\Auditor\WithAcceptedAuditAssignment;
+use App\Application\Business\Contracts\BusinessDirectoryStore;
 use App\Application\Environment\EnvironmentIsolation;
 use App\Domain\Auditor\AuditEngagementState;
 use App\Domain\Auditor\Wgs84Distance;
@@ -197,4 +198,20 @@ it('ends a simulated Business\'s review window at once so its sealed report publ
     expect(app(ReviewAuditPublication::class)->advanceDue(100)['published'])->toBe(1)
         ->and($publication->refresh()->status)->toBe('published')
         ->and($publication->published_reason)->toBe('auto_approved');
+});
+
+it('dates a simulated review\'s re-verification when it published, not at the window end it records (QA #673)', function (): void {
+    $fixture = SealingFixture::ready();
+    SealingFixture::seal($fixture);
+    asStagingAuditDemo($fixture['audit']['business']);
+    app(ReviewAuditPublication::class)->advanceDue(100);
+    $publishedAt = now('UTC')->toIso8601String();
+    $publication = AuditReportPublication::query()->where('audit_report_id', $fixture['report']->id)->sole();
+    expect($publication->published_at->isFuture())->toBeTrue();
+
+    $this->travel(1)->hours();
+    $history = app(BusinessDirectoryStore::class)->business($fixture['audit']['business'])['history'] ?? [];
+    $entry = array_values(array_filter($history, fn (array $entry): bool => $entry['command'] === 'report.publish'));
+
+    expect(array_column($entry, 'at'))->toBe([$publishedAt]);
 });

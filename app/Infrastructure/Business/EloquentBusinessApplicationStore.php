@@ -34,6 +34,7 @@ use App\Domain\Operations\OperationResult;
 use App\Domain\Underwriting\ApplicationUnderwriting;
 use App\Domain\Underwriting\ExactFinancialValue;
 use App\Domain\Underwriting\FlatReturnPricing;
+use App\Domain\Underwriting\LoanCapacity;
 use App\Domain\Underwriting\UnderwritingObservationWindow;
 use App\Domain\Underwriting\UnderwritingViolation;
 use App\Models\BusinessApplication;
@@ -1043,6 +1044,8 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
         }
         $offer = $result['capacity']['offer'];
         $instalments = array_values($offer['instalments']);
+        // A repeat raise is also limited to 1.5 times the last note repaid in full (REP-R05), binding or not.
+        $lastRepaid = $result['inputs']['last_repaid_principal'] ?? null;
 
         return ['status' => 'ready', 'quote_id' => $quote->id, 'quote_revision' => $quote->revision,
             'policy_version' => $payload['policy_version'], 'evidence_version' => $payload['evidence']['sha256'],
@@ -1055,6 +1058,8 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
             'schedule' => array_map(fn (int $index, array $amount): array => ['instalment' => $index + 1, 'amount' => $amount],
                 array_keys($instalments), $instalments),
             'reason_codes' => $result['capacity']['reason_codes'],
+            'repeat_growth_limit' => is_string($lastRepaid) ? ['currency' => 'RWF', 'amount' => (string) ExactFinancialValue::floor(
+                ExactFinancialValue::amount($lastRepaid)->toBigRational()->multipliedBy(LoanCapacity::REPEAT_GROWTH))] : null,
             'rate_basis' => ['band' => strtolower($result['scorecard']['band']), 'floor_pct' => '10.0', 'cap_pct' => '15.0',
                 'term_premium' => $result['pricing']['premium_percentage_points']]];
     }

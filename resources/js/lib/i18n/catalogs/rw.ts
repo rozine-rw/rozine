@@ -860,6 +860,8 @@ const rw: Catalog = {
     'business.apply.offer.total': 'Igiteranyo cyo kwishyura',
     'business.apply.offer.sized.requested':
         'Urimo gukusanya {requested} yose wasabye: ihuye n’amafaranga yinjira, 35% by’ibyo winjiza ku mwaka ukuyemo ibyo ugifitiye Rozine, n’ntarengwa ya RWF 100M.',
+    'business.apply.offer.sized.requested_repeat':
+        'Urimo gukusanya {requested} yose wasabye: ihuye n’amafaranga yinjira, 35% by’ibyo winjiza ku mwaka ukuyemo ibyo ugifitiye Rozine, {limit} (inshuro 1.5 z’inguzanyo iheruka wishyuye yose), n’ntarengwa ya RWF 100M.',
     'business.apply.offer.sized.capacity':
         'Yagenwe ku bushobozi bw’ubucuruzi bwawe (wasabye {requested}).',
     'business.apply.offer.sized.chosen':
