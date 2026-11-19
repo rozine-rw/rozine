@@ -4272,7 +4272,6 @@ const en = {
     'business.servicing.repay.receipt_done': 'Done',
     'business.servicing.repay.recent': 'Recent repayments',
     'business.servicing.repay.row.due': '#{index} · due {date}',
-    'business.servicing.repay.row.paid': '#{index} · paid {date}',
     'business.servicing.repay.row.paid_due':
         '#{index} · due {due} · paid {date}',
     'business.servicing.repay.early': 'Early',
