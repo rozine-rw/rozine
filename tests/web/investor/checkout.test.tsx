@@ -55,6 +55,7 @@ vi.mock('@inertiajs/core', async (importOriginal) => ({
                 transport.onResponse = null;
             };
         },
+        onError: () => () => undefined,
     },
 }));
 

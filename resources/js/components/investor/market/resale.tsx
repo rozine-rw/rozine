@@ -1,10 +1,10 @@
-import { http as transport } from '@inertiajs/core';
 import { router, useHttp } from '@inertiajs/react';
 import { useState } from 'react';
 import { LocalSheet, SheetClose } from '@/components/investor/local-sheet';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDateTime, formatRwf } from '@/lib/rozine/format';
 import { readErrorCode, readErrorData } from '@/lib/rozine/operation';
+import { readValidationBodies } from '@/lib/rozine/validation-body';
 import { cn } from '@/lib/utils';
 import type {
     MarketClosedListing,
@@ -73,17 +73,9 @@ export function useResaleCommand(identityRevision: number) {
         onDone?: () => void,
     ): Promise<boolean> => {
         let failure: MarketRefusal | null = null;
-        /*
-         * useHttp hands a 422 over as field errors only, so the refusal's code and facts are read
-         * from the response itself while this command is out (QA: a reserve over the holding
-         * limit showed only REQUEST_FAILED).
-         */
-        const stopReading = transport.onResponse((response) => {
-            if (response.status === 422) {
-                failure = readRefusal(response.data);
-            }
-
-            return response;
+        /* A 422's code and facts are read from the response itself while this command is out. */
+        const stopReading = readValidationBodies((data) => {
+            failure = readRefusal(data);
         });
 
         setBusy(true);
