@@ -1,9 +1,10 @@
+import { http as transport } from '@inertiajs/core';
 import { router, useHttp } from '@inertiajs/react';
 import { useState } from 'react';
 import { LocalSheet, SheetClose } from '@/components/investor/local-sheet';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDateTime, formatRwf } from '@/lib/rozine/format';
-import { readErrorCode } from '@/lib/rozine/operation';
+import { readErrorCode, readErrorData } from '@/lib/rozine/operation';
 import { cn } from '@/lib/utils';
 import type {
     MarketClosedListing,
@@ -36,6 +37,27 @@ const money = (amount: number | string) => ({
 const wholeUnits = (value: string): number | null =>
     /^[1-9][0-9]{0,8}$/u.test(value) ? Number(value) : null;
 
+/** A refused resale command: the server's stable code and the facts it gave with it. */
+type MarketRefusal = { code: string; data: unknown };
+
+/** The refusal in an error body, or null when the body names no code. */
+const readRefusal = (body: unknown): MarketRefusal | null => {
+    const code = readErrorCode(body);
+
+    return code === null ? null : { code, data: readErrorData(body) };
+};
+
+/** One named fact from a refusal's data, such as `maximum_units` or `cap`. */
+const refusalFact = (data: unknown, name: string): unknown =>
+    typeof data === 'object' && data !== null
+        ? (data as Record<string, unknown>)[name]
+        : undefined;
+
+const isMoneyFact = (value: unknown): value is Money =>
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as Record<string, unknown>).amount === 'string';
+
 /**
  * One resale command from the Market (`investor.market_*`). The server decides; on success the page
  * reloads its board, and a refusal is shown by its code until the next try.
@@ -43,14 +65,26 @@ const wholeUnits = (value: string): number | null =>
 export function useResaleCommand(identityRevision: number) {
     const http = useHttp<Record<string, never>, { code: string }>();
     const [busy, setBusy] = useState(false);
-    const [refusal, setRefusal] = useState<string | null>(null);
+    const [refusal, setRefusal] = useState<MarketRefusal | null>(null);
 
     const send = async (
         action: RouteAction,
         input: Record<string, string>,
         onDone?: () => void,
     ): Promise<boolean> => {
-        let failure: string | null = null;
+        let failure: MarketRefusal | null = null;
+        /*
+         * useHttp hands a 422 over as field errors only, so the refusal's code and facts are read
+         * from the response itself while this command is out (QA: a reserve over the holding
+         * limit showed only REQUEST_FAILED).
+         */
+        const stopReading = transport.onResponse((response) => {
+            if (response.status === 422) {
+                failure = readRefusal(response.data);
+            }
+
+            return response;
+        });
 
         setBusy(true);
         setRefusal(null);
@@ -63,12 +97,12 @@ export function useResaleCommand(identityRevision: number) {
         try {
             const answer = await http.submit(action, {
                 onHttpException: (response) => {
-                    failure = readErrorCode(response.data);
+                    failure = readRefusal(response.data);
                 },
             });
 
             if (answer === undefined) {
-                setRefusal(failure ?? 'REQUEST_FAILED');
+                setRefusal(failure ?? { code: 'REQUEST_FAILED', data: null });
                 setBusy(false);
 
                 return false;
@@ -83,28 +117,81 @@ export function useResaleCommand(identityRevision: number) {
 
             return true;
         } catch {
-            setRefusal(failure ?? 'REQUEST_FAILED');
+            setRefusal(failure ?? { code: 'REQUEST_FAILED', data: null });
             setBusy(false);
 
             return false;
+        } finally {
+            stopReading();
         }
     };
 
     return { send, busy, refusal };
 }
 
-function Refusal({ code }: { code: string | null }) {
+/** Says why the market refused, in words where the code is known, by its code otherwise. */
+function Refusal({ refusal }: { refusal: MarketRefusal | null }) {
     const { t } = useTranslation();
 
-    if (code === null) {
+    if (refusal === null) {
         return null;
     }
 
     return (
         <p role="alert" className="mt-2.5 text-[12.5px] text-rz-danger-text">
-            {t('investor.market.resale.refused', { code })}
+            {refusalMessage(refusal, t)}
         </p>
     );
+}
+
+function refusalMessage(
+    { code, data }: MarketRefusal,
+    t: ReturnType<typeof useTranslation>['t'],
+): string {
+    switch (code) {
+        case 'HOLDING_LIMIT_EXCEEDED': {
+            const room = refusalFact(data, 'maximum_units');
+
+            if (typeof room !== 'string' || !/^[0-9]+$/u.test(room)) {
+                break;
+            }
+
+            return room === '0'
+                ? t('investor.market.resale.refusal.holding_full')
+                : t('investor.market.resale.refusal.holding_limit', {
+                      count: Number(room),
+                  });
+        }
+        case 'PRICE_ABOVE_CAP': {
+            const cap = refusalFact(data, 'cap');
+
+            if (!isMoneyFact(cap)) {
+                break;
+            }
+
+            return t('investor.market.resale.refusal.price_cap', {
+                cap: formatRwf(cap),
+            });
+        }
+        case 'UNITS_NOT_HELD':
+            return t('investor.market.resale.refusal.not_held');
+        case 'UNITS_NOT_LISTED':
+            return t('investor.market.resale.refusal.not_listed');
+        case 'OWN_LISTING':
+            return t('investor.market.resale.refusal.own_listing');
+        case 'LISTING_RESERVED':
+            return t('investor.market.resale.refusal.reserved');
+        case 'LISTING_CLOSED':
+            return t('investor.market.resale.refusal.closed');
+        case 'RESERVATION_NOT_OPEN':
+            return t('investor.market.resale.refusal.reservation_ended');
+        case 'TRADING_PAUSED':
+        case 'MARKET_HALTED':
+        case 'NOTE_HALTED':
+            return t('investor.market.resale.refusal.paused');
+    }
+
+    return t('investor.market.resale.refused', { code });
 }
 
 /**
@@ -181,7 +268,7 @@ function WithdrawControl({
                     {t('investor.market.resale.withdraw_keep')}
                 </button>
             </div>
-            <Refusal code={command.refusal} />
+            <Refusal refusal={command.refusal} />
         </div>
     );
 }
@@ -355,7 +442,7 @@ export function ListingCard({
                     </button>
                 </div>
             )}
-            <Refusal code={command.refusal} />
+            <Refusal refusal={command.refusal} />
         </li>
     );
 }
@@ -450,7 +537,7 @@ export function BuySheet({
                         ? t('investor.market.resale.working')
                         : t('investor.market.resale.reserve')}
                 </button>
-                <Refusal code={command.refusal} />
+                <Refusal refusal={command.refusal} />
             </form>
         </LocalSheet>
     );
@@ -602,7 +689,7 @@ export function SellSheet({
                         ? t('investor.market.resale.working')
                         : t('investor.market.resale.list')}
                 </button>
-                <Refusal code={command.refusal} />
+                <Refusal refusal={command.refusal} />
             </form>
         </LocalSheet>
     );

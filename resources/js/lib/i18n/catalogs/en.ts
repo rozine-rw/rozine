@@ -4525,6 +4525,27 @@ const en = {
     'investor.market.resale.closed_title': 'Listing · {name}',
     'investor.market.resale.see_cancelled': 'See it in Cancelled',
     'investor.market.resale.trade_sell': 'Sold · {name}',
+    'investor.market.resale.refusal.holding_limit': {
+        one: 'One investor can hold at most half of a raise. You can buy up to {count} more unit of this note.',
+        other: 'One investor can hold at most half of a raise. You can buy up to {count} more units of this note.',
+    },
+    'investor.market.resale.refusal.holding_full':
+        'One investor can hold at most half of a raise, and you already hold that much of this note.',
+    'investor.market.resale.refusal.price_cap':
+        'The price is above the cap of {cap} per unit.',
+    'investor.market.resale.refusal.not_held':
+        'You don’t have that many units free to list.',
+    'investor.market.resale.refusal.not_listed':
+        'That many units aren’t listed any more. Choose fewer units.',
+    'investor.market.resale.refusal.own_listing':
+        'You can’t buy your own listing.',
+    'investor.market.resale.refusal.reserved':
+        'Another buyer is holding these units right now. Try again shortly.',
+    'investor.market.resale.refusal.closed': 'This listing has closed.',
+    'investor.market.resale.refusal.reservation_ended':
+        'Your reservation has ended. Reserve the units again to buy them.',
+    'investor.market.resale.refusal.paused':
+        'Trading on this note is paused right now. Try again later.',
     'investor.market.resale.refused':
         'That didn’t go through ({code}). Check the details and try again.',
     'investor.market.saved.empty_title': 'No saved notes yet',
