@@ -14,13 +14,13 @@ use Carbon\CarbonImmutable;
  * the price paid and what it cost, what servicing has paid on to it since the purchase
  * (`HoldingPayouts`, lot type `secondary_transfer`), and the note's schedule scaled to the units
  * held. An instalment the lot was paid is `paid`; one that fell due before the purchase went to the
- * seller (`before_purchase`); the rest are `upcoming`, each at what it will pay net of the earnings fee.
+ * seller (`before_purchase`), as did one the note paid early before the purchase; the rest are `upcoming`, each at what it will pay net of the earnings fee.
  *
  * @phpstan-import-type Money from GetInvestorPortfolio
  *
  * @phpstan-type LotInstalment array{index: int, due_on: string, expected: Money, status: 'paid'|'before_purchase'|'upcoming', paid_on: string|null, net: Money|null}
  * @phpstan-type Lot array{lot_id: string, note_id: string, name: string, accent: string, industry: string, units: string, price: Money, paid: Money, bought_at: string,
- *     received: Money, payments_made: int, payments_total: int, next_payment: array{amount: Money, due_on: string}|null, matures_on: string, schedule: list<LotInstalment>}
+ *     received: Money, payments_made: int, payments_total: int, next_payment: array{amount: Money, due_on: string}|null, matures_on: string, repaid: bool, schedule: list<LotInstalment>}
  * @phpstan-type LotFacts array{identity_context_revision: int, lot: Lot}
  */
 final class GetInvestorLot
@@ -48,17 +48,16 @@ final class GetInvestorLot
             }
         }
         $boughtOn = CarbonImmutable::parse($lot['bought_at'])->setTimezone(HoldingFigures::ZONE)->format('Y-m-d');
-        $today = now()->setTimezone(HoldingFigures::ZONE)->format('Y-m-d');
+        $notePaid = array_fill_keys([...array_keys($paidRows), ...array_merge([], ...array_map(fn (array $payout): array => $payout['instalments'], $position['paid']))], true);
         $schedule = array_map(fn (array $row): array => ['index' => $row['index'], 'due_on' => $row['due_on'], 'expected' => HoldingFigures::net($row, $feeBps),
-            'status' => isset($paidRows[$row['index']]) ? 'paid' : ($row['due_on'] < $boughtOn ? 'before_purchase' : 'upcoming'),
+            'status' => isset($paidRows[$row['index']]) ? 'paid' : (isset($notePaid[$row['index']]) || $row['due_on'] < $boughtOn ? 'before_purchase' : 'upcoming'),
             'paid_on' => $paidRows[$row['index']]['paid_on'] ?? null, 'net' => $paidRows[$row['index']]['net'] ?? null], $position['holding']['schedule']);
-        $next = array_values(array_filter($schedule, fn (array $row): bool => $row['status'] === 'upcoming' && $row['due_on'] >= $today))[0] ?? null;
+        $next = array_values(array_filter($schedule, fn (array $row): bool => $row['status'] === 'upcoming'))[0] ?? null;
         $received = array_reduce($payouts, fn (BigInteger $sum, array $payout): BigInteger => $sum->plus($payout['net']), BigInteger::zero());
-        $owned = array_values(array_filter($schedule, fn (array $row): bool => $row['status'] !== 'before_purchase'));
 
         return ['identity_context_revision' => $viewer['identity_context_revision'], 'lot' => [...$lot, 'received' => HoldingFigures::money($received),
-            'payments_made' => count($paidRows), 'payments_total' => count($owned),
+            'payments_made' => count($paidRows), 'payments_total' => count($schedule),
             'next_payment' => $next === null ? null : ['amount' => $next['expected'], 'due_on' => HoldingFigures::kigaliMidnight($next['due_on'])],
-            'matures_on' => HoldingFigures::kigaliMidnight($schedule[count($schedule) - 1]['due_on']), 'schedule' => $schedule]];
+            'matures_on' => HoldingFigures::kigaliMidnight($schedule[count($schedule) - 1]['due_on']), 'repaid' => count($notePaid) >= count($schedule), 'schedule' => $schedule]];
     }
 }

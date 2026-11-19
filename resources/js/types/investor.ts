@@ -2088,6 +2088,8 @@ export type InvestorLotProps = {
         payments_total: number;
         next_payment: { amount: Money; due_on: string } | null;
         matures_on: string;
+        /** Every instalment of the note is paid: nothing left to receive or resell. */
+        repaid: boolean;
         schedule: LotInstalment[];
     };
     links: InvestorAppLinks & { back: RouteLink; changes?: RouteLink | null };

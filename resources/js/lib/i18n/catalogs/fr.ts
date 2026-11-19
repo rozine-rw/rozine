@@ -5382,6 +5382,7 @@ const fr: Catalog = {
     'investor.lot.next_payment': 'PROCHAIN PAIEMENT',
     'investor.lot.no_next': 'Aucun paiement à venir',
     'investor.lot.matures': 'Échéance le {date}',
+    'investor.lot.repaid': 'Remboursé en totalité',
     'investor.lot.schedule': 'Échéancier',
     'investor.lot.instalment': 'Paiement {index}',
     'investor.lot.status.paid': 'Payé le {date}',
