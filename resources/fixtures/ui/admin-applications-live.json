@@ -213,7 +213,8 @@
                     "amount": "45000000"
                 },
                 "active_notes": null,
-                "outstanding": null
+                "outstanding": null,
+                "other_debts": null
             },
             "use_of_funds": "Inventory, Equipment",
             "factors": [],

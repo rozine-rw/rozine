@@ -2728,6 +2728,29 @@ describe('Apply — submitted', () => {
         );
     });
 
+    it('names the 1.5× limit beside the others when a repeat raise gets the full amount (QA #673)', () => {
+        const page = props(submittedStep);
+        const quote = page.quote as Extract<
+            NonNullable<typeof page.quote>,
+            { status: 'ready' }
+        >;
+
+        page.quote = {
+            ...quote,
+            principal: quote.requested_principal,
+            offered_principal: quote.requested_principal,
+            reason_codes: [],
+            repeat_growth_limit: { currency: 'RWF', amount: '52500000' },
+        };
+        render(<BusinessApply {...page} />);
+
+        expect(
+            screen.getByRole('region', { name: 'Your offer' }),
+        ).toHaveTextContent(
+            'You are raising the full RWF 35,000,000 you asked for: it fits your cash flow, 35% of your yearly revenue less what you already owe, RWF 52,500,000 (1.5 times the last note you repaid in full), and the RWF 100M maximum.',
+        );
+    });
+
     it('shows the note ID once the server has issued one', () => {
         const page = props(submittedStep);
 

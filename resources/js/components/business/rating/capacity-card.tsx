@@ -30,10 +30,16 @@ export function CapacityCard({
                     months: sizing.term_months,
                 });
             case 'exposure':
-                return t('business.rating.limit.exposure_detail', {
-                    limit: formatRwf(limit.limit),
-                    committed: formatRwf(limit.committed),
-                });
+                return t(
+                    limit.other_debts.amount === '0'
+                        ? 'business.rating.limit.exposure_detail'
+                        : 'business.rating.limit.exposure_detail_other',
+                    {
+                        limit: formatRwf(limit.limit),
+                        committed: formatRwf(limit.committed),
+                        other: formatRwf(limit.other_debts),
+                    },
+                );
             case 'repeat_growth':
                 return t('business.rating.limit.repeat_growth_detail', {
                     last: formatRwf(limit.last),

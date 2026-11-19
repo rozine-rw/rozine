@@ -860,6 +860,8 @@ const rw: Catalog = {
     'business.apply.offer.total': 'Igiteranyo cyo kwishyura',
     'business.apply.offer.sized.requested':
         'Urimo gukusanya {requested} yose wasabye: ihuye n’amafaranga yinjira, 35% by’ibyo winjiza ku mwaka ukuyemo ibyo ugifitiye Rozine, n’ntarengwa ya RWF 100M.',
+    'business.apply.offer.sized.requested_repeat':
+        'Urimo gukusanya {requested} yose wasabye: ihuye n’amafaranga yinjira, 35% by’ibyo winjiza ku mwaka ukuyemo ibyo ugifitiye Rozine, {limit} (inshuro 1.5 z’inguzanyo iheruka wishyuye yose), n’ntarengwa ya RWF 100M.',
     'business.apply.offer.sized.capacity':
         'Yagenwe ku bushobozi bw’ubucuruzi bwawe (wasabye {requested}).',
     'business.apply.offer.sized.chosen':
@@ -2633,6 +2635,7 @@ const rw: Catalog = {
     'admin.review.yield_value': '{rate}% rimwe',
     'admin.review.capacity_title': "Ubushobozi bukoreshwa n'uku gukusanya",
     'admin.review.capacity_approved': 'Ubushobozi bwemejwe {amount}',
+    'admin.review.capacity_other': '{amount} z’izindi nguzanyo',
     'admin.review.capacity_existing':
         'Inyandiko {count} zikora · {amount} bitararangira',
     'admin.review.factors_title': 'Ibigize amanota',
@@ -4247,6 +4250,8 @@ const rw: Catalog = {
     'business.rating.limit.exposure': 'Imbibi z’umwenda',
     'business.rating.limit.exposure_detail':
         '{limit} (35% by’ibyinjira by’umwaka) ukuyemo {committed} usanzwe ufitiye abandi',
+    'business.rating.limit.exposure_detail_other':
+        '{limit} (35% by’ibyinjira by’umwaka) ukuyemo {committed} usanzwe ufitiye abandi, harimo {other} z’izindi nguzanyo ziri ku nyandiko zawe zemejwe',
     'business.rating.limit.exposure_lift':
         'Ongera ibyinjira, cyangwa wishyure ibyo ufitiye abandi',
     'business.rating.limit.repeat_growth': 'Ukwiyongera ku nyandiko iheruka',

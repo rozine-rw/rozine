@@ -664,6 +664,8 @@ export type ApplicationQuote =
           schedule: ScheduleInstalment[];
           /** Stable codes for how the offer was reached (e.g. resized); support and audit only. */
           reason_codes: string[];
+          /** A repeat raise's 1.5× the last note repaid in full (REP-R05), binding or not; null on a first raise. */
+          repeat_growth_limit: Money | null;
           rate_basis: {
               band: RatingBand | null;
               floor_pct: string;
@@ -1522,7 +1524,13 @@ export type BusinessWalletProps = BusinessServicingPageContract & {
 /** One of the five limits on a raise; the engine marks the one that binds. */
 export type CapacityLimit = { value: Money; binding: boolean } & (
     | { key: 'cash_flow' }
-    | { key: 'exposure'; limit: Money; committed: Money }
+    | {
+          key: 'exposure';
+          limit: Money;
+          committed: Money;
+          /** Of `committed`, the other loans the verified evidence lists. */
+          other_debts: Money;
+      }
     /** A repeat raise grows to at most 1.5 times the last note repaid in full (REP-R05). */
     | { key: 'repeat_growth'; last: Money }
     | { key: 'policy_max' }

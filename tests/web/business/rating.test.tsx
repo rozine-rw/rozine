@@ -124,6 +124,28 @@ describe('Financial health', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('says how much of what is owed is other loans on the verified statements (QA #672)', () => {
+        const page = props(ratingFixture);
+        const sizing = page.sizing as CapacitySizing;
+
+        sizing.limits = sizing.limits.map((limit) =>
+            limit.key === 'exposure'
+                ? {
+                      ...limit,
+                      committed: { currency: 'RWF', amount: '3000000' },
+                      other_debts: { currency: 'RWF', amount: '3000000' },
+                  }
+                : limit,
+        );
+        render(<BusinessRating {...page} />);
+
+        expect(
+            within(healthSheet()).getByText(
+                'RWF 100,000,000 (35% of a year’s revenue) less RWF 3,000,000 you already owe, RWF 3,000,000 of it other loans on your verified statements',
+            ),
+        ).toBeInTheDocument();
+    });
+
     it('names 1.5× the last repaid note as the limit when it binds (REP-R05)', () => {
         const page = props(ratingFixture);
         const sizing = page.sizing as CapacitySizing;

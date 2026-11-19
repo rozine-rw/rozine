@@ -352,6 +352,16 @@ export function ReviewDrawer({
                                         })}
                                     </span>
                                 )}
+                            {review.capacity.other_debts !== null &&
+                                review.capacity.other_debts.amount !== '0' && (
+                                    <span>
+                                        {t('admin.review.capacity_other', {
+                                            amount: formatRwfShort(
+                                                review.capacity.other_debts,
+                                            ),
+                                        })}
+                                    </span>
+                                )}
                         </div>
                     </div>
 

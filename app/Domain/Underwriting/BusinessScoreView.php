@@ -72,6 +72,8 @@ final class BusinessScoreView
         $currentIds = array_column($current, 'id');
         $released = BigInteger::sum(0, ...array_column(array_filter($quoted, fn (array $commitment): bool => ! in_array($commitment['id'], $currentIds, true)), 'principal'));
         $committed = BigRational::max(self::rational($cashFlow['committed_exposure'])->minus($released), 0);
+        // What the Business owes beyond its Rozine notes: the other loans its verified evidence lists (#672).
+        $otherDebts = BigRational::max(self::rational($cashFlow['committed_exposure'])->minus(BigInteger::sum(0, ...array_column($quoted, 'principal'))), 0);
         $room = self::rational($cashFlow['remaining_room'])->plus($released);
         $limits = ['cash_flow' => BigInteger::max(0, ExactFinancialValue::halfUp(self::rational($rawCapacity))), 'exposure' => BigInteger::max(0, ExactFinancialValue::floor($room)),
             ...($lastRepaidPrincipal === null ? [] : ['repeat_growth' => ExactFinancialValue::floor(ExactFinancialValue::amount($lastRepaidPrincipal)->toBigRational()->multipliedBy(LoanCapacity::REPEAT_GROWTH))]),
@@ -94,7 +96,8 @@ final class BusinessScoreView
                 ['key' => 'cash_flow', 'value' => ExactFinancialValue::money($limits['cash_flow']), 'binding' => $binding === 'cash_flow'],
                 ['key' => 'exposure', 'value' => ExactFinancialValue::money($limits['exposure']), 'binding' => $binding === 'exposure',
                     'limit' => ExactFinancialValue::money(ExactFinancialValue::floor(self::rational($cashFlow['exposure_limit']))),
-                    'committed' => ExactFinancialValue::money(ExactFinancialValue::halfUp($committed))],
+                    'committed' => ExactFinancialValue::money(ExactFinancialValue::halfUp($committed)),
+                    'other_debts' => ExactFinancialValue::money(ExactFinancialValue::halfUp($otherDebts))],
                 ...($lastRepaidPrincipal === null ? [] : [['key' => 'repeat_growth', 'value' => ExactFinancialValue::money($limits['repeat_growth']),
                     'binding' => $binding === 'repeat_growth', 'last' => ExactFinancialValue::money(ExactFinancialValue::amount($lastRepaidPrincipal))]]),
                 ['key' => 'policy_max', 'value' => ExactFinancialValue::money($limits['policy_max']), 'binding' => $binding === 'policy_max'],

@@ -591,7 +591,10 @@ export type ApplicationReview = {
         used_pct: number | null;
         approved: Money;
         active_notes: number | null;
+        /** The notes' outstanding principal. */
         outstanding: Money | null;
+        /** What the Business owes beyond its notes: other loans its verified evidence lists. */
+        other_debts: Money | null;
     };
     /** The engine's evidence, each on 0–100. Read-only. */
     factors: { key: EvidenceFactorKey; value: number }[];
