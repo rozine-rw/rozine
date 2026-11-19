@@ -75,7 +75,8 @@ it('caps a repeat raise at 1.5 times the last note repaid in full, and refuses t
     $result = BusinessQuoteFixture::evaluate($fixture);
     expect($result['data']['quote']['principal']['amount'])->toBe('9000000')
         ->and($result['data']['quote']['offered_principal']['amount'])->toBe('9000000')
-        ->and($result['data']['quote']['reason_codes'])->toContain('REPEAT_GROWTH_CAPPED');
+        ->and($result['data']['quote']['reason_codes'])->toContain('REPEAT_GROWTH_CAPPED')
+        ->and($result['data']['quote']['repeat_growth_limit'])->toEqual(['currency' => 'RWF', 'amount' => '9000000']);
     $payload = BusinessApplicationQuote::query()->firstOrFail()->payload;
     expect($payload['result']['inputs']['last_repaid_principal'])->toBe('6000000')
         ->and(app(ApplicationUnderwriting::class)->evaluate($payload['result']['inputs']))->toBe($payload['result']);
@@ -90,6 +91,7 @@ it('keeps the original request and maximum offer when publishing a lower accepte
         ->and($lower['data']['quote']['principal']['amount'])->toBe('5000000')
         ->and($lower['data']['quote']['offered_principal']['amount'])->toBe('10800000')
         ->and($lower['data']['quote']['requested_principal']['amount'])->toBe('12000000')
+        ->and($lower['data']['quote']['repeat_growth_limit'])->toBeNull()
         ->and($lower['data']['quote']['interest']['amount'])->toBe('555000')
         ->and($lower['data']['quote']['quote_id'])->not->toBe($first['data']['quote']['quote_id'])
         ->and(BusinessQuoteFixture::quote($fixture))->toEqual($lower['data']['quote']);

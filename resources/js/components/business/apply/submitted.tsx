@@ -20,7 +20,12 @@ const SIZING_CODES = [
 
 function sizedBy(
     quote: ReadyQuote,
-): (typeof SIZING_CODES)[number] | 'chosen' | 'capacity' | 'requested' {
+):
+    | (typeof SIZING_CODES)[number]
+    | 'chosen'
+    | 'capacity'
+    | 'requested'
+    | 'requested_repeat' {
     if (quote.principal.amount !== quote.offered_principal.amount) {
         return 'chosen';
     }
@@ -28,7 +33,9 @@ function sizedBy(
     return (
         SIZING_CODES.find((code) => quote.reason_codes.includes(code)) ??
         (quote.principal.amount === quote.requested_principal.amount
-            ? 'requested'
+            ? quote.repeat_growth_limit
+                ? 'requested_repeat'
+                : 'requested'
             : 'capacity')
     );
 }
@@ -81,6 +88,9 @@ function OfferSummary({ quote }: { quote: ReadyQuote }) {
             <p className="mt-2 text-xs leading-[1.55] text-rz-secondary">
                 {t(`business.apply.offer.sized.${sizedBy(quote)}`, {
                     requested: formatRwf(quote.requested_principal),
+                    limit: quote.repeat_growth_limit
+                        ? formatRwf(quote.repeat_growth_limit)
+                        : '',
                 })}
             </p>
         </section>

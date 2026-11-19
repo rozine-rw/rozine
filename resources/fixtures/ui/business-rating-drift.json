@@ -299,6 +299,10 @@
                     "committed": {
                         "currency": "RWF",
                         "amount": "28483269"
+                    },
+                    "other_debts": {
+                        "currency": "RWF",
+                        "amount": "0"
                     }
                 },
                 {

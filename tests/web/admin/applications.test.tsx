@@ -328,6 +328,29 @@ describe('The live-minimal queue', () => {
 });
 
 describe('Underwriting review', () => {
+    it('shows other loans on the verified evidence apart from the notes still owed (QA #672)', () => {
+        const page = props(reviewFixture);
+
+        page.review!.capacity = {
+            ...page.review!.capacity,
+            active_notes: 0,
+            outstanding: { currency: 'RWF', amount: '0' },
+            other_debts: { currency: 'RWF', amount: '3000000' },
+        };
+        render(<AdminApplications {...page} />);
+
+        const drawer = screen.getByRole('dialog', {
+            name: 'Underwriting review, Kigali Motors',
+        });
+
+        expect(
+            within(drawer).getByText('0 active notes · RWF 0 out'),
+        ).toBeInTheDocument();
+        expect(
+            within(drawer).getByText('RWF 3M other loans'),
+        ).toBeInTheDocument();
+    });
+
     it('shows the engine decision and evidence read-only, with no score input', () => {
         render(<AdminApplications {...props(reviewFixture)} />);
 

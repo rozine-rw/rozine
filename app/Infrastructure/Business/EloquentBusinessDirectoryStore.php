@@ -88,11 +88,11 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
                 $command, $title($campaign), null);
         });
         // Each published audit report re-verified the Business's newest months (REP-R04).
-        $reports = array_map(fn (object $report): array => self::entry((string) $report->id, self::occurred((string) $report->published_at), 'Audit Partner', 'report.publish',
+        $reports = array_map(fn (object $report): array => self::entry((string) $report->id, self::occurred((string) $report->published_at, (string) $report->updated_at), 'Audit Partner', 'report.publish',
             str_replace('_', ' ', (string) $report->kind).' audit sealed', 'Report RPT-'.strtoupper(substr((string) $report->id, -8)).' verified the newest months against the business\'s records.'),
             DB::table('audit_reports')->join('audit_report_publications', 'audit_report_publications.audit_report_id', '=', 'audit_reports.id')
                 ->where('audit_reports.business_id', $businessId)->where('audit_report_publications.status', 'published')
-                ->get(['audit_reports.id', 'audit_reports.kind', 'audit_report_publications.published_at'])->all());
+                ->get(['audit_reports.id', 'audit_reports.kind', 'audit_report_publications.published_at', 'audit_report_publications.updated_at'])->all());
         $history = [...array_values($mandates), ...$published->values()->all(), ...$closed->values()->all(), ...$reports];
         usort($history, fn (array $first, array $second): int => [$second['at'], $second['id']] <=> [$first['at'], $first['id']]);
 
@@ -187,13 +187,14 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
     }
 
     /**
-     * When a report's publication happened. On UAT the simulated review closes at its window's end,
-     * recorded at that future instant so the retained history stays one the database accepts; it is
-     * shown as now until that instant passes, never as a time still to come.
+     * When a report's publication happened. On UAT the simulated review closes at once but records its
+     * window's end, a later instant the database requires, so the publication row's own update time
+     * (when it was published) is used whenever it is earlier, and never a time still to come.
      */
-    private static function occurred(string $publishedAt): string
+    private static function occurred(string $publishedAt, string $updatedAt): string
     {
         $at = CarbonImmutable::parse($publishedAt);
+        $at = CarbonImmutable::parse($updatedAt)->min($at);
 
         return $at->isFuture() ? now('UTC')->toIso8601String() : $at->toIso8601String();
     }

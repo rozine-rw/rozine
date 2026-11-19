@@ -150,7 +150,7 @@ final class EloquentStaffApplicationQueue implements StaffApplicationQueue
             'decision' => $release === null ? ['code' => 'review', 'reason' => '', 'reason_code' => 'CURRENT_RELEASE_REVIEW_REQUIRED']
                 : ['code' => 'approve', 'reason' => '', 'reason_code' => 'APPLICATION_RELEASED'],
             'capacity' => ['used_pct' => $capacity['used_pct'], 'approved' => $quote['offered_principal'], 'active_notes' => $capacity['active_notes'],
-                'outstanding' => $capacity['outstanding']],
+                'outstanding' => $capacity['outstanding'], 'other_debts' => $capacity['other_debts']],
             'use_of_funds' => implode(', ', $draft['use_of_funds'])];
     }
 
@@ -158,11 +158,12 @@ final class EloquentStaffApplicationQueue implements StaffApplicationQueue
      * How much of the Business's exposure limit (35% of a year's revenue, REP-R05) its existing exposure
      * and this raise take together, and the notes and exposure it still owes, from the engine's retained
      * quote. A commitment the quote counted whose note has since been repaid in full is no longer owed,
-     * so it is left out. A plain read: the queue takes no Business lock.
+     * so it is left out. What it owes beyond its notes (other loans its verified evidence lists) is told
+     * apart from the notes' outstanding principal (#672). A plain read: the queue takes no Business lock.
      *
      * @param  array<string, mixed>|null  $quote
      * @param  list<string>  $repaid  the reservation ids of the Business's notes repaid in full
-     * @return array{used_pct: int|null, active_notes: int|null, outstanding: array{currency: string, amount: string}|null}
+     * @return array{used_pct: int|null, active_notes: int|null, outstanding: array{currency: string, amount: string}|null, other_debts: array{currency: string, amount: string}|null}
      */
     private static function capacity(?array $quote, string $principal, array $repaid): array
     {
@@ -170,7 +171,7 @@ final class EloquentStaffApplicationQueue implements StaffApplicationQueue
         $committed = $quote['result']['cash_flow']['committed_exposure'] ?? null;
         $commitments = $quote['accepted_commitments'] ?? null;
         if (! is_array($limit) || ! is_array($committed) || ! is_array($commitments)) {
-            return ['used_pct' => null, 'active_notes' => null, 'outstanding' => null];
+            return ['used_pct' => null, 'active_notes' => null, 'outstanding' => null, 'other_debts' => null];
         }
         $limit = BigRational::of($limit['numerator'].'/'.$limit['denominator']);
         $owed = BigRational::of($committed['numerator'].'/'.$committed['denominator']);
@@ -179,8 +180,14 @@ final class EloquentStaffApplicationQueue implements StaffApplicationQueue
             $owed = $owed->minus((string) $commitment['principal']);
         }
         $owed = BigRational::max($owed, 0);
+        $other = BigRational::of($committed['numerator'].'/'.$committed['denominator']);
+        foreach ($commitments as $commitment) {
+            $other = $other->minus(is_array($commitment) ? (string) ($commitment['principal'] ?? '0') : '0');
+        }
+        $other = BigRational::min(BigRational::max($other, 0), $owed);
 
         return ['used_pct' => $limit->isPositive() ? $owed->plus($principal)->multipliedBy(100)->dividedBy($limit)->toScale(0, RoundingMode::HalfUp)->toInt() : null,
-            'active_notes' => count($commitments) - count($released), 'outstanding' => ['currency' => 'RWF', 'amount' => (string) $owed->toScale(0, RoundingMode::HalfUp)->toBigInteger()]];
+            'active_notes' => count($commitments) - count($released), 'outstanding' => ['currency' => 'RWF', 'amount' => (string) $owed->minus($other)->toScale(0, RoundingMode::HalfUp)->toBigInteger()],
+            'other_debts' => ['currency' => 'RWF', 'amount' => (string) $other->toScale(0, RoundingMode::HalfUp)->toBigInteger()]];
     }
 }

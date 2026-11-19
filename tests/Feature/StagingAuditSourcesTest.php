@@ -7,7 +7,9 @@ use App\Application\Auditor\GetAuditProcedureSources;
 use App\Application\Auditor\GetAuditSourceFacts;
 use App\Application\Auditor\ReviewAuditPublication;
 use App\Application\Auditor\WithAcceptedAuditAssignment;
+use App\Application\Business\Contracts\BusinessDirectoryStore;
 use App\Application\Environment\EnvironmentIsolation;
+use App\Application\Environment\UatMoneySimulation;
 use App\Domain\Auditor\AuditEngagementState;
 use App\Domain\Auditor\Wgs84Distance;
 use App\Domain\Operations\CommandRejection;
@@ -155,8 +157,8 @@ it('reads the latest verified month for a monthly audit staging opened for any B
 });
 
 it('records the capture for a monthly audit staging opened for a Business the simulation does not name', function (): void {
-    $fixture = Fixture::accepted();
-    $unopened = Fixture::accepted();
+    $fixture = Fixture::accepted(kind: 'routine');
+    $unopened = Fixture::accepted(kind: 'routine');
     $state = $fixture['assignment']->state;
     $running = CarbonImmutable::parse($state['original_dispatch_at'])->setTimezone('Africa/Kigali')->format('Y-m');
     $fixture['assignment']->forceFill(['state' => [...$state, 'period' => $running]])->saveQuietly();
@@ -166,6 +168,23 @@ it('records the capture for a monthly audit staging opened for a Business the si
 
     expect($code)->toBe(0)->and($output)->toContain($fixture['assignment']->id)->not->toContain($unopened['assignment']->id);
     $this->assertDatabaseCount('audit_source_snapshots', 1);
+});
+
+it('treats only a routine audit for its own dispatch month as one staging opened, and nothing it cannot read', function (): void {
+    asStagingAuditDemo('01m6dz3t0wemrqac36j094k19b');
+    $simulation = app(UatMoneySimulation::class);
+    $opened = ['kind' => 'routine', 'original_dispatch_at' => '2026-11-17T10:00:00Z', 'period' => '2026-11'];
+
+    expect($simulation->coversAudit('01m7unnamed000000000000000', $opened))->toBeTrue()
+        ->and($simulation->coversAudit('01m7unnamed000000000000000', [...$opened, 'period' => '2026-10']))->toBeFalse()
+        ->and($simulation->coversAudit('01m7unnamed000000000000000', [...$opened, 'period' => '2026-12']))->toBeFalse()
+        ->and($simulation->coversAudit('01m7unnamed000000000000000', [...$opened, 'kind' => 'flash']))->toBeFalse()
+        ->and($simulation->coversAudit('01m7unnamed000000000000000', [...$opened, 'original_dispatch_at' => 'not-a-time']))->toBeFalse()
+        ->and($simulation->coversAudit('01m7unnamed000000000000000', ['kind' => 'routine', 'original_dispatch_at' => '2026-11-17T10:00:00Z']))->toBeFalse()
+        ->and($simulation->coversAudit('01m6dz3t0wemrqac36j094k19b', []))->toBeTrue();
+
+    config(['app.uat_money_simulation' => false]);
+    expect($simulation->coversAudit('01m7unnamed000000000000000', $opened))->toBeFalse();
 });
 
 it('reports an assignment that cannot take the capture and carries on with the others', function (): void {
@@ -197,4 +216,20 @@ it('ends a simulated Business\'s review window at once so its sealed report publ
     expect(app(ReviewAuditPublication::class)->advanceDue(100)['published'])->toBe(1)
         ->and($publication->refresh()->status)->toBe('published')
         ->and($publication->published_reason)->toBe('auto_approved');
+});
+
+it('dates a simulated review\'s re-verification when it published, not at the window end it records (QA #673)', function (): void {
+    $fixture = SealingFixture::ready();
+    SealingFixture::seal($fixture);
+    asStagingAuditDemo($fixture['audit']['business']);
+    app(ReviewAuditPublication::class)->advanceDue(100);
+    $publishedAt = now('UTC')->toIso8601String();
+    $publication = AuditReportPublication::query()->where('audit_report_id', $fixture['report']->id)->sole();
+    expect($publication->published_at->isFuture())->toBeTrue();
+
+    $this->travel(1)->hours();
+    $history = app(BusinessDirectoryStore::class)->business($fixture['audit']['business'])['history'] ?? [];
+    $entry = array_values(array_filter($history, fn (array $entry): bool => $entry['command'] === 'report.publish'));
+
+    expect(array_column($entry, 'at'))->toBe([$publishedAt]);
 });

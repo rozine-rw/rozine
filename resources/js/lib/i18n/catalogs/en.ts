@@ -839,6 +839,8 @@ const en = {
     'business.apply.offer.total': 'Total to repay',
     'business.apply.offer.sized.requested':
         'You are raising the full {requested} you asked for: it fits your cash flow, 35% of your yearly revenue less what you already owe, and the RWF 100M maximum.',
+    'business.apply.offer.sized.requested_repeat':
+        'You are raising the full {requested} you asked for: it fits your cash flow, 35% of your yearly revenue less what you already owe, {limit} (1.5 times the last note you repaid in full), and the RWF 100M maximum.',
     'business.apply.offer.sized.capacity':
         'Sized to what your business can carry (you asked for {requested}).',
     'business.apply.offer.sized.chosen':
@@ -2497,6 +2499,7 @@ const en = {
     'admin.review.yield_value': '{rate}% flat',
     'admin.review.capacity_title': 'Capacity used by this raise',
     'admin.review.capacity_approved': 'Approved capacity {amount}',
+    'admin.review.capacity_other': '{amount} other loans',
     'admin.review.capacity_existing': '{count} active notes · {amount} out',
     'admin.review.factors_title': 'Rating breakdown',
     'admin.review.factors_caption': 'From the underwriting engine · read-only',
@@ -4086,6 +4089,8 @@ const en = {
     'business.rating.limit.exposure': 'Exposure limit',
     'business.rating.limit.exposure_detail':
         '{limit} (35% of a year’s revenue) less {committed} you already owe',
+    'business.rating.limit.exposure_detail_other':
+        '{limit} (35% of a year’s revenue) less {committed} you already owe, {other} of it other loans on your verified statements',
     'business.rating.limit.exposure_lift':
         'Grow your revenue, or repay what you owe',
     'business.rating.limit.repeat_growth': 'Growth on your last note',
