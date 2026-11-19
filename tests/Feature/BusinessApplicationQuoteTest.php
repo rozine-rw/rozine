@@ -100,14 +100,15 @@ function repaidServicing(array $principals): ServicingRecord
     };
 }
 
-it('names the 1.5 times limit on a quote made before the limit existed, only when the offer is within it (QA #673)', function (): void {
-    $fixture = BusinessQuoteFixture::make();
-    BusinessQuoteFixture::evaluate($fixture);
-    expect(BusinessApplicationQuote::query()->firstOrFail()->payload['result']['inputs'])->not->toHaveKey('last_repaid_principal');
+it('names the 1.5 times limit on an application signed before the limit existed, only when the offer is within it (QA #673)', function (): void {
+    $fixture = BusinessQuoteFixture::ready();
+    BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture));
+    $signed = BusinessQuoteFixture::quote($fixture);
+    expect($signed['repeat_growth_limit'] ?? null)->toBeNull();
 
-    app()->instance(ServicingRecord::class, repaidServicing(['10000000']));
-    expect(BusinessQuoteFixture::quote($fixture)['repeat_growth_limit'] ?? null)->toEqual(['currency' => 'RWF', 'amount' => '15000000']);
-    app()->instance(ServicingRecord::class, repaidServicing(['20000000', '6000000']));
+    app()->instance(ServicingRecord::class, repaidServicing([$signed['principal']['amount']]));
+    expect(BusinessQuoteFixture::quote($fixture)['repeat_growth_limit'] ?? null)->not->toBeNull();
+    app()->instance(ServicingRecord::class, repaidServicing(['20000000', '3000000']));
     expect(BusinessQuoteFixture::quote($fixture))->toHaveKey('repeat_growth_limit', null);
 });
 

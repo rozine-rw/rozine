@@ -1388,7 +1388,12 @@ export type AuditProcedureProps = AuditorPageContract & {
     };
     /** The assignment a conflict declaration targets. */
     assignment: RecordRef;
-    steps: { key: AuditStepKey; state: 'done' | 'current' | 'todo' }[];
+    /** A done step on a draft carries the server's link to open it read-only. */
+    steps: {
+        key: AuditStepKey;
+        state: 'done' | 'current' | 'todo';
+        link?: RouteLink | null;
+    }[];
     stage: AuditStage;
     /** The server's gate: may this step be committed and the next opened? */
     can_continue: boolean;

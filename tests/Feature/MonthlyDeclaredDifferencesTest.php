@@ -71,9 +71,13 @@ it('compares verified costs and drawings with the declaration, explains every di
         expect($save($step, $fields)['code'])->toBe('AUDIT_STEP_SAVED');
     }
 
-    // The seal step lists what will be signed before the note (QA #674).
+    // The seal step lists what will be signed before the note (QA #674), and a done step opens from the bar (QA #685).
+    /** @var list<array{key: string, state: string, link: array{url: string}|null}> $bar */
+    $bar = $this->actingAs($user)->getJson(route('api.v1.auditor.reports.show', ['report' => $report->id, 'step' => 'seal']))->assertOk()->json('data.steps');
+    expect($bar[0]['link']['url'] ?? null)->toBe(route('api.v1.auditor.reports.show', ['report' => $report->id, 'step' => $bar[0]['key']], false))
+        ->and(array_column(array_filter($bar, fn (array $step): bool => $step['state'] !== 'done'), 'link'))->each->toBeNull();
     $this->actingAs($user)->getJson(route('api.v1.auditor.reports.show', ['report' => $report->id, 'step' => 'seal']))->assertOk()
-        ->assertJsonFragment(['label' => 'Costs', 'value' => 'Declared RWF 785,000, verified RWF 780,000', 'tone' => 'flag'])
+        ->assertJsonFragment(['label' => 'Costs', 'value' => 'Declared RWF 785,000, verified RWF 780,000 · Personal spending from the business RWF 2,000 · Entry error RWF 5,000', 'tone' => 'flag'])
         ->assertJsonFragment(['label' => 'Owner drawings', 'value' => 'Declared RWF 2,000, verified RWF 0', 'tone' => 'flag'])
         ->assertJsonFragment(['label' => 'Cash balance', 'tone' => 'ok']);
 
