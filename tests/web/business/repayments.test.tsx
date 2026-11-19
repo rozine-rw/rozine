@@ -111,7 +111,9 @@ describe('Business repayments (business-servicing-v1)', () => {
             name: 'Repayment schedule',
         });
 
-        expect(schedule).toHaveTextContent('#1 · paid 23 Oct 2026');
+        expect(schedule).toHaveTextContent(
+            '#1 · due 23 Oct 2026 · paid 23 Oct 2026',
+        );
         expect(schedule).toHaveTextContent('#3 · due 23 Dec 2026');
         expect(schedule).toHaveTextContent('Upcoming');
 
@@ -178,7 +180,7 @@ describe('Business repayments (business-servicing-v1)', () => {
         );
         expect(
             view.getByRole('region', { name: 'Repayment schedule' }),
-        ).toHaveTextContent('#3 · paid 5 Dec 2026Paid');
+        ).toHaveTextContent('#3 · due 23 Dec 2026 · paid 5 Dec 2026EarlyPaid');
         expect(
             view.getByRole('link', { name: 'Add money to your wallet' }),
         ).toBeVisible();
@@ -201,7 +203,7 @@ describe('Business repayments (business-servicing-v1)', () => {
 
         expect(links).toHaveLength(1);
         expect(links[0]).toHaveAttribute('href', receipt.url);
-        expect(links[0]).toHaveTextContent('#1 · paid');
+        expect(links[0]).toHaveTextContent('#1 · due 23 Oct 2026 · paid');
     });
 
     it('shows what is due today and pays it', async () => {
@@ -337,7 +339,9 @@ describe('Business repayments (business-servicing-v1)', () => {
         expect(receipt).toHaveTextContent('ReferenceRZ-RPY-1223');
         expect(
             view.getByRole('region', { name: 'Repayment schedule' }),
-        ).toHaveTextContent('#3 · paid 23 Dec 2026Processing');
+        ).toHaveTextContent(
+            '#3 · due 23 Dec 2026 · paid 23 Dec 2026Processing',
+        );
         expect(
             view.queryByRole('region', { name: 'Pay from your wallet' }),
         ).not.toBeInTheDocument();
@@ -409,6 +413,10 @@ describe('Business repayments (business-servicing-v1)', () => {
         expect(
             view.getByRole('region', { name: 'Repayment progress' }),
         ).toHaveTextContent('Fully repaid');
+        // A note repaid in full can't be late, so the late-fee panel goes (QA #642).
+        expect(
+            view.queryByRole('region', { name: 'If a payment is late' }),
+        ).not.toBeInTheDocument();
     });
 
     it('shows no ladder when the late-fee policy is unavailable', () => {

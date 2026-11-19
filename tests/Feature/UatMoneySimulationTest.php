@@ -430,6 +430,11 @@ it('shows a resale on both sides: the buyer\'s units in Portfolio and both walle
         ->where('payouts', fn ($months): bool => count($months) > 0)->where('totals.next_payout', fn ($next): bool => $next !== null)->etc());
     $this->actingAs($buyer)->get(route('investor.portfolio', ['tab' => 'matured']))->assertInertia(fn (Assert $page): Assert => $page->where('bought', [])->etc());
 
+    // The raise page counts who holds the note now, the buyer included (QA #642).
+    $this->actingAs($note['payer'])->get(route('business.campaigns.show', ['business' => $note['business'], 'campaign' => $note['campaign']]))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('investors.holders', 3)
+            ->where('investors.list', fn (Collection $rows): bool => $rows->contains('units', '2') && (int) $rows->sum('units') === array_sum(array_map(fn ($issued): int => $issued->units,
+                app(RetainedNoteSchedules::class)->find($note['campaign'])->holdings)))->etc());
     // The bought lot opens its own page: what it cost, its schedule for the units held, and what it is paid (QA #663 item 2).
     $schedule = app(RetainedNoteSchedules::class)->find($note['campaign']);
     $this->actingAs($buyer)->get(route('investor.lots.show', $transfer->id))
@@ -624,7 +629,14 @@ it('files a note repaid in full as repaid on Home and the staff screens, scores 
     StaffFixture::provision($analyst, ['analyst'], 'Repaid note review.');
     $this->actingAs($analyst)->get(route('staff.businesses.index', ['business' => $note['business']]))->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->where('party.stats.0.value.value', 0)->where('party.list.rows.0.detail.value', 'completed')
-            ->where('party.list.rows.0.tone', 'grey')->etc());
+            ->where('party.list.rows.0.tone', 'grey')
+            // Activity lists the payout and every repayment (QA #642).
+            ->where('party.history', fn (Collection $history): bool => $history->where('action.code', 'note.repay')->count() === count($schedule->instalments)
+                && $history->contains(fn (array $entry): bool => $entry['action']['code'] === 'campaign.disburse' && str_starts_with($entry['action']['label'], 'Note disbursed · ')))->etc());
+    // The raise page reads repaid, and shows the platform fee taken at disbursement (QA #642).
+    $this->actingAs($note['payer'])->get(route('business.campaigns.show', ['business' => $note['business'], 'campaign' => $note['campaign']]))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('campaign.lifecycle', 'repaid')->where('note.progress.phase', 'disbursed')
+            ->where('note.progress.platform_fee.amount', fn (string $fee): bool => (int) $fee > 0)->has('note.progress.gross')->etc());
     // The register reads each deal's sealed reports, which checks this test database is a dedicated one.
     $isolation = Mockery::mock(EnvironmentIsolation::class.'[profile,assertSafeConfiguration]', [app(), app('config')]);
     $isolation->allows(['profile' => 'uat', 'assertSafeConfiguration' => null]);

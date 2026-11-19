@@ -90,7 +90,9 @@ describe('Party directories', () => {
         /* Raised and investors count funded raises only, so they say so: a live raise is not funded. */
         expect(screen.getByText('Capital Funded')).toBeInTheDocument();
         expect(screen.getAllByText('Funded').length).toBeGreaterThan(0);
-        expect(screen.getAllByText('Funders').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('Original funders').length).toBeGreaterThan(
+            0,
+        );
 
         fireEvent.change(screen.getByRole('combobox', { name: 'Sector' }), {
             target: { value: 'agriculture' },

@@ -364,6 +364,19 @@ function Disbursed({ progress }: { progress: Phase<'disbursed'> }) {
                 })}
             </Notice>
             <dl className="mt-3 rounded-2xl border border-rz-border bg-rz-surface px-[15px] py-2.5">
+                {progress.gross !== undefined &&
+                    progress.platform_fee !== undefined && (
+                        <>
+                            <Row
+                                label={t('business.campaign.raised_gross')}
+                                value={formatRwf(progress.gross)}
+                            />
+                            <Row
+                                label={t('business.campaign.platform_fee')}
+                                value={`− ${formatRwf(progress.platform_fee)}`}
+                            />
+                        </>
+                    )}
                 <Row
                     label={t('business.campaign.disbursed_amount')}
                     value={formatRwf(progress.amount)}

@@ -2884,7 +2884,7 @@ const rw: Catalog = {
     'admin.parties.col.rating': 'Amanota',
     'admin.parties.name_pending': 'Izina ritaraboneka',
     'admin.parties.col.active_notes': 'Inyandiko zikora',
-    'admin.parties.col.investors': 'Abateye inkunga',
+    'admin.parties.col.investors': 'Abateye inkunga mbere',
     'admin.parties.col.raised': 'Byatewe inkunga',
     'admin.parties.col.capacity': 'Ubushobozi bwakoreshejwe',
     'admin.parties.col.status': 'Imiterere',
@@ -3129,7 +3129,7 @@ const rw: Catalog = {
     'admin.parties.kyc_overdue_note':
         'Kongera kwemeza KYC byarengeje igihe kuva {date}.',
     'admin.parties.stat.active_notes': 'Inyandiko zikora',
-    'admin.parties.stat.investors': 'Abateye inkunga',
+    'admin.parties.stat.investors': 'Abateye inkunga mbere',
     'admin.parties.stat.raised': 'Byatewe inkunga',
     'admin.parties.stat.rating': 'Amanota ya Rozine',
     'admin.parties.stat.capacity': 'Ubushobozi',
@@ -4438,6 +4438,9 @@ const rw: Catalog = {
     'business.servicing.repay.row.due':
         '#{index} · bigomba kwishyurwa ku wa {date}',
     'business.servicing.repay.row.paid': '#{index} · byishyuwe ku wa {date}',
+    'business.servicing.repay.row.paid_due':
+        '#{index} · igihe {due} · byishyuwe {date}',
+    'business.servicing.repay.early': "Mbere y'igihe",
     'business.servicing.repay.status.paid': 'Byishyuwe',
     'business.servicing.repay.status.processing': 'Biri gutunganywa',
     'business.servicing.repay.status.due': 'Bigomba kwishyurwa',
@@ -7250,6 +7253,7 @@ const rw: Catalog = {
     'business.campaign.state.sold_out_pending_settlement': 'Yose yiyemejwe',
     'business.campaign.state.inventory_unavailable': 'Nta nyandiko ziboneka',
     'business.campaign.state.closing_pending_settlement': 'Birarangira',
+    'business.campaign.state.repaid': 'Byishyuwe byose',
     'business.campaign.state.unavailable': 'Imiterere ntiboneka',
     'business.campaign.lifecycle.live': 'Irakusanya · irakora',
     'business.campaign.lifecycle.fully_reserved': 'Irakusanya · yose yafashwe',
@@ -7304,6 +7308,8 @@ const rw: Catalog = {
     'business.campaign.closing.in_flight.unknown':
         "Uko kohereza amafaranga byagenze ntibiremezwa. Nta kirarangira mbere y'uko byemezwa; tuzabigaragaza hano nibimara kwemezwa.",
     'business.campaign.disbursed': '{amount} byoherejwe kuri {destination}.',
+    'business.campaign.raised_gross': 'Byakusanyijwe',
+    'business.campaign.platform_fee': 'Amafaranga ya platifomu (3%)',
     'business.campaign.disbursed_amount': 'Byoherejwe',
     'business.campaign.destination': 'Kuri',
     'business.campaign.effective_at': 'Byakurikijwe',

@@ -2895,7 +2895,7 @@ const fr: Catalog = {
     'admin.parties.col.rating': 'Notation',
     'admin.parties.name_pending': 'Nom en attente',
     'admin.parties.col.active_notes': 'Titres actifs',
-    'admin.parties.col.investors': 'Financeurs',
+    'admin.parties.col.investors': 'Financeurs initiaux',
     'admin.parties.col.raised': 'Financé',
     'admin.parties.col.capacity': 'Capacité utilisée',
     'admin.parties.col.status': 'Statut',
@@ -3142,7 +3142,7 @@ const fr: Catalog = {
     'admin.parties.kyc_overdue_note':
         'Revérification KYC en retard depuis le {date}.',
     'admin.parties.stat.active_notes': 'Titres actifs',
-    'admin.parties.stat.investors': 'Financeurs',
+    'admin.parties.stat.investors': 'Financeurs initiaux',
     'admin.parties.stat.raised': 'Financé',
     'admin.parties.stat.rating': 'Notation Rozine',
     'admin.parties.stat.capacity': 'Capacité',
@@ -4456,6 +4456,9 @@ const fr: Catalog = {
     'business.servicing.repay.recent': 'Remboursements récents',
     'business.servicing.repay.row.due': 'n° {index} · échéance le {date}',
     'business.servicing.repay.row.paid': 'n° {index} · payé le {date}',
+    'business.servicing.repay.row.paid_due':
+        '#{index} · échéance {due} · payé le {date}',
+    'business.servicing.repay.early': 'En avance',
     'business.servicing.repay.status.paid': 'Payé',
     'business.servicing.repay.status.processing': 'En traitement',
     'business.servicing.repay.status.due': 'Dû',
@@ -7273,6 +7276,7 @@ const fr: Catalog = {
         'Entièrement engagée',
     'business.campaign.state.inventory_unavailable': 'Aucune note disponible',
     'business.campaign.state.closing_pending_settlement': 'Clôture en cours',
+    'business.campaign.state.repaid': 'Entièrement remboursé',
     'business.campaign.state.unavailable': 'Statut indisponible',
     'business.campaign.lifecycle.live': 'Levée · en cours',
     'business.campaign.lifecycle.fully_reserved':
@@ -7328,6 +7332,8 @@ const fr: Catalog = {
         "Le résultat du paiement n'est pas encore confirmé. Rien n'est définitif avant cela ; il s'affichera ici une fois confirmé.",
     'business.campaign.disbursed':
         '{amount} ont été décaissés vers {destination}.',
+    'business.campaign.raised_gross': 'Levé',
+    'business.campaign.platform_fee': 'Frais de plateforme (3 %)',
     'business.campaign.disbursed_amount': 'Décaissé',
     'business.campaign.destination': 'Vers',
     'business.campaign.effective_at': 'Effectif',
