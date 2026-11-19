@@ -39,7 +39,10 @@ vi.mock('@inertiajs/react', () => import('../auditor/inertia'));
 
 vi.mock('@inertiajs/core', async (importOriginal) => ({
     ...(await importOriginal<typeof InertiaCore>()),
-    http: { onResponse: () => () => undefined },
+    http: {
+        onResponse: () => () => undefined,
+        onError: () => () => undefined,
+    },
 }));
 
 const wallet = (fixture: { props: unknown } = walletFixture) =>

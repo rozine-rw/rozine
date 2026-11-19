@@ -80,6 +80,7 @@ vi.mock('@inertiajs/core', async (importOriginal) => ({
                 inertia.onResponse = null;
             };
         },
+        onError: () => () => undefined,
     },
 }));
 

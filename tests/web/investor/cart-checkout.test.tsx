@@ -39,6 +39,7 @@ vi.mock('@inertiajs/core', async (importOriginal) => ({
                 responses.readers.splice(responses.readers.indexOf(reader), 1);
             };
         },
+        onError: () => () => undefined,
     },
 }));
 

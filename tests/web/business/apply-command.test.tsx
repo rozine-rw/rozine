@@ -39,6 +39,7 @@ vi.mock('@inertiajs/core', async (importOriginal) => ({
                 transport.handler = null;
             };
         },
+        onError: () => () => undefined,
     },
 }));
 

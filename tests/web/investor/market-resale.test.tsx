@@ -15,15 +15,21 @@ import {
     setWide,
 } from './inertia-mock';
 
-type ResponseReader = (response: { status: number; data: unknown }) => unknown;
+type ErrorReader = (error: {
+    response: { status: number; data: unknown };
+}) => unknown;
 
-/* The response readers the resale command installs while a command is out, as Inertia's http. */
-const responses = vi.hoisted(() => ({ readers: [] as ResponseReader[] }));
+/*
+ * The error readers the resale command installs while a command is out, as Inertia's http: its
+ * own client rejects a 422 and hands it to these before `useHttp` turns it into field errors.
+ */
+const responses = vi.hoisted(() => ({ readers: [] as ErrorReader[] }));
 
 vi.mock('@inertiajs/core', async (importOriginal) => ({
     ...(await importOriginal<typeof InertiaCore>()),
     http: {
-        onResponse: (reader: ResponseReader) => {
+        onResponse: () => () => undefined,
+        onError: (reader: ErrorReader) => {
             responses.readers.push(reader);
 
             return () => {
@@ -40,7 +46,7 @@ const refuses =
     (body: unknown): Responder =>
     () => {
         responses.readers.forEach((read) =>
-            read({ status: 422, data: JSON.stringify(body) }),
+            read({ response: { status: 422, data: JSON.stringify(body) } }),
         );
 
         return Promise.resolve(undefined);
