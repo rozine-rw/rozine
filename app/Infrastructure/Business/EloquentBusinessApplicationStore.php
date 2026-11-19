@@ -452,7 +452,13 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
                 function (?array $credit) use ($business, $verification, $businessId, $applicationId): ?array {
                     $application = $this->application($businessId, $applicationId);
                     if ($application->status === 'submitted') {
-                        return $this->submittedReview($application)['quote'];
+                        $submitted = $this->submittedReview($application)['quote'];
+                        // A quote signed before the 1.5x limit existed carries none: name the limit when the offer is within it (QA #673).
+                        if (is_array($submitted) && ($submitted['status'] ?? null) === 'ready' && ($submitted['repeat_growth_limit'] ?? null) === null) {
+                            $submitted['repeat_growth_limit'] = $this->repeatGrowthLimit($businessId, null, $submitted['principal']['amount']);
+                        }
+
+                        return $submitted;
                     }
                     $quote = $this->currentQuote($application, $business, $verification, $credit);
 
@@ -1045,17 +1051,7 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
         $offer = $result['capacity']['offer'];
         $instalments = array_values($offer['instalments']);
         // A repeat raise is also limited to 1.5 times the last note repaid in full (REP-R05), binding or not.
-        $lastRepaid = $result['inputs']['last_repaid_principal'] ?? null;
-        if (! is_string($lastRepaid) && ! array_key_exists('last_repaid_principal', $result['inputs'])) {
-            // A quote signed before the limit existed did not record it: name it only when the offer is within it.
-            $repaid = $this->servicing->forBusiness($payload['business_id'])['repaid'];
-            $lastRepaid = $repaid === [] ? null : $repaid[array_key_last($repaid)]['principal'];
-        }
-        $growthLimit = is_string($lastRepaid) ? (string) ExactFinancialValue::floor(
-            ExactFinancialValue::amount($lastRepaid)->toBigRational()->multipliedBy(LoanCapacity::REPEAT_GROWTH)) : null;
-        if ($growthLimit !== null && ExactFinancialValue::amount($offer['principal']['amount'])->isGreaterThan($growthLimit)) {
-            $growthLimit = null;
-        }
+        $growthLimit = $this->repeatGrowthLimit($payload['business_id'], $result['inputs']['last_repaid_principal'] ?? null, $offer['principal']['amount'], true);
 
         return ['status' => 'ready', 'quote_id' => $quote->id, 'quote_revision' => $quote->revision,
             'policy_version' => $payload['policy_version'], 'evidence_version' => $payload['evidence']['sha256'],
@@ -1068,9 +1064,30 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
             'schedule' => array_map(fn (int $index, array $amount): array => ['instalment' => $index + 1, 'amount' => $amount],
                 array_keys($instalments), $instalments),
             'reason_codes' => $result['capacity']['reason_codes'],
-            'repeat_growth_limit' => $growthLimit === null ? null : ['currency' => 'RWF', 'amount' => $growthLimit],
+            'repeat_growth_limit' => $growthLimit,
             'rate_basis' => ['band' => strtolower($result['scorecard']['band']), 'floor_pct' => '10.0', 'cap_pct' => '15.0',
                 'term_premium' => $result['pricing']['premium_percentage_points']]];
+    }
+
+    /**
+     * The 1.5 times limit on a repeat raise (REP-R05), named only when the offer is within it. A current quote
+     * records the last repaid note when there is one; an application signed before the limit existed did not,
+     * so the servicing record supplies it.
+     *
+     * @return array{currency: 'RWF', amount: string}|null
+     */
+    private function repeatGrowthLimit(string $businessId, ?string $recorded, string $principal, bool $calculated = false): ?array
+    {
+        if ($recorded === null && ! $calculated) {
+            $repaid = $this->servicing->forBusiness($businessId)['repaid'];
+            $recorded = $repaid === [] ? null : $repaid[array_key_last($repaid)]['principal'];
+        }
+        if ($recorded === null) {
+            return null;
+        }
+        $limit = ExactFinancialValue::floor(ExactFinancialValue::amount($recorded)->toBigRational()->multipliedBy(LoanCapacity::REPEAT_GROWTH));
+
+        return ExactFinancialValue::amount($principal)->isGreaterThan($limit) ? null : ['currency' => 'RWF', 'amount' => (string) $limit];
     }
 
     /**

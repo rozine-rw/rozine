@@ -58,7 +58,9 @@ class AuditorProcedureResource extends JsonResource
                 'revision' => $report['revision'], 'reassigned_from' => null, 'amends' => $report['amends_id'] === null ? null
                     : ['report_id' => $report['amends_id'], 'link' => AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['amends_id']])]],
             'assignment' => ['id' => $report['assignment_id'], 'revision' => $job['revision']],
-            'steps' => $page['steps'], 'stage' => $page['sealed'] === null || $report['step'] !== 'seal'
+            // A done step opens read-only from the bar, as Back does (QA #685).
+            'steps' => array_map(fn (array $step): array => [...$step, 'link' => $report['status'] === 'draft' && $step['state'] === 'done'
+                ? AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['id'], 'step' => $step['key']]) : null], $page['steps']), 'stage' => $page['sealed'] === null || $report['step'] !== 'seal'
                 ? $this->stage($report, $page['sources'], $file['file'], $prefix, $page['variance'], $options, $page['seal'], $reasonOptions, $upload, $page['mfa_confirmed'])
                 : [...array_diff_key($page['sealed'], ['sources' => true]), 'step' => 'sealed', 'verification' => AuditorJobsResource::link($request->routeIs('api.*') ? 'api.v1.audit.seals.verify' : 'audit.seals.verify', ['report' => $report['id']]), 'amended_by' => $report['amendment_id'] === null ? null
                     : ['report_id' => $report['amendment_id'], 'link' => AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['amendment_id']])]],
@@ -283,7 +285,9 @@ class AuditorProcedureResource extends JsonResource
             $money = in_array($finding['measure'], ['stock_value', 'cash', 'costs', 'owner_drawings'], true) ? 'RWF ' : '';
             $summary[] = ! isset($finding['reported']) ? ['label' => $title, 'value' => (string) $values['observed'], 'tone' => 'neutral']
                 : ($finding['difference'] === '0' ? ['label' => $title, 'value' => __('Matches: :value', ['value' => $money.$values['observed']]), 'tone' => 'ok']
-                    : ['label' => $title, 'value' => __('Declared :reported, verified :observed', ['reported' => $money.$values['reported'], 'observed' => $money.$values['observed']]), 'tone' => 'flag']);
+                    : ['label' => $title, 'value' => implode(' · ', [__('Declared :reported, verified :observed', ['reported' => $money.$values['reported'], 'observed' => $money.$values['observed']]),
+                        // The causes step 9 gave this difference (QA #685).
+                        ...array_map(fn (array $part): string => self::causeLabel($part['cause']).' '.$money.AuditorJobsResource::figures(['amount' => $part['amount']])['amount'], $finding['explained_by'] ?? [])]), 'tone' => 'flag']);
         }
 
         return ['step' => 'seal', 'summary' => $summary, 'note' => ['required' => $seal['note_required'],
@@ -305,6 +309,19 @@ class AuditorProcedureResource extends JsonResource
             'label' => $this->reasonLabel($code), 'requires_explanation' => true], $codes));
 
         return ['request_changes' => $map($options['request_changes']), 'reject' => $map($options['reject'])];
+    }
+
+    private static function causeLabel(string $cause): string
+    {
+        return match ($cause) {
+            'unrecorded_sales' => __('Sales not recorded'),
+            'unproven_expense' => __('Expense without proof'),
+            'personal_spending' => __('Personal spending from the business'),
+            'wrong_month' => __('Recorded in the wrong month'),
+            'entry_error' => __('Entry error'),
+            'counted_twice' => __('Counted twice'),
+            default => $cause,
+        };
     }
 
     private function reasonLabel(string $code): string
