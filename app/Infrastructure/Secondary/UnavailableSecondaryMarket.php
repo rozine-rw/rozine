@@ -16,7 +16,7 @@ final class UnavailableSecondaryMarket implements SecondaryBoard, SecondaryMarke
 {
     public function board(int $userId, ?int $contextRevision): array
     {
-        return ['open' => false, 'listings' => [], 'sellable' => [], 'trades' => []];
+        return ['open' => false, 'listings' => [], 'sellable' => [], 'trades' => [], 'closed' => []];
     }
 
     public function list(int $userId, int $contextRevision, string $holdingId, string $units, string $price, string $requestId): array

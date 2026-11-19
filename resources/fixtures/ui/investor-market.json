@@ -42,7 +42,8 @@
             "open": true,
             "listings": [],
             "sellable": [],
-            "trades": []
+            "trades": [],
+            "closed": []
         },
         "actions": {
             "list": null

@@ -17,6 +17,7 @@ use App\Models\LedgerEntry;
 use App\Models\PartyNotice;
 use App\Models\User;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
@@ -65,6 +66,11 @@ it('sends the Business its raise less the fee, posts the fee once on issue and t
     $this->actingAs($treasury)->get(route('staff.ledger.index', ['entry' => $entry->id]))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('entry.kind', 'platform_fee')->where('entry.from', 'Disbursement settlement')
             ->where('entry.to', 'Platform fee revenue')->where('entry.amount.amount', '324000'));
+    // The outbound leg is found by the payout's bank reference (QA #663).
+    foreach ([$intent->provider_reference, ' '.$intent->provider_reference.' '] as $search) {
+        $this->actingAs($treasury)->get(route('staff.ledger.index', ['q' => $search]))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('entries', fn (Collection $rows): bool => $rows->contains('id', $entry->id))->etc());
+    }
 
     $sent = PartyNotice::query()->where('kind', 'business.disbursement_sent')->sole();
     expect($sent->facts)->toMatchArray(['amount' => '10476000', 'principal' => '10800000', 'platform_fee' => '324000']);

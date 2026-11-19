@@ -1972,6 +1972,10 @@ export type CampaignProgress =
     | {
           phase: 'disbursed';
           amount: Money;
+          /** What the raise collected, before the platform fee. */
+          gross?: Money;
+          /** The platform fee taken at disbursement. */
+          platform_fee?: Money;
           receipt: Receipt;
           disbursement_effective_at: string;
           effective_date: string;

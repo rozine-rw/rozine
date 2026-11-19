@@ -12,7 +12,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * `GetInvestorPortfolio` read and adds real routes only: each issued Holding opens its Holding
  * page. The totals, projected payouts, industries, risk bands and concentration are the server's.
  * Nothing has matured yet, so the Active tab lists every Holding and Matured opens empty;
- * Active and Secondary list the units bought on the market and still held, each opening the Market; Saved
+ * Active and Secondary list the units bought on the market and still held, each opening its lot page; Saved
  * (the watchlist) has no read yet.
  * Each commitment awaiting issue opens its commitment page. A destination with no live route yet is null,
  * and a person still being verified has no wallet to link.
@@ -40,7 +40,7 @@ class InvestorPortfolioResource extends JsonResource
                 'link' => self::link('investor.holdings.show', ['holding' => $holding['id']])], $data['holdings']) : [],
             'payouts' => $data['payouts'], 'industries' => $data['industries'], 'risk' => $data['risk'], 'concentration' => $data['concentration'],
             'idle' => $data['idle'],
-            'bought' => in_array($data['tab'], ['active', 'secondary'], true) ? array_map(fn (array $lot): array => [...$lot, 'link' => self::link('investor.market')], $data['bought']) : [],
+            'bought' => in_array($data['tab'], ['active', 'secondary'], true) ? array_map(fn (array $lot): array => [...$lot, 'link' => self::link('investor.lots.show', ['lot' => $lot['lot_id']])], $data['bought']) : [],
             'commitments' => array_map(fn (array $commitment): array => [...$commitment,
                 'link' => self::link('investor.commitments.show', ['commitment' => $commitment['id']])], $data['commitments']),
             'links' => ['deals' => self::link('investor.deals'), 'portfolio' => $portfolio(), 'market' => self::link('investor.market'), 'cart' => self::link('investor.cart'), 'profile' => self::link('investor.profile'),

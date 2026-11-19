@@ -143,6 +143,15 @@ describe('Admin Notes', () => {
         ]);
     });
 
+    it('wraps the raised-of-target figure on a phone instead of cutting it off (QA #663 item 7)', () => {
+        render(<AdminNotes {...props()} />);
+
+        const figure = screen.getAllByText(
+            /RWF 3,000,000 of RWF 4,000,000/u,
+        )[0];
+        expect(figure).not.toHaveClass('truncate');
+    });
+
     it('says when there are no notes yet, and offers the rest of a long list', () => {
         const { rerender } = render(<AdminNotes {...props({ notes: [] })} />);
 

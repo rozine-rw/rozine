@@ -1,0 +1,151 @@
+{
+    "component": "investor/lot",
+    "synthetic": true,
+    "props": {
+        "contract_version": "investor-lot-v1",
+        "identity_context_revision": 1,
+        "server_time": "2026-11-19T10:00:00+02:00",
+        "lot": {
+            "lot_id": "01kfixture0000000000000lot1",
+            "note_id": "01kfixture0000000000000note",
+            "name": "Kivu Harvest Ltd",
+            "accent": "green",
+            "industry": "Agriculture",
+            "units": "2",
+            "price": {
+                "currency": "RWF",
+                "amount": "5200"
+            },
+            "paid": {
+                "currency": "RWF",
+                "amount": "10400"
+            },
+            "bought_at": "2026-10-05T09:00:00+00:00",
+            "received": {
+                "currency": "RWF",
+                "amount": "1830"
+            },
+            "payments_made": 1,
+            "payments_total": 5,
+            "next_payment": {
+                "amount": {
+                    "currency": "RWF",
+                    "amount": "1830"
+                },
+                "due_on": "2026-12-01T00:00:00+02:00"
+            },
+            "matures_on": "2027-03-01T00:00:00+02:00",
+            "schedule": [
+                {
+                    "index": 1,
+                    "due_on": "2026-10-01",
+                    "expected": {
+                        "currency": "RWF",
+                        "amount": "1830"
+                    },
+                    "status": "before_purchase",
+                    "paid_on": null,
+                    "net": null
+                },
+                {
+                    "index": 2,
+                    "due_on": "2026-11-01",
+                    "expected": {
+                        "currency": "RWF",
+                        "amount": "1830"
+                    },
+                    "status": "paid",
+                    "paid_on": "2026-11-01",
+                    "net": {
+                        "currency": "RWF",
+                        "amount": "1830"
+                    }
+                },
+                {
+                    "index": 3,
+                    "due_on": "2026-12-01",
+                    "expected": {
+                        "currency": "RWF",
+                        "amount": "1830"
+                    },
+                    "status": "upcoming",
+                    "paid_on": null,
+                    "net": null
+                },
+                {
+                    "index": 4,
+                    "due_on": "2027-01-01",
+                    "expected": {
+                        "currency": "RWF",
+                        "amount": "1830"
+                    },
+                    "status": "upcoming",
+                    "paid_on": null,
+                    "net": null
+                },
+                {
+                    "index": 5,
+                    "due_on": "2027-02-01",
+                    "expected": {
+                        "currency": "RWF",
+                        "amount": "1830"
+                    },
+                    "status": "upcoming",
+                    "paid_on": null,
+                    "net": null
+                },
+                {
+                    "index": 6,
+                    "due_on": "2027-03-01",
+                    "expected": {
+                        "currency": "RWF",
+                        "amount": "1830"
+                    },
+                    "status": "upcoming",
+                    "paid_on": null,
+                    "net": null
+                }
+            ],
+            "link": {
+                "url": "/investor/lots/01kfixture0000000000000lot1",
+                "method": "get"
+            }
+        },
+        "links": {
+            "deals": {
+                "url": "/investor/deals",
+                "method": "get"
+            },
+            "portfolio": {
+                "url": "/investor/portfolio",
+                "method": "get"
+            },
+            "market": {
+                "url": "/investor/market",
+                "method": "get"
+            },
+            "cart": {
+                "url": "/investor/cart",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/investor/profile",
+                "method": "get"
+            },
+            "wallet": {
+                "url": "/investor/wallet",
+                "method": "get"
+            },
+            "notifications": null,
+            "launcher": {
+                "url": "/dashboard",
+                "method": "get"
+            },
+            "back": {
+                "url": "/investor/portfolio?tab=secondary",
+                "method": "get"
+            },
+            "changes": null
+        }
+    }
+}
