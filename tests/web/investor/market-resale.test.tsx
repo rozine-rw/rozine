@@ -1,9 +1,11 @@
+import type * as InertiaCore from '@inertiajs/core';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import InvestorMarket from '@/pages/investor/market';
 import type { InvestorMarketProps } from '@/types/investor';
 import listingsFixture from '../../../resources/fixtures/ui/investor-market-listings.json';
+import type { Responder } from './inertia-mock';
 import {
     answers,
     fails,
@@ -13,7 +15,36 @@ import {
     setWide,
 } from './inertia-mock';
 
+type ResponseReader = (response: { status: number; data: unknown }) => unknown;
+
+/* The response readers the resale command installs while a command is out, as Inertia's http. */
+const responses = vi.hoisted(() => ({ readers: [] as ResponseReader[] }));
+
+vi.mock('@inertiajs/core', async (importOriginal) => ({
+    ...(await importOriginal<typeof InertiaCore>()),
+    http: {
+        onResponse: (reader: ResponseReader) => {
+            responses.readers.push(reader);
+
+            return () => {
+                responses.readers.splice(responses.readers.indexOf(reader), 1);
+            };
+        },
+    },
+}));
+
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
+
+/** A 422 refusal as the real transport answers it: the body is read, then `useHttp` resolves empty. */
+const refuses =
+    (body: unknown): Responder =>
+    () => {
+        responses.readers.forEach((read) =>
+            read({ status: 422, data: JSON.stringify(body) }),
+        );
+
+        return Promise.resolve(undefined);
+    };
 
 vi.setConfig({ testTimeout: 30_000 });
 
@@ -95,7 +126,9 @@ describe('Market resale (BRS v3.0 §12)', () => {
             url: '/investor/market/listings/01kc0000000000000000000002/settle',
             body: { reservation_id: '01kc00000000000000000000r1' },
         });
-        expect(screen.getByRole('alert')).toHaveTextContent(/TRADING_PAUSED/);
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Trading on this note is paused right now. Try again later.',
+        );
         expect(inertia.reload).not.toHaveBeenCalled();
     });
 
@@ -235,6 +268,48 @@ describe('Market resale (BRS v3.0 §12)', () => {
         expect(
             within(status).getByRole('link', { name: 'See it in Portfolio' }),
         ).toHaveAttribute('href', '/preview/investor-portfolio?tab=secondary');
+    });
+
+    it('says why a reservation over the holding limit is refused, and names any other code it does not know', async () => {
+        const user = userEvent.setup();
+
+        inertia.queue.push(
+            refuses({
+                code: 'HOLDING_LIMIT_EXCEEDED',
+                data: { maximum_units: '12' },
+            }),
+            refuses({
+                code: 'HOLDING_LIMIT_EXCEEDED',
+                data: { maximum_units: '0' },
+            }),
+            refuses({ code: 'SOMETHING_NEW', data: [] }),
+        );
+        render(<InvestorMarket {...page()} />);
+
+        await user.click(screen.getAllByRole('button', { name: 'Buy' })[0]);
+        const sheet = screen.getByRole('dialog', {
+            name: 'Buy units of Kivu Harvest Ltd',
+        });
+        const reserve = within(sheet).getByRole('button', {
+            name: 'Reserve units',
+        });
+
+        await user.click(reserve);
+        expect(within(sheet).getByRole('alert')).toHaveTextContent(
+            'One investor can hold at most half of a raise. You can buy up to 12 more units of this note.',
+        );
+
+        await user.click(reserve);
+        expect(within(sheet).getByRole('alert')).toHaveTextContent(
+            'One investor can hold at most half of a raise, and you already hold that much of this note.',
+        );
+
+        await user.click(reserve);
+        expect(within(sheet).getByRole('alert')).toHaveTextContent(
+            'That didn’t go through (SOMETHING_NEW).',
+        );
+        expect(responses.readers).toHaveLength(0);
+        expect(inertia.reload).not.toHaveBeenCalled();
     });
 
     it('says how many units are listed when more are asked for', async () => {

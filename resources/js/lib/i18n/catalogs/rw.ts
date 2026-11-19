@@ -4704,6 +4704,27 @@ const rw: Catalog = {
     'investor.market.resale.closed_title': 'Itangazo · {name}',
     'investor.market.resale.see_cancelled': 'Reba mu Byahagaritswe',
     'investor.market.resale.trade_sell': 'Wagurishije · {name}',
+    'investor.market.resale.refusal.holding_limit': {
+        one: 'Umushoramari umwe ntashobora kurenza kimwe cya kabiri cy’ubukusanye. Ushobora kugura indi migabane igera kuri {count} y’iyi noti.',
+        other: 'Umushoramari umwe ntashobora kurenza kimwe cya kabiri cy’ubukusanye. Ushobora kugura indi migabane igera kuri {count} y’iyi noti.',
+    },
+    'investor.market.resale.refusal.holding_full':
+        'Umushoramari umwe ntashobora kurenza kimwe cya kabiri cy’ubukusanye, kandi umaze kukigeraho kuri iyi noti.',
+    'investor.market.resale.refusal.price_cap':
+        'Igiciro kirenze igisenge cya {cap} ku mugabane.',
+    'investor.market.resale.refusal.not_held':
+        'Nta migabane ihagije ufite yo gushyira ku isoko.',
+    'investor.market.resale.refusal.not_listed':
+        'Iyo migabane yose ntikiri ku isoko. Hitamo mike.',
+    'investor.market.resale.refusal.own_listing':
+        'Ntushobora kugura ibyo washyize ku isoko ubwawe.',
+    'investor.market.resale.refusal.reserved':
+        'Undi muguzi afite iyi migabane ubu. Ongera ugerageze mu kanya.',
+    'investor.market.resale.refusal.closed': 'Iri tangazo ryarafunzwe.',
+    'investor.market.resale.refusal.reservation_ended':
+        'Igihe wari wafashe cyarangiye. Ongera ufate imigabane kugira ngo uyigure.',
+    'investor.market.resale.refusal.paused':
+        'Ubucuruzi kuri iyi noti bwahagaritswe by’agateganyo. Ongera ugerageze nyuma.',
     'investor.market.resale.refused':
         'Ntibyakunze ({code}). Reba amakuru wongere ugerageze.',
     'investor.market.saved.empty_title': 'Nta noti irabikwa',

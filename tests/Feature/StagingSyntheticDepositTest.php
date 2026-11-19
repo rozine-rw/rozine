@@ -23,6 +23,7 @@ use App\Models\BusinessFundingMethod;
 use App\Models\BusinessProfile;
 use App\Models\BusinessProviderEvent;
 use App\Models\DepositPolicy;
+use App\Models\IdentityOperator;
 use App\Models\InvestorFundingMethod;
 use App\Models\Party;
 use App\Models\RoleMembership;
@@ -815,3 +816,48 @@ it('names the staging demo resale buyer a wallet tester on deploy, only while th
     $migration->down();
     expect(SyntheticWalletTesterChange::query()->count())->toBe(1);
 });
+
+it('gives staging QA a third resale buyer on deploy: Investor access and a wallet, only while the UAT money simulation is on', function (): void {
+    $migration = require database_path('migrations/2026_11_19_190000_name_uat_third_resale_buyer.php');
+    $party = Party::factory()->verified()->create();
+    $buyer = User::factory()->for($party)->create(['email' => 'qa-kyc2@rozine.rw']);
+    RoleMembership::factory()->for($party)->active()->create(['role' => 'business']);
+    $operator = User::factory()->withTwoFactor()->create(['email' => 'qa-admin@rozine.rw']);
+    IdentityOperator::factory()->create(['user_id' => $operator->id]);
+    InvestorWalletFixture::policy(minimum: '1000', maximum: '5000000');
+
+    // Off UAT, or on UAT with the simulation off, nothing changes.
+    $migration->up();
+    asStaging();
+    $migration->up();
+    expect(RoleMembership::query()->where('party_id', $party->id)->where('role', 'investor')->exists())->toBeFalse()
+        ->and(SyntheticWalletTesterChange::query()->count())->toBe(0);
+
+    config(['app.uat_money_simulation' => true]);
+    $migration->up();
+    $migration->up();
+    expect(RoleMembership::query()->where('party_id', $party->id)->orderBy('role')->pluck('status', 'role')->all())->toBe(['business' => 'active', 'investor' => 'active'])
+        ->and(SyntheticWalletTesterChange::query()->sole()->only(['party_id', 'action']))->toBe(['party_id' => $buyer->party_id, 'action' => 'granted'])
+        ->and(InvestorFundingMethod::query()->where('party_id', $party->id)->whereNotNull('verified_at')->pluck('label')->all())->toBe(['MTN MoMo']);
+    $migration->down();
+    expect(SyntheticWalletTesterChange::query()->count())->toBe(1);
+});
+
+it('leaves the third resale buyer alone when it is not a verified person or no identity operator can grant access', function (bool $verified, bool $operatorEnabled, bool $operatorMfa): void {
+    $migration = require database_path('migrations/2026_11_19_190000_name_uat_third_resale_buyer.php');
+    $party = $verified ? Party::factory()->verified()->create() : Party::factory()->create();
+    User::factory()->for($party)->create(['email' => 'qa-kyc2@rozine.rw']);
+    $operator = ($operatorMfa ? User::factory()->withTwoFactor() : User::factory())->create(['email' => 'qa-admin@rozine.rw']);
+    IdentityOperator::factory()->create(['user_id' => $operator->id, 'enabled' => $operatorEnabled]);
+    asStaging();
+    config(['app.uat_money_simulation' => true]);
+
+    $migration->up();
+
+    expect(RoleMembership::query()->where('party_id', $party->id)->exists())->toBeFalse()
+        ->and(SyntheticWalletTesterChange::query()->count())->toBe(0);
+})->with([
+    'identity not verified' => [false, true, true],
+    'operator disabled' => [true, false, true],
+    'operator refused for want of an authenticator' => [true, true, false],
+]);

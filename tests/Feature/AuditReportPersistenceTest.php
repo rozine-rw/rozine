@@ -259,7 +259,9 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     // The secondary market rebinds the ledger entry sources, so it comes off first and goes back last.
     // Servicing payouts reference Business repayments and rebind the ledger kinds after the secondary market, so they come off before it and go back after it.
     $servicingPayouts = require database_path('migrations/2026_11_14_120000_create_servicing_payouts.php');
+    $disbursementPayouts = require database_path('migrations/2026_11_19_180000_add_disbursement_payout_entries.php');
     $secondaryMarket = require database_path('migrations/2026_11_11_060000_create_secondary_market_tables.php');
+    $disbursementPayouts->down();
     $servicingPayouts->down();
     $secondaryMarket->down();
     // Recycling withdrawn commitment claims rewrites check_primary_held_release again, so it comes off before the precision check.
@@ -382,6 +384,7 @@ it('rolls the unused report schema back and reapplies it without rewriting legac
     $withdrawnClaims->up();
     $secondaryMarket->up();
     $servicingPayouts->up();
+    $disbursementPayouts->up();
     expect($closingAuthorityShape())->toEqual($originalClosingAuthority);
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
     expect(DB::select($primaryGuardQuery))->toEqual($primaryGuards)
