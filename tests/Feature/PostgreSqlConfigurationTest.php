@@ -174,7 +174,9 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     // Servicing payouts reference Business repayments and rebind the ledger kinds after the secondary market, so they come off before it and go back after it.
     $servicingPayouts = require database_path('migrations/2026_11_14_120000_create_servicing_payouts.php');
     $disbursementPayouts = require database_path('migrations/2026_11_19_180000_add_disbursement_payout_entries.php');
+    $concurrentReservations = require database_path('migrations/2026_11_19_200000_allow_concurrent_secondary_reservations.php');
     $secondaryMarket = require database_path('migrations/2026_11_11_060000_create_secondary_market_tables.php');
+    $concurrentReservations->down();
     $disbursementPayouts->down();
     $servicingPayouts->down();
     $secondaryMarket->down();
@@ -514,6 +516,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $secondaryMarket->up();
     $servicingPayouts->up();
     $disbursementPayouts->up();
+    $concurrentReservations->up();
     expect(Schema::hasColumn('business_photos', 'url'))->toBeTrue();
     expect(Schema::hasTable('investor_cart_lines'))->toBeTrue()
         ->and(DB::scalar("SELECT count(*) FROM pg_constraint WHERE conname = 'investor_cart_line_units'"))->toBe(1);

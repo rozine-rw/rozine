@@ -218,7 +218,9 @@ it('reverses an empty schema but refuses rollback after reservation evidence exi
     // Servicing payouts reference Business repayments and rebind the ledger kinds after the secondary market, so they come off before it and go back after it.
     $servicingPayouts = require database_path('migrations/2026_11_14_120000_create_servicing_payouts.php');
     $disbursementPayouts = require database_path('migrations/2026_11_19_180000_add_disbursement_payout_entries.php');
+    $concurrentReservations = require database_path('migrations/2026_11_19_200000_allow_concurrent_secondary_reservations.php');
     $secondaryMarket = require database_path('migrations/2026_11_11_060000_create_secondary_market_tables.php');
+    $concurrentReservations->down();
     $disbursementPayouts->down();
     $servicingPayouts->down();
     $secondaryMarket->down();
@@ -282,6 +284,7 @@ it('reverses an empty schema but refuses rollback after reservation evidence exi
     $secondaryMarket->up();
     $servicingPayouts->up();
     $disbursementPayouts->up();
+    $concurrentReservations->up();
     expect(DB::scalar("SELECT count(*) FROM pg_trigger WHERE tgname IN ('primary_issued_closing_complete', 'primary_funded_closing_complete')"))->toBe(2);
     PrimaryReservationRecord::factory()->withInitialVersion()->create();
     primarySchemaFlush();

@@ -4687,6 +4687,10 @@ const rw: Catalog = {
     'investor.market.resale.listing_total': 'Igiteranyo {amount}',
     'investor.market.resale.list': 'Shyira ku isoko',
     'investor.market.resale.trade_buy': 'Waguze · {name}',
+    'investor.market.resale.too_many_free': {
+        one: 'Umugabane {count} gusa ni wo usigaye, undi muguzi afite indi.',
+        other: 'Imigabane {count} gusa ni yo isigaye, undi muguzi afite indi.',
+    },
     'investor.market.resale.too_many': {
         one: 'Umugabane {count} gusa ni wo uri ku isoko.',
         other: 'Imigabane {count} gusa ni yo iri ku isoko.',

@@ -4699,6 +4699,10 @@ const fr: Catalog = {
     'investor.market.resale.listing_total': 'Total de l’annonce {amount}',
     'investor.market.resale.list': 'Mettre en vente',
     'investor.market.resale.trade_buy': 'Acheté · {name}',
+    'investor.market.resale.too_many_free': {
+        one: 'Seulement {count} part est libre, un autre acheteur réserve le reste.',
+        other: 'Seulement {count} parts sont libres, un autre acheteur réserve le reste.',
+    },
     'investor.market.resale.too_many': {
         one: 'Seulement {count} part est proposée.',
         other: 'Seulement {count} parts sont proposées.',
