@@ -101,6 +101,16 @@ afterEach(() => {
 });
 
 describe('Disbursements queue', () => {
+    it('wraps a long payout destination instead of cutting it off (QA #663 item 7)', () => {
+        const page = props(queueFixture);
+        page.disbursements[0].destination = 'Bank of Kigali Account ····7890';
+        render(<AdminDisbursements {...page} />);
+
+        const cell = screen.getByText('Bank of Kigali Account ····7890');
+        expect(cell).not.toHaveClass('truncate');
+        expect(cell.className).toContain('[overflow-wrap:anywhere]');
+    });
+
     it('shows under the amount what the Business receives net of the platform fee (QA #646)', () => {
         const page = props(queueFixture);
         page.disbursements[0].platform_fee = {

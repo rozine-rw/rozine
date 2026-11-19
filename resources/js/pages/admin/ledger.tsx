@@ -191,13 +191,13 @@ export default function AdminLedger(props: AdminLedgerProps) {
                         </span>
                         <span
                             role="cell"
-                            className="truncate text-[12px] text-rz-ink"
+                            className="min-w-0 text-[12px] [overflow-wrap:anywhere] text-rz-ink"
                         >
                             {row.from} → {row.to}
                         </span>
                         <span
                             role="cell"
-                            className="truncate text-[11.5px] text-rz-body"
+                            className="min-w-0 text-[11.5px] [overflow-wrap:anywhere] text-rz-body"
                         >
                             {row.reference}
                         </span>
