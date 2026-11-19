@@ -108,9 +108,9 @@ final class EloquentAuditSourceFactsStore implements AuditSourceFactsStore
             ->whereNotExists(fn ($query) => $query->selectRaw('1')->from('audit_source_snapshots')
                 ->whereColumn('audit_source_snapshots.assignment_id', 'audit_assignments.id')
                 ->whereColumn('audit_source_snapshots.assignment_revision', 'audit_assignments.revision'))
-            ->orderBy('id')->get(['id', 'business_id']);
+            ->orderBy('id')->get(['id', 'business_id', 'state']);
         foreach ($candidates as $candidate) {
-            if (! $this->simulation->covers($candidate->business_id)) {
+            if (! $this->simulation->coversAudit($candidate->business_id, $candidate->state)) {
                 continue;
             }
             try {
