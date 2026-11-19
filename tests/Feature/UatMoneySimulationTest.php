@@ -239,6 +239,12 @@ it('lets the Business repay its note on UAT and pays each holder its share less 
     }
     $this->actingAs($treasury)->get(route('staff.ledger.index', ['entry' => $entry]))
         ->assertInertia(fn (Assert $page): Assert => $page->where('entry.kind', 'distribution')->etc());
+    // The disbursement's outbound leg is found by the bank it paid, as the Disbursements drawer names it (QA #663).
+    $issued = DB::table('ledger_entries')->where('kind', 'disbursement_platform_fee')->value('id');
+    foreach (['Bank of Kigali', 'bank of kigali', 'Account ····6789'] as $search) {
+        $this->actingAs($treasury)->get(route('staff.ledger.index', ['q' => $search]))
+            ->assertInertia(fn (Assert $page): Assert => $page->where('entries', fn (Collection $rows): bool => $rows->contains('id', $issued))->etc());
+    }
 
     // Paid on once, and a stale quote is refused.
     $this->actingAs($note['payer'])->postJson(route('business.repayments.pay', $note['business']),
@@ -331,7 +337,7 @@ it('lists, reserves, buys and withdraws resale units from the Market page on UAT
             ->where('market.listings.0.actions.settle.method', 'post')->where('market.listings.0.actions.reserve', null)->etc());
     $this->actingAs($seller)->get(route('investor.market'))
         ->assertInertia(fn (Assert $page): Assert => $page->where('market.listings.0.reserved', true)->where('market.listings.0.mine', true)
-            ->where('market.listings.0.actions.settle', null)->etc());
+            ->where('market.listings.0.reserved_units', '10')->where('market.listings.0.actions.settle', null)->etc());
     $this->actingAs($buyer)->postJson(route('investor.market_settle', $listed), $command(['reservation_id' => $reservation]))
         ->assertOk()->assertJsonPath('code', 'SECONDARY_SETTLED');
 
@@ -344,6 +350,11 @@ it('lists, reserves, buys and withdraws resale units from the Market page on UAT
     $again = $this->actingAs($seller)->postJson(route('investor.market_list'), $command(['lot_id' => $holding->holdingId, 'units' => '5', 'price' => $price]))
         ->assertOk()->json('data.listing.listing_id');
     $this->actingAs($seller)->postJson(route('investor.market_withdraw', $again), $command([]))->assertOk()->assertJsonPath('code', 'SECONDARY_LISTING_CANCELLED');
+    // A withdrawn listing stays under Orders → Cancelled (QA #663).
+    $this->actingAs($seller)->get(route('investor.market'))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('market.closed.0.listing_id', $again)->where('market.closed.0.state', 'cancelled')
+            ->where('market.closed.0.cancelled_by', 'seller')->where('market.closed.0.listed_units', '5')->where('market.closed.0.price.amount', $price)->etc());
+    $this->actingAs($buyer)->get(route('investor.market'))->assertInertia(fn (Assert $page): Assert => $page->where('market.closed', [])->etc());
     $this->actingAs($seller)->postJson(route('investor.market_list'), $command(['lot_id' => $holding->holdingId, 'units' => '0', 'price' => $price]))
         ->assertUnprocessable();
 });
@@ -413,11 +424,37 @@ it('shows a resale on both sides: the buyer\'s units in Portfolio and both walle
 
     $this->actingAs($buyer)->get(route('investor.portfolio', ['tab' => 'secondary']))
         ->assertInertia(fn (Assert $page): Assert => $page->where('bought.0.lot_id', $transfer->id)->where('bought.0.units', '2')
-            ->where('bought.0.price.amount', $price)->where('bought.0.paid.amount', $paid)->where('bought.0.link.url', route('investor.market', [], false))
+            ->where('bought.0.price.amount', $price)->where('bought.0.paid.amount', $paid)->where('bought.0.link.url', route('investor.lots.show', $transfer->id, false))
             ->where('totals.businesses', 1)->where('totals.invested.amount', $paid)->etc());
     $this->actingAs($buyer)->get(route('investor.portfolio'))->assertInertia(fn (Assert $page): Assert => $page->where('bought.0.lot_id', $transfer->id)
         ->where('payouts', fn ($months): bool => count($months) > 0)->where('totals.next_payout', fn ($next): bool => $next !== null)->etc());
     $this->actingAs($buyer)->get(route('investor.portfolio', ['tab' => 'matured']))->assertInertia(fn (Assert $page): Assert => $page->where('bought', [])->etc());
+
+    // The raise page counts who holds the note now, the buyer included (QA #642).
+    $this->actingAs($note['payer'])->get(route('business.campaigns.show', ['business' => $note['business'], 'campaign' => $note['campaign']]))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('investors.holders', 3)
+            ->where('investors.list', fn (Collection $rows): bool => $rows->contains('units', '2') && (int) $rows->sum('units') === array_sum(array_map(fn ($issued): int => $issued->units,
+                app(RetainedNoteSchedules::class)->find($note['campaign'])->holdings)))->etc());
+    // The bought lot opens its own page: what it cost, its schedule for the units held, and what it is paid (QA #663 item 2).
+    $schedule = app(RetainedNoteSchedules::class)->find($note['campaign']);
+    $this->actingAs($buyer)->get(route('investor.lots.show', $transfer->id))
+        ->assertInertia(fn (Assert $page): Assert => $page->component('investor/lot')->where('contract_version', 'investor-lot-v1')
+            ->where('lot.lot_id', $transfer->id)->where('lot.units', '2')->where('lot.paid.amount', $paid)->where('lot.price.amount', $price)
+            ->where('lot.received.amount', '0')->where('lot.payments_made', 0)->has('lot.schedule', count($schedule->instalments))
+            ->where('lot.schedule.0.status', 'upcoming')->where('lot.next_payment', fn ($next): bool => $next !== null)
+            ->where('links.back.url', route('investor.portfolio', ['tab' => 'secondary'], false))->etc());
+    $this->actingAs($seller)->get(route('investor.lots.show', $transfer->id))->assertNotFound();
+    $this->actingAs($buyer)->get(route('investor.lots.show', strtolower((string) Str::ulid())))->assertNotFound();
+    asUatProfile(...config('app.uat_money_simulation_businesses'));
+    $this->actingAs($note['payer'])->postJson(route('business.repayments.pay', $note['business']),
+        ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1, 'note_id' => $note['campaign'], 'option' => 'next_instalment',
+            'expected_servicing_revision' => 1, 'quoted_total' => ['currency' => 'RWF', 'amount' => $schedule->instalments[0]->gross]])->assertOk();
+    app()->forgetInstance(EnvironmentIsolation::class);
+    config(['app.uat_money_simulation' => false]);
+    $lotPayout = DB::table('servicing_payouts')->where('lot_type', 'secondary_transfer')->where('lot_id', $transfer->id)->sole();
+    $this->actingAs($buyer)->get(route('investor.lots.show', $transfer->id))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('lot.schedule.0.status', 'paid')->where('lot.schedule.0.net.amount', (string) $lotPayout->net)
+            ->where('lot.received.amount', (string) $lotPayout->net)->where('lot.payments_made', 1)->etc());
 
     $this->actingAs($seller)->get(route('investor.holdings.show', $holding->holdingId))
         ->assertInertia(fn (Assert $page): Assert => $page->where('holding.resold_units', '2')->where('holding.issue.units', (string) $holding->units)
@@ -431,7 +468,7 @@ it('reads the Market closed, offering nothing, while resale is off', function ()
     $investor = InvestorWalletFixture::ready()['user'];
 
     $this->actingAs($investor)->get(route('investor.market'))
-        ->assertInertia(fn (Assert $page): Assert => $page->where('market', ['open' => false, 'listings' => [], 'sellable' => [], 'trades' => []])
+        ->assertInertia(fn (Assert $page): Assert => $page->where('market', ['open' => false, 'listings' => [], 'sellable' => [], 'trades' => [], 'closed' => []])
             ->where('actions.list', null)->where('links.wallet.url', route('investor.wallet', [], false))->etc());
     $this->actingAs($investor)->postJson(route('investor.market_list'), ['request_id' => (string) Str::uuid(), 'identity_context_revision' => 1,
         'lot_id' => strtolower((string) Str::ulid()), 'units' => '1', 'price' => '100'])->assertStatus(503)->assertJsonPath('code', 'SECONDARY_TRADING_DISABLED');
@@ -592,7 +629,14 @@ it('files a note repaid in full as repaid on Home and the staff screens, scores 
     StaffFixture::provision($analyst, ['analyst'], 'Repaid note review.');
     $this->actingAs($analyst)->get(route('staff.businesses.index', ['business' => $note['business']]))->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->where('party.stats.0.value.value', 0)->where('party.list.rows.0.detail.value', 'completed')
-            ->where('party.list.rows.0.tone', 'grey')->etc());
+            ->where('party.list.rows.0.tone', 'grey')
+            // Activity lists the payout and every repayment (QA #642).
+            ->where('party.history', fn (Collection $history): bool => $history->where('action.code', 'note.repay')->count() === count($schedule->instalments)
+                && $history->contains(fn (array $entry): bool => $entry['action']['code'] === 'campaign.disburse' && str_starts_with($entry['action']['label'], 'Note disbursed · ')))->etc());
+    // The raise page reads repaid, and shows the platform fee taken at disbursement (QA #642).
+    $this->actingAs($note['payer'])->get(route('business.campaigns.show', ['business' => $note['business'], 'campaign' => $note['campaign']]))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('campaign.lifecycle', 'repaid')->where('note.progress.phase', 'disbursed')
+            ->where('note.progress.platform_fee.amount', fn (string $fee): bool => (int) $fee > 0)->has('note.progress.gross')->etc());
     // The register reads each deal's sealed reports, which checks this test database is a dedicated one.
     $isolation = Mockery::mock(EnvironmentIsolation::class.'[profile,assertSafeConfiguration]', [app(), app('config')]);
     $isolation->allows(['profile' => 'uat', 'assertSafeConfiguration' => null]);

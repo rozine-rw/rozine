@@ -18,4 +18,14 @@ interface HoldingPayouts
      * @return array<string, list<HoldingPayout>> Keyed by Holding id; a Holding nothing has been paid on is absent.
      */
     public function forHoldings(array $holdingIds): array;
+
+    /**
+     * The same for lots of one type: `primary_holding` (an issued Holding) or `secondary_transfer`
+     * (units bought on the market, paid to the buyer from the settlement on).
+     *
+     * @param  'primary_holding'|'secondary_transfer'  $lotType
+     * @param  list<string>  $lotIds
+     * @return array<string, list<HoldingPayout>> Keyed by lot id; a lot nothing has been paid on is absent.
+     */
+    public function forLots(string $lotType, array $lotIds): array;
 }

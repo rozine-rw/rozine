@@ -54,6 +54,7 @@ import StaffHomeController from './StaffHomeController'
 import AuditorProfileController from './AuditorProfileController'
 import InvestorProfileController from './InvestorProfileController'
 import InvestorPortfolioController from './InvestorPortfolioController'
+import InvestorLotController from './InvestorLotController'
 import InvestorComplaintController from './InvestorComplaintController'
 import InvestorSecondaryController from './InvestorSecondaryController'
 import InvestorDealPhotoController from './InvestorDealPhotoController'
@@ -136,6 +137,7 @@ const Controllers = {
     AuditorProfileController: Object.assign(AuditorProfileController, AuditorProfileController),
     InvestorProfileController: Object.assign(InvestorProfileController, InvestorProfileController),
     InvestorPortfolioController: Object.assign(InvestorPortfolioController, InvestorPortfolioController),
+    InvestorLotController: Object.assign(InvestorLotController, InvestorLotController),
     InvestorComplaintController: Object.assign(InvestorComplaintController, InvestorComplaintController),
     InvestorSecondaryController: Object.assign(InvestorSecondaryController, InvestorSecondaryController),
     InvestorDealPhotoController: Object.assign(InvestorDealPhotoController, InvestorDealPhotoController),

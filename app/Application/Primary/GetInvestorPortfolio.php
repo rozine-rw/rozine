@@ -168,7 +168,7 @@ final class GetInvestorPortfolio
      *
      * @return list<Bought>
      */
-    private function bought(int $userId): array
+    public function bought(int $userId): array
     {
         $bought = [];
         foreach ($this->lots->boughtBy($userId) as $lot) {
@@ -205,22 +205,31 @@ final class GetInvestorPortfolio
      */
     private function boughtPositions(array $bought): array
     {
-        $positions = [];
-        foreach ($bought as $lot) {
-            $note = $this->schedules->find($lot['note_id']) ?? throw new RuntimeException('HOLDING_PRESENTATION_UNAVAILABLE');
-            $units = array_sum(array_map(fn ($holding): int => $holding->units, $note->holdings));
-            $scale = fn (string $amount): array => HoldingFigures::money(BigInteger::of($amount)->multipliedBy($lot['units'])->dividedBy($units, RoundingMode::Down));
-            $paidOn = array_merge([], ...array_values($this->paid->forHoldings(array_map(fn ($holding): string => $holding->holdingId, $note->holdings))));
-            /** @var array{earnings_fee: array{rate_bps: int}} $terms */
-            $terms = $note->holdings[0]->terms;
-            $positions[] = ['holding' => ['schedule' => array_map(fn ($instalment): array => ['index' => $instalment->index, 'due_on' => $instalment->dueDate,
-                'principal' => $scale($instalment->principal), 'return' => $scale($instalment->contractualReturn)], $note->instalments),
-                'terms' => ['earnings_fee' => ['rate_bps' => $terms['earnings_fee']['rate_bps']]]],
-                'card' => ['name' => $lot['name'], 'accent' => $lot['accent']],
-                'paid' => array_map(fn (array $payout): array => [...$payout, 'principal' => '0', 'return' => '0', 'net' => '0'], $paidOn)];
-        }
+        return array_map(fn (array $lot): array => $this->boughtPosition($lot), $bought);
+    }
 
-        return $positions;
+    /**
+     * One bought lot as a position for the payout projection: the note's schedule scaled to the
+     * lot's units, net of the note's earnings fee, with the instalments the note has paid marked
+     * paid (at nothing, since they went to whoever held the units then).
+     *
+     * @param  array{note_id: string, units: string, name: string, accent: string}  $lot
+     * @return Projectable
+     */
+    public function boughtPosition(array $lot): array
+    {
+        $note = $this->schedules->find($lot['note_id']) ?? throw new RuntimeException('HOLDING_PRESENTATION_UNAVAILABLE');
+        $units = array_sum(array_map(fn ($holding): int => $holding->units, $note->holdings));
+        $scale = fn (string $amount): array => HoldingFigures::money(BigInteger::of($amount)->multipliedBy($lot['units'])->dividedBy($units, RoundingMode::Down));
+        $paidOn = array_merge([], ...array_values($this->paid->forHoldings(array_map(fn ($holding): string => $holding->holdingId, $note->holdings))));
+        /** @var array{earnings_fee: array{rate_bps: int}} $terms */
+        $terms = $note->holdings[0]->terms;
+
+        return ['holding' => ['schedule' => array_map(fn ($instalment): array => ['index' => $instalment->index, 'due_on' => $instalment->dueDate,
+            'principal' => $scale($instalment->principal), 'return' => $scale($instalment->contractualReturn)], $note->instalments),
+            'terms' => ['earnings_fee' => ['rate_bps' => $terms['earnings_fee']['rate_bps']]]],
+            'card' => ['name' => $lot['name'], 'accent' => $lot['accent']],
+            'paid' => array_map(fn (array $payout): array => [...$payout, 'principal' => '0', 'return' => '0', 'net' => '0'], $paidOn)];
     }
 
     /**

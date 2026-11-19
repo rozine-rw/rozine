@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * The servicing payouts recorded against issued Holdings' own lots (`servicing_payouts`, lot type
- * `primary_holding`). A lot bought on the secondary market is the buyer's transfer, not a Holding.
+ * `primary_holding`), and against lots bought on the secondary market (`secondary_transfer`), the
+ * buyer's transfer rather than a Holding.
  *
  * @phpstan-import-type HoldingPayout from HoldingPayouts
  */
@@ -18,11 +19,16 @@ final readonly class ServicingHoldingPayouts implements HoldingPayouts
 {
     public function forHoldings(array $holdingIds): array
     {
-        if ($holdingIds === []) {
+        return $this->forLots('primary_holding', $holdingIds);
+    }
+
+    public function forLots(string $lotType, array $lotIds): array
+    {
+        if ($lotIds === []) {
             return [];
         }
         $paid = [];
-        $rows = DB::table('servicing_payouts')->where('lot_type', 'primary_holding')->whereIn('lot_id', $holdingIds)
+        $rows = DB::table('servicing_payouts')->where('lot_type', $lotType)->whereIn('lot_id', $lotIds)
             ->orderBy('created_at')->orderBy('id')->get(['lot_id', 'instalment_indexes', 'principal', 'contractual_return', 'net', 'created_at']);
         foreach ($rows as $row) {
             /** @var list<int> $instalments */

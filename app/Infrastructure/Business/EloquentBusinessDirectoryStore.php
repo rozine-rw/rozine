@@ -96,7 +96,20 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
                 ->where('audit_reports.business_id', $businessId)->where('audit_report_publications.status', 'published')
                 ->get(['audit_reports.id', 'audit_reports.kind', 'audit_report_publications.published_at', 'audit_report_publications.updated_at',
                     'audit_report_seals.created_at as sealed_at'])->all());
-        $history = [...array_values($mandates), ...$published->values()->all(), ...$closed->values()->all(), ...$reports];
+        // Each note's payout to the Business, and each repayment it made, dated when they were recorded (QA #642).
+        $titles = $campaigns->mapWithKeys(fn (BusinessCampaign $campaign): array => [strtolower($campaign->id) => $title($campaign)]);
+        $rwf = fn (string $amount): string => 'RWF '.number_format((int) $amount);
+        $disbursed = array_map(fn (object $closing): array => self::entry((string) $closing->id, $closing->effective_at ?? $closing->created_at, 'System', 'campaign.disburse',
+            ($titles[strtolower((string) $closing->business_campaign_id)] ?? '').' · '.$rwf((string) ((int) $closing->amount - (int) $closing->platform_fee)),
+            'Raised '.$rwf((string) $closing->amount).', less the platform fee of '.$rwf((string) $closing->platform_fee).'.'),
+            DB::table('disbursement_closings')->join('disbursements', 'disbursements.id', '=', 'disbursement_closings.disbursement_id')
+                ->where('disbursements.business_id', $businessId)->where('disbursement_closings.kind', 'issued')
+                ->get(['disbursement_closings.id', 'disbursement_closings.effective_at', 'disbursement_closings.created_at', 'disbursements.business_campaign_id',
+                    'disbursements.amount', 'disbursements.platform_fee'])->all());
+        $repayments = array_map(fn (object $repayment): array => self::entry((string) $repayment->id, $repayment->created_at, 'Business', 'note.repay',
+            ($titles[strtolower((string) $repayment->note_id)] ?? '').' · '.$rwf((string) $repayment->amount), null),
+            DB::table('business_repayments')->where('business_id', $businessId)->get(['id', 'note_id', 'amount', 'created_at'])->all());
+        $history = [...array_values($mandates), ...$published->values()->all(), ...$closed->values()->all(), ...$reports, ...$disbursed, ...$repayments];
         usort($history, fn (array $first, array $second): int => [$second['at'], $second['id']] <=> [$first['at'], $first['id']]);
 
         return ['row' => $this->row($record, $this->ratings([$businessId])),
@@ -205,7 +218,7 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
     /**
      * One history entry, its stored instant as UTC ISO 8601 so entries sort as text.
      *
-     * @param  'business.authority.configure'|'business.authority.revoke'|'campaign.publish'|'campaign.cancel'|'campaign.expire'|'campaign.failed_closing'|'report.publish'  $command
+     * @param  'business.authority.configure'|'business.authority.revoke'|'campaign.publish'|'campaign.cancel'|'campaign.expire'|'campaign.failed_closing'|'campaign.disburse'|'note.repay'|'report.publish'  $command
      * @return HistoryEntry
      */
     private static function entry(string $id, mixed $at, string $actor, string $command, ?string $subject, ?string $reason): array

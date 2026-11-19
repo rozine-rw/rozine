@@ -37,7 +37,7 @@ class InvestorMarketResource extends JsonResource
                     'settle' => $open && $listing['reservation'] !== null ? $post('investor.market_settle', ['listing' => $listing['listing_id']]) : null,
                     'withdraw' => $open && $listing['mine'] ? $post('investor.market_withdraw', ['listing' => $listing['listing_id']]) : null]],
                     $market['listings']),
-                'sellable' => $market['sellable'], 'trades' => $market['trades']],
+                'sellable' => $market['sellable'], 'trades' => $market['trades'], 'closed' => $market['closed']],
             'actions' => ['list' => $open && array_filter($market['sellable'], fn (array $lot): bool => $lot['tradable'] && $lot['free_units'] !== '0') !== []
                 ? $post('investor.market_list') : null]];
     }

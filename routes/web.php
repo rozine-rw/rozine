@@ -39,6 +39,7 @@ use App\Http\Controllers\InvestorComplaintController;
 use App\Http\Controllers\InvestorDealPhotoController;
 use App\Http\Controllers\InvestorDealsController;
 use App\Http\Controllers\InvestorHoldingController;
+use App\Http\Controllers\InvestorLotController;
 use App\Http\Controllers\InvestorMarketController;
 use App\Http\Controllers\InvestorNoticesController;
 use App\Http\Controllers\InvestorPortfolioController;
@@ -137,6 +138,7 @@ Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;n
     Route::get('verified', [InvestorProfileController::class, 'verified'])->name('verified');
     Route::get('portfolio', [InvestorPortfolioController::class, 'show'])->name('portfolio');
     Route::get('holdings/{holding}', [InvestorHoldingController::class, 'show'])->whereUlid('holding')->name('holdings.show');
+    Route::get('lots/{lot}', [InvestorLotController::class, 'show'])->whereUlid('lot')->name('lots.show');
     Route::get('profile', [InvestorProfileController::class, 'show'])->name('profile');
     Route::post('profile/linked-accounts', [InvestorProfileController::class, 'link'])->name('profile.link');
     Route::post('profile/linked-accounts/{method}/unlink', [InvestorProfileController::class, 'unlink'])->whereUlid('method')->name('profile.unlink');

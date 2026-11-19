@@ -106,7 +106,7 @@ function Row({ note }: { note: NoteRegisterRow }) {
                 </span>
             </div>
             <div role="cell" className="min-w-0">
-                <div className="truncate text-[12.5px] font-semibold text-rz-ink">
+                <div className="text-[12.5px] font-semibold [overflow-wrap:anywhere] text-rz-ink">
                     {t('admin.primary.raised_of', {
                         raised: formatRwf(note.raised),
                         target: formatRwf(note.target),

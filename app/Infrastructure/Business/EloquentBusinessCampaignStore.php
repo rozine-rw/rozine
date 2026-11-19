@@ -21,6 +21,7 @@ use App\Application\Operations\Contracts\ChangeFeed;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\PrimaryReservations;
+use App\Application\Secondary\Contracts\NoteUnitHolders;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Identity\PartyNoticeKind;
 use App\Domain\Operations\ChangeScope;
@@ -54,7 +55,8 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         private WithBusinessAuthority $authority, private AuthorizeStaffPermission $staff, private IdentityRepository $identities,
         private OperationJournal $journal, private CanonicalJson $json, private CampaignClosureEvidence $closures, private BusinessExposureStore $exposures, private PublishedCampaignEvidence $publications, private PrimaryReservations $primary, private CampaignProgress $progress, private CampaignFundingEvidence $fundings,
         private ChangeFeed $changes, private PartyNotices $notices, private BusinessNoticeAudience $audience,
-        private RetainedStaffUnderwritingBasis $underwriting, private BusinessScoreView $scores, private ServicingRecord $servicing) {}
+        private RetainedStaffUnderwritingBasis $underwriting, private BusinessScoreView $scores, private ServicingRecord $servicing,
+        private NoteUnitHolders $unitHolders) {}
 
     /** @return array<string, mixed> */
     public function release(int $userId, string $applicationId, int $expectedRevision, string $reason, string $requestId): array
@@ -198,22 +200,25 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
                 && in_array($identity['party']['id'], $business['mandate']['required_signatories'], true);
 
             return ['identity_context_revision' => $contextRevision, 'business_id' => $businessId, 'id' => $campaign->id, 'revision' => $closure === null ? 1 : 2,
-                'lifecycle' => $closure['phase'] ?? $progress['lifecycle'], 'can_cancel' => $canCancel,
+                // A note repaid in full reads as repaid, whatever phase its raise closed in (QA #642).
+                'lifecycle' => $closure['phase'] ?? (in_array($campaign->id, array_column($this->servicing->forBusiness($businessId)['repaid'], 'campaign_id'), true)
+                    ? 'repaid' : $progress['lifecycle']), 'can_cancel' => $canCancel,
                 'title' => $payload['title'], 'principal' => $payload['principal'], 'quote' => $payload['quote'],
-                'progress' => $progress, 'investors' => $this->holders($projection['funding'] ?? null),
+                'progress' => $progress, 'investors' => $this->holders($projection['funding'] ?? null, $campaign->id),
                 'receipt' => $this->receipt($campaign->id, $payload, 'LISTING_PUBLISHED')];
         });
     }
 
     /**
-     * Who funded a note, for its own Business: each Investor's kind, notes and principal, largest
-     * first, with the holder mix by kind. Nobody is named or identified: the Privacy Note shares no
-     * Investor's personal data with a Business. Null until the raise is funded.
+     * Who holds a note now, for its own Business: each Investor's kind, notes and principal, largest
+     * first, with the holder mix by kind. Units resold on the market count for whoever holds them
+     * now, each at the note's issue price per unit (QA #642). Nobody is named or identified: the
+     * Privacy Note shares no Investor's personal data with a Business. Null until the raise is funded.
      *
      * @param  array<string, mixed>|null  $funding
      * @return array<string, mixed>|null
      */
-    private function holders(?array $funding): ?array
+    private function holders(?array $funding, string $campaignId): ?array
     {
         if ($funding === null) {
             return null;
@@ -222,6 +227,17 @@ final class EloquentBusinessCampaignStore implements BusinessCampaignStore
         foreach ($funding['commitments'] as $purchase) {
             $holder = $holders[$purchase['party_id']] ?? ['units' => BigInteger::zero(), 'principal' => BigInteger::zero()];
             $holders[$purchase['party_id']] = ['units' => $holder['units']->plus($purchase['units']), 'principal' => $holder['principal']->plus($purchase['principal'])];
+        }
+        $lots = $this->unitHolders->lots($campaignId);
+        if ($lots !== []) {
+            $issued = array_reduce($holders, fn (BigInteger $sum, array $holder): BigInteger => $sum->plus($holder['units']), BigInteger::zero());
+            $holders = [];
+            foreach ($lots as $lot) {
+                $holder = $holders[$lot['party_id']] ?? ['units' => BigInteger::zero(), 'principal' => BigInteger::zero()];
+                $units = $holder['units']->plus($lot['units']);
+                $holders[$lot['party_id']] = ['units' => $units,
+                    'principal' => $units->multipliedBy($funding['principal'])->dividedBy($issued, RoundingMode::Down)];
+            }
         }
         $kinds = $this->identities->partyKinds(array_map(strval(...), array_keys($holders)));
         $total = BigInteger::of($funding['principal']);

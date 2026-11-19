@@ -14,6 +14,33 @@ const PILL: Record<InstalmentStatus, string> = {
     upcoming: 'bg-[rgba(105,116,138,.10)] text-rz-secondary',
 };
 
+/** Paid before its due date (Kigali dates compare as text). */
+const isEarly = (row: BusinessInstalment): boolean =>
+    row.paid_on !== null && row.paid_on.slice(0, 10) < row.due_on.slice(0, 10);
+
+/** The instalment's state, with an "Early" tag beside a payment made before it fell due (QA #642). */
+function StatusPills({ row }: { row: BusinessInstalment }) {
+    const { t } = useTranslation();
+
+    return (
+        <span className="flex shrink-0 items-center gap-1.5">
+            {isEarly(row) && (
+                <span className="rounded-[10px] bg-[rgba(30,58,255,.08)] px-[9px] py-1 text-[11px] font-semibold whitespace-nowrap text-[#1e3aff] dark:text-[#99a3ff]">
+                    {t('business.servicing.repay.early')}
+                </span>
+            )}
+            <span
+                className={cn(
+                    'rounded-[10px] px-[9px] py-1 text-[11px] font-semibold whitespace-nowrap',
+                    PILL[row.status],
+                )}
+            >
+                {t(`business.servicing.repay.status.${row.status}`)}
+            </span>
+        </span>
+    );
+}
+
 /**
  * "Repayment schedule" (design L1190–1199), as the server keeps it: each instalment's scheduled
  * total, what is still outstanding once it is due, and every late-fee step applied to it, line by
@@ -69,9 +96,13 @@ export function ScheduleList({ schedule }: { schedule: BusinessInstalment[] }) {
                                                       },
                                                   )
                                                 : t(
-                                                      'business.servicing.repay.row.paid',
+                                                      'business.servicing.repay.row.paid_due',
                                                       {
                                                           index: row.index,
+                                                          due: formatDate(
+                                                              row.due_on,
+                                                              locale,
+                                                          ),
                                                           date: formatDate(
                                                               row.paid_on,
                                                               locale,
@@ -80,16 +111,7 @@ export function ScheduleList({ schedule }: { schedule: BusinessInstalment[] }) {
                                                   )}
                                         </p>
                                     </div>
-                                    <span
-                                        className={cn(
-                                            'rounded-[10px] px-[9px] py-1 text-[11px] font-semibold whitespace-nowrap',
-                                            PILL[row.status],
-                                        )}
-                                    >
-                                        {t(
-                                            `business.servicing.repay.status.${row.status}`,
-                                        )}
-                                    </span>
+                                    <StatusPills row={row} />
                                 </Link>
                             ) : (
                                 <div className="flex items-center justify-between gap-3">
@@ -114,9 +136,13 @@ export function ScheduleList({ schedule }: { schedule: BusinessInstalment[] }) {
                                                       },
                                                   )
                                                 : t(
-                                                      'business.servicing.repay.row.paid',
+                                                      'business.servicing.repay.row.paid_due',
                                                       {
                                                           index: row.index,
+                                                          due: formatDate(
+                                                              row.due_on,
+                                                              locale,
+                                                          ),
                                                           date: formatDate(
                                                               row.paid_on,
                                                               locale,
@@ -125,16 +151,7 @@ export function ScheduleList({ schedule }: { schedule: BusinessInstalment[] }) {
                                                   )}
                                         </p>
                                     </div>
-                                    <span
-                                        className={cn(
-                                            'rounded-[10px] px-[9px] py-1 text-[11px] font-semibold whitespace-nowrap',
-                                            PILL[row.status],
-                                        )}
-                                    >
-                                        {t(
-                                            `business.servicing.repay.status.${row.status}`,
-                                        )}
-                                    </span>
+                                    <StatusPills row={row} />
                                 </div>
                             )}
                             {row.late_fees.length > 0 && (

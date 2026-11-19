@@ -59,6 +59,7 @@ use Illuminate\Support\Str;
  * @phpstan-import-type BoardListing from SecondaryBoard
  * @phpstan-import-type SellableLot from SecondaryBoard
  * @phpstan-import-type Trade from SecondaryBoard
+ * @phpstan-import-type ClosedListing from SecondaryBoard
  */
 final readonly class EloquentSecondaryMarket implements SecondaryBoard, SecondaryMarket, SecondaryMarketSweep
 {
@@ -124,7 +125,7 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
             };
 
             return ['open' => true, 'listings' => $this->openListings($partyId, $now, $name), 'sellable' => $this->sellable($userId, $partyId, $now, $name),
-                'trades' => $this->trades($partyId, $name)];
+                'trades' => $this->trades($partyId, $name), 'closed' => $this->closed($partyId, $name)];
         }), 3);
     }
 
@@ -145,7 +146,8 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
             $listings[] = ['listing_id' => $row->id, 'note_id' => $row->business_campaign_id, 'deal_name' => $name($row->business_campaign_id),
                 'remaining_units' => (string) $row->remaining_units, 'price' => self::money($row->price),
                 'listed_at' => $row->listed_at->utc()->format(DateTimeInterface::ATOM), 'expires_at' => $row->expires_at->utc()->format(DateTimeInterface::ATOM),
-                'mine' => $row->seller_party_id === $partyId, 'reserved' => $live !== null && ! $mine, 'reservation' => $mine ? $this->presentReservation($live) : null];
+                'mine' => $row->seller_party_id === $partyId, 'reserved' => $live !== null && ! $mine, 'reserved_units' => $live === null ? '0' : (string) $live->units,
+                'reservation' => $mine ? $this->presentReservation($live) : null];
         }
 
         return $listings;
@@ -200,6 +202,29 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
                     'amount' => self::money($buy ? (string) $quote->buyerPays : $transfer->seller_receives),
                     'fee' => self::money($buy ? (string) $quote->buyerPays->minus($transfer->gross) : $transfer->seller_fee),
                     'settled_at' => $transfer->settled_at->utc()->format(DateTimeInterface::ATOM)];
+            })->all());
+    }
+
+    /**
+     * The Party's own listings that ended unsold, newest first: withdrawn by them, cancelled by staff or
+     * a halt, or expired. Orders → Cancelled lists them (QA #663).
+     *
+     * @param  Closure(string): string  $name
+     * @return list<ClosedListing>
+     */
+    private function closed(string $partyId, Closure $name): array
+    {
+        return array_values(SecondaryListingRecord::query()->where('seller_party_id', $partyId)->whereIn('state', ['cancelled', 'expired'])
+            ->orderByDesc('updated_at')->limit(20)->get()->map(function (SecondaryListingRecord $row) use ($name): array {
+                /** @var 'cancelled'|'expired' $state */
+                $state = $row->state;
+                /** @var 'seller'|'staff'|'halt'|null $by */
+                $by = $row->cancelled_by;
+
+                return ['listing_id' => $row->id, 'deal_name' => $name($row->business_campaign_id), 'listed_units' => (string) $row->listed_units,
+                    'remaining_units' => (string) $row->remaining_units, 'price' => self::money($row->price),
+                    'listed_at' => $row->listed_at->utc()->format(DateTimeInterface::ATOM), 'state' => $state, 'cancelled_by' => $by,
+                    'ended_at' => ($row->updated_at ?? $row->listed_at)->utc()->format(DateTimeInterface::ATOM)];
             })->all());
     }
 

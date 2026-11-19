@@ -937,6 +937,30 @@ describe('A disbursed campaign', () => {
         ).toHaveAttribute('href', '/preview/business-campaign-disbursed');
     });
 
+    it('shows what was raised and the platform fee taken before the payout (QA #642)', () => {
+        const page = props(disbursedFixture);
+        const progress = page.note.progress as Phase<'disbursed'>;
+        progress.gross = { currency: 'RWF', amount: '18556701' };
+        progress.platform_fee = { currency: 'RWF', amount: '556701' };
+        renderWithUser(<BusinessCampaign {...page} />);
+        const view = within(campaignSheet());
+
+        expect(view.getByText('Raised')).toBeInTheDocument();
+        expect(view.getByText('RWF 18,556,701')).toBeInTheDocument();
+        expect(view.getByText('Platform fee (3%)')).toBeInTheDocument();
+        expect(view.getByText('− RWF 556,701')).toBeInTheDocument();
+    });
+
+    it('reads a note repaid in full as repaid in its header (QA #642)', () => {
+        const page = props(disbursedFixture);
+        page.campaign.lifecycle = 'repaid';
+        renderWithUser(<BusinessCampaign {...page} />);
+
+        expect(
+            within(campaignSheet()).getByText('Repaid in full'),
+        ).toBeInTheDocument();
+    });
+
     it('keeps the receipt as recorded while the current projection changes', () => {
         const page = props(disbursedFixture);
         const { rerender } = renderWithUser(<BusinessCampaign {...page} />);

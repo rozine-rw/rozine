@@ -235,7 +235,9 @@ function ServicingSheet(props: BusinessRepaymentsProps) {
                     onPay={pay}
                 />
                 <ScheduleList schedule={props.schedule} />
-                <LatePolicy ladder={props.ladder} />
+                {servicing.state !== 'repaid' && (
+                    <LatePolicy ladder={props.ladder} />
+                )}
                 <RecentRepayments recent={props.recent} />
             </div>
         </DetailSheet>
