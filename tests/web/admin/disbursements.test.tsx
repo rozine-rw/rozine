@@ -108,7 +108,7 @@ describe('Disbursements queue', () => {
 
         const cell = screen.getByText('Bank of Kigali Account ····7890');
         expect(cell).not.toHaveClass('truncate');
-        expect(cell.className).toContain('[overflow-wrap:anywhere]');
+        expect(cell).toHaveClass('[overflow-wrap:anywhere]');
     });
 
     it('shows under the amount what the Business receives net of the platform fee (QA #646)', () => {
