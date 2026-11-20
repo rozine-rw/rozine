@@ -4,7 +4,7 @@ import business from './business'
 import waitlist from './waitlist'
 /**
 * @see \App\Http\Controllers\SiteController::join
-* @see app/Http/Controllers/SiteController.php:110
+* @see app/Http/Controllers/SiteController.php:106
 * @route '/join'
 */
 export const join = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -19,7 +19,7 @@ join.definition = {
 
 /**
 * @see \App\Http\Controllers\SiteController::join
-* @see app/Http/Controllers/SiteController.php:110
+* @see app/Http/Controllers/SiteController.php:106
 * @route '/join'
 */
 join.url = (options?: RouteQueryOptions) => {
@@ -28,7 +28,7 @@ join.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SiteController::join
-* @see app/Http/Controllers/SiteController.php:110
+* @see app/Http/Controllers/SiteController.php:106
 * @route '/join'
 */
 join.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -38,7 +38,7 @@ join.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SiteController::join
-* @see app/Http/Controllers/SiteController.php:110
+* @see app/Http/Controllers/SiteController.php:106
 * @route '/join'
 */
 join.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -48,7 +48,7 @@ join.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\SiteController::join
-* @see app/Http/Controllers/SiteController.php:110
+* @see app/Http/Controllers/SiteController.php:106
 * @route '/join'
 */
 const joinForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -58,7 +58,7 @@ const joinForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SiteController::join
-* @see app/Http/Controllers/SiteController.php:110
+* @see app/Http/Controllers/SiteController.php:106
 * @route '/join'
 */
 joinForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -68,7 +68,7 @@ joinForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SiteController::join
-* @see app/Http/Controllers/SiteController.php:110
+* @see app/Http/Controllers/SiteController.php:106
 * @route '/join'
 */
 joinForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

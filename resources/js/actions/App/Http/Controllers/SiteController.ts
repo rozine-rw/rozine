@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\SiteController::index
-* @see app/Http/Controllers/SiteController.php:31
+* @see app/Http/Controllers/SiteController.php:30
 * @route '/'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\SiteController::index
-* @see app/Http/Controllers/SiteController.php:31
+* @see app/Http/Controllers/SiteController.php:30
 * @route '/'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SiteController::index
-* @see app/Http/Controllers/SiteController.php:31
+* @see app/Http/Controllers/SiteController.php:30
 * @route '/'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SiteController::index
-* @see app/Http/Controllers/SiteController.php:31
+* @see app/Http/Controllers/SiteController.php:30
 * @route '/'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\SiteController::index
-* @see app/Http/Controllers/SiteController.php:31
+* @see app/Http/Controllers/SiteController.php:30
 * @route '/'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\SiteController::index
-* @see app/Http/Controllers/SiteController.php:31
+* @see app/Http/Controllers/SiteController.php:30
 * @route '/'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SiteController::index
-* @see app/Http/Controllers/SiteController.php:31
+* @see app/Http/Controllers/SiteController.php:30
 * @route '/'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\SiteController::join
-* @see app/Http/Controllers/SiteController.php:110
+* @see app/Http/Controllers/SiteController.php:106
 * @route '/join'
 */
 export const join = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -97,7 +97,7 @@ join.definition = {
 
 /**
 * @see \App\Http\Controllers\SiteController::join
-* @see app/Http/Controllers/SiteController.php:110
+* @see app/Http/Controllers/SiteController.php:106
 * @route '/join'
 */
 join.url = (options?: RouteQueryOptions) => {
@@ -106,7 +106,7 @@ join.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SiteController::join
-* @see app/Http/Controllers/SiteController.php:110
+* @see app/Http/Controllers/SiteController.php:106
 * @route '/join'
 */
 join.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -116,7 +116,7 @@ join.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SiteController::join
-* @see app/Http/Controllers/SiteController.php:110
+* @see app/Http/Controllers/SiteController.php:106
 * @route '/join'
 */
 join.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -126,7 +126,7 @@ join.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\SiteController::join
-* @see app/Http/Controllers/SiteController.php:110
+* @see app/Http/Controllers/SiteController.php:106
 * @route '/join'
 */
 const joinForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -136,7 +136,7 @@ const joinForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SiteController::join
-* @see app/Http/Controllers/SiteController.php:110
+* @see app/Http/Controllers/SiteController.php:106
 * @route '/join'
 */
 joinForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -146,7 +146,7 @@ joinForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\SiteController::join
-* @see app/Http/Controllers/SiteController.php:110
+* @see app/Http/Controllers/SiteController.php:106
 * @route '/join'
 */
 joinForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -163,7 +163,7 @@ join.form = joinForm
 
 /**
 * @see \App\Http\Controllers\SiteController::storeInvestor
-* @see app/Http/Controllers/SiteController.php:41
+* @see app/Http/Controllers/SiteController.php:40
 * @route '/investor'
 */
 export const storeInvestor = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -178,7 +178,7 @@ storeInvestor.definition = {
 
 /**
 * @see \App\Http\Controllers\SiteController::storeInvestor
-* @see app/Http/Controllers/SiteController.php:41
+* @see app/Http/Controllers/SiteController.php:40
 * @route '/investor'
 */
 storeInvestor.url = (options?: RouteQueryOptions) => {
@@ -187,7 +187,7 @@ storeInvestor.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SiteController::storeInvestor
-* @see app/Http/Controllers/SiteController.php:41
+* @see app/Http/Controllers/SiteController.php:40
 * @route '/investor'
 */
 storeInvestor.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -197,7 +197,7 @@ storeInvestor.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\SiteController::storeInvestor
-* @see app/Http/Controllers/SiteController.php:41
+* @see app/Http/Controllers/SiteController.php:40
 * @route '/investor'
 */
 const storeInvestorForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -207,7 +207,7 @@ const storeInvestorForm = (options?: RouteQueryOptions): RouteFormDefinition<'po
 
 /**
 * @see \App\Http\Controllers\SiteController::storeInvestor
-* @see app/Http/Controllers/SiteController.php:41
+* @see app/Http/Controllers/SiteController.php:40
 * @route '/investor'
 */
 storeInvestorForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -219,7 +219,7 @@ storeInvestor.form = storeInvestorForm
 
 /**
 * @see \App\Http\Controllers\SiteController::storeBusiness
-* @see app/Http/Controllers/SiteController.php:58
+* @see app/Http/Controllers/SiteController.php:57
 * @route '/business'
 */
 export const storeBusiness = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -234,7 +234,7 @@ storeBusiness.definition = {
 
 /**
 * @see \App\Http\Controllers\SiteController::storeBusiness
-* @see app/Http/Controllers/SiteController.php:58
+* @see app/Http/Controllers/SiteController.php:57
 * @route '/business'
 */
 storeBusiness.url = (options?: RouteQueryOptions) => {
@@ -243,7 +243,7 @@ storeBusiness.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SiteController::storeBusiness
-* @see app/Http/Controllers/SiteController.php:58
+* @see app/Http/Controllers/SiteController.php:57
 * @route '/business'
 */
 storeBusiness.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -253,7 +253,7 @@ storeBusiness.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\SiteController::storeBusiness
-* @see app/Http/Controllers/SiteController.php:58
+* @see app/Http/Controllers/SiteController.php:57
 * @route '/business'
 */
 const storeBusinessForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -263,7 +263,7 @@ const storeBusinessForm = (options?: RouteQueryOptions): RouteFormDefinition<'po
 
 /**
 * @see \App\Http\Controllers\SiteController::storeBusiness
-* @see app/Http/Controllers/SiteController.php:58
+* @see app/Http/Controllers/SiteController.php:57
 * @route '/business'
 */
 storeBusinessForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -275,7 +275,7 @@ storeBusiness.form = storeBusinessForm
 
 /**
 * @see \App\Http\Controllers\SiteController::storeWaitlist
-* @see app/Http/Controllers/SiteController.php:83
+* @see app/Http/Controllers/SiteController.php:82
 * @route '/waitlist'
 */
 export const storeWaitlist = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -290,7 +290,7 @@ storeWaitlist.definition = {
 
 /**
 * @see \App\Http\Controllers\SiteController::storeWaitlist
-* @see app/Http/Controllers/SiteController.php:83
+* @see app/Http/Controllers/SiteController.php:82
 * @route '/waitlist'
 */
 storeWaitlist.url = (options?: RouteQueryOptions) => {
@@ -299,7 +299,7 @@ storeWaitlist.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\SiteController::storeWaitlist
-* @see app/Http/Controllers/SiteController.php:83
+* @see app/Http/Controllers/SiteController.php:82
 * @route '/waitlist'
 */
 storeWaitlist.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -309,7 +309,7 @@ storeWaitlist.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\SiteController::storeWaitlist
-* @see app/Http/Controllers/SiteController.php:83
+* @see app/Http/Controllers/SiteController.php:82
 * @route '/waitlist'
 */
 const storeWaitlistForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -319,7 +319,7 @@ const storeWaitlistForm = (options?: RouteQueryOptions): RouteFormDefinition<'po
 
 /**
 * @see \App\Http\Controllers\SiteController::storeWaitlist
-* @see app/Http/Controllers/SiteController.php:83
+* @see app/Http/Controllers/SiteController.php:82
 * @route '/waitlist'
 */
 storeWaitlistForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
