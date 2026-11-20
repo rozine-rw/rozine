@@ -33,6 +33,8 @@ class PulseSignup extends Model
         'country',
         'listed',
         'queue_number',
+        'referral_code',
+        'referred_by',
         'pledge_amount',
         'projected_return',
         'blended_yield',

@@ -3,10 +3,7 @@ import { describe, expect, it, vi } from 'vite-plus/test';
 import { AppEntry } from '@/components/site/app-entry';
 import Home from '@/pages/home';
 
-vi.mock('@inertiajs/react', () => ({
-    Head: () => null,
-    router: { post: vi.fn() },
-}));
+vi.mock('@inertiajs/react', () => import('./landing-inertia'));
 
 describe('Site app entry', () => {
     it('stays hidden on the live site', () => {
@@ -68,5 +65,26 @@ describe('Site app entry', () => {
         expect(
             screen.queryByRole('group', { name: 'Rozine apps' }),
         ).not.toBeInTheDocument();
+    });
+
+    it('uses light text on the coloured landing header', () => {
+        const { unmount } = render(
+            <AppEntry enabled signedIn={false} tone="dark" />,
+        );
+
+        expect(screen.getByRole('link', { name: 'Sign in' })).toHaveStyle({
+            color: 'rgb(255, 255, 255)',
+        });
+        expect(
+            screen.getByRole('link', { name: 'Create account' }),
+        ).toHaveStyle({
+            background: 'transparent',
+        });
+        unmount();
+
+        render(<AppEntry enabled signedIn tone="dark" />);
+        expect(screen.getByRole('link', { name: 'Open the app' })).toHaveStyle({
+            background: 'transparent',
+        });
     });
 });
