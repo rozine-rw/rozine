@@ -1,6 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { createRef } from 'react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import {
     afterEach,
     beforeEach,
@@ -11,353 +9,254 @@ import {
 } from 'vite-plus/test';
 import Home from '@/pages/home';
 
-const mocks = vi.hoisted(() => ({ post: vi.fn() }));
+vi.mock('@inertiajs/react', () => import('./landing-inertia'));
 
-vi.mock('@inertiajs/react', () => ({
-    Head: () => null,
-    router: { post: mocks.post },
-}));
-
-const mountSite = () => {
-    const ref = createRef<Home>();
-
-    render(<Home ref={ref} />);
-
-    const instance = ref.current;
-
-    if (!instance) {
-        throw new Error('The site did not mount.');
-    }
-
-    return instance;
-};
-
-/** A stand-in for the change event the design's handlers read. */
-const changeEvent = (value: string) => ({
-    target: { value },
-    preventDefault: vi.fn(),
-    stopPropagation: vi.fn(),
-});
-
-/**
- * Call every handler the current page hands to the markup, including the few
- * the design builds but never wires to a control.
- */
-const exerciseHandlers = (value: unknown, seen = new Set<unknown>()): void => {
-    if (value === null || typeof value !== 'object') {
-        return;
-    }
-
-    if (seen.has(value)) {
-        return;
-    }
-
-    seen.add(value);
-
-    for (const entry of Object.values(value as Record<string, unknown>)) {
-        if (typeof entry === 'function') {
-            act(() => {
-                (entry as (event: unknown) => void)(changeEvent('7'));
-            });
-
-            continue;
-        }
-
-        exerciseHandlers(entry, seen);
-    }
-};
+const header = () => screen.getByRole('banner');
+const tab = (name: string) => within(header()).getByRole('button', { name });
+const heading = (name: string | RegExp) =>
+    screen.getByRole('heading', { level: 1, name });
 
 beforeEach(() => {
-    mocks.post.mockReset();
-    window.scrollTo = vi.fn() as unknown as typeof window.scrollTo;
     window.history.replaceState(null, '', '/');
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
 });
 
 afterEach(() => {
-    vi.useRealTimers();
+    vi.restoreAllMocks();
 });
 
-describe('moving between the three audiences', () => {
-    it('opens on the investor page', () => {
-        mountSite();
+describe('the landing page views', () => {
+    it('opens on Invest with its calculator', () => {
+        render(<Home />);
 
+        expect(heading(/Earn up to 15% lending/)).toBeInTheDocument();
+        expect(tab('Invest')).toHaveAttribute('aria-current', 'page');
+        expect(screen.getByTestId('earn-back')).toHaveTextContent(
+            'RWF 111,730',
+        );
         expect(
-            screen.getByRole('heading', { level: 1, name: /Earn up to/ }),
+            screen.getByRole('heading', {
+                name: 'The first raises will fill fast.',
+            }),
         ).toBeInTheDocument();
     });
 
-    it('shows businesses what they could borrow', async () => {
-        const user = userEvent.setup();
+    it('switches to every tab from the header and gives each its own address', () => {
+        render(<Home />);
 
-        mountSite();
-        await user.click(screen.getByText('For businesses'));
-
+        fireEvent.click(tab('Businesses'));
         expect(
-            screen.getByRole('heading', { level: 1, name: /Borrow up to/ }),
+            heading('Raise up to RWF 100M. No collateral needed.'),
         ).toBeInTheDocument();
-    });
-
-    it('answers questions on the help page', async () => {
-        const user = userEvent.setup();
-
-        mountSite();
-        await user.click(screen.getByRole('link', { name: 'Help' }));
-
-        expect(screen.getByText('Getting started')).toBeInTheDocument();
-    });
-});
-
-describe('giving each audience its own address', () => {
-    /** Moves the address the way the back and forward buttons do. */
-    const visit = (hash: string) => {
-        act(() => {
-            window.history.replaceState(null, '', `/${hash}`);
-            window.dispatchEvent(new HashChangeEvent('hashchange'));
-        });
-    };
-
-    it('writes the audience into the address as visitors move between them', async () => {
-        const user = userEvent.setup();
-
-        mountSite();
-        await user.click(screen.getByText('For businesses'));
         expect(window.location.hash).toBe('#businesses');
+        expect(
+            screen.getByRole('heading', {
+                name: 'Be among the first businesses to raise.',
+            }),
+        ).toBeInTheDocument();
 
-        await user.click(screen.getByText('For businesses'));
-        expect(window.location.hash).toBe('#businesses');
+        fireEvent.click(tab('How it works'));
+        expect(
+            heading('Every franc, followed from your phone and back.'),
+        ).toBeInTheDocument();
+        expect(window.location.hash).toBe('#how-it-works');
 
-        await user.click(screen.getByRole('link', { name: 'Help' }));
+        fireEvent.click(tab('Help'));
+        expect(
+            heading('Every question, answered plainly.'),
+        ).toBeInTheDocument();
         expect(window.location.hash).toBe('#help');
 
-        await user.click(screen.getByText('For investors'));
-        expect(window.location.hash).toBe('#investors');
-    });
-
-    it('opens the audience a shared link names', () => {
-        window.history.replaceState(null, '', '/#businesses');
-
-        mountSite();
-
-        expect(
-            screen.getByRole('heading', { level: 1, name: /Borrow up to/ }),
-        ).toBeInTheDocument();
-    });
-
-    it('follows the back and forward buttons between audiences', () => {
-        mountSite();
-
-        visit('#help');
-        expect(screen.getByText('Getting started')).toBeInTheDocument();
+        fireEvent.click(tab('Invest'));
+        expect(heading(/Earn up to 15%/)).toBeInTheDocument();
+        expect(window.location.hash).toBe('');
         expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
+    });
 
-        visit('#investors');
+    it('takes the logo, "See how it works" and "See what you could raise" to their views', () => {
+        render(<Home />);
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'See how it works' }),
+        );
+        expect(heading(/Every franc/)).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Rozine home' }));
+        expect(heading(/Earn up to/)).toBeInTheDocument();
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'See how it all works →' }),
+        );
+        expect(heading(/Every franc/)).toBeInTheDocument();
+
+        fireEvent.click(tab('Invest'));
+        fireEvent.click(
+            screen.getByRole('button', { name: 'See what you could raise →' }),
+        );
+        expect(heading(/Raise up to RWF 100M/)).toBeInTheDocument();
+    });
+
+    it('points every waitlist call to action at the form', () => {
+        render(<Home />);
+
+        for (const link of screen.getAllByRole('link', {
+            name: /Join the waitlist/,
+        })) {
+            expect(link).toHaveAttribute('href', '#join');
+        }
+
+        fireEvent.click(tab('Businesses'));
         expect(
-            screen.getByRole('heading', { level: 1, name: /Earn up to/ }),
+            screen.getByRole('link', { name: 'Join the business waitlist →' }),
+        ).toHaveAttribute('href', '#join');
+    });
+
+    it('keeps the address when the open tab is chosen again', () => {
+        render(<Home />);
+
+        fireEvent.click(tab('Help'));
+        const before = window.history.length;
+        fireEvent.click(tab('Help'));
+
+        expect(window.location.hash).toBe('#help');
+        expect(window.history.length).toBe(before);
+    });
+});
+
+describe('the Invest calculator', () => {
+    it('follows the amount, the term and the rating', () => {
+        render(<Home />);
+
+        fireEvent.change(
+            screen.getByRole('slider', { name: 'Amount you put in' }),
+            {
+                target: { value: '1000000' },
+            },
+        );
+        expect(screen.getByTestId('earn-back')).toHaveTextContent(
+            'RWF 1,117,300',
+        );
+
+        const term = within(screen.getByRole('group', { name: 'Term' }));
+        fireEvent.click(term.getByRole('button', { name: '3 mo' }));
+        expect(term.getByRole('button', { name: '3 mo' })).toHaveAttribute(
+            'aria-pressed',
+            'true',
+        );
+        expect(screen.getByTestId('earn-back')).toHaveTextContent(
+            'RWF 1,114,750',
+        );
+
+        const rating = within(screen.getByRole('group', { name: 'Rating' }));
+        fireEvent.click(rating.getByRole('button', { name: 'Strong' }));
+        expect(screen.getByTestId('earn-back')).toHaveTextContent(
+            'RWF 1,106,250',
+        );
+        fireEvent.click(rating.getByRole('button', { name: 'Distressed' }));
+        expect(screen.getByTestId('earn-back')).toHaveTextContent(
+            'RWF 1,123,250',
+        );
+    });
+});
+
+describe('the Businesses view', () => {
+    it('estimates the raise from yearly revenue', () => {
+        render(<Home />);
+        fireEvent.click(tab('Businesses'));
+
+        expect(screen.getByTestId('raise-max')).toHaveTextContent('RWF 42M');
+        fireEvent.change(
+            screen.getByRole('slider', { name: 'Your yearly revenue' }),
+            {
+                target: { value: '400000000' },
+            },
+        );
+        expect(screen.getByTestId('raise-max')).toHaveTextContent('RWF 100M');
+        expect(
+            screen.getByText('The RWF 100M maximum per raise'),
         ).toBeInTheDocument();
     });
 
-    it('leaves the page alone when the address names no audience or the one on show', () => {
-        window.history.replaceState(null, '', '/#calc');
+    it('opens one business question at a time and can close it', () => {
+        render(<Home />);
+        fireEvent.click(tab('Businesses'));
 
-        mountSite();
-        visit('#nowhere');
-        visit('#investors');
+        const first = screen.getByRole('button', {
+            name: /Do I need collateral\?/,
+        });
+        expect(first).toHaveAttribute('aria-expanded', 'true');
 
+        const last = screen.getByRole('button', {
+            name: /Can I borrow again\?/,
+        });
+        fireEvent.click(last);
+        expect(last).toHaveAttribute('aria-expanded', 'true');
+        expect(first).toHaveAttribute('aria-expanded', 'false');
         expect(
-            screen.getByRole('heading', { level: 1, name: /Earn up to/ }),
+            screen.getByText(
+                'Yes. After a clean repayment, you can raise again straight away, up to 1.5 times your last loan.',
+            ),
         ).toBeInTheDocument();
-        expect(window.scrollTo).not.toHaveBeenCalled();
-    });
 
-    it('stops following the address once the page has gone', () => {
-        const { unmount } = render(<Home />);
-
-        unmount();
-        visit('#help');
-
-        expect(window.scrollTo).not.toHaveBeenCalled();
+        fireEvent.click(last);
+        expect(last).toHaveAttribute('aria-expanded', 'false');
     });
 });
 
-describe('the investor calculator', () => {
-    it('reprices when the term changes', async () => {
-        const user = userEvent.setup();
-        const site = mountSite();
+describe('the How it works view', () => {
+    it('shows the money strip once to readers and the journey of six steps', () => {
+        render(<Home />);
+        fireEvent.click(tab('How it works'));
 
-        for (const term of ['3 months', '4 months', '5 months', '6 months']) {
-            await user.click(screen.getByRole('button', { name: term }));
-        }
-
-        expect(site.state.term).toBe(6);
-    });
-
-    it('reprices when the rating band changes', async () => {
-        const user = userEvent.setup();
-        const site = mountSite();
-
-        for (const band of ['Strong', 'Stable', 'Distressed']) {
-            await user.click(screen.getByRole('button', { name: band }));
-        }
-
-        expect(site.state.band).toBe(2);
-    });
-
-    it('carries the slider through to the amount on offer', () => {
-        const site = mountSite();
-        const slider = screen.getByRole('slider');
-
-        act(() => {
-            site.setState({ depIdx: 40 });
-        });
-
-        expect(slider).toBeInTheDocument();
-        expect(site.invVals().depStr).toBe('RWF 50,000,000');
-    });
-
-    it('reaches the floor and the ceiling of what may be pledged', () => {
-        const site = mountSite();
-
-        expect(site.invVals().depStr).toBe('RWF 1,500,000');
-        expect(screen.getByText('RWF 50M')).toBeInTheDocument();
-
-        act(() => {
-            site.setState({ depIdx: 0 });
-        });
-        expect(site.invVals().depStr).toBe('RWF 5,000');
-
-        act(() => {
-            site.setState({ depIdx: 40 });
-        });
-        expect(site.invVals().depStr).toBe('RWF 50,000,000');
-    });
-});
-
-describe('the business calculator', () => {
-    const openBusiness = async () => {
-        const user = userEvent.setup();
-        const site = mountSite();
-
-        await user.click(screen.getByText('For businesses'));
-
-        return { site, user };
-    };
-
-    it('sizes a loan from the figures reported', async () => {
-        const { site } = await openBusiness();
-
-        expect(site.bizVals().qualStr).toMatch(/^RWF /);
-        expect(site.bizVals().showLeft).toBe(true);
-    });
-
-    it('asks for figures before it will size anything', async () => {
-        const { site } = await openBusiness();
-
-        act(() => {
-            site.bSet({ rev: 0, exp: 0 });
-        });
-
-        expect(site.bizVals().qualStr).toBe('—');
-        expect(site.bizVals().note).toMatch(/Enter your last 12 months/);
-        expect(site.bizVals().showLeft).toBe(false);
-    });
-
-    it('says so when the costs swallow the sales', async () => {
-        const { site } = await openBusiness();
-
-        act(() => {
-            site.bSet({ rev: 40_000_000, exp: 41_000_000 });
-        });
-
-        expect(site.bizVals().leftLabel).toMatch(/COSTS ARE HIGHER/);
-        expect(site.bizVals().leftStr).toBe('Check the figures');
-        expect(site.bizVals().note).toMatch(
-            /Enter costs lower than your sales/,
+        expect(screen.getAllByRole('img', { name: 'Livestock' })).toHaveLength(
+            1,
         );
-    });
-
-    it('turns away a business that falls under the smallest loan', async () => {
-        const { site } = await openBusiness();
-
-        act(() => {
-            site.bSet({ rev: 16_000_000, exp: 15_500_000 });
-        });
-
-        expect(site.bizVals().qualStr).toBe('—');
-        expect(site.bizVals().note).toMatch(/RWF 3,000,000 minimum/);
-    });
-
-    it('caps the largest loan it will size', async () => {
-        const { site } = await openBusiness();
-
-        act(() => {
-            site.bSet({ rev: 100_000_000_000, exp: 1_000_000 });
-        });
-
-        expect(site.bizVals().qualStr).toBe('RWF 100,000,000');
-    });
-
-    it('offers a district only once a province is chosen', async () => {
-        const { site } = await openBusiness();
-
-        expect(site.bizVals().distDisabled).toBe(true);
-
-        act(() => {
-            site.bSet({ prov: 'Kigali City' });
-        });
-
-        expect(site.bizVals().distDisabled).toBe(false);
-        expect(site.bizVals().districts).toEqual([
-            'Gasabo',
-            'Kicukiro',
-            'Nyarugenge',
-        ]);
+        expect(
+            screen.getByRole('heading', { name: 'Your money is back' }),
+        ).toBeInTheDocument();
+        expect(screen.getByText('Day 31')).toBeInTheDocument();
+        expect(screen.getByText('15%, less as you grow')).toBeInTheDocument();
     });
 });
 
-describe('every control the design builds', () => {
-    it('runs the investor handlers without complaint', () => {
-        const site = mountSite();
+describe('the Help view', () => {
+    it('switches topics and opens the first question of each', () => {
+        render(<Home />);
+        fireEvent.click(tab('Help'));
 
-        exerciseHandlers(site.invVals());
-
-        expect(site.state.page).toBeDefined();
-    });
-
-    it('runs the business handlers without complaint', () => {
-        const site = mountSite();
-
-        act(() => {
-            site.setState({ page: 'biz' });
-        });
-        exerciseHandlers(site.bizVals());
-
-        expect(site.state.B).toBeDefined();
-    });
-
-    it('runs the help handlers without complaint', () => {
-        const site = mountSite();
-
-        act(() => {
-            site.setState({ page: 'help' });
-        });
-        exerciseHandlers(site.helpVals());
-
-        expect(site.state.H).toBeDefined();
-    });
-});
-
-describe('where the footer points people', () => {
-    it('links the accounts Rozine actually posts from', () => {
-        mountSite();
-
-        const href = (label: string) =>
-            screen.getByLabelText(label).getAttribute('href');
-
-        expect(href('Instagram')).toBe('https://www.instagram.com/rozineapp');
-        expect(href('X')).toBe('https://x.com/rozineapp');
-        expect(href('LinkedIn')).toBe(
-            'https://www.linkedin.com/company/rozine/',
+        const topics = within(
+            screen.getByRole('tablist', { name: 'Help topics' }),
         );
-        expect(href('Email')).toBe('mailto:hello@rozine.rw');
+        expect(topics.getByRole('tab', { name: 'Investing' })).toHaveAttribute(
+            'aria-selected',
+            'true',
+        );
+        expect(
+            screen.getByRole('button', { name: /Is my money guaranteed\?/ }),
+        ).toHaveAttribute('aria-expanded', 'true');
+
+        fireEvent.click(
+            screen.getByRole('button', { name: /Is 15% per year\?/ }),
+        );
+        fireEvent.click(topics.getByRole('tab', { name: 'Account' }));
+        expect(topics.getByRole('tab', { name: 'Account' })).toHaveAttribute(
+            'aria-selected',
+            'true',
+        );
+        expect(
+            screen.getByRole('button', { name: /Who can invest\?/ }),
+        ).toHaveAttribute('aria-expanded', 'true');
+        expect(
+            screen.getAllByRole('link', { name: 'admin@rozine.rw' })[0],
+        ).toHaveAttribute('href', 'mailto:admin@rozine.rw');
+
+        fireEvent.click(topics.getByRole('tab', { name: 'Your money' }));
+        expect(
+            screen.getByRole('button', { name: /Where is my money held\?/ }),
+        ).toBeInTheDocument();
+        fireEvent.click(topics.getByRole('tab', { name: 'For businesses' }));
+        expect(
+            screen.getByRole('button', { name: /Do I need collateral\?/ }),
+        ).toBeInTheDocument();
     });
 });

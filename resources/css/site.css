@@ -1,4 +1,4 @@
-/* Ported verbatim from docs/resources/Rozine.rw (standalone).html — do not hand-edit. */
+/* Inter, self-hosted. The landing page (resources/js/pages/home.tsx) is built from the Rozine.rw v2 design. */
 /* cyrillic-ext */
 @font-face {
     font-family: 'Inter';
@@ -299,7 +299,7 @@
 @font-face {
     font-family: 'Inter';
     font-style: normal;
-    font-weight: 800;
+    font-weight: 800 900;
     font-display: swap;
     src: url('./fonts/eb2491d6.woff2') format('woff2');
     unicode-range:
@@ -309,7 +309,7 @@
 @font-face {
     font-family: 'Inter';
     font-style: normal;
-    font-weight: 800;
+    font-weight: 800 900;
     font-display: swap;
     src: url('./fonts/e10f4e2f.woff2') format('woff2');
     unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
@@ -318,7 +318,7 @@
 @font-face {
     font-family: 'Inter';
     font-style: normal;
-    font-weight: 800;
+    font-weight: 800 900;
     font-display: swap;
     src: url('./fonts/9e10c9e8.woff2') format('woff2');
     unicode-range: U+1F00-1FFF;
@@ -327,7 +327,7 @@
 @font-face {
     font-family: 'Inter';
     font-style: normal;
-    font-weight: 800;
+    font-weight: 800 900;
     font-display: swap;
     src: url('./fonts/bc628974.woff2') format('woff2');
     unicode-range:
@@ -337,7 +337,7 @@
 @font-face {
     font-family: 'Inter';
     font-style: normal;
-    font-weight: 800;
+    font-weight: 800 900;
     font-display: swap;
     src: url('./fonts/c1184fbf.woff2') format('woff2');
     unicode-range:
@@ -349,7 +349,7 @@
 @font-face {
     font-family: 'Inter';
     font-style: normal;
-    font-weight: 800;
+    font-weight: 800 900;
     font-display: swap;
     src: url('./fonts/cc7500e2.woff2') format('woff2');
     unicode-range:
@@ -361,7 +361,7 @@
 @font-face {
     font-family: 'Inter';
     font-style: normal;
-    font-weight: 800;
+    font-weight: 800 900;
     font-display: swap;
     src: url('./fonts/03c1332d.woff2') format('woff2');
     unicode-range:
@@ -406,328 +406,69 @@ body:has(.rz-site) {
 }
 .rz-site ::selection {
     background: #1e3aff;
-    color: #fff;
+    color: #ffffff;
 }
 .rz-site input,
-.rz-site button,
-.rz-site select {
+.rz-site button {
     font: inherit;
     color: inherit;
 }
-/* The design is authored against UA defaults; Tailwind's preflight zeroes the
-   2px margin Chrome gives a range input, which shifts the slider track 2px.
-   The design's own inline margin-top still wins over this rule. */
 .rz-site input[type='range'] {
     margin: 2px;
+    accent-color: #1d9e75;
 }
-/* Preflight also makes replaced elements block/middle-aligned. The design is
-   authored against the UA defaults (inline/baseline), which changes the line
-   box around inline icons. Elements the design wants as blocks say so in their
-   own inline style, which still wins over this rule. */
-.rz-site img,
-.rz-site svg,
-.rz-site video,
-.rz-site canvas,
-.rz-site audio,
-.rz-site iframe,
-.rz-site embed,
-.rz-site object {
+.rz-site input::placeholder {
+    color: #757575;
+    opacity: 1;
+}
+/* Preflight makes replaced elements block-level. The design is authored
+   against UA defaults; elements it wants as blocks say so inline. */
+.rz-site img {
     display: inline;
     vertical-align: baseline;
 }
-@keyframes rz-rise {
-    from {
-        opacity: 0;
-        transform: translateY(26px);
-    }
-    to {
-        opacity: 1;
-        transform: none;
-    }
+.rz-site button:focus-visible,
+.rz-site a:focus-visible,
+.rz-site input:focus-visible {
+    outline: 2px solid #6fd7b1;
+    outline-offset: 2px;
 }
-@keyframes rz-fill {
-    from {
-        transform: scaleX(0);
-    }
-    to {
-        transform: scaleX(1);
-    }
+.rz-site .rz-field:focus {
+    border-color: #1e3aff !important;
 }
-@keyframes rz-pop {
-    0% {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    100% {
-        opacity: 1;
-        transform: none;
-    }
-}
-@keyframes rz-ring {
-    0% {
-        transform: scale(1);
-        opacity: 0.5;
-    }
-    70%,
-    100% {
-        transform: scale(2.6);
-        opacity: 0;
-    }
-}
-@keyframes rz-flow-r {
-    0% {
-        left: 7%;
-        opacity: 0;
-        transform: translateY(-50%) rotate(-8deg);
-    }
-    10% {
-        opacity: 1;
-    }
-    50% {
-        top: 38%;
-    }
-    90% {
-        opacity: 1;
-    }
-    100% {
-        left: 85%;
-        top: 50%;
-        opacity: 0;
-        transform: translateY(-50%) rotate(6deg);
-    }
-}
-@keyframes rz-flow-l {
-    0% {
-        left: 85%;
-        opacity: 0;
-        transform: translateY(-50%) rotate(8deg);
-    }
-    10% {
-        opacity: 1;
-    }
-    50% {
-        top: 64%;
-    }
-    90% {
-        opacity: 1;
-    }
-    100% {
-        left: 7%;
-        top: 52%;
-        opacity: 0;
-        transform: translateY(-50%) rotate(-6deg);
-    }
-}
-@keyframes rz-check-pulse {
-    0% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(29, 158, 117, 0.5);
-    }
-    70%,
-    100% {
-        transform: scale(1);
-        box-shadow: 0 0 0 18px rgba(29, 158, 117, 0);
-    }
-}
-@keyframes rz-node-float {
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-7px);
-    }
-}
-@keyframes rz-dash {
-    to {
-        stroke-dashoffset: -24;
-    }
-}
-@keyframes rz-count-bar {
-    0% {
-        height: 12%;
-    }
-    100% {
-        height: var(--h, 60%);
-    }
-}
-@keyframes rz-marquee {
+@keyframes rzb-roll {
     from {
         transform: translateX(0);
     }
     to {
-        transform: translateX(-50%);
+        transform: translateX(calc(-50% - 6px));
     }
 }
-@keyframes rz-line {
-    from {
-        transform: scaleY(0);
-    }
-    to {
-        transform: scaleY(1);
-    }
-}
-@keyframes rz-badge {
+@keyframes rzb-up {
     from {
         opacity: 0;
-        transform: scale(0.5);
+        transform: translateY(18px);
     }
     to {
         opacity: 1;
         transform: none;
     }
 }
-.rz-track {
-    display: flex;
-    width: max-content;
-    animation: rz-marquee 78s linear infinite;
-}
-.rz-strip:hover .rz-track {
-    animation-play-state: paused;
-}
-.rz-tile img {
-    transition:
-        transform 0.6s ease,
-        filter 0.4s ease;
-}
-.rz-tile:hover img {
-    transform: scale(1.06);
-    filter: saturate(1.1);
-}
-.rz-line {
-    transform-origin: top;
-    animation: rz-line linear both;
-    animation-timeline: view();
-    animation-range: entry 30% cover 45%;
-}
-.rz-badge {
-    animation: rz-badge cubic-bezier(0.2, 1.4, 0.4, 1) both;
-    animation-timeline: view();
-    animation-range: entry 25% entry 75%;
-}
-@media (prefers-reduced-motion: reduce) {
-    .rz-track {
-        animation: none;
+@keyframes rzb-spin {
+    to {
+        transform: rotate(360deg);
     }
 }
-@media (max-width: 760px) {
-    .rz-how-grid {
-        grid-template-columns: 1fr !important;
-    }
+.rz-roll:hover {
+    animation-play-state: paused !important;
 }
-.rz-step {
-    transition: background 0.3s ease;
-}
-.rz-step:hover {
-    background: rgba(30, 58, 255, 0.035);
-}
-.rz-glass {
-    transition:
-        transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1),
-        box-shadow 0.32s ease;
-}
-.rz-glass:hover {
-    transform: translateY(-3px);
-    box-shadow:
-        0 1px 2px rgba(12, 24, 48, 0.04),
-        0 34px 66px -26px rgba(12, 24, 48, 0.26);
-}
-.rz-site h1,
-.rz-site h2,
-.rz-site h3 {
-    font-feature-settings: 'ss03', 'cv11';
-    text-wrap: balance;
-}
-.rz-kick {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-}
-.rz-kick::before {
-    content: '';
-    width: 28px;
-    height: 1px;
-    background: currentColor;
-    opacity: 0.5;
-    flex: 0 0 auto;
-}
-.rz-mobile-only {
-    display: none;
-}
-.rz-seg-short {
-    display: none;
-}
-@media (max-width: 560px) {
-    .rz-sig {
-        flex-wrap: wrap !important;
-        white-space: normal !important;
-        min-width: 0 !important;
-    }
-    .rz-sig-dash {
-        display: none !important;
-    }
-    .rz-social {
-        margin-left: 0 !important;
-    }
-}
-@media (max-width: 720px) {
-    .rz-seg {
-        gap: 3px !important;
-        padding: 2px !important;
-    }
-    .rz-seg > a {
-        padding: 6px 11px !important;
-        font-size: 12.5px !important;
-    }
-    .rz-seg-long {
-        display: none !important;
-    }
-    .rz-seg-short {
-        display: inline !important;
-    }
-}
-@media (max-width: 720px) {
-    .rz-nav-links {
-        display: none !important;
-    }
-    .rz-mobile-only {
-        display: flex !important;
-    }
-    .rz-hide-mobile {
-        display: none !important;
-    }
-}
-.rz-rise {
-    animation: rz-rise linear both;
-    animation-timeline: view();
-    animation-range: entry 5% cover 28%;
-}
-.rz-range {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: 5px;
-    border-radius: 999px;
-    background: #e2e8f2;
-    outline: none;
-}
-.rz-range::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: #1e3aff;
-    border: 4px solid #fff;
-    box-shadow: 0 2px 10px rgba(30, 58, 255, 0.5);
-    cursor: pointer;
-}
-.rz-range::-moz-range-thumb {
+.rz-spinner {
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    background: #1e3aff;
-    border: 4px solid #fff;
-    cursor: pointer;
+    border: 2.5px solid rgba(255, 255, 255, 0.45);
+    border-top-color: #ffffff;
+    animation: rzb-spin 0.7s linear infinite;
 }
 @media (prefers-reduced-motion: reduce) {
     .rz-site * {
@@ -736,40 +477,61 @@ body:has(.rz-site) {
     }
 }
 
-/* ---------------------------------------------------------------------------
- * Deliberate departures from the design export.
- * ------------------------------------------------------------------------ */
-
-/* The "how it works" heading is pinned with an inline position:sticky so it
-   holds its place beside the steps while they scroll past, which is the point
-   of the two-column layout. Below 760px that grid collapses to one column, so
-   the heading instead pins directly on top of the steps scrolling underneath
-   it, and because it has no background the two sets of text overlap. The
-   export behaves this way as well; we depart from it deliberately and let the
-   heading scroll away once the columns stack. Needs !important to beat the
-   inline style the export sets. */
-@media (max-width: 760px) {
-    .rz-site .rz-how-grid > :first-child {
-        position: static !important;
-    }
-}
-
-/* Below 720px the export shows two Help links: the one in the nav, and a
-   second in a mobile-only row beneath it. The row is meant to replace the
-   nav copy, but the class that would hide that copy (.rz-nav-links) is
-   defined in the export and never applied to any element, so both render.
-   Keep the one in the nav, where it sits beside the audience toggle, and
-   drop the duplicate row. */
-@media (max-width: 720px) {
-    .rz-site .rz-mobile-only {
-        display: none !important;
-    }
-}
-
 /* The staging/demo app entry: on narrow phones keep only "Sign in"; the login page links on to
-   registration, so the header still fits beside the audience toggle and Help. */
+   registration, so the header still fits. */
 @media (max-width: 560px) {
     .rz-site .rz-app-entry-secondary {
         display: none !important;
+    }
+}
+
+/* The header's tabs sit inline with the waitlist button, exactly as designed, while
+   they fit. */
+.rz-site .rz-hdr-tabs {
+    display: contents;
+}
+
+/* Deliberate departure from the design: below 640px the design's single 72px row
+   wraps its tabs into three lines that spill above and below the bar, so Invest and
+   Businesses can't be reached on a phone. Here the logo and the waitlist button keep
+   the first row and the four tabs move to a second row of their own. */
+@media (max-width: 640px) {
+    .rz-site .rz-hdr {
+        height: auto !important;
+        flex-wrap: wrap;
+        row-gap: 6px;
+        column-gap: 12px !important;
+        padding-top: 14px !important;
+        padding-bottom: 10px !important;
+    }
+    .rz-site .rz-hdr-nav {
+        display: contents !important;
+    }
+    .rz-site #join {
+        scroll-margin-top: 104px !important;
+    }
+    .rz-site .rz-hdr-join {
+        order: 2;
+        margin-left: auto;
+        height: 38px !important;
+        padding: 0 16px !important;
+    }
+    .rz-site .rz-hdr-nav > [role='group'] {
+        order: 2;
+    }
+    .rz-site .rz-hdr-tabs {
+        order: 3;
+        display: flex;
+        flex: 1 0 100%;
+        gap: 2px;
+        margin: 0 -8px;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+    .rz-site .rz-hdr-tabs > button {
+        flex: 0 0 auto;
+        height: 34px !important;
+        padding: 0 12px !important;
+        font-size: 13.5px !important;
     }
 }
