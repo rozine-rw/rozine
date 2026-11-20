@@ -7,9 +7,15 @@ namespace App\Http\Controllers;
 use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Pulse\RegisterSiteBusiness;
 use App\Application\Pulse\RegisterSiteInvestor;
+use App\Application\Pulse\RegisterSiteWaitlist;
+use App\Enums\PulseSignupType;
 use App\Http\Requests\Site\StoreSiteBusinessRequest;
 use App\Http\Requests\Site\StoreSiteInvestorRequest;
+use App\Http\Requests\Site\StoreSiteWaitlistRequest;
+use App\Models\PulseSignup;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -66,5 +72,46 @@ class SiteController extends Controller
         ]);
 
         return back();
+    }
+
+    /**
+     * Put someone on the landing page waitlist and answer with their place in
+     * the queue and the link they can share. A referral code that matches no
+     * signup is dropped rather than refused, so a mistyped link never blocks
+     * anyone from joining.
+     */
+    public function storeWaitlist(StoreSiteWaitlistRequest $request, RegisterSiteWaitlist $register): JsonResponse
+    {
+        $ref = $request->validated('ref');
+        $referredBy = is_string($ref) && $ref !== '' && PulseSignup::query()->where('referral_code', $ref)->exists()
+            ? $ref
+            : null;
+
+        $joined = $register->handle([
+            'name' => trim((string) $request->validated('name')),
+            'contact_method' => $request->contactMethod()->value,
+            'contact' => (string) $request->validated('contact'),
+            'referred_by' => $referredBy,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ], PulseSignupType::from((string) $request->validated('role')));
+
+        return response()->json([
+            'queue_number' => $joined['queue_number'],
+            'position' => $joined['position'],
+            'referral_link' => route('site.join', ['ref' => $joined['referral_code']]),
+        ], 201);
+    }
+
+    /**
+     * The link a waitlist signup shares: it opens the landing page at the
+     * waitlist form and carries the referral code along.
+     */
+    public function join(Request $request): RedirectResponse
+    {
+        $ref = $request->query('ref');
+        $query = is_string($ref) && preg_match('/^[A-Za-z0-9]{1,64}$/', $ref) === 1 ? ['ref' => $ref] : [];
+
+        return redirect()->to(route('home', $query).'#join');
     }
 }

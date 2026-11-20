@@ -119,6 +119,24 @@ final class EloquentPulseSignupRepository implements PulseSignupRepository
     }
 
     /**
+     * @param  array{name: string, contact_method: string, contact: string, referred_by: string|null, ip_address: string|null, user_agent: string|null}  $signup
+     * @return array{queue_number: string, referral_code: string}
+     */
+    public function createWaitlistSignup(array $signup, PulseSignupType $type, string $referralStem): array
+    {
+        return DB::transaction(function () use ($signup, $type, $referralStem): array {
+            $record = $this->newSignup($signup, $type);
+            $record->referral_code = $referralStem.preg_replace('/\D/', '', (string) $record->queue_number).($type === PulseSignupType::Business ? 'b' : '');
+            $record->save();
+
+            return [
+                'queue_number' => (string) $record->queue_number,
+                'referral_code' => (string) $record->referral_code,
+            ];
+        });
+    }
+
+    /**
      * Claim the next value in a numbering series.
      *
      * The counter row is locked for the life of the transaction, so a second

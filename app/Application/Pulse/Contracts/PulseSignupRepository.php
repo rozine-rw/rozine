@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Pulse\Contracts;
 
+use App\Enums\PulseSignupType;
+
 interface PulseSignupRepository
 {
     /**
@@ -40,4 +42,14 @@ interface PulseSignupRepository
      * @return array{queue_number: string}
      */
     public function createBusinessLead(array $signup, array $figures): array;
+
+    /**
+     * Put someone on the landing page waitlist with only a name and a way to
+     * reach them. The signup is given its place in the queue and a referral
+     * code made from the stem and that place, so it can be shared.
+     *
+     * @param  array{name: string, contact_method: string, contact: string, referred_by: string|null, ip_address: string|null, user_agent: string|null}  $signup
+     * @return array{queue_number: string, referral_code: string}
+     */
+    public function createWaitlistSignup(array $signup, PulseSignupType $type, string $referralStem): array;
 }

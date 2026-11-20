@@ -331,6 +331,7 @@
         "resources/js/routes/site/business/index.ts",
         "resources/js/routes/site/index.ts",
         "resources/js/routes/site/investor/index.ts",
+        "resources/js/routes/site/waitlist/index.ts",
         "resources/js/routes/staff/access-requests/index.ts",
         "resources/js/routes/staff/applications/index.ts",
         "resources/js/routes/staff/applications/operations/index.ts",
@@ -750,6 +751,7 @@
         "resources/js/lib/investor/server-clock.ts",
         "resources/js/lib/investor/use-fit-scale.ts",
         "resources/js/lib/investor/use-wide.ts",
+        "resources/js/lib/landing.ts",
         "resources/js/lib/pass-card-image.ts",
         "resources/js/lib/pulse.ts",
         "resources/js/lib/rozine/dispute-note.ts",
@@ -846,10 +848,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 815,
-        "generated": 350,
+        "totalTrackedSources": 817,
+        "generated": 351,
         "declarationOnly": 20,
-        "authoredExecutable": 445
+        "authoredExecutable": 446
     },
-    "coverageSetSha256": "8b99b3ff94921dbe4a1c2ace8a564b864dd114657adeba23caa931bc331886be"
+    "coverageSetSha256": "34b1bc1a10a520c6af2ee6c09114d163fa48055d22e71047ce2a134286093090"
 }

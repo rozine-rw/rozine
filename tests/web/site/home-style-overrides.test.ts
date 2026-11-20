@@ -2,29 +2,35 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vite-plus/test';
 
 /**
- * resources/css/site.css is a mechanical extraction of the design export, so a
- * re-port would overwrite it. These guard the departures we make on purpose.
+ * The landing page keeps the design's inline styles; resources/css/site.css holds the few
+ * rules that cannot be inline. These guard the ones we rely on.
  */
-const css = readFileSync('resources/css/site.css', 'utf8');
+const css = readFileSync('resources/css/site.css', 'utf8').replace(/\s+/g, ' ');
 
-describe('the departures we make from the design export', () => {
-    it('lets the how-it-works heading scroll away once the columns stack', () => {
-        expect(css).toContain('Deliberate departures from the design export');
-        expect(css.replace(/\s+/g, ' ')).toContain(
-            '@media (max-width: 760px) { .rz-site .rz-how-grid > :first-child { position: static !important; } }',
+describe('the landing page stylesheet', () => {
+    it('keeps the header tabs inline with the waitlist button while they fit', () => {
+        expect(css).toContain('.rz-site .rz-hdr-tabs { display: contents; }');
+    });
+
+    it('moves the tabs to a row of their own on phones so every tab stays reachable', () => {
+        expect(css).toContain('@media (max-width: 640px)');
+        expect(css).toContain(
+            '.rz-site .rz-hdr { height: auto !important; flex-wrap: wrap;',
+        );
+        expect(css).toContain(
+            '.rz-site .rz-hdr-tabs { order: 3; display: flex;',
         );
     });
 
-    it('keeps the heading pinned while the grid still has two columns', () => {
-        // the override is scoped to the same breakpoint that collapses the grid
-        const collapse = css.indexOf('.rz-how-grid');
-
-        expect(collapse).toBeGreaterThan(-1);
-        expect(css).toContain('grid-template-columns: 1fr !important');
-    });
-    it('shows one Help link below 720px, not two', () => {
-        expect(css.replace(/\s+/g, ' ')).toContain(
-            '@media (max-width: 720px) { .rz-site .rz-mobile-only { display: none !important; } }',
+    it('carries the design animations and pauses the money strip on hover', () => {
+        expect(css).toContain('@keyframes rzb-roll');
+        expect(css).toContain('@keyframes rzb-up');
+        expect(css).toContain(
+            '.rz-roll:hover { animation-play-state: paused !important; }',
         );
+    });
+
+    it('loads Inter up to the heaviest weight the design uses', () => {
+        expect(css).toContain('font-weight: 800 900;');
     });
 });

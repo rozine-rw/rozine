@@ -85,6 +85,7 @@ use App\Http\Middleware\RedirectBrowserVisit;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [SiteController::class, 'index'])->name('home');
+Route::get('join', [SiteController::class, 'join'])->name('site.join');
 
 Route::get('audit-seals/{report}', AuditSealVerificationController::class)->whereUlid('report')
     ->middleware(['throttle:60,1', 'cache.headers:no_store'])->name('audit.seals.verify');
@@ -115,6 +116,7 @@ Route::middleware('throttle:10,1')->group(function () {
 Route::middleware('throttle:10,1')->group(function () {
     Route::post('investor', [SiteController::class, 'storeInvestor'])->name('site.investor.store');
     Route::post('business', [SiteController::class, 'storeBusiness'])->name('site.business.store');
+    Route::post('waitlist', [SiteController::class, 'storeWaitlist'])->name('site.waitlist.store');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
