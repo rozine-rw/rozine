@@ -606,7 +606,7 @@ class AppServiceProvider extends ServiceProvider
             ->meta('author', 'Rozine')
             ->canonical()
             ->og(type: OgType::Website, title: 'Rozine', siteName: 'Rozine', locale: 'en_RW')
-            ->ogImage(url('/og-image.png'), alt: 'Rozine — the capital market for everyone else', width: 1200, height: 630, type: ImageType::Png)
+            ->ogImage(url('/og-image-v2.png'), alt: 'Rozine: earn up to 15% lending to profitable Rwandan businesses', width: 1200, height: 630, type: ImageType::Png)
             ->twitter(card: TwitterCard::SummaryWithLargeImage, title: 'Rozine')
             ->robots(app()->isProduction()
                 ? [RobotsRule::Index, RobotsRule::Follow]
