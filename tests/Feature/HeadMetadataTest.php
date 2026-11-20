@@ -16,7 +16,7 @@ test('the home page renders SEO and social head metadata', function () {
         ->assertSee('og:site_name', false)
         ->assertSee('og:title', false)
         ->assertSee('og:image', false)
-        ->assertSee('og-image.png', false)
+        ->assertSee('og-image-v2.png', false)
         ->assertSee('og:image:width', false)
         ->assertSee('og:locale', false)
         ->assertSee('twitter:card', false)
