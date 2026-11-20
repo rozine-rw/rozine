@@ -23,6 +23,7 @@ final class RegisterSiteWaitlist
      */
     public function handle(array $signup, PulseSignupType $type): array
     {
+        $signup['referred_by'] = $this->knownReferral($signup['referred_by']);
         $created = $this->signups->createWaitlistSignup($signup, $type, self::referralStem($signup['name']));
 
         return [
@@ -30,6 +31,15 @@ final class RegisterSiteWaitlist
             'position' => (int) preg_replace('/\D/', '', $created['queue_number']),
             'referral_code' => $created['referral_code'],
         ];
+    }
+
+    /**
+     * The referral code to keep: one that matches no signup is dropped rather
+     * than refused, so a mistyped link never blocks anyone from joining.
+     */
+    private function knownReferral(?string $referralCode): ?string
+    {
+        return $referralCode !== null && $this->signups->referralCodeExists($referralCode) ? $referralCode : null;
     }
 
     /**

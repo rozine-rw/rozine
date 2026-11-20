@@ -52,4 +52,9 @@ interface PulseSignupRepository
      * @return array{queue_number: string, referral_code: string}
      */
     public function createWaitlistSignup(array $signup, PulseSignupType $type, string $referralStem): array;
+
+    /**
+     * Whether a waitlist signup already holds this referral code.
+     */
+    public function referralCodeExists(string $referralCode): bool;
 }

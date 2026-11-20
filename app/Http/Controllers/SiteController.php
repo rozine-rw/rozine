@@ -12,7 +12,6 @@ use App\Enums\PulseSignupType;
 use App\Http\Requests\Site\StoreSiteBusinessRequest;
 use App\Http\Requests\Site\StoreSiteInvestorRequest;
 use App\Http\Requests\Site\StoreSiteWaitlistRequest;
-use App\Models\PulseSignup;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -83,15 +82,12 @@ class SiteController extends Controller
     public function storeWaitlist(StoreSiteWaitlistRequest $request, RegisterSiteWaitlist $register): JsonResponse
     {
         $ref = $request->validated('ref');
-        $referredBy = is_string($ref) && $ref !== '' && PulseSignup::query()->where('referral_code', $ref)->exists()
-            ? $ref
-            : null;
 
         $joined = $register->handle([
             'name' => trim((string) $request->validated('name')),
             'contact_method' => $request->contactMethod()->value,
             'contact' => (string) $request->validated('contact'),
-            'referred_by' => $referredBy,
+            'referred_by' => is_string($ref) && $ref !== '' ? $ref : null,
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ], PulseSignupType::from((string) $request->validated('role')));

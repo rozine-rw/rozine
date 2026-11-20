@@ -222,4 +222,9 @@ final class EloquentPulseSignupRepository implements PulseSignupRepository
             ),
         ]);
     }
+
+    public function referralCodeExists(string $referralCode): bool
+    {
+        return PulseSignup::query()->where('referral_code', $referralCode)->exists();
+    }
 }
