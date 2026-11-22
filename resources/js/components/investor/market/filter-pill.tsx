@@ -63,7 +63,7 @@ export function FilterPill<T extends string>({
                 className={cn(
                     'flex w-full items-center gap-1.5 rounded-[10px] border px-[11px] py-[9px] text-left',
                     open
-                        ? 'border-[#f0dcb8] bg-[#f4f7fc]'
+                        ? 'border-[#f0dcb8] bg-[#f4f7fc] dark:border-rz-warning-tint dark:bg-rz-surface-muted'
                         : 'border-rz-hairline bg-rz-surface',
                 )}
             >

@@ -312,7 +312,7 @@ function NearbyPartners({
                                     onClick={() =>
                                         setReviewing(partner.party_id)
                                     }
-                                    className="mt-1 text-[12px] font-semibold text-[#157357] underline"
+                                    className="mt-1 text-[12px] font-semibold text-[#157357] underline dark:text-rz-positive"
                                 >
                                     {t(
                                         'admin.parties.audit.independence.open',
@@ -508,7 +508,7 @@ export function BusinessAuditSection({
                         {audit.remedy !== null && (
                             <Link
                                 href={audit.remedy}
-                                className="mt-1.5 inline-block text-[12.5px] font-semibold text-[#157357] underline"
+                                className="mt-1.5 inline-block text-[12.5px] font-semibold text-[#157357] underline dark:text-rz-positive"
                             >
                                 {t('admin.parties.audit.remedy')}
                             </Link>

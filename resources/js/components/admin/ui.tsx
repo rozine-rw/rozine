@@ -66,14 +66,46 @@ export const TONE_DOT: Record<Tone, string> = {
 
 /** The eight-accent KPI palette (design `_KPI_TINTS`): rail colour, tile edge and label colour. */
 const KPI_ACCENTS = [
-    ['bg-[#1e3aff]', 'border-[#e2ebfd]', 'text-[#5b7099]'],
-    ['bg-[#1d9e75]', 'border-[#dbf0e3]', 'text-[#3f6b56]'],
-    ['bg-[#5b2bd9]', 'border-[#e7e1fb]', 'text-[#6f6396]'],
-    ['bg-[#c2661f]', 'border-[#f6e6cc]', 'text-[#7a5d33]'],
-    ['bg-[#0891b2]', 'border-[#d8eef4]', 'text-[#3d6b77]'],
-    ['bg-[#db2777]', 'border-[#f8dfe9]', 'text-[#95637a]'],
-    ['bg-[#0c1830] dark:bg-[#93a1bd]', 'border-[#e6ecf5]', 'text-[#6b7688]'],
-    ['bg-[#e5484d]', 'border-[#f7dcdd]', 'text-[#96666a]'],
+    [
+        'bg-[#1e3aff]',
+        'border-[#e2ebfd] dark:border-rz-border',
+        'text-[#5b7099]',
+    ],
+    [
+        'bg-[#1d9e75]',
+        'border-[#dbf0e3] dark:border-rz-border',
+        'text-[#3f6b56] dark:text-rz-positive',
+    ],
+    [
+        'bg-[#5b2bd9]',
+        'border-[#e7e1fb] dark:border-rz-border',
+        'text-[#6f6396] dark:text-[#b6a8e6]',
+    ],
+    [
+        'bg-[#c2661f]',
+        'border-[#f6e6cc] dark:border-rz-border',
+        'text-[#7a5d33] dark:text-rz-warning-text',
+    ],
+    [
+        'bg-[#0891b2]',
+        'border-[#d8eef4] dark:border-rz-border',
+        'text-[#3d6b77] dark:text-[#7cc4d6]',
+    ],
+    [
+        'bg-[#db2777]',
+        'border-[#f8dfe9] dark:border-rz-border',
+        'text-[#95637a]',
+    ],
+    [
+        'bg-[#0c1830] dark:bg-[#93a1bd]',
+        'border-[#e6ecf5] dark:border-rz-border',
+        'text-[#6b7688]',
+    ],
+    [
+        'bg-[#e5484d]',
+        'border-[#f7dcdd] dark:border-rz-border',
+        'text-[#96666a]',
+    ],
 ] as const;
 
 export function KpiTile({

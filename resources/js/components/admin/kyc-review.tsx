@@ -154,7 +154,7 @@ export function KycReview({
             {errors.form && (
                 <p
                     role="alert"
-                    className="mt-4 rounded-[11px] bg-[rgba(229,72,77,.1)] px-3.5 py-2.5 text-[12.5px] font-semibold text-[#c2292e]"
+                    className="mt-4 rounded-[11px] bg-[rgba(229,72,77,.1)] px-3.5 py-2.5 text-[12.5px] font-semibold text-[#c2292e] dark:text-rz-danger-text"
                 >
                     {errors.form}
                 </p>
@@ -187,7 +187,7 @@ export function KycReview({
                                         action: reject,
                                     })
                                 }
-                                className="h-[42px] flex-1 rounded-[11px] border border-[#e5484d] text-[13.5px] font-bold text-[#c2292e]"
+                                className="h-[42px] flex-1 rounded-[11px] border border-[#e5484d] text-[13.5px] font-bold text-[#c2292e] dark:text-rz-danger-text"
                             >
                                 {t('admin.kyc.reject')}
                             </button>

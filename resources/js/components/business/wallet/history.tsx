@@ -198,7 +198,7 @@ function StatementDownload({
             key: 'pdf',
             link: exports.pdf,
             label: t('business.wallet.export.pdf'),
-            tint: 'bg-[rgba(229,72,77,.10)] text-[#b3383c]',
+            tint: 'bg-[rgba(229,72,77,.10)] text-[#b3383c] dark:text-rz-danger-text',
         },
         {
             key: 'csv',

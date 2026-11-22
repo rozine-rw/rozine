@@ -165,7 +165,7 @@ function AnswerForm({ action }: { action: { url: string } }) {
             {form.errors.body !== undefined && (
                 <p
                     role="alert"
-                    className="mt-1 text-[12px] font-semibold text-[#b3352a]"
+                    className="mt-1 text-[12px] font-semibold text-[#b3352a] dark:text-rz-danger-text"
                 >
                     {form.errors.body}
                 </p>
