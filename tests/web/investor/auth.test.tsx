@@ -451,8 +451,8 @@ describe('Verification', () => {
         const user = userEvent.setup();
         render(
             <InvestorVerification
-                {...clone<InvestorVerificationProps>({
-                    ...personalFixture,
+                {...({
+                    ...clone<InvestorVerificationProps>(personalFixture),
                     purpose: 'auditor',
                 } as InvestorVerificationProps)}
             />,
