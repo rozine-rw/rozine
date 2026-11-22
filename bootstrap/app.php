@@ -21,6 +21,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -93,11 +94,14 @@ return Application::configure(basePath: dirname(__DIR__))
             return response()->json($body, $exception->status);
         });
 
-        $exceptions->render(function (NotFoundHttpException $exception, Request $request) {
+        // A browser read of a URL that only takes a write (PUT settings/password, say) is a page that
+        // isn't there for it: the Rozine not-found page with its own 405, not Symfony's white page.
+        $exceptions->render(function (NotFoundHttpException|MethodNotAllowedHttpException $exception, Request $request) {
             if (! $request->expectsJson() && ! $request->is('api/*') && $request->isMethod('GET')) {
-                return app(SetLocale::class)->handle($request, function (Request $request) {
+                return app(SetLocale::class)->handle($request, function (Request $request) use ($exception) {
+                    $status = $exception->getStatusCode();
                     $response = Inertia::render('identity/access-denied', [...app(HandleInertiaRequests::class)->share($request),
-                        'code' => 'PAGE_NOT_FOUND', 'status' => 404])->toResponse($request)->setStatusCode(404);
+                        'code' => 'PAGE_NOT_FOUND', 'status' => $status])->toResponse($request)->setStatusCode($status);
                     $response->headers->set('Cache-Control', 'no-store, private');
 
                     return $response;

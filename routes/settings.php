@@ -6,6 +6,7 @@ use App\Http\Controllers\Settings\AccountClosureController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
 use Illuminate\Auth\Middleware\RequirePassword;
+use Illuminate\Routing\RedirectController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth'])->group(function () {
@@ -23,6 +24,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('settings/security', [SecurityController::class, 'edit'])
         ->middleware(RequirePassword::class)
         ->name('security.edit');
+
+    // The password form lives on Security; a bookmarked or typed settings/password opens it there.
+    Route::get('settings/password', RedirectController::class)
+        ->defaults('destination', '/settings/security')
+        ->defaults('status', 302);
 
     Route::put('settings/password', [SecurityController::class, 'update'])
         ->middleware('throttle:6,1')

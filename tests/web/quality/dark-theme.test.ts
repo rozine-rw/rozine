@@ -233,3 +233,14 @@ describe('Auditor calendar today marker', () => {
         expect(today).not.toContain('dark:border-rz-ink');
     });
 });
+
+describe('Starter-kit primary action (QA #721)', () => {
+    it('is the Rozine blue in the light theme too, not near-black', () => {
+        const app = stylesheets[0];
+        const light = app.slice(app.indexOf(':root {'));
+        const block = light.slice(0, light.indexOf('}'));
+
+        expect(block).toMatch(/--primary: #1e3aff;/u);
+        expect(block).toMatch(/--primary-foreground: #ffffff;/u);
+    });
+});
