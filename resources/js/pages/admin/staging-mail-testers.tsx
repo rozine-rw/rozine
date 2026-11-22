@@ -88,7 +88,7 @@ export default function AdminStagingMailTesters(
             {errors.form && (
                 <p
                     role="alert"
-                    className="mb-4 max-w-[720px] rounded-[11px] bg-[rgba(229,72,77,.1)] px-3.5 py-2.5 text-[12.5px] font-semibold text-[#c2292e]"
+                    className="mb-4 max-w-[720px] rounded-[11px] bg-[rgba(229,72,77,.1)] px-3.5 py-2.5 text-[12.5px] font-semibold text-[#c2292e] dark:text-rz-danger-text"
                 >
                     {errors.form}
                 </p>
@@ -157,7 +157,7 @@ export default function AdminStagingMailTesters(
                             <p
                                 id="tester-email-error"
                                 role="alert"
-                                className="mt-1.5 text-[12px] font-semibold text-[#c2292e]"
+                                className="mt-1.5 text-[12px] font-semibold text-[#c2292e] dark:text-rz-danger-text"
                             >
                                 {errors.email}
                             </p>
@@ -234,7 +234,7 @@ export default function AdminStagingMailTesters(
                                         'admin.mail_testers.remove_label',
                                         { email: tester.email },
                                     )}
-                                    className="h-[32px] rounded-[9px] border border-[#e5484d] px-3 text-[12.5px] font-bold text-[#c2292e]"
+                                    className="h-[32px] rounded-[9px] border border-[#e5484d] px-3 text-[12.5px] font-bold text-[#c2292e] dark:text-rz-danger-text"
                                 >
                                     {t('admin.mail_testers.remove')}
                                 </button>

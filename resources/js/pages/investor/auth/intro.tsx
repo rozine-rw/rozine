@@ -25,7 +25,7 @@ const TONE: Record<Slide, { tile: string; dot: string; stroke: string }> = {
     },
     exit: {
         tile: 'bg-[rgba(194,102,31,.10)]',
-        dot: 'bg-[rgba(194,102,31,.10)] text-[#a4521a]',
+        dot: 'bg-[rgba(194,102,31,.10)] text-[#a4521a] dark:text-rz-warning-text',
         stroke: '#c2661f',
     },
 };

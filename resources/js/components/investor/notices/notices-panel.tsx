@@ -27,12 +27,12 @@ const stroke = {
 const TONES: Record<InvestorNotice['kind'], Tone> = {
     'wallet.deposit_received': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
         icon: <path d="M12 5v14M5 12l7 7 7-7" {...stroke} />,
     },
     'wallet.payout_received': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
         icon: <path d="M4 17l5-5 4 4 7-7M14 9h6v6" {...stroke} />,
     },
     'market.units_bought': {
@@ -42,7 +42,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'market.units_sold': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
         icon: <path d="M17 17H7V7M17 7L7 17" {...stroke} />,
     },
     'wallet.withdrawal_sent': {
@@ -52,7 +52,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'wallet.withdrawal_returned': {
         bar: 'bg-[#b07a12]',
-        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418]',
+        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418] dark:text-rz-warning-text',
         icon: (
             <path
                 d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"
@@ -62,7 +62,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'primary.refunded': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
         icon: (
             <path
                 d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"
@@ -72,7 +72,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'primary.report_published': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
         icon: (
             <path
                 d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6zM9 12l2 2 4-4.5"
@@ -82,12 +82,12 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'primary.raise_funded': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
         icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
     },
     'primary.commitment_confirmed': {
         bar: 'bg-[#1e3aff]',
-        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff] dark:text-rz-investor-text',
         icon: (
             <>
                 <rect x="4" y="6" width="16" height="12" rx="2" {...stroke} />
@@ -97,7 +97,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'primary.holding_issued': {
         bar: 'bg-[#1e3aff]',
-        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff] dark:text-rz-investor-text',
         icon: (
             <>
                 <rect x="4" y="6" width="16" height="12" rx="2" {...stroke} />
@@ -107,7 +107,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'verification.approved': {
         bar: 'bg-[#1e3aff]',
-        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff] dark:text-rz-investor-text',
         icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
     },
     'security.password_changed': {
@@ -142,27 +142,27 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'verification.rejected': {
         bar: 'bg-[#b3383c]',
-        tile: 'bg-[rgba(179,56,60,.1)] text-[#b3383c]',
+        tile: 'bg-[rgba(179,56,60,.1)] text-[#b3383c] dark:text-rz-danger-text',
         icon: <path d="M12 7v6M12 16.5v.5" {...stroke} />,
     },
     'business.raise_funded': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
         icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
     },
     'business.disbursement_sent': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
         icon: <path d="M5 12h14M13 6l6 6-6 6" {...stroke} />,
     },
     'business.deposit_received': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
         icon: <path d="M12 5v14M5 12l7 7 7-7" {...stroke} />,
     },
     'business.application_approved': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
         icon: <path d="M5 12.5l4.5 4.5L19 7.5" {...stroke} />,
     },
     'business.withdrawal_sent': {
@@ -172,12 +172,12 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'business.repayment_received': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
         icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
     },
     'business.withdrawal_returned': {
         bar: 'bg-[#b07a12]',
-        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418]',
+        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418] dark:text-rz-warning-text',
         icon: (
             <path
                 d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"
@@ -187,7 +187,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'business.report_sealed': {
         bar: 'bg-[#1e3aff]',
-        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff] dark:text-rz-investor-text',
         icon: (
             <>
                 <rect
@@ -214,7 +214,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'business.reporting_window_open': {
         bar: 'bg-[#1e3aff]',
-        tile: 'bg-[rgba(30,58,255,.10)] text-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.10)] text-[#1e3aff] dark:text-rz-investor-text',
         icon: (
             <>
                 <rect
@@ -231,12 +231,12 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'business.readiness_stage_changed': {
         bar: 'bg-[#1e3aff]',
-        tile: 'bg-[rgba(30,58,255,.10)] text-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.10)] text-[#1e3aff] dark:text-rz-investor-text',
         icon: <path d="M4 20h4v-5h4v-5h4V5h4" {...stroke} />,
     },
     'business.readiness_requirement_due': {
         bar: 'bg-[#1e3aff]',
-        tile: 'bg-[rgba(30,58,255,.10)] text-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.10)] text-[#1e3aff] dark:text-rz-investor-text',
         icon: (
             <>
                 <rect
@@ -263,7 +263,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'business.readiness_requirement_overdue': {
         bar: 'bg-[#c2410c]',
-        tile: 'bg-[rgba(194,65,12,.12)] text-[#c2410c]',
+        tile: 'bg-[rgba(194,65,12,.12)] text-[#c2410c] dark:text-rz-warning-text',
         icon: (
             <>
                 <circle cx="12" cy="12" r="8" {...stroke} />
@@ -273,7 +273,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'business.visit_ready_open': {
         bar: 'bg-[#1e3aff]',
-        tile: 'bg-[rgba(30,58,255,.10)] text-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.10)] text-[#1e3aff] dark:text-rz-investor-text',
         icon: (
             <>
                 <rect
@@ -307,17 +307,17 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'auditor.accreditation_approved': {
         bar: 'bg-[#1e3aff]',
-        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff] dark:text-rz-investor-text',
         icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
     },
     'auditor.accreditation_rejected': {
         bar: 'bg-[#b3383c]',
-        tile: 'bg-[rgba(179,56,60,.1)] text-[#b3383c]',
+        tile: 'bg-[rgba(179,56,60,.1)] text-[#b3383c] dark:text-rz-danger-text',
         icon: <path d="M12 7v6M12 16.5v.5" {...stroke} />,
     },
     'support.complaint_answered': {
         bar: 'bg-[#1e3aff]',
-        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff] dark:text-rz-investor-text',
         icon: (
             <path
                 d="M21 11.5a8.5 8.5 0 0 1-12.4 7.55L3.5 20.5l1.45-5.05A8.5 8.5 0 1 1 21 11.5Z"
@@ -327,12 +327,12 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'support.complaint_resolved': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(23,121,90,.1)] text-[#157357]',
+        tile: 'bg-[rgba(23,121,90,.1)] text-[#157357] dark:text-rz-positive',
         icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
     },
     'auditor.accreditation_renewal_due': {
         bar: 'bg-[#0c1830] dark:bg-rz-slate',
-        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418]',
+        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418] dark:text-rz-warning-text',
         icon: (
             <>
                 <path d="M3 9.5 12 5l9 4.5-9 4.5Z" {...stroke} />
@@ -342,7 +342,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'auditor.report_reminder': {
         bar: 'bg-[#0c1830] dark:bg-rz-slate',
-        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418]',
+        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418] dark:text-rz-warning-text',
         icon: (
             <>
                 <path d="M3 9.5 12 5l9 4.5-9 4.5Z" {...stroke} />
@@ -352,7 +352,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'auditor.job_offered': {
         bar: 'bg-[#0c1830] dark:bg-rz-slate',
-        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418]',
+        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418] dark:text-rz-warning-text',
         icon: (
             <>
                 <path
@@ -504,7 +504,7 @@ export function NoticesPanel({
                 role="dialog"
                 aria-modal="true"
                 aria-label={t('investor.notices.title')}
-                className="dark:bg-rz-bg fixed inset-y-0 right-0 z-[71] flex w-[88%] max-w-[352px] animate-[rz-slide_.28s_cubic-bezier(.22,.61,.36,1)_both] flex-col bg-[#f4f7fc] shadow-[-18px_0_44px_-10px_rgba(20,45,95,.34)] lg:w-[380px] lg:max-w-none"
+                className="fixed inset-y-0 right-0 z-[71] flex w-[88%] max-w-[352px] animate-[rz-slide_.28s_cubic-bezier(.22,.61,.36,1)_both] flex-col bg-[#f4f7fc] shadow-[-18px_0_44px_-10px_rgba(20,45,95,.34)] lg:w-[380px] lg:max-w-none dark:bg-rz-page"
             >
                 <header className="flex shrink-0 items-center gap-[9px] border-b border-rz-border bg-rz-surface px-4 pt-[calc(env(safe-area-inset-top)+20px)] pb-3.5">
                     <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -539,7 +539,7 @@ export function NoticesPanel({
                         type="button"
                         onClick={onClose}
                         aria-label={t('investor.notices.close')}
-                        className="dark:bg-rz-surface-2 size-8 shrink-0 rounded-[10px] bg-[#f1f4f9] text-[15px] text-rz-secondary"
+                        className="size-8 shrink-0 rounded-[10px] bg-[#f1f4f9] text-[15px] text-rz-secondary dark:bg-rz-surface-muted"
                     >
                         ✕
                     </button>

@@ -102,7 +102,7 @@ function InfoButton({
             aria-label={label}
             aria-expanded={open}
             className={cn(
-                'flex size-[17px] shrink-0 items-center justify-center rounded-full border border-[#cfe0ff] p-0 font-[Georgia,serif] text-[10px] leading-none font-bold italic',
+                'flex size-[17px] shrink-0 items-center justify-center rounded-full border border-[#cfe0ff] p-0 font-[Georgia,serif] text-[10px] leading-none font-bold italic dark:border-rz-border',
                 open
                     ? 'bg-rz-investor text-white'
                     : 'bg-rz-surface text-rz-investor-text',
