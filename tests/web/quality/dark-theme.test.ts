@@ -153,7 +153,7 @@ describe('Light-theme colours carry a dark-theme counterpart', () => {
                         (['border', 'ring', 'divide', 'outline'].includes(
                             base,
                         ) &&
-                            level > 0.7);
+                            level > 0.5);
                     const key = `${file} ${name.replace(/^((?:[a-z0-9-]+:)*)/u, '')}`;
 
                     return leaksInDark &&
@@ -166,5 +166,70 @@ describe('Light-theme colours carry a dark-theme counterpart', () => {
         );
 
         expect(leaks).toEqual([]);
+    });
+});
+
+describe('Starter-kit screens share the Rozine dark palette', () => {
+    const block = (css: string, selector: string) => {
+        const start = css.indexOf(`\n${selector} {`);
+
+        return Object.fromEntries(
+            [
+                ...css
+                    .slice(start, css.indexOf('\n}', start))
+                    .matchAll(/--([\w-]+):\s*([^;]+);/gu),
+            ].map(([, name, value]) => [name, value.trim()]),
+        );
+    };
+    const [app, rozine] = stylesheets;
+    const shadcn = block(app, '.dark');
+    const brand = block(rozine, '.dark');
+
+    it('paints Settings and other shadcn screens in the navy surfaces, not neutral black', () => {
+        expect(shadcn.background).toBe(brand['rz-page']);
+        expect(shadcn.card).toBe(brand['rz-surface']);
+        expect(shadcn.popover).toBe(brand['rz-surface']);
+        expect(shadcn.foreground).toBe(brand['rz-ink']);
+        expect(shadcn.primary).toBe(brand['rz-investor']);
+    });
+
+    it('keeps the primary button label readable on its fill', () => {
+        const contrast =
+            (luminance(shadcn['primary-foreground']) + 0.05) /
+            (luminance(shadcn.primary) + 0.05);
+
+        expect(contrast).toBeGreaterThanOrEqual(4.5);
+    });
+});
+
+describe('White labels on green fills', () => {
+    it('darkens the Academy "Got it" fill in dark mode so its white label reads at 4.5:1', () => {
+        const source = readFileSync(
+            path.join(root, 'pages/business/academy-module.tsx'),
+            'utf8',
+        );
+        const button =
+            /className="([^"]*bg-rz-positive[^"]*text-white[^"]*)"/u.exec(
+                source,
+            )?.[1];
+        const darkFill = /dark:bg-\[(#[0-9a-f]{6})\]/u.exec(button ?? '')?.[1];
+
+        expect(darkFill).toBeDefined();
+        expect(
+            1.05 / (luminance(darkFill ?? '#ffffff') + 0.05),
+        ).toBeGreaterThanOrEqual(4.5);
+    });
+});
+
+describe('Auditor calendar today marker', () => {
+    it('rings today in the auditor accent in dark mode, not near-white ink', () => {
+        const source = readFileSync(
+            path.join(root, 'components/auditor/portfolio/audit-calendar.tsx'),
+            'utf8',
+        );
+        const today = /: isToday\s*\?\s*'([^']*)'/u.exec(source)?.[1] ?? '';
+
+        expect(today).toContain('dark:border-[#f0a060]');
+        expect(today).not.toContain('dark:border-rz-ink');
     });
 });
