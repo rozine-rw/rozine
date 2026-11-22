@@ -18,7 +18,11 @@ beforeEach(function (): void {
     StaffFixture::provision($this->officer, ['compliance'], 'Users page assignment.');
 });
 
-/** A person with a Party, signed up `$daysAgo` days ago. */
+/**
+ * A person with a Party, signed up `$daysAgo` days ago.
+ *
+ * @param  array<string, mixed>  $party
+ */
 function usersPerson(string $name, int $daysAgo, array $party = []): User
 {
     return User::factory()->create(['name' => $name, 'party_id' => Party::factory()->create($party)->id, 'created_at' => now()->subDays($daysAgo)]);
@@ -123,8 +127,12 @@ test('the role chips, KYC filter, sort and search are server queries that keep e
     RoleMembership::factory()->active()->create(['party_id' => $auditor->party_id, 'role' => 'auditor']);
     User::factory()->create(['name' => 'Nobody Yet']);
 
-    $names = fn (array $query): array => collect($this->actingAs($this->officer)->get(route('staff.users.index', $query))->assertOk()
-        ->viewData('page')['props']['rows'])->pluck('name')->all();
+    $names = function (array $query): array {
+        /** @var array{props: array{rows: list<array{name: string}>}} $page */
+        $page = $this->actingAs($this->officer)->get(route('staff.users.index', $query))->assertOk()->viewData('page');
+
+        return array_column($page['props']['rows'], 'name');
+    };
 
     expect($names(['role' => 'investor']))->toBe(['Aline Investor', 'Zed Investor'])
         ->and($names(['role' => 'investor', 'sort' => 'oldest']))->toBe(['Zed Investor', 'Aline Investor'])
@@ -152,6 +160,7 @@ test('the role chips, KYC filter, sort and search are server queries that keep e
 });
 
 test("an account's drawer shows its roles, identity, sign-in security, access requests, history and the directories that act on it", function (): void {
+    $this->freezeSecond();
     $mixed = usersPerson('Bosco Mixed', 3);
     $membership = RoleMembership::factory()->active()->create(['party_id' => $mixed->party_id, 'role' => 'investor']);
     $caseId = usersCase($mixed, 'submitted');

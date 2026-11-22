@@ -9,6 +9,7 @@ use App\Models\StaffAccount;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use stdClass;
 
 /**
  * @phpstan-import-type Directory from UserDirectoryStore
@@ -84,15 +85,19 @@ final class EloquentUserDirectoryStore implements UserDirectoryStore
             ->orderByDesc('event.created_at')->orderByDesc('event.id')->limit(self::HISTORY)
             ->get(['event.id', 'event.created_at', 'event.action', 'event.reason', 'actor.name']);
 
+        $asked = [];
+        foreach ($requests as $request) {
+            $asked[] = ['role' => $request->role === 'business' ? 'business' : 'auditor', 'organization' => (string) $request->organization,
+                'reference' => $request->reference === null ? null : (string) $request->reference, 'sent_at' => (string) self::time($request->created_at)];
+        }
+
         return ['row' => $row,
             'email_verified_at' => self::time($account?->email_verified_at), 'two_factor' => $account?->two_factor_confirmed_at !== null,
             'passkeys' => DB::table('passkeys')->where('user_id', $userId)->count(),
             'verification_id' => $record->verification_id === null ? null : (string) $record->verification_id,
             'submitted_at' => self::time($record->submitted_at),
-            'requests' => array_values($requests->map(fn (object $request): array => ['role' => $request->role === 'business' ? 'business' : 'auditor',
-                'organization' => (string) $request->organization, 'reference' => $request->reference === null ? null : (string) $request->reference,
-                'sent_at' => (string) self::time($request->created_at)])->all()),
-            'history' => array_values($history->map(fn (object $event): array => ['id' => (string) $event->id, 'at' => (string) self::time($event->created_at),
+            'requests' => $asked,
+            'history' => array_values($history->map(fn (stdClass $event): array => ['id' => (string) $event->id, 'at' => (string) self::time($event->created_at),
                 'actor' => (string) ($event->name ?? ''), 'action' => (string) $event->action, 'reason' => (string) $event->reason])->all())];
     }
 
@@ -102,8 +107,6 @@ final class EloquentUserDirectoryStore implements UserDirectoryStore
      */
     private function accounts(): Builder
     {
-        $holds = fn (string $role): string => "EXISTS (SELECT 1 FROM role_memberships m WHERE m.party_id = users.party_id AND m.role = '{$role}' AND m.status <> 'revoked')";
-
         return DB::table('users')->leftJoin('parties', 'parties.id', '=', 'users.party_id')
             ->leftJoin('investor_verifications AS iv', 'iv.party_id', '=', 'users.party_id')
             ->leftJoin('staff_accounts', 'staff_accounts.user_id', '=', 'users.id')
@@ -112,26 +115,26 @@ final class EloquentUserDirectoryStore implements UserDirectoryStore
                 (SELECT max(s.last_activity) FROM sessions s WHERE s.user_id = users.id) AS last_activity,
                 CASE WHEN parties.verified_at IS NOT NULL OR iv.status = 'approved' THEN 'verified' WHEN iv.status = 'submitted' THEN 'in_review'
                     WHEN iv.status = 'rejected' THEN 'rejected' WHEN iv.id IS NOT NULL THEN 'in_progress' ELSE 'not_started' END AS kyc,
-                {$holds('investor')} AS is_investor, {$holds('business')} AS is_business, {$holds('auditor')} AS is_auditor,
+                EXISTS (SELECT 1 FROM role_memberships m WHERE m.party_id = users.party_id AND m.role = 'investor' AND m.status <> 'revoked') AS is_investor, EXISTS (SELECT 1 FROM role_memberships m WHERE m.party_id = users.party_id AND m.role = 'business' AND m.status <> 'revoked') AS is_business, EXISTS (SELECT 1 FROM role_memberships m WHERE m.party_id = users.party_id AND m.role = 'auditor' AND m.status <> 'revoked') AS is_auditor,
                 staff_accounts.user_id IS NOT NULL AS is_staff, coalesce(staff_accounts.enabled, false) AS staff_enabled,
                 EXISTS (SELECT 1 FROM investor_account_restrictions r WHERE r.party_id = users.party_id AND r.effective_at <= now()
                     AND (r.expires_at IS NULL OR r.expires_at > now())) AS restricted");
     }
 
     /**
-     * @param  list<object>  $records
+     * @param  list<stdClass>  $records
      * @return list<DirectoryRow>
      */
     private function rows(array $records): array
     {
-        $parties = array_values(array_filter(array_map(fn (object $record): ?string => $record->party_id === null ? null : (string) $record->party_id, $records)));
+        $parties = array_values(array_filter(array_map(fn (stdClass $record): ?string => $record->party_id === null ? null : (string) $record->party_id, $records)));
         $memberships = DB::table('role_memberships')->whereIn('party_id', $parties)->orderBy('created_at')->orderBy('role')
             ->get(['party_id', 'role', 'status', 'created_at'])->groupBy('party_id');
         $requests = DB::table('role_access_requests')->whereIn('party_id', $parties)->orderBy('created_at')->get(['party_id', 'role'])->groupBy('party_id');
-        $staffIds = array_map(fn (object $record): int => (int) $record->id, array_filter($records, fn (object $record): bool => (bool) $record->is_staff));
+        $staffIds = array_map(fn (stdClass $record): int => (int) $record->id, array_filter($records, fn (stdClass $record): bool => (bool) $record->is_staff));
         $staff = StaffAccount::query()->whereKey($staffIds)->with('roles')->get()->keyBy('user_id');
 
-        return array_map(function (object $record) use ($memberships, $requests, $staff): array {
+        return array_map(function (stdClass $record) use ($memberships, $requests, $staff): array {
             $partyId = $record->party_id === null ? null : (string) $record->party_id;
             $held = [];
             foreach ($partyId === null ? [] : $memberships->get($partyId, collect())->all() as $membership) {
