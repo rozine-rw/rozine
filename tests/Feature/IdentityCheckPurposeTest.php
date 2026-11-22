@@ -54,6 +54,10 @@ function purposeSubmitted(User $user, ?string $purpose): InvestorVerification
 test('the check page carries the app the launcher card sent the person for, until it is submitted', function (): void {
     $this->actingAs($this->person)->get(route('investor.verification', ['for' => 'auditor']))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('investor/verification')->where('purpose', 'auditor'));
+    $this->actingAs($this->person)->get(route('investor.verification', ['for' => 'business']))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('purpose', 'business'));
+    $this->actingAs($this->person)->get(route('investor.verification', ['for' => 'investor']))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('purpose', 'investor'));
     $this->actingAs($this->person)->get(route('investor.verification', ['for' => 'staff']))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('purpose', 'investor'));
 
@@ -134,4 +138,19 @@ test('a check with no purpose is an Investor check and still grants Investor acc
 
     expect(RoleMembership::query()->where('party_id', $this->person->party_id)->sole()->only(['role', 'status']))
         ->toBe(['role' => 'investor', 'status' => 'active']);
+});
+
+test('approving a check made for Business access words the confirmation and e-mail for Business access', function (): void {
+    Notification::fake();
+    $case = purposeSubmitted($this->person, 'business');
+
+    $this->actingAs($this->officer)->post(route('staff.investor-verifications.approve', $case), ['request_id' => (string) Str::uuid(),
+        'expected_revision' => $case->revision, 'reason' => 'Passport and selfie match.'])->assertSessionHasNoErrors();
+
+    expect(RoleMembership::query()->where('party_id', $this->person->party_id)->exists())->toBeFalse();
+    Notification::assertSentTo($this->person, VerificationDecided::class,
+        fn (VerificationDecided $mail): bool => $mail->purpose === 'business'
+            && str_contains((string) $mail->toMail($this->person)->render(), 'Request Business access'));
+    $this->actingAs($this->officer)->get(route('staff.investor-verifications.index', ['tab' => 'decided', 'verification' => $case->id]))
+        ->assertInertia(fn (Assert $page) => $page->hasFlash('toast', ['type' => 'success', 'message' => 'Identity approved. Aminu Hussain can now ask for Business access.']));
 });
