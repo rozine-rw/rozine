@@ -13,7 +13,7 @@ namespace App\Application\Identity\Contracts;
  *
  * @phpstan-type QueueEntry array{
  *     id: string, revision: int, status: string, submitted_at: string,
- *     decided_at: string|null, name: string, email: string, id_type: string
+ *     decided_at: string|null, name: string, email: string, id_type: string, purpose: 'investor'|'business'|'auditor'
  * }
  * @phpstan-type Queue array{
  *     tab: 'submitted'|'decided', search: string, limit: int, before: string|null, entries: list<QueueEntry>,
@@ -25,7 +25,7 @@ namespace App\Application\Identity\Contracts;
  *     sha256: string, uploaded_at: string, current: bool
  * }
  * @phpstan-type Review array{
- *     id: string, revision: int, status: 'draft'|'submitted'|'approved'|'rejected', submitted_at: string|null,
+ *     id: string, revision: int, status: 'draft'|'submitted'|'approved'|'rejected', purpose: 'investor'|'business'|'auditor', submitted_at: string|null,
  *     account: array{name: string, email: string}, state: State, documents: list<ReviewDocument>,
  *     history: list<array{revision: int, status: string, command: string, reason: string|null, at: string}>,
  *     allowed_actions: list<'approve'|'reject'>

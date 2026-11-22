@@ -18,6 +18,7 @@ import {
 import { LegalDocument } from '@/components/business/profile/legal-document';
 import { LinkedAccounts } from '@/components/business/profile/linked-accounts';
 import { ProfileMenu } from '@/components/business/profile/profile-menu';
+import { DeleteAccountRow } from '@/components/delete-user';
 import { HelpCenter } from '@/components/rozine/help-center';
 import { SupportChat } from '@/components/rozine/support-chat';
 import { useTranslation } from '@/hooks/use-translation';
@@ -122,10 +123,13 @@ export default function BusinessProfile({
                         </>
                     )}
                     {section === 'security' && (
-                        <SecurityCenter
-                            security={security}
-                            settings={links.security_settings}
-                        />
+                        <>
+                            <SecurityCenter
+                                security={security}
+                                settings={links.security_settings}
+                            />
+                            <DeleteAccountRow />
+                        </>
                     )}
                     {section === 'permissions' && (
                         <TeamPermissions team={team} />

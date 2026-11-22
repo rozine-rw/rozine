@@ -51,6 +51,17 @@ class InvestorVerificationController extends Controller
         if ($submission['verified']) {
             return redirect()->route('dashboard');
         }
+        // The launcher's Business and Auditor cards send an unverified person here `for` that app: the
+        // check is recorded for it with the first saved step, while the answers can still change.
+        $for = match ($request->query('for')) {
+            'investor' => 'investor',
+            'business' => 'business',
+            'auditor' => 'auditor',
+            default => null,
+        };
+        if ($for !== null && in_array($submission['status'], ['draft', 'rejected'], true)) {
+            $submission['purpose'] = $for;
+        }
 
         return Inertia::render('investor/verification', (new InvestorVerificationResource($submission))->resolve($request));
     }
@@ -79,7 +90,7 @@ class InvestorVerificationController extends Controller
     {
         return $this->answer($request, fn (): array => $action->handle((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'),
             (int) $request->validated('expected_revision'), (string) $request->validated('step'),
-            $request->safe()->only(['date_of_birth', 'id_type', 'id_number']), (string) $request->validated('request_id')));
+            $request->safe()->only(['date_of_birth', 'id_type', 'id_number', 'purpose']), (string) $request->validated('request_id')));
     }
 
     public function upload(UploadVerificationDocumentRequest $request, UploadInvestorVerificationDocument $action): RedirectResponse|OperationResource
@@ -95,9 +106,10 @@ class InvestorVerificationController extends Controller
     /**
      * Once the details are with Compliance there is nothing left to do on this page, so the
      * Investor goes straight to their home (Deals, where the gate reads "pending"), told the
-     * submission arrived, instead of waiting on a locked form.
+     * submission arrived, instead of waiting on a locked form. A person checked for Business or
+     * Auditor access goes back to the launcher, where that card waits for the decision.
      */
-    public function submit(SubmitVerificationRequest $request, SubmitInvestorVerification $action): RedirectResponse|OperationResource
+    public function submit(SubmitVerificationRequest $request, SubmitInvestorVerification $action, GetInvestorVerification $verification): RedirectResponse|OperationResource
     {
         $answer = $this->answer($request, fn (): array => $action->handle((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'),
             (int) $request->validated('expected_revision'), (string) $request->validated('request_id')));
@@ -106,7 +118,7 @@ class InvestorVerificationController extends Controller
         }
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Your details are with our Compliance team. We will tell you when they have been reviewed.')]);
 
-        return redirect()->route('investor.deals');
+        return redirect()->route($verification->handle((int) $request->user()?->getAuthIdentifier())['purpose'] === 'investor' ? 'investor.deals' : 'dashboard');
     }
 
     /**

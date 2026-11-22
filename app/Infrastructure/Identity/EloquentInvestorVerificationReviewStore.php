@@ -66,7 +66,7 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
                 'id' => $record->id, 'revision' => $record->revision, 'status' => $record->status,
                 'submitted_at' => $record->submitted_at?->toIso8601String() ?? '', 'decided_at' => $record->state['decision']['decided_at'] ?? null,
                 'name' => (string) $record->getAttribute('account_name'), 'email' => (string) $record->getAttribute('account_email'),
-                'id_type' => $record->state['id_type'],
+                'id_type' => $record->state['id_type'], 'purpose' => $record->purpose,
             ])->all()),
             'next_cursor' => $more ? $records->last()?->id : null,
             'counts' => ['submitted' => InvestorVerification::query()->where('status', 'submitted')->count(),
@@ -103,7 +103,7 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
         $record = $this->withAccount(InvestorVerification::query())->find($verificationId) ?? throw new CommandRejection('VERIFICATION_NOT_FOUND', 404);
         $current = array_filter($record->state['uploads']);
 
-        return ['id' => $record->id, 'revision' => $record->revision, 'status' => $record->status,
+        return ['id' => $record->id, 'revision' => $record->revision, 'status' => $record->status, 'purpose' => $record->purpose,
             'submitted_at' => $record->submitted_at?->toIso8601String(),
             'account' => ['name' => (string) $record->getAttribute('account_name'), 'email' => (string) $record->getAttribute('account_email')],
             'state' => $record->state,
@@ -145,7 +145,7 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
             try {
                 $result = $this->verify->handle($actorId, $userId, $this->cases->identityReference($record->state),
                     'investor-verification:'.$record->id.'@'.$record->revision, $reason, $requestId,
-                    fn (): array => $this->decide($verificationId, $expectedRevision, 'approved', $reason, $actorId));
+                    fn (): array => $this->decide($verificationId, $expectedRevision, 'approved', $reason, $actorId), $record->purpose === 'investor');
             } catch (IdentityViolation $violation) {
                 // The verified-person writer's refusal is this decision's outcome, kept like any other.
                 throw new CommandRejection($violation->reason, $violation->status);
@@ -280,7 +280,8 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
             'status' => $outcome, 'snapshot' => $state, 'actor_user_id' => $actorId, 'command' => 'verification.'.($outcome === 'approved' ? 'approve' : 'reject'),
             'reason' => $reason, 'policy_version' => self::POLICY_VERSION])->save();
         $this->notices->record($record->party_id, $outcome === 'approved' ? PartyNoticeKind::VerificationApproved : PartyNoticeKind::VerificationRejected,
-            $outcome === 'approved' ? [] : ['reason' => $reason], 'investor-verification:'.$record->id.'@'.$record->revision);
+            $outcome === 'approved' ? ($record->purpose === 'investor' ? [] : ['purpose' => $record->purpose]) : ['reason' => $reason],
+            'investor-verification:'.$record->id.'@'.$record->revision);
 
         return [...$facts, 'revision' => $record->revision];
     }

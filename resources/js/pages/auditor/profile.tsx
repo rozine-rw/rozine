@@ -21,6 +21,7 @@ import { EarningsSection } from '@/components/auditor/profile/earnings-section';
 import { IdentityCard } from '@/components/auditor/profile/identity-card';
 import { COLUMN } from '@/components/auditor/tab-columns';
 import { DIVIDER } from '@/components/auditor/ui';
+import { DeleteAccountRow } from '@/components/delete-user';
 import { Icon } from '@/components/rozine/icon';
 import type { IconName } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
@@ -98,10 +99,13 @@ export default function AuditorProfile(props: AuditorProfileProps) {
             />
         ),
         security: (
-            <SecuritySection
-                security={props.security}
-                settings={props.links.security_settings}
-            />
+            <>
+                <SecuritySection
+                    security={props.security}
+                    settings={props.links.security_settings}
+                />
+                <DeleteAccountRow />
+            </>
         ),
         learn: <AcademySection />,
         legal: <LegalSection engagement={props.engagement} />,

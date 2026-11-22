@@ -64,8 +64,9 @@ return [
     */
 
     'providers' => [
+        // A closed account (users.closed_at) is never found; see OpenAccountUserProvider.
         'users' => [
-            'driver' => 'eloquent',
+            'driver' => 'open-accounts',
             'model' => env('AUTH_MODEL', User::class),
         ],
 

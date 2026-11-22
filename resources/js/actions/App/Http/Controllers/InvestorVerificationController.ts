@@ -172,7 +172,7 @@ export const show = {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::save
-* @see app/Http/Controllers/InvestorVerificationController.php:78
+* @see app/Http/Controllers/InvestorVerificationController.php:89
 * @route '/api/v1/investor/verification/steps'
 */
 const savea058d030671a0dbb9bfdf102ad1a2193 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -187,7 +187,7 @@ savea058d030671a0dbb9bfdf102ad1a2193.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::save
-* @see app/Http/Controllers/InvestorVerificationController.php:78
+* @see app/Http/Controllers/InvestorVerificationController.php:89
 * @route '/api/v1/investor/verification/steps'
 */
 savea058d030671a0dbb9bfdf102ad1a2193.url = (options?: RouteQueryOptions) => {
@@ -196,7 +196,7 @@ savea058d030671a0dbb9bfdf102ad1a2193.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::save
-* @see app/Http/Controllers/InvestorVerificationController.php:78
+* @see app/Http/Controllers/InvestorVerificationController.php:89
 * @route '/api/v1/investor/verification/steps'
 */
 savea058d030671a0dbb9bfdf102ad1a2193.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -206,7 +206,7 @@ savea058d030671a0dbb9bfdf102ad1a2193.post = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::save
-* @see app/Http/Controllers/InvestorVerificationController.php:78
+* @see app/Http/Controllers/InvestorVerificationController.php:89
 * @route '/api/v1/investor/verification/steps'
 */
 const savea058d030671a0dbb9bfdf102ad1a2193Form = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -216,7 +216,7 @@ const savea058d030671a0dbb9bfdf102ad1a2193Form = (options?: RouteQueryOptions): 
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::save
-* @see app/Http/Controllers/InvestorVerificationController.php:78
+* @see app/Http/Controllers/InvestorVerificationController.php:89
 * @route '/api/v1/investor/verification/steps'
 */
 savea058d030671a0dbb9bfdf102ad1a2193Form.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -227,7 +227,7 @@ savea058d030671a0dbb9bfdf102ad1a2193Form.post = (options?: RouteQueryOptions): R
 savea058d030671a0dbb9bfdf102ad1a2193.form = savea058d030671a0dbb9bfdf102ad1a2193Form
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::save
-* @see app/Http/Controllers/InvestorVerificationController.php:78
+* @see app/Http/Controllers/InvestorVerificationController.php:89
 * @route '/investor/verification/steps'
 */
 const save32204cb3f96b06b072e39b275d6a7654 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -242,7 +242,7 @@ save32204cb3f96b06b072e39b275d6a7654.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::save
-* @see app/Http/Controllers/InvestorVerificationController.php:78
+* @see app/Http/Controllers/InvestorVerificationController.php:89
 * @route '/investor/verification/steps'
 */
 save32204cb3f96b06b072e39b275d6a7654.url = (options?: RouteQueryOptions) => {
@@ -251,7 +251,7 @@ save32204cb3f96b06b072e39b275d6a7654.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::save
-* @see app/Http/Controllers/InvestorVerificationController.php:78
+* @see app/Http/Controllers/InvestorVerificationController.php:89
 * @route '/investor/verification/steps'
 */
 save32204cb3f96b06b072e39b275d6a7654.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -261,7 +261,7 @@ save32204cb3f96b06b072e39b275d6a7654.post = (options?: RouteQueryOptions): Route
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::save
-* @see app/Http/Controllers/InvestorVerificationController.php:78
+* @see app/Http/Controllers/InvestorVerificationController.php:89
 * @route '/investor/verification/steps'
 */
 const save32204cb3f96b06b072e39b275d6a7654Form = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -271,7 +271,7 @@ const save32204cb3f96b06b072e39b275d6a7654Form = (options?: RouteQueryOptions): 
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::save
-* @see app/Http/Controllers/InvestorVerificationController.php:78
+* @see app/Http/Controllers/InvestorVerificationController.php:89
 * @route '/investor/verification/steps'
 */
 save32204cb3f96b06b072e39b275d6a7654Form.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -293,7 +293,7 @@ export const save = {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::upload
-* @see app/Http/Controllers/InvestorVerificationController.php:85
+* @see app/Http/Controllers/InvestorVerificationController.php:96
 * @route '/api/v1/investor/verification/documents'
 */
 const uploadceb47da3add9aef60fdc14aac4126c6e = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -308,7 +308,7 @@ uploadceb47da3add9aef60fdc14aac4126c6e.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::upload
-* @see app/Http/Controllers/InvestorVerificationController.php:85
+* @see app/Http/Controllers/InvestorVerificationController.php:96
 * @route '/api/v1/investor/verification/documents'
 */
 uploadceb47da3add9aef60fdc14aac4126c6e.url = (options?: RouteQueryOptions) => {
@@ -317,7 +317,7 @@ uploadceb47da3add9aef60fdc14aac4126c6e.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::upload
-* @see app/Http/Controllers/InvestorVerificationController.php:85
+* @see app/Http/Controllers/InvestorVerificationController.php:96
 * @route '/api/v1/investor/verification/documents'
 */
 uploadceb47da3add9aef60fdc14aac4126c6e.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -327,7 +327,7 @@ uploadceb47da3add9aef60fdc14aac4126c6e.post = (options?: RouteQueryOptions): Rou
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::upload
-* @see app/Http/Controllers/InvestorVerificationController.php:85
+* @see app/Http/Controllers/InvestorVerificationController.php:96
 * @route '/api/v1/investor/verification/documents'
 */
 const uploadceb47da3add9aef60fdc14aac4126c6eForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -337,7 +337,7 @@ const uploadceb47da3add9aef60fdc14aac4126c6eForm = (options?: RouteQueryOptions)
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::upload
-* @see app/Http/Controllers/InvestorVerificationController.php:85
+* @see app/Http/Controllers/InvestorVerificationController.php:96
 * @route '/api/v1/investor/verification/documents'
 */
 uploadceb47da3add9aef60fdc14aac4126c6eForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -348,7 +348,7 @@ uploadceb47da3add9aef60fdc14aac4126c6eForm.post = (options?: RouteQueryOptions):
 uploadceb47da3add9aef60fdc14aac4126c6e.form = uploadceb47da3add9aef60fdc14aac4126c6eForm
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::upload
-* @see app/Http/Controllers/InvestorVerificationController.php:85
+* @see app/Http/Controllers/InvestorVerificationController.php:96
 * @route '/investor/verification/documents'
 */
 const upload00272106b54ce13d1bd3a04f74e7b7e9 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -363,7 +363,7 @@ upload00272106b54ce13d1bd3a04f74e7b7e9.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::upload
-* @see app/Http/Controllers/InvestorVerificationController.php:85
+* @see app/Http/Controllers/InvestorVerificationController.php:96
 * @route '/investor/verification/documents'
 */
 upload00272106b54ce13d1bd3a04f74e7b7e9.url = (options?: RouteQueryOptions) => {
@@ -372,7 +372,7 @@ upload00272106b54ce13d1bd3a04f74e7b7e9.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::upload
-* @see app/Http/Controllers/InvestorVerificationController.php:85
+* @see app/Http/Controllers/InvestorVerificationController.php:96
 * @route '/investor/verification/documents'
 */
 upload00272106b54ce13d1bd3a04f74e7b7e9.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -382,7 +382,7 @@ upload00272106b54ce13d1bd3a04f74e7b7e9.post = (options?: RouteQueryOptions): Rou
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::upload
-* @see app/Http/Controllers/InvestorVerificationController.php:85
+* @see app/Http/Controllers/InvestorVerificationController.php:96
 * @route '/investor/verification/documents'
 */
 const upload00272106b54ce13d1bd3a04f74e7b7e9Form = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -392,7 +392,7 @@ const upload00272106b54ce13d1bd3a04f74e7b7e9Form = (options?: RouteQueryOptions)
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::upload
-* @see app/Http/Controllers/InvestorVerificationController.php:85
+* @see app/Http/Controllers/InvestorVerificationController.php:96
 * @route '/investor/verification/documents'
 */
 upload00272106b54ce13d1bd3a04f74e7b7e9Form.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -414,7 +414,7 @@ export const upload = {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::document
-* @see app/Http/Controllers/InvestorVerificationController.php:63
+* @see app/Http/Controllers/InvestorVerificationController.php:74
 * @route '/api/v1/investor/verification/documents/{side}'
 */
 const documentc2edd219c381ba026f205a9dd0777ce3 = (args: { side: string | number } | [side: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -429,7 +429,7 @@ documentc2edd219c381ba026f205a9dd0777ce3.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::document
-* @see app/Http/Controllers/InvestorVerificationController.php:63
+* @see app/Http/Controllers/InvestorVerificationController.php:74
 * @route '/api/v1/investor/verification/documents/{side}'
 */
 documentc2edd219c381ba026f205a9dd0777ce3.url = (args: { side: string | number } | [side: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -456,7 +456,7 @@ documentc2edd219c381ba026f205a9dd0777ce3.url = (args: { side: string | number } 
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::document
-* @see app/Http/Controllers/InvestorVerificationController.php:63
+* @see app/Http/Controllers/InvestorVerificationController.php:74
 * @route '/api/v1/investor/verification/documents/{side}'
 */
 documentc2edd219c381ba026f205a9dd0777ce3.get = (args: { side: string | number } | [side: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -466,7 +466,7 @@ documentc2edd219c381ba026f205a9dd0777ce3.get = (args: { side: string | number } 
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::document
-* @see app/Http/Controllers/InvestorVerificationController.php:63
+* @see app/Http/Controllers/InvestorVerificationController.php:74
 * @route '/api/v1/investor/verification/documents/{side}'
 */
 documentc2edd219c381ba026f205a9dd0777ce3.head = (args: { side: string | number } | [side: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -476,7 +476,7 @@ documentc2edd219c381ba026f205a9dd0777ce3.head = (args: { side: string | number }
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::document
-* @see app/Http/Controllers/InvestorVerificationController.php:63
+* @see app/Http/Controllers/InvestorVerificationController.php:74
 * @route '/api/v1/investor/verification/documents/{side}'
 */
 const documentc2edd219c381ba026f205a9dd0777ce3Form = (args: { side: string | number } | [side: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -486,7 +486,7 @@ const documentc2edd219c381ba026f205a9dd0777ce3Form = (args: { side: string | num
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::document
-* @see app/Http/Controllers/InvestorVerificationController.php:63
+* @see app/Http/Controllers/InvestorVerificationController.php:74
 * @route '/api/v1/investor/verification/documents/{side}'
 */
 documentc2edd219c381ba026f205a9dd0777ce3Form.get = (args: { side: string | number } | [side: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -496,7 +496,7 @@ documentc2edd219c381ba026f205a9dd0777ce3Form.get = (args: { side: string | numbe
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::document
-* @see app/Http/Controllers/InvestorVerificationController.php:63
+* @see app/Http/Controllers/InvestorVerificationController.php:74
 * @route '/api/v1/investor/verification/documents/{side}'
 */
 documentc2edd219c381ba026f205a9dd0777ce3Form.head = (args: { side: string | number } | [side: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -512,7 +512,7 @@ documentc2edd219c381ba026f205a9dd0777ce3Form.head = (args: { side: string | numb
 documentc2edd219c381ba026f205a9dd0777ce3.form = documentc2edd219c381ba026f205a9dd0777ce3Form
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::document
-* @see app/Http/Controllers/InvestorVerificationController.php:63
+* @see app/Http/Controllers/InvestorVerificationController.php:74
 * @route '/investor/verification/documents/{side}'
 */
 const documentd922f21cb256e7bc616964f027ac2661 = (args: { side: string | number } | [side: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -527,7 +527,7 @@ documentd922f21cb256e7bc616964f027ac2661.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::document
-* @see app/Http/Controllers/InvestorVerificationController.php:63
+* @see app/Http/Controllers/InvestorVerificationController.php:74
 * @route '/investor/verification/documents/{side}'
 */
 documentd922f21cb256e7bc616964f027ac2661.url = (args: { side: string | number } | [side: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -554,7 +554,7 @@ documentd922f21cb256e7bc616964f027ac2661.url = (args: { side: string | number } 
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::document
-* @see app/Http/Controllers/InvestorVerificationController.php:63
+* @see app/Http/Controllers/InvestorVerificationController.php:74
 * @route '/investor/verification/documents/{side}'
 */
 documentd922f21cb256e7bc616964f027ac2661.get = (args: { side: string | number } | [side: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -564,7 +564,7 @@ documentd922f21cb256e7bc616964f027ac2661.get = (args: { side: string | number } 
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::document
-* @see app/Http/Controllers/InvestorVerificationController.php:63
+* @see app/Http/Controllers/InvestorVerificationController.php:74
 * @route '/investor/verification/documents/{side}'
 */
 documentd922f21cb256e7bc616964f027ac2661.head = (args: { side: string | number } | [side: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -574,7 +574,7 @@ documentd922f21cb256e7bc616964f027ac2661.head = (args: { side: string | number }
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::document
-* @see app/Http/Controllers/InvestorVerificationController.php:63
+* @see app/Http/Controllers/InvestorVerificationController.php:74
 * @route '/investor/verification/documents/{side}'
 */
 const documentd922f21cb256e7bc616964f027ac2661Form = (args: { side: string | number } | [side: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -584,7 +584,7 @@ const documentd922f21cb256e7bc616964f027ac2661Form = (args: { side: string | num
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::document
-* @see app/Http/Controllers/InvestorVerificationController.php:63
+* @see app/Http/Controllers/InvestorVerificationController.php:74
 * @route '/investor/verification/documents/{side}'
 */
 documentd922f21cb256e7bc616964f027ac2661Form.get = (args: { side: string | number } | [side: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -594,7 +594,7 @@ documentd922f21cb256e7bc616964f027ac2661Form.get = (args: { side: string | numbe
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::document
-* @see app/Http/Controllers/InvestorVerificationController.php:63
+* @see app/Http/Controllers/InvestorVerificationController.php:74
 * @route '/investor/verification/documents/{side}'
 */
 documentd922f21cb256e7bc616964f027ac2661Form.head = (args: { side: string | number } | [side: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -621,7 +621,7 @@ export const document = {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:100
+* @see app/Http/Controllers/InvestorVerificationController.php:112
 * @route '/api/v1/investor/verification/submit'
 */
 const submitab9c35128af7f532a1a67ae1ae838a78 = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -636,7 +636,7 @@ submitab9c35128af7f532a1a67ae1ae838a78.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:100
+* @see app/Http/Controllers/InvestorVerificationController.php:112
 * @route '/api/v1/investor/verification/submit'
 */
 submitab9c35128af7f532a1a67ae1ae838a78.url = (options?: RouteQueryOptions) => {
@@ -645,7 +645,7 @@ submitab9c35128af7f532a1a67ae1ae838a78.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:100
+* @see app/Http/Controllers/InvestorVerificationController.php:112
 * @route '/api/v1/investor/verification/submit'
 */
 submitab9c35128af7f532a1a67ae1ae838a78.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -655,7 +655,7 @@ submitab9c35128af7f532a1a67ae1ae838a78.post = (options?: RouteQueryOptions): Rou
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:100
+* @see app/Http/Controllers/InvestorVerificationController.php:112
 * @route '/api/v1/investor/verification/submit'
 */
 const submitab9c35128af7f532a1a67ae1ae838a78Form = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -665,7 +665,7 @@ const submitab9c35128af7f532a1a67ae1ae838a78Form = (options?: RouteQueryOptions)
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:100
+* @see app/Http/Controllers/InvestorVerificationController.php:112
 * @route '/api/v1/investor/verification/submit'
 */
 submitab9c35128af7f532a1a67ae1ae838a78Form.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -676,7 +676,7 @@ submitab9c35128af7f532a1a67ae1ae838a78Form.post = (options?: RouteQueryOptions):
 submitab9c35128af7f532a1a67ae1ae838a78.form = submitab9c35128af7f532a1a67ae1ae838a78Form
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:100
+* @see app/Http/Controllers/InvestorVerificationController.php:112
 * @route '/investor/verification/submit'
 */
 const submitda95dfa569d727bede107655bee3682a = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -691,7 +691,7 @@ submitda95dfa569d727bede107655bee3682a.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:100
+* @see app/Http/Controllers/InvestorVerificationController.php:112
 * @route '/investor/verification/submit'
 */
 submitda95dfa569d727bede107655bee3682a.url = (options?: RouteQueryOptions) => {
@@ -700,7 +700,7 @@ submitda95dfa569d727bede107655bee3682a.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:100
+* @see app/Http/Controllers/InvestorVerificationController.php:112
 * @route '/investor/verification/submit'
 */
 submitda95dfa569d727bede107655bee3682a.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -710,7 +710,7 @@ submitda95dfa569d727bede107655bee3682a.post = (options?: RouteQueryOptions): Rou
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:100
+* @see app/Http/Controllers/InvestorVerificationController.php:112
 * @route '/investor/verification/submit'
 */
 const submitda95dfa569d727bede107655bee3682aForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -720,7 +720,7 @@ const submitda95dfa569d727bede107655bee3682aForm = (options?: RouteQueryOptions)
 
 /**
 * @see \App\Http\Controllers\InvestorVerificationController::submit
-* @see app/Http/Controllers/InvestorVerificationController.php:100
+* @see app/Http/Controllers/InvestorVerificationController.php:112
 * @route '/investor/verification/submit'
 */
 submitda95dfa569d727bede107655bee3682aForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

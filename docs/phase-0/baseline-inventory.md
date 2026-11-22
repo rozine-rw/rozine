@@ -2839,6 +2839,7 @@ Vendor routes excluded, matching `route:list --except-vendor`.
 | POST | `/admin/staging-mail-testers` | `staff.staging-mail-testers.store` | `StaffStagingMailTesterController@store` | web, auth, throttle:60,1, cache.headers:private;no_store, App\Http\Middleware\EnsureStagingMailTesterAccess |
 | POST | `/admin/staging-mail-testers/{tester}/remove` | `staff.staging-mail-testers.remove` | `StaffStagingMailTesterController@remove` | web, auth, throttle:60,1, cache.headers:private;no_store, App\Http\Middleware\EnsureStagingMailTesterAccess |
 | GET | `/admin/system-health` | `staff.system-health.index` | `StaffSystemHealthController@__invoke` | web, auth, throttle:60,1, cache.headers:private;no_store |
+| GET | `/admin/users` | `staff.users.index` | `StaffUserDirectoryController@index` | web, auth, throttle:60,1, cache.headers:private;no_store |
 | GET | `/admin/{section}` | `staff.sections.show` | `StaffSectionController@show` | web, auth, throttle:60,1, cache.headers:private;no_store |
 | GET | `/api/user` | — | `Closure` | api, auth:sanctum |
 | GET | `/api/v1/audit-seals/{report}` | `api.v1.audit.seals.verify` | `AuditSealVerificationController@__invoke` | api, throttle:60,1, cache.headers:no_store |

@@ -350,8 +350,8 @@ function Field({
 /**
  * Security center (design L3934–3975): whether two-factor sign-in is on, the login alerts switch,
  * and the way to change the password. Two-factor and the password are managed on the account's
- * security settings, so those rows open them. The design's account deletion has no command for an
- * Investor, so it is left out.
+ * security settings, so those rows open them. The design's Danger zone row (account deletion) is
+ * `DeleteAccountRow`, which the profile page places after this section.
  */
 export function SecurityCenter({
     security,

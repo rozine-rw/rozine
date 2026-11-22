@@ -1183,6 +1183,7 @@ describe('Party 360', () => {
                 id: 'case-a',
                 revision: 6,
                 status: 'submitted',
+                purpose: 'investor',
                 submitted_at: '2026-10-06T08:00:00+00:00',
                 account: { name: 'Marie Mugisha', email: 'marie@example.rw' },
                 date_of_birth: '01 / 05 / 1990',

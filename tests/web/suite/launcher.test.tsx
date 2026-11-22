@@ -394,10 +394,14 @@ describe('Suite launcher', () => {
             'Browse open deals now. Investing opens once your identity is verified.Browse deals →',
         );
 
-        for (const app of apps.slice(1)) {
+        // Each card's check is recorded for its own app, so it never grants Investor access.
+        for (const [app, role] of [
+            [apps[1], 'business'],
+            [apps[2], 'auditor'],
+        ] as const) {
             expect(within(app).getByRole('link')).toHaveAttribute(
                 'href',
-                '/investor/verification',
+                `/investor/verification?for=${role}`,
             );
             expect(within(app).getByRole('link')).toHaveTextContent(
                 /Verify your identity first →$/u,

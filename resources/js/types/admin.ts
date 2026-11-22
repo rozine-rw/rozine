@@ -64,6 +64,7 @@ export type AdminOptionalSection =
     | 'reports'
     | 'mail_testers'
     | 'access_requests'
+    | 'users'
     | AdminPendingSection;
 
 /**
@@ -2021,6 +2022,9 @@ export type KycIdType = 'national_id' | 'passport' | 'drivers_license';
 
 export type KycCaseStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 
+/** The app a person verified their identity for: only an Investor check grants Investor access. */
+export type KycPurpose = 'investor' | 'business' | 'auditor';
+
 export type InvestorVerificationEntry = {
     id: string;
     revision: number;
@@ -2030,6 +2034,7 @@ export type InvestorVerificationEntry = {
     name: string;
     email: string;
     id_type: KycIdType;
+    purpose: KycPurpose;
     /** The automated checks the case passed before it could be submitted. */
     checks: KycCheck[];
     selected: boolean;
@@ -2059,6 +2064,7 @@ export type InvestorVerificationReview = {
     id: string;
     revision: number;
     status: KycCaseStatus;
+    purpose: KycPurpose;
     submitted_at: string | null;
     account: { name: string; email: string };
     date_of_birth: string;
@@ -2321,4 +2327,109 @@ export type AdminAccessRequestsProps = AdminFrameShellProps & {
     requests: AccessRequestRow[];
     /** Where staff grant each kind: Onboard business, or the Auditor Network. */
     links: Record<AccessRequestRole, RouteLink>;
+};
+
+/** An account's identity (KYC) state on the Users page. */
+export type UserKyc =
+    | 'verified'
+    | 'in_review'
+    | 'in_progress'
+    | 'rejected'
+    | 'not_started';
+
+export type UserMembership = {
+    role: 'investor' | 'business' | 'auditor';
+    status: 'pending' | 'active' | 'suspended' | 'revoked';
+    since: string;
+};
+
+/** One sign-in account on the Users page, with every role it holds. */
+export type UserRow = {
+    id: string;
+    name: string;
+    email: string;
+    email_verified: boolean;
+    signed_up_at: string;
+    last_seen_at: string | null;
+    memberships: UserMembership[];
+    staff: { roles: string[]; enabled: boolean } | null;
+    /** Roles asked for from the launcher and not held yet. */
+    requested: ('business' | 'auditor')[];
+    kyc: UserKyc;
+    restricted: boolean;
+    /** When the holder closed the account (soft delete); null while it is open. */
+    closed_at: string | null;
+    /** The holder's own words on closing, when they gave any. */
+    closure_reason: string | null;
+    link: RouteLink;
+};
+
+/** The Users drawer: the row, sign-in security, access requests and identity history. */
+export type UserDetail = Omit<UserRow, 'link'> & {
+    email_verified_at: string | null;
+    two_factor: boolean;
+    passkeys: number;
+    submitted_at: string | null;
+    requests: {
+        role: 'business' | 'auditor';
+        organization: string;
+        reference: string | null;
+        sent_at: string;
+    }[];
+    history: {
+        id: string;
+        at: string;
+        actor: string;
+        action: string;
+        reason: string;
+    }[];
+    links: {
+        close: RouteLink;
+        investor: RouteLink | null;
+        business: RouteLink | null;
+        auditor: RouteLink | null;
+        staff: RouteLink | null;
+        access_requests: RouteLink | null;
+    };
+};
+
+export type UserRoleChip =
+    | 'all'
+    | 'investor'
+    | 'business'
+    | 'auditor'
+    | 'staff'
+    | 'no_role';
+
+/** Users (Accounts): every account on the platform, filtered and searched on the server. */
+export type AdminUsersProps = AdminFrameShellProps & {
+    /** Open accounts, and the accounts their holders closed. */
+    tabs: {
+        key: 'active' | 'deleted';
+        count: number;
+        link: RouteLink;
+        active: boolean;
+    }[];
+    stats: {
+        key: 'total_users' | 'new_this_week' | 'kyc_verified' | 'awaiting_kyc';
+        value: StatValue;
+    }[];
+    chips: {
+        key: UserRoleChip;
+        count: number;
+        link: RouteLink;
+        active: boolean;
+    }[];
+    filters: (
+        | { key: 'kyc'; value: 'any' | UserKyc; options: ('any' | UserKyc)[] }
+        | {
+              key: 'sort';
+              value: 'newest' | 'oldest' | 'name';
+              options: ('newest' | 'oldest' | 'name')[];
+          }
+    )[];
+    shown: number;
+    total: number;
+    rows: UserRow[];
+    user: UserDetail | null;
 };
