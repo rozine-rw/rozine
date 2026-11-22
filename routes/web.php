@@ -80,6 +80,7 @@ use App\Http\Controllers\StaffReconciliationController;
 use App\Http\Controllers\StaffSectionController;
 use App\Http\Controllers\StaffStagingMailTesterController;
 use App\Http\Controllers\StaffSystemHealthController;
+use App\Http\Controllers\StaffUserDirectoryController;
 use App\Http\Middleware\EnsureStagingMailTesterAccess;
 use App\Http\Middleware\RedirectBrowserVisit;
 use Illuminate\Support\Facades\Route;
@@ -365,6 +366,9 @@ Route::get('admin/{section}', [StaffSectionController::class, 'show'])->whereIn(
 
 Route::get('admin/investors', [StaffInvestorDirectoryController::class, 'index'])
     ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.investors.index');
+
+Route::get('admin/users', [StaffUserDirectoryController::class, 'index'])
+    ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.users.index');
 
 Route::get('admin/businesses', [StaffBusinessDirectoryController::class, 'index'])
     ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.index');

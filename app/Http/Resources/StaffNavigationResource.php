@@ -21,7 +21,8 @@ class StaffNavigationResource extends JsonResource
     /**
      * The Dashboard and Staff & Roles are for every enabled staff member (`admin.open`). Activity &
      * Audit names participants and their identity decisions, so it takes the supervisory
-     * `investors.verify` that already reads Investors' identity history.
+     * `investors.verify` that already reads Investors' identity history, as does Users, which lists
+     * every account with its roles and KYC state.
      *
      * @var array<string, array{permission: string, route: string}>
      */
@@ -30,6 +31,7 @@ class StaffNavigationResource extends JsonResource
         'staff' => ['permission' => 'admin.open', 'route' => 'staff.staff.index'],
         'events' => ['permission' => 'investors.verify', 'route' => 'staff.events.index'],
         'investors' => ['permission' => 'investors.verify', 'route' => 'staff.investors.index'],
+        'users' => ['permission' => 'investors.verify', 'route' => 'staff.users.index'],
         'businesses' => ['permission' => 'businesses.view', 'route' => 'staff.businesses.index'],
         'auditors' => ['permission' => 'audit.partners.verify', 'route' => 'staff.auditors.index'],
         'applications' => ['permission' => 'applications.review', 'route' => 'staff.applications.index'],

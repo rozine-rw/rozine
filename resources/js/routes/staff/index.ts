@@ -6,6 +6,7 @@ import notes from './notes'
 import reports from './reports'
 import sections from './sections'
 import investors from './investors'
+import users from './users'
 import businesses from './businesses'
 import auditors from './auditors'
 import staff from './staff'
@@ -112,6 +113,7 @@ const staffNamespace = {
     reports: Object.assign(reports, reports),
     sections: Object.assign(sections, sections),
     investors: Object.assign(investors, investors),
+    users: Object.assign(users, users),
     businesses: Object.assign(businesses, businesses),
     auditors: Object.assign(auditors, auditors),
     dashboard: Object.assign(dashboard, dashboard),
