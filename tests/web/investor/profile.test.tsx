@@ -492,7 +492,9 @@ describe('Profile', () => {
         expect(
             screen.getByRole('link', { name: /Change password/u }),
         ).toHaveAttribute('href', '/preview/investor-profile-security');
-        expect(screen.queryByText(/Delete account/u)).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /Delete account/u }),
+        ).toHaveAttribute('href', '/settings/profile#close-account');
         unmount();
 
         const off = profile(securityFixture);

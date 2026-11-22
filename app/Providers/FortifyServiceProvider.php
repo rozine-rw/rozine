@@ -13,10 +13,12 @@ use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
@@ -49,6 +51,27 @@ class FortifyServiceProvider extends ServiceProvider
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
+        Fortify::authenticateUsing(self::authenticate(...));
+    }
+
+    /**
+     * Fortify's own credential check, except that the right password for a closed account is
+     * told the account is closed, rather than that the details are wrong (the users provider
+     * never finds a closed account, so its sessions and password resets already stop).
+     */
+    private static function authenticate(Request $request): ?User
+    {
+        $user = User::query()->where(Fortify::username(), (string) $request->input(Fortify::username()))->first();
+
+        if ($user === null || ! Hash::check((string) $request->input('password'), $user->password)) {
+            return null;
+        }
+
+        if ($user->isClosed()) {
+            throw ValidationException::withMessages([Fortify::username() => __('This account has been closed. Contact info@rozine.rw if you need it reopened.')]);
+        }
+
+        return $user;
     }
 
     /**

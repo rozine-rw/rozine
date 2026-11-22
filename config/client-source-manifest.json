@@ -87,6 +87,7 @@
         "resources/js/actions/App/Http/Controllers/RoleAccessRequestController.ts",
         "resources/js/actions/App/Http/Controllers/RoleBookmarkController.ts",
         "resources/js/actions/App/Http/Controllers/RoleHomeController.ts",
+        "resources/js/actions/App/Http/Controllers/Settings/AccountClosureController.ts",
         "resources/js/actions/App/Http/Controllers/Settings/ProfileController.ts",
         "resources/js/actions/App/Http/Controllers/Settings/SecurityController.ts",
         "resources/js/actions/App/Http/Controllers/Settings/index.ts",
@@ -157,6 +158,7 @@
         "resources/js/actions/Laravel/Sanctum/Http/index.ts",
         "resources/js/actions/Laravel/Sanctum/index.ts",
         "resources/js/actions/Laravel/index.ts",
+        "resources/js/routes/account-closure/index.ts",
         "resources/js/routes/admin/index.ts",
         "resources/js/routes/api/index.ts",
         "resources/js/routes/api/v1/audit/index.ts",
@@ -848,8 +850,8 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 817,
-        "generated": 351,
+        "totalTrackedSources": 819,
+        "generated": 353,
         "declarationOnly": 20,
         "authoredExecutable": 446
     },

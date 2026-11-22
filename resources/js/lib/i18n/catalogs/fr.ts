@@ -2034,6 +2034,64 @@ const fr: Catalog = {
         'Rien dans {section} ne correspond à « {term} ». Essayez un terme plus court ou différent.',
     'admin.account.open': 'Compte, {name}',
     'settings.back_to_console': 'Retour à la console d’administration',
+    'settings.close.title': 'Supprimer le compte',
+    'settings.close.description': 'Fermer définitivement votre compte Rozine',
+    'settings.close.danger_zone': 'Zone sensible',
+    'settings.close.ready_hint':
+        'La fermeture de votre compte ne peut pas être annulée depuis l’application.',
+    'settings.close.blocked_hint':
+        'Certains éléments sont encore ouverts. Réglez-les avant de fermer votre compte.',
+    'settings.close.blocked_title': 'Avant de pouvoir supprimer votre compte',
+    'settings.close.blocked_description':
+        'Votre compte reste ouvert jusqu’à ce que chacun de ces éléments soit réglé.',
+    'settings.close.settle': 'Y aller',
+    'settings.close.keep': 'Garder mon compte',
+    'settings.close.confirm_title': 'Supprimer votre compte ?',
+    'settings.close.confirm_description':
+        'Cela ferme votre compte Rozine pour tous les rôles qu’il détient.',
+    'settings.close.consequence.sign_in':
+        'Vous ne pourrez plus vous connecter et vos comptes de versement liés ne pourront plus être utilisés.',
+    'settings.close.consequence.records':
+        'Rozine conserve vos dossiers pendant la durée exigée par le droit financier et fiscal rwandais, puis les supprime.',
+    'settings.close.consequence.reopen':
+        'Pour le rouvrir plus tard, écrivez à info@rozine.rw.',
+    'settings.close.warning':
+        'La suppression n’annule aucun montant qui vous est dû ou que vous devez. Rozine peut conserver les dossiers requis à des fins juridiques, fiscales et de lutte contre le blanchiment, conformément à nos Conditions.',
+    'settings.close.reason': 'Pourquoi partez-vous ? (facultatif)',
+    'settings.close.password': 'Mot de passe',
+    'settings.close.type_delete': 'Tapez DELETE pour confirmer',
+    'settings.close.submit': 'Supprimer définitivement le compte',
+    'settings.close.processing': 'Suppression…',
+    'settings.close.role.investor': 'Investisseur',
+    'settings.close.role.business': 'Entreprise',
+    'settings.close.role.auditor': 'Auditeur partenaire',
+    'settings.close.role.staff': 'Personnel',
+    'settings.close.blocker.STAFF_ACCOUNT':
+        'Les comptes du personnel sont fermés par un administrateur, pas depuis les paramètres.',
+    'settings.close.blocker.INVESTOR_WALLET_BALANCE':
+        'Votre portefeuille contient encore de l’argent. Retirez-le d’abord vers votre propre compte.',
+    'settings.close.blocker.INVESTOR_MONEY_MOVING':
+        'Un dépôt est encore en cours. Attendez qu’il arrive, puis retirez-le.',
+    'settings.close.blocker.INVESTOR_COMMITMENTS':
+        'Vous avez de l’argent engagé dans une levée qui n’est pas encore clôturée.',
+    'settings.close.blocker.INVESTOR_HOLDINGS':
+        'Vous détenez encore des titres en cours de remboursement. Vendez-les sur le marché ou attendez leur remboursement.',
+    'settings.close.blocker.INVESTOR_MARKET_ORDERS':
+        'Vous avez une annonce ou un achat ouvert sur le marché. Annulez-le ou terminez-le d’abord.',
+    'settings.close.blocker.BUSINESS_LIVE_RAISE':
+        'Votre entreprise a une levée en cours ou pas encore décaissée.',
+    'settings.close.blocker.BUSINESS_APPLICATION_IN_REVIEW':
+        'Votre entreprise a une demande en cours d’examen.',
+    'settings.close.blocker.BUSINESS_REPAYMENTS_OWED':
+        'Votre entreprise doit encore des remboursements aux investisseurs.',
+    'settings.close.blocker.BUSINESS_WALLET_BALANCE':
+        'Le portefeuille de votre entreprise contient encore de l’argent. Retirez-le d’abord.',
+    'settings.close.blocker.BUSINESS_MONEY_MOVING':
+        'Un dépôt vers le portefeuille de votre entreprise est encore en cours.',
+    'settings.close.blocker.AUDITOR_OPEN_AUDITS':
+        'Vous avez un audit proposé ou en cours. Terminez-le ou refusez-le d’abord.',
+    'settings.close.blocker.AUDITOR_REPORTS_PENDING':
+        'Vous avez un rapport qui n’est pas encore final. Terminez-le d’abord.',
     'admin.account.close': 'Fermer le menu du compte',
     'admin.account.sign_out': 'Se déconnecter',
     'admin.role.analyst': 'Analyste',
