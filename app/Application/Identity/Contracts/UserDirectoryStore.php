@@ -17,18 +17,21 @@ namespace App\Application\Identity\Contracts;
  * state of their verification case (in review when submitted, in progress while a draft, rejected
  * while the last decision stands), and not started when no case exists.
  *
- * `everyone`, `new_this_week`, `kyc_verified` and `awaiting_review` count the whole platform,
- * whatever the filters.
+ * `everyone`, `new_this_week`, `kyc_verified` and `awaiting_review` count the whole platform's open
+ * accounts, whatever the filters, and `closed` counts its closed (soft-deleted) accounts. The page
+ * lists open accounts, or with `$closed` the closed ones, newest closure first by default, with
+ * the closing date and the holder's own reason.
  *
  * @phpstan-type Kyc 'verified'|'in_review'|'in_progress'|'rejected'|'not_started'
  * @phpstan-type Membership array{role: 'investor'|'business'|'auditor', status: 'pending'|'active'|'suspended'|'revoked', since: string}
  * @phpstan-type Staff array{roles: list<string>, enabled: bool}|null
  * @phpstan-type DirectoryRow array{
  *     id: int, party_id: string|null, name: string, email: string, email_verified: bool, signed_up_at: string, last_seen_at: string|null,
- *     memberships: list<Membership>, staff: Staff, requested: list<'business'|'auditor'>, kyc: Kyc, restricted: bool
+ *     memberships: list<Membership>, staff: Staff, requested: list<'business'|'auditor'>, kyc: Kyc, restricted: bool,
+ *     closed_at: string|null, closure_reason: string|null
  * }
  * @phpstan-type Counts array{all: int, investor: int, business: int, auditor: int, staff: int, no_role: int}
- * @phpstan-type Directory array{rows: list<DirectoryRow>, matching: int, counts: Counts, everyone: int, new_this_week: int, kyc_verified: int, awaiting_review: int}
+ * @phpstan-type Directory array{rows: list<DirectoryRow>, matching: int, counts: Counts, everyone: int, new_this_week: int, kyc_verified: int, awaiting_review: int, closed: int}
  * @phpstan-type Detail array{
  *     row: DirectoryRow, email_verified_at: string|null, two_factor: bool, passkeys: int, verification_id: string|null, submitted_at: string|null,
  *     requests: list<array{role: 'business'|'auditor', organization: string, reference: string|null, sent_at: string}>,
@@ -45,7 +48,7 @@ interface UserDirectoryStore
      * @param  'newest'|'oldest'|'name'  $sort
      * @return Directory
      */
-    public function directory(string $role, string $kyc, string $sort, string $search, int $limit): array;
+    public function directory(string $role, string $kyc, string $sort, string $search, int $limit, bool $closed = false): array;
 
     /** @return Detail|null */
     public function user(int $userId): ?array;

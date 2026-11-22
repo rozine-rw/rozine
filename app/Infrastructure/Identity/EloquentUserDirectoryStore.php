@@ -22,13 +22,14 @@ final class EloquentUserDirectoryStore implements UserDirectoryStore
     private const HISTORY = 25;
 
     /** @return Directory */
-    public function directory(string $role, string $kyc, string $sort, string $search, int $limit): array
+    public function directory(string $role, string $kyc, string $sort, string $search, int $limit, bool $closed = false): array
     {
-        $everyone = DB::query()->fromSub($this->accounts(), 'accounts');
+        $everyone = DB::query()->fromSub($this->accounts(), 'accounts')->whereNull('closed_at');
+        $closedCount = DB::table('users')->whereNotNull('closed_at')->count();
         $platform = (clone $everyone)->selectRaw("count(*) AS everyone, count(*) FILTER (WHERE signed_up_at >= ?) AS new_this_week,
             count(*) FILTER (WHERE kyc = 'verified') AS verified, count(*) FILTER (WHERE kyc = 'in_review') AS awaiting", [now()->subDays(7)])->first();
 
-        $accounts = clone $everyone;
+        $accounts = $closed ? DB::query()->fromSub($this->accounts(), 'accounts')->whereNotNull('closed_at') : clone $everyone;
         if ($search !== '') {
             $term = '%'.addcslashes($search, '%_\\').'%';
             $accounts->where(fn (Builder $match) => $match->whereLike('name', $term)->orWhereLike('email', $term));
@@ -49,14 +50,14 @@ final class EloquentUserDirectoryStore implements UserDirectoryStore
         match ($sort) {
             'name' => $accounts->orderByRaw('lower(name)')->orderBy('id'),
             'oldest' => $accounts->orderBy('signed_up_at')->orderBy('id'),
-            default => $accounts->orderByDesc('signed_up_at')->orderByDesc('id'),
+            default => $closed ? $accounts->orderByDesc('closed_at')->orderByDesc('id') : $accounts->orderByDesc('signed_up_at')->orderByDesc('id'),
         };
 
         return ['rows' => $this->rows(array_values($accounts->limit($limit)->get()->all())), 'matching' => $matching,
             'counts' => ['all' => (int) ($totals->everyone ?? 0), 'investor' => (int) ($totals->investor ?? 0), 'business' => (int) ($totals->business ?? 0),
                 'auditor' => (int) ($totals->auditor ?? 0), 'staff' => (int) ($totals->staff ?? 0), 'no_role' => (int) ($totals->no_role ?? 0)],
             'everyone' => (int) ($platform->everyone ?? 0), 'new_this_week' => (int) ($platform->new_this_week ?? 0), 'kyc_verified' => (int) ($platform->verified ?? 0),
-            'awaiting_review' => (int) ($platform->awaiting ?? 0)];
+            'awaiting_review' => (int) ($platform->awaiting ?? 0), 'closed' => $closedCount];
     }
 
     /** @return Detail|null */
@@ -111,7 +112,7 @@ final class EloquentUserDirectoryStore implements UserDirectoryStore
             ->leftJoin('investor_verifications AS iv', 'iv.party_id', '=', 'users.party_id')
             ->leftJoin('staff_accounts', 'staff_accounts.user_id', '=', 'users.id')
             ->selectRaw("users.id, users.party_id, users.name, users.email, users.email_verified_at IS NOT NULL AS email_verified,
-                users.created_at AS signed_up_at, iv.id AS verification_id, iv.submitted_at,
+                users.created_at AS signed_up_at, users.closed_at, users.closure_reason, iv.id AS verification_id, iv.submitted_at,
                 (SELECT max(s.last_activity) FROM sessions s WHERE s.user_id = users.id) AS last_activity,
                 CASE WHEN parties.verified_at IS NOT NULL OR iv.status = 'approved' THEN 'verified' WHEN iv.status = 'submitted' THEN 'in_review'
                     WHEN iv.status = 'rejected' THEN 'rejected' WHEN iv.id IS NOT NULL THEN 'in_progress' ELSE 'not_started' END AS kyc,
@@ -156,7 +157,8 @@ final class EloquentUserDirectoryStore implements UserDirectoryStore
                 'email_verified' => (bool) $record->email_verified, 'signed_up_at' => (string) self::time($record->signed_up_at),
                 'last_seen_at' => $record->last_activity === null ? null : Carbon::createFromTimestamp((int) $record->last_activity)->toIso8601String(),
                 'memberships' => $held, 'staff' => $account === null ? null : ['roles' => $staffRoles, 'enabled' => (bool) $record->staff_enabled],
-                'requested' => $requested, 'kyc' => self::kyc((string) $record->kyc), 'restricted' => (bool) $record->restricted];
+                'requested' => $requested, 'kyc' => self::kyc((string) $record->kyc), 'restricted' => (bool) $record->restricted,
+                'closed_at' => self::time($record->closed_at), 'closure_reason' => $record->closure_reason === null ? null : (string) $record->closure_reason];
         }, $records);
     }
 

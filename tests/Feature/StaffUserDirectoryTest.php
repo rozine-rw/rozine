@@ -212,3 +212,27 @@ test('a superadmin reaches the Business, Auditor and Access requests tools from 
             ->where('user.links.access_requests', ['url' => '/admin/access-requests', 'method' => 'get'])
             ->where('user.requested', [])->where('user.requests.0.role', 'business'));
 });
+
+test('closed accounts leave the open list and its counts and appear on the Deleted accounts tab with their date and reason', function (): void {
+    $open = usersPerson('Olive Open', 3);
+    $gone = usersPerson('Gaston Gone', 10);
+    $gone->forceFill(['closed_at' => now()->subDay(), 'closure_reason' => 'Moving abroad'])->save();
+    $earlier = usersPerson('Eva Earlier', 20);
+    $earlier->forceFill(['closed_at' => now()->subDays(5)])->save();
+
+    $this->actingAs($this->officer)->get(route('staff.users.index'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('tabs.0', ['key' => 'active', 'count' => 2, 'link' => ['url' => '/admin/users', 'method' => 'get'], 'active' => true])
+            ->where('tabs.1', ['key' => 'deleted', 'count' => 2, 'link' => ['url' => '/admin/users?status=deleted', 'method' => 'get'], 'active' => false])
+            ->where('stats.0.value.value', 2)->where('total', 2)
+            ->where('rows', fn (Collection $rows): bool => $rows->pluck('name')->sort()->values()->all() === ['Odette Officer', 'Olive Open']
+                && $rows->every(fn (array $row): bool => $row['closed_at'] === null)));
+
+    $this->actingAs($this->officer)->get(route('staff.users.index', ['status' => 'deleted', 'user' => $gone->id]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('tabs.1.active', true)->where('total', 2)
+            ->where('rows.0.name', 'Gaston Gone')->where('rows.0.closure_reason', 'Moving abroad')->where('rows.1.name', 'Eva Earlier')
+            ->where('rows.1.closure_reason', null)->where('rows.0.link.url', '/admin/users?status=deleted&user='.$gone->id)
+            ->where('chips.1.link.url', '/admin/users?status=deleted&role=investor')
+            ->where('user.closed_at', $gone->fresh()->closed_at->toIso8601String())->where('user.closure_reason', 'Moving abroad'));
+
+    expect($open->fresh()->isClosed())->toBeFalse();
+});

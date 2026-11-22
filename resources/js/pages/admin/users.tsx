@@ -12,6 +12,7 @@ import {
     HeadCell,
     KpiTile,
     MicroBadge,
+    PillTabs,
     ROW_RULE,
     SegmentedChips,
     TABLE_HEAD,
@@ -84,9 +85,13 @@ function Row({ row, serverTime }: { row: UserRow; serverTime: string }) {
                 {formatDate(row.signed_up_at, locale)}
             </span>
             <span role="cell" className="text-[12.5px] text-rz-body">
-                {row.last_seen_at === null
-                    ? t('admin.users.never')
-                    : ago(row.last_seen_at)}
+                {row.closed_at !== null
+                    ? t('admin.users.closed_on', {
+                          date: formatDate(row.closed_at, locale),
+                      })
+                    : row.last_seen_at === null
+                      ? t('admin.users.never')
+                      : ago(row.last_seen_at)}
             </span>
         </div>
     );
@@ -96,11 +101,15 @@ function Row({ row, serverTime }: { row: UserRow; serverTime: string }) {
  * Users (Accounts): every sign-in account on the platform — Investors, Businesses, Audit Partners,
  * staff and people with no role yet — with each one's roles, KYC state, sign-up date and last
  * activity. The role chips, KYC filter, sort and search are server queries; a row opens the account
- * in the drawer, as the Investor directory opens a person and their KYC review.
+ * in the drawer, as the Investor directory opens a person and their KYC review. The Deleted accounts
+ * tab lists the accounts their holders closed, with the closing date in place of last activity.
  */
 export default function AdminUsers(props: AdminUsersProps) {
     const { t } = useTranslation();
     const format = useStatFormatter();
+    const deleted = props.tabs.some(
+        (tab) => tab.key === 'deleted' && tab.active,
+    );
 
     return (
         <AdminFrame
@@ -127,6 +136,13 @@ export default function AdminUsers(props: AdminUsersProps) {
                     />
                 ))}
             </div>
+            <PillTabs
+                label={t('admin.users.tabs')}
+                tabs={props.tabs.map((tab) => ({
+                    ...tab,
+                    label: t(`admin.users.tab.${tab.key}`),
+                }))}
+            />
             <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3">
                 <SegmentedChips
                     label={t('admin.users.filter')}
@@ -185,14 +201,22 @@ export default function AdminUsers(props: AdminUsersProps) {
                 empty={
                     props.rows.length === 0 &&
                     props.search === '' && (
-                        <EmptyState title={t('admin.users.empty')} />
+                        <EmptyState
+                            title={t(
+                                deleted
+                                    ? 'admin.users.empty_deleted'
+                                    : 'admin.users.empty',
+                            )}
+                        />
                     )
                 }
             >
                 <div role="row" className={cn(GRID, TABLE_HEAD, 'py-[13px]')}>
                     {HEADS.map((head) => (
                         <HeadCell key={head}>
-                            {t(`admin.users.col.${head}`)}
+                            {t(
+                                `admin.users.col.${head === 'last_seen' && deleted ? 'closed' : head}`,
+                            )}
                         </HeadCell>
                     ))}
                 </div>
