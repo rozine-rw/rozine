@@ -64,6 +64,7 @@ export type AdminOptionalSection =
     | 'reports'
     | 'mail_testers'
     | 'access_requests'
+    | 'users'
     | AdminPendingSection;
 
 /**
@@ -2321,4 +2322,98 @@ export type AdminAccessRequestsProps = AdminFrameShellProps & {
     requests: AccessRequestRow[];
     /** Where staff grant each kind: Onboard business, or the Auditor Network. */
     links: Record<AccessRequestRole, RouteLink>;
+};
+
+/** An account's identity (KYC) state on the Users page. */
+export type UserKyc =
+    | 'verified'
+    | 'in_review'
+    | 'in_progress'
+    | 'rejected'
+    | 'not_started';
+
+export type UserMembership = {
+    role: 'investor' | 'business' | 'auditor';
+    status: 'pending' | 'active' | 'suspended' | 'revoked';
+    since: string;
+};
+
+/** One sign-in account on the Users page, with every role it holds. */
+export type UserRow = {
+    id: string;
+    name: string;
+    email: string;
+    email_verified: boolean;
+    signed_up_at: string;
+    last_seen_at: string | null;
+    memberships: UserMembership[];
+    staff: { roles: string[]; enabled: boolean } | null;
+    /** Roles asked for from the launcher and not held yet. */
+    requested: ('business' | 'auditor')[];
+    kyc: UserKyc;
+    restricted: boolean;
+    link: RouteLink;
+};
+
+/** The Users drawer: the row, sign-in security, access requests and identity history. */
+export type UserDetail = Omit<UserRow, 'link'> & {
+    email_verified_at: string | null;
+    two_factor: boolean;
+    passkeys: number;
+    submitted_at: string | null;
+    requests: {
+        role: 'business' | 'auditor';
+        organization: string;
+        reference: string | null;
+        sent_at: string;
+    }[];
+    history: {
+        id: string;
+        at: string;
+        actor: string;
+        action: string;
+        reason: string;
+    }[];
+    links: {
+        close: RouteLink;
+        investor: RouteLink | null;
+        business: RouteLink | null;
+        auditor: RouteLink | null;
+        staff: RouteLink | null;
+        access_requests: RouteLink | null;
+    };
+};
+
+export type UserRoleChip =
+    | 'all'
+    | 'investor'
+    | 'business'
+    | 'auditor'
+    | 'staff'
+    | 'no_role';
+
+/** Users (Accounts): every account on the platform, filtered and searched on the server. */
+export type AdminUsersProps = AdminFrameShellProps & {
+    stats: {
+        key: 'total_users' | 'new_this_week' | 'kyc_verified' | 'awaiting_kyc';
+        value: StatValue;
+    }[];
+    chips: {
+        key: UserRoleChip;
+        count: number;
+        link: RouteLink;
+        active: boolean;
+    }[];
+    filters: (
+        | { key: 'kyc'; value: 'any' | UserKyc; options: ('any' | UserKyc)[] }
+        | {
+              key: 'sort';
+              value: 'newest' | 'oldest' | 'name';
+              options: ('newest' | 'oldest' | 'name')[];
+          }
+    )[];
+    shown: number;
+    total: number;
+    rows: UserRow[];
+    user: UserDetail | null;
 };
