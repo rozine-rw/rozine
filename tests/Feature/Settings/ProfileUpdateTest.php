@@ -52,13 +52,14 @@ test('email verification status is unchanged when the email address is unchanged
     expect($user->refresh()->email_verified_at)->not->toBeNull();
 });
 
-test('user can delete their account', function () {
+test('user can delete their account, which closes it and keeps its record', function () {
     $user = User::factory()->create();
 
     $response = $this
         ->actingAs($user)
-        ->delete(route('profile.destroy'), [
+        ->post(route('account-closure.store'), [
             'password' => 'password',
+            'confirmation' => 'DELETE',
         ]);
 
     $response
@@ -66,7 +67,7 @@ test('user can delete their account', function () {
         ->assertRedirect(route('home'));
 
     $this->assertGuest();
-    expect($user->fresh())->toBeNull();
+    expect($user->fresh()?->isClosed())->toBeTrue();
 });
 
 test('correct password must be provided to delete account', function () {
@@ -75,13 +76,14 @@ test('correct password must be provided to delete account', function () {
     $response = $this
         ->actingAs($user)
         ->from(route('profile.edit'))
-        ->delete(route('profile.destroy'), [
+        ->post(route('account-closure.store'), [
             'password' => 'wrong-password',
+            'confirmation' => 'DELETE',
         ]);
 
     $response
         ->assertSessionHasErrors('password')
         ->assertRedirect(route('profile.edit'));
 
-    expect($user->fresh())->not->toBeNull();
+    expect($user->fresh()?->isClosed())->toBeFalse();
 });

@@ -19,6 +19,8 @@ use Inertia\Response;
  * KYC state, sign-up date and last activity. A row opens the account's detail in the console drawer,
  * with its roles, identity, sign-in security, access requests and identity history, and links to
  * the role directories that act on it. Read-only: every change still happens in those directories.
+ * The Deleted accounts tab lists accounts their holders closed (soft deleted), with the closing date
+ * and the reason they gave; their records stay, and they can no longer sign in.
  *
  * @phpstan-import-type DirectoryRow from UserDirectoryStore
  * @phpstan-import-type Detail from UserDirectoryStore
@@ -46,13 +48,15 @@ class StaffUserDirectoryController extends Controller
         /** @var 'newest'|'oldest'|'name' $sort */
         $sort = (string) $request->validated('sort', 'newest');
         $search = trim((string) $request->validated('q', ''));
+        $deleted = $request->validated('status') === 'deleted';
         $selected = $request->validated('user');
-        $page = $this->directory->directory($actorId, $role, $kyc, $sort, $search, self::LIMIT);
+        $page = $this->directory->directory($actorId, $role, $kyc, $sort, $search, self::LIMIT, $deleted);
         $user = $selected === null ? null : $this->directory->user($actorId, (int) $selected);
         $staff = $access->handle($actorId);
 
         $link = fn (array $query): array => ['url' => route('staff.users.index', $query, false), 'method' => 'get'];
-        $filters = array_filter(['q' => $search, 'kyc' => $kyc === 'any' ? '' : $kyc, 'sort' => $sort === 'newest' ? '' : $sort], fn (string $value): bool => $value !== '');
+        $filters = array_filter(['status' => $deleted ? 'deleted' : '', 'q' => $search, 'kyc' => $kyc === 'any' ? '' : $kyc, 'sort' => $sort === 'newest' ? '' : $sort],
+            fn (string $value): bool => $value !== '');
         $position = array_filter([...$filters, 'role' => $role === 'all' ? '' : $role], fn (string $value): bool => $value !== '');
         $counts = $page['counts'];
         $nav = (new StaffNavigationResource($staff['allowed_actions']))->resolve($request);
@@ -60,6 +64,8 @@ class StaffUserDirectoryController extends Controller
         return Inertia::render('admin/users', ['contract_version' => 'staff-user-directory-v1', 'server_time' => now()->toIso8601String(),
             'viewer' => (new StaffViewerResource($staff['roles']))->resolve($request), 'nav' => $nav,
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => $search,
+            'tabs' => [['key' => 'active', 'count' => $page['everyone'], 'link' => $link([]), 'active' => ! $deleted],
+                ['key' => 'deleted', 'count' => $page['closed'], 'link' => $link(['status' => 'deleted']), 'active' => $deleted]],
             'stats' => [['key' => 'total_users', 'value' => ['kind' => 'count', 'value' => $page['everyone']]],
                 ['key' => 'new_this_week', 'value' => ['kind' => 'count', 'value' => $page['new_this_week']]],
                 ['key' => 'kyc_verified', 'value' => ['kind' => 'percent', 'value' => (string) ($page['everyone'] === 0 ? 0 : intdiv($page['kyc_verified'] * 100, $page['everyone']))]],
@@ -80,7 +86,8 @@ class StaffUserDirectoryController extends Controller
     {
         return ['id' => (string) $row['id'], 'name' => $row['name'], 'email' => $row['email'], 'email_verified' => $row['email_verified'],
             'signed_up_at' => $row['signed_up_at'], 'last_seen_at' => $row['last_seen_at'], 'memberships' => $row['memberships'],
-            'staff' => $row['staff'], 'requested' => $row['requested'], 'kyc' => $row['kyc'], 'restricted' => $row['restricted']];
+            'staff' => $row['staff'], 'requested' => $row['requested'], 'kyc' => $row['kyc'], 'restricted' => $row['restricted'],
+            'closed_at' => $row['closed_at'], 'closure_reason' => $row['closure_reason']];
     }
 
     /**

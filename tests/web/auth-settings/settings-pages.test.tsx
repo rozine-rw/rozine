@@ -15,6 +15,8 @@ import Appearance from '@/pages/settings/appearance';
 import Profile from '@/pages/settings/profile';
 import Security from '@/pages/settings/security';
 
+const NO_CLOSURE_BLOCKERS = { roles: [], blockers: [] };
+
 type FormState = {
     processing: boolean;
     errors: Record<string, string>;
@@ -202,7 +204,11 @@ describe('settings pages and layout', () => {
             email: 'Email is invalid.',
         };
         const { rerender } = render(
-            <Profile mustVerifyEmail status="verification-link-sent" />,
+            <Profile
+                mustVerifyEmail
+                status="verification-link-sent"
+                closure={NO_CLOSURE_BLOCKERS}
+            />,
         );
 
         expect(screen.getByDisplayValue('Ada Lovelace')).toBeInTheDocument();
@@ -222,7 +228,14 @@ describe('settings pages and layout', () => {
         doubles.auth.user.email_verified_at = '2026-08-24T00:00:00Z';
         doubles.state.processing = false;
         doubles.state.errors = {};
-        rerender(<Profile key="verified" mustVerifyEmail status="unrelated" />);
+        rerender(
+            <Profile
+                key="verified"
+                mustVerifyEmail
+                status="unrelated"
+                closure={NO_CLOSURE_BLOCKERS}
+            />,
+        );
         expect(
             screen.queryByRole('link', {
                 name: /Click here to re-send/,
@@ -232,7 +245,11 @@ describe('settings pages and layout', () => {
 
         doubles.auth.user.email_verified_at = null;
         rerender(
-            <Profile key="verification-disabled" mustVerifyEmail={false} />,
+            <Profile
+                key="verification-disabled"
+                mustVerifyEmail={false}
+                closure={NO_CLOSURE_BLOCKERS}
+            />,
         );
         expect(
             screen.queryByText(/Your email address is unverified/),

@@ -24,6 +24,7 @@ const BOX = 'rounded-[13px] border border-rz-hairline bg-rz-surface';
 
 /** The identity history actions the drawer names; any other reads as its code. */
 const ACTIONS = [
+    'account.close',
     'investor.self_grant',
     'membership.mandate_grant',
     'membership.change',
@@ -130,6 +131,25 @@ export function UserDrawer({
                 tabIndex={0}
                 className="rz-scroll min-h-0 flex-1 overflow-y-auto px-[18px] pt-[18px] pb-[26px]"
             >
+                {user.closed_at !== null && (
+                    <div
+                        role="status"
+                        className="mb-5 rounded-[13px] border border-[#f4d4d4] bg-[#fff7f7] px-4 py-3 text-[12.5px] text-[#a0524f] dark:border-red-200/20 dark:bg-red-700/10 dark:text-red-200"
+                    >
+                        <p className="font-bold">
+                            {t('admin.users.closed_on', {
+                                date: formatDate(user.closed_at, locale),
+                            })}
+                        </p>
+                        <p className="mt-1">
+                            {user.closure_reason === null
+                                ? t('admin.users.closed_no_reason')
+                                : t('admin.users.closed_reason', {
+                                      reason: user.closure_reason,
+                                  })}
+                        </p>
+                    </div>
+                )}
                 <section aria-label={t('admin.users.roles_title')}>
                     <h3 className={SECTION}>{t('admin.users.roles_title')}</h3>
                     <div className={cn(BOX, 'mt-2.5 px-4 py-3.5')}>

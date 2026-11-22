@@ -9,7 +9,7 @@ vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 
 const shell = structuredClone(coverageFixture.props) as unknown as Omit<
     AdminUsersProps,
-    'stats' | 'chips' | 'filters' | 'shown' | 'total' | 'rows' | 'user'
+    'tabs' | 'stats' | 'chips' | 'filters' | 'shown' | 'total' | 'rows' | 'user'
 >;
 
 const link = (url: string) => ({ url, method: 'get' as const });
@@ -26,6 +26,8 @@ const row = (
     requested: [],
     kyc: 'not_started',
     restricted: false,
+    closed_at: null,
+    closure_reason: null,
     link: link(`/admin/users?user=${overrides.id}`),
     ...overrides,
 });
@@ -97,6 +99,15 @@ const page = (overrides: Partial<AdminUsersProps> = {}): AdminUsersProps => ({
     ...shell,
     nav: { ...shell.nav, users: link('/admin/users') },
     search: '',
+    tabs: [
+        { key: 'active', count: 6, link: link('/admin/users'), active: true },
+        {
+            key: 'deleted',
+            count: 1,
+            link: link('/admin/users?status=deleted'),
+            active: false,
+        },
+    ],
     stats: [
         { key: 'total_users', value: { kind: 'count', value: 6 } },
         { key: 'new_this_week', value: { kind: 'count', value: 2 } },
@@ -372,5 +383,96 @@ describe('Users', () => {
         expect(
             within(drawer).getByRole('region', { name: 'Access requested' }),
         ).toHaveTextContent('Business');
+    });
+
+    it('lists the accounts their holders closed on the Deleted accounts tab, with the date and reason', () => {
+        const closed = row({
+            id: '9',
+            name: 'Gone Investor',
+            closed_at: '2027-02-01T08:00:00+02:00',
+            closure_reason: 'Moving abroad',
+        });
+        const { link: _link, ...base } = closed;
+        const { unmount } = render(
+            <AdminUsers
+                {...page({
+                    tabs: [
+                        {
+                            key: 'active',
+                            count: 6,
+                            link: link('/admin/users'),
+                            active: false,
+                        },
+                        {
+                            key: 'deleted',
+                            count: 1,
+                            link: link('/admin/users?status=deleted'),
+                            active: true,
+                        },
+                    ],
+                    rows: [closed],
+                    shown: 1,
+                    total: 1,
+                    user: detail({
+                        ...base,
+                        history: [
+                            {
+                                id: 'e9',
+                                at: '2027-02-01T08:00:00+02:00',
+                                actor: 'Gone Investor',
+                                action: 'account.close',
+                                reason: 'Moving abroad',
+                            },
+                        ],
+                    }),
+                })}
+            />,
+        );
+
+        expect(
+            screen.getByRole('link', { name: 'Deleted accounts 1' }),
+        ).toHaveAttribute('aria-current', 'page');
+        expect(
+            screen.getByRole('link', { name: 'Active accounts 6' }),
+        ).toHaveAttribute('href', '/admin/users');
+        expect(screen.getByText('Closed')).toBeInTheDocument();
+        expect(rowOf('Gone Investor')).toHaveTextContent('Closed on');
+        const drawer = screen.getByRole('dialog', {
+            name: 'Gone Investor, user account',
+        });
+        expect(drawer).toHaveTextContent('Reason given: Moving abroad');
+        expect(drawer).toHaveTextContent('Closed their account');
+        unmount();
+
+        render(
+            <AdminUsers
+                {...page({
+                    tabs: [
+                        {
+                            key: 'active',
+                            count: 6,
+                            link: link('/admin/users'),
+                            active: false,
+                        },
+                        {
+                            key: 'deleted',
+                            count: 0,
+                            link: link('/admin/users?status=deleted'),
+                            active: true,
+                        },
+                    ],
+                    rows: [],
+                    shown: 0,
+                    total: 0,
+                    user: detail({ ...base, closure_reason: null }),
+                })}
+            />,
+        );
+        expect(
+            screen.getByText('No deleted accounts match these filters'),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('dialog')).toHaveTextContent(
+            'No reason given.',
+        );
     });
 });

@@ -1919,6 +1919,64 @@ const en = {
         'Nothing in {section} matches “{term}”. Try a shorter or different term.',
     'admin.account.open': 'Account, {name}',
     'settings.back_to_console': 'Back to the Admin console',
+    'settings.close.title': 'Delete account',
+    'settings.close.description': 'Permanently close your Rozine account',
+    'settings.close.danger_zone': 'Danger zone',
+    'settings.close.ready_hint':
+        'Closing your account cannot be undone from the app.',
+    'settings.close.blocked_hint':
+        'Some items are still open. Settle them before you close your account.',
+    'settings.close.blocked_title': 'Before you can delete your account',
+    'settings.close.blocked_description':
+        'Your account stays open until each of these is settled.',
+    'settings.close.settle': 'Go there',
+    'settings.close.keep': 'Keep my account',
+    'settings.close.confirm_title': 'Delete your account?',
+    'settings.close.confirm_description':
+        'This closes your Rozine account for every role it holds.',
+    'settings.close.consequence.sign_in':
+        'You can no longer sign in, and your linked payout accounts can no longer be used.',
+    'settings.close.consequence.records':
+        'Rozine keeps your records for the period Rwandan financial and tax law requires, then deletes them.',
+    'settings.close.consequence.reopen':
+        'To reopen it later, write to info@rozine.rw.',
+    'settings.close.warning':
+        'Deletion does not waive any amount owed to you or by you. Rozine may retain records required for legal, tax and anti-money-laundering purposes under our Terms.',
+    'settings.close.reason': 'Why are you leaving? (optional)',
+    'settings.close.password': 'Password',
+    'settings.close.type_delete': 'Type DELETE to confirm',
+    'settings.close.submit': 'Permanently delete account',
+    'settings.close.processing': 'Deleting…',
+    'settings.close.role.investor': 'Investor',
+    'settings.close.role.business': 'Business',
+    'settings.close.role.auditor': 'Audit Partner',
+    'settings.close.role.staff': 'Staff',
+    'settings.close.blocker.STAFF_ACCOUNT':
+        'Staff accounts are closed by an administrator, not from settings.',
+    'settings.close.blocker.INVESTOR_WALLET_BALANCE':
+        'Your wallet still holds money. Withdraw it to your own account first.',
+    'settings.close.blocker.INVESTOR_MONEY_MOVING':
+        'A deposit is still on its way. Wait until it arrives, then withdraw it.',
+    'settings.close.blocker.INVESTOR_COMMITMENTS':
+        'You have money committed to a raise that has not closed yet.',
+    'settings.close.blocker.INVESTOR_HOLDINGS':
+        'You still hold notes that are being repaid. Sell them on the market or wait until they are repaid.',
+    'settings.close.blocker.INVESTOR_MARKET_ORDERS':
+        'You have an open listing or purchase on the market. Cancel or finish it first.',
+    'settings.close.blocker.BUSINESS_LIVE_RAISE':
+        'Your business has a raise that is live or not yet disbursed.',
+    'settings.close.blocker.BUSINESS_APPLICATION_IN_REVIEW':
+        'Your business has an application under review.',
+    'settings.close.blocker.BUSINESS_REPAYMENTS_OWED':
+        'Your business still owes repayments to investors.',
+    'settings.close.blocker.BUSINESS_WALLET_BALANCE':
+        'Your business wallet still holds money. Withdraw it first.',
+    'settings.close.blocker.BUSINESS_MONEY_MOVING':
+        'A deposit to your business wallet is still on its way.',
+    'settings.close.blocker.AUDITOR_OPEN_AUDITS':
+        'You have an audit offered to you or in progress. Finish or decline it first.',
+    'settings.close.blocker.AUDITOR_REPORTS_PENDING':
+        'You have a report that is not final yet. Finish it first.',
     'admin.account.close': 'Close account menu',
     'admin.account.sign_out': 'Sign out',
     'admin.role.analyst': 'Analyst',
@@ -8354,6 +8412,15 @@ const en = {
     'admin.users.stats.kyc_verified': 'KYC verified',
     'admin.users.stats.awaiting_kyc': 'Awaiting KYC review',
     'admin.users.filter': 'Filter users by role',
+    'admin.users.tabs': 'Account status',
+    'admin.users.tab.active': 'Active accounts',
+    'admin.users.tab.deleted': 'Deleted accounts',
+    'admin.users.col.closed': 'Closed',
+    'admin.users.closed_on': 'Closed on {date}',
+    'admin.users.closed_reason': 'Reason given: {reason}',
+    'admin.users.closed_no_reason': 'No reason given.',
+    'admin.users.empty_deleted': 'No deleted accounts match these filters',
+    'admin.users.action.account.close': 'Closed their account',
     'admin.users.chip.all': 'All',
     'admin.users.chip.investor': 'Investors',
     'admin.users.chip.business': 'Businesses',

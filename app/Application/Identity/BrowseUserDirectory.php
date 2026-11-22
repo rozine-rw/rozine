@@ -27,11 +27,11 @@ final class BrowseUserDirectory
      * @param  'newest'|'oldest'|'name'  $sort
      * @return Directory
      */
-    public function directory(int $actorId, string $role, string $kyc, string $sort, string $search, int $limit): array
+    public function directory(int $actorId, string $role, string $kyc, string $sort, string $search, int $limit, bool $closed = false): array
     {
         $this->staff->check($actorId, 'investors.verify');
 
-        return $this->store->directory($role, $kyc, $sort, $search, $limit);
+        return $this->store->directory($role, $kyc, $sort, $search, $limit, $closed);
     }
 
     /** @return Detail */

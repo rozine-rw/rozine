@@ -629,7 +629,9 @@ describe('Business account sections', () => {
         expect(
             screen.getByRole('link', { name: /Change password/u }),
         ).toHaveAttribute('href', '/preview/business-profile-security');
-        expect(screen.queryByText(/Delete account/u)).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /Delete account/u }),
+        ).toHaveAttribute('href', '/settings/profile#close-account');
         unmount();
 
         const off = props(securityFixture);

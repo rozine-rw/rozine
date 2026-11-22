@@ -2020,6 +2020,64 @@ const rw: Catalog = {
         'Nta kintu muri {section} gihuye na “{term}”. Gerageza ijambo rigufi cyangwa irindi.',
     'admin.account.open': 'Konti, {name}',
     'settings.back_to_console': 'Subira kuri konsole y’ubuyobozi',
+    'settings.close.title': 'Gusiba konti',
+    'settings.close.description': 'Funga burundu konti yawe ya Rozine',
+    'settings.close.danger_zone': 'Ahantu h’akaga',
+    'settings.close.ready_hint':
+        'Gufunga konti yawe ntibishobora gusubizwa inyuma muri porogaramu.',
+    'settings.close.blocked_hint':
+        'Hari ibikiri bifunguye. Banza ubirangize mbere yo gufunga konti yawe.',
+    'settings.close.blocked_title': 'Mbere y’uko usiba konti yawe',
+    'settings.close.blocked_description':
+        'Konti yawe iguma ifunguye kugeza buri kimwe muri ibi kirangiye.',
+    'settings.close.settle': 'Jyayo',
+    'settings.close.keep': 'Gumana konti yanjye',
+    'settings.close.confirm_title': 'Gusiba konti yawe?',
+    'settings.close.confirm_description':
+        'Ibi bifunga konti yawe ya Rozine ku nshingano zose ifite.',
+    'settings.close.consequence.sign_in':
+        'Ntuzongera kwinjira, kandi konti zawe zihuje zo kwakiriraho amafaranga ntizizongera gukoreshwa.',
+    'settings.close.consequence.records':
+        'Rozine ibika inyandiko zawe mu gihe amategeko y’u Rwanda agenga imari n’imisoro ateganya, hanyuma ikazisiba.',
+    'settings.close.consequence.reopen':
+        'Kugira ngo uzayifungure nyuma, andikira info@rozine.rw.',
+    'settings.close.warning':
+        'Gusiba ntibikuraho amafaranga ayo ari yo yose ubereyemo cyangwa ubereyemo abandi. Rozine ishobora kubika inyandiko zisabwa n’amategeko, imisoro no kurwanya iyezandonke hakurikijwe Amabwiriza yacu.',
+    'settings.close.reason': 'Kuki ugiye? (si ngombwa)',
+    'settings.close.password': 'Ijambo ry’ibanga',
+    'settings.close.type_delete': 'Andika DELETE kugira ngo wemeze',
+    'settings.close.submit': 'Siba konti burundu',
+    'settings.close.processing': 'Birimo gusibwa…',
+    'settings.close.role.investor': 'Umushoramari',
+    'settings.close.role.business': 'Ubucuruzi',
+    'settings.close.role.auditor': 'Umugenzuzi',
+    'settings.close.role.staff': 'Abakozi',
+    'settings.close.blocker.STAFF_ACCOUNT':
+        'Konti z’abakozi zifungwa n’umuyobozi, si muri igenamiterere.',
+    'settings.close.blocker.INVESTOR_WALLET_BALANCE':
+        'Ikotomoni yawe iracyafite amafaranga. Banza uyakure uyashyire kuri konti yawe.',
+    'settings.close.blocker.INVESTOR_MONEY_MOVING':
+        'Hari amafaranga yoherejwe ataragera. Tegereza agere, hanyuma uyakure.',
+    'settings.close.blocker.INVESTOR_COMMITMENTS':
+        'Ufite amafaranga wiyemeje gushora mu bukangurambaga butararangira.',
+    'settings.close.blocker.INVESTOR_HOLDINGS':
+        'Uracyafite inyandiko z’umwenda zikiri kwishyurwa. Zigurishe ku isoko cyangwa utegereze zishyurwe.',
+    'settings.close.blocker.INVESTOR_MARKET_ORDERS':
+        'Ufite igicuruzwa cyangwa igura bifunguye ku isoko. Banza ubihagarike cyangwa ubirangize.',
+    'settings.close.blocker.BUSINESS_LIVE_RAISE':
+        'Ubucuruzi bwawe bufite ubukangurambaga bukiri gukorwa cyangwa butaratangwa.',
+    'settings.close.blocker.BUSINESS_APPLICATION_IN_REVIEW':
+        'Ubucuruzi bwawe bufite ubusabe buri gusuzumwa.',
+    'settings.close.blocker.BUSINESS_REPAYMENTS_OWED':
+        'Ubucuruzi bwawe buracyafitiye abashoramari amafaranga yo kwishyura.',
+    'settings.close.blocker.BUSINESS_WALLET_BALANCE':
+        'Ikotomoni y’ubucuruzi bwawe iracyafite amafaranga. Banza uyakure.',
+    'settings.close.blocker.BUSINESS_MONEY_MOVING':
+        'Hari amafaranga yoherejwe ku ikotomoni y’ubucuruzi ataragera.',
+    'settings.close.blocker.AUDITOR_OPEN_AUDITS':
+        'Ufite igenzura wahawe cyangwa urimo gukorwa. Banza urirangize cyangwa uryange.',
+    'settings.close.blocker.AUDITOR_REPORTS_PENDING':
+        'Ufite raporo itararangira. Banza uyirangize.',
     'admin.account.close': 'Funga urutonde rwa konti',
     'admin.account.sign_out': 'Sohoka',
     'admin.role.analyst': 'Umusesenguzi',
@@ -8632,6 +8690,15 @@ const rw: Catalog = {
     'admin.users.stats.kyc_verified': 'KYC yemejwe',
     'admin.users.stats.awaiting_kyc': 'KYC itegereje gusuzumwa',
     'admin.users.filter': 'Shungura abakoresha ukurikije inshingano',
+    'admin.users.tabs': 'Imiterere ya konti',
+    'admin.users.tab.active': 'Konti zikora',
+    'admin.users.tab.deleted': 'Konti zasibwe',
+    'admin.users.col.closed': 'Yafunzwe',
+    'admin.users.closed_on': 'Yafunzwe ku wa {date}',
+    'admin.users.closed_reason': 'Impamvu yatanzwe: {reason}',
+    'admin.users.closed_no_reason': 'Nta mpamvu yatanzwe.',
+    'admin.users.empty_deleted': 'Nta konti zasibwe zihuye n’ibi byatoranyijwe',
+    'admin.users.action.account.close': 'Yafunze konti ye',
     'admin.users.chip.all': 'Bose',
     'admin.users.chip.investor': 'Abashoramari',
     'admin.users.chip.business': 'Ubucuruzi',

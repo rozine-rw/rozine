@@ -18,7 +18,7 @@ class ListUserDirectoryRequest extends FormRequest
     {
         return ['role' => ['sometimes', 'string', 'in:all,investor,business,auditor,staff,no_role'],
             'kyc' => ['sometimes', 'string', 'in:any,verified,in_review,in_progress,rejected,not_started'],
-            'sort' => ['sometimes', 'string', 'in:newest,oldest,name'],
+            'sort' => ['sometimes', 'string', 'in:newest,oldest,name'], 'status' => ['sometimes', 'string', 'in:active,deleted'],
             'q' => ['sometimes', 'nullable', 'string', 'max:120'], 'user' => ['sometimes', 'integer', 'min:1']];
     }
 }

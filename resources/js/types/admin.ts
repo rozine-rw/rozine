@@ -2357,6 +2357,10 @@ export type UserRow = {
     requested: ('business' | 'auditor')[];
     kyc: UserKyc;
     restricted: boolean;
+    /** When the holder closed the account (soft delete); null while it is open. */
+    closed_at: string | null;
+    /** The holder's own words on closing, when they gave any. */
+    closure_reason: string | null;
     link: RouteLink;
 };
 
@@ -2399,6 +2403,13 @@ export type UserRoleChip =
 
 /** Users (Accounts): every account on the platform, filtered and searched on the server. */
 export type AdminUsersProps = AdminFrameShellProps & {
+    /** Open accounts, and the accounts their holders closed. */
+    tabs: {
+        key: 'active' | 'deleted';
+        count: number;
+        link: RouteLink;
+        active: boolean;
+    }[];
     stats: {
         key: 'total_users' | 'new_this_week' | 'kyc_verified' | 'awaiting_kyc';
         value: StatValue;

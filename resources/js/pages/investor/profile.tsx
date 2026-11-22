@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { DeleteAccountRow } from '@/components/delete-user';
 import { InvestorShell } from '@/components/investor/investor-shell';
 import {
     Academy,
@@ -96,10 +97,13 @@ export default function InvestorProfile(props: InvestorProfileProps) {
                     />
                 )}
                 {sub === 'security' && (
-                    <SecurityCenter
-                        security={props.security}
-                        settings={props.links.security_settings}
-                    />
+                    <>
+                        <SecurityCenter
+                            security={props.security}
+                            settings={props.links.security_settings}
+                        />
+                        <DeleteAccountRow />
+                    </>
                 )}
                 {(sub === 'plan' || sub === 'terms' || sub === 'privacy') && (
                     <PendingContent kind={sub} />
