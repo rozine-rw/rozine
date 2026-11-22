@@ -11,6 +11,7 @@ use App\Http\Requests\Staff\DecideInvestorVerificationRequest;
 use App\Http\Requests\Staff\ListInvestorVerificationsRequest;
 use App\Http\Resources\OperationResource;
 use App\Http\Resources\StaffInvestorVerificationsResource;
+use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -76,7 +77,11 @@ class StaffInvestorVerificationController extends Controller
 
     public function approve(DecideInvestorVerificationRequest $request): RedirectResponse|OperationResource
     {
-        return $this->answer($request, $this->review->approve(...$this->command($request)), 'Identity approved. :name can now invest.');
+        return $this->answer($request, $this->review->approve(...$this->command($request)), fn (string $purpose): string => match ($purpose) {
+            'auditor' => 'Identity approved. :name can now ask for Auditor access.',
+            'business' => 'Identity approved. :name can now ask for Business access.',
+            default => 'Identity approved. :name can now invest.',
+        });
     }
 
     public function reject(DecideInvestorVerificationRequest $request): RedirectResponse|OperationResource
@@ -96,8 +101,9 @@ class StaffInvestorVerificationController extends Controller
      * so a reviewer working down a long queue sees that it went through and what it changed (#550).
      *
      * @param  array<string, mixed>  $result
+     * @param  string|Closure(string): string  $done  the confirmation, or how to word it for the case's purpose
      */
-    private function answer(Request $request, array $result, string $done): RedirectResponse|OperationResource
+    private function answer(Request $request, array $result, string|Closure $done): RedirectResponse|OperationResource
     {
         if ($request->routeIs('api.*')) {
             return OperationResource::fromResult($result, 'engineering-2026-10-06.1');
@@ -107,8 +113,8 @@ class StaffInvestorVerificationController extends Controller
         }
 
         $verification = (string) $request->route('verification');
-        $name = $this->review->show((int) $request->user()?->getAuthIdentifier(), $verification)['account']['name'];
-        Inertia::flash('toast', ['type' => 'success', 'message' => __($done, ['name' => $name])]);
+        $review = $this->review->show((int) $request->user()?->getAuthIdentifier(), $verification);
+        Inertia::flash('toast', ['type' => 'success', 'message' => __(is_string($done) ? $done : $done($review['purpose']), ['name' => $review['account']['name']])]);
 
         // A decision taken from the Investor directory returns to that person's 360 there.
         $route = $request->input('return_to') === 'directory' ? 'staff.investors.index' : 'staff.investor-verifications.index';

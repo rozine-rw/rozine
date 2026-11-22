@@ -16,6 +16,7 @@ use Illuminate\Support\Carbon;
  * @property int $revision
  * @property 'draft'|'submitted'|'approved'|'rejected' $status
  * @property State $state
+ * @property 'investor'|'business'|'auditor' $purpose
  * @property Carbon|null $submitted_at
  */
 class InvestorVerification extends Model

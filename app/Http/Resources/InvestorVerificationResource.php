@@ -15,6 +15,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @phpstan-type Submission array{
  *     revision: int,
  *     status: string,
+ *     purpose: 'investor'|'business'|'auditor',
  *     verified: bool,
  *     identity_context_revision: int,
  *     state: array{
@@ -47,7 +48,7 @@ class InvestorVerificationResource extends JsonResource
         };
 
         return ['investor_type' => 'individual', 'verified' => $data['verified'], 'identity_context_revision' => $data['identity_context_revision'], 'revision' => $data['revision'],
-            'status' => $data['status'], 'decision_reason' => $data['status'] === 'rejected' ? $state['decision']['reason'] ?? null : null,
+            'status' => $data['status'], 'purpose' => $data['purpose'], 'decision_reason' => $data['status'] === 'rejected' ? $state['decision']['reason'] ?? null : null,
             'step' => $state['step'], 'country' => 'Rwanda', 'date_of_birth' => $state['date_of_birth'],
             'id_type' => $state['id_type'], 'id_number' => $state['id_number'],
             'uploads' => ['front' => $upload('front'), 'back' => $upload('back'), 'selfie' => $upload('selfie')],

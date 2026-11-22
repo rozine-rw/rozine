@@ -153,6 +153,13 @@ export default function AdminInvestorVerifications(
                                     <div className="truncate text-[11px] text-rz-faint">
                                         {entry.email}
                                     </div>
+                                    {entry.purpose !== 'investor' && (
+                                        <div className="truncate text-[11px] font-semibold text-rz-accent-text">
+                                            {t(
+                                                `admin.kyc.purpose.${entry.purpose}`,
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             <div role="cell" className="min-w-0">
@@ -314,6 +321,11 @@ function ReviewDrawer({
                     <p className="truncate text-[12.5px] text-rz-muted">
                         {review.account.email}
                     </p>
+                    {review.purpose !== 'investor' && (
+                        <p className="mt-1 text-[12px] font-semibold text-rz-accent-text">
+                            {t(`admin.kyc.purpose.${review.purpose}`)}
+                        </p>
+                    )}
                 </div>
                 <Chip tone={KYC_STATUS_TONE[review.status]}>
                     {t(`admin.kyc.status.${review.status}`)}
