@@ -373,8 +373,13 @@ export default function Launcher({
                                                   'IDENTITY_VERIFICATION_REQUIRED' ? (
                                                     <a
                                                         href={
-                                                            investorVerification()
-                                                                .url
+                                                            investorVerification(
+                                                                {
+                                                                    query: {
+                                                                        for: role,
+                                                                    },
+                                                                },
+                                                            ).url
                                                         }
                                                         className={CARD}
                                                     >

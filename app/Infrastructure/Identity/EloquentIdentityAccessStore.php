@@ -589,15 +589,18 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
      * @param  Closure(string): array<string, mixed>  $approve
      * @return array<string, mixed>
      */
-    public function verifyInvestor(int $actorId, int $userId, string $identityReference, string $evidenceReference, string $reason, string $requestId, Closure $approve): array
+    public function verifyInvestor(int $actorId, int $userId, string $identityReference, string $evidenceReference, string $reason, string $requestId, Closure $approve, bool $grantsInvestorAccess = true): array
     {
-        return DB::transaction(function () use ($actorId, $userId, $identityReference, $evidenceReference, $reason, $requestId, $approve): array {
+        return DB::transaction(function () use ($actorId, $userId, $identityReference, $evidenceReference, $reason, $requestId, $approve, $grantsInvestorAccess): array {
             // Both accounts in ascending ID first; the reviewer's current permission is then read under that lock.
             $users = User::query()->whereKey([$actorId, $userId])->orderBy('id')->lockForUpdate()->get()->keyBy('id');
             $this->requireStaffPermission($actorId, 'investors.verify');
 
             return $this->resolveVerifiedPerson($actorId, $users->get($userId), $identityReference, $evidenceReference, $reason, $requestId, 'investor.verify',
-                function (Party $party) use ($approve): array {
+                function (Party $party) use ($approve, $grantsInvestorAccess): array {
+                    if (! $grantsInvestorAccess) {
+                        return ['membership' => null, 'verification' => $approve($party->id)];
+                    }
                     [$membership, , $revision] = $this->transitionMembership($party, 'investor', 'active', 0);
 
                     return ['membership' => ['id' => $membership->id, 'role' => 'investor', 'status' => 'active', 'revision' => $revision],

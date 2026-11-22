@@ -1970,6 +1970,10 @@ const en = {
     'admin.kyc.status.draft': 'Reopened',
     'admin.kyc.status.submitted': 'Waiting',
     'admin.kyc.status.approved': 'Approved',
+    'admin.kyc.purpose.business':
+        'For Business access · no Investor access on approval',
+    'admin.kyc.purpose.auditor':
+        'For Auditor access · no Investor access on approval',
     'admin.kyc.status.rejected': 'Rejected',
     'admin.kyc.empty.submitted': 'No submissions are waiting for review.',
     'admin.kyc.empty.decided': 'No decisions yet.',
@@ -5077,6 +5081,8 @@ const en = {
     'investor.signup.agree.privacy_after': '.',
     'investor.kyc.progress': 'Verification progress',
     'investor.kyc.kicker_identity': 'IDENTITY VERIFICATION',
+    'investor.kyc.kicker_business': 'IDENTITY CHECK FOR BUSINESS ACCESS',
+    'investor.kyc.kicker_auditor': 'IDENTITY CHECK FOR AUDITOR ACCESS',
     'investor.kyc.kicker_entity': 'ENTITY VERIFICATION',
     'investor.kyc.personal.title': 'Personal details',
     'investor.kyc.personal.subtitle':

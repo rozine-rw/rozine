@@ -16,7 +16,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * approval reruns them under its locks. AML alerts and sanctions hits stay null until screening
  * (KYC-R04) is connected, so the console says so rather than showing a count.
  *
- * @phpstan-type Entry array{id: string, revision: int, status: string, submitted_at: string, decided_at: string|null, name: string, email: string, id_type: string}
+ * @phpstan-type Entry array{id: string, revision: int, status: string, submitted_at: string, decided_at: string|null, name: string, email: string, id_type: string, purpose: string}
  * @phpstan-type Review array{
  *     id: string, revision: int, status: string, submitted_at: string|null, account: array{name: string, email: string},
  *     state: array{date_of_birth: string, id_type: string, id_number: string, decision: array{outcome: string, reason: string, decided_at: string}|null},
@@ -72,7 +72,7 @@ class StaffInvestorVerificationsResource extends JsonResource
     {
         $action = fn (string $name): array => ['url' => route($prefix.'staff.investor-verifications.'.$name, ['verification' => $review['id']], false), 'method' => 'post'];
 
-        return ['id' => $review['id'], 'revision' => $review['revision'], 'status' => $review['status'], 'submitted_at' => $review['submitted_at'],
+        return ['id' => $review['id'], 'revision' => $review['revision'], 'status' => $review['status'], 'purpose' => $review['purpose'], 'submitted_at' => $review['submitted_at'],
             'account' => $review['account'], 'date_of_birth' => $review['state']['date_of_birth'], 'id_type' => $review['state']['id_type'],
             'id_number' => $review['state']['id_number'], 'decision' => $review['state']['decision'],
             'documents' => array_map(function (array $document) use ($review, $prefix): array {

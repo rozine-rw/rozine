@@ -14,6 +14,7 @@ namespace App\Application\Identity\Contracts;
  * @phpstan-type Submission array{
  *     revision: int,
  *     status: 'draft'|'submitted'|'approved'|'rejected',
+ *     purpose: 'investor'|'business'|'auditor',
  *     state: State,
  *     verified: bool,
  *     identity_context_revision: int
@@ -25,6 +26,9 @@ interface InvestorVerificationStore
     public function get(int $userId): array;
 
     /**
+     * Saves one step. `$input['purpose']`, when given, records which app the identity check is for
+     * while the submission can still be changed: only an Investor case grants Investor access.
+     *
      * @param  array<string, mixed>  $input
      * @return array<string, mixed>
      */

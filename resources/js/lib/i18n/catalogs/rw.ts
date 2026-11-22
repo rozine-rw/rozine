@@ -2071,6 +2071,10 @@ const rw: Catalog = {
     'admin.kyc.status.draft': 'Byongeye gufungurwa',
     'admin.kyc.status.submitted': 'Bitegereje',
     'admin.kyc.status.approved': 'Byemejwe',
+    'admin.kyc.purpose.business':
+        "Ku bwinjiriro bwa Ubucuruzi · nta bwinjiriro bw'Umushoramari nyuma yo kwemezwa",
+    'admin.kyc.purpose.auditor':
+        "Ku bwinjiriro bw'Umugenzuzi · nta bwinjiriro bw'Umushoramari nyuma yo kwemezwa",
     'admin.kyc.status.rejected': 'Byanzwe',
     'admin.kyc.empty.submitted': 'Nta bisabwa bitegereje gusuzumwa.',
     'admin.kyc.empty.decided': 'Nta cyemezo kirafatwa.',
@@ -5270,6 +5274,8 @@ const rw: Catalog = {
     'investor.signup.agree.privacy_after': '.',
     'investor.kyc.progress': 'Aho igenzura rigeze',
     'investor.kyc.kicker_identity': "IGENZURA RY'UMWIRONDORO",
+    'investor.kyc.kicker_business': "IGENZURA RY'UMWIRONDORO KU BUCURUZI",
+    'investor.kyc.kicker_auditor': "IGENZURA RY'UMWIRONDORO KU MUGENZUZI",
     'investor.kyc.kicker_entity': "IGENZURA RY'IKIGO",
     'investor.kyc.personal.title': 'Amakuru bwite',
     'investor.kyc.personal.subtitle':

@@ -13,11 +13,18 @@ class VerificationDecided extends RozineMail
     private function __construct(
         public readonly string $url,
         public readonly ?string $rejectionReason,
+        public readonly string $purpose = 'investor',
     ) {}
 
     public static function approved(string $url): self
     {
         return new self($url, null);
+    }
+
+    /** Verified for Business or Auditor access: the next step is asking for that access on the launcher. */
+    public static function approvedFor(string $purpose, string $url): self
+    {
+        return new self($url, null, $purpose);
     }
 
     public static function rejected(string $reason, string $url): self
@@ -33,6 +40,7 @@ class VerificationDecided extends RozineMail
                 : __('Your identity details need another look'))
             ->markdown('mail.investor.verification-decided', [
                 'approved' => $this->rejectionReason === null,
+                'purpose' => $this->purpose,
                 'reason' => $this->rejectionReason,
                 'url' => $this->url,
             ]);

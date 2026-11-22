@@ -86,12 +86,14 @@ interface IdentityAccessStore
      * another Party, activates the Investor membership through the membership-transition core, and
      * then runs `$approve` with the verified Party id, all in one transaction. Lock order: both accounts
      * in ascending ID (the reviewer's permission is read under that lock), identity advisory lock,
-     * parties, then whatever `$approve` locks (the submission).
+     * parties, then whatever `$approve` locks (the submission). A check made for Business or Auditor
+     * access (`$grantsInvestorAccess` false) verifies the person and grants no membership: the role
+     * they came for is asked of staff from the launcher, and an Auditor keeps no other role.
      *
      * @param  Closure(string): array<string, mixed>  $approve
      * @return array<string, mixed>
      */
-    public function verifyInvestor(int $actorId, int $userId, string $identityReference, string $evidenceReference, string $reason, string $requestId, Closure $approve): array;
+    public function verifyInvestor(int $actorId, int $userId, string $identityReference, string $evidenceReference, string $reason, string $requestId, Closure $approve, bool $grantsInvestorAccess = true): array;
 
     /**
      * Records, as an identity operator, the verified person behind a staff account; a null reference
