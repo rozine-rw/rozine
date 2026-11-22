@@ -359,7 +359,7 @@ export function AuditCalendar({
                                     isPicked
                                         ? 'border-[#d6e4ff] bg-[#f4f7fc] dark:border-rz-border dark:bg-rz-surface-sunken'
                                         : isToday
-                                          ? 'border-[#0c1830] bg-[rgba(194,102,31,.10)] dark:border-rz-ink'
+                                          ? 'border-[#0c1830] bg-[rgba(194,102,31,.10)] dark:border-rz-accent-text'
                                           : due.length > 0
                                             ? 'border-rz-border bg-[#f8fafc] dark:bg-rz-surface-sunken'
                                             : 'border-rz-border bg-rz-surface',

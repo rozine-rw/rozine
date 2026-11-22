@@ -153,7 +153,7 @@ describe('Light-theme colours carry a dark-theme counterpart', () => {
                         (['border', 'ring', 'divide', 'outline'].includes(
                             base,
                         ) &&
-                            level > 0.7);
+                            level > 0.6);
                     const key = `${file} ${name.replace(/^((?:[a-z0-9-]+:)*)/u, '')}`;
 
                     return leaksInDark &&
@@ -166,5 +166,47 @@ describe('Light-theme colours carry a dark-theme counterpart', () => {
         );
 
         expect(leaks).toEqual([]);
+    });
+});
+
+describe('Dark theme leftovers (QA #716)', () => {
+    it('gives the starter-kit settings screens the console palette, not neutral black', () => {
+        const app = stylesheets[0];
+        const dark = app.slice(app.indexOf('.dark {'));
+        const block = dark.slice(0, dark.indexOf('}'));
+
+        for (const token of [
+            'background',
+            'foreground',
+            'card',
+            'popover',
+            'primary',
+            'secondary',
+            'muted',
+            'accent',
+            'border',
+            'input',
+            'ring',
+            'sidebar',
+        ]) {
+            expect(block).toMatch(
+                new RegExp(`--${token}: var\\(--rz-[\\w-]+\\);`, 'u'),
+            );
+        }
+    });
+
+    it('never sets white text on the positive green, which is too light for it in the dark theme', () => {
+        const clashes = sources.flatMap(({ file, text }) =>
+            classLists(text)
+                .filter(
+                    ({ classes }) =>
+                        classes.includes('bg-rz-positive') &&
+                        classes.includes('text-white') &&
+                        !classes.some((name) => name.startsWith('dark:text-')),
+                )
+                .map(({ line }) => `${file}:${line}`),
+        );
+
+        expect(clashes).toEqual([]);
     });
 });

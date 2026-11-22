@@ -250,6 +250,15 @@ describe('Auditor Portfolio', () => {
         );
     });
 
+    it("rings today in the auditor's accent, not a near-white line, in the dark theme (QA #716)", () => {
+        render(<AuditorPortfolio {...props()} />);
+
+        const today = screen.getByRole('button', { name: /^3 Oct 2026/u });
+
+        expect(today).toHaveClass('dark:border-rz-accent-text');
+        expect(today).not.toHaveClass('dark:border-rz-ink');
+    });
+
     it("opens a day's entries from the grid and closes them again", async () => {
         const { user } = renderWithUser(<AuditorPortfolio {...props()} />);
         const seventh = screen.getByRole('button', {
