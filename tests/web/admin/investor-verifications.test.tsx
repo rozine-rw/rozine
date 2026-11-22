@@ -275,7 +275,9 @@ describe('Compliance identity queue', () => {
                 'For Auditor access · no Investor access on approval',
             ),
         ).toBeInTheDocument();
-        expect(within(aline).queryByText(/For Auditor access/u)).toBeNull();
+        expect(
+            within(aline).queryByText(/For Auditor access/u),
+        ).not.toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Show more' })).toHaveAttribute(
             'href',
             '/admin/investor-verifications?tab=submitted&before=b',
