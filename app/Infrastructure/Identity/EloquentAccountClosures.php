@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Infrastructure\Identity;
 
 use App\Application\Identity\Contracts\AccountClosures;
+use App\Application\Wallet\Contracts\NoteRepayments;
 use App\Domain\Identity\ActiveRolePolicy;
-use App\Models\BusinessRepayment;
 use App\Models\IdentityAuditEvent;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +23,8 @@ final class EloquentAccountClosures implements AccountClosures
 {
     /** The wallet buckets that hold the investor's money, including cash on its way out. */
     private const INVESTOR_BUCKETS = ['investor_available', 'investor_held', 'investor_committed', 'investor_withdrawing'];
+
+    public function __construct(private NoteRepayments $notes) {}
 
     public function standing(int $userId): array
     {
@@ -123,7 +125,7 @@ final class EloquentAccountClosures implements AccountClosures
         }
 
         foreach ($this->unitsHeld($party) as $campaignId => $units) {
-            if ($units > 0 && ! $this->noteRepaid($campaignId)) {
+            if ($units > 0 && ! $this->notes->repaid($campaignId)) {
                 $blockers[] = self::blocker('INVESTOR_HOLDINGS', 'investor');
                 break;
             }
@@ -158,28 +160,6 @@ final class EloquentAccountClosures implements AccountClosures
         }
 
         return $held;
-    }
-
-    /**
-     * A note is repaid once every instalment on its disbursement closing's due dates has been
-     * named by a repayment, the rule the servicing record uses. A note not yet issued is not repaid.
-     */
-    private function noteRepaid(string $campaignId): bool
-    {
-        $dueDates = DB::table('disbursements')->join('disbursement_closings', 'disbursement_closings.disbursement_id', '=', 'disbursements.id')
-            ->where('disbursements.business_campaign_id', $campaignId)->whereNotNull('disbursement_closings.due_dates')->value('disbursement_closings.due_dates');
-        /** @var list<string> $instalments */
-        $instalments = $dueDates === null ? [] : json_decode((string) $dueDates, true);
-        $paid = [];
-        foreach (BusinessRepayment::query()->where('note_id', strtolower($campaignId))->get() as $repayment) {
-            /** @var list<int> $indexes */
-            $indexes = $repayment->payload['instalment_indexes'] ?? [];
-            foreach ($indexes as $index) {
-                $paid[(int) $index] = true;
-            }
-        }
-
-        return $instalments !== [] && array_all(array_keys($instalments), fn (int $offset): bool => isset($paid[$offset + 1]));
     }
 
     /**
@@ -222,7 +202,7 @@ final class EloquentAccountClosures implements AccountClosures
         $notes = DB::table('disbursements')->join('disbursement_closings', 'disbursement_closings.disbursement_id', '=', 'disbursements.id')
             ->where('disbursements.business_id', $businessId)->whereNotNull('disbursement_closings.due_dates')->pluck('disbursements.business_campaign_id');
         foreach ($notes as $note) {
-            if (! $this->noteRepaid((string) $note)) {
+            if (! $this->notes->repaid((string) $note)) {
                 $blockers[] = self::blocker('BUSINESS_REPAYMENTS_OWED', 'business', $businessId);
                 break;
             }

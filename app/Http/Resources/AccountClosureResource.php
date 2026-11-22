@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Application\Identity\Contracts\AccountClosures;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * The Close account section of the profile settings: the account's roles and what still blocks its
  * closure, each blocker with a link to the page that settles it.
- *
- * @phpstan-import-type Blocker from AccountClosures
  */
 class AccountClosureResource extends JsonResource
 {
@@ -35,7 +32,7 @@ class AccountClosureResource extends JsonResource
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        /** @var array{roles: list<string>, blockers: list<Blocker>} $standing */
+        /** @var array{roles: list<string>, blockers: list<array{code: string, role: string, business_id: string|null}>} $standing */
         $standing = $this->resource;
 
         return ['roles' => $standing['roles'], 'blockers' => array_map(fn (array $blocker): array => [
