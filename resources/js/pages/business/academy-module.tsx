@@ -317,7 +317,7 @@ function Flashcards({
                                 <button
                                     type="button"
                                     onClick={() => rate(true)}
-                                    className="h-[52px] rounded-2xl bg-rz-positive text-[14.5px] font-semibold text-white shadow-rz-resting transition active:scale-[.98] motion-reduce:transition-none"
+                                    className="h-[52px] rounded-2xl bg-rz-positive text-[14.5px] font-semibold text-white shadow-rz-resting transition active:scale-[.98] motion-reduce:transition-none dark:bg-[#17795a]"
                                 >
                                     {t('business.academy.got_it')}
                                 </button>
