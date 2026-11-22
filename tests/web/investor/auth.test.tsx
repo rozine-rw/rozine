@@ -447,6 +447,29 @@ describe('Sign-up', () => {
 });
 
 describe('Verification', () => {
+    it('names an Auditor check and sends its purpose with the first step', async () => {
+        const user = userEvent.setup();
+        render(
+            <InvestorVerification
+                {...clone<InvestorVerificationProps>({
+                    ...personalFixture,
+                    purpose: 'auditor',
+                } as InvestorVerificationProps)}
+            />,
+        );
+
+        expect(
+            screen.getByText('IDENTITY CHECK FOR AUDITOR ACCESS'),
+        ).toBeInTheDocument();
+        fireEvent.change(screen.getByLabelText('DATE OF BIRTH'), {
+            target: { value: '1990-02-01' },
+        });
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+        expect(inertia.posts.at(-1)).toMatchObject({
+            data: { step: 'personal', purpose: 'auditor' },
+        });
+    });
+
     it('verifies an individual: date of birth, document photos, then a selfie', async () => {
         const user = userEvent.setup();
         const { unmount: unmountFirst } = render(

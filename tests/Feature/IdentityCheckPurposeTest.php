@@ -110,7 +110,7 @@ test('approving a check made for Auditor access verifies the person without maki
         ->and(IdentityAuditEvent::query()->where('action', 'investor.verify')->sole()->result['membership'])->toBeNull();
     Notification::assertSentTo($this->person, VerificationDecided::class,
         fn (VerificationDecided $mail): bool => $mail->purpose === 'auditor' && $mail->url === route('dashboard')
-            && str_contains($mail->toMail($this->person)->render(), 'Request Auditor access'));
+            && str_contains((string) $mail->toMail($this->person)->render(), 'Request Auditor access'));
 
     $this->actingAs($this->officer)->get(route('staff.investor-verifications.index', ['tab' => 'decided', 'verification' => $case->id]))
         ->assertInertia(fn (Assert $page) => $page->hasFlash('toast', ['type' => 'success', 'message' => 'Identity approved. Aminu Hussain can now ask for Auditor access.']));

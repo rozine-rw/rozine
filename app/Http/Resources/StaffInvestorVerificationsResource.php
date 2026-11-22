@@ -18,7 +18,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *
  * @phpstan-type Entry array{id: string, revision: int, status: string, submitted_at: string, decided_at: string|null, name: string, email: string, id_type: string, purpose: string}
  * @phpstan-type Review array{
- *     id: string, revision: int, status: string, submitted_at: string|null, account: array{name: string, email: string},
+ *     id: string, revision: int, status: string, purpose: string, submitted_at: string|null, account: array{name: string, email: string},
  *     state: array{date_of_birth: string, id_type: string, id_number: string, decision: array{outcome: string, reason: string, decided_at: string}|null},
  *     documents: list<array{id: string, slot: string, filename: string, media_type: string, size_bytes: int, sha256: string, uploaded_at: string, current: bool}>,
  *     history: list<array{revision: int, status: string, command: string, reason: string|null, at: string}>,
