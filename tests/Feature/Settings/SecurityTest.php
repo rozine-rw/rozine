@@ -102,3 +102,9 @@ test('correct password must be provided to update password', function () {
         ->assertSessionHasErrors('current_password')
         ->assertRedirect(route('security.edit'));
 });
+
+it('opens the password form on Security when settings/password is read (QA #721)', function (): void {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->get('/settings/password')->assertRedirect('/settings/security');
+});
