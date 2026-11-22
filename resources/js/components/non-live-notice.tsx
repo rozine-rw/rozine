@@ -17,7 +17,7 @@ export default function NonLiveNotice() {
         <aside
             role="note"
             aria-label={title}
-            className="border-b border-border bg-primary px-4 py-3 text-primary-foreground"
+            className="border-b border-border bg-primary px-4 py-3 text-primary-foreground dark:border-rz-border dark:bg-rz-surface-muted dark:text-rz-ink"
         >
             <div className="mx-auto flex max-w-7xl flex-col gap-1 text-sm sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-4">
                 <strong className="shrink-0 font-semibold">{title}</strong>

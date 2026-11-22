@@ -126,7 +126,7 @@ function Row({ payout }: { payout: PayoutInFlight }) {
                 className={cn(
                     'text-[11.5px] font-semibold',
                     payout.state === 'unknown'
-                        ? 'text-[#a4521a]'
+                        ? 'text-[#a4521a] dark:text-rz-warning-text'
                         : 'text-rz-muted',
                 )}
             >

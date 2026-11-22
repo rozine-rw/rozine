@@ -161,7 +161,7 @@ export default function InvestorMarket({
             role="tablist"
             aria-label={t('investor.market.title')}
             className={cn(
-                'flex gap-1.5 rounded-xl border border-rz-hairline bg-[#f3f6fc] p-1',
+                'flex gap-1.5 rounded-xl border border-rz-hairline bg-[#f3f6fc] p-1 dark:bg-rz-surface-sunken',
                 wide ? 'mt-2.5' : 'mt-4',
             )}
         >
@@ -354,7 +354,7 @@ export default function InvestorMarket({
                     <div
                         role="tablist"
                         aria-label={t('investor.market.orders.label')}
-                        className="flex gap-1 overflow-x-auto rounded-xl border border-rz-hairline bg-[#f3f6fc] p-1"
+                        className="flex gap-1 overflow-x-auto rounded-xl border border-rz-hairline bg-[#f3f6fc] p-1 dark:bg-rz-surface-sunken"
                     >
                         {orderOptions.map((option) => (
                             <button
@@ -369,7 +369,7 @@ export default function InvestorMarket({
                                 className={cn(
                                     'flex-1 rounded-[9px] px-2 py-1.5 text-xs font-semibold whitespace-nowrap',
                                     orders === option.value
-                                        ? 'bg-rz-surface text-rz-ink shadow-[0_1px_3px_rgba(20,45,95,.15)]'
+                                        ? 'bg-rz-surface text-rz-ink shadow-[0_1px_3px_rgba(20,45,95,.15)] dark:bg-rz-surface-muted'
                                         : 'text-rz-secondary',
                                 )}
                             >

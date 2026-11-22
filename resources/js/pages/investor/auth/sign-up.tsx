@@ -656,7 +656,7 @@ export default function InvestorSignUp({
                                                 className={cn(
                                                     'flex size-5 items-center justify-center rounded-full border-2',
                                                     on
-                                                        ? 'border-[#d6e4ff]'
+                                                        ? 'border-[#d6e4ff] dark:border-rz-investor-text'
                                                         : 'border-rz-border',
                                                 )}
                                             >

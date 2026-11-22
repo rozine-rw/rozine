@@ -78,7 +78,7 @@ const monthsAfter = (month: string, count: number): string[] => {
 };
 
 const FIELD =
-    'h-10 w-full rounded-xl border border-rz-border bg-rz-surface px-3 text-[13px] text-rz-text';
+    'h-10 w-full rounded-xl border border-rz-border bg-rz-surface px-3 text-[13px] text-rz-ink';
 
 /** The review sends text on one line: the procedure refuses control characters, line breaks included. */
 const oneLine = (text: string): string => text.replace(/\s+/g, ' ').trim();
@@ -135,7 +135,7 @@ export function StatementVerification({
                 role="status"
                 className="mt-5 rounded-2xl border border-rz-border bg-rz-surface p-4"
             >
-                <p className="text-rz-text text-[14px] font-bold">
+                <p className="text-[14px] font-bold text-rz-ink">
                     {t('auditor.verify.done.title')}
                 </p>
                 <p className="mt-1 text-[12.5px] leading-[1.5] text-rz-secondary">
@@ -283,7 +283,7 @@ export function StatementVerification({
                 submit();
             }}
         >
-            <h3 className="text-rz-text text-[15px] font-bold">
+            <h3 className="text-[15px] font-bold text-rz-ink">
                 {t('auditor.verify.title')}
             </h3>
             <p className="mt-1 text-[12px] leading-[1.5] text-rz-secondary">
@@ -294,7 +294,7 @@ export function StatementVerification({
                 {review.documents.map((document) => (
                     <div key={document.id}>
                         <div className="flex items-center justify-between gap-3 text-[13px]">
-                            <span className="text-rz-text font-semibold">
+                            <span className="font-semibold text-rz-ink">
                                 {document.filename}
                             </span>
                             <a
@@ -336,7 +336,7 @@ export function StatementVerification({
                             </th>
                         </tr>
                     </thead>
-                    <tbody className="text-rz-text">
+                    <tbody className="text-rz-ink">
                         {transcription.observations.map((observation) => (
                             <tr key={observation.month}>
                                 <th scope="row" className="font-semibold">
@@ -372,7 +372,7 @@ export function StatementVerification({
                                 </th>
                             </tr>
                         </thead>
-                        <tbody className="text-rz-text">
+                        <tbody className="text-rz-ink">
                             {transcription.balances.map((balance) => (
                                 <tr key={`${balance.account}:${balance.month}`}>
                                     <th scope="row" className="font-semibold">
@@ -397,7 +397,7 @@ export function StatementVerification({
                 {review.checks.map((check) => (
                     <label
                         key={check}
-                        className="text-rz-text flex items-start gap-2.5 text-[12.5px] leading-[1.45]"
+                        className="flex items-start gap-2.5 text-[12.5px] leading-[1.45] text-rz-ink"
                     >
                         <input
                             type="checkbox"
@@ -434,7 +434,7 @@ export function StatementVerification({
                         key={index}
                         className="space-y-2 rounded-xl border border-rz-border p-3"
                     >
-                        <legend className="text-rz-text px-1 text-[12px] font-semibold">
+                        <legend className="px-1 text-[12px] font-semibold text-rz-ink">
                             {t('auditor.verify.debt', { number: index + 1 })}
                         </legend>
                         <label className="block text-[11.5px] text-rz-secondary">
@@ -575,7 +575,7 @@ export function StatementVerification({
                         {review.documents.map((document) => (
                             <label
                                 key={document.id}
-                                className="text-rz-text flex items-center gap-2 text-[12px]"
+                                className="flex items-center gap-2 text-[12px] text-rz-ink"
                             >
                                 <input
                                     type="checkbox"
@@ -674,7 +674,7 @@ export function StatementVerification({
             {refusal !== null && (
                 <p
                     role="alert"
-                    className="bg-rz-danger-soft mt-3 rounded-xl px-3.5 py-2.5 text-[12px] leading-[1.5] text-rz-danger-text"
+                    className="mt-3 rounded-xl bg-rz-danger-tint px-3.5 py-2.5 text-[12px] leading-[1.5] text-rz-danger-text"
                 >
                     {t(`auditor.verify.refused.${refusal}` as MessageCode)}
                 </p>

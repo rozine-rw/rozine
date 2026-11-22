@@ -246,7 +246,7 @@ export function OnboardBusiness({ action }: { action: OnboardBusinessAction }) {
                             className={cn(
                                 'cursor-pointer rounded-[10px] border px-3.5 py-2 text-[12.5px] font-semibold',
                                 form.data.kind === kind
-                                    ? 'border-[#1e3aff] text-[#1e3aff]'
+                                    ? 'border-[#1e3aff] text-[#1e3aff] dark:text-rz-investor-text'
                                     : 'border-rz-hairline text-rz-body',
                             )}
                         >
@@ -368,8 +368,8 @@ export function OnboardedNotice({
             className={cn(
                 'mb-4 rounded-[13px] border px-4 py-3 text-[12.5px] leading-[1.55]',
                 onboarded.business_access
-                    ? 'border-[#bfe6d6] bg-[#effaf5] text-[#0f5c45]'
-                    : 'border-[#f5d9a8] bg-[#fff8eb] text-[#7a4b00]',
+                    ? 'border-[#bfe6d6] bg-[#effaf5] text-[#0f5c45] dark:border-rz-border dark:bg-rz-positive-tint dark:text-rz-positive'
+                    : 'border-[#f5d9a8] bg-[#fff8eb] text-[#7a4b00] dark:border-rz-border dark:bg-rz-warning-tint dark:text-rz-warning-text',
             )}
         >
             <p className="font-bold">{t('admin.businesses.onboarded.title')}</p>

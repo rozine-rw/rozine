@@ -334,13 +334,13 @@ function StatementExport({
             key: 'pdf',
             link: exports.pdf,
             label: t('investor.wallet.tx.pdf'),
-            tint: 'bg-[rgba(229,72,77,.10)] text-[#b3383c]',
+            tint: 'bg-[rgba(229,72,77,.10)] text-[#b3383c] dark:text-rz-danger-text',
         },
         {
             key: 'csv',
             link: exports.csv,
             label: t('investor.wallet.tx.csv'),
-            tint: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+            tint: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
         },
     ];
 

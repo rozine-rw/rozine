@@ -779,8 +779,8 @@ export default function BusinessAcademyModule({
                         className={cn(
                             'mt-3 flex items-center gap-2.5 rounded-2xl border px-3.5 py-3',
                             last.passed
-                                ? 'border-[#cfe9d8] bg-rz-positive-tint'
-                                : 'border-[#f3dfbf] bg-rz-warning-tint',
+                                ? 'border-[#cfe9d8] bg-rz-positive-tint dark:border-rz-positive-tint'
+                                : 'border-[#f3dfbf] bg-rz-warning-tint dark:border-rz-warning-tint',
                         )}
                     >
                         <span aria-hidden className="text-[20px]">
