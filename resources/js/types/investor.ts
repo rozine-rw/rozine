@@ -898,6 +898,8 @@ export type InvestorVerificationProps =
     | ({
           investor_type: 'individual';
           step: KycStep;
+          /** The app this identity check is for: only an Investor check grants Investor access. */
+          purpose?: 'investor' | 'business' | 'auditor';
           country: string;
           date_of_birth: string;
           id_type: IdDocument;

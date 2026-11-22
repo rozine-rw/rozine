@@ -91,14 +91,15 @@ final class EloquentInvestorDirectoryStore implements InvestorDirectoryStore
     }
 
     /**
-     * Every Party with an Investor membership or a verification case, one row each. KYC is verified
-     * once the verified-person writer has set the Party verified, rejected while the case's last
-     * decision stands, and pending otherwise.
+     * Every Party with an Investor membership or an Investor verification case, one row each. A case
+     * made for Business or Auditor access is not an Investor. KYC is verified once the verified-person
+     * writer has set the Party verified, rejected while the case's last decision stands, and pending
+     * otherwise.
      */
     private function investors(): Builder
     {
         return DB::table('parties')->leftJoin('investor_verifications AS iv', 'iv.party_id', '=', 'parties.id')
-            ->where(fn (Builder $investor) => $investor->whereNotNull('iv.id')->orWhereExists(fn (Builder $membership) => $membership->selectRaw('1')
+            ->where(fn (Builder $investor) => $investor->where('iv.purpose', 'investor')->orWhereExists(fn (Builder $membership) => $membership->selectRaw('1')
                 ->from('role_memberships')->whereColumn('role_memberships.party_id', 'parties.id')->where('role_memberships.role', 'investor')))
             ->selectRaw("parties.id AS party_id, iv.id AS verification_id, iv.status AS verification_status,
                 coalesce((SELECT u.name FROM users u WHERE u.party_id = parties.id ORDER BY u.id LIMIT 1), '') AS name,

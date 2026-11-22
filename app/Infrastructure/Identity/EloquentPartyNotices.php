@@ -200,7 +200,9 @@ final readonly class EloquentPartyNotices implements PartyNotices
             PartyNoticeKind::AuditorAccreditationRejected => AccreditationDecided::rejected($facts['reason'], route('auditor.profile')),
             PartyNoticeKind::AuditorJobOffered => new JobOffered(AuditJobType::from($facts['type']), $facts['business'], $facts['location'],
                 CarbonImmutable::parse($facts['accept_by']), route('auditor.jobs.index')),
-            PartyNoticeKind::VerificationApproved => VerificationDecided::approved(route('investor.deals')),
+            PartyNoticeKind::VerificationApproved => isset($facts['purpose'])
+                ? VerificationDecided::approvedFor($facts['purpose'], route('dashboard'))
+                : VerificationDecided::approved(route('investor.deals')),
             default => VerificationDecided::rejected($facts['reason'], route('investor.verification')),
         };
     }

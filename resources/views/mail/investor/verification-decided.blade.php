@@ -6,11 +6,25 @@
 {{ __('KYC status: Verified') }}
 </x-mail::notice>
 
+@if ($purpose === 'auditor')
+{{ __('Compliance has verified your identity. Open Rozine and choose Request access on the Auditor card, with your ICPAR licence number, so our team can accredit you.') }}
+
+<x-mail::button :url="$url" color="investor">
+{{ __('Request Auditor access') }}
+</x-mail::button>
+@elseif ($purpose === 'business')
+{{ __('Compliance has verified your identity. Open Rozine and choose Request access on the Business card, so our team can link you to your business.') }}
+
+<x-mail::button :url="$url" color="investor">
+{{ __('Request Business access') }}
+</x-mail::button>
+@else
 {{ __('Compliance has verified your identity. Your wallet is ready: deposit to start investing in audited Rwandan businesses.') }}
 
 <x-mail::button :url="$url" color="investor">
 {{ __('Start exploring') }}
 </x-mail::button>
+@endif
 @else
 # {{ __('Your details need another look') }}
 

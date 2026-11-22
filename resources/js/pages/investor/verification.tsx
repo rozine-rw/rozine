@@ -26,6 +26,12 @@ type Step = InvestorVerificationProps['step'];
 
 const PERSONAL_STEPS = ['personal', 'document', 'liveness'] as const;
 const ENTITY_STEPS = ['entity', 'representative', 'declarations'] as const;
+/** The same identity check, named for the app the person came to verify for. */
+const KICKER = {
+    investor: 'investor.kyc.kicker_identity',
+    business: 'investor.kyc.kicker_business',
+    auditor: 'investor.kyc.kicker_auditor',
+} as const;
 
 /**
  * A live submission's commands carry a fresh `request_id`, the identity context and the revision
@@ -486,6 +492,10 @@ function VerificationForm({
         form.transform((values) => ({
             ...values,
             step,
+            ...(props.investor_type === 'individual' &&
+            props.purpose !== undefined
+                ? { purpose: props.purpose }
+                : {}),
             ...envelope(submission),
         }));
         form.post(last ? props.actions.submit.url : props.actions.save.url, {
@@ -559,7 +569,7 @@ function VerificationForm({
                 <p className="mt-2 text-[12.5px] font-semibold tracking-[.05em] text-rz-accent-app-text uppercase">
                     {t(
                         props.investor_type === 'individual'
-                            ? 'investor.kyc.kicker_identity'
+                            ? KICKER[props.purpose ?? 'investor']
                             : 'investor.kyc.kicker_entity',
                     )}
                 </p>

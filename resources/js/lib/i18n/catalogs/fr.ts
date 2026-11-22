@@ -2143,6 +2143,10 @@ const fr: Catalog = {
     'admin.kyc.status.draft': 'Rouverte',
     'admin.kyc.status.submitted': 'En attente',
     'admin.kyc.status.approved': 'Approuvée',
+    'admin.kyc.purpose.business':
+        "Pour l'accès Entreprise · aucun accès Investisseur à l'approbation",
+    'admin.kyc.purpose.auditor':
+        "Pour l'accès Auditeur · aucun accès Investisseur à l'approbation",
     'admin.kyc.status.rejected': 'Rejetée',
     'admin.kyc.empty.submitted': "Aucune demande n'attend d'examen.",
     'admin.kyc.empty.decided': 'Aucune décision pour le moment.',
@@ -5336,6 +5340,10 @@ const fr: Catalog = {
     'investor.signup.agree.privacy_after': '.',
     'investor.kyc.progress': 'Progression de la vérification',
     'investor.kyc.kicker_identity': "VÉRIFICATION D'IDENTITÉ",
+    'investor.kyc.kicker_business':
+        "VÉRIFICATION D'IDENTITÉ POUR L'ACCÈS ENTREPRISE",
+    'investor.kyc.kicker_auditor':
+        "VÉRIFICATION D'IDENTITÉ POUR L'ACCÈS AUDITEUR",
     'investor.kyc.kicker_entity': "VÉRIFICATION DE L'ENTITÉ",
     'investor.kyc.personal.title': 'Informations personnelles',
     'investor.kyc.personal.subtitle':

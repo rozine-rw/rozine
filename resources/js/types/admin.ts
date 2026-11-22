@@ -2022,6 +2022,9 @@ export type KycIdType = 'national_id' | 'passport' | 'drivers_license';
 
 export type KycCaseStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 
+/** The app a person verified their identity for: only an Investor check grants Investor access. */
+export type KycPurpose = 'investor' | 'business' | 'auditor';
+
 export type InvestorVerificationEntry = {
     id: string;
     revision: number;
@@ -2031,6 +2034,7 @@ export type InvestorVerificationEntry = {
     name: string;
     email: string;
     id_type: KycIdType;
+    purpose: KycPurpose;
     /** The automated checks the case passed before it could be submitted. */
     checks: KycCheck[];
     selected: boolean;
@@ -2060,6 +2064,7 @@ export type InvestorVerificationReview = {
     id: string;
     revision: number;
     status: KycCaseStatus;
+    purpose: KycPurpose;
     submitted_at: string | null;
     account: { name: string; email: string };
     date_of_birth: string;
