@@ -38,6 +38,7 @@ beforeEach(function (): void {
         Route::get('/test-failure/invalid', fn () => throw ValidationException::withMessages(['amount' => 'Too small.']));
         Route::get('/test-failure/signed-out', fn () => throw new AuthenticationException);
         Route::get('/test-failure/responded', fn () => throw new HttpResponseException(response('The upstream answer', 502)));
+        Route::put('/test-failure/write-only', fn () => response()->noContent());
     });
     Route::get('/api/test-failure/crash', fn () => throw new RuntimeException('db-host-10.0.0.7 refused secret_ledger_table'));
 });
@@ -152,4 +153,11 @@ it('leaves 4xx answers, validation, sign-in redirects and responded exceptions u
     $this->from('/somewhere')->get('/test-failure/invalid')->assertRedirect('/somewhere')->assertSessionHasErrors('amount');
     $this->get('/test-failure/signed-out')->assertRedirect(route('login'));
     $this->get('/test-failure/responded')->assertStatus(502)->assertContent('The upstream answer');
+});
+
+it('gives a browser read of a write-only URL the Rozine page with its 405, not the bare error page (QA #721)', function (): void {
+    $this->get('/test-failure/write-only')->assertMethodNotAllowed()
+        ->assertInertia(fn (Assert $page): Assert => $page->component('identity/access-denied')->where('code', 'PAGE_NOT_FOUND')->where('status', 405));
+    $this->getJson('/test-failure/write-only')->assertMethodNotAllowed()->assertJsonMissingPath('component');
+    $this->post('/test-failure/write-only')->assertMethodNotAllowed()->assertDontSee('PAGE_NOT_FOUND');
 });
