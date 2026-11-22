@@ -221,6 +221,15 @@ const GLYPHS: Record<AdminFrameSection, ReactNode> = {
             <circle cx="12" cy="10.5" r="2.2" />
         </>
     ),
+    users: (
+        <>
+            <circle cx="12" cy="8" r="3.4" />
+            <path
+                d="M5 20c.6-3.4 3.4-5.2 7-5.2s6.4 1.8 7 5.2"
+                strokeLinecap="round"
+            />
+        </>
+    ),
     access_requests: (
         <>
             <circle cx="10" cy="8" r="3.2" />
@@ -301,7 +310,13 @@ const GROUPS: {
     { group: null, items: ['today'] },
     {
         group: 'accounts',
-        items: ['businesses', 'investors', 'auditors', 'access_requests'],
+        items: [
+            'users',
+            'businesses',
+            'investors',
+            'auditors',
+            'access_requests',
+        ],
     },
     {
         group: 'capital',
