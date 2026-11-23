@@ -128,7 +128,7 @@ test('a closed account gives back its email, so the same address can sign up aga
         ->and(IdentityAuditEvent::query()->where('action', 'account.close')->sole()->after['email_released'])->toBeTrue();
 
     $this->post(route('register.store'), [
-        'name' => 'Aminu Again', 'sandbox_notice_version' => SandboxNotice::VERSION, 'sandbox_notice_sha256' => SandboxNotice::sha256(),
+        'name' => 'Aminu Again', 'sandbox_notice_version' => SandboxNotice::VERSION, 'sandbox_notice_sha256' => SandboxNotice::sha256(), ...legalConsentFields(),
         'email' => 'aminu@example.com', 'password' => 'new-password', 'password_confirmation' => 'new-password',
     ])->assertSessionHasNoErrors();
 

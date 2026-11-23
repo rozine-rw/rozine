@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "1c5de54aa6fa972efd6eabfcb0e61859c6381680dd10b465b43ed108e4c03489",
-    "coverageSetSha256": "0b10271e7a49476a9f609e08248da16b22dc69a7b61d75cf5cd1fc023324d0c8",
+    "sourceManifestSha256": "8b5058224bbc780f755a2ef5c29ca55005c68af71a2ce5f23c077dd0e4a071fe",
+    "coverageSetSha256": "aaec6262d2b7a1fb7c325cefb3ba9f0d1efc1c4c61027f229a601981d18aa6fc",
     "thresholds": {
         "critical": {
             "global": {
@@ -258,6 +258,7 @@
         "resources/js/components/investor/deals/desk-card.tsx",
         "resources/js/components/investor/deals/invest-bar.tsx",
         "resources/js/components/investor/deals/risk-statements.tsx",
+        "resources/js/components/investor/deals/risk-warning.tsx",
         "resources/js/components/investor/deals/swipe-card.tsx",
         "resources/js/components/investor/deals/time-left.tsx",
         "resources/js/components/investor/deals/use-quote.ts",
@@ -284,6 +285,7 @@
         "resources/js/components/investor/tokens.ts",
         "resources/js/components/investor/wallet/funding.tsx",
         "resources/js/components/investor/wallet/history.tsx",
+        "resources/js/components/legal/legal-consent-fields.tsx",
         "resources/js/components/manage-passkeys.tsx",
         "resources/js/components/manage-two-factor.tsx",
         "resources/js/components/nav-footer.tsx",
@@ -492,6 +494,8 @@
         "resources/js/pages/investor/verification.tsx",
         "resources/js/pages/investor/verified.tsx",
         "resources/js/pages/investor/wallet.tsx",
+        "resources/js/pages/legal/document.tsx",
+        "resources/js/pages/legal/review.tsx",
         "resources/js/pages/pulse.tsx",
         "resources/js/pages/settings/appearance.tsx",
         "resources/js/pages/settings/profile.tsx",

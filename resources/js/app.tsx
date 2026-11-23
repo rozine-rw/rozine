@@ -38,6 +38,7 @@ function start(): void {
                 case name === 'welcome':
                 case name === 'pulse':
                 case name.startsWith('audit/'):
+                case name.startsWith('legal/'):
                 case name === 'identity/access-denied' &&
                     (page.props.status === 404 ||
                         Number(page.props.status) >= 500):

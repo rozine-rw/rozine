@@ -20,6 +20,7 @@ import {
     canReserve,
     unquotedGetBack,
 } from '@/components/investor/deals/invest-bar';
+import { RiskWarning } from '@/components/investor/deals/risk-warning';
 import { useQuotedUnits } from '@/components/investor/deals/use-quote';
 import { UpdateList, UpdateSheet } from '@/components/investor/monthly-updates';
 import { earningsFeeLabel } from '@/components/investor/primary/earnings-fee';
@@ -188,6 +189,8 @@ export function DealDetailPage({
                     variant="phone"
                 />
             </div>
+
+            <RiskWarning className="mx-3.5 mt-3.5" />
 
             <div className="flex items-center gap-2.5 px-3.5 pt-[22px]">
                 <span className="text-[10.5px] font-bold tracking-[.12em] text-rz-accent-app-text uppercase">

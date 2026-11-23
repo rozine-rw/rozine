@@ -43,6 +43,7 @@ import StaffSystemHealthController from './StaffSystemHealthController'
 import StaffInvestorVerificationController from './StaffInvestorVerificationController'
 import ChangeFeedController from './ChangeFeedController'
 import SiteController from './SiteController'
+import LegalDocumentController from './LegalDocumentController'
 import BusinessAuditReportController from './BusinessAuditReportController'
 import EmailVerificationCodeController from './EmailVerificationCodeController'
 import PulseController from './PulseController'
@@ -127,6 +128,7 @@ const Controllers = {
     StaffInvestorVerificationController: Object.assign(StaffInvestorVerificationController, StaffInvestorVerificationController),
     ChangeFeedController: Object.assign(ChangeFeedController, ChangeFeedController),
     SiteController: Object.assign(SiteController, SiteController),
+    LegalDocumentController: Object.assign(LegalDocumentController, LegalDocumentController),
     BusinessAuditReportController: Object.assign(BusinessAuditReportController, BusinessAuditReportController),
     EmailVerificationCodeController: Object.assign(EmailVerificationCodeController, EmailVerificationCodeController),
     PulseController: Object.assign(PulseController, PulseController),

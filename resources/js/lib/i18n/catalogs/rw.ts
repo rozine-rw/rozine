@@ -9,6 +9,30 @@
 import type { Catalog } from '@/lib/i18n/types';
 
 const rw: Catalog = {
+    'legal.back_home': 'Subira kuri Rozine',
+    'legal.nav_label': 'Inyandiko z’amategeko',
+    'legal.fingerprint': 'Verisiyo {version} · Igikumwe (SHA-256) {hash}',
+    'legal.review_banner':
+        'Izi nyandiko ni nshya cyangwa zarahindutse. Emera verisiyo ziriho kugira ngo ukomeze gukoresha Rozine.',
+    'legal.review_banner_cta': 'Soma kandi wemere',
+    'legal.review.head_title': 'Emera kugira ngo ukomeze',
+    'legal.review.title': 'Banza usome kandi wemere mbere yo gukomeza',
+    'legal.review.lead':
+        'Amabwiriza yacu, Itangazo ry’ibanga n’Imiburo ni bishya cyangwa byarahindutse. Fungura buri kimwe, hanyuma ushyireho akamenyetso wemera. Tubika verisiyo wemeye n’igihe wayemereye.',
+    'legal.review.submit': 'Emera ukomeze',
+    'legal.review.processing': 'Birimo kubikwa…',
+    'legal.consent.legend': 'Amabwiriza, ibanga n’imiburo',
+    'legal.consent.terms_before': 'Nasomye kandi nemera',
+    'legal.consent.privacy_before': 'Nasomye kandi nemera',
+    'legal.consent.disclaimers_before': 'Nasomye kandi nsobanukiwe',
+    'legal.risk_warning':
+        'Gushora imari bigira ingaruka, harimo no guhomba amafaranga washoye. Inyungu ntizemewe ku buryo budasubirwaho.',
+    'legal.risk_warning_link': 'Soma imiburo',
+    'investor.profile.legal.terms_body':
+        'Amasezerano hagati yawe na Rozine: uko inyandiko z’inguzanyo, amafaranga y’serivisi, kwishyurwa no kugurisha bikora, n’uko Rozine yubahiriza amategeko agenga urubuga rwo gukusanya imari.',
+    'investor.profile.legal.privacy_body':
+        'Amakuru bwite Rozine ikusanya, impamvu, aho abikwa n’uburenganzira ufite.',
+    'investor.profile.legal.open': 'Soma inyandiko yose',
     'suite.sign_out': 'Sohoka',
     'site.app_entry.label': 'Porogaramu za Rozine',
     'site.app_entry.sign_in': 'Injira',
@@ -6054,7 +6078,7 @@ const rw: Catalog = {
         "Iyo umaze kwemeza, amafaranga yoherezwa kuri konti yawe binyuze ku utanga serivisi yo kwishyura. Ubusabe budasanzwe bushobora gufatwa bugasuzumwa mu gihe kigera ku masaha 24.\n\nUshobora gukurikirana buri bubikuza mu mateka y'agasanduku kawe. Amafaranga wiyemeje mu ikusanya rifunguye ntashobora kubikuzwa.",
     'investor.help.safety.held.q': 'Amafaranga yanjye abikwa he?',
     'investor.help.safety.held.a':
-        "Amafaranga yose y'abakiriya abikwa kuri konti y'abakiriya yihariye muri banki y'u Rwanda ifite uruhushya, atandukanye n'amafaranga ya Rozine. Igiteranyo cy'udusanduku twose gihuzwa n'iyo konti buri munsi.\n\nAmafaranga ya serivisi yinjijwe kandi yatangajwe gusa ni yo ashobora kujya kuri konti ya Rozine.",
+        "Amafaranga y'abakiriya azabikwa kuri konti y'abakiriya yihariye muri banki y'ubucuruzi y'u Rwanda ifite uruhushya, atandukanye n'amafaranga ya Rozine. Turi mu biganiro na GT Bank ngo iduhe iyo konti. Nta masezerano arasinywa, kandi Rozine ntizakira amafaranga nyayo y'abakiriya mbere y'uko iyo konti ifungurwa.\n\nIyo konti nimara gufungurwa, igiteranyo cy'udusanduku twose kizajya gihuzwa nayo buri munsi, kandi amafaranga ya serivisi yinjijwe kandi yatangajwe gusa ni yo ashobora kujya kuri konti ya Rozine.",
     'investor.help.safety.stop.q': 'Bigenda bite Rozine iramutse ihagaze?',
     'investor.help.safety.stop.a':
         'Ibikorwa bishya bihagarara uwo munsi, buri mafaranga yiyemejwe mu ikusanya ritujujwe asubizwa yose, kandi buri nyandiko yatanzwe ikomeza kwishyurwa kugeza ku gihe cyayo hifashishijwe ikigega cyabigenewe.\n\nKubikuza amafaranga ari mu dusanduku ni ubuntu muri icyo gihe.',

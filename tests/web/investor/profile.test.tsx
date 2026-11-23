@@ -543,10 +543,24 @@ describe('Profile', () => {
     });
 
     it.each([
-        [planFixture, 'Rozine Plus', 'Rozine Plus is not open yet'],
-        [termsFixture, 'Terms & Conditions', 'Coming to the app soon'],
-        [privacyFixture, 'Privacy Note', 'Coming to the app soon'],
+        [termsFixture, 'Terms & Conditions', '/terms', /notes, fees, payouts/u],
+        [privacyFixture, 'Privacy Note', '/privacy', /where it is stored/u],
     ])(
+        'shows %#: what the document covers, linking to the published document',
+        (fixture, heading, url, summary) => {
+            render(<InvestorProfile {...profile(fixture)} />);
+
+            expect(
+                screen.getByRole('heading', { name: heading }),
+            ).toBeInTheDocument();
+            expect(screen.getByText(summary)).toBeInTheDocument();
+            expect(
+                screen.getByRole('link', { name: 'Read the full document' }),
+            ).toHaveAttribute('href', url);
+        },
+    );
+
+    it.each([[planFixture, 'Rozine Plus', 'Rozine Plus is not open yet']])(
         'shows %#: the design page, empty until its content is approved',
         (fixture, heading, title) => {
             render(<InvestorProfile {...profile(fixture)} />);

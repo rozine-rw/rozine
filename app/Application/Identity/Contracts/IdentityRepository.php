@@ -6,13 +6,19 @@ namespace App\Application\Identity\Contracts;
 
 /**
  * @phpstan-import-type AccessSnapshot from \App\Domain\Identity\ActiveRolePolicy
+ * @phpstan-import-type AgreedDocument from LegalConsents
  */
 interface IdentityRepository
 {
     public function accountName(int $userId): string;
 
-    /** Creates the person's Party and account, recording their acknowledgement of the current sandbox notice. */
-    public function register(string $name, string $email, string $password): int;
+    /**
+     * Creates the person's Party and account, recording their acknowledgement of the current sandbox
+     * notice and their agreement to each legal document, all in one transaction.
+     *
+     * @param  list<AgreedDocument>  $legalDocuments
+     */
+    public function register(string $name, string $email, string $password, array $legalDocuments): int;
 
     /** @return AccessSnapshot */
     public function forUser(int $userId): array;
