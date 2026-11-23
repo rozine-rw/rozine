@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RoleAccessRequestController::index
-* @see app/Http/Controllers/RoleAccessRequestController.php:51
+* @see app/Http/Controllers/RoleAccessRequestController.php:49
 * @route '/admin/access-requests'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\RoleAccessRequestController::index
-* @see app/Http/Controllers/RoleAccessRequestController.php:51
+* @see app/Http/Controllers/RoleAccessRequestController.php:49
 * @route '/admin/access-requests'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RoleAccessRequestController::index
-* @see app/Http/Controllers/RoleAccessRequestController.php:51
+* @see app/Http/Controllers/RoleAccessRequestController.php:49
 * @route '/admin/access-requests'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RoleAccessRequestController::index
-* @see app/Http/Controllers/RoleAccessRequestController.php:51
+* @see app/Http/Controllers/RoleAccessRequestController.php:49
 * @route '/admin/access-requests'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RoleAccessRequestController::index
-* @see app/Http/Controllers/RoleAccessRequestController.php:51
+* @see app/Http/Controllers/RoleAccessRequestController.php:49
 * @route '/admin/access-requests'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\RoleAccessRequestController::index
-* @see app/Http/Controllers/RoleAccessRequestController.php:51
+* @see app/Http/Controllers/RoleAccessRequestController.php:49
 * @route '/admin/access-requests'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RoleAccessRequestController::index
-* @see app/Http/Controllers/RoleAccessRequestController.php:51
+* @see app/Http/Controllers/RoleAccessRequestController.php:49
 * @route '/admin/access-requests'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,10 +82,10 @@ index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\RoleAccessRequestController::grant
-* @see app/Http/Controllers/RoleAccessRequestController.php:74
+* @see app/Http/Controllers/RoleAccessRequestController.php:72
 * @route '/admin/access-requests/{accessRequest}/grant'
 */
-export const grant = (args: { accessRequest: string | { id: string } } | [accessRequest: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+export const grant = (args: { accessRequest: string | number } | [accessRequest: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: grant.url(args, options),
     method: 'post',
 })
@@ -97,16 +97,12 @@ grant.definition = {
 
 /**
 * @see \App\Http\Controllers\RoleAccessRequestController::grant
-* @see app/Http/Controllers/RoleAccessRequestController.php:74
+* @see app/Http/Controllers/RoleAccessRequestController.php:72
 * @route '/admin/access-requests/{accessRequest}/grant'
 */
-grant.url = (args: { accessRequest: string | { id: string } } | [accessRequest: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions) => {
+grant.url = (args: { accessRequest: string | number } | [accessRequest: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { accessRequest: args }
-    }
-
-    if (typeof args === 'object' && !Array.isArray(args) && 'id' in args) {
-        args = { accessRequest: args.id }
     }
 
     if (Array.isArray(args)) {
@@ -118,9 +114,7 @@ grant.url = (args: { accessRequest: string | { id: string } } | [accessRequest: 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-        accessRequest: typeof args.accessRequest === 'object'
-        ? args.accessRequest.id
-        : args.accessRequest,
+        accessRequest: args.accessRequest,
     }
 
     return grant.definition.url
@@ -130,30 +124,30 @@ grant.url = (args: { accessRequest: string | { id: string } } | [accessRequest: 
 
 /**
 * @see \App\Http\Controllers\RoleAccessRequestController::grant
-* @see app/Http/Controllers/RoleAccessRequestController.php:74
+* @see app/Http/Controllers/RoleAccessRequestController.php:72
 * @route '/admin/access-requests/{accessRequest}/grant'
 */
-grant.post = (args: { accessRequest: string | { id: string } } | [accessRequest: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+grant.post = (args: { accessRequest: string | number } | [accessRequest: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     url: grant.url(args, options),
     method: 'post',
 })
 
 /**
 * @see \App\Http\Controllers\RoleAccessRequestController::grant
-* @see app/Http/Controllers/RoleAccessRequestController.php:74
+* @see app/Http/Controllers/RoleAccessRequestController.php:72
 * @route '/admin/access-requests/{accessRequest}/grant'
 */
-const grantForm = (args: { accessRequest: string | { id: string } } | [accessRequest: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+const grantForm = (args: { accessRequest: string | number } | [accessRequest: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: grant.url(args, options),
     method: 'post',
 })
 
 /**
 * @see \App\Http\Controllers\RoleAccessRequestController::grant
-* @see app/Http/Controllers/RoleAccessRequestController.php:74
+* @see app/Http/Controllers/RoleAccessRequestController.php:72
 * @route '/admin/access-requests/{accessRequest}/grant'
 */
-grantForm.post = (args: { accessRequest: string | { id: string } } | [accessRequest: string | { id: string } ] | string | { id: string }, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
+grantForm.post = (args: { accessRequest: string | number } | [accessRequest: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
     action: grant.url(args, options),
     method: 'post',
 })

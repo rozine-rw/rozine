@@ -39,6 +39,23 @@ final class GetInvestorVerification
     }
 
     /**
+     * The app an account's own check is for and where it stands, or null for an account the check
+     * does not describe, which each command then refuses in its own words.
+     *
+     * @return array{purpose: string, status: string}|null
+     */
+    public function standing(int $userId): ?array
+    {
+        try {
+            $submission = $this->store->get($userId);
+        } catch (IdentityViolation) {
+            return null;
+        }
+
+        return ['purpose' => $submission['purpose'], 'status' => $submission['status']];
+    }
+
+    /**
      * Where an unverified person's own identity check stands, for pages that ask them to verify:
      * 'pending' once it is with Compliance, 'required' before that. Null for anyone it does not
      * describe (a verified person, an organisation, an unlinked sign-in), so those pages keep

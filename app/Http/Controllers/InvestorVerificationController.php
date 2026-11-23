@@ -8,7 +8,6 @@ use App\Application\Identity\GetInvestorVerification;
 use App\Application\Identity\SaveInvestorVerification;
 use App\Application\Identity\SubmitInvestorVerification;
 use App\Application\Identity\UploadInvestorVerificationDocument;
-use App\Domain\Identity\IdentityViolation;
 use App\Http\Requests\Investor\SaveVerificationRequest;
 use App\Http\Requests\Investor\SubmitVerificationRequest;
 use App\Http\Requests\Investor\UploadVerificationDocumentRequest;
@@ -149,12 +148,8 @@ class InvestorVerificationController extends Controller
         if ($request->user()?->hasEnabledTwoFactorAuthentication() === true) {
             return;
         }
-        try {
-            $recorded = $verification->handle((int) $request->user()?->getAuthIdentifier());
-        } catch (IdentityViolation) {
-            return;
-        }
-        if ($this->needsTwoFactor($request, is_string($purpose) ? $purpose : $recorded['purpose'], $recorded['status'])) {
+        $recorded = $verification->standing((int) $request->user()?->getAuthIdentifier());
+        if ($recorded !== null && $this->needsTwoFactor($request, is_string($purpose) ? $purpose : $recorded['purpose'], $recorded['status'])) {
             throw ValidationException::withMessages(['form' => [__('Turn on two-factor authentication in your security settings before you send your Auditor identity check.')]]);
         }
     }
