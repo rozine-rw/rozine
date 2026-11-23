@@ -7,6 +7,30 @@
  * codes stay aligned.
  */
 const en = {
+    'legal.back_home': 'Back to Rozine',
+    'legal.nav_label': 'Legal documents',
+    'legal.fingerprint': 'Version {version} · Fingerprint (SHA-256) {hash}',
+    'legal.review_banner':
+        'These documents are new or have changed. Agree to the current versions to keep using Rozine.',
+    'legal.review_banner_cta': 'Review and agree',
+    'legal.review.head_title': 'Agree to continue',
+    'legal.review.title': 'Please read and agree before you continue',
+    'legal.review.lead':
+        'Our Terms, Privacy Notice and Disclaimers are new or have changed. Open each one, then tick the box to agree. We record the version you agree to and the time.',
+    'legal.review.submit': 'Agree and continue',
+    'legal.review.processing': 'Saving…',
+    'legal.consent.legend': 'Terms, privacy and disclaimers',
+    'legal.consent.terms_before': 'I have read and agree to the',
+    'legal.consent.privacy_before': 'I have read and accept the',
+    'legal.consent.disclaimers_before': 'I have read and understand the',
+    'legal.risk_warning':
+        'Investing carries risk, including loss of capital. Returns are not guaranteed.',
+    'legal.risk_warning_link': 'Read the disclaimers',
+    'investor.profile.legal.terms_body':
+        'The agreement between you and Rozine: how notes, fees, payouts and resale work, and how Rozine follows the rules for crowdfunding platforms.',
+    'investor.profile.legal.privacy_body':
+        'What personal data Rozine collects, why, where it is stored and the rights you have.',
+    'investor.profile.legal.open': 'Read the full document',
     'suite.sign_out': 'Sign out',
     'site.app_entry.label': 'Rozine apps',
     'site.app_entry.sign_in': 'Sign in',

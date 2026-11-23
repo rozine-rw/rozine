@@ -65,7 +65,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $user = User::factory()->for($party)->create();
     RoleMembership::factory()->for($party)->active()->create();
     $accountAttributes = $user->refresh()->getAttributes();
-    unset($accountAttributes['party_id'], $accountAttributes['active_membership_id'], $accountAttributes['active_membership_revision'], $accountAttributes['context_revision'], $accountAttributes['login_alerts']);
+    unset($accountAttributes['party_id'], $accountAttributes['active_membership_id'], $accountAttributes['active_membership_revision'], $accountAttributes['context_revision'], $accountAttributes['login_alerts'], $accountAttributes['closed_email']);
 
     expect(Schema::hasIndex('users', ['party_id']))->toBeTrue();
 
@@ -180,6 +180,13 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $disbursementPayouts->down();
     $servicingPayouts->down();
     $secondaryMarket->down();
+    // Legal consents and released identities reference parties, which are rebuilt below, so they come off first and go back last.
+    $legalConsents = require database_path('migrations/2026_11_23_090000_create_legal_consents_table.php');
+    $legalConsents->down();
+    $releasedIdentities = require database_path('migrations/2026_11_23_060000_release_identifiers_of_closed_accounts.php');
+    $releasedIdentities->down();
+    expect(Schema::hasTable('legal_consents'))->toBeFalse()
+        ->and(Schema::hasTable('released_person_identities'))->toBeFalse();
     // Role access requests reference parties, which are rebuilt below, so they come off first and go back last.
     $roleAccessRequests = require database_path('migrations/2026_11_14_140000_create_role_access_requests_table.php');
     $roleAccessRequests->down();
@@ -512,6 +519,8 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
         ->and(Schema::hasTable('business_academy_attempts'))->toBeTrue();
     $visitReadyTicks->up();
     $roleAccessRequests->up();
+    $releasedIdentities->up();
+    $legalConsents->up();
     expect(Schema::hasTable('business_visit_ready_ticks'))->toBeTrue();
     $secondaryMarket->up();
     $servicingPayouts->up();

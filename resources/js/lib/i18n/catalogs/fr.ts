@@ -7,6 +7,30 @@
 import type { Catalog } from '@/lib/i18n/types';
 
 const fr: Catalog = {
+    'legal.back_home': 'Retour à Rozine',
+    'legal.nav_label': 'Documents juridiques',
+    'legal.fingerprint': 'Version {version} · Empreinte (SHA-256) {hash}',
+    'legal.review_banner':
+        'Ces documents sont nouveaux ou ont changé. Acceptez les versions actuelles pour continuer à utiliser Rozine.',
+    'legal.review_banner_cta': 'Lire et accepter',
+    'legal.review.head_title': 'Accepter pour continuer',
+    'legal.review.title': 'Veuillez lire et accepter avant de continuer',
+    'legal.review.lead':
+        'Nos Conditions générales, notre Avis de confidentialité et nos Avertissements sont nouveaux ou ont changé. Ouvrez chacun d’eux, puis cochez la case pour les accepter. Nous enregistrons la version acceptée et l’heure.',
+    'legal.review.submit': 'Accepter et continuer',
+    'legal.review.processing': 'Enregistrement…',
+    'legal.consent.legend': 'Conditions, confidentialité et avertissements',
+    'legal.consent.terms_before': 'J’ai lu et j’accepte les',
+    'legal.consent.privacy_before': 'J’ai lu et j’accepte le',
+    'legal.consent.disclaimers_before': 'J’ai lu et je comprends les',
+    'legal.risk_warning':
+        'Investir comporte des risques, y compris la perte du capital. Les rendements ne sont pas garantis.',
+    'legal.risk_warning_link': 'Lire les avertissements',
+    'investor.profile.legal.terms_body':
+        'L’accord entre vous et Rozine : le fonctionnement des titres, des frais, des paiements et de la revente, et la manière dont Rozine respecte les règles des plateformes de financement participatif.',
+    'investor.profile.legal.privacy_body':
+        'Les données personnelles que Rozine collecte, pourquoi, où elles sont stockées et vos droits.',
+    'investor.profile.legal.open': 'Lire le document complet',
     'suite.sign_out': 'Se déconnecter',
     'site.app_entry.label': 'Applications Rozine',
     'site.app_entry.sign_in': 'Se connecter',

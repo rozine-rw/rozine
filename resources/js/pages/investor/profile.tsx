@@ -14,6 +14,7 @@ import {
     AutomationExplainer,
     IdentityCard,
     LinkedAccounts,
+    LegalDocumentCard,
     PendingContent,
     PersonalInformation,
     ProfileMenu,
@@ -105,8 +106,9 @@ export default function InvestorProfile(props: InvestorProfileProps) {
                         <DeleteAccountRow />
                     </>
                 )}
-                {(sub === 'plan' || sub === 'terms' || sub === 'privacy') && (
-                    <PendingContent kind={sub} />
+                {sub === 'plan' && <PendingContent kind={sub} />}
+                {(sub === 'terms' || sub === 'privacy') && (
+                    <LegalDocumentCard kind={sub} />
                 )}
                 {sub === 'help' && (
                     <>

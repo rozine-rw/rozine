@@ -51,6 +51,7 @@ use App\Http\Controllers\InvestorRiskAcknowledgementController;
 use App\Http\Controllers\InvestorSecondaryController;
 use App\Http\Controllers\InvestorVerificationController;
 use App\Http\Controllers\InvestorWalletController;
+use App\Http\Controllers\LegalDocumentController;
 use App\Http\Controllers\PulseController;
 use App\Http\Controllers\RoleAccessRequestController;
 use App\Http\Controllers\RoleBookmarkController;
@@ -87,6 +88,17 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [SiteController::class, 'index'])->name('home');
 Route::get('join', [SiteController::class, 'join'])->name('site.join');
+
+Route::middleware('throttle:60,1')->group(function (): void {
+    Route::get('terms', [LegalDocumentController::class, 'show'])->defaults('document', 'terms')->name('legal.terms');
+    Route::get('privacy', [LegalDocumentController::class, 'show'])->defaults('document', 'privacy')->name('legal.privacy');
+    Route::get('disclaimers', [LegalDocumentController::class, 'show'])->defaults('document', 'disclaimers')->name('legal.disclaimers');
+});
+
+Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('legal')->name('legal.')->group(function (): void {
+    Route::get('review', [LegalDocumentController::class, 'review'])->name('review');
+    Route::post('review', [LegalDocumentController::class, 'accept'])->name('accept');
+});
 
 Route::get('audit-seals/{report}', AuditSealVerificationController::class)->whereUlid('report')
     ->middleware(['throttle:60,1', 'cache.headers:no_store'])->name('audit.seals.verify');

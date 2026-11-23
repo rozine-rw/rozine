@@ -29,7 +29,7 @@ test('registering sends the onboarding code email, not a link', function () {
     $this->post(route('register.store'), [
         'name' => 'Aline Uwase',
         'sandbox_notice_version' => SandboxNotice::VERSION,
-        'sandbox_notice_sha256' => SandboxNotice::sha256(),
+        'sandbox_notice_sha256' => SandboxNotice::sha256(), ...legalConsentFields(),
         'email' => 'aline@example.test',
         'password' => 'password',
         'password_confirmation' => 'password',

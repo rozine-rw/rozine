@@ -83,6 +83,7 @@
         "resources/js/actions/App/Http/Controllers/InvestorRiskAcknowledgementController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorVerificationController.ts",
         "resources/js/actions/App/Http/Controllers/InvestorWalletController.ts",
+        "resources/js/actions/App/Http/Controllers/LegalDocumentController.ts",
         "resources/js/actions/App/Http/Controllers/PulseController.ts",
         "resources/js/actions/App/Http/Controllers/RoleAccessRequestController.ts",
         "resources/js/actions/App/Http/Controllers/RoleBookmarkController.ts",
@@ -319,6 +320,7 @@
         "resources/js/routes/investor/verification/index.ts",
         "resources/js/routes/investor/wallet/index.ts",
         "resources/js/routes/investor/wallet/operations/index.ts",
+        "resources/js/routes/legal/index.ts",
         "resources/js/routes/login-alerts/index.ts",
         "resources/js/routes/login/index.ts",
         "resources/js/routes/passkey/index.ts",
@@ -394,6 +396,7 @@
         "resources/js/types/identity.ts",
         "resources/js/types/index.ts",
         "resources/js/types/investor.ts",
+        "resources/js/types/legal.ts",
         "resources/js/types/money.ts",
         "resources/js/types/navigation.ts",
         "resources/js/types/operation.ts",
@@ -614,6 +617,7 @@
         "resources/js/components/investor/deals/desk-card.tsx",
         "resources/js/components/investor/deals/invest-bar.tsx",
         "resources/js/components/investor/deals/risk-statements.tsx",
+        "resources/js/components/investor/deals/risk-warning.tsx",
         "resources/js/components/investor/deals/swipe-card.tsx",
         "resources/js/components/investor/deals/time-left.tsx",
         "resources/js/components/investor/deals/use-quote.ts",
@@ -640,6 +644,7 @@
         "resources/js/components/investor/tokens.ts",
         "resources/js/components/investor/wallet/funding.tsx",
         "resources/js/components/investor/wallet/history.tsx",
+        "resources/js/components/legal/legal-consent-fields.tsx",
         "resources/js/components/manage-passkeys.tsx",
         "resources/js/components/manage-two-factor.tsx",
         "resources/js/components/nav-footer.tsx",
@@ -848,6 +853,8 @@
         "resources/js/pages/investor/verification.tsx",
         "resources/js/pages/investor/verified.tsx",
         "resources/js/pages/investor/wallet.tsx",
+        "resources/js/pages/legal/document.tsx",
+        "resources/js/pages/legal/review.tsx",
         "resources/js/pages/pulse.tsx",
         "resources/js/pages/settings/appearance.tsx",
         "resources/js/pages/settings/profile.tsx",
@@ -855,10 +862,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 824,
-        "generated": 355,
-        "declarationOnly": 20,
-        "authoredExecutable": 449
+        "totalTrackedSources": 831,
+        "generated": 357,
+        "declarationOnly": 21,
+        "authoredExecutable": 453
     },
-    "coverageSetSha256": "0b10271e7a49476a9f609e08248da16b22dc69a7b61d75cf5cd1fc023324d0c8"
+    "coverageSetSha256": "aaec6262d2b7a1fb7c325cefb3ba9f0d1efc1c4c61027f229a601981d18aa6fc"
 }

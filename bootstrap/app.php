@@ -7,10 +7,12 @@ use App\Application\Identity\EnterSoleApp;
 use App\Application\Identity\GetInvestorVerification;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Operations\CommandRejection;
+use App\Http\Middleware\EnsureLegalConsent;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -42,7 +44,11 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+            EnsureLegalConsent::class,
         ]);
+        $middleware->api(append: [EnsureLegalConsent::class]);
+        // The consent check reads the signed-in account, so it runs once authentication has.
+        $middleware->appendToPriorityList(Authenticate::class, EnsureLegalConsent::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->dontFlash(['code', 'step_up', 'proof', 'step_up_proof']);
