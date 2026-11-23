@@ -1,5 +1,11 @@
-// eslint-disable-next-line testing-library/no-manual-cleanup
-import { cleanup, render, screen, within } from '@testing-library/react';
+import {
+    // eslint-disable-next-line testing-library/no-manual-cleanup
+    cleanup,
+    fireEvent,
+    render,
+    screen,
+    within,
+} from '@testing-library/react';
 import type { ComponentProps, ReactNode } from 'react';
 import {
     afterEach,
@@ -262,10 +268,14 @@ describe('A legal document read inside the app', () => {
         expect(
             within(article).getByRole('link', { name: 'Disclaimers' }),
         ).toHaveAttribute('href', '/disclaimers');
-        within(article).getByText('Plain text.').click();
-        within(article).getByRole('link', { name: 'this note' }).click();
+        fireEvent.click(within(article).getByText('Plain text.'));
+        fireEvent.click(
+            within(article).getByRole('link', { name: 'this note' }),
+        );
         expect(screen.getByText('Inside')).not.toBeVisible();
-        within(article).getByRole('link', { name: 'Privacy Notice' }).click();
+        fireEvent.click(
+            within(article).getByRole('link', { name: 'Privacy Notice' }),
+        );
         expect(screen.getByText('Inside')).toBeVisible();
     });
 });
