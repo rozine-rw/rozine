@@ -111,7 +111,7 @@ final class EloquentUserDirectoryStore implements UserDirectoryStore
         return DB::table('users')->leftJoin('parties', 'parties.id', '=', 'users.party_id')
             ->leftJoin('investor_verifications AS iv', 'iv.party_id', '=', 'users.party_id')
             ->leftJoin('staff_accounts', 'staff_accounts.user_id', '=', 'users.id')
-            ->selectRaw("users.id, users.party_id, users.name, users.email, users.email_verified_at IS NOT NULL AS email_verified,
+            ->selectRaw("users.id, users.party_id, users.name, coalesce(users.closed_email, users.email) AS email, users.email_verified_at IS NOT NULL AS email_verified,
                 users.created_at AS signed_up_at, users.closed_at, users.closure_reason, iv.id AS verification_id, iv.submitted_at,
                 (SELECT max(s.last_activity) FROM sessions s WHERE s.user_id = users.id) AS last_activity,
                 CASE WHEN parties.verified_at IS NOT NULL OR iv.status = 'approved' THEN 'verified' WHEN iv.status = 'submitted' THEN 'in_review'

@@ -61,17 +61,20 @@ class FortifyServiceProvider extends ServiceProvider
      */
     private static function authenticate(Request $request): ?User
     {
-        $user = User::query()->where(Fortify::username(), (string) $request->input(Fortify::username()))->first();
-
-        if ($user === null || ! Hash::check((string) $request->input('password'), $user->password)) {
-            return null;
+        $email = (string) $request->input(Fortify::username());
+        $password = (string) $request->input('password');
+        $user = User::query()->where(Fortify::username(), $email)->whereNull('closed_at')->first();
+        if ($user !== null) {
+            return Hash::check($password, $user->password) ? $user : null;
         }
 
-        if ($user->isClosed()) {
+        // A closed account gave its address back, so it is found by the address it closed with.
+        $closed = User::query()->where('closed_email', $email)->whereNotNull('closed_at')->latest('closed_at')->first();
+        if ($closed !== null && Hash::check($password, $closed->password)) {
             throw ValidationException::withMessages([Fortify::username() => __('This account has been closed. Contact info@rozine.rw if you need it reopened.')]);
         }
 
-        return $user;
+        return null;
     }
 
     /**
