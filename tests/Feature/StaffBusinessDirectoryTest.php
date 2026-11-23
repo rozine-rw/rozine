@@ -5,6 +5,8 @@ declare(strict_types=1);
 use App\Application\Business\Contracts\BusinessDirectoryStore;
 use App\Application\Business\Contracts\BusinessExposureStore;
 use App\Application\Business\Contracts\ServicingRecord;
+use App\Models\AuditAssignment;
+use App\Models\BusinessApplication;
 use App\Models\BusinessCampaign;
 use App\Models\BusinessCampaignClosure;
 use App\Models\BusinessMandate;
@@ -16,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Sanctum\Sanctum;
+use Tests\Support\BusinessQuoteFixture as QuoteFixture;
 use Tests\Support\PrimaryFailedClosingFixture;
 use Tests\Support\PrimaryHoldingFixture;
 use Tests\Support\StaffFixture;
@@ -98,12 +101,13 @@ test('rows carry real notes, ratings and KYC, and the chips, sectors, sort and s
                 return $rows->pluck('name')->all() === ['Amahoro Bakery', 'Isoko Farms', 'Kivu Mills', 'Rugali Freight']
                     && $rows->firstWhere('name', 'Isoko Farms') === ['id' => $seed->business_id, 'name' => 'Isoko Farms', 'sector' => 'Agriculture',
                         'rating' => ['band' => 'stable', 'score' => '3.1'], 'active_notes' => 1, 'investors' => 0, 'raised' => ['currency' => 'RWF', 'amount' => '0'],
-                        'capacity_used_pct' => null, 'health' => 'not_tracked', 'frozen' => null, 'kyc' => 'verified',
+                        'capacity_used_pct' => null, 'health' => 'listed', 'frozen' => null, 'kyc' => 'verified',
                         'link' => ['url' => '/admin/businesses?business='.$seed->business_id, 'method' => 'get']]
                     && $rows->firstWhere('name', 'Amahoro Bakery')['kyc'] === 'pending' && $rows->firstWhere('name', 'Amahoro Bakery')['rating'] === null
                     && $rows->firstWhere('name', 'Amahoro Bakery')['id'] === $bakery->id
                     && $rows->firstWhere('name', 'Rugali Freight')['active_notes'] === 0 && $rows->firstWhere('name', 'Rugali Freight')['rating'] === null
-                    && $rows->every(fn (array $row): bool => $row['health'] === 'not_tracked' && $row['frozen'] === null);
+                    && $rows->pluck('health', 'name')->all() === ['Amahoro Bakery' => 'kyb_pending', 'Isoko Farms' => 'listed', 'Kivu Mills' => 'listed', 'Rugali Freight' => 'listed']
+                    && $rows->every(fn (array $row): bool => $row['frozen'] === null);
             }));
 
     $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['sort' => 'name', 'sector' => 'Agriculture', 'q' => 'isoko']))->assertOk()
@@ -128,6 +132,36 @@ test('rows carry real notes, ratings and KYC, and the chips, sectors, sort and s
     foreach (['healthy', 'watch', 'distressed', 'frozen', 'everyone'] as $chip) {
         $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['chip' => $chip]))->assertSessionHasErrors('chip');
     }
+});
+
+test('a Business still onboarding shows its real stage, not a pending audit or untracked health', function (): void {
+    $business = fn (string $name, bool $verified = true): BusinessProfile => BusinessProfile::factory()->create([
+        'entity_party_id' => $verified ? Party::factory()->verified() : Party::factory(), 'profile' => ['name' => $name, 'company_code' => null, 'industry' => 'Services',
+            'district' => 'Gasabo', 'established_year' => 2020]]);
+    $business('Emojis Technologies', false);
+    $business('Gisozi Paints');
+    BusinessApplication::factory()->create(['business_id' => $business('Huye Coffee')->id]);
+    AuditAssignment::factory()->create(['business_id' => $business('Juru Textiles')->id]);
+    businessDirectoryNote('Kivu Mills', 'Services', ['title' => 'Mill line']);
+
+    $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['sort' => 'name']))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('directory.rows', fn (Collection $rows): bool => $rows->pluck('health', 'name')->all() === [
+            'Emojis Technologies' => 'kyb_pending', 'Gisozi Paints' => 'not_applied', 'Huye Coffee' => 'applying',
+            'Juru Textiles' => 'auditing', 'Kivu Mills' => 'listed']
+            && $rows->every(fn (array $row): bool => $row['rating'] === null)));
+});
+
+test('a submitted application reads as applied, and as in its baseline audit while a CPA holds an unpublished audit', function (): void {
+    $fixture = QuoteFixture::ready();
+    QuoteFixture::submit($fixture, QuoteFixture::acceptance($fixture));
+    $businessId = (string) $fixture['audit']['business'];
+    $stage = fn (string $expected) => $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['business' => $businessId]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('directory.rows.0.health', $expected)->where('party.health', $expected));
+
+    // The accepted audit has no published report yet, so the CPA's work is still open.
+    $stage('auditing');
+    DB::table('audit_assignments')->where('business_id', $businessId)->update(['status' => 'completed', 'completed_at' => now()]);
+    $stage('applied');
 });
 
 test('a note repaid in full is not active, so it neither counts nor sorts its Business above one with a live note', function (): void {
@@ -168,7 +202,7 @@ test("a Business's 360 carries its notes, rating, KYC and history, and an unknow
 
     $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['business' => $cancelled->business_id, 'chip' => 'all']))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('party.id', $cancelled->business_id)->where('party.kind', 'business')->where('party.name', 'Rugali Freight')
-            ->where('party.subtitle', 'Retail · Gasabo')->where('party.health', 'not_tracked')
+            ->where('party.subtitle', 'Retail · Gasabo')->where('party.health', 'listed')
             ->where('party.stats', [['key' => 'active_notes', 'value' => ['kind' => 'count', 'value' => 0]], ['key' => 'investors', 'value' => ['kind' => 'count', 'value' => 0]],
                 ['key' => 'raised', 'value' => ['kind' => 'money', 'value' => ['currency' => 'RWF', 'amount' => '0']]],
                 ['key' => 'rating', 'value' => ['kind' => 'rating', 'value' => ['band' => 'weak', 'score' => '2.4']]]])
@@ -187,7 +221,7 @@ test("a Business's 360 carries its notes, rating, KYC and history, and an unknow
             ->where('party.list.rows.0.detail.value', 'failed'));
 
     $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['business' => $bakery->id]))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('party.subtitle', 'Food · RDB-77 · Huye')->where('party.kyc.state', 'pending')
+        ->assertInertia(fn (Assert $page) => $page->where('party.subtitle', 'Food · RDB-77 · Huye')->where('party.kyc.state', 'pending')->where('party.health', 'kyb_pending')
             ->where('party.list', ['key' => 'active_notes', 'rows' => []])
             ->where('party.history.0.action', ['code' => 'business.authority.revoke', 'label' => 'Authority revoked', 'tone' => 'red'])
             ->where('party.history.0.reason', 'Mandate withdrawn.')
