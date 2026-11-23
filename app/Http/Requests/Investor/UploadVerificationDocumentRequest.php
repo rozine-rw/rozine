@@ -18,7 +18,7 @@ class UploadVerificationDocumentRequest extends FormRequest
     public function rules(): array
     {
         return ['request_id' => ['required', 'uuid'], 'identity_context_revision' => ['required', 'integer', 'min:0'],
-            'expected_revision' => ['required', 'integer', 'min:0'], 'slot' => ['required', 'string', 'in:id_front,id_back,selfie'],
+            'expected_revision' => ['required', 'integer', 'min:0'], 'slot' => ['required', 'string', 'in:id_front,id_back,selfie,icpar_certificate'],
             'file' => ['required', 'file', 'max:10240']];
     }
 }

@@ -272,7 +272,7 @@ describe('Compliance identity queue', () => {
         expect(within(jean).getByText('jean@example.rw')).toBeInTheDocument();
         expect(
             within(jean).getByText(
-                'For Auditor access · no Investor access on approval',
+                'For Auditor access · approval also verifies the ICPAR licence and makes them an Auditor',
             ),
         ).toBeInTheDocument();
         expect(

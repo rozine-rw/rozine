@@ -2153,10 +2153,14 @@ const rw: Catalog = {
     'admin.kyc.status.draft': 'Byongeye gufungurwa',
     'admin.kyc.status.submitted': 'Bitegereje',
     'admin.kyc.status.approved': 'Byemejwe',
+    'admin.kyc.licence.title': 'Uruhushya rwa ICPAR',
+    'admin.kyc.licence.number': 'Uruhushya {number}',
+    'admin.kyc.licence.expires': 'Ruzarangira {date}',
+    'admin.kyc.slot.certificate': 'Icyemezo cya ICPAR',
     'admin.kyc.purpose.business':
         "Ku bwinjiriro bwa Ubucuruzi · nta bwinjiriro bw'Umushoramari nyuma yo kwemezwa",
     'admin.kyc.purpose.auditor':
-        "Ku bwinjiriro bw'Umugenzuzi · nta bwinjiriro bw'Umushoramari nyuma yo kwemezwa",
+        "Ku bwinjiriro bw'Umugenzuzi · kwemeza bigenzura n'uruhushya rwa ICPAR bikamugira Umugenzuzi",
     'admin.kyc.status.rejected': 'Byanzwe',
     'admin.kyc.empty.submitted': 'Nta bisabwa bitegereje gusuzumwa.',
     'admin.kyc.empty.decided': 'Nta cyemezo kirafatwa.',
@@ -5394,6 +5398,15 @@ const rw: Catalog = {
     'investor.kyc.upload_passport': "Ohereza urupapuro rw'ifoto rwa pasiporo",
     'investor.kyc.uploaded_passport':
         "Urupapuro rw'ifoto rwa pasiporo rwoherejwe",
+    'investor.kyc.licence.title': 'Uruhushya rwawe rwa ICPAR',
+    'investor.kyc.licence.subtitle':
+        "Rozine igenzura uruhushya rwawe hamwe n'indangamuntu yawe, ku buryo kwemezwa rimwe bikugira Umufatanyabikorwa mu igenzura.",
+    'investor.kyc.licence.number': "Nimero y'uruhushya",
+    'investor.kyc.licence.number_placeholder': 'ICPAR-2024-0000',
+    'investor.kyc.licence.expires_on': 'Itariki uruhushya ruzarangiriraho',
+    'investor.kyc.licence.upload': 'Ohereza icyemezo cyawe cya ICPAR',
+    'investor.kyc.licence.uploaded': 'Icyemezo cyoherejwe',
+    'investor.kyc.licence.certificate': 'Icyemezo cya ICPAR',
     'investor.kyc.replace': 'Kanda usimbuze',
     'investor.kyc.view_upload': 'Reba {slot}',
     'investor.kyc.selfie_slot': 'ifoto yawe',
@@ -8838,7 +8851,7 @@ const rw: Catalog = {
     'admin.access_requests.reference.auditor':
         'Uruhushya rwa ICPAR {reference}',
     'admin.access_requests.grant.business': 'Andika ubu bucuruzi →',
-    'admin.access_requests.grant.auditor': 'Urusobe rw’Abagenzuzi →',
+    'admin.access_requests.grant.auditor': "Tanga uburenganzira bw'Umugenzuzi",
     'admin.access_requests.identity.verified': 'Umwirondoro wemejwe',
     'admin.access_requests.identity.unverified': 'Umwirondoro ntiwemejwe',
     'admin.access_requests.time': '{time} CAT',

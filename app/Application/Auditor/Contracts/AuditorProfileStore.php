@@ -21,6 +21,13 @@ interface AuditorProfileStore
     /** @return array<string, mixed> */
     public function availability(int $userId, int $contextRevision, int $expectedRevision, bool $accepting, string $requestId): array;
 
+    /**
+     * Records the ICPAR licence Compliance verified with an Auditor identity check (one step): the
+     * certificate is kept as the partner's own and their standing is active from that review. Runs
+     * inside the identity approval's transaction, after it has locked the Party.
+     */
+    public function accreditFromIdentityCheck(int $actorId, string $partyId, string $licence, string $expiresOn, string $filename, string $content, string $reference, string $reason): void;
+
     /** @return array<string, mixed> */
     public function review(int $actorId, string $partyId, int $expectedRevision, string $decision, ?string $submissionId, string $checkedAt, string $reference, string $reason, string $requestId): array;
 

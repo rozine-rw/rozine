@@ -17,6 +17,7 @@ use App\Domain\Identity\StaffPermission;
 use App\Models\IdentityAuditEvent;
 use App\Models\IdentityOperator;
 use App\Models\Party;
+use App\Models\RoleAccessRequest;
 use App\Models\RoleBookmark;
 use App\Models\RoleMembership;
 use App\Models\StaffAccount;
@@ -587,23 +588,24 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
 
     /**
      * @param  Closure(string): array<string, mixed>  $approve
+     * @param  'investor'|'auditor'|null  $grantedRole
      * @return array<string, mixed>
      */
-    public function verifyInvestor(int $actorId, int $userId, string $identityReference, string $evidenceReference, string $reason, string $requestId, Closure $approve, bool $grantsInvestorAccess = true): array
+    public function verifyInvestor(int $actorId, int $userId, string $identityReference, string $evidenceReference, string $reason, string $requestId, Closure $approve, ?string $grantedRole = 'investor'): array
     {
-        return DB::transaction(function () use ($actorId, $userId, $identityReference, $evidenceReference, $reason, $requestId, $approve, $grantsInvestorAccess): array {
+        return DB::transaction(function () use ($actorId, $userId, $identityReference, $evidenceReference, $reason, $requestId, $approve, $grantedRole): array {
             // Both accounts in ascending ID first; the reviewer's current permission is then read under that lock.
             $users = User::query()->whereKey([$actorId, $userId])->orderBy('id')->lockForUpdate()->get()->keyBy('id');
             $this->requireStaffPermission($actorId, 'investors.verify');
 
             return $this->resolveVerifiedPerson($actorId, $users->get($userId), $identityReference, $evidenceReference, $reason, $requestId, 'investor.verify',
-                function (Party $party) use ($approve, $grantsInvestorAccess): array {
-                    if (! $grantsInvestorAccess) {
+                function (Party $party) use ($approve, $grantedRole): array {
+                    if ($grantedRole === null) {
                         return ['membership' => null, 'verification' => $approve($party->id)];
                     }
-                    [$membership, , $revision] = $this->transitionMembership($party, 'investor', 'active', 0);
+                    [$membership, , $revision] = $this->transitionMembership($party, $grantedRole, 'active', 0);
 
-                    return ['membership' => ['id' => $membership->id, 'role' => 'investor', 'status' => 'active', 'revision' => $revision],
+                    return ['membership' => ['id' => $membership->id, 'role' => $grantedRole, 'status' => 'active', 'revision' => $revision],
                         'verification' => $approve($party->id)];
                 });
         }, 3);
@@ -640,6 +642,41 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
                 [], ['status' => 'active', 'revision' => $revision, 'business_id' => $businessId], $result);
 
             return [...$result, 'access_active' => true];
+        }, 3);
+    }
+
+    public function grantRequestedAuditorAccess(int $actorId, string $accessRequestId, string $reason, string $requestId): array
+    {
+        return DB::transaction(function () use ($actorId, $accessRequestId, $reason, $requestId): array {
+            User::query()->whereKey($actorId)->lockForUpdate()->first();
+            $this->requireStaffPermission($actorId, 'audit.partners.verify');
+            $hash = $this->requestHash(['membership.request_grant', $accessRequestId], $reason, $requestId);
+            if (($replay = $this->replay('user:'.$actorId, $requestId, $hash)) !== null) {
+                /** @var array{code: string, party_id: string, membership: array{id: string, role: string, status: string, revision: int}} $replay */
+                return $replay;
+            }
+            $partyId = RoleAccessRequest::query()->whereKey($accessRequestId)->where('role', 'auditor')->value('party_id');
+            $party = is_string($partyId) ? $this->lockParty($partyId) : null;
+            if ($party === null) {
+                throw new IdentityViolation('IDENTITY_RECORD_NOT_FOUND', 404);
+            }
+            if ($party->kind !== 'person' || $party->verified_at === null || $party->verified_at->gt(now()) || ! $party->verifiedIdentity()->exists()) {
+                throw new IdentityViolation('IDENTITY_VERIFICATION_REQUIRED');
+            }
+            $existing = $party->memberships()->where('role', 'auditor')->first();
+            if ($existing !== null) {
+                return ['code' => 'MEMBERSHIP_UNCHANGED', 'party_id' => $party->id, 'membership' => [
+                    'id' => $existing->id, 'role' => 'auditor', 'status' => $existing->status, 'revision' => $existing->revision,
+                ]];
+            }
+            [$membership, , $revision] = $this->transitionMembership($party, 'auditor', 'active', 0);
+            $result = ['code' => 'MEMBERSHIP_UPDATED', 'party_id' => $party->id, 'membership' => [
+                'id' => $membership->id, 'role' => 'auditor', 'status' => 'active', 'revision' => $revision,
+            ]];
+            $this->record('user:'.$actorId, $actorId, 'membership', $membership->id, 'membership.request_grant', $reason, $requestId, $hash,
+                [], ['status' => 'active', 'revision' => $revision, 'access_request_id' => $accessRequestId], $result);
+
+            return $result;
         }, 3);
     }
 

@@ -21,7 +21,7 @@ final class GetInvestorVerification
     /**
      * What the person's current uploads are, by side, so their own page can show them again.
      *
-     * @return array<'front'|'back'|'selfie', array{filename: string, media_type: string}>
+     * @return array<'front'|'back'|'selfie'|'certificate', array{filename: string, media_type: string}>
      */
     public function uploads(int $userId): array
     {

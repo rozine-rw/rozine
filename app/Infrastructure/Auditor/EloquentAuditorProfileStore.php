@@ -106,6 +106,22 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
         });
     }
 
+    public function accreditFromIdentityCheck(int $actorId, string $partyId, string $licence, string $expiresOn, string $filename, string $content, string $reference, string $reason): void
+    {
+        if (AuditorProfile::query()->where('party_id', $partyId)->lockForUpdate()->exists()) {
+            throw new CommandRejection('ACCREDITATION_ACTION_NOT_ALLOWED', 409);
+        }
+        $certificateId = strtolower((string) Str::ulid());
+        $source = $this->certificates->describe($filename, $content);
+        $now = now()->toDateTimeImmutable();
+        $state = $this->profiles->submit($this->profiles->empty(), $certificateId, $licence, $expiresOn, $now);
+        $state = $this->profiles->review($state, 'approve', $certificateId, now()->utc()->format('Y-m-d\TH:i:s\Z'), $reference, $reason, $now);
+        $record = $this->persist(null, $partyId, $state, 0);
+        (new AuditorCertificate)->forceFill([...$source, 'id' => $certificateId, 'auditor_profile_id' => $record->id,
+            'content' => $content, 'actor_user_id' => $actorId])->save();
+        $this->history($record, $actorId, 'accreditation.identity_review', $reason);
+    }
+
     public function remindRenewals(): int
     {
         $now = now()->toDateTimeImmutable();

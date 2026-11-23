@@ -222,6 +222,7 @@ test('a stale revision, a changed context and a reused request are refused', fun
 
 test('a refusal without its own words gets the generic message', function (): void {
     $this->mock(InvestorVerificationStore::class, function ($mock): void {
+        $mock->shouldReceive('get')->andReturn(['purpose' => 'investor', 'status' => 'draft']);
         $mock->shouldReceive('submit')->andReturn(['status' => 'rejected', 'code' => 'SOMETHING_ELSE', 'field_errors' => []]);
     });
 

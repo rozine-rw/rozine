@@ -147,7 +147,7 @@ Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;n
     Route::get('verification', [InvestorVerificationController::class, 'show'])->name('verification');
     Route::post('verification/steps', [InvestorVerificationController::class, 'save'])->name('verification.save');
     Route::post('verification/documents', [InvestorVerificationController::class, 'upload'])->name('verification.upload');
-    Route::get('verification/documents/{side}', [InvestorVerificationController::class, 'document'])->whereIn('side', ['front', 'back', 'selfie'])
+    Route::get('verification/documents/{side}', [InvestorVerificationController::class, 'document'])->whereIn('side', ['front', 'back', 'selfie', 'certificate'])
         ->name('verification.document');
     Route::post('verification/submit', [InvestorVerificationController::class, 'submit'])->name('verification.submit');
     Route::get('verified', [InvestorProfileController::class, 'verified'])->name('verified');
@@ -426,6 +426,7 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::get('admin/payments', StaffPaymentsController::class)->name('staff.payments.index');
     Route::get('admin/coverage', StaffCoverageController::class)->name('staff.coverage.index');
     Route::get('admin/access-requests', [RoleAccessRequestController::class, 'index'])->name('staff.access-requests.index');
+    Route::post('admin/access-requests/{accessRequest}/grant', [RoleAccessRequestController::class, 'grant'])->whereUlid('accessRequest')->name('staff.access-requests.grant');
     Route::get('admin/complaints', [StaffComplaintController::class, 'index'])->name('staff.complaints.index');
     Route::get('admin/system-health', StaffSystemHealthController::class)->name('staff.system-health.index');
     Route::post('admin/complaints/{complaint}/answers', [StaffComplaintController::class, 'answer'])->whereUlid('complaint')->name('staff.complaints.answer');

@@ -8,6 +8,7 @@ use App\Application\Identity\GetInvestorVerification;
 use App\Application\Identity\SaveInvestorVerification;
 use App\Application\Identity\SubmitInvestorVerification;
 use App\Application\Identity\UploadInvestorVerificationDocument;
+use App\Domain\Identity\IdentityViolation;
 use App\Http\Requests\Investor\SaveVerificationRequest;
 use App\Http\Requests\Investor\SubmitVerificationRequest;
 use App\Http\Requests\Investor\UploadVerificationDocumentRequest;
@@ -62,6 +63,13 @@ class InvestorVerificationController extends Controller
         if ($for !== null && in_array($submission['status'], ['draft', 'rejected'], true)) {
             $submission['purpose'] = $for;
         }
+        // An Auditor account must hold two-factor authentication (AUD-R01), so it is set up before the
+        // identity and licence check starts, not after Compliance has approved it.
+        if ($this->needsTwoFactor($request, $submission['purpose'], $submission['status'])) {
+            Inertia::flash('toast', ['type' => 'info', 'message' => __('Turn on two-factor authentication first. Then open the Auditor card again to send your ID and ICPAR licence.')]);
+
+            return redirect()->route('security.edit');
+        }
 
         return Inertia::render('investor/verification', (new InvestorVerificationResource($submission))->resolve($request));
     }
@@ -86,15 +94,18 @@ class InvestorVerificationController extends Controller
         ]);
     }
 
-    public function save(SaveVerificationRequest $request, SaveInvestorVerification $action): RedirectResponse|OperationResource
+    public function save(SaveVerificationRequest $request, SaveInvestorVerification $action, GetInvestorVerification $verification): RedirectResponse|OperationResource
     {
+        $this->requireTwoFactor($request, $verification, $request->validated('purpose'));
+
         return $this->answer($request, fn (): array => $action->handle((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'),
             (int) $request->validated('expected_revision'), (string) $request->validated('step'),
-            $request->safe()->only(['date_of_birth', 'id_type', 'id_number', 'purpose']), (string) $request->validated('request_id')));
+            $request->safe()->only(['date_of_birth', 'id_type', 'id_number', 'purpose', 'licence_number', 'licence_expires_on']), (string) $request->validated('request_id')));
     }
 
-    public function upload(UploadVerificationDocumentRequest $request, UploadInvestorVerificationDocument $action): RedirectResponse|OperationResource
+    public function upload(UploadVerificationDocumentRequest $request, UploadInvestorVerificationDocument $action, GetInvestorVerification $verification): RedirectResponse|OperationResource
     {
+        $this->requireTwoFactor($request, $verification);
         /** @var UploadedFile $file */
         $file = $request->validated('file');
 
@@ -111,6 +122,7 @@ class InvestorVerificationController extends Controller
      */
     public function submit(SubmitVerificationRequest $request, SubmitInvestorVerification $action, GetInvestorVerification $verification): RedirectResponse|OperationResource
     {
+        $this->requireTwoFactor($request, $verification);
         $answer = $this->answer($request, fn (): array => $action->handle((int) $request->user()?->getAuthIdentifier(), (int) $request->validated('identity_context_revision'),
             (int) $request->validated('expected_revision'), (string) $request->validated('request_id')));
         if ($answer instanceof OperationResource) {
@@ -119,6 +131,32 @@ class InvestorVerificationController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Your details are with our Compliance team. We will tell you when they have been reviewed.')]);
 
         return redirect()->route($verification->handle((int) $request->user()?->getAuthIdentifier())['purpose'] === 'investor' ? 'investor.deals' : 'dashboard');
+    }
+
+    /** Whether an editable check made for Auditor access still waits on the account's two-factor setup. */
+    private function needsTwoFactor(Request $request, string $purpose, string $status): bool
+    {
+        return $purpose === 'auditor' && in_array($status, ['draft', 'rejected'], true)
+            && $request->user()?->hasEnabledTwoFactorAuthentication() !== true;
+    }
+
+    /**
+     * Refuses a change to an Auditor check from an account without two-factor authentication. An
+     * account the check does not describe is left to the command, which refuses it in its own words.
+     */
+    private function requireTwoFactor(Request $request, GetInvestorVerification $verification, mixed $purpose = null): void
+    {
+        if ($request->user()?->hasEnabledTwoFactorAuthentication() === true) {
+            return;
+        }
+        try {
+            $recorded = $verification->handle((int) $request->user()?->getAuthIdentifier());
+        } catch (IdentityViolation) {
+            return;
+        }
+        if ($this->needsTwoFactor($request, is_string($purpose) ? $purpose : $recorded['purpose'], $recorded['status'])) {
+            throw ValidationException::withMessages(['form' => [__('Turn on two-factor authentication in your security settings before you send your Auditor identity check.')]]);
+        }
     }
 
     /**
