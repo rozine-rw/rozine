@@ -12,12 +12,12 @@ use Illuminate\Support\Str;
  * The designed Business directory (`admin/parties`, kind business) from live records: the four
  * figures, the chips with their counts, the sector and sort filters, the first sixty matches and one
  * Business's 360. Fields the platform does not record yet are not invented: no capacity read exists,
- * so capacity is null; no arrears or freeze read exists, so health reads not tracked, frozen is null
+ * so capacity is null; no arrears or freeze read exists, so health reads the onboarding stage, frozen is null
  * and the only chip is All. The policy strip shows who may apply (`PlatformPolicies::businesses()`).
  * A viewer who verifies Businesses may onboard one; the notice after it says whether its representative
  * can open the Business app yet.
- * A Business with no rated
- * note reads as pending its audit, and the average is of published scores only. A viewer who manages
+ * Until an arrears read exists, a
+ * Business's status is its onboarding stage. A Business with no rated note reads as not rated yet, and the average is of published scores only. A viewer who manages
  * audit assignments sees the audit open on the Business and, in the console, may request a Flash audit
  * when none is open or redispatch one that waits on Audit Operations, sees a Flash audit past its
  * 24-hour deadline as overdue, and sees whether the Business's
@@ -95,7 +95,7 @@ class StaffBusinessDirectoryResource extends JsonResource
             'onboarded' => $page['onboarded'] ?? null,
             'directory' => ['kind' => 'business', 'rows' => array_map(fn (array $row): array => ['id' => $row['business_id'], 'name' => $row['name'],
                 'sector' => $row['sector'], 'rating' => $row['rating'], 'active_notes' => $row['active_notes'], 'investors' => $row['investors'],
-                'raised' => $money($row['raised']), 'capacity_used_pct' => null, 'health' => 'not_tracked', 'frozen' => null, 'kyc' => $row['kyc'],
+                'raised' => $money($row['raised']), 'capacity_used_pct' => null, 'health' => $row['stage'], 'frozen' => null, 'kyc' => $row['kyc'],
                 'link' => $link([...$position, 'business' => $row['business_id']])], $page['rows'])],
             'party' => $page['business'] === null ? null : [...self::business($page['business'], $link($position)),
                 'premises' => ($page['premises'] ?? null) === null ? null : StaffAuditorDirectoryResource::location($page['premises'], $prefix === ''
@@ -171,7 +171,7 @@ class StaffBusinessDirectoryResource extends JsonResource
         return ['id' => $row['business_id'], 'kind' => 'business', 'name' => $row['name'],
             'subtitle' => implode(' · ', array_filter([$row['sector'], $row['company_code'] === null ? '' : (Str::startsWith(Str::upper($row['company_code']), 'RDB') ? $row['company_code'] : 'RDB '.$row['company_code']), $row['district']],
                 fn (string $part): bool => $part !== '')),
-            'health' => 'not_tracked',
+            'health' => $row['stage'],
             'stats' => [['key' => 'active_notes', 'value' => ['kind' => 'count', 'value' => $row['active_notes']]],
                 ['key' => 'investors', 'value' => ['kind' => 'count', 'value' => $row['investors']]],
                 ['key' => 'raised', 'value' => ['kind' => 'money', 'value' => ['currency' => 'RWF', 'amount' => $row['raised']]]],
