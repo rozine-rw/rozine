@@ -8,9 +8,9 @@ This page brings together every warning that appears on Rozine, word for word wh
 
 **Shown:** before the sign-up form, on the investor risk screen and in our marketing.
 
-> Rozine has applied to test this service in the Capital Market Authority's Fintech Regulatory Sandbox. Once admitted, it will run under limits set by the CMA. Admission to the sandbox is not a licence or an endorsement.
+> Rozine is testing this service in the Capital Market Authority's Fintech Regulatory Sandbox, under limits set by the CMA. Admission to the sandbox is not a licence or an endorsement.
 
-**What it means:** the CMA's sandbox lets new financial services be tried under close watch and strict limits. Our application to the sandbox is with the CMA, and Rozine has not been admitted yet. Until it is, no real money moves on Rozine. Even once admitted, being in the sandbox does not mean the CMA has licensed Rozine, approved any business on it, or checked any investment.
+**What it means:** the CMA's sandbox lets new financial services be tried under close watch and strict limits. The CMA has admitted Rozine to its sandbox. Being in the sandbox does not mean the CMA has licensed Rozine, approved any business on it, or checked any investment.
 
 ## 2. The risk warning
 

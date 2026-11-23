@@ -3520,12 +3520,11 @@ export default function Home({ showAppEntry = false, auth }: SiteProps) {
                             </div>
                             <span style={{ fontSize: '12px', lineHeight: 1.5 }}>
                                 Investing carries risk, including loss of
-                                capital. Returns are not guaranteed. Rozine has
-                                applied to test this service in the Capital
-                                Market Authority's Fintech Regulatory Sandbox.
-                                Once admitted, it will run under limits set by
-                                the CMA. Admission to the sandbox is not a
-                                licence or an endorsement.
+                                capital. Returns are not guaranteed. Rozine is
+                                testing this service in the Capital Market
+                                Authority's Fintech Regulatory Sandbox, under
+                                limits set by the CMA. Admission to the sandbox
+                                is not a licence or an endorsement.
                             </span>
                             <nav
                                 aria-label="Legal"

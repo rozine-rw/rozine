@@ -30,8 +30,8 @@ function sandboxNoticeSignUp(array $overrides = []): array
 it('gives the sign-up page the CMA sandbox notice word for word, with its version and digest (BRS KYC-R01)', function (): void {
     $this->get(route('register'))->assertOk()->assertInertia(fn (Assert $page) => $page->component('auth/register')
         ->where('sandboxNotice', [
-            'version' => 'kyc-r01-2026-11-23',
-            'text' => "Rozine has applied to test this service in the Capital Market Authority's Fintech Regulatory Sandbox. Once admitted, it will run under limits set by the CMA. Admission to the sandbox is not a licence or an endorsement.",
+            'version' => 'brs-2.0-kyc-r01',
+            'text' => "Rozine is testing this service in the Capital Market Authority's Fintech Regulatory Sandbox, under limits set by the CMA. Admission to the sandbox is not a licence or an endorsement.",
             'sha256' => SandboxNotice::sha256(),
         ]));
 

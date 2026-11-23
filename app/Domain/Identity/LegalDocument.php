@@ -19,7 +19,7 @@ enum LegalDocument: string
     public function version(): string
     {
         return match ($this) {
-            self::Terms => 'terms-2026-11-23',
+            self::Terms => 'terms-2026-11-23-r2',
             self::Privacy => 'privacy-2026-11-23',
             self::Disclaimers => 'disclaimers-2026-11-23-r2',
         };

@@ -1,6 +1,6 @@
 # Rozine Terms and Conditions
 
-Version `terms-2026-11-23` · Effective 23 November 2026 · Issued by Rozine Technologies Ltd (TIN 156642791), Kigali, Rwanda
+Version `terms-2026-11-23-r2` · Effective 23 November 2026 · Issued by Rozine Technologies Ltd (TIN 156642791), Kigali, Rwanda
 
 These Terms are the agreement between you and Rozine Technologies Ltd ("Rozine", "we", "us"). They apply to everyone who uses Rozine: investors, businesses, Audit Partners and anyone who opens an account. Please read them with our [Privacy Notice](/privacy) and our [Disclaimers](/disclaimers). When you sign up, you tick a box to agree to each of the three. We record the version you agreed to and the exact time.
 
@@ -16,7 +16,7 @@ These Terms are the agreement between you and Rozine Technologies Ltd ("Rozine",
 
 1.1. **Who we are.** Rozine Technologies Ltd is a private limited company registered in Rwanda (TIN 156642791).
 
-1.2. **The CMA sandbox.** Rozine is built to run in the Capital Market Authority's Fintech Regulatory Sandbox, under the limits the CMA sets. Our application to the sandbox is with the CMA. Being in the sandbox is not a licence or an endorsement by the CMA. We will update these Terms when the CMA decides.
+1.2. **The CMA sandbox.** Rozine runs in the Capital Market Authority's Fintech Regulatory Sandbox, which the CMA admitted it to, under the limits the CMA sets. Being in the sandbox is not a licence or an endorsement by the CMA.
 
 1.3. **What Rozine is not.** Rozine is not a bank, a microfinance institution, a deposit-taker or an insurer. Your wallet and your notes are not insured by the Government of Rwanda, the National Bank of Rwanda (BNR) or the CMA.
 
