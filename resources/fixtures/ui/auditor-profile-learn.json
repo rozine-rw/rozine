@@ -7,6 +7,7 @@
         "server_time": "2026-10-03T17:00:00Z",
         "allowed_actions": ["accreditation.renew", "availability.update"],
         "section": "learn",
+        "legal_documents": [],
         "auditor": {
             "name": "Diane Uwase, CPA",
             "firm": "Uwase & Co.",

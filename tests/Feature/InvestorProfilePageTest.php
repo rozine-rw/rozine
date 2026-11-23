@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Identity\LegalDocuments;
 use App\Domain\Identity\InvestorVerificationCase;
 use App\Domain\Wallet\PayoutAccount;
 use App\Models\InvestorFundingMethod;
@@ -54,6 +55,7 @@ it('shows the account, its verified state and its verified funding methods, with
     expect(array_keys($props))->toEqualCanonicalizing(array_keys(profilePageFixture('investor-profile')))
         ->and($response->headers->get('Cache-Control'))->toContain('no-store')->toContain('private')
         ->and($props['section'])->toBe('overview')
+        ->and($props['legal_document'])->toBeNull()
         ->and($props['identity'])->toBe(['name' => $user->name, 'email' => $user->email, 'investor_type' => 'individual', 'kyc' => 'verified',
             'member_since' => $user->created_at->toIso8601String()])
         ->and($props['personal'])->toBe(['name' => $user->name, 'email' => $user->email, 'phone' => null, 'id_type' => null, 'id_number' => null, 'country' => null, 'address' => null])
@@ -67,14 +69,19 @@ it('shows the account, its verified state and its verified funding methods, with
             'launcher' => ['url' => '/dashboard', 'method' => 'get'], 'overview' => $profile(), 'personal' => $profile('?section=personal'),
             'plan' => $profile('?section=plan'), 'security' => $profile('?section=security'), 'linked' => $profile('?section=linked'),
             'statements' => $profile('?section=statements'), 'help' => $profile('?section=help'), 'terms' => $profile('?section=terms'),
-            'privacy' => $profile('?section=privacy'), 'automation' => $profile('?section=automation'),
+            'privacy' => $profile('?section=privacy'), 'disclaimers' => $profile('?section=disclaimers'), 'automation' => $profile('?section=automation'),
             'verification' => ['url' => '/investor/verified', 'method' => 'get'], 'security_settings' => ['url' => '/settings/security', 'method' => 'get']])
         ->and($props['actions'])->toBe(['link_account' => ['url' => '/investor/profile/linked-accounts', 'method' => 'post'], 'logout' => ['url' => '/logout', 'method' => 'post']])
         ->and(array_keys($props['links']))->toEqualCanonicalizing(array_keys(profilePageFixture('investor-profile-automation')['links']));
 
-    foreach (['personal', 'plan', 'security', 'statements', 'help', 'terms', 'privacy'] as $section) {
+    foreach (['personal', 'plan', 'security', 'statements', 'help'] as $section) {
         $this->get(route('investor.profile', ['section' => $section, 'identity_context_revision' => 1]))->assertOk()
-            ->assertInertia(fn (Assert $page) => $page->where('section', $section));
+            ->assertInertia(fn (Assert $page) => $page->where('section', $section)->where('legal_document', null));
+    }
+    foreach (['terms', 'privacy', 'disclaimers'] as $section) {
+        $this->get(route('investor.profile', ['section' => $section, 'identity_context_revision' => 1]))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('section', $section)
+                ->where('legal_document', app(LegalDocuments::class)->pageFor($section)));
     }
     $this->get(route('investor.profile', ['section' => 'refer']))->assertSessionHasErrors('section');
 });

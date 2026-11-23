@@ -78,6 +78,12 @@ it('lists the Rozine way of meeting each of the twelve platform rules in the Ter
     expect(app(LegalDocuments::class)->pageFor('cookies'))->toBeNull();
 });
 
+it('gives every document as a page, in order, for the profiles to show in place', function (): void {
+    $documents = app(LegalDocuments::class);
+
+    expect($documents->pages())->toBe([$documents->pageFor('terms'), $documents->pageFor('privacy'), $documents->pageFor('disclaimers')]);
+});
+
 it('points a signed-in person who has not agreed yet to the review page from a document', function (): void {
     $this->actingAs(personWithoutLegalConsent())->get(route('legal.privacy'))
         ->assertInertia(fn (Assert $page) => $page->where('review', '/legal/review'));

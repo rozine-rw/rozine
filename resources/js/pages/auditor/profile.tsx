@@ -108,7 +108,12 @@ export default function AuditorProfile(props: AuditorProfileProps) {
             </>
         ),
         learn: <AcademySection />,
-        legal: <LegalSection engagement={props.engagement} />,
+        legal: (
+            <LegalSection
+                engagement={props.engagement}
+                documents={props.legal_documents}
+            />
+        ),
     };
 
     return (
