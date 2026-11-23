@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "8b5058224bbc780f755a2ef5c29ca55005c68af71a2ce5f23c077dd0e4a071fe",
-    "coverageSetSha256": "aaec6262d2b7a1fb7c325cefb3ba9f0d1efc1c4c61027f229a601981d18aa6fc",
+    "sourceManifestSha256": "0a4e605552acd4eba87f6e7b03b038f8d730092d2969f675c99c9df3540090e4",
+    "coverageSetSha256": "9e906a72d2f792e07ce5011eb4df42b62f5f04f56f639fa695376b4a10a8b9bc",
     "thresholds": {
         "critical": {
             "global": {
@@ -266,6 +266,7 @@
         "resources/js/components/investor/local-sheet.tsx",
         "resources/js/components/investor/logo-stack.tsx",
         "resources/js/components/investor/market/filter-pill.tsx",
+        "resources/js/components/investor/market/resale.tsx",
         "resources/js/components/investor/monthly-updates.tsx",
         "resources/js/components/investor/notices/notices-panel.tsx",
         "resources/js/components/investor/portfolio/earnings-card.tsx",
@@ -411,6 +412,7 @@
         "resources/js/lib/rozine/operation.ts",
         "resources/js/lib/rozine/raising.ts",
         "resources/js/lib/rozine/statement-transcription.ts",
+        "resources/js/lib/rozine/validation-body.ts",
         "resources/js/lib/utils.ts",
         "resources/js/pages/admin/access-requests.tsx",
         "resources/js/pages/admin/applications.tsx",
@@ -487,6 +489,7 @@
         "resources/js/pages/investor/deal.tsx",
         "resources/js/pages/investor/deals.tsx",
         "resources/js/pages/investor/holding.tsx",
+        "resources/js/pages/investor/lot.tsx",
         "resources/js/pages/investor/market.tsx",
         "resources/js/pages/investor/portfolio.tsx",
         "resources/js/pages/investor/profile.tsx",
