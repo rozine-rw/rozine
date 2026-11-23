@@ -8,7 +8,8 @@ namespace App\Domain\Identity;
  * The three public legal documents every person agrees to before acting on Rozine: the Terms, the
  * Privacy Notice and the Disclaimers. A consent binds the document's version and the SHA-256 digest
  * of its exact wording, so new wording is a new digest; changed wording must also carry a new
- * version, which `LegalConsentTest` pins.
+ * version, which `LegalConsentTest` pins. What the Terms and Disclaimers say about the CMA sandbox
+ * must agree with `SandboxNotice`, which every person acknowledges at sign-up.
  */
 enum LegalDocument: string
 {
