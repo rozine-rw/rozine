@@ -28,11 +28,6 @@ const rw: Catalog = {
     'legal.risk_warning':
         'Gushora imari bigira ingaruka, harimo no guhomba amafaranga washoye. Inyungu ntizemewe ku buryo budasubirwaho.',
     'legal.risk_warning_link': 'Soma imiburo',
-    'investor.profile.legal.terms_body':
-        'Amasezerano hagati yawe na Rozine: uko inyandiko z’inguzanyo, amafaranga y’serivisi, kwishyurwa no kugurisha bikora, n’uko Rozine yubahiriza amategeko agenga urubuga rwo gukusanya imari.',
-    'investor.profile.legal.privacy_body':
-        'Amakuru bwite Rozine ikusanya, impamvu, aho abikwa n’uburenganzira ufite.',
-    'investor.profile.legal.open': 'Soma inyandiko yose',
     'suite.sign_out': 'Sohoka',
     'site.app_entry.label': 'Porogaramu za Rozine',
     'site.app_entry.sign_in': 'Injira',
@@ -1164,6 +1159,7 @@ const rw: Catalog = {
     'business.profile.section.linked': 'Konti zihujwe',
     'business.profile.section.terms': "Amategeko n'amabwiriza",
     'business.profile.section.privacy': "Itangazo ku ibanga ry'amakuru",
+    'business.profile.section.disclaimers': 'Imiburo',
     'business.profile.section.security': 'Umutekano wa konti',
     'business.profile.section.permissions': "Uburenganzira n'inshingano",
     'business.profile.section.support': 'Ubufasha',
@@ -1339,19 +1335,6 @@ const rw: Catalog = {
         'Ufite ikibazo? Baza ubufasha bwa Rozine.',
     'business.profile.linked.footnote':
         "Hahuzwa gusa konti iri mu izina ryanditswe ry'ubucuruzi. Amafaranga abikujwe ajya gusa kuri konti ihujwe.",
-    'business.profile.legal.updated':
-        'Byavuguruwe ku wa {date} · Verisiyo {version}',
-    'business.profile.legal.terms_intro':
-        'Soma aya Mategeko witonze. Iyo wanditse ikigo cyawe, utangiye gukusanya cyangwa ukoresha Rozine mu bundi buryo, uba wemeye kubahiriza aya Mategeko yose. Niba utayemera, ntugomba gukoresha uru rubuga.',
-    'business.profile.legal.privacy_intro':
-        "Iri tangazo risobanura amakuru Rozine ikusanya ku kigo cyawe, uko tuyakoresha, n'amahitamo ufite. Iyo ukoresheje Rozine uba wemeye ibivugwa hano.",
-    'business.profile.legal.terms_footer':
-        "Aya Mategeko agengwa n'amategeko ya Repubulika y'u Rwanda. Ku kibazo cyose, andikira",
-    'business.profile.legal.terms_contact': 'legal@rozine.rw',
-    'business.profile.legal.privacy_footer':
-        "Kugira ngo ukoreshe uburenganzira ku makuru yawe cyangwa uvugane n'ushinzwe kurinda amakuru, andikira",
-    'business.profile.legal.privacy_contact': 'privacy@rozine.rw',
-    'business.profile.legal.footer_end': '.',
 
     'admin.auth.head_title': 'Injira',
     'admin.auth.title': 'Injira',
@@ -4237,6 +4220,7 @@ const rw: Catalog = {
     'auditor.profile.security.password': 'Hindura ijambobanga',
     'auditor.profile.legal.title': "Amategeko n'amabwiriza",
     'auditor.profile.legal.engagement': "Amasezerano y'akazi",
+    'auditor.profile.legal.platform': 'Amabwiriza na politiki bya Rozine',
     'auditor.profile.legal.current':
         "Yemejwe · amasezerano rusange n'uburyo bwumvikanyweho",
     'auditor.profile.legal.required': 'Bisaba ko ubyemeza',
@@ -5755,6 +5739,7 @@ const rw: Catalog = {
     'investor.profile.item.verification': "Igenzura ry'umwirondoro",
     'investor.profile.item.terms': "Amabwiriza n'Amategeko",
     'investor.profile.item.privacy': 'Itangazo ku Ibanga',
+    'investor.profile.item.disclaimers': 'Imiburo',
     'investor.profile.item.personal': 'Umwirondoro wawe',
     'investor.profile.item.plan': 'Rozine Plus · uko uyibona',
     'investor.profile.item.security': 'Umutekano wa konti',

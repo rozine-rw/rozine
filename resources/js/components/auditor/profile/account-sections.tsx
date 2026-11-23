@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { DIVIDER } from '@/components/auditor/ui';
+import { LegalDocumentBody } from '@/components/legal/legal-document-body';
 import { Icon } from '@/components/rozine/icon';
 import type { IconName } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
@@ -217,43 +218,84 @@ export function SecuritySection({
 }
 
 /**
- * Terms & legal: the engagement documents the partner accepts — the platform MSA and the agreed
- * procedures — opened on their own page. Without an engagement summary there is nothing to open.
+ * Terms & legal: the engagement documents the partner accepts (the platform MSA and the agreed
+ * procedures), opened on their own page, then Rozine's Terms, Privacy Notice and Disclaimers,
+ * each opening in place to its full wording. Without an engagement summary only those three show.
  */
 export function LegalSection({
     engagement,
+    documents,
 }: {
     engagement: AuditorProfileProps['engagement'];
+    documents: AuditorProfileProps['legal_documents'];
 }) {
     const { t } = useTranslation();
-
-    if (engagement === null) {
-        return <PendingSection kind="legal" />;
-    }
 
     return (
         <>
             <Heading label={t('auditor.profile.legal.title')} />
-            <div className={CARD}>
-                <Link
-                    href={engagement.link}
-                    className="flex w-full items-center gap-3 p-[15px] text-left"
-                >
-                    <span className="flex size-[30px] shrink-0 items-center justify-center rounded-[9px] bg-rz-page text-[15px] dark:bg-rz-surface-muted">
-                        <Icon name="document" tone="amber" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                        <span className="block text-[13.5px] font-semibold text-rz-ink">
-                            {t('auditor.profile.legal.engagement')}
+            {engagement !== null && (
+                <div className={CARD}>
+                    <Link
+                        href={engagement.link}
+                        className="flex w-full items-center gap-3 p-[15px] text-left"
+                    >
+                        <span className="flex size-[30px] shrink-0 items-center justify-center rounded-[9px] bg-rz-page text-[15px] dark:bg-rz-surface-muted">
+                            <Icon name="document" tone="amber" />
                         </span>
-                        <span className="block text-[11.5px] text-rz-secondary">
-                            {t(`auditor.profile.legal.${engagement.status}`)}
+                        <span className="min-w-0 flex-1">
+                            <span className="block text-[13.5px] font-semibold text-rz-ink">
+                                {t('auditor.profile.legal.engagement')}
+                            </span>
+                            <span className="block text-[11.5px] text-rz-secondary">
+                                {t(
+                                    `auditor.profile.legal.${engagement.status}`,
+                                )}
+                            </span>
                         </span>
-                    </span>
-                    <span aria-hidden className="text-rz-secondary">
-                        ›
-                    </span>
-                </Link>
+                        <span aria-hidden className="text-rz-secondary">
+                            ›
+                        </span>
+                    </Link>
+                </div>
+            )}
+            <p className="mt-4 mb-2 text-[11.5px] font-semibold tracking-[.04em] text-rz-secondary uppercase">
+                {t('auditor.profile.legal.platform')}
+            </p>
+            <div className={cn(CARD, 'divide-y divide-rz-border')}>
+                {documents.map((document) => (
+                    <details
+                        key={document.key}
+                        id={`legal-${document.key}`}
+                        className="group scroll-mt-4"
+                    >
+                        <summary className="flex cursor-pointer list-none items-center gap-3 p-[15px] [&::-webkit-details-marker]:hidden">
+                            <span className="flex size-[30px] shrink-0 items-center justify-center rounded-[9px] bg-rz-page text-[15px] dark:bg-rz-surface-muted">
+                                <Icon name="document" tone="amber" />
+                            </span>
+                            <span className="min-w-0 flex-1 text-[13.5px] font-semibold text-rz-ink">
+                                {document.title}
+                            </span>
+                            <span
+                                aria-hidden
+                                className="text-rz-secondary transition-transform group-open:rotate-90"
+                            >
+                                ›
+                            </span>
+                        </summary>
+                        <div className="px-[15px] pb-[15px]">
+                            <LegalDocumentBody
+                                document={document}
+                                className="[&_h1]:sr-only"
+                                targets={{
+                                    terms: '#legal-terms',
+                                    privacy: '#legal-privacy',
+                                    disclaimers: '#legal-disclaimers',
+                                }}
+                            />
+                        </div>
+                    </details>
+                ))}
             </div>
         </>
     );

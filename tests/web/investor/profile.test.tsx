@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import InvestorProfile from '@/pages/investor/profile';
 import type { InvestorProfileProps } from '@/types/investor';
 import automationFixture from '../../../resources/fixtures/ui/investor-profile-automation.json';
+import disclaimersFixture from '../../../resources/fixtures/ui/investor-profile-disclaimers.json';
 import helpFixture from '../../../resources/fixtures/ui/investor-profile-help.json';
 import expiredFixture from '../../../resources/fixtures/ui/investor-profile-kyc-expired.json';
 import linkedFixture from '../../../resources/fixtures/ui/investor-profile-linked.json';
@@ -25,7 +26,7 @@ vi.setConfig({ testTimeout: 30_000 });
 const profile = (fixture: { props: unknown } = profileFixture) =>
     structuredClone(fixture.props) as InvestorProfileProps;
 
-/** The design's eight menu rows, in its order (Investor.dc.html L9933–9941). */
+/** The design's eight menu rows, in its order (Investor.dc.html L9933–9941), then the Disclaimers. */
 const MENU_ROWS = [
     'Personal information›',
     'Rozine Plus · how to unlock›',
@@ -35,6 +36,7 @@ const MENU_ROWS = [
     'Help center›',
     'Terms & Conditions›',
     'Privacy Note›',
+    'Disclaimers›',
 ];
 
 beforeEach(() => {
@@ -77,6 +79,7 @@ describe('Profile', () => {
             '/preview/investor-profile-help',
             '/preview/investor-profile-terms',
             '/preview/investor-profile-privacy',
+            '/preview/investor-profile-disclaimers',
         ]);
         expect(
             within(menu).queryByText('Identity verification'),
@@ -543,22 +546,62 @@ describe('Profile', () => {
     });
 
     it.each([
-        [termsFixture, 'Terms & Conditions', '/terms', /notes, fees, payouts/u],
-        [privacyFixture, 'Privacy Note', '/privacy', /where it is stored/u],
+        [
+            termsFixture,
+            'Terms & Conditions',
+            'Terms and Conditions',
+            '1. About Rozine',
+        ],
+        [
+            privacyFixture,
+            'Privacy Note',
+            'Privacy Notice',
+            '1. Who we are and the law we follow',
+        ],
+        [
+            disclaimersFixture,
+            'Disclaimers',
+            'Disclaimers',
+            '1. The CMA sandbox notice',
+        ],
     ])(
-        'shows %#: what the document covers, linking to the published document',
-        (fixture, heading, url, summary) => {
-            render(<InvestorProfile {...profile(fixture)} />);
+        'shows %#: the full document in place, with its version and fingerprint',
+        (fixture, heading, title, section) => {
+            const page = profile(fixture);
+
+            render(<InvestorProfile {...page} />);
 
             expect(
                 screen.getByRole('heading', { name: heading }),
             ).toBeInTheDocument();
-            expect(screen.getByText(summary)).toBeInTheDocument();
+            const article = screen.getByRole('article', { name: title });
             expect(
-                screen.getByRole('link', { name: 'Read the full document' }),
-            ).toHaveAttribute('href', url);
+                within(article).getByRole('heading', { name: section }),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    `Version ${page.legal_document?.version} · Fingerprint (SHA-256) ${page.legal_document?.sha256}`,
+                ),
+            ).toBeInTheDocument();
+            expect(
+                screen.queryByRole('link', { name: 'Read the full document' }),
+            ).not.toBeInTheDocument();
         },
     );
+
+    it('keeps a link to another legal document inside the profile', () => {
+        render(<InvestorProfile {...profile(termsFixture)} />);
+
+        const article = screen.getByRole('article', {
+            name: 'Terms and Conditions',
+        });
+        expect(
+            within(article).getAllByRole('link', { name: 'Privacy Notice' })[0],
+        ).toHaveAttribute('href', '/preview/investor-profile-privacy');
+        expect(
+            within(article).getAllByRole('link', { name: 'Disclaimers' })[0],
+        ).toHaveAttribute('href', '/preview/investor-profile-disclaimers');
+    });
 
     it.each([[planFixture, 'Rozine Plus', 'Rozine Plus is not open yet']])(
         'shows %#: the design page, empty until its content is approved',

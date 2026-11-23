@@ -26,7 +26,7 @@ use App\Domain\Wallet\PayoutAccount;
 final class GetBusinessProfile
 {
     /** The design's Profile sections (Business.dc.html L5022–5028), in its menu order. */
-    public const array SECTIONS = ['company', 'security', 'permissions', 'linked', 'support', 'terms', 'privacy'];
+    public const array SECTIONS = ['company', 'security', 'permissions', 'linked', 'support', 'terms', 'privacy', 'disclaimers'];
 
     public function __construct(private WithBusinessAuthority $authority, private BusinessCampaignStore $campaigns, private GetBusinessWallet $wallet, private BusinessContacts $contacts,
         private BusinessPayoutAccounts $accounts) {}

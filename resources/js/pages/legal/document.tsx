@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
+import { LegalDocumentBody } from '@/components/legal/legal-document-body';
 import { LogoLockup } from '@/components/rozine/logo';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
@@ -79,28 +80,11 @@ export default function LegalDocumentPage({
                     </section>
                 )}
 
-                <article
-                    className={cn(
-                        'mt-6 rounded-2xl border border-rz-border bg-rz-surface p-5 text-[15px] leading-[1.65] text-rz-ink sm:p-8',
-                        '[&_h1]:text-2xl [&_h1]:leading-tight [&_h1]:font-semibold sm:[&_h1]:text-3xl',
-                        '[&_h1+p]:mt-2 [&_h1+p]:text-[13px] [&_h1+p]:text-rz-secondary',
-                        '[&_h2]:mt-9 [&_h2]:text-lg [&_h2]:font-semibold',
-                        '[&_li]:mt-2 [&_ol]:mt-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mt-3 [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:pl-5',
-                        '[&_blockquote]:mt-3 [&_blockquote]:rounded-xl [&_blockquote]:border-l-4 [&_blockquote]:border-rz-accent-fill [&_blockquote]:bg-rz-page [&_blockquote]:px-4 [&_blockquote]:py-2 [&_blockquote_p]:mt-1',
-                        '[&_a]:font-semibold [&_a]:text-rz-accent-app-text [&_a]:underline [&_a]:underline-offset-4',
-                        '[&_code]:rounded [&_code]:bg-rz-page [&_code]:px-1 [&_code]:text-[13px]',
-                        '[&_table]:mt-4 [&_table]:block [&_table]:w-full [&_table]:overflow-x-auto [&_table]:text-sm [&_td]:border-t [&_td]:border-rz-border [&_td]:px-2 [&_td]:py-2 [&_td]:align-top [&_th]:px-2 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold',
-                    )}
-                    // The wording is the server's own published Markdown, rendered with raw HTML stripped.
-                    dangerouslySetInnerHTML={{ __html: document.html }}
+                <LegalDocumentBody
+                    document={document}
+                    targets={{}}
+                    className="mt-6 rounded-2xl border border-rz-border bg-rz-surface p-5 sm:p-8"
                 />
-
-                <p className="mt-4 text-xs leading-normal break-all text-rz-secondary">
-                    {t('legal.fingerprint', {
-                        version: document.version,
-                        hash: document.sha256,
-                    })}
-                </p>
             </div>
         </main>
     );

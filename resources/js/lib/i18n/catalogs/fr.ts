@@ -26,11 +26,6 @@ const fr: Catalog = {
     'legal.risk_warning':
         'Investir comporte des risques, y compris la perte du capital. Les rendements ne sont pas garantis.',
     'legal.risk_warning_link': 'Lire les avertissements',
-    'investor.profile.legal.terms_body':
-        'L’accord entre vous et Rozine : le fonctionnement des titres, des frais, des paiements et de la revente, et la manière dont Rozine respecte les règles des plateformes de financement participatif.',
-    'investor.profile.legal.privacy_body':
-        'Les données personnelles que Rozine collecte, pourquoi, où elles sont stockées et vos droits.',
-    'investor.profile.legal.open': 'Lire le document complet',
     'suite.sign_out': 'Se déconnecter',
     'site.app_entry.label': 'Applications Rozine',
     'site.app_entry.sign_in': 'Se connecter',
@@ -1166,6 +1161,7 @@ const fr: Catalog = {
     'business.profile.section.linked': 'Comptes liés',
     'business.profile.section.terms': 'Conditions générales',
     'business.profile.section.privacy': 'Note de confidentialité',
+    'business.profile.section.disclaimers': 'Avertissements',
     'business.profile.section.security': 'Centre de sécurité',
     'business.profile.section.permissions': 'Autorisations et rôles',
     'business.profile.section.support': "Centre d'assistance",
@@ -1345,19 +1341,6 @@ const fr: Catalog = {
         'Des questions ? Contactez le support Rozine.',
     'business.profile.linked.footnote':
         "Seul un compte au nom enregistré de l'entreprise peut être lié. Les retraits ne vont que vers un compte lié.",
-    'business.profile.legal.updated':
-        'Dernière mise à jour le {date} · Version {version}',
-    'business.profile.legal.terms_intro':
-        "Veuillez lire attentivement ces Conditions. En enregistrant votre entreprise, en lançant une levée ou en utilisant Rozine de toute autre manière, vous acceptez d'être lié par l'intégralité de ces Conditions. Si vous ne les acceptez pas, vous ne devez pas utiliser la plateforme.",
-    'business.profile.legal.privacy_intro':
-        "Cette Note de confidentialité explique quelles informations Rozine collecte sur votre entreprise, comment nous les utilisons et quels choix s'offrent à vous. En utilisant Rozine, vous consentez aux pratiques décrites ici.",
-    'business.profile.legal.terms_footer':
-        'Ces Conditions sont régies par les lois de la République du Rwanda. Pour toute question, contactez',
-    'business.profile.legal.terms_contact': 'legal@rozine.rw',
-    'business.profile.legal.privacy_footer':
-        'Pour exercer un droit sur vos données ou joindre notre délégué à la protection des données, contactez',
-    'business.profile.legal.privacy_contact': 'privacy@rozine.rw',
-    'business.profile.legal.footer_end': '.',
 
     'admin.auth.head_title': 'Connexion',
     'admin.auth.title': 'Connexion',
@@ -4255,6 +4238,7 @@ const fr: Catalog = {
     'auditor.profile.security.password': 'Changer le mot de passe',
     'auditor.profile.legal.title': 'Conditions et mentions légales',
     'auditor.profile.legal.engagement': "Conditions d'engagement",
+    'auditor.profile.legal.platform': 'Conditions et politiques de Rozine',
     'auditor.profile.legal.current':
         'Acceptées · le contrat-cadre et les procédures convenues',
     'auditor.profile.legal.required': 'Votre acceptation est requise',
@@ -5766,6 +5750,7 @@ const fr: Catalog = {
     'investor.profile.item.verification': "Vérification d'identité",
     'investor.profile.item.terms': 'Conditions générales',
     'investor.profile.item.privacy': 'Note de confidentialité',
+    'investor.profile.item.disclaimers': 'Avertissements',
     'investor.profile.item.personal': 'Informations personnelles',
     'investor.profile.item.plan': 'Rozine Plus · comment le débloquer',
     'investor.profile.item.security': 'Centre de sécurité',

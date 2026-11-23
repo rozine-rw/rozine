@@ -1,0 +1,267 @@
+{
+    "component": "business/profile",
+    "props": {
+        "business": {
+            "name": "GreenLeaf Agro",
+            "address_line": "North, Musanze",
+            "verified": true,
+            "rating": {
+                "band": "strong",
+                "score": "4.8"
+            }
+        },
+        "section": "disclaimers",
+        "landing": false,
+        "company": {
+            "name": "GreenLeaf Agro",
+            "email": "operations@greenleaf.rw",
+            "phone": "0788013245",
+            "address": {
+                "province": "northern",
+                "district": "musanze",
+                "sector": "Muhoza",
+                "cell": "Kigombe",
+                "street": "KG 5 Ave"
+            },
+            "certificate": {
+                "number": "RDB/2019/004512",
+                "status": "verified",
+                "expires_on": null
+            },
+            "signatories": [
+                {
+                    "name": "Robert Mugisha",
+                    "role": "CEO · Managing Director"
+                },
+                {
+                    "name": "Aline Uwase",
+                    "role": "Board Chair"
+                }
+            ],
+            "signatories_required": 2
+        },
+        "registration": null,
+        "team": [
+            {
+                "name": "Robert Mugisha",
+                "roles": ["controller", "owner", "signatory"],
+                "permissions": [
+                    "application.create",
+                    "application.evaluate",
+                    "application.save",
+                    "application.sign",
+                    "business.view",
+                    "business.wallet.deposit",
+                    "report.cosign",
+                    "repayment.pay"
+                ],
+                "signatory": true
+            },
+            {
+                "name": "Aline Uwase",
+                "roles": ["director", "signatory"],
+                "permissions": [
+                    "application.sign",
+                    "business.view",
+                    "report.cosign"
+                ],
+                "signatory": true
+            },
+            {
+                "name": "Eric Habimana",
+                "roles": ["representative"],
+                "permissions": ["business.view"],
+                "signatory": false
+            }
+        ],
+        "security": {
+            "two_factor": false,
+            "login_alerts": true,
+            "update_login_alerts": {
+                "url": "/preview/business-profile-security",
+                "method": "put"
+            }
+        },
+        "provinces": [
+            {
+                "value": "kigali",
+                "label": "Kigali City",
+                "districts": [
+                    {
+                        "value": "gasabo",
+                        "label": "Gasabo"
+                    },
+                    {
+                        "value": "kicukiro",
+                        "label": "Kicukiro"
+                    },
+                    {
+                        "value": "nyarugenge",
+                        "label": "Nyarugenge"
+                    }
+                ]
+            },
+            {
+                "value": "northern",
+                "label": "Northern",
+                "districts": [
+                    {
+                        "value": "burera",
+                        "label": "Burera"
+                    },
+                    {
+                        "value": "gakenke",
+                        "label": "Gakenke"
+                    },
+                    {
+                        "value": "gicumbi",
+                        "label": "Gicumbi"
+                    },
+                    {
+                        "value": "musanze",
+                        "label": "Musanze"
+                    },
+                    {
+                        "value": "rulindo",
+                        "label": "Rulindo"
+                    }
+                ]
+            },
+            {
+                "value": "southern",
+                "label": "Southern",
+                "districts": [
+                    {
+                        "value": "huye",
+                        "label": "Huye"
+                    },
+                    {
+                        "value": "muhanga",
+                        "label": "Muhanga"
+                    }
+                ]
+            },
+            {
+                "value": "eastern",
+                "label": "Eastern",
+                "districts": [
+                    {
+                        "value": "rwamagana",
+                        "label": "Rwamagana"
+                    },
+                    {
+                        "value": "kayonza",
+                        "label": "Kayonza"
+                    }
+                ]
+            },
+            {
+                "value": "western",
+                "label": "Western",
+                "districts": [
+                    {
+                        "value": "rubavu",
+                        "label": "Rubavu"
+                    },
+                    {
+                        "value": "karongi",
+                        "label": "Karongi"
+                    }
+                ]
+            }
+        ],
+        "linked": null,
+        "legal": {
+            "key": "disclaimers",
+            "title": "Disclaimers",
+            "version": "disclaimers-2026-11-23-r2",
+            "sha256": "8dbbfa24a6cd0028d7ab7a61a774ee5258e0c62b8beaff8262ada146f3c39992",
+            "html": "<h1>Rozine Disclaimers</h1>\n<p>Version <code>disclaimers-2026-11-23-r2</code> · Effective 23 November 2026 · Issued by Rozine Technologies Ltd (TIN 156642791), Kigali, Rwanda</p>\n<p>This page brings together every warning that appears on Rozine, word for word where it is shown in the apps, and explains what each one means for you. When you sign up, you tick a box to confirm you have read and understood them. We record the version and the exact time. These disclaimers form part of our <a href=\"/terms\">Terms and Conditions</a>.</p>\n<h2>1. The CMA sandbox notice</h2>\n<p><strong>Shown:</strong> before the sign-up form, on the investor risk screen and in our marketing.</p>\n<blockquote>\n<p>Rozine is testing this service in the Capital Market Authority's Fintech Regulatory Sandbox, under limits set by the CMA. Admission to the sandbox is not a licence or an endorsement.</p>\n</blockquote>\n<p><strong>What it means:</strong> the CMA's sandbox lets new financial services be tried under close watch and strict limits. The CMA has admitted Rozine to its sandbox. Being in the sandbox does not mean the CMA has licensed Rozine, approved any business on it, or checked any investment.</p>\n<h2>2. The risk warning</h2>\n<p><strong>Shown:</strong> on our website, on every listing and at checkout.</p>\n<blockquote>\n<p>Investing carries risk, including loss of capital. Returns are not guaranteed.</p>\n</blockquote>\n<p><strong>What it means:</strong> you lend your money to a real business. If the business cannot pay, you can get back less than you put in, or nothing at all.</p>\n<h2>3. The five risk statements</h2>\n<p><strong>Shown:</strong> once, after your identity is verified and before your wallet opens. You tick one box: &quot;I understand all of the above&quot;. If the wording changes, you see it again.</p>\n<blockquote>\n<ul>\n<li>I can lose all the money I invest.</li>\n<li>There is no guarantee or collateral.</li>\n<li>Returns are paid only if the business pays.</li>\n<li>I may not find a buyer if I want to sell early.</li>\n<li>Rozine operates in the CMA sandbox under limits.</li>\n</ul>\n</blockquote>\n<p><strong>What they mean:</strong></p>\n<ul>\n<li><strong>You can lose everything.</strong> A note is an unsecured loan. If the business fails, recovery may return little or nothing.</li>\n<li><strong>Nothing backs your money.</strong> There is no collateral, guarantee, insurance or reserve fund behind any note, and Rozine does not cover losses.</li>\n<li><strong>You are paid only when the business pays.</strong> Rozine passes on what it collects. It does not advance payments from its own money.</li>\n<li><strong>Selling early is not certain.</strong> Resale needs another investor willing to buy at your price.</li>\n<li><strong>Limits apply.</strong> The sandbox caps how big Rozine can grow, and the CMA can change or end it.</li>\n</ul>\n<h2>4. Rozine is a platform, not a lender</h2>\n<p><strong>Shown:</strong> in the Terms and in help answers.</p>\n<p>Rozine connects businesses and investors and runs the note. Rozine never lends its own money, guarantees capital or returns, buys or sells notes, makes a market or sets resale prices. Rozine is not a bank, a microfinance institution, a deposit-taker or an insurer. Your wallet and your notes are not insured by the Government of Rwanda, the National Bank of Rwanda or the CMA.</p>\n<h2>5. No investment advice</h2>\n<p><strong>Shown:</strong> on ratings, deals and the prospectus.</p>\n<p>Rozine does not advise you or recommend any investment. Rating labels, such as Strong, Stable or Distressed, and returns come from a published formula applied to verified facts. They describe a business's risk; they do not tell you to invest. Decide for yourself, and get independent advice if you need it. Spreading your money across several notes lowers, but does not remove, the risk.</p>\n<h2>6. Returns and schedules are not promises</h2>\n<p><strong>Shown:</strong> next to returns and schedules, for example &quot;Returns are projected, not guaranteed&quot; at checkout and &quot;Scheduled, not guaranteed&quot; in your portfolio.</p>\n<p>A note's return and repayment schedule are what the business has agreed to pay. They are not a promise that it will. Past repayments by a business, or across Rozine, do not tell you what will happen in future.</p>\n<h2>7. Late charges</h2>\n<p><strong>Shown:</strong> in your portfolio when a note is late.</p>\n<blockquote>\n<p>Late charges and penalty fees are accrued daily upon default and are payable to note holders only as and when collected from the borrower. Rozine does not guarantee or advance late fee recoveries.</p>\n</blockquote>\n<p><strong>What it means:</strong> late charges are added to what the business owes. You receive your share only if and when the business actually pays them.</p>\n<h2>8. Fee figures</h2>\n<p><strong>Shown:</strong> at checkout.</p>\n<blockquote>\n<p>The exact fee is worked out on each repayment once your notes are reserved, so it can differ by a few francs.</p>\n</blockquote>\n<p><strong>What it means:</strong> the earnings fee is a percentage of each return payment, rounded to whole francs. The total you see at checkout is an estimate that can differ by a few francs from the sum of the actual fees.</p>\n<h2>9. Business information and CPA checks</h2>\n<p><strong>Shown:</strong> on listings, prospectuses and audit reports.</p>\n<p>Business figures come from the statements the business uploads and from an independent Certified Public Accountant's in-person checks. A CPA check makes errors and fraud much less likely, but it is not a guarantee that every figure is correct or that the business will succeed. Rozine is not liable for false information a business gives, though we act on it when we find it.</p>\n<h2>10. Selling early</h2>\n<p><strong>Shown:</strong> in the resale market.</p>\n<p>A sale needs a buyer, so it is never guaranteed. You may have to lower your price, or keep the note to the end of its term. Trading pauses around each due date, and the market can be halted.</p>\n<h2>11. Where your money is held</h2>\n<p>All customer money is to be held in a segregated client account at a licensed Rwandan commercial bank. We are in talks with GT Bank to provide that account; no agreement has been signed yet. Rozine will not take real customer money until the account is open.</p>\n<h2>12. Where your data is held</h2>\n<p>Your data is stored on servers in Germany, in the European Union, not in Rwanda. Rozine is applying to the National Cyber Security Authority for the registration needed to store personal data outside Rwanda. See our <a href=\"/privacy\">Privacy Notice</a>.</p>\n<h2>13. Calculators, examples and the waitlist</h2>\n<p><strong>Shown:</strong> on our website, for example &quot;Non-binding demand simulation&quot; and the return calculators.</p>\n<p>Calculators, examples and sample figures on our website are illustrations. They are not offers, quotes or promises. Your real figures are shown in the app before you confirm anything. Joining the waitlist does not commit you to anything and does not guarantee you a place in any raise.</p>\n<h2>14. Test site and simulated money</h2>\n<p><strong>Shown:</strong> on staging.rozine.rw.</p>\n<p>staging.rozine.rw is a test site. Businesses, deals, wallets, payments, disbursements, repayments, resales and payouts there may be simulated with test data. No real money moves, and nothing on the test site is an offer to invest.</p>\n<h2>15. Taxes</h2>\n<p>You are responsible for any tax due on your returns or your business's income. Rozine does not give tax advice.</p>\n<h2>16. Language and translations</h2>\n<p>Rozine's screens are available in English, French and Kinyarwanda. Our legal documents are in English. If a translation ever differs, the English version applies.</p>\n<h2>17. Links to other websites</h2>\n<p>Links to other websites are for your information only. Rozine is not responsible for their content.</p>\n"
+        },
+        "support": {
+            "open": {
+                "url": "/preview/business-profile-support",
+                "method": "post"
+            },
+            "complaints": []
+        },
+        "links": {
+            "home": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/business-reports",
+                "method": "get"
+            },
+            "readiness": {
+                "url": "/preview/business-readiness",
+                "method": "get"
+            },
+            "market": {
+                "url": "/preview/business-market",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/business-profile",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            },
+            "back": {
+                "url": "/preview/business-profile",
+                "method": "get"
+            },
+            "sections": {
+                "company": {
+                    "url": "/preview/business-profile-company",
+                    "method": "get"
+                },
+                "security": {
+                    "url": "/preview/business-profile-security",
+                    "method": "get"
+                },
+                "permissions": {
+                    "url": "/preview/business-profile-permissions",
+                    "method": "get"
+                },
+                "linked": {
+                    "url": "/preview/business-profile-linked",
+                    "method": "get"
+                },
+                "support": {
+                    "url": "/preview/business-profile-support",
+                    "method": "get"
+                },
+                "terms": {
+                    "url": "/preview/business-profile-terms",
+                    "method": "get"
+                },
+                "privacy": {
+                    "url": "/preview/business-profile-privacy",
+                    "method": "get"
+                },
+                "disclaimers": {
+                    "url": "/preview/business-profile-disclaimers",
+                    "method": "get"
+                }
+            },
+            "security_settings": {
+                "url": "/preview/business-profile-security",
+                "method": "get"
+            },
+            "sign_out": {
+                "url": "/logout",
+                "method": "post"
+            }
+        },
+        "actions": {
+            "save_company": {
+                "url": "/preview/business-profile-company",
+                "method": "put"
+            }
+        }
+    }
+}

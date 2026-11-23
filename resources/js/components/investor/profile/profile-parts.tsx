@@ -11,7 +11,6 @@ import { useTranslation } from '@/hooks/use-translation';
 import type { MessageCode } from '@/lib/i18n/types';
 import { formatMonthYearLong, formatMonthYear } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import legal from '@/routes/legal';
 import type { RouteLink } from '@/types';
 import type { InvestorProfileProps, KycState } from '@/types/investor';
 
@@ -124,10 +123,12 @@ const MENU: { key: MenuKey; icon: IconName }[] = [
     { key: 'help', icon: 'question' },
     { key: 'terms', icon: 'document' },
     { key: 'privacy', icon: 'lock-key' },
+    { key: 'disclaimers', icon: 'shield' },
 ];
 
 /**
- * The profile menu (design L2800–2809, rows L9933–9941): the design's eight rows in its order. A
+ * The profile menu (design L2800–2809, rows L9933–9941): the design's eight rows in its order, then
+ * the Disclaimers. A
  * person not yet verified also gets a row back to their verification, which the design (drawn for
  * a verified investor) has no place for.
  */
@@ -463,33 +464,6 @@ export function PendingContent({
             <p className="mt-1.5 max-w-[260px] text-[13px] leading-normal text-rz-secondary">
                 {t(`investor.profile.pending.${kind}_body`)}
             </p>
-        </div>
-    );
-}
-
-/** The Terms or the Privacy Notice: what it covers, and a link to the full published document. */
-export function LegalDocumentCard({ kind }: { kind: 'terms' | 'privacy' }) {
-    const { t } = useTranslation();
-
-    return (
-        <div className="flex flex-col items-center px-[22px] py-16 text-center">
-            <span
-                aria-hidden
-                className="flex size-[72px] items-center justify-center rounded-[20px] bg-rz-accent-soft text-[26px]"
-            >
-                <Icon name={PENDING_ICON[kind]} />
-            </span>
-            <p className="mt-4 max-w-[300px] text-[13px] leading-normal text-rz-secondary">
-                {t(`investor.profile.legal.${kind}_body`)}
-            </p>
-            <a
-                href={
-                    kind === 'terms' ? legal.terms().url : legal.privacy().url
-                }
-                className="mt-5 flex h-12 w-full max-w-[300px] items-center justify-center rounded-xl bg-rz-accent-fill text-[14.5px] font-semibold text-white"
-            >
-                {t('investor.profile.legal.open')}
-            </a>
         </div>
     );
 }

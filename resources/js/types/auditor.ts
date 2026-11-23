@@ -3,6 +3,7 @@ import type {
     AuditPublicationPolicy,
     AuditPublishedReason,
 } from './audit-dispute';
+import type { LegalDocumentText } from './legal';
 import type { Money } from './money';
 import type { OperationCommand, OperationResource } from './operation';
 import type { RouteAction, RouteLink } from './routing';
@@ -1698,6 +1699,8 @@ export type AccreditationActions = {
 export type AuditorProfileProps = AuditorPageContract &
     EngagementSummaryProp & {
         section: ProfileSection;
+        /** The Terms, Privacy Notice and Disclaimers, each read in place under Terms & legal. */
+        legal_documents: LegalDocumentText[];
         auditor: AuditorProfileIdentity;
         quality_score: number | null;
         on_time_pct: number | null;

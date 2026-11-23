@@ -19,8 +19,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * account can be verified, the section offers the link form with its banks and an unlink action
  * on each account; elsewhere neither is offered. Statements lists a monthly wallet
  * statement for each month with wallet activity, opening the wallet statement PDF for that month; a
- * month not yet over is marked open. There is no annual summary yet. Rozine Plus, the help center's
- * answers, the terms and the privacy note have no approved content yet and show their empty state. The
+ * month not yet over is marked open. There is no annual summary yet. Rozine Plus has no approved
+ * content yet and shows its empty state. On the Terms, Privacy Notice or Disclaimers section,
+ * `legal_document` is that document's current wording, read in place; elsewhere it is null. The
  * help center's support chat is real: it lists the Investor's complaints with their reference, clocks and
  * conversation (BRS v2.0 CMP-R03), offers a reply on each one not yet resolved, and opens a new one. The verification link opens the
  * verification flow, or the verified page once the identity is verified.
@@ -30,12 +31,12 @@ class InvestorProfileResource extends JsonResource
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
     {
-        /** @var array{section: string, name: string, email: string, member_since: string, kyc: string, investor_type: string, methods: list<array<string, mixed>>, document: array{id_type: string, id_number: string}|null, two_factor: bool, login_alerts: bool, statement_months: list<string>, complaints: list<array{id: string, reference: string, status: string, opened_at: string, acknowledge_by: string, resolve_by: string, messages: list<array<string, mixed>>}>, linkable: bool, banks: list<array{code: string, name: string}>} $data */
+        /** @var array{section: string, legal_document: array{key: string, title: string, version: string, sha256: string, html: string}|null, name: string, email: string, member_since: string, kyc: string, investor_type: string, methods: list<array<string, mixed>>, document: array{id_type: string, id_number: string}|null, two_factor: bool, login_alerts: bool, statement_months: list<string>, complaints: list<array{id: string, reference: string, status: string, opened_at: string, acknowledge_by: string, resolve_by: string, messages: list<array<string, mixed>>}>, linkable: bool, banks: list<array{code: string, name: string}>} $data */
         $data = $this->resource;
         $verified = $data['kyc'] === 'verified';
         $profile = fn (array $query = []): array => self::link('investor.profile', $query);
 
-        return ['section' => $data['section'],
+        return ['section' => $data['section'], 'legal_document' => $data['legal_document'],
             'identity' => ['name' => $data['name'], 'email' => $data['email'], 'investor_type' => $data['investor_type'], 'kyc' => $data['kyc'],
                 'member_since' => $data['member_since']],
             'personal' => ['name' => $data['name'], 'email' => $data['email'], 'phone' => null, 'id_type' => $data['document']['id_type'] ?? null,
@@ -53,6 +54,7 @@ class InvestorProfileResource extends JsonResource
                 'overview' => $profile(), 'personal' => $profile(['section' => 'personal']), 'plan' => $profile(['section' => 'plan']),
                 'security' => $profile(['section' => 'security']), 'linked' => $profile(['section' => 'linked']), 'statements' => $profile(['section' => 'statements']),
                 'help' => $profile(['section' => 'help']), 'terms' => $profile(['section' => 'terms']), 'privacy' => $profile(['section' => 'privacy']),
+                'disclaimers' => $profile(['section' => 'disclaimers']),
                 'automation' => $profile(['section' => 'automation']), 'verification' => self::link($verified ? 'investor.verified' : 'investor.verification'),
                 'security_settings' => self::link('security.edit')],
             'actions' => ['link_account' => $data['linkable'] ? ['url' => route('investor.profile.link', [], false), 'method' => 'post'] : null, 'logout' => ['url' => route('logout', [], false), 'method' => 'post']]];

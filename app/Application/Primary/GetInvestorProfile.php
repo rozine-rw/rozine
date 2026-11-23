@@ -25,7 +25,7 @@ use App\Domain\Wallet\PayoutAccount;
  */
 final class GetInvestorProfile
 {
-    public const array SECTIONS = ['overview', 'personal', 'plan', 'security', 'linked', 'statements', 'help', 'terms', 'privacy', 'automation'];
+    public const array SECTIONS = ['overview', 'personal', 'plan', 'security', 'linked', 'statements', 'help', 'terms', 'privacy', 'disclaimers', 'automation'];
 
     public function __construct(private GetInvestorViewer $viewer, private InvestorVerificationStore $verifications, private WalletStore $wallets,
         private PayoutAccounts $accounts) {}

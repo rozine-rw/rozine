@@ -2,6 +2,7 @@
     "component": "investor/profile",
     "props": {
         "section": "statements",
+        "legal_document": null,
         "identity": {
             "name": "Robert Mugisha",
             "email": "robert.m@example.rw",
@@ -193,6 +194,10 @@
             },
             "privacy": {
                 "url": "/preview/investor-profile-privacy",
+                "method": "get"
+            },
+            "disclaimers": {
+                "url": "/preview/investor-profile-disclaimers",
                 "method": "get"
             },
             "verification": {
