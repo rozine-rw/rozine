@@ -18,8 +18,8 @@ beforeEach(function (): void {
 });
 
 /**
- * @param  array<string, string|null>  $overrides
- * @return array<string, string|null>
+ * @param  array<string, string|array<string, string>|null>  $overrides
+ * @return array<string, string|array<string, string>|null>
  */
 function sandboxNoticeSignUp(array $overrides = []): array
 {
