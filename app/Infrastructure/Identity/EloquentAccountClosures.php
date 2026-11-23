@@ -9,6 +9,7 @@ use App\Application\Wallet\Contracts\NoteRepayments;
 use App\Domain\Identity\ActiveRolePolicy;
 use App\Models\IdentityAuditEvent;
 use App\Models\User;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -16,12 +17,17 @@ use Illuminate\Support\Str;
  * Reads each role's open obligations straight from the records the role's own pages read, and
  * closes the account by stamping `users.closed_at` (a soft delete): every record stays, the
  * account's sessions and API tokens end, and an immutable identity audit event names the closure.
+ * Closing also frees the sign-in email and the verified ID (both kept on record), so the person
+ * can sign up and be verified again with a new account.
  *
  * @phpstan-import-type Blocker from AccountClosures
  */
 final class EloquentAccountClosures implements AccountClosures
 {
     /** The wallet buckets that hold the investor's money, including cash on its way out. */
+    /** The placeholder sign-in email a closed account keeps, so its own address can register again. */
+    public const RELEASED_EMAIL = 'closed-account-%d@closed.rozine.invalid';
+
     private const INVESTOR_BUCKETS = ['investor_available', 'investor_held', 'investor_committed', 'investor_withdrawing'];
 
     public function __construct(private NoteRepayments $notes) {}
@@ -46,11 +52,16 @@ final class EloquentAccountClosures implements AccountClosures
             }
 
             $closedAt = now('UTC');
-            User::query()->whereKey($userId)->update(['closed_at' => $closedAt, 'closure_reason' => $reason]);
+            $roles = $this->roles($user);
+            User::query()->whereKey($userId)->update([
+                'closed_at' => $closedAt, 'closure_reason' => $reason,
+                'closed_email' => $user->email, 'email' => sprintf(self::RELEASED_EMAIL, $userId),
+            ]);
             DB::table('sessions')->where('user_id', $userId)->delete();
             $user->tokens()->delete();
+            $identityReleased = $this->releaseIdentity($user, $closedAt);
 
-            $after = ['closed_at' => $closedAt->toIso8601String(), 'roles' => $this->roles($user)];
+            $after = ['closed_at' => $closedAt->toIso8601String(), 'roles' => $roles, 'email_released' => true, 'identity_released' => $identityReleased];
             $requestId = (string) Str::uuid();
             (new IdentityAuditEvent)->forceFill([
                 'id' => strtolower((string) Str::ulid()), 'actor_key' => 'user:'.$userId, 'actor_user_id' => $userId,
@@ -63,6 +74,31 @@ final class EloquentAccountClosures implements AccountClosures
 
             return [];
         });
+    }
+
+    /**
+     * Moves the person's verified ID to the released record when no other open account shares the
+     * person, so the same ID can be verified for a new account. Nothing is deleted from the record.
+     */
+    private function releaseIdentity(User $user, CarbonInterface $closedAt): bool
+    {
+        if ($user->party_id === null || User::query()->where('party_id', $user->party_id)
+            ->whereKeyNot($user->id)->whereNull('closed_at')->exists()) {
+            return false;
+        }
+        $identity = DB::table('verified_person_identities')->where('party_id', $user->party_id)->lockForUpdate()->first();
+        if ($identity === null) {
+            return false;
+        }
+
+        DB::table('released_person_identities')->insert([
+            'id' => strtolower((string) Str::ulid()), 'identity_digest' => $identity->identity_digest,
+            'party_id' => $identity->party_id, 'evidence_reference' => $identity->evidence_reference,
+            'closed_user_id' => $user->id, 'verified_at' => $identity->created_at, 'released_at' => $closedAt,
+        ]);
+        DB::table('verified_person_identities')->where('identity_digest', $identity->identity_digest)->delete();
+
+        return true;
     }
 
     /** @return list<string> */

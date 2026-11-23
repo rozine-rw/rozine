@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 use App\Application\Business\WithAuditApplicationBinding;
 use App\Application\Identity\CloseAccount;
+use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Wallet\RecordBusinessDeposit;
+use App\Domain\Identity\SandboxNotice;
+use App\Infrastructure\Identity\EloquentAccountClosures;
 use App\Infrastructure\Secondary\EloquentSecondaryMarket;
 use App\Models\AuditReport;
 use App\Models\BusinessCampaign;
@@ -13,10 +16,13 @@ use App\Models\BusinessProfile;
 use App\Models\CommandOperation;
 use App\Models\DepositPolicy;
 use App\Models\IdentityAuditEvent;
+use App\Models\Party;
 use App\Models\PrimaryHolding;
 use App\Models\PrimaryReservationRecord;
 use App\Models\User;
+use App\Models\VerifiedPersonIdentity;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -101,7 +107,8 @@ test('a blank reason is stored as none, and closing twice changes nothing', func
 });
 
 test('a closed account cannot sign in again and is told why', function () {
-    $user = User::factory()->create(['closed_at' => now()]);
+    $user = User::factory()->create();
+    app(CloseAccount::class)->handle($user->id, null);
 
     $this->post(route('login.store'), ['email' => $user->email, 'password' => 'password'])
         ->assertSessionHasErrors(['email' => 'This account has been closed. Contact info@rozine.rw if you need it reopened.']);
@@ -109,6 +116,66 @@ test('a closed account cannot sign in again and is told why', function () {
 
     $this->post(route('login.store'), ['email' => $user->email, 'password' => 'wrong-password'])->assertSessionHasErrors('email');
     $this->assertGuest();
+});
+
+test('a closed account gives back its email, so the same address can sign up again', function () {
+    $user = User::factory()->create(['email' => 'aminu@example.com']);
+    app(CloseAccount::class)->handle($user->id, null);
+
+    $closed = $user->fresh();
+    expect($closed->email)->toBe(sprintf(EloquentAccountClosures::RELEASED_EMAIL, $user->id))
+        ->and($closed->closed_email)->toBe('aminu@example.com')
+        ->and(IdentityAuditEvent::query()->where('action', 'account.close')->sole()->after['email_released'])->toBeTrue();
+
+    $this->post(route('register.store'), [
+        'name' => 'Aminu Again', 'sandbox_notice_version' => SandboxNotice::VERSION, 'sandbox_notice_sha256' => SandboxNotice::sha256(),
+        'email' => 'aminu@example.com', 'password' => 'new-password', 'password_confirmation' => 'new-password',
+    ])->assertSessionHasNoErrors();
+
+    $fresh = User::query()->where('email', 'aminu@example.com')->sole();
+    expect($fresh->id)->not->toBe($user->id)->and($fresh->isClosed())->toBeFalse();
+    $this->assertAuthenticatedAs($fresh);
+
+    Auth::logout();
+    $this->post(route('login.store'), ['email' => 'aminu@example.com', 'password' => 'new-password'])->assertSessionHasNoErrors();
+    $this->assertAuthenticatedAs($fresh);
+    Auth::logout();
+    $this->post(route('login.store'), ['email' => 'aminu@example.com', 'password' => 'password'])
+        ->assertSessionHasErrors(['email' => 'These credentials do not match our records.']);
+});
+
+test('a closed account releases the verified ID, so the same person can be verified on a new account', function () {
+    $officer = User::factory()->withTwoFactor()->create();
+    StaffFixture::provision($officer, ['compliance'], 'Compliance review assignment.');
+    $verify = fn (User $person): array => app(IdentityAccessStore::class)->verifyInvestor($officer->id, $person->id, 'rw-nid:1199080012345678',
+        'investor-verification:case@1', 'Matches.', (string) Str::uuid(), fn (): array => [], grantsInvestorAccess: false);
+
+    $first = User::factory()->create(['party_id' => Party::factory()]);
+    $verify($first);
+    $firstParty = $first->fresh()->party_id;
+    app(CloseAccount::class)->handle($first->id, null);
+
+    expect(VerifiedPersonIdentity::query()->count())->toBe(0)
+        ->and(DB::table('released_person_identities')->where('party_id', $firstParty)->where('closed_user_id', $first->id)->count())->toBe(1)
+        ->and(IdentityAuditEvent::query()->where('action', 'account.close')->sole()->after['identity_released'])->toBeTrue();
+    expect(fn () => DB::transaction(fn () => DB::table('released_person_identities')->delete()))->toThrow(QueryException::class, 'Released person identities are immutable');
+
+    $second = User::factory()->create(['party_id' => Party::factory()]);
+    expect($verify($second)['code'])->toBe('INVESTOR_VERIFIED');
+    expect(VerifiedPersonIdentity::query()->sole()->party_id)->toBe($second->fresh()->party_id)
+        ->and($second->fresh()->party_id)->not->toBe($firstParty);
+});
+
+test('an ID shared with another open account stays verified when one of them closes', function () {
+    $party = Party::factory()->create();
+    VerifiedPersonIdentity::factory()->create(['identity_digest' => hash('sha256', 'rw-nid:1'), 'party_id' => $party->id]);
+    $closing = User::factory()->create(['party_id' => $party->id]);
+    User::factory()->create(['party_id' => $party->id]);
+
+    app(CloseAccount::class)->handle($closing->id, null);
+
+    expect(VerifiedPersonIdentity::query()->sole()->party_id)->toBe($party->id)
+        ->and(DB::table('released_person_identities')->count())->toBe(0);
 });
 
 test('an open account still signs in through the closure-aware check', function () {

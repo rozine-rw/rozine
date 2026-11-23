@@ -216,7 +216,8 @@ test('a superadmin reaches the Business, Auditor and Access requests tools from 
 test('closed accounts leave the open list and its counts and appear on the Deleted accounts tab with their date and reason', function (): void {
     $open = usersPerson('Olive Open', 3);
     $gone = usersPerson('Gaston Gone', 10);
-    $gone->forceFill(['closed_at' => now()->subDay(), 'closure_reason' => 'Moving abroad'])->save();
+    $goneEmail = $gone->email;
+    $gone->forceFill(['closed_at' => now()->subDay(), 'closure_reason' => 'Moving abroad', 'closed_email' => $goneEmail, 'email' => 'closed-account-'.$gone->id.'@closed.rozine.invalid'])->save();
     $earlier = usersPerson('Eva Earlier', 20);
     $earlier->forceFill(['closed_at' => now()->subDays(5)])->save();
 
@@ -229,7 +230,7 @@ test('closed accounts leave the open list and its counts and appear on the Delet
 
     $this->actingAs($this->officer)->get(route('staff.users.index', ['status' => 'deleted', 'user' => $gone->id]))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('tabs.1.active', true)->where('total', 2)
-            ->where('rows.0.name', 'Gaston Gone')->where('rows.0.closure_reason', 'Moving abroad')->where('rows.1.name', 'Eva Earlier')
+            ->where('rows.0.name', 'Gaston Gone')->where('rows.0.email', $goneEmail)->where('rows.0.closure_reason', 'Moving abroad')->where('rows.1.name', 'Eva Earlier')
             ->where('rows.1.closure_reason', null)->where('rows.0.link.url', '/admin/users?status=deleted&user='.$gone->id)
             ->where('chips.1.link.url', '/admin/users?status=deleted&role=investor')
             ->where('user.closed_at', $gone->fresh()->closed_at->toIso8601String())->where('user.closure_reason', 'Moving abroad'));
