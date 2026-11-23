@@ -375,7 +375,12 @@ describe('Suite launcher', () => {
         expect(screen.getByRole('button', { name: 'Investor' })).toBeEnabled();
     });
     it('opens the Investor deals while the identity is verified and offers the other apps on request', () => {
-        render(<Launcher identity={identityFrom(pendingFixture)} />);
+        render(
+            <Launcher
+                identity={identityFrom(pendingFixture)}
+                role_application={{ kyc: 'none', status: 'none', role: null }}
+            />,
+        );
         const apps = screen.getAllByRole('listitem');
 
         expect(apps.map((app) => app.dataset.audience)).toEqual([
@@ -394,14 +399,11 @@ describe('Suite launcher', () => {
             'Browse open deals now. Investing opens once your identity is verified.Browse deals →',
         );
 
-        // Each card's check is recorded for its own app, so it never grants Investor access.
-        for (const [app, role] of [
-            [apps[1], 'business'],
-            [apps[2], 'auditor'],
-        ] as const) {
+        // Everyone starts with the same identity check (KYC); a role switch is offered once it is sent.
+        for (const app of [apps[1], apps[2]]) {
             expect(within(app).getByRole('link')).toHaveAttribute(
                 'href',
-                `/investor/verification?for=${role}`,
+                '/investor/verification',
             );
             expect(within(app).getByRole('link')).toHaveTextContent(
                 /Verify your identity first →$/u,
@@ -803,139 +805,84 @@ describe('Asking for Business or Auditor access', () => {
         available_roles: ['investor'],
     };
 
-    it('asks for Business access on the card with the business name, then closes once sent', async () => {
+    it('offers to switch to Business or Auditor once the person has sent their own KYC', () => {
         render(
             <Launcher
                 identity={investor}
-                access_requests={offer(['business', 'auditor'])}
+                role_application={{
+                    kyc: 'submitted',
+                    status: 'none',
+                    role: null,
+                }}
             />,
         );
-        const apps = screen.getAllByRole('listitem');
+        const [, business, auditor] = screen.getAllByRole('listitem');
 
-        expect(within(apps[1]).queryByRole('link')).not.toBeInTheDocument();
-        await userEvent.click(within(apps[1]).getByRole('button'));
-        expect(within(apps[1]).getByRole('button')).toHaveAttribute(
-            'aria-expanded',
-            'true',
+        expect(within(business).getByRole('link')).toHaveAttribute(
+            'href',
+            '/role?for=business',
         );
-        const form = screen.getByRole('form', {
-            name: 'Request Business access',
-        });
-
-        expect(within(form).getByLabelText('Business name')).toBeRequired();
-        expect(
-            within(form).getByLabelText('RDB company code (optional)'),
-        ).not.toBeRequired();
-        await userEvent.type(
-            within(form).getByLabelText('Business name'),
-            'Kivu Harvest Ltd',
+        expect(business).toHaveTextContent(/Switch to this role →$/u);
+        expect(within(auditor).getByRole('link')).toHaveAttribute(
+            'href',
+            '/role?for=auditor',
         );
-        await userEvent.type(
-            within(form).getByLabelText('RDB company code (optional)'),
-            '108123456',
-        );
-        await userEvent.type(
-            within(form).getByLabelText('Phone number (optional)'),
-            '+250 788 000 000',
-        );
-        await userEvent.type(
-            within(form).getByLabelText(
-                'Anything staff should know (optional)',
-            ),
-            'Coffee washing station',
-        );
-        await userEvent.click(
-            within(form).getByRole('button', { name: 'Send request' }),
-        );
-
-        expect(mocks.form.data).toEqual({
-            request_id: expect.any(String),
-            role: 'business',
-            organization: 'Kivu Harvest Ltd',
-            reference: '108123456',
-            phone: '+250 788 000 000',
-            note: 'Coffee washing station',
-        });
-        const [link, options] = mocks.form.submit.mock.calls[0];
-
-        expect(link).toEqual({
-            url: '/identity/access-requests',
-            method: 'post',
-        });
-        expect(options.preserveScroll).toBe(true);
-        act(() => options.onSuccess());
-        expect(
-            screen.queryByRole('form', { name: 'Request Business access' }),
-        ).not.toBeInTheDocument();
     });
 
-    it('asks an Auditor for the ICPAR licence, shows a refusal, and cancels', async () => {
-        mocks.form.errors = {
-            role: 'You already asked for this access. Rozine will contact you.',
-        };
+    it('shows a sent application on its card and keeps the other role closed, since an account holds one role', () => {
         render(
             <Launcher
                 identity={investor}
-                access_requests={offer(['auditor'])}
+                role_application={{
+                    kyc: 'submitted',
+                    status: 'submitted',
+                    role: 'business',
+                }}
             />,
         );
+        const [, business, auditor] = screen.getAllByRole('listitem');
 
-        await userEvent.click(
-            within(screen.getAllByRole('listitem')[2]).getByRole('button'),
-        );
-        const form = screen.getByRole('form', {
-            name: 'Request Auditor access',
-        });
-
-        expect(
-            within(form).getByLabelText('ICPAR licence number'),
-        ).toBeRequired();
-        expect(
-            within(form).getByLabelText('Audit firm (optional)'),
-        ).not.toBeRequired();
-        expect(within(form).getByRole('alert')).toHaveTextContent(
-            'You already asked for this access.',
-        );
-        await userEvent.click(
-            within(form).getByRole('button', { name: 'Cancel' }),
-        );
-        expect(
-            screen.queryByRole('form', { name: 'Request Auditor access' }),
-        ).not.toBeInTheDocument();
-    });
-
-    it('holds the send button while the request is in flight', async () => {
-        mocks.form.processing = true;
-        render(
-            <Launcher
-                identity={investor}
-                access_requests={offer(['business'])}
-            />,
-        );
-
-        await userEvent.click(
-            within(screen.getAllByRole('listitem')[1]).getByRole('button'),
-        );
-        expect(screen.getByRole('button', { name: 'Sending…' })).toBeDisabled();
-    });
-
-    it('shows a sent request on its card instead of asking again', () => {
-        render(
-            <Launcher
-                identity={investor}
-                access_requests={offer([], {
-                    business: '2026-11-14T13:40:00+00:00',
-                })}
-            />,
-        );
-        const business = screen.getAllByRole('listitem')[1];
-
-        expect(within(business).queryByRole('button')).not.toBeInTheDocument();
         expect(within(business).getByRole('status')).toHaveTextContent(
-            /Rozine staff have your request and will contact you\.Request sent ✓$/u,
+            /Under review$/u,
+        );
+        expect(within(business).queryByRole('link')).not.toBeInTheDocument();
+        expect(auditor).toHaveTextContent(
+            'An account holds one role at a time.',
+        );
+        expect(within(auditor).queryByRole('link')).not.toBeInTheDocument();
+    });
+
+    it('sends the person back to fix an application Compliance returned, or to continue a draft', () => {
+        const { rerender } = render(
+            <Launcher
+                identity={investor}
+                role_application={{
+                    kyc: 'approved',
+                    status: 'changes_requested',
+                    role: 'auditor',
+                }}
+            />,
+        );
+
+        expect(screen.getAllByRole('listitem')[2]).toHaveTextContent(
+            /Compliance asked for a few changes\..*Fix and send again →$/u,
+        );
+
+        rerender(
+            <Launcher
+                identity={investor}
+                role_application={{
+                    kyc: 'approved',
+                    status: 'draft',
+                    role: 'business',
+                }}
+            />,
+        );
+        expect(screen.getAllByRole('listitem')[1]).toHaveTextContent(
+            /Continue your application →$/u,
         );
         expect(screen.getAllByRole('listitem')[2]).toHaveTextContent(
-            /Not available with your current access$/u,
+            /Switch to this role →$/u,
         );
     });
 

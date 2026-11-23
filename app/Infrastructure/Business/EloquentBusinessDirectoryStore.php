@@ -66,7 +66,8 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
             ->where('disbursements.business_id', $businessId)->where('disbursement_closings.kind', 'issued')->pluck('disbursements.business_campaign_id')->all();
         $repaid = array_column($this->servicing->forBusiness($businessId)['repaid'], 'campaign_id');
         $closures = DB::table('business_campaign_closures')->leftJoin('users', 'users.id', '=', 'business_campaign_closures.actor_user_id')
-            ->where('business_id', $businessId)->get(['business_campaign_closures.id', 'business_campaign_id', 'phase', 'closed_at', 'users.name'])
+            ->where('business_campaign_closures.business_id', $businessId)->get(['business_campaign_closures.id', 'business_campaign_closures.business_campaign_id',
+                'business_campaign_closures.phase', 'business_campaign_closures.closed_at', 'users.name'])
             ->keyBy('business_campaign_id');
         $actors = DB::table('users')->whereIn('id', $campaigns->pluck('actor_user_id')->all())->pluck('name', 'id');
         $title = fn (BusinessCampaign $campaign): string => (string) ($campaign->payload['title'] ?? '');

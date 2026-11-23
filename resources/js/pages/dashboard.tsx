@@ -1,4 +1,4 @@
-import { Head, Link, router, useForm, useHttp } from '@inertiajs/react';
+import { Head, Link, router, useHttp } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 import { LogoLockup } from '@/components/rozine/logo';
 import { RoleIcon } from '@/components/rozine/role-icon';
@@ -11,6 +11,7 @@ import {
     deals as investorDeals,
     verification as investorVerification,
 } from '@/routes/investor';
+import { show as roleApplication } from '@/routes/role-application';
 import { edit as security } from '@/routes/security';
 import { dashboard as staffDashboard } from '@/routes/staff';
 import { notice as verificationNotice } from '@/routes/verification';
@@ -22,6 +23,7 @@ import type {
     RequestableRole,
     RoleAccessOffer,
     RoleApp,
+    RoleApplicationOffer,
     RouteLink,
     SelectActiveRoleInput,
     StaffAccess,
@@ -42,14 +44,17 @@ type LauncherProps = {
      * for and which were already sent. Absent in previews, where those cards explain only.
      */
     access_requests?: RoleAccessOffer;
+    /**
+     * Where the person's own KYC and their application to switch to Business or Auditor stand
+     * (23 Nov 2026): everyone starts as an Investor and may apply once their KYC is sent.
+     */
+    role_application?: RoleApplicationOffer | null;
     /** Supplied only by local/testing synthetic fixture previews. */
     preview_links?: Partial<Record<RoleApp, RouteLink>>;
 };
 /** Every marketplace app, in the launcher's order. */
 const APPS: RoleApp[] = ['investor', 'business', 'auditor'];
 const SUPPORT = 'mailto:hello@rozine.rw';
-const FIELD =
-    'h-10 w-full rounded-[11px] border border-rz-hairline bg-rz-surface px-3 text-sm text-rz-ink';
 type Listed =
     | 'IDENTITY_READY'
     | 'IDENTITY_VERIFICATION_REQUIRED'
@@ -81,6 +86,7 @@ export default function Launcher({
     verification,
     investor_access,
     access_requests,
+    role_application,
     preview_links,
 }: LauncherProps) {
     const { t } = useTranslation();
@@ -89,7 +95,6 @@ export default function Launcher({
     const [failure, setFailure] = useState<string | null>(null);
     const [opening, setOpening] = useState(false);
     const [addingInvestor, setAddingInvestor] = useState(false);
-    const [requesting, setRequesting] = useState<RequestableRole | null>(null);
     const refreshing = useAccessRefresh(
         ['identity', 'staff_access', 'verification'],
         preview_links === undefined,
@@ -340,59 +345,13 @@ export default function Launcher({
                                                         />
                                                     </Link>
                                                 ) : role !== 'investor' &&
-                                                  accessOffer?.requestable.includes(
-                                                      role,
-                                                  ) ? (
-                                                    <button
-                                                        type="button"
-                                                        aria-expanded={
-                                                            requesting === role
+                                                  role_application ? (
+                                                    <RoleSwitchCard
+                                                        role={role}
+                                                        application={
+                                                            role_application
                                                         }
-                                                        aria-controls="request-role-access"
-                                                        onClick={() =>
-                                                            setRequesting(role)
-                                                        }
-                                                        className={CARD}
-                                                    >
-                                                        <AppCardBody
-                                                            role={role}
-                                                            summary={`suite.app.${role}.description`}
-                                                            action="suite.app.request_access"
-                                                        />
-                                                    </button>
-                                                ) : role !== 'investor' &&
-                                                  accessOffer?.sent[role] !==
-                                                      undefined ? (
-                                                    <div
-                                                        role="status"
-                                                        className={CARD}
-                                                    >
-                                                        <AppCardBody
-                                                            role={role}
-                                                            summary="suite.app.request_sent_summary"
-                                                            action="suite.app.request_sent"
-                                                        />
-                                                    </div>
-                                                ) : identity.code ===
-                                                  'IDENTITY_VERIFICATION_REQUIRED' ? (
-                                                    <a
-                                                        href={
-                                                            investorVerification(
-                                                                {
-                                                                    query: {
-                                                                        for: role,
-                                                                    },
-                                                                },
-                                                            ).url
-                                                        }
-                                                        className={CARD}
-                                                    >
-                                                        <AppCardBody
-                                                            role={role}
-                                                            summary={`suite.app.${role}.description`}
-                                                            action="suite.app.verify_first"
-                                                        />
-                                                    </a>
+                                                    />
                                                 ) : (
                                                     <div className={CARD}>
                                                         <AppCardBody
@@ -431,17 +390,6 @@ export default function Launcher({
                                                         pending.current,
                                                     );
                                                 }}
-                                            />
-                                        )}
-                                    {accessOffer !== null &&
-                                        requesting !== null && (
-                                            <RequestRoleAccess
-                                                key={requesting}
-                                                role={requesting}
-                                                link={accessOffer.link}
-                                                onClose={() =>
-                                                    setRequesting(null)
-                                                }
                                             />
                                         )}
                                     {identity.code ===
@@ -563,6 +511,82 @@ function unavailableSummary(
     );
 }
 
+/**
+ * The Business or Auditor card for a person who does not hold that role (role switch, 23 Nov 2026):
+ * verify first while their own KYC is not sent; then apply, continue, fix what Compliance asked for,
+ * or wait while the application is under review. A pending application for the other role leaves
+ * this card explaining only, since an account holds one role at a time.
+ */
+function RoleSwitchCard({
+    role,
+    application,
+}: {
+    role: Exclude<RoleApp, 'investor'>;
+    application: RoleApplicationOffer;
+}) {
+    const mine = application.role === role;
+    const busyElsewhere =
+        application.role !== null &&
+        application.role !== role &&
+        ['submitted', 'approved'].includes(application.status);
+
+    if (!['submitted', 'approved'].includes(application.kyc)) {
+        return (
+            <a href={investorVerification().url} className={CARD}>
+                <AppCardBody
+                    role={role}
+                    summary={`suite.app.${role}.description`}
+                    action="suite.app.verify_first"
+                />
+            </a>
+        );
+    }
+
+    if (busyElsewhere || (mine && application.status === 'approved')) {
+        return (
+            <div className={CARD}>
+                <AppCardBody
+                    role={role}
+                    summary="suite.app.switch.one_role"
+                    action="suite.app.unavailable"
+                />
+            </div>
+        );
+    }
+
+    if (mine && application.status === 'submitted') {
+        return (
+            <div role="status" className={CARD}>
+                <AppCardBody
+                    role={role}
+                    summary="suite.app.switch.under_review_summary"
+                    action="suite.app.switch.under_review"
+                />
+            </div>
+        );
+    }
+
+    return (
+        <Link href={roleApplication({ query: { for: role } })} className={CARD}>
+            <AppCardBody
+                role={role}
+                summary={
+                    mine && application.status === 'changes_requested'
+                        ? 'suite.app.switch.asked_summary'
+                        : `suite.app.${role}.switch`
+                }
+                action={
+                    mine && application.status === 'changes_requested'
+                        ? 'suite.app.switch.fix'
+                        : mine && application.status !== 'none'
+                          ? 'suite.app.switch.continue'
+                          : 'suite.app.switch.start'
+                }
+            />
+        </Link>
+    );
+}
+
 function AppCardBody({
     role,
     summary,
@@ -574,7 +598,11 @@ function AppCardBody({
         | UnavailableSummary
         | 'suite.app.investor.preview'
         | 'suite.app.investor.add'
-        | 'suite.app.request_sent_summary';
+        | 'suite.app.request_sent_summary'
+        | `suite.app.${'business' | 'auditor'}.switch`
+        | 'suite.app.switch.one_role'
+        | 'suite.app.switch.under_review_summary'
+        | 'suite.app.switch.asked_summary';
     action:
         | 'suite.app.open'
         | 'suite.app.browse'
@@ -582,7 +610,11 @@ function AppCardBody({
         | 'suite.app.request_sent'
         | 'suite.app.verify_first'
         | 'suite.app.unavailable'
-        | 'suite.app.add_access';
+        | 'suite.app.add_access'
+        | 'suite.app.switch.start'
+        | 'suite.app.switch.continue'
+        | 'suite.app.switch.fix'
+        | 'suite.app.switch.under_review';
 }) {
     const { t } = useTranslation();
 
@@ -722,138 +754,6 @@ function AddInvestorAccess({
                 </button>
             </div>
         </section>
-    );
-}
-
-/**
- * A verified person asks Rozine's staff for Business or Auditor access (#616) instead of writing an
- * email: what staff need to act on it (the business name, or the ICPAR licence number an Audit
- * Partner is accredited on), sent once. The launcher then shows the request as sent.
- */
-function RequestRoleAccess({
-    role,
-    link,
-    onClose,
-}: {
-    role: RequestableRole;
-    link: RoleAccessOffer['link'];
-    onClose: () => void;
-}) {
-    const { t } = useTranslation();
-    const [requestId] = useState(() => crypto.randomUUID());
-    const form = useForm({
-        request_id: requestId,
-        role,
-        organization: '',
-        reference: '',
-        phone: '',
-        note: '',
-    });
-    const error = (
-        ['role', 'organization', 'reference', 'phone', 'note'] as const
-    )
-        .map((key) => form.errors[key])
-        .find((message) => message !== undefined);
-
-    return (
-        <form
-            id="request-role-access"
-            aria-labelledby="request-role-access-title"
-            onSubmit={(event) => {
-                event.preventDefault();
-                form.submit(link, { preserveScroll: true, onSuccess: onClose });
-            }}
-            className="mt-4 flex max-w-xl flex-col gap-3 rounded-[18px] border border-rz-hairline bg-rz-surface p-5"
-        >
-            <h2
-                id="request-role-access-title"
-                className="text-base font-semibold text-rz-ink"
-            >
-                {t(`suite.request_access.${role}.title`)}
-            </h2>
-            <p className="text-sm text-rz-body">
-                {t(`suite.request_access.${role}.body`)}
-            </p>
-            <label className="flex flex-col gap-1.5 text-[12.5px] font-semibold text-rz-ink">
-                {t(`suite.request_access.${role}.organization`)}
-                <input
-                    name="organization"
-                    value={form.data.organization}
-                    required={role === 'business'}
-                    maxLength={160}
-                    onChange={(event) =>
-                        form.setData('organization', event.target.value)
-                    }
-                    className={FIELD}
-                />
-            </label>
-            <label className="flex flex-col gap-1.5 text-[12.5px] font-semibold text-rz-ink">
-                {t(`suite.request_access.${role}.reference`)}
-                <input
-                    name="reference"
-                    value={form.data.reference}
-                    required={role === 'auditor'}
-                    maxLength={60}
-                    onChange={(event) =>
-                        form.setData('reference', event.target.value)
-                    }
-                    className={FIELD}
-                />
-            </label>
-            <label className="flex flex-col gap-1.5 text-[12.5px] font-semibold text-rz-ink">
-                {t('suite.request_access.phone')}
-                <input
-                    name="phone"
-                    type="tel"
-                    autoComplete="tel"
-                    value={form.data.phone}
-                    maxLength={32}
-                    onChange={(event) =>
-                        form.setData('phone', event.target.value)
-                    }
-                    className={FIELD}
-                />
-            </label>
-            <label className="flex flex-col gap-1.5 text-[12.5px] font-semibold text-rz-ink">
-                {t('suite.request_access.note')}
-                <textarea
-                    name="note"
-                    value={form.data.note}
-                    maxLength={1000}
-                    rows={3}
-                    onChange={(event) =>
-                        form.setData('note', event.target.value)
-                    }
-                    className="w-full rounded-[11px] border border-rz-hairline bg-rz-surface px-3 py-2 text-sm text-rz-ink"
-                />
-            </label>
-            {error !== undefined && (
-                <p role="alert" className="text-sm text-rz-danger-text">
-                    {error}
-                </p>
-            )}
-            <div className="flex gap-2.5">
-                <button
-                    type="button"
-                    onClick={onClose}
-                    className="h-10 rounded-[11px] border border-rz-hairline px-4 text-sm font-semibold text-rz-body"
-                >
-                    {t('suite.request_access.cancel')}
-                </button>
-                <button
-                    type="submit"
-                    disabled={form.processing}
-                    aria-busy={form.processing || undefined}
-                    className="h-10 flex-1 rounded-[11px] bg-rz-accent px-4 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                    {t(
-                        form.processing
-                            ? 'suite.request_access.sending'
-                            : 'suite.request_access.submit',
-                    )}
-                </button>
-            </div>
-        </form>
     );
 }
 

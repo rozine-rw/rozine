@@ -227,6 +227,218 @@ const fr: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Les auditeurs partenaires ne peuvent pas avoir un autre rôle Rozine : ce compte ne peut donc pas demander l’accès Auditeur.',
     'suite.app.unavailable': 'Indisponible avec votre accès actuel',
+    'admin.role_applications.business.title': 'Demandes d’entreprise (KYB)',
+    'admin.role_applications.business.caption':
+        'Investisseurs demandant à devenir représentant d’entreprise. Examinez l’entreprise, ses personnes et ses documents, puis décidez ici.',
+    'admin.role_applications.business.kicker': 'Demande entreprise',
+    'admin.role_applications.business.approve': 'Approuver et intégrer',
+    'admin.role_applications.auditor.title': 'Demandes d’auditeur',
+    'admin.role_applications.auditor.caption':
+        'Investisseurs demandant à devenir auditeur. Vérifiez le certificat ICPAR dans le registre, puis décidez ici.',
+    'admin.role_applications.auditor.kicker': 'Demande auditeur',
+    'admin.role_applications.auditor.approve': 'Approuver et accréditer',
+    'admin.role_applications.tabs': 'Statut des demandes',
+    'admin.role_applications.tab.submitted': 'En attente',
+    'admin.role_applications.tab.changes_requested': 'Renvoyées',
+    'admin.role_applications.tab.approved': 'Approuvées',
+    'admin.role_applications.tab.rejected': 'Rejetées',
+    'admin.role_applications.empty.submitted': 'Rien en attente d’examen.',
+    'admin.role_applications.empty.changes_requested':
+        'Aucune demande renvoyée.',
+    'admin.role_applications.empty.approved':
+        'Aucune demande approuvée pour l’instant.',
+    'admin.role_applications.empty.rejected': 'Aucune demande rejetée.',
+    'admin.role_applications.kyc_approved': 'KYC approuvé',
+    'admin.role_applications.kyc_pending': 'KYC en attente',
+    'admin.role_applications.review': 'Examiner',
+    'admin.role_applications.sent_on': 'Envoyée le {date}',
+    'admin.role_applications.drawer_label': 'Demande de {name}',
+    'admin.role_applications.status.draft': 'Brouillon',
+    'admin.role_applications.status.submitted': 'En attente d’examen',
+    'admin.role_applications.status.changes_requested':
+        'Renvoyée pour modifications',
+    'admin.role_applications.status.approved': 'Approuvée',
+    'admin.role_applications.status.rejected': 'Rejetée',
+    'admin.role_applications.identity': 'KYC du demandeur',
+    'admin.role_applications.kyc.none': 'Non commencé',
+    'admin.role_applications.kyc.draft': 'Commencé, non envoyé',
+    'admin.role_applications.kyc.submitted': 'Envoyé, en attente d’approbation',
+    'admin.role_applications.kyc.approved': 'Approuvé',
+    'admin.role_applications.kyc.rejected': 'Rejeté',
+    'admin.role_applications.open_kyc': 'Ouvrir dans Utilisateurs →',
+    'admin.role_applications.two_factor_on':
+        'L’authentification à deux facteurs est activée.',
+    'admin.role_applications.two_factor_off':
+        'L’authentification à deux facteurs est désactivée.',
+    'admin.role_applications.representative':
+        '{name} postule comme {title} ({phone}).',
+    'admin.role_applications.before_approval': 'Avant de pouvoir approuver',
+    'admin.role_applications.incomplete': 'Manquant ou invalide : {fields}',
+    'admin.role_applications.decision': 'Décision',
+    'admin.role_applications.note': 'Note au demandeur',
+    'admin.role_applications.note_hint':
+        'Une note est requise pour renvoyer ou rejeter. Approuver change le rôle du demandeur, qui cesse d’être Investisseur.',
+    'admin.role_applications.reject': 'Rejeter',
+    'admin.role_applications.more': 'Demander plus',
+    'admin.role_applications.approving': 'Approbation…',
+    'admin.role_applications.history': 'Historique',
+    'suite.app.business.switch':
+        'Levez des fonds pour votre entreprise. Ajoutez les informations et documents de l’entreprise (KYB) pour passer en Entreprise.',
+    'suite.app.auditor.switch':
+        'Auditez les entreprises cotées. Ajoutez votre licence ICPAR et vos zones pour passer en Auditeur.',
+    'suite.app.switch.one_role':
+        'Un compte n’a qu’un rôle à la fois. Votre autre demande est chez la Conformité.',
+    'suite.app.switch.under_review_summary':
+        'Votre demande est chez notre équipe Conformité. Nous vous dirons quand elle aura été examinée.',
+    'suite.app.switch.asked_summary':
+        'La Conformité demande quelques modifications. Ouvrez votre demande pour voir quoi corriger.',
+    'suite.app.switch.start': 'Passer à ce rôle →',
+    'suite.app.switch.continue': 'Continuer votre demande →',
+    'suite.app.switch.fix': 'Corriger et renvoyer →',
+    'suite.app.switch.under_review': 'En cours d’examen',
+    'role.choice.title': 'Choisissez votre rôle',
+    'role.choice.kicker': 'Votre rôle',
+    'role.choice.subtitle':
+        'Tout le monde commence comme Investisseur. Vous pouvez passer à un autre rôle. Un compte n’a qu’un rôle à la fois.',
+    'role.choice.current': 'Actuel',
+    'role.choice.investor_approved':
+        'Votre vérification d’identité est approuvée.',
+    'role.choice.investor_pending':
+        'Votre vérification d’identité est envoyée et en cours d’examen.',
+    'role.choice.business.title': 'Représentant d’entreprise',
+    'role.choice.business.body':
+        'Levez des fonds pour une entreprise que vous représentez. Vous ajoutez l’immatriculation, les personnes et les documents de l’entreprise (KYB).',
+    'role.choice.business.start': 'Postuler comme entreprise',
+    'role.choice.auditor.title': 'Auditeur',
+    'role.choice.auditor.body':
+        'Auditez chaque mois les entreprises cotées. Vous ajoutez votre certificat d’exercice ICPAR et les districts couverts.',
+    'role.choice.auditor.start': 'Postuler comme auditeur',
+    'role.choice.kyc_note':
+        'Vous pouvez envoyer votre demande maintenant. La Conformité l’approuve une fois votre vérification d’identité approuvée.',
+    'role.choice.kyc_link': 'Voir votre vérification d’identité',
+    'role.apply.kicker_business': 'Demande entreprise',
+    'role.apply.kicker_auditor': 'Demande auditeur',
+    'role.apply.progress': 'Progression de la demande',
+    'role.apply.step.company.title': 'Votre entreprise',
+    'role.apply.step.company.subtitle':
+        'Tel qu’enregistré au RDB. Nous vérifions ces informations dans le registre RDB.',
+    'role.apply.step.people.title': 'Personnes',
+    'role.apply.step.people.subtitle':
+        'Vous, les administrateurs et toute personne détenant 25 % ou plus.',
+    'role.apply.step.documents.title': 'Documents',
+    'role.apply.step.documents.subtitle':
+        'Des copies lisibles des documents de l’entreprise et de la pièce d’identité de chaque personne.',
+    'role.apply.step.licence.title': 'Licence ICPAR',
+    'role.apply.step.licence.subtitle':
+        'Votre adhésion ICPAR et votre certificat d’exercice en cours.',
+    'role.apply.step.coverage.title': 'Zones et conflits',
+    'role.apply.step.coverage.subtitle':
+        'Où vous pouvez auditer, et votre indépendance.',
+    'role.apply.step.review.title': 'Vérifier et envoyer',
+    'role.apply.step.review.subtitle':
+        'Vérifiez vos réponses puis envoyez-les à notre équipe Conformité.',
+    'role.apply.company.rdb_code': 'Code entreprise RDB',
+    'role.apply.company.rdb_code_hint': '9 chiffres, sur votre certificat RDB',
+    'role.apply.company.legal_name': 'Nom enregistré',
+    'role.apply.company.tin': 'NIF (TIN)',
+    'role.apply.company.tin_hint': '9 chiffres, de la RRA',
+    'role.apply.company.company_type': 'Type d’entreprise',
+    'role.apply.company_type.private_limited': 'SARL',
+    'role.apply.company_type.public_limited': 'SA',
+    'role.apply.company_type.cooperative': 'Coopérative',
+    'role.apply.company_type.partnership': 'Société de personnes',
+    'role.apply.company_type.other': 'Autre',
+    'role.apply.company.incorporated': 'Date de constitution',
+    'role.apply.company.district': 'District',
+    'role.apply.company.sector': 'Secteur',
+    'role.apply.company.address': 'Adresse du siège',
+    'role.apply.company.phone': 'Téléphone de l’entreprise',
+    'role.apply.people.your_title': 'Votre fonction dans l’entreprise',
+    'role.apply.people.your_phone': 'Votre téléphone',
+    'role.apply.people.authorised':
+        'Je suis autorisé(e) à agir pour cette entreprise sur Rozine.',
+    'role.apply.people.directors': 'Administrateurs',
+    'role.apply.people.owners': 'Propriétaires de 25 % ou plus',
+    'role.apply.people.full_name': 'Nom complet',
+    'role.apply.people.national_id': 'Carte d’identité',
+    'role.apply.people.passport': 'Passeport',
+    'role.apply.people.id_number': 'Numéro de pièce',
+    'role.apply.people.nationality': 'Nationalité',
+    'role.apply.people.share': 'Part (%)',
+    'role.apply.people.pep':
+        'Occupe ou a occupé une fonction publique importante (PPE)',
+    'role.apply.people.remove': 'Retirer',
+    'role.apply.people.add_director': '+ Ajouter un administrateur',
+    'role.apply.people.add_owner': '+ Ajouter un propriétaire',
+    'role.apply.document.rdb_certificate': 'Certificat d’immatriculation RDB',
+    'role.apply.document.tin_certificate': 'Certificat NIF (RRA)',
+    'role.apply.document.articles': 'Statuts',
+    'role.apply.document.shareholder_register': 'Registre des actionnaires',
+    'role.apply.document.board_resolution':
+        'Résolution du conseil vous désignant',
+    'role.apply.document.practising_certificate': 'Certificat d’exercice ICPAR',
+    'role.apply.document.person_id': 'Pièce d’identité de {name}',
+    'role.apply.document.optional':
+        'Facultatif. Requis si vous n’êtes pas administrateur.',
+    'role.apply.document.staff_only': 'Seule notre équipe Conformité les voit.',
+    'role.apply.document.formats': 'PDF, JPG ou PNG, 10 Mo maximum chacun.',
+    'role.apply.document.replace': 'Remplacer',
+    'role.apply.document.tap': 'Touchez pour téléverser',
+    'role.apply.document.view': 'Voir',
+    'role.apply.licence.membership': 'Numéro de membre ICPAR',
+    'role.apply.licence.certificate': 'Numéro du certificat d’exercice',
+    'role.apply.licence.valid_until': 'Valable jusqu’au',
+    'role.apply.licence.firm': 'Cabinet d’audit (facultatif)',
+    'role.apply.coverage.districts': 'Districts que vous couvrez',
+    'role.apply.coverage.conflicts': 'Indépendance',
+    'role.apply.coverage.no_conflicts':
+        'Je n’ai aucun intérêt financier ou familial dans une entreprise cotée sur Rozine.',
+    'role.apply.coverage.will_declare':
+        'Je déclarerai tout conflit avant d’accepter un audit.',
+    'role.apply.coverage.ethics':
+        'Je respecte le code de déontologie de l’ICPAR.',
+    'role.apply.review.kyc_pending_title':
+        'Votre vérification d’identité est encore en examen',
+    'role.apply.review.kyc_pending_body':
+        'Vous pouvez l’envoyer maintenant. La Conformité l’approuve une fois votre identité approuvée.',
+    'role.apply.review.uploaded': 'Téléversés',
+    'role.apply.review.declare_business':
+        'Je confirme que ces informations sont exactes et complètes, et que je peux agir pour cette entreprise.',
+    'role.apply.review.declare_auditor':
+        'Je confirme que ces informations sont exactes et que ma licence est en cours de validité.',
+    'role.apply.blockers.title': 'Avant que la Conformité change votre rôle',
+    'role.apply.blocker.INVESTOR_WALLET_BALANCE':
+        'Retirez l’argent de votre portefeuille Investisseur.',
+    'role.apply.blocker.INVESTOR_MONEY_MOVING':
+        'Attendez la fin de vos dépôts et retraits.',
+    'role.apply.blocker.INVESTOR_COMMITMENTS':
+        'Vos investissements en cours doivent d’abord se clôturer.',
+    'role.apply.blocker.INVESTOR_HOLDINGS':
+        'Vous détenez encore des investissements. Ils doivent d’abord être remboursés ou vendus.',
+    'role.apply.blocker.INVESTOR_MARKET_ORDERS':
+        'Annulez vos ordres de marché ouverts.',
+    'role.apply.two_factor.title': 'Activez l’authentification à deux facteurs',
+    'role.apply.two_factor.body':
+        'Les auditeurs doivent protéger leur compte par l’authentification à deux facteurs avant d’envoyer leur demande.',
+    'role.apply.two_factor.action': 'Ouvrir les paramètres de sécurité',
+    'role.apply.asked_for_more': 'La Conformité demande des modifications',
+    'role.apply.rejected': 'Votre dernière demande n’a pas été approuvée',
+    'role.apply.send': 'Envoyer à la Conformité',
+    'role.apply.sending': 'Envoi…',
+    'role.apply.continue': 'Enregistrer et continuer',
+    'role.apply.saving': 'Enregistrement…',
+    'role.apply.waiting_uploads': 'En attente de la fin des téléversements…',
+    'role.apply.choose': 'Choisir…',
+    'role.apply.edit': 'Modifier',
+    'role.apply.back_home': 'Retour à l’accueil',
+    'role.apply.review_state.title': 'Demande envoyée',
+    'role.apply.review_state.business':
+        'Notre équipe Conformité vérifie votre entreprise. Vous restez Investisseur jusqu’à l’approbation.',
+    'role.apply.review_state.auditor':
+        'Notre équipe Conformité vérifie votre licence. Vous restez Investisseur jusqu’à l’approbation.',
+    'role.apply.review_state.sent': 'Demande envoyée',
+    'role.apply.review_state.kyc': 'Vérification d’identité approuvée',
+    'role.apply.review_state.compliance': 'Décision de la Conformité',
     'suite.request_access.business.title': 'Demander l’accès Entreprise',
     'suite.request_access.business.body':
         'Indiquez l’entreprise pour laquelle vous souhaitez lever des fonds. L’équipe Rozine vérifie l’entreprise et vous, en tant que représentant, avant d’ouvrir l’accès Entreprise.',

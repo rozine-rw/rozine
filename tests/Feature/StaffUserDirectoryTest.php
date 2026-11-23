@@ -8,6 +8,7 @@ use App\Models\Party;
 use App\Models\RoleMembership;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -31,7 +32,8 @@ function usersPerson(string $name, int $daysAgo, array $party = []): User
 function usersCase(User $user, string $status): string
 {
     $id = strtolower((string) Str::ulid());
-    DB::table('investor_verifications')->insert(['id' => $id, 'party_id' => $user->party_id, 'revision' => 1, 'status' => $status, 'state' => '{}',
+    DB::table('investor_verifications')->insert(['id' => $id, 'party_id' => $user->party_id, 'revision' => 1, 'status' => $status,
+        'state' => Crypt::encryptString((string) json_encode(['date_of_birth' => '1990-05-01', 'id_type' => 'passport', 'id_number' => 'PC445566', 'decision' => null, 'uploads' => []])),
         'submitted_at' => $status === 'draft' ? null : now()->subDay(), 'created_at' => now()->subDays(2), 'updated_at' => now()->subDay()]);
 
     return $id;

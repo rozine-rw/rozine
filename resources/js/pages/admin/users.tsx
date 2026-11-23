@@ -122,6 +122,8 @@ export default function AdminUsers(props: AdminUsersProps) {
                         key={props.user.id}
                         user={props.user}
                         serverTime={props.server_time}
+                        kycReview={props.kyc_review ?? null}
+                        viewer={props.viewer}
                     />
                 )
             }

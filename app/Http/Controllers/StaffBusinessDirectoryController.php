@@ -14,6 +14,7 @@ use App\Application\Evidence\GetStaffStatementAuditReadiness;
 use App\Application\Evidence\RequestStatementReview;
 use App\Application\Identity\BrowseRoleAccessRequests;
 use App\Application\Identity\GetStaffAccess;
+use App\Application\Identity\ReviewRoleApplications;
 use App\Application\Operations\PlatformPolicies;
 use App\Http\Requests\Auditor\ResolveAuditAssignmentRequest;
 use App\Http\Requests\Staff\ListBusinessDirectoryRequest;
@@ -107,7 +108,7 @@ class StaffBusinessDirectoryController extends Controller
     public function __construct(private BrowseBusinessDirectory $directory) {}
 
     public function index(ListBusinessDirectoryRequest $request, GetStaffAccess $access, GetAuditLocation $location, GetBusinessAuditEngagement $audits,
-        GetStaffStatementAuditReadiness $statements, BrowseRoleAccessRequests $requests): Response|StaffBusinessDirectoryResource
+        GetStaffStatementAuditReadiness $statements, BrowseRoleAccessRequests $requests, ReviewRoleApplications $applications): Response|StaffBusinessDirectoryResource
     {
         $actorId = (int) $request->user()?->getAuthIdentifier();
         /** @var 'all' $chip */
@@ -136,7 +137,15 @@ class StaffBusinessDirectoryController extends Controller
             'onboarding_sectors' => OnboardBusiness::sectors(),
             'onboarding_prefill' => $prefill, 'onboarding_request_closed' => $onboard !== null && $prefill === null]);
 
-        return $request->routeIs('api.*') ? $resource : Inertia::render('admin/parties', $resource->resolve($request));
+        if ($request->routeIs('api.*')) {
+            return $resource;
+        }
+        $tab = (string) $request->query('kyb', 'submitted');
+        $selectedApplication = $request->query('application');
+
+        return Inertia::render('admin/parties', [...$resource->resolve($request), ...$applications->page($actorId, 'business',
+            in_array('businesses.verify', $staff['allowed_actions'], true), $tab, is_string($selectedApplication) ? $selectedApplication : null),
+            'applications_close' => route('staff.businesses.index', ['kyb' => $tab])]);
     }
 
     /**

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::verify
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:100
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:109
 * @route '/admin/auditors/{party}/office'
 */
 export const verify = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ verify.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::verify
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:100
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:109
 * @route '/admin/auditors/{party}/office'
 */
 verify.url = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ verify.url = (args: { party: string | number } | [party: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::verify
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:100
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:109
 * @route '/admin/auditors/{party}/office'
 */
 verify.post = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -53,7 +53,7 @@ verify.post = (args: { party: string | number } | [party: string | number ] | st
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::verify
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:100
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:109
 * @route '/admin/auditors/{party}/office'
 */
 const verifyForm = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -63,7 +63,7 @@ const verifyForm = (args: { party: string | number } | [party: string | number ]
 
 /**
 * @see \App\Http\Controllers\StaffAuditorDirectoryController::verify
-* @see app/Http/Controllers/StaffAuditorDirectoryController.php:100
+* @see app/Http/Controllers/StaffAuditorDirectoryController.php:109
 * @route '/admin/auditors/{party}/office'
 */
 verifyForm.post = (args: { party: string | number } | [party: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

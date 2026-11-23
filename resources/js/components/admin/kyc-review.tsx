@@ -44,10 +44,12 @@ export function KycReview({
     review,
     viewer,
     returnTo,
+    returnUser,
 }: {
     review: InvestorVerificationReview;
     viewer: StaffViewer;
-    returnTo?: 'directory';
+    returnTo?: 'directory' | 'users';
+    returnUser?: string;
 }) {
     const { t } = useTranslation();
     const { errors } = usePage<{ errors: Record<string, string> }>().props;
@@ -179,6 +181,9 @@ export function KycReview({
                         request_id: requestId,
                         expected_revision: review.revision,
                         ...(returnTo && { return_to: returnTo }),
+                        ...(returnUser !== undefined && {
+                            return_user: returnUser,
+                        }),
                     }}
                 />
             ) : (

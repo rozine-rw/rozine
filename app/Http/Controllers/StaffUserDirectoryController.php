@@ -7,7 +7,9 @@ namespace App\Http\Controllers;
 use App\Application\Identity\BrowseUserDirectory;
 use App\Application\Identity\Contracts\UserDirectoryStore;
 use App\Application\Identity\GetStaffAccess;
+use App\Application\Identity\ReviewInvestorVerifications;
 use App\Http\Requests\Staff\ListUserDirectoryRequest;
+use App\Http\Resources\StaffInvestorVerificationsResource;
 use App\Http\Resources\StaffNavigationResource;
 use App\Http\Resources\StaffViewerResource;
 use Inertia\Inertia;
@@ -38,7 +40,7 @@ class StaffUserDirectoryController extends Controller
 
     public function __construct(private BrowseUserDirectory $directory) {}
 
-    public function index(ListUserDirectoryRequest $request, GetStaffAccess $access): Response
+    public function index(ListUserDirectoryRequest $request, GetStaffAccess $access, ReviewInvestorVerifications $reviews): Response
     {
         $actorId = (int) $request->user()?->getAuthIdentifier();
         /** @var 'all'|'investor'|'business'|'auditor'|'staff'|'no_role' $role */
@@ -75,7 +77,10 @@ class StaffUserDirectoryController extends Controller
             'filters' => [['key' => 'kyc', 'value' => $kyc, 'options' => self::KYC], ['key' => 'sort', 'value' => $sort, 'options' => self::SORTS]],
             'shown' => count($page['rows']), 'total' => $page['matching'],
             'rows' => array_map(fn (array $row): array => [...self::row($row), 'link' => $link([...$position, 'user' => $row['id']])], $page['rows']),
-            'user' => $user === null ? null : self::detail($user, $link($position), $nav)]);
+            'user' => $user === null ? null : self::detail($user, $link($position), $nav),
+            // Everyone's own KYC is approved here, in the account's drawer (Erastus, 23 Nov 2026).
+            'kyc_review' => $user !== null && $user['verification_id'] !== null && in_array('investors.verify', $staff['allowed_actions'], true)
+                ? StaffInvestorVerificationsResource::review($reviews->show($actorId, $user['verification_id']), $link([...$position, 'user' => $user['row']['id']]), '') : null]);
     }
 
     /**

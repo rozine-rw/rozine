@@ -21,6 +21,7 @@ import coverage from './coverage'
 import accessRequests from './access-requests'
 import complaints from './complaints'
 import systemHealth from './system-health'
+import roleApplications from './role-applications'
 import investorVerifications from './investor-verifications'
 import stagingMailTesters from './staging-mail-testers'
 import changes from './changes'
@@ -129,6 +130,7 @@ const staffNamespace = {
     accessRequests: Object.assign(accessRequests, accessRequests),
     complaints: Object.assign(complaints, complaints),
     systemHealth: Object.assign(systemHealth, systemHealth),
+    roleApplications: Object.assign(roleApplications, roleApplications),
     investorVerifications: Object.assign(investorVerifications, investorVerifications),
     stagingMailTesters: Object.assign(stagingMailTesters, stagingMailTesters),
     changes: Object.assign(changes, changes),

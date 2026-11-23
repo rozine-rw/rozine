@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "8b5058224bbc780f755a2ef5c29ca55005c68af71a2ce5f23c077dd0e4a071fe",
-    "coverageSetSha256": "aaec6262d2b7a1fb7c325cefb3ba9f0d1efc1c4c61027f229a601981d18aa6fc",
+    "sourceManifestSha256": "c77e5cb3ffe318f7b2012939eed50179ad80b20ea7619adfe5694625d71ad44b",
+    "coverageSetSha256": "797024c640984f178add0a498f487342656648a31c2157e379b4c65123e59e58",
     "thresholds": {
         "critical": {
             "global": {
@@ -74,6 +74,8 @@
         "resources/js/components/admin/parties/pending-staff-approvals.tsx",
         "resources/js/components/admin/parties/permission-matrix.tsx",
         "resources/js/components/admin/parties/review-queue.tsx",
+        "resources/js/components/admin/parties/role-application-drawer.tsx",
+        "resources/js/components/admin/parties/role-application-queue.tsx",
         "resources/js/components/admin/parties/user-drawer.tsx",
         "resources/js/components/admin/parties/user-roles.tsx",
         "resources/js/components/admin/reason-stage.tsx",
@@ -497,6 +499,7 @@
         "resources/js/pages/legal/document.tsx",
         "resources/js/pages/legal/review.tsx",
         "resources/js/pages/pulse.tsx",
+        "resources/js/pages/role/apply.tsx",
         "resources/js/pages/settings/appearance.tsx",
         "resources/js/pages/settings/profile.tsx",
         "resources/js/pages/settings/security.tsx",

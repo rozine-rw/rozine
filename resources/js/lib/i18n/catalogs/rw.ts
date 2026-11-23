@@ -223,6 +223,222 @@ const rw: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Abagenzuzi ntibashobora kugira urundi ruhare muri Rozine, bityo iyi konti ntishobora gusaba uburenganzira bw’Umugenzuzi.',
     'suite.app.unavailable': 'Ntibishoboka n’uburenganzira ufite ubu',
+    'admin.role_applications.business.title': 'Dosiye z’ubucuruzi (KYB)',
+    'admin.role_applications.business.caption':
+        'Abashoramari basaba guhindukira abahagarariye ubucuruzi. Suzuma ikigo, abantu bacyo n’inyandiko, hanyuma ufate icyemezo hano.',
+    'admin.role_applications.business.kicker': 'Dosiye y’ubucuruzi',
+    'admin.role_applications.business.approve': 'Emeza kandi winjize',
+    'admin.role_applications.auditor.title': 'Dosiye z’abagenzuzi',
+    'admin.role_applications.auditor.caption':
+        'Abashoramari basaba guhindukira abagenzuzi. Genzura icyemezo cya ICPAR mu gitabo, hanyuma ufate icyemezo hano.',
+    'admin.role_applications.auditor.kicker': 'Dosiye y’umugenzuzi',
+    'admin.role_applications.auditor.approve': 'Emeza kandi wemerere',
+    'admin.role_applications.tabs': 'Aho dosiye zigeze',
+    'admin.role_applications.tab.submitted': 'Zitegereje',
+    'admin.role_applications.tab.changes_requested': 'Zasubijwe',
+    'admin.role_applications.tab.approved': 'Zemejwe',
+    'admin.role_applications.tab.rejected': 'Zanze',
+    'admin.role_applications.empty.submitted':
+        'Nta dosiye itegereje gusuzumwa.',
+    'admin.role_applications.empty.changes_requested': 'Nta dosiye yasubijwe.',
+    'admin.role_applications.empty.approved': 'Nta dosiye iremezwa.',
+    'admin.role_applications.empty.rejected': 'Nta dosiye yanzwe.',
+    'admin.role_applications.kyc_approved': 'KYC yemejwe',
+    'admin.role_applications.kyc_pending': 'KYC itegereje',
+    'admin.role_applications.review': 'Suzuma',
+    'admin.role_applications.sent_on': 'Yoherejwe {date}',
+    'admin.role_applications.drawer_label': 'Dosiye ya {name}',
+    'admin.role_applications.status.draft': 'Igitabo',
+    'admin.role_applications.status.submitted': 'Itegereje gusuzumwa',
+    'admin.role_applications.status.changes_requested':
+        'Yasubijwe ngo ikosorwe',
+    'admin.role_applications.status.approved': 'Yemejwe',
+    'admin.role_applications.status.rejected': 'Yanzwe',
+    'admin.role_applications.identity': 'KYC y’usaba',
+    'admin.role_applications.kyc.none': 'Ntiyatangiye',
+    'admin.role_applications.kyc.draft': 'Yatangiye, ntiyoherejwe',
+    'admin.role_applications.kyc.submitted': 'Yoherejwe, itegereje kwemezwa',
+    'admin.role_applications.kyc.approved': 'Yemejwe',
+    'admin.role_applications.kyc.rejected': 'Yanzwe',
+    'admin.role_applications.open_kyc': 'Fungura muri Abakoresha →',
+    'admin.role_applications.two_factor_on':
+        'Kwemeza mu byiciro bibiri birakora.',
+    'admin.role_applications.two_factor_off':
+        'Kwemeza mu byiciro bibiri ntibikora.',
+    'admin.role_applications.representative':
+        '{name} asaba nka {title} ({phone}).',
+    'admin.role_applications.before_approval': 'Mbere yo kwemeza',
+    'admin.role_applications.incomplete':
+        'Ibibura cyangwa bitari byo: {fields}',
+    'admin.role_applications.decision': 'Icyemezo',
+    'admin.role_applications.note': 'Ubutumwa ku usaba',
+    'admin.role_applications.note_hint':
+        'Ubutumwa burakenewe kugira ngo usubize cyangwa wange. Kwemeza bihindura uruhare rw’usaba, akareka kuba Umushoramari.',
+    'admin.role_applications.reject': 'Anga',
+    'admin.role_applications.more': 'Saba ibindi',
+    'admin.role_applications.approving': 'Biremezwa…',
+    'admin.role_applications.history': 'Amateka',
+    'suite.app.business.switch':
+        'Shakira ikigo cyawe igishoro. Ongeraho amakuru n’inyandiko by’ikigo (KYB) kugira ngo uhindukire Ubucuruzi.',
+    'suite.app.auditor.switch':
+        'Genzura ubucuruzi buri ku rubuga. Ongeraho uruhushya rwa ICPAR n’uturere ukoreramo kugira ngo uhindukire Umugenzuzi.',
+    'suite.app.switch.one_role':
+        'Konti igira uruhare rumwe gusa icyarimwe. Indi dosiye yawe iri kwa Compliance.',
+    'suite.app.switch.under_review_summary':
+        'Dosiye yawe iri ku itsinda rya Compliance. Tuzakubwira nimara gusuzumwa.',
+    'suite.app.switch.asked_summary':
+        'Compliance yasabye impinduka nkeya. Fungura dosiye yawe urebe ibyo gukosora.',
+    'suite.app.switch.start': 'Hindukira uru ruhare →',
+    'suite.app.switch.continue': 'Komeza dosiye yawe →',
+    'suite.app.switch.fix': 'Kosora wongere wohereze →',
+    'suite.app.switch.under_review': 'Birasuzumwa',
+    'role.choice.title': 'Hitamo uruhare rwawe',
+    'role.choice.kicker': 'Uruhare rwawe',
+    'role.choice.subtitle':
+        'Buri wese atangira ari Umushoramari. Ushobora guhindukira urundi ruhare rumwe. Konti igira uruhare rumwe gusa icyarimwe.',
+    'role.choice.current': 'Ubu',
+    'role.choice.investor_approved': 'Isuzuma ry’umwirondoro wawe ryemejwe.',
+    'role.choice.investor_pending':
+        'Isuzuma ry’umwirondoro wawe ryoherejwe kandi riri gusuzumwa.',
+    'role.choice.business.title': 'Uhagarariye ubucuruzi',
+    'role.choice.business.body':
+        'Shakira igishoro ikigo uhagarariye. Wongeraho kwiyandikisha kw’ikigo, abantu bacyo n’inyandiko (KYB).',
+    'role.choice.business.start': 'Saba nk’ubucuruzi',
+    'role.choice.auditor.title': 'Umugenzuzi',
+    'role.choice.auditor.body':
+        'Genzura buri kwezi ubucuruzi buri ku rubuga. Wongeraho icyemezo cya ICPAR n’uturere ukoreramo.',
+    'role.choice.auditor.start': 'Saba nk’umugenzuzi',
+    'role.choice.kyc_note':
+        'Ushobora kohereza dosiye yawe ubu. Compliance iyemeza isuzuma ry’umwirondoro wawe rimaze kwemezwa.',
+    'role.choice.kyc_link': 'Reba isuzuma ry’umwirondoro wawe',
+    'role.apply.kicker_business': 'Dosiye y’ubucuruzi',
+    'role.apply.kicker_auditor': 'Dosiye y’umugenzuzi',
+    'role.apply.progress': 'Aho dosiye igeze',
+    'role.apply.step.company.title': 'Ikigo cyawe',
+    'role.apply.step.company.subtitle':
+        'Nk’uko cyanditswe muri RDB. Tugenzura aya makuru mu gitabo cya RDB.',
+    'role.apply.step.people.title': 'Abantu',
+    'role.apply.step.people.subtitle':
+        'Wowe, abayobozi n’umuntu wese ufite 25% cyangwa arenga.',
+    'role.apply.step.documents.title': 'Inyandiko',
+    'role.apply.step.documents.subtitle':
+        'Kopi zisomeka z’inyandiko z’ikigo n’indangamuntu ya buri muntu.',
+    'role.apply.step.licence.title': 'Uruhushya rwa ICPAR',
+    'role.apply.step.licence.subtitle':
+        'Ubunyamuryango bwawe muri ICPAR n’icyemezo cyo gukora kigezweho.',
+    'role.apply.step.coverage.title': 'Uturere n’inyungu zivuguruzanya',
+    'role.apply.step.coverage.subtitle':
+        'Aho ushobora kugenzura, n’ubwigenge bwawe.',
+    'role.apply.step.review.title': 'Genzura wohereze',
+    'role.apply.step.review.subtitle':
+        'Genzura ibisubizo byawe, hanyuma ubyoherereze itsinda rya Compliance.',
+    'role.apply.company.rdb_code': 'Kode y’ikigo muri RDB',
+    'role.apply.company.rdb_code_hint': 'Imibare 9, iri ku cyemezo cya RDB',
+    'role.apply.company.legal_name': 'Izina ryanditswe',
+    'role.apply.company.tin': 'TIN',
+    'role.apply.company.tin_hint': 'Imibare 9, ya RRA',
+    'role.apply.company.company_type': 'Ubwoko bw’ikigo',
+    'role.apply.company_type.private_limited': 'Ikigo cyigenga',
+    'role.apply.company_type.public_limited': 'Ikigo rusange',
+    'role.apply.company_type.cooperative': 'Koperative',
+    'role.apply.company_type.partnership': 'Ubufatanye',
+    'role.apply.company_type.other': 'Ikindi',
+    'role.apply.company.incorporated': 'Itariki cyandikiweho',
+    'role.apply.company.district': 'Akarere',
+    'role.apply.company.sector': 'Urwego',
+    'role.apply.company.address': 'Aderesi yanditswe',
+    'role.apply.company.phone': 'Telefoni y’ikigo',
+    'role.apply.people.your_title': 'Umwanya wawe mu kigo',
+    'role.apply.people.your_phone': 'Telefoni yawe',
+    'role.apply.people.authorised':
+        'Mfite uburenganzira bwo guhagararira iki kigo kuri Rozine.',
+    'role.apply.people.directors': 'Abayobozi',
+    'role.apply.people.owners': 'Ba nyir’imigabane ya 25% cyangwa irenga',
+    'role.apply.people.full_name': 'Amazina yose',
+    'role.apply.people.national_id': 'Indangamuntu',
+    'role.apply.people.passport': 'Pasiporo',
+    'role.apply.people.id_number': 'Nimero y’indangamuntu',
+    'role.apply.people.nationality': 'Ubwenegihugu',
+    'role.apply.people.share': 'Imigabane (%)',
+    'role.apply.people.pep':
+        'Afite cyangwa yigeze kugira umwanya ukomeye wa leta (PEP)',
+    'role.apply.people.remove': 'Kuraho',
+    'role.apply.people.add_director': '+ Ongeraho umuyobozi',
+    'role.apply.people.add_owner': '+ Ongeraho nyir’imigabane',
+    'role.apply.document.rdb_certificate':
+        'Icyemezo cyo kwiyandikisha muri RDB',
+    'role.apply.document.tin_certificate': 'Icyemezo cya TIN (RRA)',
+    'role.apply.document.articles': 'Amategeko shingiro',
+    'role.apply.document.shareholder_register': 'Igitabo cy’abanyamigabane',
+    'role.apply.document.board_resolution':
+        'Icyemezo cy’inama y’ubuyobozi kigushyiraho',
+    'role.apply.document.practising_certificate':
+        'Icyemezo cyo gukora cya ICPAR',
+    'role.apply.document.person_id': 'Indangamuntu ya {name}',
+    'role.apply.document.optional':
+        'Si ngombwa. Irakenewe niba utari umuyobozi.',
+    'role.apply.document.staff_only':
+        'Itsinda rya Compliance ni ryo ryonyine rizireba.',
+    'role.apply.document.formats':
+        'PDF, JPG cyangwa PNG, kugeza kuri MB 10 buri imwe.',
+    'role.apply.document.replace': 'Simbuza',
+    'role.apply.document.tap': 'Kanda wohereze',
+    'role.apply.document.view': 'Reba',
+    'role.apply.licence.membership': 'Nimero y’ubunyamuryango muri ICPAR',
+    'role.apply.licence.certificate': 'Nimero y’icyemezo cyo gukora',
+    'role.apply.licence.valid_until': 'Kizarangira ku wa',
+    'role.apply.licence.firm': 'Ikigo cy’ubugenzuzi (si ngombwa)',
+    'role.apply.coverage.districts': 'Uturere ushobora gukoreramo',
+    'role.apply.coverage.conflicts': 'Ubwigenge',
+    'role.apply.coverage.no_conflicts':
+        'Nta nyungu y’amafaranga cyangwa y’umuryango mfite mu bucuruzi buri kuri Rozine.',
+    'role.apply.coverage.will_declare':
+        'Nzatangaza inyungu zivuguruzanya zose mbere yo kwemera igenzura.',
+    'role.apply.coverage.ethics':
+        'Nkurikiza amategeko ngengamyitwarire ya ICPAR.',
+    'role.apply.review.kyc_pending_title':
+        'Isuzuma ry’umwirondoro wawe riracyakorwa',
+    'role.apply.review.kyc_pending_body':
+        'Ushobora kohereza ubu. Compliance izabyemeza umwirondoro wawe umaze kwemezwa.',
+    'role.apply.review.uploaded': 'Byoherejwe',
+    'role.apply.review.declare_business':
+        'Ndemeza ko aya makuru ari ukuri kandi yuzuye, kandi ko nemerewe guhagararira iki kigo.',
+    'role.apply.review.declare_auditor':
+        'Ndemeza ko aya makuru ari ukuri kandi ko uruhushya rwanjye rukiri gukoreshwa.',
+    'role.apply.blockers.title':
+        'Mbere y’uko Compliance ihindura uruhare rwawe',
+    'role.apply.blocker.INVESTOR_WALLET_BALANCE':
+        'Kura amafaranga ari mu gikapu cyawe cy’Umushoramari.',
+    'role.apply.blocker.INVESTOR_MONEY_MOVING':
+        'Tegereza ko kubitsa no kubikuza birangira.',
+    'role.apply.blocker.INVESTOR_COMMITMENTS':
+        'Ishoramari ryawe rifunguye rigomba kubanza gusozwa.',
+    'role.apply.blocker.INVESTOR_HOLDINGS':
+        'Uracyafite ishoramari. Rigomba kubanza kwishyurwa cyangwa kugurishwa.',
+    'role.apply.blocker.INVESTOR_MARKET_ORDERS':
+        'Hagarika amabwiriza y’isoko afunguye.',
+    'role.apply.two_factor.title': 'Fungura kwemeza mu byiciro bibiri',
+    'role.apply.two_factor.body':
+        'Abagenzuzi bagomba kurinda konti zabo bakoresheje kwemeza mu byiciro bibiri mbere yo kohereza dosiye.',
+    'role.apply.two_factor.action': 'Fungura igenamiterere ry’umutekano',
+    'role.apply.asked_for_more': 'Compliance yasabye impinduka',
+    'role.apply.rejected': 'Dosiye yawe iheruka ntiyemejwe',
+    'role.apply.send': 'Ohereza kwa Compliance',
+    'role.apply.sending': 'Birimo koherezwa…',
+    'role.apply.continue': 'Bika ukomeze',
+    'role.apply.saving': 'Birimo kubikwa…',
+    'role.apply.waiting_uploads': 'Dutegereje ko kohereza birangira…',
+    'role.apply.choose': 'Hitamo…',
+    'role.apply.edit': 'Hindura',
+    'role.apply.back_home': 'Subira ahabanza',
+    'role.apply.review_state.title': 'Dosiye yoherejwe',
+    'role.apply.review_state.business':
+        'Itsinda rya Compliance riri kugenzura ikigo cyawe. Ukomeza kuba Umushoramari kugeza cyemejwe.',
+    'role.apply.review_state.auditor':
+        'Itsinda rya Compliance riri kugenzura uruhushya rwawe. Ukomeza kuba Umushoramari kugeza rwemejwe.',
+    'role.apply.review_state.sent': 'Dosiye yoherejwe',
+    'role.apply.review_state.kyc': 'Isuzuma ry’umwirondoro ryemejwe',
+    'role.apply.review_state.compliance': 'Icyemezo cya Compliance',
     'suite.request_access.business.title': 'Saba uburenganzira bwa Sosiyete',
     'suite.request_access.business.body':
         'Tubwire sosiyete ushaka gushakira igishoro. Abakozi ba Rozine bagenzura sosiyete nawe nk’uyihagarariye mbere yo gufungura uburenganzira bwa Sosiyete.',

@@ -86,6 +86,7 @@
         "resources/js/actions/App/Http/Controllers/LegalDocumentController.ts",
         "resources/js/actions/App/Http/Controllers/PulseController.ts",
         "resources/js/actions/App/Http/Controllers/RoleAccessRequestController.ts",
+        "resources/js/actions/App/Http/Controllers/RoleApplicationController.ts",
         "resources/js/actions/App/Http/Controllers/RoleBookmarkController.ts",
         "resources/js/actions/App/Http/Controllers/RoleHomeController.ts",
         "resources/js/actions/App/Http/Controllers/Settings/AccountClosureController.ts",
@@ -114,6 +115,7 @@
         "resources/js/actions/App/Http/Controllers/StaffPaymentsController.ts",
         "resources/js/actions/App/Http/Controllers/StaffPrimaryMarketController.ts",
         "resources/js/actions/App/Http/Controllers/StaffReconciliationController.ts",
+        "resources/js/actions/App/Http/Controllers/StaffRoleApplicationController.ts",
         "resources/js/actions/App/Http/Controllers/StaffSectionController.ts",
         "resources/js/actions/App/Http/Controllers/StaffStagingMailTesterController.ts",
         "resources/js/actions/App/Http/Controllers/StaffStatementAuditReadinessController.ts",
@@ -331,6 +333,7 @@
         "resources/js/routes/pulse/index.ts",
         "resources/js/routes/pulse/investor/index.ts",
         "resources/js/routes/register/index.ts",
+        "resources/js/routes/role-application/index.ts",
         "resources/js/routes/sanctum/index.ts",
         "resources/js/routes/security/index.ts",
         "resources/js/routes/site/business/index.ts",
@@ -369,6 +372,7 @@
         "resources/js/routes/staff/primary-market/index.ts",
         "resources/js/routes/staff/reconciliation/index.ts",
         "resources/js/routes/staff/reports/index.ts",
+        "resources/js/routes/staff/role-applications/index.ts",
         "resources/js/routes/staff/sections/index.ts",
         "resources/js/routes/staff/staff/index.ts",
         "resources/js/routes/staff/staging-mail-testers/index.ts",
@@ -400,6 +404,7 @@
         "resources/js/types/money.ts",
         "resources/js/types/navigation.ts",
         "resources/js/types/operation.ts",
+        "resources/js/types/role-application.ts",
         "resources/js/types/routing.ts",
         "resources/js/types/settlement.ts",
         "resources/js/types/support.ts",
@@ -433,6 +438,8 @@
         "resources/js/components/admin/parties/pending-staff-approvals.tsx",
         "resources/js/components/admin/parties/permission-matrix.tsx",
         "resources/js/components/admin/parties/review-queue.tsx",
+        "resources/js/components/admin/parties/role-application-drawer.tsx",
+        "resources/js/components/admin/parties/role-application-queue.tsx",
         "resources/js/components/admin/parties/user-drawer.tsx",
         "resources/js/components/admin/parties/user-roles.tsx",
         "resources/js/components/admin/reason-stage.tsx",
@@ -856,16 +863,17 @@
         "resources/js/pages/legal/document.tsx",
         "resources/js/pages/legal/review.tsx",
         "resources/js/pages/pulse.tsx",
+        "resources/js/pages/role/apply.tsx",
         "resources/js/pages/settings/appearance.tsx",
         "resources/js/pages/settings/profile.tsx",
         "resources/js/pages/settings/security.tsx",
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 831,
-        "generated": 357,
-        "declarationOnly": 21,
-        "authoredExecutable": 453
+        "totalTrackedSources": 839,
+        "generated": 361,
+        "declarationOnly": 22,
+        "authoredExecutable": 456
     },
-    "coverageSetSha256": "aaec6262d2b7a1fb7c325cefb3ba9f0d1efc1c4c61027f229a601981d18aa6fc"
+    "coverageSetSha256": "797024c640984f178add0a498f487342656648a31c2157e379b4c65123e59e58"
 }
