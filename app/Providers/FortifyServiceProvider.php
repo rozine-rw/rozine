@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
+use App\Application\Identity\LegalDocuments;
 use App\Domain\Identity\SandboxNotice;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
@@ -105,12 +106,25 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::registerView(fn (Request $request) => Inertia::render('auth/register', [
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
             'sandboxNotice' => SandboxNotice::toArray(),
+            'legalDocuments' => self::legalDocuments(),
             'audience' => self::audience($request),
         ]));
 
         Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/two-factor-challenge'));
 
         Fortify::confirmPasswordView(fn () => Inertia::render('auth/confirm-password'));
+    }
+
+    /**
+     * The Terms, Privacy Notice and Disclaimers the sign-up form asks the person to tick, each with
+     * the digest of the wording behind its link.
+     *
+     * @return list<array{key: string, title: string, version: string, sha256: string, url: string}>
+     */
+    private static function legalDocuments(): array
+    {
+        return array_map(fn (array $document): array => [...$document, 'url' => route('legal.'.$document['key'], absolute: false)],
+            app(LegalDocuments::class)->current());
     }
 
     /**

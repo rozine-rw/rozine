@@ -1,6 +1,7 @@
 import { Head, useHttp } from '@inertiajs/react';
 import type { CSSProperties, FormEvent } from 'react';
 import { useEffect, useState } from 'react';
+import legal from '@/routes/legal';
 
 import { AppEntry } from '@/components/site/app-entry';
 import {
@@ -1266,6 +1267,13 @@ const RATING_CARDS: ReadonlyArray<[string, string, string, string]> = [
         '#c0392b',
         'Still verified and still covering repayments 1.5 times, but a weaker record. The highest returns, and the highest risk.',
     ],
+];
+
+/** The footer's links to the three legal documents everyone agrees to at sign-up. */
+const LEGAL_LINKS: ReadonlyArray<[string, string]> = [
+    ['Terms', legal.terms().url],
+    ['Privacy', legal.privacy().url],
+    ['Disclaimers', legal.disclaimers().url],
 ];
 
 export default function Home({ showAppEntry = false, auth }: SiteProps) {
@@ -3512,8 +3520,33 @@ export default function Home({ showAppEntry = false, auth }: SiteProps) {
                             </div>
                             <span style={{ fontSize: '12px', lineHeight: 1.5 }}>
                                 Investing carries risk, including loss of
-                                capital. Returns are not guaranteed.
+                                capital. Returns are not guaranteed. Rozine is
+                                testing this service in the Capital Market
+                                Authority's Fintech Regulatory Sandbox, under
+                                limits set by the CMA. Admission to the sandbox
+                                is not a licence or an endorsement.
                             </span>
+                            <nav
+                                aria-label="Legal"
+                                style={{
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: '8px 18px',
+                                }}
+                            >
+                                {LEGAL_LINKS.map(([label, href]) => (
+                                    <a
+                                        key={href}
+                                        href={href}
+                                        style={{
+                                            color: '#ffffff',
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        {label}
+                                    </a>
+                                ))}
+                            </nav>
                             <a
                                 href="mailto:admin@rozine.rw"
                                 style={{ color: '#ffffff', fontWeight: 600 }}

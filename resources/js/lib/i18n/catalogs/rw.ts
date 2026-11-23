@@ -9,6 +9,30 @@
 import type { Catalog } from '@/lib/i18n/types';
 
 const rw: Catalog = {
+    'legal.back_home': 'Subira kuri Rozine',
+    'legal.nav_label': 'Inyandiko z’amategeko',
+    'legal.fingerprint': 'Verisiyo {version} · Igikumwe (SHA-256) {hash}',
+    'legal.review_banner':
+        'Izi nyandiko ni nshya cyangwa zarahindutse. Emera verisiyo ziriho kugira ngo ukomeze gukoresha Rozine.',
+    'legal.review_banner_cta': 'Soma kandi wemere',
+    'legal.review.head_title': 'Emera kugira ngo ukomeze',
+    'legal.review.title': 'Banza usome kandi wemere mbere yo gukomeza',
+    'legal.review.lead':
+        'Amabwiriza yacu, Itangazo ry’ibanga n’Imiburo ni bishya cyangwa byarahindutse. Fungura buri kimwe, hanyuma ushyireho akamenyetso wemera. Tubika verisiyo wemeye n’igihe wayemereye.',
+    'legal.review.submit': 'Emera ukomeze',
+    'legal.review.processing': 'Birimo kubikwa…',
+    'legal.consent.legend': 'Amabwiriza, ibanga n’imiburo',
+    'legal.consent.terms_before': 'Nasomye kandi nemera',
+    'legal.consent.privacy_before': 'Nasomye kandi nemera',
+    'legal.consent.disclaimers_before': 'Nasomye kandi nsobanukiwe',
+    'legal.risk_warning':
+        'Gushora imari bigira ingaruka, harimo no guhomba amafaranga washoye. Inyungu ntizemewe ku buryo budasubirwaho.',
+    'legal.risk_warning_link': 'Soma imiburo',
+    'investor.profile.legal.terms_body':
+        'Amasezerano hagati yawe na Rozine: uko inyandiko z’inguzanyo, amafaranga y’serivisi, kwishyurwa no kugurisha bikora, n’uko Rozine yubahiriza amategeko agenga urubuga rwo gukusanya imari.',
+    'investor.profile.legal.privacy_body':
+        'Amakuru bwite Rozine ikusanya, impamvu, aho abikwa n’uburenganzira ufite.',
+    'investor.profile.legal.open': 'Soma inyandiko yose',
     'suite.sign_out': 'Sohoka',
     'site.app_entry.label': 'Porogaramu za Rozine',
     'site.app_entry.sign_in': 'Injira',

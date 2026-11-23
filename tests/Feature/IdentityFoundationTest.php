@@ -24,7 +24,7 @@ it('registers an unverified Party without accepting supplied authority', functio
     $this->post(route('register.store'), [
         'name' => 'Alpha Participant',
         'sandbox_notice_version' => SandboxNotice::VERSION,
-        'sandbox_notice_sha256' => SandboxNotice::sha256(),
+        'sandbox_notice_sha256' => SandboxNotice::sha256(), ...legalConsentFields(),
         'email' => 'alpha@example.test',
         'password' => 'password',
         'password_confirmation' => 'password',
@@ -52,7 +52,7 @@ it('registers an unverified Party without accepting supplied authority', functio
 it('rolls back the new Party when account creation fails', function (): void {
     $user = User::factory()->create();
 
-    expect(fn () => app(RegisterIdentity::class)->handle('Duplicate', $user->email, 'password', SandboxNotice::VERSION, SandboxNotice::sha256()))
+    expect(fn () => app(RegisterIdentity::class)->handle('Duplicate', $user->email, 'password', SandboxNotice::VERSION, SandboxNotice::sha256(), legalDigests()))
         ->toThrow(QueryException::class);
 
     $this->assertDatabaseCount('parties', 0);
@@ -65,7 +65,7 @@ it('does not create a Party when registration validation fails', function (): vo
     $this->post(route('register.store'), [
         'name' => 'Alpha Participant',
         'sandbox_notice_version' => SandboxNotice::VERSION,
-        'sandbox_notice_sha256' => SandboxNotice::sha256(),
+        'sandbox_notice_sha256' => SandboxNotice::sha256(), ...legalConsentFields(),
         'email' => 'not-an-email',
         'password' => 'password',
         'password_confirmation' => 'different',
