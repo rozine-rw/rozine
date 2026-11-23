@@ -6078,7 +6078,7 @@ const rw: Catalog = {
         "Iyo umaze kwemeza, amafaranga yoherezwa kuri konti yawe binyuze ku utanga serivisi yo kwishyura. Ubusabe budasanzwe bushobora gufatwa bugasuzumwa mu gihe kigera ku masaha 24.\n\nUshobora gukurikirana buri bubikuza mu mateka y'agasanduku kawe. Amafaranga wiyemeje mu ikusanya rifunguye ntashobora kubikuzwa.",
     'investor.help.safety.held.q': 'Amafaranga yanjye abikwa he?',
     'investor.help.safety.held.a':
-        "Amafaranga yose y'abakiriya abikwa kuri konti y'abakiriya yihariye muri banki y'u Rwanda ifite uruhushya, atandukanye n'amafaranga ya Rozine. Igiteranyo cy'udusanduku twose gihuzwa n'iyo konti buri munsi.\n\nAmafaranga ya serivisi yinjijwe kandi yatangajwe gusa ni yo ashobora kujya kuri konti ya Rozine.",
+        "Amafaranga y'abakiriya azabikwa kuri konti y'abakiriya yihariye muri banki y'ubucuruzi y'u Rwanda ifite uruhushya, atandukanye n'amafaranga ya Rozine. Turi mu biganiro na GT Bank ngo iduhe iyo konti. Nta masezerano arasinywa, kandi Rozine ntizakira amafaranga nyayo y'abakiriya mbere y'uko iyo konti ifungurwa.\n\nIyo konti nimara gufungurwa, igiteranyo cy'udusanduku twose kizajya gihuzwa nayo buri munsi, kandi amafaranga ya serivisi yinjijwe kandi yatangajwe gusa ni yo ashobora kujya kuri konti ya Rozine.",
     'investor.help.safety.stop.q': 'Bigenda bite Rozine iramutse ihagaze?',
     'investor.help.safety.stop.a':
         'Ibikorwa bishya bihagarara uwo munsi, buri mafaranga yiyemejwe mu ikusanya ritujujwe asubizwa yose, kandi buri nyandiko yatanzwe ikomeza kwishyurwa kugeza ku gihe cyayo hifashishijwe ikigega cyabigenewe.\n\nKubikuza amafaranga ari mu dusanduku ni ubuntu muri icyo gihe.',

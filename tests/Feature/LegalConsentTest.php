@@ -22,9 +22,9 @@ use Inertia\Testing\AssertableInertia as Assert;
  * here, so nobody's recorded consent ever points at wording other than what they agreed to.
  */
 const ISSUED_LEGAL_DOCUMENTS = [
-    'terms' => ['terms-2026-11-23', '43b7fc2e74d758f48da5008e06d39e6e4b1e03dcf2b43de4e9f971f76ed5c893'],
+    'terms' => ['terms-2026-11-23-r2', 'e03d92859dce0f54f6f7ac59598231fa7acec29d2d191d101335a1c100377846'],
     'privacy' => ['privacy-2026-11-23', '268c15329d9fd92ebe20e34ae19cb37481dd3e4db41bac7edfdcb1ee8943f250'],
-    'disclaimers' => ['disclaimers-2026-11-23', '7892c36343133a5e36a64ddffe7932fe40424b50cccc399401632793cac20326'],
+    'disclaimers' => ['disclaimers-2026-11-23-r2', '8dbbfa24a6cd0028d7ab7a61a774ee5258e0c62b8beaff8262ada146f3c39992'],
 ];
 
 function personWithoutLegalConsent(): User
@@ -86,7 +86,7 @@ it('points a signed-in person who has not agreed yet to the review page from a d
 it('gives the sign-up form each document with its digest and link', function (): void {
     $this->get(route('register'))->assertOk()->assertInertia(fn (Assert $page) => $page->component('auth/register')
         ->has('legalDocuments', 3)
-        ->where('legalDocuments.0', ['key' => 'terms', 'title' => 'Terms and Conditions', 'version' => 'terms-2026-11-23',
+        ->where('legalDocuments.0', ['key' => 'terms', 'title' => 'Terms and Conditions', 'version' => 'terms-2026-11-23-r2',
             'sha256' => ISSUED_LEGAL_DOCUMENTS['terms'][1], 'url' => '/terms'])
         ->where('legalDocuments.2.url', '/disclaimers'));
 });

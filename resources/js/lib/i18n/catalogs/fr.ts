@@ -6090,7 +6090,7 @@ const fr: Catalog = {
         'Une fois confirmé, le retrait est envoyé vers votre compte par le prestataire de paiement. Une demande inhabituelle peut être retenue pour examen jusqu’à 24 heures.\n\nVous pouvez suivre chaque retrait dans l’historique de votre portefeuille. L’argent engagé dans une levée ouverte ne peut pas être retiré.',
     'investor.help.safety.held.q': 'Où mon argent est-il conservé ?',
     'investor.help.safety.held.a':
-        'Tout l’argent des clients est conservé sur un compte client cantonné dans une banque rwandaise agréée, séparé des fonds propres de Rozine. Le total de tous les portefeuilles est rapproché de ce compte chaque jour.\n\nSeuls les frais gagnés et communiqués peuvent être transférés sur le compte de Rozine.',
+        'L’argent des clients sera conservé sur un compte client cantonné dans une banque commerciale rwandaise agréée, séparé des fonds propres de Rozine. Nous sommes en discussion avec GT Bank pour ce compte. Aucun accord n’est encore signé, et Rozine n’acceptera pas d’argent réel de clients avant l’ouverture du compte.\n\nUne fois le compte ouvert, le total de tous les portefeuilles est rapproché de ce compte chaque jour, et seuls les frais gagnés et communiqués peuvent être transférés sur le compte de Rozine.',
     'investor.help.safety.stop.q':
         'Que se passe-t-il si Rozine doit cesser son activité ?',
     'investor.help.safety.stop.a':

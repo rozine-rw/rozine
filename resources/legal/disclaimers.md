@@ -1,6 +1,6 @@
 # Rozine Disclaimers
 
-Version `disclaimers-2026-11-23` · Effective 23 November 2026 · Issued by Rozine Technologies Ltd (TIN 156642791), Kigali, Rwanda
+Version `disclaimers-2026-11-23-r2` · Effective 23 November 2026 · Issued by Rozine Technologies Ltd (TIN 156642791), Kigali, Rwanda
 
 This page brings together every warning that appears on Rozine, word for word where it is shown in the apps, and explains what each one means for you. When you sign up, you tick a box to confirm you have read and understood them. We record the version and the exact time. These disclaimers form part of our [Terms and Conditions](/terms).
 
@@ -10,7 +10,7 @@ This page brings together every warning that appears on Rozine, word for word wh
 
 > Rozine is testing this service in the Capital Market Authority's Fintech Regulatory Sandbox, under limits set by the CMA. Admission to the sandbox is not a licence or an endorsement.
 
-**What it means:** the CMA's sandbox lets new financial services be tried under close watch and strict limits. Our application to the sandbox is with the CMA. Even once admitted, being in the sandbox does not mean the CMA has licensed Rozine, approved any business on it, or checked any investment.
+**What it means:** the CMA's sandbox lets new financial services be tried under close watch and strict limits. The CMA has admitted Rozine to its sandbox. Being in the sandbox does not mean the CMA has licensed Rozine, approved any business on it, or checked any investment.
 
 ## 2. The risk warning
 
