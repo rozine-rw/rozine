@@ -55,6 +55,12 @@ const HEALTH_TONE: Record<BusinessPartyRow['health'], Tone> = {
     watch: 'amber',
     distressed: 'red',
     not_tracked: 'grey',
+    kyb_pending: 'amber',
+    not_applied: 'amber',
+    applying: 'amber',
+    applied: 'blue',
+    auditing: 'blue',
+    listed: 'green',
 };
 
 const STANDING_TONE: Record<AuditorPartyRow['standing'], Tone> = {

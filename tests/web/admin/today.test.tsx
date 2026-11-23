@@ -603,7 +603,7 @@ describe('Admin Today', () => {
         ).toHaveAttribute('href', '/preview/admin-ledger');
         expect(screen.getByText('Repaying')).toBeInTheDocument();
         expect(screen.getByText('Stable 3.8')).toBeInTheDocument();
-        expect(screen.getAllByText('Pending audit')).toHaveLength(1);
+        expect(screen.getAllByText('Not rated yet')).toHaveLength(1);
         expect(
             screen.getByRole('link', { name: 'Review Akabanga Foods' }),
         ).toHaveAttribute('href', '/preview/admin-applications-review');

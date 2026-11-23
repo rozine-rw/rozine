@@ -390,6 +390,42 @@ describe('Party directories', () => {
         ).not.toBeInTheDocument();
     });
 
+    it.each([
+        ['kyb_pending', 'Verifying business'],
+        ['not_applied', 'Not applied yet'],
+        ['applying', 'Application in progress'],
+        ['applied', 'Application submitted'],
+        ['auditing', 'Baseline audit'],
+        ['listed', 'Listed'],
+    ] as const)(
+        'shows a Business at the %s stage as "%s", not as a pending audit',
+        (stage, label) => {
+            const businesses = props(businessesFixture);
+
+            if (businesses.directory.kind === 'business') {
+                businesses.directory.rows = [
+                    {
+                        ...businesses.directory.rows[0],
+                        rating: null,
+                        health: stage,
+                    },
+                ];
+            }
+
+            render(<AdminParties {...businesses} />);
+            const row = screen.getAllByRole('row')[1];
+
+            expect(within(row).getByText(label)).toBeInTheDocument();
+            expect(within(row).getByText('Not rated yet')).toBeInTheDocument();
+            expect(
+                within(row).queryByText('Pending audit'),
+            ).not.toBeInTheDocument();
+            expect(
+                within(row).queryByText('Not tracked'),
+            ).not.toBeInTheDocument();
+        },
+    );
+
     it('says a live Business health is not tracked, in the row and its 360, with no frozen badge', () => {
         const businesses = props(businessesFixture);
 
@@ -2659,7 +2695,7 @@ describe('Party 360', () => {
         };
         const { user, unmount } = renderWithUser(<AdminParties {...fixture} />);
 
-        expect(screen.getByText('Pending audit')).toBeInTheDocument();
+        expect(screen.getByText('Not rated yet')).toBeInTheDocument();
 
         await user.click(screen.getByRole('tab', { name: 'Activity' }));
         expect(

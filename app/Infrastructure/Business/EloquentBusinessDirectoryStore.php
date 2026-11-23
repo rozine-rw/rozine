@@ -66,7 +66,7 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
             ->where('disbursements.business_id', $businessId)->where('disbursement_closings.kind', 'issued')->pluck('disbursements.business_campaign_id')->all();
         $repaid = array_column($this->servicing->forBusiness($businessId)['repaid'], 'campaign_id');
         $closures = DB::table('business_campaign_closures')->leftJoin('users', 'users.id', '=', 'business_campaign_closures.actor_user_id')
-            ->where('business_id', $businessId)->get(['business_campaign_closures.id', 'business_campaign_id', 'phase', 'closed_at', 'users.name'])
+            ->where('business_campaign_closures.business_id', $businessId)->get(['business_campaign_closures.id', 'business_campaign_closures.business_campaign_id', 'business_campaign_closures.phase', 'business_campaign_closures.closed_at', 'users.name'])
             ->keyBy('business_campaign_id');
         $actors = DB::table('users')->whereIn('id', $campaigns->pluck('actor_user_id')->all())->pluck('name', 'id');
         $title = fn (BusinessCampaign $campaign): string => (string) ($campaign->payload['title'] ?? '');
@@ -145,7 +145,8 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
      * once the identity writer has verified the Business's own Party, as of the application clock:
      * a future-dated verification is not yet verified. The clock is bound rather than read from
      * PostgreSQL's now(), which is the start of the surrounding transaction. Notes repaid in full are
-     * not active.
+     * not active. The stage is how far the Business has come towards its first listing: verification,
+     * its application, the CPA baseline audit (AUD-R03), then a note on the market.
      *
      * @param  list<string>  $repaid
      */
@@ -166,7 +167,15 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
                     UNION SELECT r.party_id FROM primary_commitments pc JOIN primary_reservations r ON r.id = pc.primary_reservation_id
                         JOIN business_campaigns c ON c.id = r.business_campaign_id
                         WHERE c.business_id = bp.id AND NOT EXISTS (SELECT 1 FROM business_campaign_closures x WHERE x.business_campaign_id = c.id)) AS backer) AS investors,
-                coalesce((SELECT sum(f.principal) FROM primary_campaign_fundings f WHERE f.business_id = bp.id), 0) AS raised", [now(), ...$repaid]);
+                coalesce((SELECT sum(f.principal) FROM primary_campaign_fundings f WHERE f.business_id = bp.id), 0) AS raised,
+                CASE WHEN EXISTS (SELECT 1 FROM business_campaigns c WHERE c.business_id = bp.id) THEN 'listed'
+                    WHEN EXISTS (SELECT 1 FROM audit_assignments a WHERE a.business_id = bp.id AND a.status IN ('offered', 'accepted', 'operations')
+                        AND NOT EXISTS (SELECT 1 FROM audit_reports r JOIN audit_report_publications p ON p.audit_report_id = r.id
+                            WHERE r.assignment_id = a.id AND p.status = 'published')) THEN 'auditing'
+                    WHEN EXISTS (SELECT 1 FROM business_applications ba WHERE ba.business_id = bp.id AND ba.status = 'submitted') THEN 'applied'
+                    WHEN EXISTS (SELECT 1 FROM business_applications ba WHERE ba.business_id = bp.id AND ba.status = 'draft') THEN 'applying'
+                    WHEN parties.verified_at IS NOT NULL AND parties.verified_at <= ? THEN 'not_applied'
+                    ELSE 'kyb_pending' END AS stage", [now(), ...$repaid, now()]);
     }
 
     /**
@@ -239,6 +248,10 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
         return ['business_id' => $id, 'name' => (string) $row['name'], 'sector' => (string) $row['sector'], 'district' => (string) $row['district'],
             'company_code' => $row['company_code'] === null ? null : (string) $row['company_code'],
             'kyc' => $row['kyc'] === 'verified' ? 'verified' : 'pending', 'rating' => $ratings[$id] ?? null,
-            'active_notes' => (int) $row['active_notes'], 'investors' => (int) $row['investors'], 'raised' => (string) $row['raised']];
+            'active_notes' => (int) $row['active_notes'], 'investors' => (int) $row['investors'], 'raised' => (string) $row['raised'],
+            'stage' => match ((string) $row['stage']) {
+                'listed' => 'listed', 'auditing' => 'auditing', 'applied' => 'applied', 'applying' => 'applying', 'not_applied' => 'not_applied',
+                default => 'kyb_pending',
+            }];
     }
 }

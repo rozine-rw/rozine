@@ -59,6 +59,12 @@ const HEALTH_TONE: Record<PartyDetail['health'], Tone> = {
     licence_pending: 'amber',
     frozen: 'red',
     not_tracked: 'grey',
+    kyb_pending: 'amber',
+    not_applied: 'amber',
+    applying: 'amber',
+    applied: 'blue',
+    auditing: 'blue',
+    listed: 'green',
 };
 
 const SECTION =
