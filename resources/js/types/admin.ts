@@ -2046,7 +2046,7 @@ export type KycCheck = 'age' | 'id_number' | 'documents' | 'selfie';
 /** A private upload: read only through its link, never inlined in the props. */
 export type InvestorVerificationDocument = {
     id: string;
-    slot: 'front' | 'back' | 'selfie';
+    slot: 'front' | 'back' | 'selfie' | 'certificate';
     filename: string;
     media_type: string;
     size_bytes: number;
@@ -2065,6 +2065,8 @@ export type InvestorVerificationReview = {
     revision: number;
     status: KycCaseStatus;
     purpose: KycPurpose;
+    /** The ICPAR licence an Auditor check carries, reviewed with the identity; null otherwise. */
+    licence?: { number: string; expires_on: string } | null;
     submitted_at: string | null;
     account: { name: string; email: string };
     date_of_birth: string;
@@ -2317,8 +2319,8 @@ export type AccessRequestRow = {
     handled_at: string | null;
     /** Whether the requester's identity is verified, which granting the role needs. */
     identity_verified: boolean;
-    /** Where staff grant this request: Onboard a business filled from it, or the Auditor Network. */
-    grant: RouteLink;
+    /** Where staff grant this request: Onboard a business filled from it, or Auditor access granted in place. */
+    grant: RouteLink | RouteAction;
 };
 
 export type AdminAccessRequestsProps = AdminFrameShellProps & {

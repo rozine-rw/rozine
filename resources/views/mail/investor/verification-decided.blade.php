@@ -7,10 +7,10 @@
 </x-mail::notice>
 
 @if ($purpose === 'auditor')
-{{ __('Compliance has verified your identity. Open Rozine and choose Request access on the Auditor card, with your ICPAR licence number, so our team can accredit you.') }}
+{{ __('Compliance has verified your identity and your ICPAR licence. You are now a Rozine Audit Partner. Turn on two-factor authentication in your account settings, then open the Auditor app.') }}
 
 <x-mail::button :url="$url" color="investor">
-{{ __('Request Auditor access') }}
+{{ __('Open the Auditor app') }}
 </x-mail::button>
 @elseif ($purpose === 'business')
 {{ __('Compliance has verified your identity. Open Rozine and choose Request access on the Business card, so our team can link you to your business.') }}

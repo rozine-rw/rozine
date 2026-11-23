@@ -74,6 +74,12 @@ export function KycReview({
                         label={t('admin.kyc.fact.id_number')}
                         value={review.id_number}
                     />
+                    {review.licence && (
+                        <Fact
+                            label={t('admin.kyc.licence.title')}
+                            value={`${t('admin.kyc.licence.number', { number: review.licence.number })} · ${t('admin.kyc.licence.expires', { date: review.licence.expires_on })}`}
+                        />
+                    )}
                     {review.submitted_at && (
                         <Fact
                             label={t('admin.kyc.fact.submitted_at')}

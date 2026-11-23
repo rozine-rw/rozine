@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Identity\BrowseRoleAccessRequests;
+use App\Models\IdentityAuditEvent;
 use App\Models\Party;
 use App\Models\RoleAccessRequest;
 use App\Models\RoleMembership;
@@ -144,7 +145,7 @@ it('shows staff who grant each role the requests for it, newest first, and refus
         ->and($props['requests'])->toBe([
             ['id' => $rows[0]->id, 'role' => 'auditor', 'name' => 'Jean Mugisha', 'email' => $auditor->email, 'organization' => 'Ledger & Co',
                 'reference' => 'ICPAR-2041', 'phone' => '+250 788 000 000', 'note' => 'Coffee washing station', 'sent_at' => $rows[0]->created_at->toIso8601String(), 'outcome' => null,
-                'handled_at' => null, 'identity_verified' => true, 'grant' => ['url' => '/admin/auditors', 'method' => 'get']],
+                'handled_at' => null, 'identity_verified' => true, 'grant' => ['url' => '/admin/access-requests/'.$rows[0]->id.'/grant', 'method' => 'post']],
             ['id' => $rows[1]->id, 'role' => 'business', 'name' => 'Jean Mugisha', 'email' => $business->email, 'organization' => 'Kivu Harvest Ltd',
                 'reference' => null, 'phone' => '+250 788 000 000', 'note' => 'Coffee washing station', 'sent_at' => $rows[1]->created_at->toIso8601String(), 'outcome' => null,
                 'handled_at' => null, 'identity_verified' => true, 'grant' => ['url' => '/admin/businesses?onboard_request='.$rows[1]->id, 'method' => 'get']],
@@ -218,4 +219,46 @@ it('keeps a sent request as it was sent', function (): void {
         ->and(fn () => DB::table('role_access_requests')->delete())->toThrow(QueryException::class)
         ->and(fn () => DB::table('role_access_requests')->insert(['id' => (string) Str::ulid(), 'party_id' => RoleAccessRequest::query()->value('party_id'),
             'role' => 'investor', 'organization' => '', 'operation_id' => (string) Str::ulid(), 'created_at' => now()]))->toThrow(QueryException::class);
+});
+
+it('grants the Auditor access a request asked for, once, from the access requests page', function (): void {
+    $auditor = accessRequester([]);
+    $this->actingAs($auditor)->post(route('identity.access-requests.store'),
+        accessRequest(['role' => 'auditor', 'organization' => '', 'reference' => 'ICPAR-2041']))->assertSessionHasNoErrors();
+    $request = RoleAccessRequest::query()->sole();
+    $staff = User::factory()->withTwoFactor()->create();
+    StaffFixture::provision($staff, ['compliance'], 'Auditor access grant.');
+
+    $this->actingAs($staff)->from(route('staff.access-requests.index'))->post(route('staff.access-requests.grant', $request))
+        ->assertRedirect(route('staff.access-requests.index'))
+        ->assertSessionHas('toast', ['type' => 'success', 'message' => 'Auditor access granted. They upload their ICPAR certificate next, and it lands on the Auditor Network desk.']);
+    expect(RoleMembership::query()->where('party_id', $auditor->party_id)->sole()->only(['role', 'status']))->toBe(['role' => 'auditor', 'status' => 'active'])
+        ->and(IdentityAuditEvent::query()->where('action', 'membership.request_grant')->sole()->actor_user_id)->toBe($staff->id);
+
+    // A second grant changes nothing.
+    $this->actingAs($staff)->from(route('staff.access-requests.index'))->post(route('staff.access-requests.grant', $request))
+        ->assertSessionHas('toast', ['type' => 'success', 'message' => 'This person already has an Auditor membership.']);
+    expect(RoleMembership::query()->where('party_id', $auditor->party_id)->count())->toBe(1);
+
+    // A person holding another role, or not verified, is refused; staff without the permission are forbidden.
+    $investor = accessRequester();
+    $other = (string) Str::ulid();
+    DB::table('role_access_requests')->insert(['id' => $other, 'party_id' => $investor->party_id, 'role' => 'auditor', 'organization' => '',
+        'operation_id' => (string) Str::ulid(), 'created_at' => now()]);
+    $this->actingAs($staff)->from(route('staff.access-requests.index'))->post(route('staff.access-requests.grant', $other))
+        ->assertSessionHas('toast', ['type' => 'error', 'message' => 'This person holds another role. An Auditor keeps no other role.']);
+    $unverified = accessRequester([], false);
+    $pending = (string) Str::ulid();
+    DB::table('role_access_requests')->insert(['id' => $pending, 'party_id' => $unverified->party_id, 'role' => 'auditor', 'organization' => '',
+        'operation_id' => (string) Str::ulid(), 'created_at' => now()]);
+    $this->actingAs($staff)->from(route('staff.access-requests.index'))->post(route('staff.access-requests.grant', $pending))
+        ->assertSessionHas('toast', ['type' => 'error', 'message' => "Verify this person's identity before granting Auditor access."]);
+    $business = (string) Str::ulid();
+    DB::table('role_access_requests')->insert(['id' => $business, 'party_id' => $unverified->party_id, 'role' => 'business', 'organization' => 'Kivu',
+        'operation_id' => (string) Str::ulid(), 'created_at' => now()]);
+    $this->actingAs($staff)->from(route('staff.access-requests.index'))->post(route('staff.access-requests.grant', $business))
+        ->assertSessionHas('toast', ['type' => 'error', 'message' => 'We could not grant Auditor access. Refresh and try again.']);
+    $treasury = User::factory()->withTwoFactor()->create();
+    StaffFixture::provision($treasury, ['treasury'], 'Access request refusal.');
+    $this->actingAs($treasury)->post(route('staff.access-requests.grant', $request))->assertForbidden();
 });

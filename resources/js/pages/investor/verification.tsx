@@ -378,6 +378,109 @@ const writeIdTypeDraft = (
  * representative with a board resolution, and the source of funds and declarations. Unverified
  * investors have no transaction capacity (CFG-01), so this gates buying.
  */
+/**
+ * An Auditor's identity check also takes their ICPAR licence (AUD-R01): its number, its expiry and
+ * the certificate, so Compliance verifies the person and the licence in one review.
+ */
+function LicenceFields({
+    number,
+    expiresOn,
+    onChange,
+    certificate,
+    locked,
+    upload,
+}: {
+    number: string;
+    expiresOn: string;
+    onChange: (key: string, value: string) => void;
+    certificate: UploadState;
+    locked: boolean;
+    upload: (
+        children: ReactNode,
+        state: UploadState,
+        label: string,
+    ) => ReactNode;
+}) {
+    const { t } = useTranslation();
+    const uploaded = certificate.status !== 'missing';
+
+    return (
+        <section
+            aria-labelledby="licence_heading"
+            className="mt-5 rounded-2xl border border-rz-border bg-rz-surface p-4"
+        >
+            <h2
+                id="licence_heading"
+                className="text-[14px] font-semibold text-rz-ink"
+            >
+                {t('investor.kyc.licence.title')}
+            </h2>
+            <p className="mt-1 text-[12.5px] text-rz-secondary">
+                {t('investor.kyc.licence.subtitle')}
+            </p>
+            <div className="mt-3.5">
+                <label htmlFor="licence_number" className={LABEL}>
+                    {t('investor.kyc.licence.number')}
+                </label>
+                <input
+                    id="licence_number"
+                    value={number}
+                    onChange={(event) =>
+                        onChange('licence_number', event.target.value)
+                    }
+                    autoCapitalize="characters"
+                    placeholder={t('investor.kyc.licence.number_placeholder')}
+                    className={FIELD}
+                />
+            </div>
+            <div className="mt-3.5">
+                <label htmlFor="licence_expires_on" className={LABEL}>
+                    {t('investor.kyc.licence.expires_on')}
+                </label>
+                <input
+                    id="licence_expires_on"
+                    type="date"
+                    value={expiresOn}
+                    onChange={(event) =>
+                        onChange('licence_expires_on', event.target.value)
+                    }
+                    className={FIELD}
+                />
+            </div>
+            <div className="mt-3.5">
+                {upload(
+                    <>
+                        <span className="text-[22px]">
+                            <Icon
+                                name={uploaded ? 'check-badge' : 'document'}
+                                tone="green"
+                            />
+                        </span>
+                        <span className="mt-1.5 block text-xs font-semibold text-rz-slate">
+                            {t(
+                                uploaded
+                                    ? 'investor.kyc.licence.uploaded'
+                                    : 'investor.kyc.licence.upload',
+                            )}
+                        </span>
+                        {uploaded && !locked && (
+                            <span className="mt-0.5 block text-[11px] text-rz-secondary">
+                                {t('investor.kyc.replace')}
+                            </span>
+                        )}
+                    </>,
+                    certificate,
+                    t('investor.kyc.licence.upload'),
+                )}
+                <ViewUpload
+                    state={certificate}
+                    label={t('investor.kyc.licence.certificate')}
+                />
+            </div>
+        </section>
+    );
+}
+
 export default function InvestorVerification(props: InvestorVerificationProps) {
     const { auth } = usePage().props as {
         auth?: { user?: { id: number } | null };
@@ -423,6 +526,12 @@ function VerificationForm({
                           ? (readIdTypeDraft(userId) ?? props.id_type)
                           : props.id_type,
                   id_number: props.id_number,
+                  ...(props.purpose === 'auditor'
+                      ? {
+                            licence_number: props.licence_number ?? '',
+                            licence_expires_on: props.licence_expires_on ?? '',
+                        }
+                      : {}),
               }
             : {
                   entity_type: props.entity_type,
@@ -449,7 +558,10 @@ function VerificationForm({
             props.uploads.front.status !== 'missing' &&
             (data.id_type === 'passport' ||
                 props.uploads.back.status !== 'missing')) ||
-            (field === 'selfie' && props.uploads.selfie.status !== 'missing'));
+            (field === 'selfie' && props.uploads.selfie.status !== 'missing') ||
+            (field === 'icpar_certificate' &&
+                (props.uploads.certificate?.status ?? 'missing') !==
+                    'missing'));
     const failure =
         uploadError ??
         Object.entries(form.errors).find(([field]) => !answered(field))?.[1];
@@ -755,6 +867,36 @@ function VerificationForm({
                                     );
                                 })}
                             </div>
+                            {props.purpose === 'auditor' && (
+                                <LicenceFields
+                                    number={String(data.licence_number ?? '')}
+                                    expiresOn={String(
+                                        data.licence_expires_on ?? '',
+                                    )}
+                                    onChange={set}
+                                    certificate={
+                                        props.uploads.certificate ?? {
+                                            status: 'missing',
+                                        }
+                                    }
+                                    locked={locked}
+                                    upload={(children, state, label) => (
+                                        <Upload
+                                            onError={setUploadError}
+                                            sending={sending}
+                                            onSending={setSending}
+                                            slot="icpar_certificate"
+                                            action={props.actions.upload}
+                                            submission={submission}
+                                            state={state}
+                                            label={label}
+                                            className="block rounded-2xl px-2.5 py-[18px] text-center"
+                                        >
+                                            {children}
+                                        </Upload>
+                                    )}
+                                />
+                            )}
                         </>
                     )}
 

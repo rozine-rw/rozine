@@ -251,8 +251,12 @@ export default function Launcher({
                                 </button>
                             )}
                             {failure === 'MFA_REQUIRED' && (
-                                <Link href={security()}>
-                                    {t('suite.mfa_setup')}
+                                <Link
+                                    href={security()}
+                                    className="font-semibold text-rz-accent-text"
+                                >
+                                    {t('suite.mfa_setup')}{' '}
+                                    <span aria-hidden="true">→</span>
                                 </Link>
                             )}
                             <Link href={dashboard()} preserveState={false}>
@@ -484,9 +488,15 @@ export default function Launcher({
                                     role="status"
                                     className="mt-4 flex flex-col gap-3 text-sm"
                                 >
-                                    <p>{t('suite.mfa_required')}</p>
-                                    <Link href={security()}>
-                                        {t('suite.mfa_setup')}
+                                    <p className="text-rz-body">
+                                        {t('suite.mfa_required')}
+                                    </p>
+                                    <Link
+                                        href={security()}
+                                        className="inline-flex w-fit items-center rounded-xl bg-rz-accent px-4 py-2.5 font-semibold text-white"
+                                    >
+                                        {t('suite.mfa_setup')}{' '}
+                                        <span aria-hidden="true">→</span>
                                     </Link>
                                 </div>
                             )}

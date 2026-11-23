@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Identity;
 
+use App\Application\Auditor\Contracts\AuditorProfileStore;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\InvestorVerificationReviewStore;
 use App\Application\Identity\Contracts\PartyNotices;
@@ -37,6 +38,7 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
         private AuthorizeStaffPermission $staff,
         private VerifyInvestorIdentity $verify,
         private PartyNotices $notices,
+        private AuditorProfileStore $auditors,
     ) {}
 
     /** @return Queue */
@@ -104,6 +106,8 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
         $current = array_filter($record->state['uploads']);
 
         return ['id' => $record->id, 'revision' => $record->revision, 'status' => $record->status, 'purpose' => $record->purpose,
+            'licence' => $record->purpose === 'auditor' && ($record->state['licence_number'] ?? '') !== ''
+                ? ['number' => (string) $record->state['licence_number'], 'expires_on' => (string) ($record->state['licence_expires_on'] ?? '')] : null,
             'submitted_at' => $record->submitted_at?->toIso8601String(),
             'account' => ['name' => (string) $record->getAttribute('account_name'), 'email' => (string) $record->getAttribute('account_email')],
             'state' => $record->state,
@@ -145,7 +149,12 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
             try {
                 $result = $this->verify->handle($actorId, $userId, $this->cases->identityReference($record->state),
                     'investor-verification:'.$record->id.'@'.$record->revision, $reason, $requestId,
-                    fn (): array => $this->decide($verificationId, $expectedRevision, 'approved', $reason, $actorId), $record->purpose === 'investor');
+                    fn (): array => $this->decide($verificationId, $expectedRevision, 'approved', $reason, $actorId),
+                    match ($record->purpose) {
+                        'investor' => 'investor',
+                        'auditor' => 'auditor',
+                        default => null,
+                    });
             } catch (IdentityViolation $violation) {
                 // The verified-person writer's refusal is this decision's outcome, kept like any other.
                 throw new CommandRejection($violation->reason, $violation->status);
@@ -260,7 +269,7 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
         $record = $this->decidable(InvestorVerification::query()->whereKey($verificationId)->lockForUpdate()->first(), $expectedRevision);
         $facts = ['verification_id' => $record->id];
         if ($outcome === 'approved') {
-            $this->cases->complete($record->state, now()->toDateTimeImmutable());
+            $this->cases->complete($record->state, now()->toDateTimeImmutable(), $record->purpose);
             $uploads = array_filter($record->state['uploads']);
             $documents = InvestorVerificationDocument::query()->where('investor_verification_id', $record->id)->whereIn('id', $uploads)->get()->keyBy('id');
             if ($documents->count() !== count($uploads)) {
@@ -273,6 +282,17 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
                 }
             }
             $facts['documents'] = array_map(fn (string $id): string => (string) $documents[$id]->sha256, $uploads);
+            // One step for an Auditor (#622 follow-up): the ICPAR licence reviewed with the identity becomes their standing.
+            if ($record->purpose === 'auditor') {
+                $certificateId = $record->state['uploads']['certificate'] ?? null;
+                if ($certificateId === null || ! isset($documents[$certificateId])) {
+                    throw new CommandRejection('VERIFICATION_CERTIFICATE_REQUIRED', 422, $record->revision);
+                }
+                $certificate = $documents[$certificateId];
+                $this->auditors->accreditFromIdentityCheck($actorId, $record->party_id, $record->state['licence_number'] ?? '',
+                    $record->state['licence_expires_on'] ?? '', $certificate->filename, $certificate->content,
+                    'investor-verification:'.$record->id.'@'.$record->revision, $reason);
+            }
         }
         $state = [...$record->state, 'decision' => ['outcome' => $outcome, 'reason' => $reason, 'decided_at' => now()->toIso8601String()]];
         $record->forceFill(['revision' => $expectedRevision + 1, 'status' => $outcome, 'state' => $state])->save();

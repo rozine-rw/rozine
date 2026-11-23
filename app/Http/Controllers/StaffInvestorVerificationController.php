@@ -78,7 +78,7 @@ class StaffInvestorVerificationController extends Controller
     public function approve(DecideInvestorVerificationRequest $request): RedirectResponse|OperationResource
     {
         return $this->answer($request, $this->review->approve(...$this->command($request)), fn (string $purpose): string => match ($purpose) {
-            'auditor' => 'Identity approved. :name can now ask for Auditor access.',
+            'auditor' => 'Identity and ICPAR licence approved. :name is now an Auditor.',
             'business' => 'Identity approved. :name can now ask for Business access.',
             default => 'Identity approved. :name can now invest.',
         });

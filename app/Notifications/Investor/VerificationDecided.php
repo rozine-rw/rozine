@@ -21,7 +21,7 @@ class VerificationDecided extends RozineMail
         return new self($url, null);
     }
 
-    /** Verified for Business or Auditor access: the next step is asking for that access on the launcher. */
+    /** Verified for Business access (the next step is asking for it on the launcher) or as an Auditor (the Auditor app is open). */
     public static function approvedFor(string $purpose, string $url): self
     {
         return new self($url, null, $purpose);
