@@ -19,8 +19,8 @@ import VerifyEmail from '@/pages/auth/verify-email';
 import type { LegalDocumentLink } from '@/types/legal';
 
 const sandboxNotice = {
-    version: 'brs-2.0-kyc-r01',
-    text: "Rozine is testing this service in the Capital Market Authority's Fintech Regulatory Sandbox, under limits set by the CMA. Admission to the sandbox is not a licence or an endorsement.",
+    version: 'kyc-r01-2026-11-23',
+    text: "Rozine has applied to test this service in the Capital Market Authority's Fintech Regulatory Sandbox. Once admitted, it will run under limits set by the CMA. Admission to the sandbox is not a licence or an endorsement.",
     sha256: 'a'.repeat(64),
 };
 

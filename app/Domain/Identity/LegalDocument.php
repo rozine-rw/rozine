@@ -21,7 +21,7 @@ enum LegalDocument: string
         return match ($this) {
             self::Terms => 'terms-2026-11-23',
             self::Privacy => 'privacy-2026-11-23',
-            self::Disclaimers => 'disclaimers-2026-11-23',
+            self::Disclaimers => 'disclaimers-2026-11-23-r2',
         };
     }
 

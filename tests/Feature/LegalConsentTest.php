@@ -24,7 +24,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 const ISSUED_LEGAL_DOCUMENTS = [
     'terms' => ['terms-2026-11-23', '43b7fc2e74d758f48da5008e06d39e6e4b1e03dcf2b43de4e9f971f76ed5c893'],
     'privacy' => ['privacy-2026-11-23', '268c15329d9fd92ebe20e34ae19cb37481dd3e4db41bac7edfdcb1ee8943f250'],
-    'disclaimers' => ['disclaimers-2026-11-23', '7892c36343133a5e36a64ddffe7932fe40424b50cccc399401632793cac20326'],
+    'disclaimers' => ['disclaimers-2026-11-23-r2', 'f8641d60fa804106846a9d5e9ad675042705b48038c81504d9625f98ea0ed34f'],
 ];
 
 function personWithoutLegalConsent(): User
