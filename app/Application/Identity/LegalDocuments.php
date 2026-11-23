@@ -26,6 +26,16 @@ final class LegalDocuments
     }
 
     /**
+     * Every document as a page, in the order they are listed.
+     *
+     * @return list<array{key: string, title: string, version: string, sha256: string, html: string}>
+     */
+    public function pages(): array
+    {
+        return array_map(fn (LegalDocument $document): array => $this->page($document), LegalDocument::cases());
+    }
+
+    /**
      * The named document as a page, or null for a name that is not one of the documents.
      *
      * @return array{key: string, title: string, version: string, sha256: string, html: string}|null

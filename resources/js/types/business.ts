@@ -6,6 +6,7 @@ import type {
     WalletWithdrawal,
     WithdrawalTerms,
 } from './investor';
+import type { LegalDocumentText } from './legal';
 import type { Money } from './money';
 import type {
     OperationCommand,
@@ -1237,7 +1238,8 @@ export type ProfileSection =
     | 'linked'
     | 'support'
     | 'terms'
-    | 'privacy';
+    | 'privacy'
+    | 'disclaimers';
 
 /** A mandate permission (`MandateAuthority::PERMISSIONS`). */
 export type MandatePermission =
@@ -1311,13 +1313,6 @@ export type CompanyRegistration = {
     signatories_required: number;
 };
 
-/** A versioned legal document, as the business accepted it. */
-export type LegalDocument = {
-    version: string;
-    updated_on: string;
-    sections: { heading: string; body: string }[];
-};
-
 export type BusinessProfileProps = {
     business: {
         name: string;
@@ -1362,8 +1357,8 @@ export type BusinessProfileProps = {
         /** Whether Rozine has opened payout linking at all; absent reads as open (#592). */
         open?: boolean;
     } | null;
-    /** Null while no legal document is published: the section shows its empty state. */
-    legal: LegalDocument | null;
+    /** On the Terms, Privacy Notice or Disclaimers section, that document read in place; otherwise null. */
+    legal: LegalDocumentText | null;
     /** The support center's chat over the Business's complaints (BRS v2.0 CMP-R03). */
     support: SupportCenter;
     links: BusinessAppLinks & {

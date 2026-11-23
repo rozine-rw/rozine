@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Auditor\Contracts\AuditReportPublicationStore;
+use App\Application\Identity\LegalDocuments;
 use App\Domain\Auditor\AuditEngagementState;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Underwriting\EngineScorecard;
@@ -98,12 +99,13 @@ it('opens Profile on the verified registration and mandate, with every design se
         ->and($props['links'])->toBe(['home' => ($this->link)("/business/{$business}"), 'reports' => ($this->link)("/business/{$business}/reports"),
             'readiness' => ($this->link)("/business/{$business}/readiness"), 'market' => ($this->link)("/business/{$business}/market"), 'profile' => $profile, 'launcher' => ($this->link)('/dashboard'), 'back' => $profile,
             'sections' => ['company' => $section('company'), 'security' => $section('security'), 'permissions' => $section('permissions'),
-                'linked' => $section('linked'), 'support' => $section('support'), 'terms' => $section('terms'), 'privacy' => $section('privacy')],
+                'linked' => $section('linked'), 'support' => $section('support'), 'terms' => $section('terms'), 'privacy' => $section('privacy'),
+                'disclaimers' => $section('disclaimers')],
             'security_settings' => ($this->link)('/settings/security'), 'sign_out' => ($this->link)('/logout', 'post')]);
 
-    foreach (['company', 'security', 'permissions', 'linked', 'support', 'terms', 'privacy'] as $key) {
+    foreach (['company', 'security', 'permissions', 'linked', 'support', 'terms', 'privacy', 'disclaimers'] as $key) {
         expect(($this->props)($user, 'business.profile', ['business' => $business, 'section' => $key], 'business/profile'))
-            ->toMatchArray(['section' => $key, 'landing' => false]);
+            ->toMatchArray(['section' => $key, 'landing' => false, 'legal' => app(LegalDocuments::class)->pageFor($key)]);
     }
     $this->actingAs($user)->get("/business/{$business}/profile/billing")->assertNotFound();
 

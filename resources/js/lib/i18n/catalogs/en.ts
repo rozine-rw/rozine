@@ -26,11 +26,6 @@ const en = {
     'legal.risk_warning':
         'Investing carries risk, including loss of capital. Returns are not guaranteed.',
     'legal.risk_warning_link': 'Read the disclaimers',
-    'investor.profile.legal.terms_body':
-        'The agreement between you and Rozine: how notes, fees, payouts and resale work, and how Rozine follows the rules for crowdfunding platforms.',
-    'investor.profile.legal.privacy_body':
-        'What personal data Rozine collects, why, where it is stored and the rights you have.',
-    'investor.profile.legal.open': 'Read the full document',
     'suite.sign_out': 'Sign out',
     'site.app_entry.label': 'Rozine apps',
     'site.app_entry.sign_in': 'Sign in',
@@ -1337,6 +1332,7 @@ const en = {
     'business.profile.section.linked': 'Linked accounts',
     'business.profile.section.terms': 'Terms & Conditions',
     'business.profile.section.privacy': 'Privacy Note',
+    'business.profile.section.disclaimers': 'Disclaimers',
     'business.profile.section.security': 'Security center',
     'business.profile.section.permissions': 'Permissions & roles',
     'business.profile.section.support': 'Support center',
@@ -1503,18 +1499,6 @@ const en = {
     'business.profile.linked.ask_support': 'Questions? Ask Rozine support.',
     'business.profile.linked.footnote':
         "Only an account held in the business's registered name can be linked. Withdrawals go only to a linked account.",
-    'business.profile.legal.updated': 'Last updated {date} · Version {version}',
-    'business.profile.legal.terms_intro':
-        'Please read these Terms carefully. By registering your business, starting a raise or otherwise using Rozine, you agree to be bound by these Terms in full. If you do not agree, you must not use the platform.',
-    'business.profile.legal.privacy_intro':
-        'This Privacy Note explains what information Rozine collects about your business, how we use it, and the choices you have. By using Rozine you consent to the practices described here.',
-    'business.profile.legal.terms_footer':
-        'These Terms are governed by the laws of the Republic of Rwanda. For any questions, contact',
-    'business.profile.legal.terms_contact': 'legal@rozine.rw',
-    'business.profile.legal.privacy_footer':
-        'To exercise a data right or reach our Data Protection Officer, contact',
-    'business.profile.legal.privacy_contact': 'privacy@rozine.rw',
-    'business.profile.legal.footer_end': '.',
     'admin.auth.head_title': 'Sign in',
     'admin.auth.title': 'Sign in',
     'admin.auth.subtitle':
@@ -4287,6 +4271,7 @@ const en = {
     'auditor.profile.security.password': 'Change password',
     'auditor.profile.legal.title': 'Terms & legal',
     'auditor.profile.legal.engagement': 'Engagement terms',
+    'auditor.profile.legal.platform': 'Rozine’s terms and policies',
     'auditor.profile.legal.current':
         'Accepted · the platform MSA and agreed procedures',
     'auditor.profile.legal.required': 'Needs your acceptance',
@@ -5765,6 +5750,7 @@ const en = {
     'investor.profile.item.verification': 'Identity verification',
     'investor.profile.item.terms': 'Terms & Conditions',
     'investor.profile.item.privacy': 'Privacy Note',
+    'investor.profile.item.disclaimers': 'Disclaimers',
     'investor.profile.item.personal': 'Personal information',
     'investor.profile.item.plan': 'Rozine Plus · how to unlock',
     'investor.profile.item.security': 'Security center',

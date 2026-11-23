@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "c77e5cb3ffe318f7b2012939eed50179ad80b20ea7619adfe5694625d71ad44b",
-    "coverageSetSha256": "797024c640984f178add0a498f487342656648a31c2157e379b4c65123e59e58",
+    "sourceManifestSha256": "8d0ca7283b19767a05873e75cb51f0c7b8252616021bb4a69fb2648ec3a607b7",
+    "coverageSetSha256": "b0b6747f5b6a18bc3b680d98feef93067a7d6e04a891b9e5067874ae2f102834",
     "thresholds": {
         "critical": {
             "global": {
@@ -217,7 +217,6 @@
         "resources/js/components/business/profile/company-form.tsx",
         "resources/js/components/business/profile/company-records.tsx",
         "resources/js/components/business/profile/help-answers.ts",
-        "resources/js/components/business/profile/legal-document.tsx",
         "resources/js/components/business/profile/linked-accounts.tsx",
         "resources/js/components/business/profile/profile-menu.tsx",
         "resources/js/components/business/rating/band.ts",
@@ -269,6 +268,7 @@
         "resources/js/components/investor/local-sheet.tsx",
         "resources/js/components/investor/logo-stack.tsx",
         "resources/js/components/investor/market/filter-pill.tsx",
+        "resources/js/components/investor/market/resale.tsx",
         "resources/js/components/investor/monthly-updates.tsx",
         "resources/js/components/investor/notices/notices-panel.tsx",
         "resources/js/components/investor/portfolio/earnings-card.tsx",
@@ -288,6 +288,7 @@
         "resources/js/components/investor/wallet/funding.tsx",
         "resources/js/components/investor/wallet/history.tsx",
         "resources/js/components/legal/legal-consent-fields.tsx",
+        "resources/js/components/legal/legal-document-body.tsx",
         "resources/js/components/manage-passkeys.tsx",
         "resources/js/components/manage-two-factor.tsx",
         "resources/js/components/nav-footer.tsx",
@@ -413,6 +414,7 @@
         "resources/js/lib/rozine/operation.ts",
         "resources/js/lib/rozine/raising.ts",
         "resources/js/lib/rozine/statement-transcription.ts",
+        "resources/js/lib/rozine/validation-body.ts",
         "resources/js/lib/utils.ts",
         "resources/js/pages/admin/access-requests.tsx",
         "resources/js/pages/admin/applications.tsx",
@@ -489,6 +491,7 @@
         "resources/js/pages/investor/deal.tsx",
         "resources/js/pages/investor/deals.tsx",
         "resources/js/pages/investor/holding.tsx",
+        "resources/js/pages/investor/lot.tsx",
         "resources/js/pages/investor/market.tsx",
         "resources/js/pages/investor/portfolio.tsx",
         "resources/js/pages/investor/profile.tsx",

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Identity\LegalDocuments;
 use App\Application\Identity\ListInvestorComplaints;
 use App\Application\Primary\GetInvestorDeals;
 use App\Application\Primary\GetInvestorProfile;
@@ -37,15 +38,16 @@ class InvestorProfileController extends Controller
         'PAYOUT_ACCOUNT_NOT_FOUND' => 'That account is no longer linked.',
     ];
 
-    public function show(ShowProfileRequest $request, GetInvestorProfile $profile, ListInvestorComplaints $complaints): Response
+    public function show(ShowProfileRequest $request, GetInvestorProfile $profile, ListInvestorComplaints $complaints, LegalDocuments $legal): Response
     {
+        $section = $request->validated('section') ?? 'overview';
         $context = $request->validated('identity_context_revision');
         $user = $request->user();
         /** @var CarbonInterface $joined */
         $joined = $user?->getAttribute('created_at');
         $facts = $profile->handle((int) $user?->getAuthIdentifier(), $context === null ? null : (int) $context);
 
-        return Inertia::render('investor/profile', (new InvestorProfileResource([...$facts, 'section' => $request->validated('section') ?? 'overview',
+        return Inertia::render('investor/profile', (new InvestorProfileResource([...$facts, 'section' => $section, 'legal_document' => $legal->pageFor((string) $section),
             'name' => (string) $user?->getAttribute('name'), 'email' => (string) $user?->getAttribute('email'), 'member_since' => $joined->toIso8601String(),
             'two_factor' => $user?->hasEnabledTwoFactorAuthentication() === true, 'login_alerts' => $user?->getAttribute('login_alerts') !== false,
             'complaints' => $complaints->handle((int) $user?->getAuthIdentifier())]))->resolve($request));

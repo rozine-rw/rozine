@@ -11,6 +11,7 @@ use App\Application\Business\GetBusinessReadiness;
 use App\Application\Business\GetBusinessRepayments;
 use App\Application\Business\GetBusinessReports;
 use App\Application\Identity\AuthorizeActiveRole;
+use App\Application\Identity\LegalDocuments;
 use App\Application\Identity\ListBusinessComplaints;
 use App\Http\Requests\Business\ShowBusinessHomeRequest;
 use App\Http\Resources\BusinessAuditPrepResource;
@@ -86,13 +87,14 @@ class BusinessHomeController extends Controller
      * The bare Profile URL lands on the menu (a wide screen opens Company information beside it);
      * `profile/{section}` opens that section on a phone too.
      */
-    public function profile(ShowBusinessHomeRequest $request, GetBusinessProfile $profile, ListBusinessComplaints $complaints): Response
+    public function profile(ShowBusinessHomeRequest $request, GetBusinessProfile $profile, ListBusinessComplaints $complaints, LegalDocuments $legal): Response
     {
         $section = $request->route('section');
         $business = (string) $request->route('business');
         $resource = new BusinessProfileResource([...$profile->handle($this->userId($request), $this->revision($request), $business),
             'complaints' => $complaints->handle($this->userId($request), $this->revision($request), $business),
             'section' => is_string($section) ? $section : 'company', 'landing' => $section === null,
+            'legal' => is_string($section) ? $legal->pageFor($section) : null,
             'two_factor' => $request->user()?->hasEnabledTwoFactorAuthentication() === true,
             'login_alerts' => $request->user()?->getAttribute('login_alerts') !== false]);
 
