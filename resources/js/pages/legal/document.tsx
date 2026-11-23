@@ -82,6 +82,7 @@ export default function LegalDocumentPage({
 
                 <LegalDocumentBody
                     document={document}
+                    targets={{}}
                     className="mt-6 rounded-2xl border border-rz-border bg-rz-surface p-5 sm:p-8"
                 />
             </div>

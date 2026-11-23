@@ -41,11 +41,11 @@ const PROSE = cn(
 export function LegalDocumentBody({
     document,
     className,
-    targets = {},
+    targets,
 }: {
     document: LegalDocumentText;
     className?: string;
-    targets?: LegalDocumentTargets;
+    targets: LegalDocumentTargets;
 }) {
     const { t } = useTranslation();
 

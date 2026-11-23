@@ -10,6 +10,7 @@ import {
     vi,
 } from 'vite-plus/test';
 import { RiskWarning } from '@/components/investor/deals/risk-warning';
+import { LegalDocumentBody } from '@/components/legal/legal-document-body';
 import LegalDocumentPage from '@/pages/legal/document';
 import LegalReview from '@/pages/legal/review';
 import type { LegalDocumentLink } from '@/types/legal';
@@ -229,5 +230,42 @@ describe('The public legal documents and the review page', () => {
         expect(
             screen.getByRole('link', { name: 'Read the disclaimers' }),
         ).toHaveAttribute('href', '/disclaimers');
+    });
+});
+
+describe('A legal document read inside the app', () => {
+    const body = {
+        key: 'terms' as const,
+        title: 'Terms and Conditions',
+        version: 'terms-test',
+        sha256: 'a'.repeat(64),
+        html: '<h1>Terms</h1><p>Read the <a href="/privacy">Privacy Notice</a>, the <a href="/disclaimers">Disclaimers</a> and <a href="#plain">this note</a>.</p><p id="plain">Plain text.</p>',
+    };
+
+    it('points only the documents it has a target for, and opens only a closed section', () => {
+        render(
+            <>
+                <LegalDocumentBody
+                    document={body}
+                    targets={{ privacy: '#privacy-section' }}
+                />
+                <details id="privacy-section">
+                    <summary>Privacy</summary>
+                    <p>Inside</p>
+                </details>
+            </>,
+        );
+        const article = screen.getByRole('article', {
+            name: 'Terms and Conditions',
+        });
+
+        expect(
+            within(article).getByRole('link', { name: 'Disclaimers' }),
+        ).toHaveAttribute('href', '/disclaimers');
+        within(article).getByText('Plain text.').click();
+        within(article).getByRole('link', { name: 'this note' }).click();
+        expect(screen.getByText('Inside')).not.toBeVisible();
+        within(article).getByRole('link', { name: 'Privacy Notice' }).click();
+        expect(screen.getByText('Inside')).toBeVisible();
     });
 });
