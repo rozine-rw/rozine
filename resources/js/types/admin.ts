@@ -692,6 +692,15 @@ export type PartyKind = 'business' | 'investor' | 'auditor' | 'staff';
 
 export type KycState = 'verified' | 'pending' | 'overdue' | 'rejected';
 
+/** How far a Business has come towards its first listing: KYB, its application, the CPA baseline audit, then a note on the market. */
+export type BusinessStage =
+    | 'kyb_pending'
+    | 'not_applied'
+    | 'applying'
+    | 'applied'
+    | 'auditing'
+    | 'listed';
+
 export type BusinessPartyRow = {
     id: string;
     name: string;
@@ -702,8 +711,8 @@ export type BusinessPartyRow = {
     raised: Money;
     /** Null until the platform reads a Business's capacity; the cell shows a dash. */
     capacity_used_pct: number | null;
-    /** `not_tracked` until the platform reads arrears and freezes; the cell says so. */
-    health: 'healthy' | 'watch' | 'distressed' | 'not_tracked';
+    /** Until the platform reads arrears, a Business's onboarding stage (BusinessStage). */
+    health: 'healthy' | 'watch' | 'distressed' | 'not_tracked' | BusinessStage;
     /** Null while no freeze read exists. */
     frozen: boolean | null;
     kyc: KycState;
@@ -951,7 +960,8 @@ export type PartyDetail = {
         | 'kyc_pending'
         | 'licence_pending'
         | 'frozen'
-        | 'not_tracked';
+        | 'not_tracked'
+        | BusinessStage;
     stats: { key: PartyStatKey; value: StatValue }[];
     list: {
         key: 'active_notes' | 'holdings' | 'engagements';
