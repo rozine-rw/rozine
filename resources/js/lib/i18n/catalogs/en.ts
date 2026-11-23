@@ -2865,7 +2865,7 @@ const en = {
     'admin.parties.health.not_applied': 'Not applied yet',
     'admin.parties.health.applying': 'Application in progress',
     'admin.parties.health.applied': 'Application submitted',
-    'admin.parties.health.auditing': 'Baseline audit',
+    'admin.parties.health.auditing': 'Audit in progress',
     'admin.parties.health.listed': 'Listed',
     'admin.parties.kyc.verified': 'Verified',
     'admin.parties.kyc.pending': 'Pending',

@@ -3002,7 +3002,7 @@ const rw: Catalog = {
     'admin.parties.health.not_applied': 'Ntirasaba',
     'admin.parties.health.applying': 'Ubusabe buri gutegurwa',
     'admin.parties.health.applied': 'Ubusabe bwatanzwe',
-    'admin.parties.health.auditing': "Igenzura ry'ibanze",
+    'admin.parties.health.auditing': 'Igenzura riri gukorwa',
     'admin.parties.health.listed': 'Yashyizwe ku isoko',
     'admin.parties.kyc.verified': 'Byemejwe',
     'admin.parties.kyc.pending': 'Bitegereje',

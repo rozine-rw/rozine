@@ -395,7 +395,7 @@ describe('Party directories', () => {
         ['not_applied', 'Not applied yet'],
         ['applying', 'Application in progress'],
         ['applied', 'Application submitted'],
-        ['auditing', 'Baseline audit'],
+        ['auditing', 'Audit in progress'],
         ['listed', 'Listed'],
     ] as const)(
         'shows a Business at the %s stage as "%s", not as a pending audit',

@@ -3013,7 +3013,7 @@ const fr: Catalog = {
     'admin.parties.health.not_applied': 'Pas encore de demande',
     'admin.parties.health.applying': 'Demande en cours',
     'admin.parties.health.applied': 'Demande soumise',
-    'admin.parties.health.auditing': 'Audit initial',
+    'admin.parties.health.auditing': 'Audit en cours',
     'admin.parties.health.listed': 'Cotée',
     'admin.parties.kyc.verified': 'Vérifié',
     'admin.parties.kyc.pending': 'En attente',

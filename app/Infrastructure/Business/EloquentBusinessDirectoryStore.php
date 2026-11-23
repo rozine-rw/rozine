@@ -146,7 +146,7 @@ final class EloquentBusinessDirectoryStore implements BusinessDirectoryStore
      * a future-dated verification is not yet verified. The clock is bound rather than read from
      * PostgreSQL's now(), which is the start of the surrounding transaction. Notes repaid in full are
      * not active. The stage is how far the Business has come towards its first listing: verification,
-     * its application, the CPA baseline audit (AUD-R03), then a note on the market.
+     * its application, an open CPA audit (its baseline, AUD-R03, before a first note), then a note on the market.
      *
      * @param  list<string>  $repaid
      */

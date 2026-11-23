@@ -14,7 +14,7 @@ namespace App\Application\Business\Contracts;
  * the one its newest rated note published. No arrears, freeze or capacity read exists yet, so a
  * Business's health is not tracked: the directory offers no health chips and asserts no health.
  * Instead each Business shows its stage on the way to its first listing: its verification is pending,
- * it has not applied, its application is in draft or submitted, its CPA baseline audit is open, or
+ * it has not applied, its application is in draft or submitted, a CPA audit is open, or
  * it is listed. A Business has no rating until its baseline audit is sealed and a note publishes one.
  *
  * @phpstan-type Rating array{band: string, score: string}
