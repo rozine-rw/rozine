@@ -38,12 +38,13 @@ use Laravel\Sanctum\HasApiTokens;
  * @property bool $login_alerts
  * @property Carbon|null $closed_at
  * @property string|null $closure_reason
+ * @property string|null $closed_email
  * @property-read Party|null $party
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token', 'party_id', 'party', 'active_membership_id', 'active_membership_revision', 'context_revision', 'login_alerts', 'closure_reason'])]
+#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token', 'party_id', 'party', 'active_membership_id', 'active_membership_revision', 'context_revision', 'login_alerts', 'closure_reason', 'closed_email'])]
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
