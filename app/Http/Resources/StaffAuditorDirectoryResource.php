@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Domain\Identity\RwandaAddress;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -83,7 +82,7 @@ class StaffAuditorDirectoryResource extends JsonResource
             'requests' => self::queue(array_filter($page['queue'], fn (array $entry): bool => $entry['renewal']), $link, $position, $verify),
             'party' => $page['partner'] === null ? null : [...self::partner($page['partner'], $link($position), $verify ? $prefix : null, $page['decide']),
                 'coverage' => ($page['coverage'] ?? null) === null ? null : [...$page['coverage'],
-                    'address_line' => $page['coverage']['address'] === null ? null : RwandaAddress::line($page['coverage']['address'])]]];
+                    'address_line' => $page['coverage']['address'] === null ? null : self::addressLine($page['coverage']['address'])]]];
     }
 
     /**
@@ -133,5 +132,17 @@ class StaffAuditorDirectoryResource extends JsonResource
             'freeze' => null, 'release_blocked' => null, 'restrictions' => [], 'links' => ['close' => $close],
             'actions' => $waiting ? ['verify_licence' => $decision('approve'), 'reject_licence' => $decision('reject')] : (object) [],
             'stage' => $waiting && $decide !== null ? ($decide === 'approve' ? 'verify_licence' : 'reject_licence') : null];
+    }
+
+    /**
+     * The address on one line, as the design shows it: street, cell, sector, district.
+     *
+     * @param  array<string, mixed>  $address
+     */
+    private static function addressLine(array $address): string
+    {
+        $parts = array_map(fn (string $field): string => is_string($address[$field] ?? null) ? trim($address[$field]) : '', ['street', 'cell', 'sector', 'district']);
+
+        return implode(', ', array_values(array_filter($parts, fn (string $part): bool => $part !== '')));
     }
 }
