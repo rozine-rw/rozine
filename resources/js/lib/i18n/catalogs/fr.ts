@@ -461,6 +461,10 @@ const fr: Catalog = {
         'Auditez les entreprises cotées. Ajoutez votre licence ICPAR et vos zones pour passer en Auditeur.',
     'suite.app.switch.one_role':
         'Un compte n’a qu’un rôle à la fois. Votre autre demande est chez la Conformité.',
+    'suite.app.switch.held_business':
+        'Un compte n’a qu’un rôle à la fois, et le vôtre est Entreprise.',
+    'suite.app.switch.held_auditor':
+        'Un compte n’a qu’un rôle à la fois, et le vôtre est Auditeur.',
     'suite.app.switch.under_review_summary':
         'Votre demande est chez notre équipe Conformité. Nous vous dirons quand elle aura été examinée.',
     'suite.app.switch.asked_summary':

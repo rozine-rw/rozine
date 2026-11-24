@@ -445,6 +445,10 @@ const en = {
         'Audit listed businesses. Add your ICPAR licence and coverage to switch to Auditor.',
     'suite.app.switch.one_role':
         'An account holds one role at a time. Your other application is with Compliance.',
+    'suite.app.switch.held_business':
+        'An account holds one role at a time, and yours is Business.',
+    'suite.app.switch.held_auditor':
+        'An account holds one role at a time, and yours is Auditor.',
     'suite.app.switch.under_review_summary':
         'Your application is with our Compliance team. We will tell you when it has been reviewed.',
     'suite.app.switch.asked_summary':

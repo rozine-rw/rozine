@@ -454,6 +454,10 @@ const rw: Catalog = {
         'Genzura ubucuruzi buri ku rubuga. Ongeraho uruhushya rwa ICPAR n’uturere ukoreramo kugira ngo uhindukire Umugenzuzi.',
     'suite.app.switch.one_role':
         'Konti igira uruhare rumwe gusa icyarimwe. Indi dosiye yawe iri kwa Compliance.',
+    'suite.app.switch.held_business':
+        'Konti igira uruhare rumwe icyarimwe, urwawe ni Ubucuruzi.',
+    'suite.app.switch.held_auditor':
+        'Konti igira uruhare rumwe icyarimwe, urwawe ni Umugenzuzi.',
     'suite.app.switch.under_review_summary':
         'Dosiye yawe iri ku itsinda rya Compliance. Tuzakubwira nimara gusuzumwa.',
     'suite.app.switch.asked_summary':
