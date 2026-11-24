@@ -6,6 +6,7 @@ import {
     formatTimestamp,
     initialOf,
 } from '@/components/admin/format';
+import { KycReview } from '@/components/admin/kyc-review';
 import {
     UserKycChip,
     UserRoleChips,
@@ -16,7 +17,11 @@ import type { MessageCode } from '@/lib/i18n/types';
 import { formatDate } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { RouteLink } from '@/types';
-import type { UserDetail } from '@/types/admin';
+import type {
+    InvestorVerificationReview,
+    StaffViewer,
+    UserDetail,
+} from '@/types/admin';
 
 const SECTION =
     'text-[12px] font-bold tracking-[.05em] text-[#636e86] uppercase dark:text-rz-muted';
@@ -71,14 +76,19 @@ function DirectoryLink({ link, label }: { link: RouteLink; label: string }) {
 /**
  * One account in the console drawer: who they are, every role they hold with its status, their
  * identity (KYC) state, how they sign in, the access they asked for and their identity history,
- * newest first. Read-only: the links open the directories that act on each role.
+ * newest first. Everyone's own KYC is approved here, in this drawer, by a viewer who verifies identity
+ * checks (Erastus, 23 Nov 2026); the links open the directories that act on each role.
  */
 export function UserDrawer({
     user,
     serverTime,
+    kycReview = null,
+    viewer,
 }: {
     user: UserDetail;
     serverTime: string;
+    kycReview?: InvestorVerificationReview | null;
+    viewer?: StaffViewer;
 }) {
     const { t, locale } = useTranslation();
     const ago = useRelativeLabel(serverTime);
@@ -189,6 +199,23 @@ export function UserDrawer({
                         )}
                     </div>
                 </section>
+
+                {kycReview !== null && viewer !== undefined && (
+                    <section
+                        aria-label={t('admin.kyc.drawer')}
+                        className="mt-5"
+                    >
+                        <h3 className={SECTION}>{t('admin.kyc.drawer')}</h3>
+                        <div className={cn(BOX, 'mt-2.5 px-4 py-3.5')}>
+                            <KycReview
+                                review={kycReview}
+                                viewer={viewer}
+                                returnTo="users"
+                                returnUser={user.id}
+                            />
+                        </div>
+                    </section>
+                )}
 
                 <section
                     aria-label={t('admin.users.account_title')}

@@ -28,4 +28,12 @@ interface AccountClosures
      * @return list<Blocker>
      */
     public function close(int $userId, ?string $reason): array;
+
+    /**
+     * What stops the account giving up its Investor role (a role switch, Erastus 23 Nov 2026): money in
+     * its wallet or on the move, open commitments, notes still held and open market orders.
+     *
+     * @return list<Blocker>
+     */
+    public function investorBlockers(int $userId): array;
 }

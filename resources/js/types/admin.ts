@@ -2444,4 +2444,6 @@ export type AdminUsersProps = AdminFrameShellProps & {
     total: number;
     rows: UserRow[];
     user: UserDetail | null;
+    /** The open account's own KYC, for a viewer who approves identity checks. */
+    kyc_review?: InvestorVerificationReview | null;
 };

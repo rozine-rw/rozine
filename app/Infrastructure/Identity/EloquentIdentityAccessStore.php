@@ -645,6 +645,43 @@ final class EloquentIdentityAccessStore implements IdentityAccessStore
         }, 3);
     }
 
+    public function switchRole(int $actorId, string $permission, string $partyId, string $role, string $reason, string $requestId): array
+    {
+        return DB::transaction(function () use ($actorId, $permission, $partyId, $role, $reason, $requestId): array {
+            User::query()->whereKey($actorId)->lockForUpdate()->first();
+            $this->requireStaffPermission($actorId, $permission);
+            $hash = $this->requestHash(['membership.role_switch', $partyId, $role], $reason, $requestId);
+            if (($replay = $this->replay('user:'.$actorId, $requestId, $hash)) !== null) {
+                /** @var array{code: string, party_id: string, membership: array{id: string, role: string, status: string, revision: int}} $replay */
+                return $replay;
+            }
+            $party = $this->lockParty($partyId) ?? throw new IdentityViolation('IDENTITY_RECORD_NOT_FOUND', 404);
+            if ($party->kind !== 'person' || $party->verified_at === null || $party->verified_at->gt(now()) || ! $party->verifiedIdentity()->exists()) {
+                throw new IdentityViolation('IDENTITY_VERIFICATION_REQUIRED');
+            }
+            $before = $party->memberships()->get()->mapWithKeys(fn (RoleMembership $membership): array => [$membership->role => $membership->status])->all();
+            // One role at a time: the Investor role ends before (Auditor) or once (Business) the new role is active.
+            $investor = $party->memberships()->where('role', 'investor')->first();
+            if ($investor !== null && $investor->status !== 'revoked') {
+                $this->transitionMembership($party, 'investor', 'revoked', $investor->revision);
+            }
+            $membership = $party->memberships()->where('role', $role)->first();
+            if ($role === 'auditor' && $membership === null) {
+                [$membership] = $this->transitionMembership($party, 'auditor', 'active', 0);
+            }
+            if ($membership === null || $membership->status !== 'active') {
+                throw new IdentityViolation('ROLE_MEMBERSHIP_REQUIRED');
+            }
+            $result = ['code' => 'MEMBERSHIP_UPDATED', 'party_id' => $party->id, 'membership' => [
+                'id' => $membership->id, 'role' => $role, 'status' => 'active', 'revision' => $membership->revision,
+            ]];
+            $this->record('user:'.$actorId, $actorId, 'membership', $membership->id, 'membership.role_switch', $reason, $requestId, $hash,
+                $before, ['investor' => 'revoked', $role => 'active'], $result);
+
+            return $result;
+        }, 3);
+    }
+
     public function grantRequestedAuditorAccess(int $actorId, string $accessRequestId, string $reason, string $requestId): array
     {
         return DB::transaction(function () use ($actorId, $accessRequestId, $reason, $requestId): array {

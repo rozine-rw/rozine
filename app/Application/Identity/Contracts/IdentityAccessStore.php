@@ -51,6 +51,17 @@ interface IdentityAccessStore
      */
     public function grantRequestedAuditorAccess(int $actorId, string $accessRequestId, string $reason, string $requestId): array;
 
+    /**
+     * Compliance's approval of a role switch (Erastus, 23 Nov 2026): an account holds one role at a time,
+     * so the verified person's Investor role is revoked and the new role is the only one active. An
+     * Auditor membership is activated here; a Business membership is granted first by onboarding the
+     * company, and is only checked here. `$permission` is the reviewer's staff permission for that role.
+     *
+     * @param  'business'|'auditor'  $role
+     * @return array{code: string, party_id: string, membership: array{id: string, role: string, status: string, revision: int}}
+     */
+    public function switchRole(int $actorId, string $permission, string $partyId, string $role, string $reason, string $requestId): array;
+
     /** Approves the immutable superadmin grant or reactivation request as a second current manager.
      * @return array<string, mixed>
      */
