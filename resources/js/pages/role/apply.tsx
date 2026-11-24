@@ -8,6 +8,7 @@ import { ErrorBanner } from '@/components/rozine/form';
 import { UploadStatus } from '@/components/rozine/upload-status';
 import { useTranslation } from '@/hooks/use-translation';
 import type { MessageCode } from '@/lib/i18n/types';
+import { answerAt, flagKey } from '@/lib/role-application-answers';
 import { cn } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import { verification as investorVerification } from '@/routes/investor';
@@ -75,19 +76,6 @@ function stepForItem(key: string, role: 'business' | 'auditor'): string {
             coverage: 'coverage',
         }[head] ?? 'review'
     );
-}
-
-/** The answer at a dotted key such as `company.tin`. */
-function valueAt(answers: object, key: string): unknown {
-    return key
-        .split('.')
-        .reduce<unknown>(
-            (value, part) =>
-                value !== null && typeof value === 'object'
-                    ? (value as Record<string, unknown>)[part]
-                    : undefined,
-            answers,
-        );
 }
 
 /** The items Compliance flagged, by key, with their note; empty when nothing was sent back. */
@@ -352,8 +340,8 @@ export default function RoleApply(props: RoleApplicationProps) {
         }
 
         return (
-            JSON.stringify(valueAt(answers, item.key)) ===
-            JSON.stringify(valueAt(initialAnswers, item.key))
+            JSON.stringify(answerAt(answers, item.key)) ===
+            JSON.stringify(answerAt(initialAnswers, item.key))
         );
     });
     // A document flagged for change loses its flag once it is replaced; a typed answer keeps its note
@@ -365,7 +353,7 @@ export default function RoleApply(props: RoleApplicationProps) {
                     !item.key.startsWith('documents.') ||
                     unchanged.includes(item),
             )
-            .map((item) => [item.key, item.note]),
+            .map((item) => [flagKey(item.key), item.note]),
     );
 
     return (
