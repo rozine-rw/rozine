@@ -812,9 +812,11 @@ export function RoleApplicationDrawer({
                                     )}
                                 </span>
                                 {entry.count > 1 &&
-                                    t('admin.role_applications.saves', {
-                                        count: String(entry.count - 1),
-                                    })}{' '}
+                                    (entry.count === 2
+                                        ? t('admin.role_applications.saves_one')
+                                        : t('admin.role_applications.saves', {
+                                              count: String(entry.count - 1),
+                                          }))}{' '}
                                 · {formatDateTime(entry.at, locale)}
                                 {entry.reason !== null && (
                                     <span className="block text-rz-muted">

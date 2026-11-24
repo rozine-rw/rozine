@@ -359,6 +359,30 @@ describe('Reviewing an auditor application (#757)', () => {
 });
 
 describe('Application history', () => {
+    it('says one save in the singular (#771)', () => {
+        renderWithUser(
+            <RoleApplicationDrawer
+                application={application({
+                    history: [1, 2].map((revision) => ({
+                        revision,
+                        status: 'changes_requested',
+                        command:
+                            revision === 1
+                                ? 'application.more'
+                                : 'application.save',
+                        reason: null,
+                        at: `2026-11-24T1${revision}:00:00+02:00`,
+                    })),
+                })}
+                close="/admin/businesses"
+            />,
+        );
+
+        expect(
+            screen.getByText(/then 1 save by the applicant/u),
+        ).toBeInTheDocument();
+    });
+
     it('reads a send-back followed by applicant saves as one send-back, then the saves, then the resend', () => {
         const entry = (revision: number, status: string, command: string) => ({
             revision,
