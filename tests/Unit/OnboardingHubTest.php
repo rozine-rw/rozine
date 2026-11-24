@@ -6,7 +6,6 @@ use App\Domain\Identity\OnboardingHub;
 use App\Domain\Identity\RevisionItems;
 use App\Domain\Operations\CommandRejection;
 
-
 /**
  * @param  array{status?: 'none'|'draft'|'submitted'|'rejected'|'approved', submitted_at?: string, approved_at?: string, reason?: string, requested_at?: string}  $kyc
  * @param  array{role?: 'business'|'auditor', status?: 'draft'|'submitted'|'changes_requested'|'approved'|'rejected', submitted_at?: string, note?: string,
