@@ -497,17 +497,22 @@ test('owners hold 25 to 100 percent between them, are listed once, and a directo
 test('a send-back recorded before the structured address compares the address like for like (#771)', function (): void {
     kycSent($this->person);
     $application = businessSent($this, $this->person);
+    /** @var array<string, mixed> $state */
     $state = $application->state;
-    $old = [...$state['answers']['company'], 'district' => 'Kicukiro', 'registered_address' => 'KK 15 Rd, Kicukiro'];
+    /** @var array{company: array<string, mixed>} $answers */
+    $answers = $state['answers'];
+    $old = [...$answers['company'], 'district' => 'Kicukiro', 'registered_address' => 'KK 15 Rd, Kicukiro'];
     unset($old['province'], $old['sector'], $old['cell'], $old['street']);
-    $state['revision'] = ['note' => 'Fix two things.', 'requested_at' => now()->toIso8601String(), 'before' => ['answers' => [...$state['answers'], 'company' => $old], 'documents' => $state['documents']],
+    $state['revision'] = ['note' => 'Fix two things.', 'requested_at' => now()->toIso8601String(), 'before' => ['answers' => [...$answers, 'company' => $old], 'documents' => $state['documents']],
         'items' => [['key' => 'company.tin', 'label' => 'TIN', 'note' => ''], ['key' => 'company.district', 'label' => 'District', 'note' => 'Wrong district.'],
             ['key' => 'company.registered_address', 'label' => 'Registered address', 'note' => 'Add the plot.']]];
     $application->forceFill(['state' => $state])->save();
 
     (require database_path('migrations/2026_11_24_220000_move_address_revision_items_to_the_structured_address.php'))->up();
 
-    $revision = $application->refresh()->state['revision'];
+    /** @var array{revision: array{items: list<array<string, string>>, before: array{answers: array{company: array<string, string>}}}} $after */
+    $after = $application->refresh()->state;
+    $revision = $after['revision'];
     expect($revision['items'])->toBe([['key' => 'company.tin', 'label' => 'TIN', 'note' => ''],
         ['key' => 'company.address', 'label' => 'Registered address', 'note' => 'Wrong district. Add the plot.']])
         ->and(array_intersect_key($revision['before']['answers']['company'], array_flip(['province', 'district', 'sector', 'cell', 'street'])))
