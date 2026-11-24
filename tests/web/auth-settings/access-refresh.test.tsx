@@ -97,14 +97,7 @@ it('keeps a held refresh to the named properties', () => {
         expect.objectContaining({ only: ['identity'] }),
     );
 });
-it('asks the pulse while visible and reloads only when the fingerprint changes', async () => {
-    vi.useFakeTimers();
-    const answers: unknown[] = [
-        { version: 'a' },
-        { version: 'a' },
-        { version: 'b' },
-        { nothing: true },
-    ];
+const pulseAnswers = (answers: unknown[]) => {
     const fetcher = vi.fn(async () => {
         const body = answers.shift();
 
@@ -115,41 +108,125 @@ it('asks the pulse while visible and reloads only when the fingerprint changes',
         return { ok: true, json: async () => body } as Response;
     });
     vi.stubGlobal('fetch', fetcher);
-    const { unmount } = renderHook(() =>
-        useAccessRefresh(['identity', 'hub'], true, true, '/dashboard/version'),
-    );
+
+    return fetcher;
+};
+const tick = async (ms = 5000) => {
     await act(async () => {
-        await vi.advanceTimersByTimeAsync(0);
+        await vi.advanceTimersByTimeAsync(ms);
     });
+};
+it('asks the pulse while visible and reloads only when it differs from what is shown', async () => {
+    vi.useFakeTimers();
+    const fetcher = pulseAnswers([
+        { version: 'a' },
+        { version: 'a' },
+        { version: 'b' },
+        { nothing: true },
+    ]);
+    const { rerender, unmount } = renderHook(
+        ({ shown }) =>
+            useAccessRefresh(['identity', 'hub'], true, true, {
+                url: '/dashboard/version',
+                shown,
+            }),
+        { initialProps: { shown: 'a' } },
+    );
+    await tick(0);
     expect(fetcher).toHaveBeenCalledWith(
         '/dashboard/version',
         expect.objectContaining({ credentials: 'same-origin' }),
     );
     expect(reload).not.toHaveBeenCalled();
-    await act(async () => {
-        await vi.advanceTimersByTimeAsync(5000);
-    });
+    await tick();
     expect(reload).not.toHaveBeenCalled();
-    await act(async () => {
-        await vi.advanceTimersByTimeAsync(5000);
-    });
+    await tick();
     expect(reload).toHaveBeenCalledOnce();
     expect(reload).toHaveBeenCalledWith(
         expect.objectContaining({ only: ['identity', 'hub'] }),
     );
-    // A malformed answer and a network failure change nothing.
-    await act(async () => {
-        await vi.advanceTimersByTimeAsync(10000);
+    act(() => {
+        reload.mock.calls[0][0].onFinish();
     });
+    rerender({ shown: 'b' });
+    // A malformed answer and a network failure change nothing.
+    await tick(10000);
     expect(reload).toHaveBeenCalledOnce();
     // A hidden page does not ask at all.
     vi.spyOn(document, 'hidden', 'get').mockReturnValue(true);
     const calls = fetcher.mock.calls.length;
-    await act(async () => {
-        await vi.advanceTimersByTimeAsync(5000);
-    });
+    await tick();
     expect(fetcher).toHaveBeenCalledTimes(calls);
     unmount();
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+});
+it('reloads at once when the facts moved on before the first ask', async () => {
+    vi.useFakeTimers();
+    pulseAnswers([{ version: 'newer' }]);
+    renderHook(() =>
+        useAccessRefresh(['hub'], true, true, {
+            url: '/dashboard/version',
+            shown: 'rendered',
+        }),
+    );
+    await tick(0);
+    expect(reload).toHaveBeenCalledOnce();
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+});
+it('tries again until the newer facts are shown when a reload overlaps or fails', async () => {
+    vi.useFakeTimers();
+    pulseAnswers([
+        { version: 'b' },
+        { version: 'b' },
+        { version: 'b' },
+        { version: 'b' },
+    ]);
+    const { rerender } = renderHook(
+        ({ shown }) =>
+            useAccessRefresh(['hub'], true, true, {
+                url: '/dashboard/version',
+                shown,
+            }),
+        { initialProps: { shown: 'a' } },
+    );
+    // The first reload is still in flight at the next ask, which does not start another.
+    await tick(0);
+    expect(reload).toHaveBeenCalledOnce();
+    await tick();
+    expect(reload).toHaveBeenCalledOnce();
+    // It ends without new facts (a failed reload): the next ask tries again.
+    act(() => {
+        reload.mock.calls[0][0].onFinish();
+    });
+    await tick();
+    expect(reload).toHaveBeenCalledTimes(2);
+    // Once the newer facts are on screen the asks stop reloading.
+    act(() => {
+        reload.mock.calls[1][0].onFinish();
+    });
+    rerender({ shown: 'b' });
+    await tick();
+    expect(reload).toHaveBeenCalledTimes(2);
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+});
+it('holds a pulse reload while a command is unsettled', async () => {
+    vi.useFakeTimers();
+    pulseAnswers([{ version: 'b' }]);
+    const { rerender } = renderHook(
+        ({ settled }) =>
+            useAccessRefresh(['hub'], true, settled, {
+                url: '/dashboard/version',
+                shown: 'a',
+            }),
+        { initialProps: { settled: false } },
+    );
+    await tick(0);
+    expect(reload).not.toHaveBeenCalled();
+    rerender({ settled: true });
+    expect(reload).toHaveBeenCalledOnce();
     vi.unstubAllGlobals();
     vi.useRealTimers();
 });
@@ -164,7 +241,10 @@ it('ignores an error answer and a late answer after unmounting', async () => {
         );
     vi.stubGlobal('fetch', fetcher);
     const { unmount } = renderHook(() =>
-        useAccessRefresh(null, true, true, '/dashboard/version'),
+        useAccessRefresh(null, true, true, {
+            url: '/dashboard/version',
+            shown: 'y',
+        }),
     );
     await act(async () => {
         await vi.advanceTimersByTimeAsync(5000);

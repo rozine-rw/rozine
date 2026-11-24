@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Application\Identity\AddInvestorAccess;
 use App\Application\Identity\ApplyForRole;
+use App\Application\Identity\GetAccountPulse;
 use App\Application\Identity\GetIdentityContext;
 use App\Application\Identity\GetInvestorVerification;
 use App\Application\Identity\GetOnboardingHub;
@@ -26,9 +27,11 @@ class DashboardController extends Controller
      * Auditor access is applied for from the card once the person's KYC is sent (role switch, 23 Nov
      * 2026), so the launcher says where that application stands.
      */
-    public function __invoke(Request $request, GetIdentityContext $identity, GetStaffAccess $staff, GetInvestorVerification $verification, AddInvestorAccess $investor, RequestRoleAccess $access, ApplyForRole $applications, GetOnboardingHub $hub): Response
+    public function __invoke(Request $request, GetIdentityContext $identity, GetStaffAccess $staff, GetInvestorVerification $verification, AddInvestorAccess $investor, RequestRoleAccess $access, ApplyForRole $applications, GetOnboardingHub $hub, GetAccountPulse $pulse): Response
     {
         $userId = (int) $request->user()?->getAuthIdentifier();
+        // Read before the facts, so the page never holds a fingerprint newer than what it shows.
+        $version = $pulse->handle($userId);
         $context = $identity->handle($userId);
         $standing = ($context['party']['kind'] ?? null) === 'person' ? $applications->standing($userId) : null;
 
@@ -42,6 +45,8 @@ class DashboardController extends Controller
             'role_application' => $standing === null ? null : ['kyc' => $standing['kyc'], 'status' => $standing['status'], 'role' => $standing['role']],
             // The progress hub (24 Nov 2026): setup steps, what needs the person now, what is next and what is done.
             'hub' => $standing === null ? null : $hub->handle($userId),
+            // The fingerprint of the facts rendered here: the page reloads while `dashboard.version` answers otherwise.
+            'pulse' => $version,
             'access_requests' => [...$access->offer($userId), 'link' => ['url' => route('identity.access-requests.store', absolute: false), 'method' => 'post']],
         ]);
     }
