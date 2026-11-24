@@ -296,6 +296,14 @@ const en = {
         'Compliance reviews it once your identity check is approved. We email you as soon as it is decided.',
     'suite.hub.next.role_review_auditor.body':
         'Compliance reviews it once your identity check is approved. We email you as soon as it is decided.',
+    'suite.hub.next.role_send_business.body_approved':
+        'Your identity is approved, so Compliance reviews it as soon as you send it.',
+    'suite.hub.next.role_send_auditor.body_approved':
+        'Your identity is approved, so Compliance reviews your ICPAR licence as soon as you send it.',
+    'suite.hub.next.role_review_business.body_approved':
+        'Compliance is reviewing your business now. We email you as soon as it is decided.',
+    'suite.hub.next.role_review_auditor.body_approved':
+        'Compliance is reviewing your ICPAR licence now. We email you as soon as it is decided.',
     'suite.hub.next.role_reapply.title': 'Apply again when ready',
     'suite.hub.next.role_reapply.body':
         'Correct your details and send a new application.',
@@ -481,6 +489,10 @@ const en = {
         'Audit listed businesses. Add your ICPAR licence and coverage to switch to Auditor.',
     'suite.app.switch.one_role':
         'An account holds one role at a time. Your other application is with Compliance.',
+    'suite.app.switch.held_business':
+        'An account holds one role at a time, and yours is Business.',
+    'suite.app.switch.held_auditor':
+        'An account holds one role at a time, and yours is Auditor.',
     'suite.app.switch.under_review_summary':
         'Your application is with our Compliance team. We will tell you when it has been reviewed.',
     'suite.app.switch.asked_summary':
