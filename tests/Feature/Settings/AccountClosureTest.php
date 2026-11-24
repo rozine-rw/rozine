@@ -348,6 +348,7 @@ test('roles of parties closed before #746 are ended, and closed parties leave th
     $shared = Party::factory()->create();
     $closedTwin = User::factory()->create(['party_id' => $shared->id, 'closed_at' => now()]);
     $open = User::factory()->create(['party_id' => $shared->id, 'name' => 'Still Open']);
+    User::factory()->create(['party_id' => $shared->id, 'name' => 'Open Sibling']);
     $membership = fn (string $party, string $status): array => ['id' => strtolower((string) Str::ulid()), 'party_id' => $party, 'role' => 'auditor',
         'status' => $status, 'revision' => 1, 'created_at' => now(), 'updated_at' => now()];
     DB::table('role_memberships')->insert([$membership($closed->party_id, 'active'), $membership($shared->id, 'active')]);
