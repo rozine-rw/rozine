@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\StaffRoleApplicationController::document
-* @see app/Http/Controllers/StaffRoleApplicationController.php:38
+* @see app/Http/Controllers/StaffRoleApplicationController.php:39
 * @route '/admin/role-applications/{application}/documents/{document}'
 */
 export const document = (args: { application: string | number, document: string | number } | [application: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ document.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffRoleApplicationController::document
-* @see app/Http/Controllers/StaffRoleApplicationController.php:38
+* @see app/Http/Controllers/StaffRoleApplicationController.php:39
 * @route '/admin/role-applications/{application}/documents/{document}'
 */
 document.url = (args: { application: string | number, document: string | number } | [application: string | number, document: string | number ], options?: RouteQueryOptions) => {
@@ -42,7 +42,7 @@ document.url = (args: { application: string | number, document: string | number 
 
 /**
 * @see \App\Http\Controllers\StaffRoleApplicationController::document
-* @see app/Http/Controllers/StaffRoleApplicationController.php:38
+* @see app/Http/Controllers/StaffRoleApplicationController.php:39
 * @route '/admin/role-applications/{application}/documents/{document}'
 */
 document.get = (args: { application: string | number, document: string | number } | [application: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -52,7 +52,7 @@ document.get = (args: { application: string | number, document: string | number 
 
 /**
 * @see \App\Http\Controllers\StaffRoleApplicationController::document
-* @see app/Http/Controllers/StaffRoleApplicationController.php:38
+* @see app/Http/Controllers/StaffRoleApplicationController.php:39
 * @route '/admin/role-applications/{application}/documents/{document}'
 */
 document.head = (args: { application: string | number, document: string | number } | [application: string | number, document: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -62,7 +62,7 @@ document.head = (args: { application: string | number, document: string | number
 
 /**
 * @see \App\Http\Controllers\StaffRoleApplicationController::document
-* @see app/Http/Controllers/StaffRoleApplicationController.php:38
+* @see app/Http/Controllers/StaffRoleApplicationController.php:39
 * @route '/admin/role-applications/{application}/documents/{document}'
 */
 const documentForm = (args: { application: string | number, document: string | number } | [application: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -72,7 +72,7 @@ const documentForm = (args: { application: string | number, document: string | n
 
 /**
 * @see \App\Http\Controllers\StaffRoleApplicationController::document
-* @see app/Http/Controllers/StaffRoleApplicationController.php:38
+* @see app/Http/Controllers/StaffRoleApplicationController.php:39
 * @route '/admin/role-applications/{application}/documents/{document}'
 */
 documentForm.get = (args: { application: string | number, document: string | number } | [application: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ documentForm.get = (args: { application: string | number, document: string | num
 
 /**
 * @see \App\Http\Controllers\StaffRoleApplicationController::document
-* @see app/Http/Controllers/StaffRoleApplicationController.php:38
+* @see app/Http/Controllers/StaffRoleApplicationController.php:39
 * @route '/admin/role-applications/{application}/documents/{document}'
 */
 documentForm.head = (args: { application: string | number, document: string | number } | [application: string | number, document: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -99,7 +99,7 @@ document.form = documentForm
 
 /**
 * @see \App\Http\Controllers\StaffRoleApplicationController::decide
-* @see app/Http/Controllers/StaffRoleApplicationController.php:51
+* @see app/Http/Controllers/StaffRoleApplicationController.php:52
 * @route '/admin/role-applications/{application}/decide'
 */
 export const decide = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -114,7 +114,7 @@ decide.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffRoleApplicationController::decide
-* @see app/Http/Controllers/StaffRoleApplicationController.php:51
+* @see app/Http/Controllers/StaffRoleApplicationController.php:52
 * @route '/admin/role-applications/{application}/decide'
 */
 decide.url = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -141,7 +141,7 @@ decide.url = (args: { application: string | number } | [application: string | nu
 
 /**
 * @see \App\Http\Controllers\StaffRoleApplicationController::decide
-* @see app/Http/Controllers/StaffRoleApplicationController.php:51
+* @see app/Http/Controllers/StaffRoleApplicationController.php:52
 * @route '/admin/role-applications/{application}/decide'
 */
 decide.post = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -151,7 +151,7 @@ decide.post = (args: { application: string | number } | [application: string | n
 
 /**
 * @see \App\Http\Controllers\StaffRoleApplicationController::decide
-* @see app/Http/Controllers/StaffRoleApplicationController.php:51
+* @see app/Http/Controllers/StaffRoleApplicationController.php:52
 * @route '/admin/role-applications/{application}/decide'
 */
 const decideForm = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -161,7 +161,7 @@ const decideForm = (args: { application: string | number } | [application: strin
 
 /**
 * @see \App\Http\Controllers\StaffRoleApplicationController::decide
-* @see app/Http/Controllers/StaffRoleApplicationController.php:51
+* @see app/Http/Controllers/StaffRoleApplicationController.php:52
 * @route '/admin/role-applications/{application}/decide'
 */
 decideForm.post = (args: { application: string | number } | [application: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

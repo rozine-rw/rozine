@@ -1,10 +1,18 @@
 import { Head, Link, router, useHttp } from '@inertiajs/react';
 import { useRef, useState } from 'react';
+import {
+    HubAside,
+    HubOverview,
+    HubWork,
+    LivePill,
+    UrgentFlashcards,
+} from '@/components/rozine/dashboard-hub';
 import { LogoLockup } from '@/components/rozine/logo';
 import { RoleIcon } from '@/components/rozine/role-icon';
 import { useAccessRefresh } from '@/hooks/use-access-refresh';
 import { useTranslation } from '@/hooks/use-translation';
 import { dashboard, logout } from '@/routes';
+import { version as dashboardVersion } from '@/routes/dashboard';
 import { store } from '@/routes/identity/active-role';
 import { resume } from '@/routes/identity/roles';
 import {
@@ -20,6 +28,7 @@ import type {
     IdentityCode,
     IdentityContext,
     InvestorAccessOffer,
+    OnboardingHub,
     RequestableRole,
     RoleAccessOffer,
     RoleApp,
@@ -49,6 +58,11 @@ type LauncherProps = {
      * (23 Nov 2026): everyone starts as an Investor and may apply once their KYC is sent.
      */
     role_application?: RoleApplicationOffer | null;
+    /**
+     * The progress hub (24 Nov 2026): setup steps, what needs the person now, what happens next,
+     * what is done and their newest onboarding updates. Absent for staff and in previews.
+     */
+    hub?: OnboardingHub | null;
     /** Supplied only by local/testing synthetic fixture previews. */
     preview_links?: Partial<Record<RoleApp, RouteLink>>;
 };
@@ -87,6 +101,7 @@ export default function Launcher({
     investor_access,
     access_requests,
     role_application,
+    hub,
     preview_links,
 }: LauncherProps) {
     const { t } = useTranslation();
@@ -96,8 +111,18 @@ export default function Launcher({
     const [opening, setOpening] = useState(false);
     const [addingInvestor, setAddingInvestor] = useState(false);
     const refreshing = useAccessRefresh(
-        ['identity', 'staff_access', 'verification'],
+        [
+            'identity',
+            'staff_access',
+            'verification',
+            'investor_access',
+            'access_requests',
+            'role_application',
+            'hub',
+        ],
         preview_links === undefined,
+        true,
+        dashboardVersion().url,
     );
     const canSelect = identity.allowed_actions.includes('identity.select_role');
     const canView = identity.allowed_actions.includes('identity.view_role');
@@ -110,6 +135,8 @@ export default function Launcher({
             ? (investor_access ?? null)
             : null;
     const accessOffer = access_requests ?? null;
+    /** With the hub the greeting is the page's heading, so the apps title steps down a level. */
+    const HeadingTag = hub ? 'h2' : 'h1';
     const mfaRequired =
         identity.available_roles.includes('auditor') && !canSelect;
 
@@ -200,26 +227,46 @@ export default function Launcher({
                 <span className="ml-auto hidden text-[11px] font-semibold tracking-[.09em] text-rz-faint uppercase lg:inline">
                     {t('suite.motto')}
                 </span>
+                {preview_links === undefined && (
+                    <span className="ml-auto lg:ml-0">
+                        <LivePill />
+                    </span>
+                )}
                 <Link
                     href={logout()}
                     as="button"
-                    className="ml-auto text-sm font-semibold text-rz-body"
+                    className={`${preview_links === undefined ? '' : 'ml-auto '}text-sm font-semibold text-rz-body`}
                 >
                     {t('suite.sign_out')}
                 </Link>
             </header>
-            <main className="mx-auto mt-3.5 flex w-full max-w-[1320px] flex-1 flex-col justify-center gap-[30px]">
+            <main
+                className={`mx-auto mt-3.5 flex w-full max-w-[1320px] flex-1 flex-col gap-[30px] ${hub ? 'pt-4 pb-40' : 'justify-center'}`}
+            >
+                {hub && (
+                    <div className="flex animate-rz-rise flex-col gap-6">
+                        <HubOverview hub={hub} />
+                        <div className="flex flex-wrap items-start gap-6">
+                            <div className="flex min-w-0 flex-[999_1_560px] flex-col gap-6">
+                                <HubWork hub={hub} />
+                            </div>
+                            <aside className="flex min-w-0 flex-[1_1_320px] flex-col gap-6">
+                                <HubAside hub={hub} />
+                            </aside>
+                        </div>
+                    </div>
+                )}
                 <section
                     aria-labelledby="suite-apps"
                     className="animate-rz-rise [animation-delay:.1s]"
                 >
                     <div className="mb-3.5 flex items-center gap-[9px]">
-                        <h1
+                        <HeadingTag
                             id="suite-apps"
                             className="text-xs font-bold tracking-[.12em] text-rz-muted uppercase"
                         >
                             {t('suite.section.apps')}
-                        </h1>
+                        </HeadingTag>
                         <div className="h-px flex-1 bg-rz-divider" />
                     </div>
                     {preview_links && (
@@ -468,6 +515,7 @@ export default function Launcher({
                     )}
                 </section>
             </main>
+            {hub && <UrgentFlashcards actions={hub.actions} />}
         </div>
     );
 }

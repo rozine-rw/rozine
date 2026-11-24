@@ -162,3 +162,82 @@ export type RoleApplicationOffer = {
         | 'rejected';
     role: 'business' | 'auditor' | null;
 };
+
+/** One answer or document Compliance asked to change (24 Nov 2026), with its optional word on what to fix. */
+export type RevisionItem = { key: string; label: string; note: string };
+
+/** The dashboard's progress hub (24 Nov 2026). */
+export type HubStep = {
+    key: 'account' | 'email' | 'kyc' | 'role' | 'open';
+    state:
+        | 'done'
+        | 'attention'
+        | 'rejected'
+        | 'review'
+        | 'current'
+        | 'upcoming';
+    role: 'investor' | 'business' | 'auditor' | null;
+    at: string | null;
+};
+
+export type HubAction = {
+    id: string;
+    kind:
+        | 'kyc_changes'
+        | 'role_changes'
+        | 'role_rejected'
+        | 'kyc_start'
+        | 'kyc_continue'
+        | 'role_continue'
+        | 'two_factor';
+    urgent: boolean;
+    role: 'business' | 'auditor' | null;
+    company: string | null;
+    note: string | null;
+    items: RevisionItem[];
+    at: string | null;
+};
+
+export type HubNext =
+    | 'kyc_send'
+    | 'kyc_resend'
+    | 'kyc_review'
+    | 'role_send'
+    | 'role_resend'
+    | 'role_review'
+    | 'role_reapply'
+    | 'role_switch'
+    | 'investor_ready'
+    | 'business_ready'
+    | 'auditor_ready';
+
+export type HubDone = {
+    key:
+        | 'account'
+        | 'email'
+        | 'two_factor'
+        | 'kyc_sent'
+        | 'kyc_approved'
+        | 'role_sent'
+        | 'role_approved';
+    role: 'business' | 'auditor' | null;
+    at: string | null;
+};
+
+export type HubNotice = {
+    id: string;
+    kind: string;
+    created_at: string;
+    read: boolean;
+};
+
+export type OnboardingHub = {
+    name: string;
+    steps: HubStep[];
+    actions: HubAction[];
+    next: HubNext[];
+    done: HubDone[];
+    role: 'business' | 'auditor' | null;
+    company: string | null;
+    recent: HubNotice[];
+};

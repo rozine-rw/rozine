@@ -25,7 +25,9 @@ use App\Domain\Operations\CommandRejection;
  *     company?: Company, representative?: Representative, directors?: list<Person>, owners?: list<Owner>,
  *     licence?: Licence, coverage?: Coverage, declared: bool
  * }
- * @phpstan-type State array{role: 'business'|'auditor', step: string, answers: Answers, documents: array<string, string>, note: string|null}
+ * @phpstan-type RevisionItem array{key: string, label: string, note: string}
+ * @phpstan-type Revision array{note: string|null, items: list<RevisionItem>, requested_at: string}
+ * @phpstan-type State array{role: 'business'|'auditor', step: string, answers: Answers, documents: array<string, string>, note: string|null, revision?: Revision}
  */
 final class RoleApplicationCase
 {
@@ -236,16 +238,51 @@ final class RoleApplicationCase
 
     /**
      * Compliance's note when it asks for more or rejects: the applicant sees it and may change their answers.
+     * Asking for more also names the answers and documents to change; the applicant sees them flagged.
      *
      * @param  State  $state
+     * @param  list<RevisionItem>  $items
      * @return State
      */
-    public function returned(array $state, string $note): array
+    public function returned(array $state, string $note, array $items = [], string $requestedAt = ''): array
     {
         $state['note'] = $note;
         $state['answers']['declared'] = false;
+        if ($items !== []) {
+            $state['revision'] = ['note' => $note, 'items' => $items, 'requested_at' => $requestedAt];
+        } else {
+            unset($state['revision']);
+        }
 
         return $state;
+    }
+
+    /**
+     * Every answer and document Compliance may ask the applicant to change, keyed as the form and the
+     * revision request name them, with the label the applicant and the email show (24 Nov 2026).
+     *
+     * @param  State  $state
+     * @return array<string, string>
+     */
+    public function revisable(array $state): array
+    {
+        if ($state['role'] === 'auditor') {
+            return ['licence.membership_number' => 'ICPAR membership number', 'licence.licence_number' => 'Practising certificate number',
+                'licence.expires_on' => 'Licence valid until', 'licence.firm' => 'Audit firm', 'coverage.districts' => 'Districts you can cover',
+                'coverage.declarations' => 'Conflicts and ethics declarations', 'documents.practising_certificate' => 'ICPAR practising certificate'];
+        }
+        $items = ['company.legal_name' => 'Company legal name', 'company.rdb_code' => 'RDB company code', 'company.tin' => 'TIN',
+            'company.company_type' => 'Company type', 'company.incorporation_date' => 'Date of incorporation', 'company.industry' => 'Sector',
+            'company.district' => 'District', 'company.registered_address' => 'Registered address', 'company.phone' => 'Company phone',
+            'representative' => 'Your title, phone and authority', 'directors' => 'Directors', 'owners' => 'Beneficial owners',
+            'documents.rdb_certificate' => 'RDB registration certificate', 'documents.tin_certificate' => 'TIN certificate',
+            'documents.articles' => 'Articles of Association', 'documents.shareholder_register' => 'Shareholder register',
+            'documents.board_resolution' => 'Board resolution'];
+        foreach ($this->peopleById($state) as $idNumber => $person) {
+            $items['documents.id:'.$idNumber] = $person['full_name']."'s ID";
+        }
+
+        return $items;
     }
 
     public function editable(string $status): void

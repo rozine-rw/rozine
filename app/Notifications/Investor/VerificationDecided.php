@@ -10,10 +10,12 @@ use Illuminate\Notifications\Messages\MailMessage;
 /** Compliance's decision on an Investor's identity verification (KYC): verified, or rejected with its reason. */
 class VerificationDecided extends RozineMail
 {
+    /** @param  list<array{label: string, note: string}>  $items  the answers and documents Compliance flagged to change */
     private function __construct(
         public readonly string $url,
         public readonly ?string $rejectionReason,
         public readonly string $purpose = 'investor',
+        public readonly array $items = [],
     ) {}
 
     public static function approved(string $url): self
@@ -27,9 +29,10 @@ class VerificationDecided extends RozineMail
         return new self($url, null, $purpose);
     }
 
-    public static function rejected(string $reason, string $url): self
+    /** @param  list<array{label: string, note: string}>  $items */
+    public static function rejected(string $reason, string $url, array $items = []): self
     {
-        return new self($url, $reason);
+        return new self($url, $reason, 'investor', $items);
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -42,6 +45,7 @@ class VerificationDecided extends RozineMail
                 'approved' => $this->rejectionReason === null,
                 'purpose' => $this->purpose,
                 'reason' => $this->rejectionReason,
+                'items' => $this->items,
                 'url' => $this->url,
             ]);
     }

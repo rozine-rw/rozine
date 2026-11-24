@@ -33,6 +33,7 @@ class StaffRoleApplicationController extends Controller
         'IDENTITY_RECONCILIATION_REQUIRED' => 'This account needs an identity operator, so it cannot be approved here.',
         'STAFF_PERMISSION_REQUIRED' => 'Your staff role cannot decide this application.',
         'IDEMPOTENCY_CONFLICT' => 'That request was already used for different details. Try again.',
+        'REVISION_ITEM_INVALID' => 'One of the ticked items is no longer on this application. Review it again.',
     ];
 
     public function document(Request $request, ReviewRoleApplications $review): FileResponse
@@ -53,8 +54,11 @@ class StaffRoleApplicationController extends Controller
         $actorId = (int) $request->user()?->getAuthIdentifier();
         $applicationId = (string) $request->route('application');
         $decision = (string) $request->validated('decision');
+        /** @var list<array{key: string, note?: string|null}> $items */
+        $items = array_values(array_map(fn (array $item): array => ['key' => (string) $item['key'], 'note' => (string) ($item['note'] ?? '')],
+            (array) $request->validated('items', [])));
         $result = $review->decide($actorId, $applicationId, (int) $request->validated('expected_revision'), $decision,
-            (string) $request->validated('note', ''), (string) $request->validated('request_id'));
+            (string) $request->validated('note', ''), (string) $request->validated('request_id'), $items);
         if ($result['status'] !== 'completed') {
             /** @var array<string, list<string>> $fields */
             $fields = $result['field_errors'] ?? [];
@@ -64,7 +68,7 @@ class StaffRoleApplicationController extends Controller
         $application = $review->show($actorId, $applicationId);
         Inertia::flash('toast', ['type' => 'success', 'message' => __(match ($decision) {
             'approve' => $application['role'] === 'business' ? ':name is now the representative of an onboarded business.' : ':name is now an active Auditor.',
-            'more' => 'Sent back to :name with your note.',
+            'more' => 'Sent back to :name. They have been emailed and see each item you ticked.',
             default => 'Rejected. :name will see your note.',
         }, ['name' => $application['account']['name']])]);
 

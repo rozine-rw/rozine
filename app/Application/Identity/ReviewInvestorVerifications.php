@@ -41,9 +41,12 @@ final class ReviewInvestorVerifications
         return $this->store->approve($actorId, $verificationId, $expectedRevision, $reason, $requestId);
     }
 
-    /** @return array<string, mixed> */
-    public function reject(int $actorId, string $verificationId, int $expectedRevision, string $reason, string $requestId): array
+    /**
+     * @param  list<mixed>  $items
+     * @return array<string, mixed>
+     */
+    public function reject(int $actorId, string $verificationId, int $expectedRevision, string $reason, string $requestId, array $items = []): array
     {
-        return $this->store->reject($actorId, $verificationId, $expectedRevision, $reason, $requestId);
+        return $this->store->reject($actorId, $verificationId, $expectedRevision, $reason, $requestId, $items);
     }
 }

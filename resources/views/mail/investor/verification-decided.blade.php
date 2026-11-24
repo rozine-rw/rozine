@@ -32,6 +32,15 @@
 {{ __('Compliance could not verify these details: :reason', ['reason' => $reason]) }}
 </x-mail::notice>
 
+@if (($items ?? []) !== [])
+{{ __('Please change:') }}
+
+@foreach ($items as $item)
+- **{{ $item['label'] }}**@if ($item['note'] !== ''): {{ $item['note'] }}@endif
+
+@endforeach
+@endif
+
 {{ __('Correct them in the Investor app and submit again. Investing stays paused until your identity is verified.') }}
 
 <x-mail::button :url="$url" color="investor">

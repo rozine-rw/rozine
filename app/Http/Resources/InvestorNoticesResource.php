@@ -22,6 +22,11 @@ class InvestorNoticesResource extends JsonResource
     private const array DESTINATIONS = [
         'verification.approved' => ['investor.deals', []],
         'verification.rejected' => ['investor.verification', []],
+        'verification.submitted' => ['dashboard', []],
+        'role.application_submitted' => ['role-application.show', []],
+        'role.application_returned' => ['role-application.show', []],
+        'role.application_approved' => ['dashboard', []],
+        'role.application_rejected' => ['role-application.show', []],
         'wallet.deposit_received' => ['investor.wallet', []],
         'wallet.withdrawal_sent' => ['investor.wallet', []],
         'wallet.withdrawal_returned' => ['investor.wallet', []],

@@ -89,10 +89,13 @@ interface RoleApplicationStore
     /**
      * Approve (`approve`), ask for more (`more`) or reject (`reject`) a sent application with a note. An
      * approval runs `$switch` under the application's lock once the KYC is approved, the application is
-     * complete and the Investor role has nothing open; it returns the business onboarded, if any.
+     * complete and the Investor role has nothing open; it returns the business onboarded, if any. Asking
+     * for more names the answers and documents to change (`$items`, each `{key, note?}`), which the
+     * applicant sees flagged. Every decision is sent to the applicant in the app and by email.
      *
      * @param  Closure(Approval): (string|null)  $switch
+     * @param  list<mixed>  $items
      * @return array<string, mixed>
      */
-    public function decide(int $actorId, string $applicationId, int $expectedRevision, string $decision, string $note, string $requestId, Closure $switch): array;
+    public function decide(int $actorId, string $applicationId, int $expectedRevision, string $decision, string $note, string $requestId, Closure $switch, array $items = []): array;
 }

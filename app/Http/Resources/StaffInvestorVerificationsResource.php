@@ -22,7 +22,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *     state: array{date_of_birth: string, id_type: string, id_number: string, decision: array{outcome: string, reason: string, decided_at: string}|null},
  *     documents: list<array{id: string, slot: string, filename: string, media_type: string, size_bytes: int, sha256: string, uploaded_at: string, current: bool}>,
  *     history: list<array{revision: int, status: string, command: string, reason: string|null, at: string}>,
- *     allowed_actions: list<string>
+ *     revisable: array<string, string>, allowed_actions: list<string>
  * }
  * @phpstan-type Page array{
  *     tab: string, search: string, limit: int, before: string|null, entries: list<Entry>, next_cursor: string|null,
@@ -83,6 +83,8 @@ class StaffInvestorVerificationsResource extends JsonResource
                     'view' => ['url' => route($prefix.'staff.investor-verifications.document', [...$route, 'disposition' => 'inline'], false), 'method' => 'get']];
             }, $review['documents']),
             'history' => $review['history'], 'links' => ['close' => $close],
+            // The answers and documents Compliance may ask to change when it sends the check back (24 Nov 2026).
+            'revisable' => (object) $review['revisable'],
             'actions' => (object) array_combine($review['allowed_actions'], array_map($action, $review['allowed_actions']))];
     }
 }

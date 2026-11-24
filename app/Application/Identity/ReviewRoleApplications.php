@@ -81,12 +81,15 @@ final class ReviewRoleApplications
         return $this->store->document($actorId, $applicationId, $documentId);
     }
 
-    /** @return array<string, mixed> */
-    public function decide(int $actorId, string $applicationId, int $expectedRevision, string $decision, string $note, string $requestId): array
+    /**
+     * @param  list<mixed>  $items  the answers and documents to change when asking for more
+     * @return array<string, mixed>
+     */
+    public function decide(int $actorId, string $applicationId, int $expectedRevision, string $decision, string $note, string $requestId, array $items = []): array
     {
         return $this->store->decide($actorId, $applicationId, $expectedRevision, $decision, $note, $requestId,
             fn (array $approval): ?string => $approval['state']['role'] === 'business'
-                ? $this->business($actorId, $approval) : $this->auditor($actorId, $approval));
+                ? $this->business($actorId, $approval) : $this->auditor($actorId, $approval), $items);
     }
 
     /** @param Approval $approval */

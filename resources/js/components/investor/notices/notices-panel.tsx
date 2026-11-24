@@ -140,6 +140,31 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
         tile: 'bg-[rgba(176,122,18,.12)] text-[#b07a12]',
         icon: <path d="M5 12h14" {...stroke} />,
     },
+    'verification.submitted': {
+        bar: 'bg-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff] dark:text-rz-investor-text',
+        icon: <path d="M5 12h14M13 6l6 6-6 6" {...stroke} />,
+    },
+    'role.application_submitted': {
+        bar: 'bg-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff] dark:text-rz-investor-text',
+        icon: <path d="M5 12h14M13 6l6 6-6 6" {...stroke} />,
+    },
+    'role.application_approved': {
+        bar: 'bg-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
+        icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
+    },
+    'role.application_returned': {
+        bar: 'bg-[#c2661f]',
+        tile: 'bg-[rgba(194,102,31,.13)] text-[#a55418] dark:text-rz-warning-text',
+        icon: <path d="M12 7v6M12 16.5v.5" {...stroke} />,
+    },
+    'role.application_rejected': {
+        bar: 'bg-[#b3383c]',
+        tile: 'bg-[rgba(179,56,60,.1)] text-[#b3383c] dark:text-rz-danger-text',
+        icon: <path d="M12 7v6M12 16.5v.5" {...stroke} />,
+    },
     'verification.rejected': {
         bar: 'bg-[#b3383c]',
         tile: 'bg-[rgba(179,56,60,.1)] text-[#b3383c] dark:text-rz-danger-text',
@@ -832,6 +857,34 @@ function body(
             });
         case 'verification.approved':
             return t(VERIFIED_BODY[audience]);
+        case 'verification.submitted':
+            return t('investor.notices.verification.submitted.body');
+        case 'role.application_submitted':
+            return notice.facts.role === 'business'
+                ? t(
+                      'investor.notices.role.application_submitted.body_business',
+                      {
+                          company: notice.facts.company ?? '',
+                      },
+                  )
+                : t('investor.notices.role.application_submitted.body_auditor');
+        case 'role.application_returned':
+            return t('investor.notices.role.application_returned.body', {
+                items: notice.facts.items.map((item) => item.label).join(', '),
+            });
+        case 'role.application_approved':
+            return notice.facts.role === 'business'
+                ? t(
+                      'investor.notices.role.application_approved.body_business',
+                      {
+                          company: notice.facts.company ?? '',
+                      },
+                  )
+                : t('investor.notices.role.application_approved.body_auditor');
+        case 'role.application_rejected':
+            return t('investor.notices.role.application_rejected.body', {
+                note: notice.facts.note,
+            });
         case 'security.password_changed':
             return t('investor.notices.security.password_changed.body');
         case 'security.new_device':

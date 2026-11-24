@@ -201,6 +201,157 @@ const rw: Catalog = {
         "Urwego rw'amasoko y'imari y'abantu bose ku bukungu buri kuzamuka",
     'suite.motto': 'Intangiriro imwe · ahantu hose',
     'suite.section.apps': 'Porogaramu zawe',
+    'suite.hub.live': 'Bihita ako kanya',
+    'suite.hub.greeting': 'Muraho, {name}',
+    'suite.hub.greeting_plain': 'Murakaza neza',
+    'suite.hub.summary':
+        'Murangije intambwe {done} kuri {total} zo gutunganya konti yanyu.',
+    'suite.hub.summary_complete': 'Konti yanyu iriteguye.',
+    'suite.hub.needs_one': 'Hari ikintu 1 kibakeneye ubu.',
+    'suite.hub.needs_many': 'Hari ibintu {count} bibakeneye ubu.',
+    'suite.hub.setup.title': 'Gutunganya konti yanyu',
+    'suite.hub.setup.percent': '{percent}% byarangiye',
+    'suite.hub.step.account': 'Konti yafunguwe',
+    'suite.hub.step.email': 'Imeyili yemejwe',
+    'suite.hub.step.kyc': 'Igenzura ry’umwirondoro',
+    'suite.hub.step.role_business': 'Igenzura ry’ikigo',
+    'suite.hub.step.role_auditor': 'Igenzura ry’uruhushya rw’umugenzuzi',
+    'suite.hub.step.open_investor': 'Tangira gushora imari',
+    'suite.hub.step.open_business': 'Fungura Ikigo',
+    'suite.hub.step.open_auditor': 'Fungura Umugenzuzi',
+    'suite.hub.state.done': 'Byarangiye',
+    'suite.hub.state.attention': 'Hasabwe impinduka',
+    'suite.hub.state.rejected': 'Ntibyemewe',
+    'suite.hub.state.review': 'Biri kwa Compliance',
+    'suite.hub.state.current': 'Ibyo gukora',
+    'suite.hub.state.upcoming': 'Nyuma yo kwemezwa',
+    'suite.hub.needs.title': 'Ibibakeneye ubu',
+    'suite.hub.needs.empty':
+        'Nta kibakeneye ubu. Tuzabibamenyesha hano no kuri imeyili.',
+    'suite.hub.tag.urgent': 'Byihutirwa · biturutse kwa Compliance',
+    'suite.hub.tag.todo': 'Ibyo gukora',
+    'suite.hub.tag.recommended': 'Birasabwa',
+    'suite.hub.items_label': 'Ibyo guhindura',
+    'suite.hub.action.kyc_changes.title':
+        'Compliance irasaba impinduka ku igenzura ry’umwirondoro wanyu',
+    'suite.hub.action.kyc_changes.body':
+        'Hindura ibiri hasi, hanyuma wongere ubyohereze.',
+    'suite.hub.action.role_changes_business.title':
+        'Compliance irasaba impinduka ku busabe bw’ikigo cyanyu',
+    'suite.hub.action.role_changes_auditor.title':
+        'Compliance irasaba impinduka ku busabe bwanyu bw’umugenzuzi',
+    'suite.hub.action.role_changes.body':
+        'Hindura ibiri hasi, hanyuma wongere ubyohereze. Ushobora no guhindura ibindi bisubizo.',
+    'suite.hub.action.role_rejected_business.title':
+        'Ubusabe bw’ikigo cyanyu ntibwemewe',
+    'suite.hub.action.role_rejected_auditor.title':
+        'Ubusabe bwanyu bw’umugenzuzi ntibwemewe',
+    'suite.hub.action.role_rejected.body':
+        'Konti yanyu y’Umushoramari ntiyahindutse. Mushobora gukosora amakuru mukongera gusaba.',
+    'suite.hub.action.kyc_start.title': 'Emeza umwirondoro wawe',
+    'suite.hub.action.kyc_start.body':
+        'Konti zose zitangirira hano. Bifata iminota 5 ufite indangamuntu n’ifoto yawe.',
+    'suite.hub.action.kyc_continue.title':
+        'Rangiza igenzura ry’umwirondoro wawe',
+    'suite.hub.action.kyc_continue.body':
+        'Mwarabitangiye. Mukomereze aho mwari mugeze.',
+    'suite.hub.action.role_continue_business.title':
+        'Rangiza ubusabe bw’ikigo cyawe',
+    'suite.hub.action.role_continue_auditor.title':
+        'Rangiza ubusabe bwawe bw’umugenzuzi',
+    'suite.hub.action.role_continue.body':
+        'Bwohereze kwa Compliance mumaze gushyiramo ibisubizo n’inyandiko.',
+    'suite.hub.action.two_factor.title': 'Fungura kwinjira mu ntambwe ebyiri',
+    'suite.hub.action.two_factor.body':
+        'Birinda konti n’ikofi yawe. Bifata iminota 2 ukoresheje porogaramu y’ibanga.',
+    'suite.hub.action.two_factor.body_auditor':
+        'Abagenzuzi barabikenera mbere yo gufungura porogaramu y’Umugenzuzi. Bifata iminota 2.',
+    'suite.hub.button.fix': 'Kosora ubu',
+    'suite.hub.button.reapply': 'Subiramo wongere usabe',
+    'suite.hub.button.start': 'Tangira',
+    'suite.hub.button.continue': 'Komeza',
+    'suite.hub.button.setup': 'Tunganya',
+    'suite.hub.next.title': 'Ibikurikiraho',
+    'suite.hub.your_business': 'Ikigo cyanyu',
+    'suite.hub.next.kyc_send.title': 'Ohereza igenzura ry’umwirondoro wawe',
+    'suite.hub.next.kyc_send.body':
+        'Compliance irabisuzuma, akenshi mu munsi 1 w’akazi.',
+    'suite.hub.next.kyc_resend.title':
+        'Compliance yongera kugenzura umwirondoro wawe',
+    'suite.hub.next.kyc_resend.body':
+        'Akenshi mu munsi 1 w’akazi mumaze kohereza ibikosowe. Tuzabandikira uko byagenda kose.',
+    'suite.hub.next.kyc_review.title': 'Compliance irasuzuma umwirondoro wawe',
+    'suite.hub.next.kyc_review.body':
+        'Akenshi mu munsi 1 w’akazi. Tuzabandikira bikimara gufatirwa umwanzuro.',
+    'suite.hub.next.role_send_business.title': 'Ohereza ubusabe bw’ikigo cyawe',
+    'suite.hub.next.role_send_auditor.title':
+        'Ohereza ubusabe bwawe bw’umugenzuzi',
+    'suite.hub.next.role_send_business.body':
+        'Compliance irabusuzuma umwirondoro wawe umaze kwemezwa.',
+    'suite.hub.next.role_send_auditor.body':
+        'Compliance isuzuma uruhushya rwawe rwa ICPAR umwirondoro wawe umaze kwemezwa.',
+    'suite.hub.next.role_resend.title': 'Ongera wohereze ubusabe bwawe',
+    'suite.hub.next.role_resend.body':
+        'Hindura ibyo Compliance yavuze, hanyuma ubyohereze. Ushobora no guhindura ibindi bisubizo.',
+    'suite.hub.next.role_review_business.title': '{company} irasuzumwa',
+    'suite.hub.next.role_review_auditor.title':
+        'Uruhushya rwawe rwa ICPAR rurasuzumwa',
+    'suite.hub.next.role_review_business.body':
+        'Compliance irabisuzuma umwirondoro wawe umaze kwemezwa. Tuzabandikira bikimara gufatirwa umwanzuro.',
+    'suite.hub.next.role_review_auditor.body':
+        'Compliance irabisuzuma umwirondoro wawe umaze kwemezwa. Tuzabandikira bikimara gufatirwa umwanzuro.',
+    'suite.hub.next.role_reapply.title': 'Ongera usabe igihe witeguye',
+    'suite.hub.next.role_reapply.body':
+        'Kosora amakuru yawe wohereze ubusabe bushya.',
+    'suite.hub.next.role_switch_business.title': 'Konti yawe ihinduka iy’Ikigo',
+    'suite.hub.next.role_switch_business.body':
+        'Ubwo uzashobora gusaba inkunga. Tegura raporo za banki z’amezi 12 kugira ngo wihute.',
+    'suite.hub.next.role_switch_auditor.title':
+        'Konti yawe ihinduka iy’Umugenzuzi',
+    'suite.hub.next.role_switch_auditor.body':
+        'Ubwo uzashobora guhabwa akazi ko kugenzura hafi yawe.',
+    'suite.hub.next.investor_ready.title': 'Reba amahirwe yo gushora ari ho',
+    'suite.hub.next.investor_ready.body':
+        'Konti yawe iriteguye. Fungura Umushoramari urebe ibigo birimo gushaka imari.',
+    'suite.hub.next.business_ready.title': 'Fungura Ikigo',
+    'suite.hub.next.business_ready.body':
+        'Ikigo cyawe cyemejwe. Fungura Ikigo usabe inkunga.',
+    'suite.hub.next.auditor_ready.title': 'Fungura Umugenzuzi',
+    'suite.hub.next.auditor_ready.body':
+        'Uri Umufatanyabikorwa w’igenzura ukora. Fungura Umugenzuzi urebe akazi kawe.',
+    'suite.hub.done.title': 'Ibyarangiye',
+    'suite.hub.done.account': 'Konti yafunguwe',
+    'suite.hub.done.email': 'Imeyili yemejwe',
+    'suite.hub.done.two_factor': 'Kwinjira mu ntambwe ebyiri birakora',
+    'suite.hub.done.kyc_sent': 'Igenzura ry’umwirondoro ryoherejwe',
+    'suite.hub.done.kyc_approved': 'Umwirondoro wemejwe',
+    'suite.hub.done.role_sent_business': 'Ubusabe bw’ikigo bwoherejwe',
+    'suite.hub.done.role_sent_auditor': 'Ubusabe bw’umugenzuzi bwoherejwe',
+    'suite.hub.done.role_approved_business': 'Ikigo cyemejwe',
+    'suite.hub.done.role_approved_auditor': 'Uruhushya rwa ICPAR rwemejwe',
+    'suite.hub.recent.title': 'Amakuru mashya',
+    'suite.hub.recent.empty': 'Amakuru ava kwa Compliance agaragara hano.',
+    'suite.hub.recent.emailed': 'Byoherejwe kuri imeyili',
+    'suite.hub.help.title': 'Mukeneye ubufasha?',
+    'suite.hub.help.body': 'Itsinda ryacu risubiza mu munsi 1 w’akazi.',
+    'suite.hub.help.contact': 'Vugana n’ubufasha',
+    'suite.hub.flash.label': 'Byihutirwa',
+    'suite.hub.flash.source': 'Compliance · {time}',
+    'suite.hub.flash.position': '{index} kuri {total}',
+    'suite.hub.flash.previous': 'Ibibanza',
+    'suite.hub.flash.next': 'Ibikurikira',
+    'suite.hub.flash.later': 'Nyuma',
+    'suite.hub.flash.details': 'Reba ibisobanuro',
+    'suite.hub.flash.kyc_title':
+        'Igenzura ry’umwirondoro wawe rikeneye impinduka',
+    'suite.hub.flash.role_title_business':
+        'Ubusabe bw’ikigo cyawe bukeneye impinduka',
+    'suite.hub.flash.role_title_auditor':
+        'Ubusabe bwawe bw’umugenzuzi bukeneye impinduka',
+    'suite.hub.flash.body_items':
+        'Compliance yagaragaje: {items}. Bikosore kugira ngo isuzuma rirangire.',
+    'suite.hub.flash.body':
+        'Compliance yabigaruye. Bikosore kugira ngo isuzuma rirangire.',
     'suite.app.open': 'Fungura porogaramu →',
     'suite.app.browse': 'Reba amahirwe →',
     'suite.app.request_access': 'Saba uburenganzira →',
@@ -268,9 +419,23 @@ const rw: Catalog = {
     'admin.role_applications.decision': 'Icyemezo',
     'admin.role_applications.note': 'Ubutumwa ku usaba',
     'admin.role_applications.note_hint':
-        'Ubutumwa burakenewe kugira ngo usubize cyangwa wange. Kwemeza bihindura uruhare rw’usaba, akareka kuba Umushoramari.',
+        'Kwanga bisaba ubusobanuro. Kugira ngo usubize, hitamo ibyo guhindura; ubusobanuro si ngombwa. Kwemeza bihindura uruhare rw’usaba, akareka kuba Umushoramari.',
     'admin.role_applications.reject': 'Anga',
     'admin.role_applications.more': 'Saba ibindi',
+    'admin.revision.legend': 'Ni iki usaba agomba guhindura?',
+    'admin.revision.group.details': 'Amakuru bwite n’amafoto',
+    'admin.revision.group.company': 'Ikigo',
+    'admin.revision.group.people': 'Abantu',
+    'admin.revision.group.licence': 'Uruhushya rwa ICPAR',
+    'admin.revision.group.coverage': 'Aho akorera',
+    'admin.revision.group.documents': 'Inyandiko',
+    'admin.revision.note_label': 'Icyo gukosora kuri {item}',
+    'admin.revision.note_placeholder': 'Icyo gukosora (si ngombwa)',
+    'admin.revision.ask_title': 'Saba impinduka',
+    'admin.revision.ask_body':
+        'Hitamo buri kintu usaba agomba guhindura. Arabibona byagaragajwe ku ifishi ye, kandi abona imeyili n’ubutumwa muri porogaramu.',
+    'admin.revision.send_one': 'Subiza ufite ikintu 1',
+    'admin.revision.send_many': 'Subiza ufite ibintu {count}',
     'admin.role_applications.approving': 'Biremezwa…',
     'admin.role_applications.history': 'Amateka',
     'suite.app.business.switch':
@@ -417,6 +582,11 @@ const rw: Catalog = {
         'Abagenzuzi bagomba kurinda konti zabo bakoresheje kwemeza mu byiciro bibiri mbere yo kohereza dosiye.',
     'role.apply.two_factor.action': 'Fungura igenamiterere ry’umutekano',
     'role.apply.asked_for_more': 'Compliance yasabye impinduka',
+    'role.apply.flag.change': 'Compliance irabasaba guhindura iki.',
+    'role.apply.flag.note': 'Compliance: {note}',
+    'role.apply.flag.list_title': 'Hindura ibi, hanyuma wongere wohereze:',
+    'role.apply.flag.still_editable':
+        'Ushobora no guhindura ikindi gisubizo mbere yo kongera kohereza.',
     'role.apply.rejected': 'Dosiye yawe iheruka ntiyemejwe',
     'role.apply.send': 'Ohereza kwa Compliance',
     'role.apply.sending': 'Birimo koherezwa…',
@@ -1952,6 +2122,16 @@ const rw: Catalog = {
         'Ishami ry’iyubahirizwa ryemeje igenzura ry’umwirondoro',
     'admin.messaging.trigger.verification.rejected':
         'Ishami ry’iyubahirizwa risubije igenzura ry’umwirondoro',
+    'admin.messaging.trigger.verification.submitted':
+        'Umuntu yohereje igenzura ry’umwirondoro we',
+    'admin.messaging.trigger.role.application_submitted':
+        'Umuntu yohereje ubusabe bw’Ikigo cyangwa bw’Umugenzuzi',
+    'admin.messaging.trigger.role.application_returned':
+        'Compliance isubiza ubusabe bw’Ikigo cyangwa bw’Umugenzuzi',
+    'admin.messaging.trigger.role.application_approved':
+        'Compliance yemeje ubusabe bw’Ikigo cyangwa bw’Umugenzuzi',
+    'admin.messaging.trigger.role.application_rejected':
+        'Compliance yanze ubusabe bw’Ikigo cyangwa bw’Umugenzuzi',
     'admin.messaging.trigger.market.units_bought':
         'Kugura ku isoko rya kabiri birangiye',
     'admin.messaging.trigger.market.units_sold':
@@ -2043,6 +2223,8 @@ const rw: Catalog = {
     'admin.messaging.rule.raise_fully_funded': 'Ubukusanyamari bwuzuye',
     'admin.messaging.template.account.new_device_sign_in':
         'Kwinjira hakoreshejwe igikoresho gishya',
+    'admin.messaging.template.account.onboarding_update':
+        'Amakuru ku iyandikisha',
     'admin.messaging.template.account.one_time_code': 'Kode y’igihe kimwe',
     'admin.messaging.template.account.reset_password':
         'Guhindura ijambo ry’ibanga',
@@ -2402,17 +2584,17 @@ const rw: Catalog = {
     'admin.kyc.command.verification.reject':
         "Byanzwe n'ushinzwe kubahiriza amategeko",
     'admin.kyc.approve': 'Emeza',
-    'admin.kyc.reject': 'Anga',
+    'admin.kyc.reject': 'Subiza',
     'admin.kyc.stage.approve.title': 'Emeza uyu mwirondoro',
     'admin.kyc.stage.approve.body':
         'Ibi byemeza uyu muntu kandi bimufungurira kuba Umushoramari. Vuga ibyo wagenzuye.',
     'admin.kyc.stage.approve.cta': 'Emeza umwirondoro',
     'admin.kyc.stage.approve.placeholder':
         "urugero: Ifoto, nimero n'ifoto ye bihuye na nyir'konti",
-    'admin.kyc.stage.reject.title': 'Anga iki gisabwa',
+    'admin.kyc.stage.reject.title': 'Subiza iri genzura kugira ngo rikosorwe',
     'admin.kyc.stage.reject.body':
-        'Uyu muntu abona impamvu yawe kandi ashobora gukosora amakuru ye.',
-    'admin.kyc.stage.reject.cta': 'Anga igisabwa',
+        'Hitamo ibyo uyu muntu agomba guhindura kandi uvuge impamvu. Arabimenyeshwa kuri imeyili kandi akabona buri kintu cyagaragajwe ku ifishi ye.',
+    'admin.kyc.stage.reject.cta': 'Subiza ngo bikosorwe',
     'admin.kyc.stage.reject.placeholder':
         "urugero: Ifoto y'indangamuntu ntigaragara neza. Ohereza indi isobanutse.",
     'admin.nav.mail_testers': 'Abagerageza imeyili z’igerageza',
@@ -5669,6 +5851,9 @@ const rw: Catalog = {
     'investor.kyc.previous': 'Intambwe ibanza',
     'investor.kyc.submitted_notice':
         'Amakuru yawe ari mu itsinda ryacu rishinzwe kubahiriza amategeko. Tuzakumenyesha nibamara kuyasuzuma.',
+    'investor.kyc.requested.title': 'Compliance irabasaba guhindura',
+    'investor.kyc.requested.still_editable':
+        'Hindura ibi, hanyuma wongere wohereze. Ushobora no guhindura ikindi gisubizo.',
     'investor.kyc.rejected_notice':
         'Itsinda rishinzwe kubahiriza amategeko ntiryashoboye kwemeza aya makuru: {reason}. Yakosore wongere uyohereze.',
     'investor.kyc.verifying': 'Turimo kugenzura umwirondoro wawe…',
@@ -8153,6 +8338,27 @@ const rw: Catalog = {
         'Amakuru y’umwirondoro wawe akeneye kongera kurebwa',
     'investor.notices.verification.rejected.body':
         'Ishami rishinzwe kubahiriza amategeko ntiryashoboye kwemeza amakuru yawe: {reason}',
+    'investor.notices.verification.submitted.title':
+        'Igenzura ry’umwirondoro ryakiriwe',
+    'investor.notices.verification.submitted.body':
+        'Compliance yakiriye amakuru yawe, ikunze gufata icyemezo mu munsi 1 w’akazi. Tuzakoherereza imeli.',
+    'investor.notices.role.application_submitted.title': 'Dosiye yakiriwe',
+    'investor.notices.role.application_submitted.body_business':
+        'Compliance yakiriye dosiye ya {company}. Izafatirwa icyemezo umwirondoro wawe umaze kwemezwa.',
+    'investor.notices.role.application_submitted.body_auditor':
+        'Compliance yakiriye dosiye yawe y’Umugenzuzi. Izafatirwa icyemezo umwirondoro wawe umaze kwemezwa.',
+    'investor.notices.role.application_returned.title':
+        'Compliance yasabye impinduka',
+    'investor.notices.role.application_returned.body':
+        'Hindura {items}, hanyuma wongere wohereze dosiye yawe.',
+    'investor.notices.role.application_approved.title': 'Dosiye yemejwe',
+    'investor.notices.role.application_approved.body_business':
+        '{company} yemejwe. Konti yawe ubu ni konti y’Ubucuruzi.',
+    'investor.notices.role.application_approved.body_auditor':
+        'Uruhushya rwawe rwa ICPAR rwemejwe. Konti yawe ubu ni konti y’Umugenzuzi.',
+    'investor.notices.role.application_rejected.title': 'Dosiye ntiyemejwe',
+    'investor.notices.role.application_rejected.body':
+        'Compliance ntiyashoboye kuyemeza: {note}',
     'investor.checkout.risks.title': 'Mbere yo gushora',
     'investor.checkout.risks.lead':
         'Soma aya magambo atanu. Uyemeza rimwe gusa; kwishyura ntibizongera kugira ikindi bikubaza.',
