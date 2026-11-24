@@ -70,6 +70,11 @@ export type RoleApplicationProps = {
             note: string | null;
             items: { key: string; label: string; note: string }[];
             requested_at: string;
+            /** What the answers and documents held when Compliance sent it back. */
+            before?: {
+                answers: RoleApplicationAnswers;
+                documents: Record<string, string>;
+            };
         } | null;
         uploads: Record<string, { filename: string; media_type: string }>;
     };
@@ -121,6 +126,16 @@ export type RoleApplicationReview = {
         answers: RoleApplicationAnswers;
         documents: Record<string, string>;
         note: string | null;
+        /** The last time Compliance asked for changes, kept after the applicant sends it again. */
+        revision?: {
+            note: string | null;
+            items: { key: string; label: string; note: string }[];
+            requested_at: string;
+            before?: {
+                answers: RoleApplicationAnswers;
+                documents: Record<string, string>;
+            };
+        };
     };
     people: Record<string, { full_name: string; roles: string[] }>;
     documents: RoleApplicationDocument[];

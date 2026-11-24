@@ -33,7 +33,7 @@ function directoryStaff(array $roles): User
 }
 
 /** A person's own identity submission, driven to `submitted` through the participant commands. */
-function directorySubmitted(User $user): InvestorVerification
+function directorySubmitted(User $user, string $idNumber = '1 1990 8 0012345 6 78'): InvestorVerification
 {
     $context = $user->context_revision;
     $png = "\x89PNG\r\n\x1a\nsynthetic identity image";
@@ -45,7 +45,7 @@ function directorySubmitted(User $user): InvestorVerification
     $step(app(SaveInvestorVerification::class)->handle($user->id, $context, $revision, 'personal', ['date_of_birth' => '1/5/1990'], (string) Str::uuid()));
     $step(app(UploadInvestorVerificationDocument::class)->handle($user->id, $context, $revision, 'id_front', 'front.png', $png, (string) Str::uuid()));
     $step(app(UploadInvestorVerificationDocument::class)->handle($user->id, $context, $revision, 'id_back', 'back.png', $png, (string) Str::uuid()));
-    $step(app(SaveInvestorVerification::class)->handle($user->id, $context, $revision, 'document', ['id_type' => 'national_id', 'id_number' => '1 1990 8 0012345 6 78'], (string) Str::uuid()));
+    $step(app(SaveInvestorVerification::class)->handle($user->id, $context, $revision, 'document', ['id_type' => 'national_id', 'id_number' => $idNumber], (string) Str::uuid()));
     $step(app(UploadInvestorVerificationDocument::class)->handle($user->id, $context, $revision, 'selfie', 'selfie.png', $png, (string) Str::uuid()));
     $step(app(SubmitInvestorVerification::class)->handle($user->id, $context, $revision, (string) Str::uuid()));
 
@@ -168,7 +168,9 @@ test("a person's 360 carries their identity submission, its documents and histor
         ->where('party.history.0.actor', 'Aline Uwase')->where('party.history.5.action.label', 'Saved a step')
         ->where('party.verification.id', $case->id)->where('party.verification.status', 'submitted')->has('party.verification.documents', 3)
         ->where('party.verification.documents.0.view.url', fn (string $url): bool => str_ends_with($url, '?disposition=inline'))
-        ->where('party.verification.actions.approve.url', '/admin/investor-verifications/'.$case->id.'/approve')
+        ->where('party.verification.actions', [])->where('party.verification.decide.url', '/admin/users?q='.urlencode($person->email))
+        ->where('party.verification.checks', [['key' => 'age', 'outcome' => 'passed'], ['key' => 'id_birth_year', 'outcome' => 'passed']])
+        ->where('party.verification.age', fn (int $age): bool => $age >= 35)
         ->where('party.verification.links.close.url', '/admin/investors')->where('party.links.close.url', '/admin/investors');
 
     $this->actingAs($this->officer)->get(route('staff.investors.index', ['investor' => $person->party_id]))->assertOk()->assertInertia($assert);
@@ -176,6 +178,14 @@ test("a person's 360 carries their identity submission, its documents and histor
     $this->actingAs($this->officer)->get(route('staff.investors.index', ['investor' => strtolower((string) Str::ulid())]))->assertNotFound();
     $this->actingAs($this->officer)->get(route('staff.investors.index', ['verification' => strtolower((string) Str::ulid())]))->assertNotFound();
     $this->actingAs($this->officer)->get(route('staff.investors.index', ['chip' => 'everyone']))->assertSessionHasErrors('chip');
+});
+
+test('a national ID whose birth year differs from the date of birth is flagged for Compliance, not shown as passed (#744)', function (): void {
+    $person = User::factory()->create(['name' => 'Walk Three', 'party_id' => Party::factory()]);
+    directorySubmitted($person, '1 2001 8 0012345 6 78');
+
+    $this->actingAs($this->officer)->get(route('staff.investors.index', ['investor' => $person->party_id]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('party.verification.checks.1', ['key' => 'id_birth_year', 'outcome' => 'flagged']));
 });
 
 test('a decision taken from the directory returns to that person there; one from the queue still returns to the queue', function (): void {

@@ -72,7 +72,7 @@ class StaffSectionController extends Controller
         /** @var list<string> $permissions */
         $permissions = $staff['allowed_actions'];
         if ($section === 'compliance' && in_array('investors.verify', $permissions, true)) {
-            return to_route('staff.investor-verifications.index');
+            return to_route('staff.users.index', ['kyc' => 'in_review']);
         }
         if ($section === 'messaging' && in_array('messaging.view', $permissions, true)) {
             return to_route('staff.messaging.index');

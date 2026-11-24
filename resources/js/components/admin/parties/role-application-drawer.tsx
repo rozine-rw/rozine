@@ -21,6 +21,19 @@ const BOX = 'rounded-[13px] border border-rz-hairline bg-rz-surface';
 
 type Decision = 'approve' | 'more' | 'reject';
 
+/** The answer at a dotted key such as `company.tin`. */
+function valueAt(answers: object | undefined, key: string): unknown {
+    return key
+        .split('.')
+        .reduce<unknown>(
+            (value, part) =>
+                value !== null && typeof value === 'object'
+                    ? (value as Record<string, unknown>)[part]
+                    : undefined,
+            answers,
+        );
+}
+
 function Fact({ label, children }: { label: string; children: ReactNode }) {
     return (
         <div className="min-w-0 rounded-[11px] border border-rz-hairline bg-rz-surface px-3 py-2.5">
@@ -46,9 +59,12 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 function People({
     title,
     people,
+    pep,
 }: {
     title: string;
     people: RoleApplicationPerson[];
+    /** The ID numbers of everyone declared a politically exposed person, as owner or director. */
+    pep: Set<string>;
 }) {
     const { t } = useTranslation();
 
@@ -63,7 +79,7 @@ function People({
                     >
                         <span className="font-semibold">
                             {person.full_name}
-                            {person.pep && (
+                            {pep.has(person.id_number) && (
                                 <span className="ml-1.5 rounded bg-[rgba(194,102,31,.14)] px-1.5 py-0.5 text-[10px] font-bold text-[#a3480a] dark:text-[#f0a060]">
                                     PEP
                                 </span>
@@ -101,7 +117,67 @@ export function RoleApplicationDrawer({
     const [asking, setAsking] = useState(false);
     const [items, setItems] = useState<PickedItem[]>([]);
     const [busy, setBusy] = useState<Decision | null>(null);
+    const [diligence, setDiligence] = useState(false);
+    const [confirming, setConfirming] = useState(false);
+    const resent =
+        application.status === 'submitted'
+            ? application.state.revision
+            : undefined;
+    const changed = (key: string): boolean | null => {
+        const before = resent?.before;
+
+        if (before === undefined) {
+            return null;
+        }
+
+        if (key.startsWith('documents.')) {
+            const slot = key.slice('documents.'.length);
+
+            return application.state.documents[slot] !== before.documents[slot];
+        }
+
+        return (
+            JSON.stringify(valueAt(application.state.answers, key)) !==
+            JSON.stringify(valueAt(before.answers, key))
+        );
+    };
+    const unchangedCount = (resent?.items ?? []).filter(
+        (item) => changed(item.key) === false,
+    ).length;
     const answers = application.state.answers;
+    const pep = new Set(
+        [...(answers.directors ?? []), ...(answers.owners ?? [])]
+            .filter((person) => person.pep === true)
+            .map((person) => person.id_number),
+    );
+    /** Consecutive history entries with the same status read as one line, with how many saves it took. */
+    const history = application.history.reduce<
+        { status: string; at: string; reason: string | null; count: number }[]
+    >((lines, entry) => {
+        const last = lines.at(-1);
+
+        if (
+            last !== undefined &&
+            last.status === entry.status &&
+            entry.reason === null &&
+            last.reason === null
+        ) {
+            last.at = entry.at;
+            last.count += 1;
+
+            return lines;
+        }
+
+        return [
+            ...lines,
+            {
+                status: entry.status,
+                at: entry.at,
+                reason: entry.reason,
+                count: 1,
+            },
+        ];
+    }, []);
     const name =
         application.account.name.trim() === ''
             ? application.account.email
@@ -175,6 +251,58 @@ export function RoleApplicationDrawer({
                 tabIndex={0}
                 className="rz-scroll min-h-0 flex-1 overflow-y-auto px-[18px] pt-[18px] pb-[26px]"
             >
+                {resent !== undefined && resent.items.length > 0 && (
+                    <section
+                        aria-label={t('admin.role_applications.resent_title')}
+                        className="mb-5 rounded-[13px] border border-[#cfe0f5] bg-[#f3f8ff] px-4 py-3 dark:border-[rgba(120,170,255,.3)] dark:bg-[rgba(60,120,220,.12)]"
+                    >
+                        <p className="text-[12.5px] font-bold text-rz-ink">
+                            {t('admin.role_applications.resent_title')}
+                        </p>
+                        <p className="mt-0.5 text-[12px] text-rz-muted">
+                            {t('admin.role_applications.resent_body', {
+                                date: formatDate(resent.requested_at, locale),
+                            })}
+                        </p>
+                        <ul className="mt-2 space-y-1.5">
+                            {resent.items.map((item) => {
+                                const moved = changed(item.key);
+
+                                return (
+                                    <li
+                                        key={item.key}
+                                        className="text-[12px] text-rz-body"
+                                    >
+                                        <span className="font-semibold text-rz-ink">
+                                            {item.label}
+                                        </span>
+                                        {moved !== null && (
+                                            <span
+                                                className={cn(
+                                                    'ml-1.5 rounded px-1.5 py-0.5 text-[10px] font-bold',
+                                                    moved
+                                                        ? 'bg-[rgba(29,158,117,.12)] text-[#17795a] dark:text-[#5fd3a5]'
+                                                        : 'bg-[rgba(194,102,31,.14)] text-[#a3480a] dark:text-[#f0a060]',
+                                                )}
+                                            >
+                                                {t(
+                                                    moved
+                                                        ? 'admin.role_applications.item_changed'
+                                                        : 'admin.role_applications.item_unchanged',
+                                                )}
+                                            </span>
+                                        )}
+                                        {item.note !== '' && (
+                                            <span className="block text-rz-muted">
+                                                {item.note}
+                                            </span>
+                                        )}
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </section>
+                )}
                 <Section title={t('admin.role_applications.identity')}>
                     <div
                         className={cn(
@@ -210,7 +338,7 @@ export function RoleApplicationDrawer({
                 </Section>
 
                 {application.role === 'business' && answers.company && (
-                    <Section title={t('role.apply.step.company.title')}>
+                    <Section title={t('admin.role_applications.company')}>
                         <dl className="grid grid-cols-2 gap-2">
                             <Fact label={t('role.apply.company.rdb_code')}>
                                 {answers.company.rdb_code}
@@ -245,21 +373,39 @@ export function RoleApplicationDrawer({
                 {application.role === 'business' && (
                     <Section title={t('role.apply.step.people.title')}>
                         {answers.representative && (
-                            <p className="text-[12.5px] text-rz-body">
-                                {t('admin.role_applications.representative', {
-                                    name,
-                                    title: answers.representative.title,
-                                    phone: answers.representative.phone,
-                                })}
-                            </p>
+                            <dl className="grid grid-cols-2 gap-2">
+                                <Fact
+                                    label={t(
+                                        'admin.role_applications.rep_name',
+                                    )}
+                                >
+                                    {name}
+                                </Fact>
+                                <Fact
+                                    label={t(
+                                        'admin.role_applications.rep_title',
+                                    )}
+                                >
+                                    {answers.representative.title}
+                                </Fact>
+                                <Fact
+                                    label={t(
+                                        'admin.role_applications.rep_phone',
+                                    )}
+                                >
+                                    {answers.representative.phone}
+                                </Fact>
+                            </dl>
                         )}
                         <People
                             title={t('role.apply.people.directors')}
                             people={answers.directors ?? []}
+                            pep={pep}
                         />
                         <People
                             title={t('role.apply.people.owners')}
                             people={answers.owners ?? []}
+                            pep={pep}
                         />
                     </Section>
                 )}
@@ -426,6 +572,102 @@ export function RoleApplicationDrawer({
                                     </button>
                                 </div>
                             </div>
+                        ) : confirming ? (
+                            <div
+                                role="group"
+                                aria-label={t(
+                                    `admin.role_applications.${application.role}.confirm_title`,
+                                    { name: title },
+                                )}
+                                className="mt-3 rounded-[11px] border border-rz-hairline bg-rz-surface px-3.5 py-3 text-[12.5px] text-rz-body"
+                            >
+                                <p className="text-[13px] font-semibold text-rz-ink">
+                                    {t(
+                                        `admin.role_applications.${application.role}.confirm_title`,
+                                        { name: title },
+                                    )}
+                                </p>
+                                <p className="mt-1">
+                                    {t(
+                                        `admin.role_applications.${application.role}.confirm_body`,
+                                        { name },
+                                    )}
+                                </p>
+                                {unchangedCount > 0 && (
+                                    <p className="mt-2 font-semibold text-[#a3480a] dark:text-[#f0a060]">
+                                        {t(
+                                            'admin.role_applications.confirm_unchanged',
+                                            { count: String(unchangedCount) },
+                                        )}
+                                    </p>
+                                )}
+                                {pep.size > 0 && (
+                                    <div
+                                        role="note"
+                                        className="mt-2.5 rounded-[11px] border border-[#f1d9bd] bg-[#fff8ef] px-3.5 py-2.5 dark:border-[rgba(255,180,100,.3)] dark:bg-[rgba(194,102,31,.12)]"
+                                    >
+                                        <p className="font-semibold text-rz-ink">
+                                            {t(
+                                                'admin.role_applications.pep_title',
+                                            )}
+                                        </p>
+                                        <p className="mt-1">
+                                            {t(
+                                                'admin.role_applications.pep_body',
+                                            )}
+                                        </p>
+                                        <label className="mt-2 flex items-start gap-2 font-semibold">
+                                            <input
+                                                type="checkbox"
+                                                checked={diligence}
+                                                onChange={(event) =>
+                                                    setDiligence(
+                                                        event.target.checked,
+                                                    )
+                                                }
+                                                className="mt-0.5"
+                                            />
+                                            {t(
+                                                'admin.role_applications.pep_confirm',
+                                            )}
+                                        </label>
+                                    </div>
+                                )}
+                                {note.trim() === '' && (
+                                    <p className="mt-2 text-[12px] text-rz-muted">
+                                        {t(
+                                            'admin.role_applications.confirm_note',
+                                        )}
+                                    </p>
+                                )}
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setConfirming(false)}
+                                        className="rounded-[10px] border border-rz-hairline bg-rz-surface px-3.5 py-[9px] text-[12.5px] font-semibold text-rz-slate"
+                                    >
+                                        {t('admin.stage.cancel')}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        disabled={
+                                            busy !== null ||
+                                            note.trim() === '' ||
+                                            (pep.size > 0 && !diligence)
+                                        }
+                                        onClick={() => send('approve')}
+                                        className="flex-1 rounded-[10px] bg-[#17795a] px-4 py-[9px] text-[12.5px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        {busy === 'approve'
+                                            ? t(
+                                                  'admin.role_applications.approving',
+                                              )
+                                            : t(
+                                                  `admin.role_applications.${application.role}.approve`,
+                                              )}
+                                    </button>
+                                </div>
+                            </div>
                         ) : (
                             <div className="mt-3 flex flex-wrap gap-2">
                                 <button
@@ -444,18 +686,20 @@ export function RoleApplicationDrawer({
                                 >
                                     {t('admin.role_applications.more')}
                                 </button>
-                                <button
-                                    type="button"
-                                    disabled={busy !== null}
-                                    onClick={() => send('approve')}
-                                    className="flex-1 rounded-[10px] bg-[#17795a] px-4 py-[9px] text-[12.5px] font-bold text-white disabled:opacity-60"
-                                >
-                                    {busy === 'approve'
-                                        ? t('admin.role_applications.approving')
-                                        : t(
-                                              `admin.role_applications.${application.role}.approve`,
-                                          )}
-                                </button>
+                                {application.allowed_actions.includes(
+                                    'approve',
+                                ) && (
+                                    <button
+                                        type="button"
+                                        disabled={busy !== null}
+                                        onClick={() => setConfirming(true)}
+                                        className="flex-1 rounded-[10px] bg-[#17795a] px-4 py-[9px] text-[12.5px] font-bold text-white disabled:opacity-60"
+                                    >
+                                        {t(
+                                            `admin.role_applications.${application.role}.approve`,
+                                        )}
+                                    </button>
+                                )}
                             </div>
                         )}
                         <p className="mt-2 text-[11.5px] text-rz-muted">
@@ -466,16 +710,18 @@ export function RoleApplicationDrawer({
 
                 <Section title={t('admin.role_applications.history')}>
                     <ol className="space-y-1.5">
-                        {[...application.history].reverse().map((entry) => (
+                        {[...history].reverse().map((entry) => (
                             <li
-                                key={entry.revision}
+                                key={`${entry.status}-${entry.at}`}
                                 className="text-[12px] text-rz-body"
                             >
                                 <span className="font-semibold">
                                     {t(
                                         `admin.role_applications.status.${entry.status}` as MessageCode,
                                     )}
-                                </span>{' '}
+                                </span>
+                                {entry.count > 1 &&
+                                    ` ${t('admin.role_applications.saves', { count: String(entry.count) })}`}{' '}
                                 · {formatDateTime(entry.at, locale)}
                                 {entry.reason !== null && (
                                     <span className="block text-rz-muted">

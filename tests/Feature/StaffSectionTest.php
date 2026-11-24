@@ -165,20 +165,20 @@ test('the frame names the most privileged role, and Payments and Compliance open
         ->assertInertia(fn (Assert $page) => $page->where('nav.payments.url', '/admin/disbursements'));
     $this->actingAs(sectionStaff(['approver', 'superadmin']))->get(route('staff.sections.show', ['section' => 'secondary-market']))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('viewer.role', 'superadmin')
-            ->where('nav.payments.url', '/admin/payments')->where('nav.compliance.url', '/admin/investor-verifications')
+            ->where('nav.payments.url', '/admin/payments')->where('nav.compliance.url', '/admin/users?kyc=in_review')
             ->where('nav.investors.url', '/admin/investors')
             ->where('nav.businesses.url', '/admin/businesses')->where('nav.auditors.url', '/admin/auditors'));
 });
 
 test('Compliance opens the investor identity review queue for compliance officers, and the design page otherwise', function (): void {
     $this->actingAs(sectionStaff(['compliance']))->get(route('staff.sections.show', ['section' => 'secondary-market']))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('nav.compliance.url', '/admin/investor-verifications'));
+        ->assertInertia(fn (Assert $page) => $page->where('nav.compliance.url', '/admin/users?kyc=in_review'));
     $this->actingAs(sectionStaff(['compliance']))->getJson(route('api.v1.staff.investor-verifications.index'))->assertOk()
         ->assertJsonPath('data.nav.compliance.url', '/api/v1/staff/investor-verifications');
     $this->actingAs(sectionStaff(['approver']))->get(route('staff.sections.show', ['section' => 'secondary-market']))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('nav.compliance.url', '/admin/compliance'));
     $this->actingAs(sectionStaff(['compliance']))->get(route('staff.sections.show', ['section' => 'compliance']))
-        ->assertRedirect(route('staff.investor-verifications.index'));
+        ->assertRedirect(route('staff.users.index', ['kyc' => 'in_review']));
 });
 
 test('Messaging opens Messaging & Automations for whoever may read message history, and the design page otherwise', function (): void {

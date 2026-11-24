@@ -26,7 +26,7 @@ use App\Domain\Operations\CommandRejection;
  *     licence?: Licence, coverage?: Coverage, declared: bool
  * }
  * @phpstan-type RevisionItem array{key: string, label: string, note: string}
- * @phpstan-type Revision array{note: string|null, items: list<RevisionItem>, requested_at: string}
+ * @phpstan-type Revision array{note: string|null, items: list<RevisionItem>, requested_at: string, before?: array{answers: Answers, documents: array<string, string>}}
  * @phpstan-type State array{role: 'business'|'auditor', step: string, answers: Answers, documents: array<string, string>, note: string|null, revision?: Revision}
  */
 final class RoleApplicationCase
@@ -249,7 +249,10 @@ final class RoleApplicationCase
         $state['note'] = $note;
         $state['answers']['declared'] = false;
         if ($items !== []) {
-            $state['revision'] = ['note' => $note, 'items' => $items, 'requested_at' => $requestedAt];
+            // What the flagged items held when they were sent back, so the applicant and Compliance can
+            // both see which ones changed on the resubmission (QA 24 Nov 2026).
+            $state['revision'] = ['note' => $note, 'items' => $items, 'requested_at' => $requestedAt,
+                'before' => ['answers' => $state['answers'], 'documents' => $state['documents']]];
         } else {
             unset($state['revision']);
         }
@@ -350,11 +353,17 @@ final class RoleApplicationCase
         if ($company['registered_address'] === '') {
             $errors['company.registered_address'] = ['Enter the registered office address.'];
         }
-        if (preg_match('/^\+?[0-9 ]{9,20}$/D', $company['phone']) !== 1) {
+        if (! self::rwandanPhone($company['phone'])) {
             $errors['company.phone'] = ['Enter the company phone number, for example +250 788 000 000.'];
         }
 
         return [$company, $errors];
+    }
+
+    /** A Rwandan number: +250 or 250 then nine digits, or 0 then nine digits, spaces allowed (QA 24 Nov 2026). */
+    private static function rwandanPhone(string $phone): bool
+    {
+        return preg_match('/^(\+?250|0)[0-9]{9}$/D', str_replace(' ', '', $phone)) === 1;
     }
 
     /** @return array{0: Representative, 1: array<string, list<string>>} */
@@ -368,7 +377,7 @@ final class RoleApplicationCase
         if ($representative['title'] === '') {
             $errors['representative.title'] = ['Enter your role at the company, for example Managing Director.'];
         }
-        if (preg_match('/^\+?[0-9 ]{9,20}$/D', $representative['phone']) !== 1) {
+        if (! self::rwandanPhone($representative['phone'])) {
             $errors['representative.phone'] = ['Enter your phone number, for example +250 788 000 000.'];
         }
         if (! $representative['authorised']) {
