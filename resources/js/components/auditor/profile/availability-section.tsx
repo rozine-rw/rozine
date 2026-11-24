@@ -76,12 +76,10 @@ export function AvailabilitySection({
     const locked = !allowed;
     const pending = draft !== null && !sameCoverage(draft, saved);
 
-    useEffect(() => {
-        if (draft !== null && sameCoverage(draft, saved)) {
-            setDraft(null);
-            sentAt.current = null;
-        }
-    });
+    if (draft !== null && !pending) {
+        // The server now holds the draft: show what it recorded from here on.
+        setDraft(null);
+    }
 
     useEffect(() => {
         if (
