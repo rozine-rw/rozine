@@ -459,7 +459,7 @@ describe('Verification', () => {
         );
 
         expect(
-            screen.getByText('IDENTITY CHECK FOR AUDITOR ACCESS'),
+            screen.getAllByText('IDENTITY CHECK FOR AUDITOR ACCESS')[0],
         ).toBeInTheDocument();
         fireEvent.change(screen.getByLabelText('DATE OF BIRTH'), {
             target: { value: '1990-02-01' },
@@ -534,7 +534,9 @@ describe('Verification', () => {
             />,
         );
 
-        expect(screen.getByText('IDENTITY VERIFICATION')).toBeInTheDocument();
+        expect(
+            screen.getAllByText('IDENTITY VERIFICATION')[0],
+        ).toBeInTheDocument();
         expect(screen.getByText('Rwanda')).toBeInTheDocument();
         fireEvent.change(screen.getByLabelText('DATE OF BIRTH'), {
             target: { value: '1990-02-01' },
@@ -631,7 +633,9 @@ describe('Verification', () => {
             />,
         );
 
-        expect(screen.getByText('ENTITY VERIFICATION')).toBeInTheDocument();
+        expect(
+            screen.getAllByText('ENTITY VERIFICATION')[0],
+        ).toBeInTheDocument();
         await user.click(screen.getByRole('radio', { name: 'SACCO' }));
         await user.type(screen.getByLabelText('RDB COMPANY CODE'), '103847291');
         await user.type(screen.getByLabelText('INCORPORATED'), '03 / 2019');
