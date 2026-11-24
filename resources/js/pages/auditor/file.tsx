@@ -178,7 +178,6 @@ function FileSheet({ receipt, ...props }: FileSheetProps) {
                     close={links.close}
                     business={job.business}
                     district={job.district}
-                    distanceKm={job.distance_km}
                     serverTime={props.server_time}
                     dueAt={job.deadline?.due_at ?? job.complete_by}
                     clock={blocked === null && job.report_state === null}

@@ -200,6 +200,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->prefix('v1/auditor')->name
     Route::get('accreditation/certificates/{certificate}', [AuditorProfileController::class, 'certificate'])
         ->where('certificate', '[0-9a-z]{26}')->name('accreditation.certificates.show');
     Route::post('availability', [AuditorProfileController::class, 'availability'])->name('availability.update');
+    Route::post('address', [AuditorProfileController::class, 'address'])->name('address.update');
     Route::get('operations/{request_id}', [AuditorProfileController::class, 'operation'])->whereUuid('request_id')->name('operations.show');
 });
 

@@ -7,7 +7,7 @@ use App\Domain\Auditor\AuditorStanding;
 use App\Domain\Operations\CommandRejection;
 use Tests\Support\AuditorFixture;
 
-it('admits the exact conservative radius boundary and prefers fewest active then oldest assignment then stable ID', function (): void {
+it('prefers fewest active then oldest assignment then stable ID', function (): void {
     $policy = new AuditorDispatch(new AuditorStanding);
     $now = new DateTimeImmutable('2026-09-24T08:00:00Z');
     $a = AuditorFixture::candidate('partner-a');
@@ -22,7 +22,7 @@ it('admits the exact conservative radius boundary and prefers fewest active then
     expect($policy->select([$c, $b], $now))->toBe('partner-b')->and($policy->select([$b, $c], $now))->toBe('partner-b');
 });
 
-it('excludes unsafe candidates without waiving standing capacity rotation conflicts or location checks', function (string $case, string $reason): void {
+it('excludes unsafe candidates without waiving standing capacity rotation conflicts coverage or the weekly limit', function (string $case, string $reason): void {
     $candidate = AuditorFixture::candidate();
     switch ($case) {
         case 'suspended': $candidate['standing']['status'] = 'suspended';
@@ -57,33 +57,18 @@ it('excludes unsafe candidates without waiving standing capacity rotation confli
             break;
         case 'invalid role date': $candidate['role_tie_ended_at'] = 'unknown';
             break;
-        case 'office not verified': $candidate['office']['verified_at'] = null;
+        case 'no districts': $candidate['districts'] = [];
             break;
-        case 'office stale': $candidate['office']['verified_at'] = '2025-09-24T07:59:59Z';
+        case 'other district': $candidate['business_district'] = 'Rubavu';
             break;
-        case 'premises future': $candidate['premises']['verified_at'] = '2026-09-24T08:00:01Z';
+        case 'no business district': $candidate['business_district'] = '';
             break;
-        case 'premises moved':
-            $candidate['premises']['verified_at'] = '2026-09-23T08:00:00Z';
-            $candidate['premises']['moved_at'] = '2026-09-24T08:00:00Z';
+        case 'weekly limit reached': $candidate['accepted_this_week'] = 4;
             break;
-        case 'unknown move time': $candidate['office']['moved_at'] = 'unknown';
+        case 'weekly limit lowered': $candidate['accepted_this_week'] = 1;
+            $candidate['max_jobs_per_week'] = 1;
             break;
-        case 'same second move': $candidate['office']['moved_at'] = $candidate['office']['verified_at'];
-            break;
-        case 'missing accuracy': $candidate['office']['uncertainty_m'] = null;
-            break;
-        case 'negative accuracy': $candidate['premises']['uncertainty_m'] = -1;
-            break;
-        case 'unbounded accuracy': $candidate['office']['uncertainty_m'] = PHP_INT_MAX;
-            break;
-        case 'unknown distance': $candidate['distance_upper_bound_m'] = null;
-            break;
-        case 'negative distance': $candidate['distance_upper_bound_m'] = -1;
-            break;
-        case 'far beyond radius': $candidate['distance_upper_bound_m'] = PHP_INT_MAX;
-            break;
-        case 'one metre outside': $candidate['distance_upper_bound_m'] = 29901;
+        case 'negative weekly count': $candidate['accepted_this_week'] = -1;
             break;
     }
     $policy = new AuditorDispatch(new AuditorStanding);
@@ -96,18 +81,14 @@ it('excludes unsafe candidates without waiving standing capacity rotation confli
     ['unsigned engagement', 'AUDIT_ENGAGEMENT_ACCEPTANCE_REQUIRED'],
     ['financial interest', 'AUDITOR_CONFLICT'], ['current role tie', 'AUDITOR_CONFLICT'], ['family tie', 'AUDITOR_CONFLICT'],
     ['unresolved declaration', 'AUDITOR_CONFLICT'], ['role at cutoff', 'AUDITOR_CONFLICT'], ['invalid role date', 'AUDITOR_CONFLICT'],
-    ['office not verified', 'AUDITOR_LOCATION_REVIEW_REQUIRED'], ['office stale', 'AUDITOR_LOCATION_REVIEW_REQUIRED'],
-    ['premises future', 'AUDITOR_LOCATION_REVIEW_REQUIRED'], ['premises moved', 'AUDITOR_LOCATION_REVIEW_REQUIRED'],
-    ['unknown move time', 'AUDITOR_LOCATION_REVIEW_REQUIRED'], ['same second move', 'AUDITOR_LOCATION_REVIEW_REQUIRED'], ['missing accuracy', 'AUDITOR_LOCATION_REVIEW_REQUIRED'],
-    ['negative accuracy', 'AUDITOR_LOCATION_REVIEW_REQUIRED'], ['unbounded accuracy', 'AUDITOR_LOCATION_REVIEW_REQUIRED'],
-    ['unknown distance', 'AUDITOR_OUTSIDE_RADIUS'], ['negative distance', 'AUDITOR_OUTSIDE_RADIUS'], ['far beyond radius', 'AUDITOR_OUTSIDE_RADIUS'],
-    ['one metre outside', 'AUDITOR_OUTSIDE_RADIUS'],
+    ['no districts', 'AUDITOR_OUTSIDE_COVERAGE'], ['other district', 'AUDITOR_OUTSIDE_COVERAGE'], ['no business district', 'AUDITOR_OUTSIDE_COVERAGE'],
+    ['weekly limit reached', 'AUDITOR_WEEKLY_LIMIT_REACHED'], ['weekly limit lowered', 'AUDITOR_WEEKLY_LIMIT_REACHED'], ['negative weekly count', 'AUDITOR_FACTS_INVALID'],
 ]);
 
-it('accepts exactly current location verification and an expired lookback with capacity remaining', function (): void {
+it('accepts a Business in one of the partner\'s districts below the weekly limit and an expired lookback with capacity remaining', function (): void {
     $candidate = AuditorFixture::candidate();
-    $candidate['office']['verified_at'] = '2025-09-24T08:00:00Z';
-    $candidate['office']['moved_at'] = '2025-09-24T07:59:59Z';
+    $candidate['business_district'] = 'Kicukiro';
+    $candidate['accepted_this_week'] = 3;
     $candidate['role_tie_ended_at'] = '2024-09-24T07:59:59Z';
     $candidate['active_count'] = $candidate['consecutive_reports'] = 2;
     expect((new AuditorDispatch(new AuditorStanding))->select([$candidate], new DateTimeImmutable('2026-09-24T08:00:00Z')))->toBe('partner-a');
@@ -115,7 +96,7 @@ it('accepts exactly current location verification and an expired lookback with c
 
 it('uses a full calendar lookback at leap day instead of rolling February into March', function (): void {
     $candidate = AuditorFixture::candidate();
-    $candidate['standing']['checked_at'] = $candidate['office']['verified_at'] = $candidate['premises']['verified_at'] = '2028-02-29T08:00:00Z';
+    $candidate['standing']['checked_at'] = '2028-02-29T08:00:00Z';
     $candidate['role_tie_ended_at'] = '2026-02-28T08:00:00Z';
     $policy = new AuditorDispatch(new AuditorStanding);
     $now = new DateTimeImmutable('2028-02-29T08:00:00Z');

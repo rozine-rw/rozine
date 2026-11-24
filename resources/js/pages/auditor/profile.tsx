@@ -83,13 +83,21 @@ export default function AuditorProfile(props: AuditorProfileProps) {
     );
     const sections: Record<ProfileSection, ReactNode> = {
         earnings: <EarningsSection earnings={props.earnings} />,
-        contact: <ContactSection contact={props.contact} />,
+        contact: (
+            <ContactSection
+                contact={props.contact}
+                provinces={props.provinces}
+                revision={props.availability.revision}
+                districts={props.availability.districts}
+            />
+        ),
         accreditation,
         payout: <PendingSection kind="payout" />,
         availability: (
             <AvailabilitySection
                 availability={props.availability}
                 standing={props.standing}
+                provinces={props.provinces}
             />
         ),
         telemetry: (

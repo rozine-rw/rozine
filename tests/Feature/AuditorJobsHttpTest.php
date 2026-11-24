@@ -61,7 +61,7 @@ it('presents the same real offered case over web and API without exposing origin
     Sanctum::actingAs($user, ['auditor:read']);
     $api = $this->getJson('/api/v1/auditor/jobs')->assertOk()->assertHeader('Cache-Control', 'no-store, private')
         ->assertJsonPath('data.eligible.0.requested', ['currency' => 'RWF', 'amount' => '8000000'])
-        ->assertJsonPath('data.eligible.0.distance_km', '0.0')->assertJsonPath('data.eligible.0.sector', 'retail')
+        ->assertJsonPath('data.eligible.0.district', 'Gasabo')->assertJsonMissingPath('data.eligible.0.distance_km')->assertJsonPath('data.eligible.0.sector', 'retail')
         ->assertJsonPath('data.eligible.0.dscr', null)->assertJsonPath('data.eligible.0.map', null)->assertJsonPath('data.pagination.next', null)
         ->assertJsonPath('data.eligible.0.allowed_actions', ['conflict.declare', 'assignment.decline', 'assignment.accept'])->json('data');
     expect($api['eligible'][0]['complete_by'])->toBe($web['eligible'][0]['complete_by'])

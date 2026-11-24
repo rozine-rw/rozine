@@ -10,7 +10,11 @@
             "assignment.decline",
             "conflict.declare"
         ],
-        "radius_km": 30,
+        "coverage": {
+            "accepting": true,
+            "districts": ["Gasabo", "Kicukiro", "Nyarugenge"],
+            "max_jobs_per_week": 4
+        },
         "flash_hours": 24,
         "eligible": [
             {
@@ -22,7 +26,6 @@
                 "sector": "logistics",
                 "district": "Gasabo",
                 "offered_at": "2026-10-03T14:00:00Z",
-                "distance_km": "11.2",
                 "requested": {
                     "currency": "RWF",
                     "amount": "51200000"

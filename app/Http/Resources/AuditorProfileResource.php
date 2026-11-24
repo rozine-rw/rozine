@@ -63,7 +63,9 @@ class AuditorProfileResource extends JsonResource
             'on_time_pct' => $page['track_record']['on_time_pct'] ?? null,
             'jobs_done' => $page['filed'],
             'earnings' => AuditorPortfolioResource::earnings($page['earnings']),
-            'contact' => ['email' => $page['email'], 'phone' => null, 'address' => null],
+            'contact' => ['email' => $page['email'], 'phone' => null, 'address' => $address = $data['availability']['address'] ?? null,
+                'address_line' => is_array($address) ? self::addressLine($address) : null, 'update' => self::action($prefix.'address.update')],
+            'provinces' => (array) config('rwanda.districts', []),
             'security' => ['two_factor' => $page['two_factor']],
             'accreditation' => $data['accreditation'],
             'standing' => $data['standing'],
@@ -128,5 +130,17 @@ class AuditorProfileResource extends JsonResource
         $url = route($prefix.'operations.show', ['request_id' => self::REQUEST_ID_PLACEHOLDER], false);
 
         return ['url' => str_replace(self::REQUEST_ID_PLACEHOLDER, '{request_id}', $url), 'method' => 'get'];
+    }
+
+    /**
+     * The address on one line, as the design shows it: street, cell, sector, district.
+     *
+     * @param  array<string, mixed>  $address
+     */
+    private static function addressLine(array $address): string
+    {
+        $parts = array_map(fn (string $field): string => is_string($address[$field] ?? null) ? trim($address[$field]) : '', ['street', 'cell', 'sector', 'district']);
+
+        return implode(', ', array_values(array_filter($parts, fn (string $part): bool => $part !== '')));
     }
 }

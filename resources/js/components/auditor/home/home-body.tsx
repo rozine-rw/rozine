@@ -1,11 +1,15 @@
 import { Link } from '@inertiajs/react';
 import { AssignedJobCard } from '@/components/auditor/assigned-job-card';
 import { AvailabilityRow } from '@/components/auditor/availability';
-import { AuditorCommandNotice } from '@/components/auditor/commands';
+import {
+    AuditorCommandNotice,
+    useCommandsSettled,
+} from '@/components/auditor/commands';
 import { EngagementBanner } from '@/components/auditor/engagement/engagement-banner';
 import { ActivityList } from '@/components/auditor/home/activity-list';
 import { Hero } from '@/components/auditor/home/hero';
 import { TopRow } from '@/components/auditor/home/top-row';
+import { useAuditorPulse } from '@/components/auditor/pulse';
 import { ColumnPad, TabColumns } from '@/components/auditor/tab-columns';
 import { AMBER_TEXT, Eyebrow } from '@/components/auditor/ui';
 import { useTranslation } from '@/hooks/use-translation';
@@ -13,14 +17,18 @@ import { cn } from '@/lib/utils';
 import type { RouteLink } from '@/types';
 import type { AuditorHomeProps, AuditorStanding } from '@/types/auditor';
 
-/** "N Flash Audits nearby" (design L144–156): pulses until the partner looks. */
+/**
+ * "N Flash Audits nearby" (design L144–156): offers in the districts the partner accepts, pulsing
+ * until the partner looks.
+ */
 function NearbyAlert({
     count,
-    closest,
+    districts,
     jobs,
 }: {
     count: number;
-    closest: string | null;
+    /** The districts the offers are in, all among those the partner accepts. */
+    districts: string[];
     jobs: RouteLink;
 }) {
     const { t } = useTranslation();
@@ -58,7 +66,7 @@ function NearbyAlert({
                             ? t('auditor.home.nearby_one')
                             : t('auditor.home.nearby_other', { count })}
                     </span>
-                    {closest !== null && (
+                    {districts.length > 0 && (
                         <span
                             className={cn(
                                 'mt-0.5 block text-[11.5px]',
@@ -66,7 +74,7 @@ function NearbyAlert({
                             )}
                         >
                             {t('auditor.home.nearby_sub', {
-                                distance: closest,
+                                districts: districts.join(', '),
                             })}
                         </span>
                     )}
@@ -164,6 +172,8 @@ function Standing({ standing }: { standing: AuditorStanding }) {
 export function HomeBody(props: AuditorHomeProps) {
     const { t } = useTranslation();
 
+    useAuditorPulse(props.live, props.pulse, useCommandsSettled());
+
     return (
         <TabColumns
             header={
@@ -197,7 +207,7 @@ export function HomeBody(props: AuditorHomeProps) {
                     {props.nearby.count > 0 && props.links.jobs !== null && (
                         <NearbyAlert
                             count={props.nearby.count}
-                            closest={props.nearby.closest_km}
+                            districts={props.nearby.districts}
                             jobs={props.links.jobs}
                         />
                     )}

@@ -27,7 +27,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @phpstan-import-type TrackRecord from \App\Application\Auditor\Contracts\AuditorFiledReportStore
  * @phpstan-import-type Earnings from \App\Application\Auditor\Contracts\AuditorEarningsStore
  *
- * @phpstan-type Home array{accreditation: Accreditation, name: string, engagement: Summary, jobs: array{data: list<AuditApplication>, next_cursor: string|null}, reports: FiledReports, unread_notifications?: int, track_record?: TrackRecord, earnings: Earnings}
+ * @phpstan-type Home array{accreditation: Accreditation, name: string, engagement: Summary, jobs: array{data: list<AuditApplication>, next_cursor: string|null}, reports: FiledReports, unread_notifications?: int, track_record?: TrackRecord, earnings: Earnings, pulse?: string}
  */
 class AuditorHomeResource extends JsonResource
 {
@@ -39,12 +39,11 @@ class AuditorHomeResource extends JsonResource
         $facts = $page['accreditation'];
         /** @var array{expires_on: string|null} $accreditation */
         $accreditation = $facts['accreditation'];
-        /** @var array{eligible: list<array{distance_km: string|null}>, assigned: list<array<string, mixed>>} $jobs */
+        /** @var array{eligible: list<array{district: string}>, assigned: list<array<string, mixed>>} $jobs */
         $jobs = (new AuditorJobsResource([...$page['jobs'], 'identity_context_revision' => $facts['identity_context_revision'],
             'limit' => 25, 'engagement' => $page['engagement']]))->resolve($request);
         $open = AuditorJobsResource::openJobs($page['jobs']);
         $variance = $page['track_record']['avg_variance_pct'] ?? null;
-        $distances = array_filter(array_column($jobs['eligible'], 'distance_km'), fn (?string $distance): bool => $distance !== null);
 
         return [
             'contract_version' => $facts['contract_version'],
@@ -52,6 +51,9 @@ class AuditorHomeResource extends JsonResource
             'server_time' => $facts['server_time'],
             // Home offers one command, the dispatch switch; the accreditation commands live on Profile.
             'allowed_actions' => array_values(array_intersect($facts['allowed_actions'], ['availability.update'])),
+            // The home is live (Erastus, 24 Nov 2026): it compares this fingerprint with `live` and reloads when they differ.
+            'pulse' => $page['pulse'] ?? null,
+            'live' => ['url' => route('auditor.home.version', [], false), 'method' => 'get'],
             'engagement' => (new AuditorEngagementSummaryResource($page['engagement']))->resolve($request),
             'auditor' => ['name' => $page['name'], 'firm' => null, 'accreditation' => null, 'avatar_url' => null, 'since_year' => $page['track_record']['since_year'] ?? null],
             'quality_score' => null,
@@ -59,7 +61,8 @@ class AuditorHomeResource extends JsonResource
             'active_deals' => $page['earnings']['deals'],
             'licence_expires_on' => $accreditation['expires_on'],
             'availability' => [...$facts['availability'], 'update' => ['url' => route('auditor.availability.update', [], false), 'method' => 'post']],
-            'nearby' => ['count' => $open, 'closest_km' => $open === 0 || $distances === [] ? null : min($distances)],
+            // The flash audits dispatch offered this partner, all in districts they accept (Erastus, 24 Nov 2026).
+            'nearby' => ['count' => $open, 'districts' => array_values(array_unique(array_column($jobs['eligible'], 'district')))],
             'in_progress' => $jobs['assigned'],
             'standing' => [...$facts['standing'], 'on_time_pct' => $page['track_record']['on_time_pct'] ?? null, 'avg_variance_pct' => $variance,
                 'variance_flagged' => $page['track_record']['variance_flagged'] ?? false,

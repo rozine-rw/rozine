@@ -38,14 +38,13 @@ final class AuditAssignmentFixture
         $staff = $authority['staff'];
         app(ConfigureStaffAccess::class)->handle($staff->id, true, 'Manage synthetic audit assignments.', (string) Str::uuid(), ['approver', 'compliance']);
         $partners = [];
-        self::location($staff, 'premises', $business);
         for ($index = 0; $index < $count; $index++) {
             $partner = AuditorFixture::make();
             $submitted = AuditorFixture::submit($partner['user']);
             AuditorFixture::review($partner['staff'], $partner['party']->id, 1, 'approve', $submitted['data']['submission_id']);
-            app(SetAuditorAvailability::class)->handle($partner['user']->id, 1, 2, true, (string) Str::uuid());
+            // The synthetic Business is registered in Gasabo, so each partner accepts audits there.
+            app(SetAuditorAvailability::class)->handle($partner['user']->id, 1, 2, true, (string) Str::uuid(), ['Gasabo', 'Kicukiro'], 10);
             AuditEngagementFixture::ready($partner['staff'], $partner['user']);
-            self::location($partner['staff'], 'office', $partner['party']->id);
             self::independence($staff, $business, $partner['party']->id);
             $partners[] = $partner;
         }

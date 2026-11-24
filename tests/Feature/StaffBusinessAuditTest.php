@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Application\Auditor\MarkAuditLocationMoved;
 use App\Application\Auditor\SetAuditorAvailability;
 use App\Application\Operations\Contracts\OverdueAudits;
 use App\Domain\Auditor\AuditEngagementState;
@@ -83,7 +82,7 @@ it('requests a Flash audit from a Business with none open and then shows it offe
     expect(AuditAssignment::query()->count())->toBe(1);
 });
 
-it('says no partner office is within 30 km, then asks for an independence review and redispatches once one is recorded', function (): void {
+it('says no partner covers the Business\'s district, then asks for an independence review and redispatches once one is recorded', function (): void {
     $fixture = Fixture::make(0);
     $assignment = Fixture::request($fixture);
     $id = $fixture['business'];
@@ -92,7 +91,7 @@ it('says no partner office is within 30 km, then asks for an independence review
 
     $this->actingAs($fixture['staff'])->get($page)->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit', ['engagement' => ['id' => $assignment->id,
-            'kind' => 'flash', 'status' => 'operations', 'revision' => 1, 'attempt' => 0, 'operations_reason' => 'AUDIT_NO_PARTNER_IN_RANGE',
+            'kind' => 'flash', 'status' => 'operations', 'revision' => 1, 'attempt' => 0, 'operations_reason' => 'AUDIT_NO_PARTNER_IN_DISTRICT',
             'due_at' => now('UTC')->addDay()->format('Y-m-d\TH:i:s\Z'), 'overdue' => false], 'closed' => false,
             'request_flash' => null, 'redispatch' => null,
             'close' => ['url' => '/admin/businesses/'.$id.'/audits/'.$assignment->id.'/close', 'method' => 'post'],
@@ -108,7 +107,7 @@ it('says no partner office is within 30 km, then asks for an independence review
     $this->from($page)->post($url, ['expected_revision' => 1, ...flashAuditRequest('Stale.')])
         ->assertSessionHasErrors(['reason' => 'This audit changed since you opened it. Review it again.']);
 
-    // A partner approved near the business, but never reviewed as independent of it, is not offered the audit.
+    // A partner approved for the business's district, but never reviewed as independent of it, is not offered the audit.
     $partner = Fixture::make(1)['partners'][0];
     $review = '/admin/businesses/'.$id.'/auditors/'.$partner['party']->id.'/independence';
     $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.operations_reason', 'AUDIT_INDEPENDENCE_REVIEW_REQUIRED')
@@ -152,7 +151,7 @@ it('says no partner office is within 30 km, then asks for an independence review
         ->assertSessionHasErrors(['reason' => 'This audit is no longer with Audit Operations.']);
 });
 
-it('says a partner within 30 km who was already offered the audit cannot take it again', function (): void {
+it('says a partner covering the district who was already offered the audit cannot take it again', function (): void {
     $fixture = Fixture::make(1);
     $assignment = Fixture::request($fixture);
     $partner = $fixture['partners'][0];
@@ -242,7 +241,7 @@ it('leaves the audit out for staff who do not manage audits and gives the API no
         ->assertJsonPath('data.party.audit.partners', [])->assertJsonPath('data.party.audit.statement_review.request', null);
 });
 
-it('says why no partner can take an audit: premises not verified, or partners in range who cannot take it', function (): void {
+it('says why no partner can take an audit: none covers the district, or partners who cover it cannot take it', function (): void {
     $fixture = Fixture::make(1);
     $partner = $fixture['partners'][0];
     app(SetAuditorAvailability::class)->handle($partner['user']->id, 1, 3, false, (string) Str::uuid());
@@ -253,10 +252,10 @@ it('says why no partner can take an audit: premises not verified, or partners in
         ->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.id', $assignment->id)
             ->where('party.audit.engagement.operations_reason', 'AUDIT_NO_ELIGIBLE_PARTNER')->where('party.audit.remedy', null));
 
-    app(MarkAuditLocationMoved::class)->handle($fixture['staff']->id, 'premises', $fixture['business'], 1,
-        now('UTC')->format('Y-m-d\TH:i:s\Z'), 'The business moved.', (string) Str::uuid());
-    $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.operations_reason', 'AUDIT_PREMISES_UNVERIFIED')
-        ->where('party.audit.remedy', null));
+    // The partner stops covering Gasabo, where the Business is registered, so no partner serves its district.
+    app(SetAuditorAvailability::class)->handle($partner['user']->id, 1, 4, false, (string) Str::uuid(), ['Rubavu'], 4);
+    $this->get($page)->assertInertia(fn (Assert $page): Assert => $page->where('party.audit.engagement.operations_reason', 'AUDIT_NO_PARTNER_IN_DISTRICT')
+        ->where('party.audit.remedy', ['url' => '/admin/auditors', 'method' => 'get']));
 });
 
 it('offers a new Flash audit once the accepted audit\'s report is published, and completes it on that request', function (): void {

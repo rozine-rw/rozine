@@ -43,7 +43,7 @@ it('lists current offers with real application inputs while keeping originals an
         ->and($case['work']['assignment']['allowed_actions'])->toContain('assignment.accept', 'assignment.decline', 'conflict.declare')
         ->and($case['work']['assignment']['accept_by'])->toBe($assignment->state['accept_by'])
         ->and($case['work']['assignment']['complete_by'])->toBe($assignment->state['complete_by'])
-        ->and($case['work']['distance_upper_bound_m'])->toBe(0)
+        ->and($case['work'])->not->toHaveKey('distance_upper_bound_m')
         ->and(app(ListAuditJobs::class)->handle($partner['user']->id, 1))->toBe(['data' => [$case], 'next_cursor' => null])
         ->and(json_encode($case, JSON_THROW_ON_ERROR))->not->toContain('story', 'Test-only business plan', 'licence', 'mandate', 'party_id', 'selection_basis');
     expect(fn () => app(GetAuditStatements::class)->handle($partner['user']->id, 1, $assignment->id))->toThrow(CommandRejection::class, 'ASSIGNMENT_NOT_ACCEPTED');

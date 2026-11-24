@@ -7,6 +7,7 @@ use App\Http\Controllers\AuditDisputeController;
 use App\Http\Controllers\AuditOperationsController;
 use App\Http\Controllers\AuditorEngagementController;
 use App\Http\Controllers\AuditorHomeController;
+use App\Http\Controllers\AuditorHomeVersionController;
 use App\Http\Controllers\AuditorJobsController;
 use App\Http\Controllers\AuditorNoticesController;
 use App\Http\Controllers\AuditorPortfolioController;
@@ -142,6 +143,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('investor', RoleHomeController::class)->name('investor.home');
     Route::get('business', RoleHomeController::class)->middleware(['throttle:60,1', 'cache.headers:private;no_store'])->name('business.home');
     Route::get('auditor', AuditorHomeController::class)->middleware(['throttle:60,1', 'cache.headers:private;no_store'])->name('auditor.home');
+    Route::get('auditor/version', AuditorHomeVersionController::class)->middleware('throttle:40,1')->name('auditor.home.version');
     Route::get('admin', StaffHomeController::class)->name('admin.home');
     Route::get('auditor/profile', [AuditorProfileController::class, 'show'])->name('auditor.profile');
 });
@@ -253,6 +255,7 @@ Route::middleware(['auth', 'throttle:60,1'])->prefix('auditor')->name('auditor.'
     Route::get('accreditation/certificates/{certificate}', [AuditorProfileController::class, 'certificate'])
         ->where('certificate', '[0-9a-z]{26}')->name('accreditation.certificates.show');
     Route::post('availability', [AuditorProfileController::class, 'availability'])->name('availability.update');
+    Route::post('address', [AuditorProfileController::class, 'address'])->name('address.update');
     Route::get('operations/{request_id}', [AuditorProfileController::class, 'operation'])->whereUuid('request_id')->name('operations.show');
 });
 
@@ -397,8 +400,6 @@ Route::get('admin/users', [StaffUserDirectoryController::class, 'index'])
 
 Route::get('admin/businesses', [StaffBusinessDirectoryController::class, 'index'])
     ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.index');
-Route::post('admin/businesses/{business}/premises', [StaffBusinessDirectoryController::class, 'premises'])->whereUlid('business')
-    ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.premises.verify');
 Route::post('admin/businesses/{business}/flash-audit', [StaffBusinessDirectoryController::class, 'flashAudit'])->whereUlid('business')
     ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.audit.flash');
 Route::post('admin/businesses/{business}/audits/{assignment}/redispatch', [StaffBusinessDirectoryController::class, 'redispatchAudit'])->whereUlid('business')
@@ -419,7 +420,6 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     foreach (['approve', 'reject'] as $decision) {
         Route::post('{party}/licence/'.$decision, [StaffAuditorDirectoryController::class, 'decide'])->whereUlid('party')->defaults('decision', $decision)->name('licence.'.$decision);
     }
-    Route::post('{party}/office', [StaffAuditorDirectoryController::class, 'office'])->whereUlid('party')->name('office.verify');
 });
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->group(function (): void {

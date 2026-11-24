@@ -10,9 +10,12 @@ final class SetAuditorAvailability
 {
     public function __construct(private AuditorProfileStore $store) {}
 
-    /** @return array<string, mixed> */
-    public function handle(int $userId, int $contextRevision, int $expectedRevision, bool $accepting, string $requestId): array
+    /**
+     * @param  list<mixed>|null  $districts
+     * @return array<string, mixed>
+     */
+    public function handle(int $userId, int $contextRevision, int $expectedRevision, bool $accepting, string $requestId, ?array $districts = null, ?int $maxJobsPerWeek = null): array
     {
-        return $this->store->availability($userId, $contextRevision, $expectedRevision, $accepting, $requestId);
+        return $this->store->availability($userId, $contextRevision, $expectedRevision, $accepting, $requestId, $districts, $maxJobsPerWeek);
     }
 }

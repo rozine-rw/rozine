@@ -7,8 +7,8 @@ import type { AuditorAvailability, DispatchStanding } from '@/types/auditor';
 /**
  * The partner's own dispatch switch, as the `availability.update` command. It is offered only
  * when `allowed_actions` lists it. The page shows the server's state, not a guess: the switch
- * waits for the server to record the change, and the page reloads from its answer. The radius and
- * the number of active jobs stay the server's.
+ * waits for the server to record the change, and the page reloads from its answer. The districts
+ * and weekly limit are kept as they are; the number of active jobs stays the server's.
  */
 export function useAvailabilityToggle(availability: AuditorAvailability) {
     const center = useAuditorCommands();
@@ -127,8 +127,17 @@ export function AvailabilityRow({
                         {reason ??
                             (receiving
                                 ? t('auditor.availability.home_sub', {
-                                      radius: availability.radius_km,
-                                      max: availability.max_active,
+                                      districts:
+                                          availability.districts.length === 1
+                                              ? t('auditor.coverage.count_one')
+                                              : t(
+                                                    'auditor.coverage.count_other',
+                                                    {
+                                                        count: availability
+                                                            .districts.length,
+                                                    },
+                                                ),
+                                      max: availability.max_jobs_per_week,
                                   })
                                 : allowed
                                   ? t('auditor.availability.home_paused')

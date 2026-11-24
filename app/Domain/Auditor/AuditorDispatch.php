@@ -10,17 +10,25 @@ use DateTimeZone;
 
 /**
  * Inputs are server-resolved records under the assignment transaction, never request assertions.
- * Distance is a conservative geodesic upper bound in whole metres, not a rounded UI distance.
+ * A partner reaches a Business when the Business's registered district is one of the districts the
+ * partner accepts (Erastus, 24 Nov 2026). This replaces the 30 km radius between a staff-verified
+ * office and premises (Robert's #154 answer), so no coordinates are captured or verified.
  *
  * @phpstan-import-type Standing from AuditorStanding
  * @phpstan-import-type Facts from AuditorIndependence
  * @phpstan-import-type Acceptance from AuditEngagementDocuments
  *
- * @phpstan-type Location array{verified_at: string|null, moved_at: string|null, uncertainty_m: int|null}
- * @phpstan-type Candidate array{id: string, standing: Standing, engagement: Acceptance|null, accepting: bool, active_count: int, consecutive_reports: int, last_assigned_at: string|null, office: Location, premises: Location, distance_upper_bound_m: int|null, financial_interest: bool, current_role_tie: bool, role_tie_ended_at: string|null, family_or_business_conflict: bool, unresolved_conflict: bool}
+ * @phpstan-type Candidate array{id: string, standing: Standing, engagement: Acceptance|null, accepting: bool, active_count: int, consecutive_reports: int, last_assigned_at: string|null, districts: list<string>, business_district: string, accepted_this_week: int, max_jobs_per_week: int, financial_interest: bool, current_role_tie: bool, role_tie_ended_at: string|null, family_or_business_conflict: bool, unresolved_conflict: bool}
  */
 final class AuditorDispatch
 {
+    /** The weekly limit a partner starts with and the bounds they may set it within (design: "Max jobs per week", 4). */
+    public const int DEFAULT_MAX_JOBS_PER_WEEK = 4;
+
+    public const int MIN_JOBS_PER_WEEK = 1;
+
+    public const int MAX_JOBS_PER_WEEK = 20;
+
     public function __construct(private AuditorStanding $standing) {}
 
     /**
@@ -37,7 +45,7 @@ final class AuditorDispatch
             $reasons[] = $rejection->reason;
         }
         $assigned = $this->timestamp($candidate['last_assigned_at']);
-        if ($candidate['id'] === '' || $candidate['active_count'] < 0 || $candidate['consecutive_reports'] < 0
+        if ($candidate['id'] === '' || $candidate['active_count'] < 0 || $candidate['consecutive_reports'] < 0 || $candidate['accepted_this_week'] < 0
             || ($candidate['last_assigned_at'] !== null && ($assigned === null || $assigned > $now))) {
             $reasons[] = 'AUDITOR_FACTS_INVALID';
         }
@@ -50,18 +58,17 @@ final class AuditorDispatch
         if ($candidate['active_count'] >= 3) {
             $reasons[] = 'AUDITOR_CAPACITY_REACHED';
         }
+        if ($candidate['accepted_this_week'] >= $candidate['max_jobs_per_week']) {
+            $reasons[] = 'AUDITOR_WEEKLY_LIMIT_REACHED';
+        }
         if ($candidate['consecutive_reports'] >= 3) {
             $reasons[] = 'AUDITOR_ROTATION_REQUIRED';
         }
         if ($this->hasConflict($candidate, $now)) {
             $reasons[] = 'AUDITOR_CONFLICT';
         }
-        if (! $this->locationCurrent($candidate['office'], $now) || ! $this->locationCurrent($candidate['premises'], $now)) {
-            $reasons[] = 'AUDITOR_LOCATION_REVIEW_REQUIRED';
-        } elseif ($candidate['distance_upper_bound_m'] === null || $candidate['distance_upper_bound_m'] < 0
-            || $candidate['distance_upper_bound_m'] > 30000
-            || $candidate['distance_upper_bound_m'] + $candidate['office']['uncertainty_m'] + $candidate['premises']['uncertainty_m'] > 30000) {
-            $reasons[] = 'AUDITOR_OUTSIDE_RADIUS';
+        if (! self::covers($candidate['districts'], $candidate['business_district'])) {
+            $reasons[] = 'AUDITOR_OUTSIDE_COVERAGE';
         }
 
         return $reasons;
@@ -80,7 +87,7 @@ final class AuditorDispatch
     }
 
     /**
-     * No candidate means Audit Operations must resolve the queue; no conflict or radius is waived.
+     * No candidate means Audit Operations must resolve the queue; no conflict or coverage is waived.
      *
      * @param  list<Candidate>  $candidates
      */
@@ -102,15 +109,14 @@ final class AuditorDispatch
         return $eligible[0]['id'] ?? null;
     }
 
-    /** @param Location $location */
-    private function locationCurrent(array $location, DateTimeImmutable $now): bool
+    /**
+     * Whether a partner who accepts these districts reaches a Business registered in this one.
+     *
+     * @param  list<string>  $districts
+     */
+    public static function covers(array $districts, string $businessDistrict): bool
     {
-        $verified = $this->timestamp($location['verified_at']);
-        $moved = $this->timestamp($location['moved_at']);
-
-        return $location['uncertainty_m'] !== null && $location['uncertainty_m'] >= 0 && $location['uncertainty_m'] <= 30000
-            && $verified !== null && $verified <= $now && $verified >= $now->modify('-365 days')
-            && ($location['moved_at'] === null || ($moved !== null && $moved < $verified));
+        return $businessDistrict !== '' && in_array($businessDistrict, $districts, true);
     }
 
     private function timestamp(?string $value): ?DateTimeImmutable

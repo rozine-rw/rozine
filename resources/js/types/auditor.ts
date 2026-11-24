@@ -40,6 +40,7 @@ export type AuditorAllowedAction =
     | 'accreditation.renew'
     | 'accreditation.withdraw'
     | 'availability.update'
+    | 'contact.update'
     | 'statement.verify';
 
 /** What every Auditor page carries (point 1). */
@@ -272,17 +273,36 @@ export type AuditorIdentity = {
     since_year: number;
 };
 
+/** A registered address in Rwanda: province, a district of it, and the sector, cell and street as typed. */
+export type RwandaAddress = {
+    province: string;
+    district: string;
+    sector: string;
+    cell: string;
+    /** Empty where the premises has no street name. */
+    street: string;
+};
+
+/** Rwanda's provinces, each with its districts, in the order the forms list them. */
+export type RwandaProvinces = Record<string, string[]>;
+
 /**
- * Dispatch availability. Radius and concurrency are policy values (CFG-05), shown, never edited
- * here; only the partner's own on/off choice is a command.
+ * Dispatch availability and coverage (Erastus, 24 Nov 2026): audits are offered when the
+ * Business's district is one the partner accepts, up to their weekly limit. The concurrency cap is
+ * a policy value, shown, never edited here.
  */
 export type AuditorAvailability = {
     /**
      * The partner's saved preference, not whether work is arriving: dispatch also needs
-     * `standing.current`.
+     * `standing.current`. Switched on automatically at the first verification.
      */
     accepting: boolean;
-    radius_km: number;
+    /** The districts the partner accepts audits in, in Rwanda's own order. */
+    districts: string[];
+    /** The engine stops offering work past this many accepted audits a week (Monday to Sunday, Kigali). */
+    max_jobs_per_week: number;
+    /** The partner's registered address, or null until they give one. */
+    address: RwandaAddress | null;
     max_active: number;
     /** The availability record's revision, sent back as `expected_revision`. */
     revision: number;
@@ -345,11 +365,6 @@ export type AssignedJob = {
     kind: 'flash' | 'monthly';
     business: string;
     district: string;
-    /**
-     * Distance from the registered office, already formatted by the server: "7.7". Null when it
-     * cannot be stated; the card then gives the district alone.
-     */
-    distance_km: string | null;
     deadline: Deadline;
     /** Accepted: no offer window is left. */
     accept_by: null;
@@ -414,8 +429,12 @@ export type AuditorHomeProps = AuditorPageContract &
         /** Null when no licence is on record or the fact is unavailable; never a stand-in date. */
         licence_expires_on: string | null;
         availability: AuditorAvailability;
-        /** Eligible Flash Audits right now and the closest one's distance. */
-        nearby: { count: number; closest_km: string | null };
+        /** Offers waiting for the partner now, and the districts they are in. */
+        nearby: { count: number; districts: string[] };
+        /** The Home fingerprint the page compares with `live` to reload without a refresh. */
+        pulse?: string | null;
+        /** Where the open page asks whether anything it shows has changed. */
+        live?: RouteLink;
         in_progress: AssignedJob[];
         standing: AuditorStanding;
         activity: AuditorActivity[];
@@ -464,8 +483,6 @@ export type EligibleJob = {
     sector: SectorCode | null;
     district: string;
     offered_at: string;
-    /** Distance from the registered office, formatted: "11.2". Null when it cannot be stated. */
-    distance_km: string | null;
     /** Null while the draft carries no amount. */
     requested: Money | null;
     /** The engine's DSCR for the case, formatted: "1.12". Null until an evaluation is published. */
@@ -601,13 +618,16 @@ export type AuditorPagination = {
  */
 export type AuditorJobsProps = AuditorPageContract &
     EngagementSummaryProp & {
-        radius_km: number;
-        flash_hours: number;
         /**
-         * Whether dispatch can measure the radius from this partner's registered office: verified by
-         * Rozine within the last year, lapsed, or not on record. Null or absent where not served.
+         * What dispatch matches this partner on: whether they accept audits, the districts they
+         * accept and their weekly limit. Null where not served.
          */
-        office?: 'verified' | 'expired' | 'missing' | null;
+        coverage: {
+            accepting: boolean;
+            districts: string[];
+            max_jobs_per_week: number;
+        } | null;
+        flash_hours: number;
         /**
          * Offers to this partner and their accepted work: the server splits one bounded page into
          * these two lists, and `pagination` covers the page as a whole.
@@ -705,8 +725,6 @@ export type FileJob = {
     kind: 'flash' | 'monthly';
     business: string;
     district: string;
-    /** Formatted: "11.2". Null when it cannot be stated; the header then gives the district alone. */
-    distance_km: string | null;
     /**
      * Offered or assigned. A flash audit's clock runs from its original dispatch either way;
      * accepting does not start it.
@@ -1377,7 +1395,6 @@ export type AuditProcedureProps = AuditorPageContract & {
         kind: 'flash' | 'monthly';
         business: string;
         district: string;
-        distance_km: string;
         /** The audited month for a monthly report. */
         month: string | null;
         /** Null once the engagement is no longer running, such as a completed one opened read-only. */
@@ -1706,8 +1723,17 @@ export type AuditorProfileProps = AuditorPageContract &
         on_time_pct: number | null;
         jobs_done: number;
         earnings: AuditorEarnings;
-        /** The account's own email; no phone or address is held, so they are null. */
-        contact: { email: string; phone: null; address: null };
+        /** The account's own email and the partner's registered address; no phone is held. */
+        contact: {
+            email: string;
+            phone: null;
+            address: RwandaAddress | null;
+            address_line: string | null;
+            /** Where `contact.update` saves the address. */
+            update: RouteAction;
+        };
+        /** Rwanda's provinces and districts, for the address form and the district chips. */
+        provinces: RwandaProvinces;
         security: { two_factor: boolean };
         accreditation: Accreditation;
         /** Whether dispatch may offer work now; read with `availability.accepting`. */

@@ -13,6 +13,7 @@ use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Models\BusinessContactVersion;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * The Business contact adapter. A save is journaled under the acting Party and targets the Business
@@ -28,6 +29,25 @@ final class EloquentBusinessContacts implements BusinessContacts
         $version = BusinessContactVersion::query()->where('business_id', $businessId)->orderByDesc('version')->first();
 
         return $version?->payload;
+    }
+
+    public function adopt(string $businessId, string $actorPartyId, array $details): void
+    {
+        /** @var array<string, list<string>> $districts */
+        $districts = config('rwanda.districts');
+        $digits = (string) preg_replace('/[^0-9]/', '', is_string($details['phone'] ?? null) ? $details['phone'] : '');
+        $phone = str_starts_with($digits, '250') && strlen($digits) === 12 ? '0'.substr($digits, 3) : $digits;
+        $contact = BusinessContact::fromInput([...$details, 'phone' => $phone], $districts);
+        if (is_array($contact)) {
+            return;
+        }
+        DB::select('SELECT pg_advisory_xact_lock(hashtextextended(?, 0))', ['business-contact|'.$businessId]);
+        if (BusinessContactVersion::query()->where('business_id', $businessId)->exists()) {
+            return;
+        }
+        (new BusinessContactVersion)->forceFill(['business_id' => $businessId, 'version' => 1, 'actor_party_id' => $actorPartyId,
+            'operation_id' => strtolower((string) Str::ulid()), 'payload' => $contact->details,
+            'sha256' => hash('sha256', $this->json->encode($contact->details)), 'created_at' => now('UTC')])->save();
     }
 
     public function save(int $userId, int $contextRevision, string $businessId, string $requestId, array $input): array

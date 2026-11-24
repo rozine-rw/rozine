@@ -1,4 +1,5 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
+import homeA31aa7 from './home'
 import notices5868c6 from './notices'
 import reports from './reports'
 import engagement from './engagement'
@@ -7,10 +8,11 @@ import conflicts from './conflicts'
 import portfolio from './portfolio'
 import accreditation from './accreditation'
 import availability from './availability'
+import address from './address'
 import operations from './operations'
 /**
 * @see \App\Http\Controllers\AuditorHomeController::__invoke
-* @see app/Http/Controllers/AuditorHomeController.php:31
+* @see app/Http/Controllers/AuditorHomeController.php:32
 * @route '/auditor'
 */
 export const home = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -25,7 +27,7 @@ home.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorHomeController::__invoke
-* @see app/Http/Controllers/AuditorHomeController.php:31
+* @see app/Http/Controllers/AuditorHomeController.php:32
 * @route '/auditor'
 */
 home.url = (options?: RouteQueryOptions) => {
@@ -34,7 +36,7 @@ home.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuditorHomeController::__invoke
-* @see app/Http/Controllers/AuditorHomeController.php:31
+* @see app/Http/Controllers/AuditorHomeController.php:32
 * @route '/auditor'
 */
 home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -44,7 +46,7 @@ home.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorHomeController::__invoke
-* @see app/Http/Controllers/AuditorHomeController.php:31
+* @see app/Http/Controllers/AuditorHomeController.php:32
 * @route '/auditor'
 */
 home.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -54,7 +56,7 @@ home.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorHomeController::__invoke
-* @see app/Http/Controllers/AuditorHomeController.php:31
+* @see app/Http/Controllers/AuditorHomeController.php:32
 * @route '/auditor'
 */
 const homeForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -64,7 +66,7 @@ const homeForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorHomeController::__invoke
-* @see app/Http/Controllers/AuditorHomeController.php:31
+* @see app/Http/Controllers/AuditorHomeController.php:32
 * @route '/auditor'
 */
 homeForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -74,7 +76,7 @@ homeForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorHomeController::__invoke
-* @see app/Http/Controllers/AuditorHomeController.php:31
+* @see app/Http/Controllers/AuditorHomeController.php:32
 * @route '/auditor'
 */
 homeForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -91,7 +93,7 @@ home.form = homeForm
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::profile
-* @see app/Http/Controllers/AuditorProfileController.php:43
+* @see app/Http/Controllers/AuditorProfileController.php:45
 * @route '/auditor/profile'
 */
 export const profile = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -106,7 +108,7 @@ profile.definition = {
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::profile
-* @see app/Http/Controllers/AuditorProfileController.php:43
+* @see app/Http/Controllers/AuditorProfileController.php:45
 * @route '/auditor/profile'
 */
 profile.url = (options?: RouteQueryOptions) => {
@@ -115,7 +117,7 @@ profile.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::profile
-* @see app/Http/Controllers/AuditorProfileController.php:43
+* @see app/Http/Controllers/AuditorProfileController.php:45
 * @route '/auditor/profile'
 */
 profile.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -125,7 +127,7 @@ profile.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::profile
-* @see app/Http/Controllers/AuditorProfileController.php:43
+* @see app/Http/Controllers/AuditorProfileController.php:45
 * @route '/auditor/profile'
 */
 profile.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -135,7 +137,7 @@ profile.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::profile
-* @see app/Http/Controllers/AuditorProfileController.php:43
+* @see app/Http/Controllers/AuditorProfileController.php:45
 * @route '/auditor/profile'
 */
 const profileForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -145,7 +147,7 @@ const profileForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::profile
-* @see app/Http/Controllers/AuditorProfileController.php:43
+* @see app/Http/Controllers/AuditorProfileController.php:45
 * @route '/auditor/profile'
 */
 profileForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -155,7 +157,7 @@ profileForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 
 /**
 * @see \App\Http\Controllers\AuditorProfileController::profile
-* @see app/Http/Controllers/AuditorProfileController.php:43
+* @see app/Http/Controllers/AuditorProfileController.php:45
 * @route '/auditor/profile'
 */
 profileForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -252,7 +254,7 @@ noticesForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 notices.form = noticesForm
 
 const auditor = {
-    home: Object.assign(home, home),
+    home: Object.assign(home, homeA31aa7),
     profile: Object.assign(profile, profile),
     notices: Object.assign(notices, notices5868c6),
     reports: Object.assign(reports, reports),
@@ -262,6 +264,7 @@ const auditor = {
     portfolio: Object.assign(portfolio, portfolio),
     accreditation: Object.assign(accreditation, accreditation),
     availability: Object.assign(availability, availability),
+    address: Object.assign(address, address),
     operations: Object.assign(operations, operations),
 }
 

@@ -6,7 +6,11 @@
         "identity_context_revision": 3,
         "server_time": "2026-10-03T17:00:00Z",
         "allowed_actions": [],
-        "radius_km": 30,
+        "coverage": {
+            "accepting": true,
+            "districts": ["Gasabo", "Kicukiro", "Nyarugenge"],
+            "max_jobs_per_week": 4
+        },
         "flash_hours": 24,
         "eligible": [
             {
@@ -18,7 +22,6 @@
                 "sector": null,
                 "district": "Nyarugenge",
                 "offered_at": "2026-10-03T16:20:00Z",
-                "distance_km": null,
                 "requested": null,
                 "dscr": null,
                 "term_months": null,
@@ -60,7 +63,6 @@
                 "sector": "retail",
                 "district": "Nyarugenge",
                 "offered_at": "2026-10-03T15:10:00Z",
-                "distance_km": "4.8",
                 "requested": {
                     "currency": "RWF",
                     "amount": "18500000"
@@ -108,7 +110,6 @@
                 "kind": "flash",
                 "business": "Gikondo Metal Works",
                 "district": "Kicukiro",
-                "distance_km": "6.4",
                 "deadline": {
                     "due_at": "2026-10-04T09:00:00Z"
                 },
@@ -126,7 +127,6 @@
             }
         ],
         "monthly": null,
-        "office": "verified",
         "decline_options": [
             {
                 "code": "unavailable",

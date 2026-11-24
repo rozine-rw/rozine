@@ -21,7 +21,9 @@
         "licence_expires_on": "2027-03-31",
         "availability": {
             "accepting": true,
-            "radius_km": 30,
+            "districts": ["Gasabo", "Kicukiro", "Nyarugenge"],
+            "max_jobs_per_week": 4,
+            "address": null,
             "max_active": 3,
             "revision": 5,
             "update": {
@@ -31,7 +33,7 @@
         },
         "nearby": {
             "count": 0,
-            "closest_km": null
+            "districts": []
         },
         "in_progress": [
             {
@@ -41,7 +43,6 @@
                 "kind": "flash",
                 "business": "Murakoze Tech",
                 "district": "Kicukiro",
-                "distance_km": "7.7",
                 "deadline": {
                     "due_at": "2026-10-04T13:59:55Z"
                 },
@@ -64,7 +65,6 @@
                 "kind": "flash",
                 "business": "GreenLeaf Agro",
                 "district": "Gasabo",
-                "distance_km": "8.8",
                 "deadline": {
                     "due_at": "2026-10-04T08:59:55Z"
                 },
@@ -168,6 +168,11 @@
                 "url": "/preview/auditor-operation-{request_id}",
                 "method": "get"
             }
+        },
+        "pulse": null,
+        "live": {
+            "url": "/auditor/version",
+            "method": "get"
         }
     }
 }

@@ -12,7 +12,7 @@ use DateTimeImmutable;
  *
  * A partner reaches a Business when dispatch would accept them on everything that does not depend
  * on that Business (BRS AUD-R01, AUD-R02): current standing, accepting work, accepted engagement
- * terms, open capacity, and a verified office within 30 km of the Business's verified premises.
+ * terms, open capacity, and the Business's district among the districts the partner accepts.
  * Conflicts and rotation are judged per assignment, so they are not counted here. A district is
  * covered when every Business in it is reached by at least one partner.
  *

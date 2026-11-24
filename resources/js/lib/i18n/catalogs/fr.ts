@@ -2380,7 +2380,7 @@ const fr: Catalog = {
     'admin.design.app_control.feature.auditor_sign_ups':
         'Inscriptions des auditeurs',
     'admin.design.app_control.feature.auto_dispatch':
-        'Affectation automatique à 30 km',
+        'Affectation automatique par district',
     'admin.design.app_control.feature.flash_audits': 'Audits flash (24 h)',
     'admin.design.app_control.state.live': 'Actif',
     'admin.design.app_control.state.not_built': 'Pas encore développé',
@@ -3731,68 +3731,6 @@ const fr: Catalog = {
     'admin.parties.verify_licence': '✓ Valider la licence',
     'admin.parties.reject': 'Refuser',
     'admin.parties.licence_title': 'Licence ICPAR et vérification',
-    'admin.parties.office.title': 'Bureau enregistré',
-    'admin.parties.office.status': "Lieu d'affectation",
-    'admin.parties.office.state.verified': 'Vérifié',
-    'admin.parties.office.state.expired': 'Vérification expirée',
-    'admin.parties.office.state.missing': 'Non vérifié',
-    'admin.parties.office.note.missing':
-        "Aucun bureau n'est enregistré, donc ce partenaire ne reçoit pas de missions. Les missions ne vont qu'aux partenaires dont le bureau vérifié est à moins de 30 km de l'entreprise.",
-    'admin.parties.office.note.expired':
-        "Ce bureau a été vérifié il y a plus d'un an, donc ce partenaire ne reçoit pas de missions tant qu'il n'est pas vérifié à nouveau.",
-    'admin.parties.office.coordinates': 'Coordonnées',
-    'admin.parties.office.point': '{latitude}, {longitude} (±{metres} m)',
-    'admin.parties.office.verified_on': 'Vérifié le',
-    'admin.parties.office.evidence': 'Preuve vérifiée',
-    'admin.parties.office.record': 'Enregistrer le bureau vérifié',
-    'admin.parties.office.reverify': 'Vérifier le bureau à nouveau',
-    'admin.parties.office.form': 'Vérifier le bureau enregistré',
-    'admin.parties.office.form_body':
-        "Saisissez les coordonnées du bureau vérifiées avec la preuve. L'affectation ajoute la précision à la distance, donc une marge large peut exclure des entreprises.",
-    'admin.parties.office.field.latitude': 'Latitude',
-    'admin.parties.office.field.longitude': 'Longitude',
-    'admin.parties.office.field.uncertainty_m': 'Précision (mètres)',
-    'admin.parties.office.field.reference': 'Preuve vérifiée',
-    'admin.parties.office.field.reason': 'Motif',
-    'admin.parties.office.placeholder.latitude': '-1.9441',
-    'admin.parties.office.placeholder.longitude': '30.0619',
-    'admin.parties.office.placeholder.uncertainty_m': '50',
-    'admin.parties.office.placeholder.reference':
-        "ex. registre de l'ICPAR, visite sur place",
-    'admin.parties.office.placeholder.reason':
-        "ex. Adresse du bureau confirmée au registre de l'ICPAR et par téléphone.",
-    'admin.parties.office.cta': 'Enregistrer comme vérifié',
-    'admin.parties.premises.title': 'Locaux de l’entreprise',
-    'admin.parties.premises.status': 'Lieu de dispatch',
-    'admin.parties.premises.state.verified': 'Vérifié',
-    'admin.parties.premises.state.expired': 'Vérification expirée',
-    'admin.parties.premises.state.missing': 'Non vérifié',
-    'admin.parties.premises.note.missing':
-        'Aucun emplacement des locaux n’est enregistré, aucun Partenaire d’audit ne peut donc être dépêché ici. Les missions ne vont qu’aux partenaires dont le bureau vérifié est à moins de 30 km de ces locaux.',
-    'admin.parties.premises.note.expired':
-        'Ces locaux ont été vérifiés il y a plus d’un an : aucun Partenaire d’audit n’est dépêché ici avant une nouvelle vérification.',
-    'admin.parties.premises.coordinates': 'Coordonnées',
-    'admin.parties.premises.point': '{latitude}, {longitude} (±{metres} m)',
-    'admin.parties.premises.verified_on': 'Vérifié le',
-    'admin.parties.premises.evidence': 'Preuve vérifiée',
-    'admin.parties.premises.record': 'Enregistrer les locaux vérifiés',
-    'admin.parties.premises.reverify': 'Vérifier à nouveau les locaux',
-    'admin.parties.premises.form': 'Vérifier les locaux de l’entreprise',
-    'admin.parties.premises.form_body':
-        'Saisissez les coordonnées des locaux vérifiées par rapport aux preuves. Le dispatch ajoute la précision à la distance : une marge large peut mettre des partenaires hors de portée.',
-    'admin.parties.premises.field.latitude': 'Latitude',
-    'admin.parties.premises.field.longitude': 'Longitude',
-    'admin.parties.premises.field.uncertainty_m': 'Précision (mètres)',
-    'admin.parties.premises.field.reference': 'Preuve vérifiée',
-    'admin.parties.premises.field.reason': 'Motif',
-    'admin.parties.premises.placeholder.latitude': '-1.9441',
-    'admin.parties.premises.placeholder.longitude': '30.0619',
-    'admin.parties.premises.placeholder.uncertainty_m': '50',
-    'admin.parties.premises.placeholder.reference':
-        'ex. visite sur place, adresse enregistrée au RDB',
-    'admin.parties.premises.placeholder.reason':
-        'ex. Locaux confirmés lors d’une visite et avec l’adresse RDB.',
-    'admin.parties.premises.cta': 'Enregistrer comme vérifié',
     'admin.parties.audit.title': 'Audit',
     'admin.parties.audit.none':
         'Aucun audit n’est en cours pour cette entreprise.',
@@ -3808,19 +3746,15 @@ const fr: Catalog = {
     'admin.parties.audit.overdue':
         'Le délai de 24 heures a expiré le {date} sans rapport scellé. Un audit éclair doit être terminé en 24 heures : celui-ci est donc en infraction. Il figure dans les exceptions ouvertes pour suivi par les Opérations d’audit.',
     'admin.parties.audit.reason.AUDIT_NO_ELIGIBLE_PARTNER':
-        'Des Partenaires d’audit ont un bureau vérifié à moins de 30 km, mais aucun ne peut prendre cet audit maintenant (disponibilité, capacité ou indépendance). Tentatives d’affectation utilisées : {attempts} sur 3. Réaffectez-le dès que l’un d’eux le peut.',
+        'Des partenaires d’audit acceptent le district de cette entreprise, mais aucun ne peut prendre cet audit maintenant (disponibilité, limite hebdomadaire, capacité ou indépendance). Tentatives d’affectation utilisées : {attempts} sur 3. Réaffectez-le dès que l’un d’eux le peut.',
     'admin.parties.audit.reason.AUDIT_DISPATCH_EXHAUSTED':
         'Toutes les tentatives d’affectation sont utilisées ou le délai est dépassé : cet audit ne peut plus être réaffecté.',
-    'admin.parties.audit.reason.AUDIT_PREMISES_UNVERIFIED':
-        'Les locaux de cette entreprise ne sont pas vérifiés : l’affectation ne peut pas mesurer les 30 km. Le personnel qui vérifie les entreprises les enregistre dans la section Locaux. Tentatives d’affectation utilisées : {attempts} sur 3.',
-    'admin.parties.audit.reason.AUDIT_NO_PARTNER_IN_RANGE':
-        'Aucun Partenaire d’audit n’a de bureau vérifié à moins de 30 km de ces locaux. Approuvez un partenaire proche ou vérifiez l’adresse de son bureau. Tentatives d’affectation utilisées : {attempts} sur 3.',
     'admin.parties.audit.remedy': 'Ouvrir les Partenaires d’audit',
     'admin.parties.audit.field.reason': 'Motif',
     'admin.parties.audit.flash.open': 'Demander un audit éclair',
     'admin.parties.audit.flash.form': 'Demander un audit éclair',
     'admin.parties.audit.flash.form_body':
-        'L’audit est proposé au prochain Partenaire d’audit éligible à moins de 30 km et doit être terminé sous 24 heures. L’entreprise n’est pas prévenue.',
+        'L’audit est proposé au prochain partenaire d’audit éligible qui accepte le district de cette entreprise et doit être réalisé sous 24 heures. L’entreprise n’est pas prévenue à l’avance.',
     'admin.parties.audit.flash.placeholder':
         'p. ex. Mouvements inhabituels sur le compte de recettes cette semaine.',
     'admin.parties.audit.flash.cta': 'Demander un audit éclair',
@@ -3854,11 +3788,10 @@ const fr: Catalog = {
     'admin.parties.audit.withdraw.done':
         'Audit retiré. Vous pouvez en demander un nouveau.',
     'admin.parties.audit.reason.AUDIT_PARTNER_AVAILABLE':
-        'Un Partenaire d’audit à moins de 30 km peut prendre cet audit maintenant. Réaffectez-le pour le lui proposer. Tentatives d’affectation utilisées : {attempts} sur 3.',
+        'Un partenaire d’audit qui accepte le district de cette entreprise peut prendre cet audit maintenant. Réaffectez-le pour le lui proposer. Tentatives d’affectation utilisées : {attempts} sur 3.',
     'admin.parties.audit.reason.AUDIT_INDEPENDENCE_REVIEW_REQUIRED':
-        'Des Partenaires d’audit ont un bureau vérifié à moins de 30 km, mais aucun n’a été reconnu indépendant de cette entreprise pour son mandat actuel, donc l’affectation ne peut pas le leur proposer. Enregistrez un examen d’indépendance pour un partenaire ci-dessous. Tentatives d’affectation utilisées : {attempts} sur 3.',
-    'admin.parties.audit.partners.title':
-        'Partenaires d’audit à moins de 30 km',
+        'Des partenaires d’audit acceptent le district de cette entreprise, mais aucun n’a été examiné comme indépendant de celle-ci pour son mandat actuel : l’affectation ne peut pas le leur proposer. Enregistrez un examen d’indépendance pour un partenaire ci-dessous. Tentatives d’affectation utilisées : {attempts} sur 3.',
+    'admin.parties.audit.partners.title': 'Partenaires d’audit de ce district',
     'admin.parties.audit.partners.reviewed': 'Indépendance examinée',
     'admin.parties.audit.partners.unreviewed': 'Non examiné',
     'admin.parties.audit.independence.open':
@@ -3910,7 +3843,7 @@ const fr: Catalog = {
     'admin.parties.audit.review.open': 'Demander un examen des relevés',
     'admin.parties.audit.review.form': 'Demander un examen des relevés',
     'admin.parties.audit.review.form_body':
-        'Un Audit Partner situé à moins de 30 km compare les relevés téléversés à leurs originaux. La demande porte sur les relevés affichés ici ; s’ils changent avant, il vous sera demandé de les revoir.',
+        'Un partenaire d’audit qui accepte le district de cette entreprise vérifie les relevés téléversés par rapport à leurs originaux. La demande porte sur les relevés affichés ici ; s’ils changent d’abord, il vous sera demandé de les revoir.',
     'admin.parties.audit.review.placeholder':
         'ex. Premier examen des relevés téléversés avec la demande.',
     'admin.parties.audit.review.cta': 'Demander l’examen',
@@ -4135,15 +4068,14 @@ const fr: Catalog = {
     'auditor.rating.label': 'Note du partenaire {score} sur 100',
     'auditor.availability.accepting': 'Audits acceptés',
     'auditor.availability.paused': 'En pause',
-    'auditor.availability.home_sub':
-        'Rayon de {radius} km · {max} missions max à la fois',
+    'auditor.availability.home_sub': '{districts} · {max} missions max/semaine',
     'auditor.availability.home_paused':
         'Touchez pour accepter à nouveau les audits flash',
     'auditor.availability.toggle': 'Accepter des audits',
     'auditor.home.nearby_one': '1 audit flash à proximité',
     'auditor.home.nearby_other': '{count} audits flash à proximité',
     'auditor.home.nearby_sub':
-        'Le plus proche à {distance} km · le premier à accepter verrouille le dossier',
+        'À {districts} · le premier à accepter verrouille le dossier',
     'auditor.home.in_progress': 'En cours',
     'auditor.job.step_of': 'Étape {step} sur {steps}',
     'auditor.job.status.overdue': 'En retard',
@@ -4174,16 +4106,8 @@ const fr: Catalog = {
     'auditor.jobs.head_title': 'Missions',
     'auditor.jobs.title': "Missions d'audit",
     'auditor.jobs.lead':
-        'Contrôles sur site ouverts dans un rayon de {radius} km. Le premier à accepter verrouille le dossier. Chaque audit flash est dû {hours} heures après son envoi.',
-    'auditor.jobs.map_label':
-        "Carte de votre rayon d'affectation de {radius} km avec {count} missions ouvertes à des positions approximatives",
-    'auditor.jobs.map_badge': 'Rayon {radius} km · {count} ouvertes',
-    'auditor.jobs.map_label_page':
-        "Carte de votre rayon d'affectation de {radius} km avec {count} missions sur cette page à des positions approximatives",
-    'auditor.jobs.map_badge_page': 'Rayon {radius} km · {count} sur cette page',
+        'Contrôles sur le terrain ouverts dans les districts que vous acceptez. Le premier à accepter verrouille le dossier. Chaque audit flash est dû {hours} heures après son envoi.',
     'auditor.jobs.assigned': 'En cours',
-    'auditor.jobs.distance': 'Distance',
-    'auditor.jobs.km': '{distance} km',
     'auditor.jobs.sector_unavailable': 'Secteur indisponible',
     'auditor.jobs.kind_monthly': 'Visite mensuelle',
     'auditor.jobs.kind_flash': 'Audit flash',
@@ -4202,12 +4126,8 @@ const fr: Catalog = {
     'auditor.jobs.view_file': 'Voir le dossier complet →',
     'auditor.jobs.decline': 'Refuser',
     'auditor.jobs.declare_conflict': 'Déclarer un conflit',
-    'auditor.jobs.office.missing':
-        "Rozine n'a pas encore vérifié l'adresse de votre bureau, donc aucune mission ne peut vous être envoyée. Les missions vont aux partenaires dont le bureau est à moins de {radius} km de l'entreprise. Contactez les Opérations d'audit pour la faire vérifier.",
-    'auditor.jobs.office.expired':
-        "L'adresse de votre bureau a été vérifiée il y a plus d'un an, donc aucune nouvelle mission ne peut vous être envoyée tant que Rozine ne l'a pas vérifiée à nouveau. Contactez les Opérations d'audit.",
     'auditor.jobs.empty':
-        "Aucune mission ouverte dans votre zone. Nous vous préviendrons dès qu'un dossier de niveau 2 nécessitera un contrôle sur site dans un rayon de {radius} km.",
+        "Aucune mission ouverte dans vos districts. Nous vous préviendrons dès qu'une entreprise de l'un d'eux aura besoin d'un contrôle sur le terrain.",
     'auditor.monthly.title': 'Rapports mensuels',
     'auditor.monthly.lead':
         "Vous ouvrez chaque mois le dossier d'audit des entreprises que vous suivez. Auditez sur place et scellez avant le 7 — l'entreprise dispose ensuite de 24 heures pour contester.",
@@ -4287,7 +4207,6 @@ const fr: Catalog = {
     'auditor.file.label': "Dossier de l'entreprise {business}",
     'auditor.file.eyebrow_preview': 'Aperçu de la demande',
     'auditor.file.eyebrow_file': "Dossier de l'entreprise",
-    'auditor.file.place': '{district} · {distance} km',
     'auditor.file.continue': "Poursuivre l'audit",
     'auditor.file.title': 'Examiner la demande',
     'auditor.file.lead':
@@ -4773,12 +4692,6 @@ const fr: Catalog = {
         "Vous figurez dans le vivier d'affectation et pouvez recevoir des audits flash.",
     'auditor.availability.paused_sub':
         "Aucune nouvelle mission n'est proposée. Les missions acceptées gardent leur délai.",
-    'auditor.availability.max_title': 'Missions simultanées',
-    'auditor.availability.max_sub':
-        "L'affectation cesse de vous proposer du travail au-delà.",
-    'auditor.availability.radius_title': 'Couverture',
-    'auditor.availability.radius_sub':
-        "Mesurée de votre cabinet enregistré aux locaux de l'entreprise.",
 
     'business.rating.page_title': 'Santé financière',
     'business.rating.page_subtitle':
@@ -6862,7 +6775,6 @@ const fr: Catalog = {
     'auditor.photos.add_unavailable': 'Capture indisponible',
     'auditor.checkin.position_unavailable': 'Position indisponible',
     'auditor.ledger.ingested': 'Reçu · pas encore examiné',
-    'auditor.jobs.map_approximate': 'Positions approximatives',
     'auditor.reason.label': 'Motif',
     'auditor.reason.explanation_required':
         'Explication factuelle (obligatoire)',
@@ -9672,14 +9584,14 @@ const fr: Catalog = {
         'Oui, si le montant est faible',
     'auditor.academy.lesson.dispatch.title': 'Missions',
     'auditor.academy.lesson.dispatch.sub':
-        'L’expert éligible le plus proche, à 30 km au plus',
-    'auditor.academy.lesson.dispatch.topic1.title': 'Dans un rayon de 30 km',
+        'Un CPA éligible dans le district de l’entreprise',
+    'auditor.academy.lesson.dispatch.topic1.title': 'Vos districts',
     'auditor.academy.lesson.dispatch.topic1.body':
-        'Le travail va à l’expert-comptable éligible le plus proche dont le bureau se trouve à 30 km au plus des locaux de l’entreprise. Éligible signifie un agrément valide, aucun conflit déclaré et une rotation qui le permet.',
+        'Le travail va à un CPA éligible qui accepte le district de l’entreprise, dans la limite de son plafond hebdomadaire. Éligible signifie une licence en cours, aucun conflit déclaré et une rotation qui le permet. Vous choisissez vos districts dans Disponibilité et couverture.',
     'auditor.academy.lesson.dispatch.topic1.q':
-        'Une entreprise est à 31 km de votre bureau. Que se passe-t-il ?',
+        'Une entreprise se trouve dans un district que vous n’acceptez pas. Que se passe-t-il ?',
     'auditor.academy.lesson.dispatch.topic1.option1':
-        'Elle vous est proposée si personne n’est plus proche',
+        'Il vous est proposé si personne d’autre n’est disponible',
     'auditor.academy.lesson.dispatch.topic1.option2':
         'Elle ne vous est jamais proposée',
     'auditor.academy.lesson.dispatch.topic1.option3':
@@ -10037,6 +9949,55 @@ const fr: Catalog = {
         one: '{count} mois',
         other: '{count} mois',
     },
+    'auditor.jobs.district': 'District',
+    'auditor.coverage.count_one': '1 district',
+    'auditor.coverage.count_other': '{count} districts',
+    'auditor.jobs.coverage_title': 'Districts que vous acceptez',
+    'auditor.jobs.coverage_badge': '{districts} · {count} ouvertes',
+    'auditor.jobs.coverage_badge_page': '{districts} · {count} sur cette page',
+    'auditor.jobs.coverage_none':
+        "Vous n'avez encore choisi aucun district : aucun audit ne peut vous être proposé. Choisissez-les dans Disponibilité et couverture.",
+    'auditor.jobs.coverage_paused':
+        'Vous êtes en pause : aucun nouvel audit ne vous est proposé tant que vous ne réactivez pas Accepter des audits.',
+    'auditor.jobs.coverage_weekly': "Jusqu'à {max} missions par semaine",
+    'auditor.jobs.coverage_edit': 'Modifier la couverture',
+    'auditor.availability.weekly_title': 'Missions max par semaine',
+    'auditor.availability.weekly_sub':
+        'Le moteur cesse de vous proposer du travail au-delà.',
+    'auditor.availability.weekly_less': 'Une mission de moins par semaine',
+    'auditor.availability.weekly_more': 'Une mission de plus par semaine',
+    'auditor.availability.districts_title': 'Districts que vous acceptez',
+    'auditor.availability.districts_count': '{count} districts sur {total}',
+    'auditor.availability.districts_none':
+        "Choisissez au moins un district. D'ici là, aucun audit ne peut vous être proposé.",
+    'auditor.profile.contact.add_address': 'Ajouter votre adresse enregistrée',
+    'auditor.profile.contact.edit_address': "Modifier l'adresse enregistrée",
+    'auditor.profile.contact.save': "Enregistrer l'adresse",
+    'auditor.profile.contact.saving': 'Enregistrement…',
+    'auditor.profile.contact.cancel': 'Annuler',
+    'role.apply.address.province': 'Province',
+    'role.apply.address.select_district': 'Choisir le district',
+    'role.apply.address.sector': 'Secteur',
+    'role.apply.address.sector_placeholder': 'Nom du secteur',
+    'role.apply.address.cell': 'Cellule',
+    'role.apply.address.cell_placeholder': 'Nom de la cellule',
+    'role.apply.address.street': 'Rue',
+    'role.apply.address.street_placeholder': 'KG 5 Ave',
+    'role.apply.address.street_hint':
+        "Laissez vide si les locaux n'ont pas de nom de rue.",
+    'admin.parties.audit.reason.AUDIT_DISTRICT_MISSING':
+        'Aucun district enregistré n’est connu pour cette entreprise : l’affectation ne peut pas la rapprocher d’un partenaire. Demandez à l’entreprise de compléter son adresse enregistrée. Tentatives d’affectation utilisées : {attempts} sur 3.',
+    'admin.parties.audit.reason.AUDIT_NO_PARTNER_IN_DISTRICT':
+        'Aucun partenaire d’audit n’accepte d’audits dans le district de cette entreprise. Approuvez un partenaire qui le couvre, ou demandez à un partenaire de l’ajouter à ses districts. Tentatives d’affectation utilisées : {attempts} sur 3.',
+    'admin.parties.coverage.title': 'Couverture d’affectation',
+    'admin.parties.coverage.status': 'Statut',
+    'admin.parties.coverage.accepting': 'Accepte des audits',
+    'admin.parties.coverage.paused': 'En pause',
+    'admin.parties.coverage.districts': 'Districts acceptés',
+    'admin.parties.coverage.none': 'Aucun choisi pour l’instant',
+    'admin.parties.coverage.weekly': 'Missions max par semaine',
+    'admin.parties.coverage.address': 'Adresse enregistrée',
+    'admin.parties.coverage.no_address': 'Pas encore fournie',
 };
 
 export default fr;

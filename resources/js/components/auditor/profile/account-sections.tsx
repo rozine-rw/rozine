@@ -1,12 +1,18 @@
 import { Link } from '@inertiajs/react';
-import { DIVIDER } from '@/components/auditor/ui';
+import { useState } from 'react';
+import { useAuditorCommands } from '@/components/auditor/commands';
+import { DIVIDER, PRIMARY } from '@/components/auditor/ui';
 import { LegalDocumentBody } from '@/components/legal/legal-document-body';
 import { Icon } from '@/components/rozine/icon';
 import type { IconName } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import { cn } from '@/lib/utils';
 import type { RouteLink } from '@/types';
-import type { AuditorProfileProps } from '@/types/auditor';
+import type {
+    AuditorProfileProps,
+    RwandaAddress,
+    RwandaProvinces,
+} from '@/types/auditor';
 
 const CARD =
     'mt-2.5 overflow-hidden rounded-2xl border border-rz-border bg-rz-surface';
@@ -19,16 +25,185 @@ function Heading({ label }: { label: string }) {
     );
 }
 
+const LABEL =
+    'mb-1.5 block text-[10.5px] font-bold tracking-[.05em] text-rz-slate uppercase';
+const FIELD =
+    'w-full rounded-xl border border-rz-border bg-rz-field px-3.5 py-[11px] text-[13px] text-rz-ink outline-none placeholder:text-rz-placeholder focus:border-rz-focus-border';
+const EMPTY_ADDRESS: RwandaAddress = {
+    province: '',
+    district: '',
+    sector: '',
+    cell: '',
+    street: '',
+};
+
 /**
- * Personal & contact (design L740–760): the account's own email. No phone, address or district of
- * operation is held for a partner, so those rows read "Not provided" and nothing is editable.
+ * The registered address form (Erastus, 24 Nov 2026): a province, a district of that province, and
+ * the sector, cell and street as typed. Saving is the `contact.update` command; the server checks
+ * the district belongs to the province and says which field to fix.
+ */
+function AddressForm({
+    contact,
+    provinces,
+    revision,
+    onClose,
+}: {
+    contact: AuditorProfileProps['contact'];
+    provinces: RwandaProvinces;
+    revision: number;
+    onClose: () => void;
+}) {
+    const { t } = useTranslation();
+    const center = useAuditorCommands();
+    const [address, setAddress] = useState<RwandaAddress>(
+        contact.address ?? EMPTY_ADDRESS,
+    );
+    const error = (field: keyof RwandaAddress) =>
+        center.errors[`address.${field}`];
+    const set = (value: Partial<RwandaAddress>) =>
+        setAddress((current) => ({ ...current, ...value }));
+    const field = (key: 'sector' | 'cell' | 'street', placeholder: string) => (
+        <div className={key === 'street' ? 'sm:col-span-2' : undefined}>
+            <label htmlFor={`address-${key}`} className={LABEL}>
+                {t(`role.apply.address.${key}`)}
+            </label>
+            <input
+                id={`address-${key}`}
+                value={address[key]}
+                placeholder={placeholder}
+                aria-invalid={error(key) !== undefined}
+                onChange={(event) => set({ [key]: event.target.value })}
+                className={FIELD}
+            />
+            <FieldError message={error(key)} />
+        </div>
+    );
+
+    return (
+        <form
+            className="grid grid-cols-1 gap-3 border-t border-rz-border p-[15px] sm:grid-cols-2"
+            onSubmit={(event) => {
+                event.preventDefault();
+                center.send(
+                    {
+                        name: 'contact.update',
+                        business: '',
+                        route: contact.update,
+                        scope: ['contact.update'],
+                        payload: { address, expected_revision: revision },
+                    },
+                    { onCompleted: onClose },
+                );
+            }}
+        >
+            <div>
+                <label htmlFor="address-province" className={LABEL}>
+                    {t('role.apply.address.province')}
+                </label>
+                <select
+                    id="address-province"
+                    value={address.province}
+                    aria-invalid={error('province') !== undefined}
+                    onChange={(event) =>
+                        set({
+                            province: event.target.value,
+                            district: (
+                                provinces[event.target.value] ?? []
+                            ).includes(address.district)
+                                ? address.district
+                                : '',
+                        })
+                    }
+                    className={FIELD}
+                >
+                    <option value="">{t('role.apply.choose')}</option>
+                    {Object.keys(provinces).map((province) => (
+                        <option key={province} value={province}>
+                            {province}
+                        </option>
+                    ))}
+                </select>
+                <FieldError message={error('province')} />
+            </div>
+            <div>
+                <label htmlFor="address-district" className={LABEL}>
+                    {t('role.apply.company.district')}
+                </label>
+                <select
+                    id="address-district"
+                    value={address.district}
+                    aria-invalid={error('district') !== undefined}
+                    onChange={(event) => set({ district: event.target.value })}
+                    className={FIELD}
+                >
+                    <option value="">
+                        {t('role.apply.address.select_district')}
+                    </option>
+                    {(provinces[address.province] ?? []).map((district) => (
+                        <option key={district} value={district}>
+                            {district}
+                        </option>
+                    ))}
+                </select>
+                <FieldError message={error('district')} />
+            </div>
+            {field('sector', t('role.apply.address.sector_placeholder'))}
+            {field('cell', t('role.apply.address.cell_placeholder'))}
+            {field('street', t('role.apply.address.street_placeholder'))}
+            <div className="flex gap-2.5 sm:col-span-2">
+                <button
+                    type="button"
+                    onClick={onClose}
+                    className="flex-1 rounded-xl border border-rz-border py-3 text-[13px] font-bold text-rz-ink"
+                >
+                    {t('auditor.profile.contact.cancel')}
+                </button>
+                <button
+                    type="submit"
+                    disabled={!center.idle}
+                    aria-busy={center.busy || undefined}
+                    className={cn(
+                        'flex-1 rounded-xl py-3 text-[13px]',
+                        PRIMARY,
+                    )}
+                >
+                    {center.busy
+                        ? t('auditor.profile.contact.saving')
+                        : t('auditor.profile.contact.save')}
+                </button>
+            </div>
+        </form>
+    );
+}
+
+function FieldError({ message }: { message?: string }) {
+    return message ? (
+        <p role="alert" className="mt-1.5 text-[11.5px] text-rz-danger-text">
+            {message}
+        </p>
+    ) : null;
+}
+
+/**
+ * Personal & contact (design L740–760): the account's own email and the partner's registered
+ * address, which they edit here. The district of operation is the districts they accept audits in,
+ * set under Availability & coverage. No phone is held for a partner, so it reads "Not provided".
  */
 export function ContactSection({
     contact,
+    provinces,
+    revision,
+    districts,
 }: {
     contact: AuditorProfileProps['contact'];
+    provinces: RwandaProvinces;
+    /** The profile's revision, sent back as `expected_revision`. */
+    revision: number;
+    /** The districts the partner accepts audits in. */
+    districts: string[];
 }) {
     const { t } = useTranslation();
+    const [editing, setEditing] = useState(false);
     const rows: {
         key: 'phone' | 'email' | 'address' | 'district';
         icon: IconName;
@@ -36,43 +211,70 @@ export function ContactSection({
     }[] = [
         { key: 'phone', icon: 'phone', value: contact.phone },
         { key: 'email', icon: 'mail', value: contact.email },
-        { key: 'address', icon: 'pin', value: contact.address },
-        { key: 'district', icon: 'compass', value: null },
+        { key: 'address', icon: 'pin', value: contact.address_line },
+        {
+            key: 'district',
+            icon: 'compass',
+            value: districts.length === 0 ? null : districts.join(', '),
+        },
     ];
 
     return (
         <>
             <Heading label={t('auditor.profile.contact.title')} />
-            <dl className={CARD}>
-                {rows.map((row) => (
-                    <div
-                        key={row.key}
+            <div className={CARD}>
+                <dl>
+                    {rows.map((row) => (
+                        <div
+                            key={row.key}
+                            className={cn(
+                                'relative border-b py-3 pr-[15px] pl-[57px] last:border-b-0',
+                                DIVIDER,
+                            )}
+                        >
+                            <dt className="text-[10px] font-bold tracking-[.05em] text-rz-slate uppercase">
+                                {/* The mark sits in the term so the row keeps one term and one description. */}
+                                <span className="absolute top-1/2 left-[15px] flex size-[30px] -translate-y-1/2 items-center justify-center rounded-[9px] bg-rz-page text-[15px] dark:bg-rz-surface-muted">
+                                    <Icon name={row.icon} tone="amber" />
+                                </span>
+                                {t(`auditor.profile.contact.${row.key}`)}
+                            </dt>
+                            <dd
+                                className={cn(
+                                    'mt-0.5 truncate text-[13px] font-semibold',
+                                    row.value === null
+                                        ? 'text-rz-muted'
+                                        : 'text-rz-ink',
+                                )}
+                            >
+                                {row.value ??
+                                    t('auditor.profile.contact.not_provided')}
+                            </dd>
+                        </div>
+                    ))}
+                </dl>
+                {editing ? (
+                    <AddressForm
+                        contact={contact}
+                        provinces={provinces}
+                        revision={revision}
+                        onClose={() => setEditing(false)}
+                    />
+                ) : (
+                    <button
+                        type="button"
+                        onClick={() => setEditing(true)}
                         className={cn(
-                            'relative border-b py-3 pr-[15px] pl-[57px] last:border-b-0',
+                            'w-full border-t py-3 text-center text-[13px] font-bold text-rz-ink',
                             DIVIDER,
                         )}
                     >
-                        <dt className="text-[10px] font-bold tracking-[.05em] text-rz-slate uppercase">
-                            {/* The mark sits in the term so the row keeps one term and one description. */}
-                            <span className="absolute top-1/2 left-[15px] flex size-[30px] -translate-y-1/2 items-center justify-center rounded-[9px] bg-rz-page text-[15px] dark:bg-rz-surface-muted">
-                                <Icon name={row.icon} tone="amber" />
-                            </span>
-                            {t(`auditor.profile.contact.${row.key}`)}
-                        </dt>
-                        <dd
-                            className={cn(
-                                'mt-0.5 truncate text-[13px] font-semibold',
-                                row.value === null
-                                    ? 'text-rz-muted'
-                                    : 'text-rz-ink',
-                            )}
-                        >
-                            {row.value ??
-                                t('auditor.profile.contact.not_provided')}
-                        </dd>
-                    </div>
-                ))}
-            </dl>
+                        {contact.address === null
+                            ? t('auditor.profile.contact.add_address')
+                            : t('auditor.profile.contact.edit_address')}
+                    </button>
+                )}
+            </div>
         </>
     );
 }
