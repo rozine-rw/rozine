@@ -357,3 +357,31 @@ describe('Reviewing an auditor application (#757)', () => {
         );
     });
 });
+
+describe('Application history', () => {
+    it('reads a send-back followed by applicant saves as one send-back, then the saves', () => {
+        const entry = (revision: number, status: string, command: string) => ({
+            revision,
+            status,
+            command,
+            reason: null,
+            at: `2026-11-24T1${revision}:00:00+02:00`,
+        });
+        renderWithUser(
+            <RoleApplicationDrawer
+                application={application({
+                    history: [
+                        entry(1, 'changes_requested', 'application.more'),
+                        entry(2, 'changes_requested', 'application.save'),
+                        entry(3, 'changes_requested', 'application.save'),
+                    ],
+                })}
+                close="/admin/businesses"
+            />,
+        );
+
+        expect(
+            screen.getByText(/then 2 saves by the applicant/u),
+        ).toBeInTheDocument();
+    });
+});

@@ -151,7 +151,9 @@ final class EloquentRoleApplicationStore implements RoleApplicationStore
         $this->cases->role($role);
         $this->staff->check($actorId, self::PERMISSIONS[$role]);
         $tab = in_array($tab, ['submitted', 'changes_requested', 'approved', 'rejected'], true) ? $tab : 'submitted';
-        $query = $this->withAccount(RoleApplication::query())->where('role', $role)->where('status', $tab);
+        // Applications of a Party whose every account is closed leave the queue (#746); the Users page keeps closed accounts.
+        $open = fn ($users) => $users->selectRaw('1')->from('users')->whereColumn('users.party_id', 'role_applications.party_id')->whereNull('users.closed_at');
+        $query = $this->withAccount(RoleApplication::query())->where('role', $role)->where('status', $tab)->whereExists($open);
         if ($search !== '') {
             $term = '%'.addcslashes(mb_strtolower($search), '%_\\').'%';
             $query->where(fn (Builder $match) => $match->whereLike('search_name', $term)->orWhereExists(fn ($users) => $users->selectRaw('1')->from('users')
@@ -160,7 +162,7 @@ final class EloquentRoleApplicationStore implements RoleApplicationStore
         }
         $tab === 'submitted' ? $query->orderBy('submitted_at')->orderBy('id') : $query->orderByDesc('updated_at')->orderByDesc('id');
         $counts = [];
-        foreach (RoleApplication::query()->where('role', $role)->whereIn('status', ['submitted', 'changes_requested', 'approved', 'rejected'])
+        foreach (RoleApplication::query()->where('role', $role)->whereIn('status', ['submitted', 'changes_requested', 'approved', 'rejected'])->whereExists($open)
             ->groupBy('status')->selectRaw('status, count(*) AS total')->pluck('total', 'status') as $status => $total) {
             $counts[(string) $status] = (int) $total;
         }
@@ -488,7 +490,8 @@ final class EloquentRoleApplicationStore implements RoleApplicationStore
      */
     private function withAccount(Builder $query): Builder
     {
-        $account = fn (string $column) => User::query()->select($column)->whereColumn('users.party_id', 'role_applications.party_id')->orderBy('id')->limit(1);
+        $account = fn (string $column) => User::query()->select($column)->whereColumn('users.party_id', 'role_applications.party_id')
+            ->orderByRaw('closed_at IS NOT NULL')->orderBy('id')->limit(1);
 
         return $query->select('role_applications.*')->addSelect(['account_name' => $account('name'), 'account_email' => $account('email')]);
     }

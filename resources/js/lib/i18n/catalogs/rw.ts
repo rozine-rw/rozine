@@ -417,7 +417,7 @@ const rw: Catalog = {
     'admin.role_applications.pep_body':
         'Banza ugenzure byimbitse mbere yo kwemeza: genzura inkomoko y’amafaranga n’umutungo, wandike ibyo wagenzuye mu nyandiko.',
     'admin.role_applications.pep_confirm': 'Nagenzuye byimbitse uyu muntu.',
-    'admin.role_applications.saves': '(byabitswe {count})',
+    'admin.role_applications.saves': ', hanyuma usaba abika inshuro {count}',
     'role.apply.review.unchanged_title': 'Ibi ntabwo urabihindura',
     'role.apply.review.unchanged_body':
         'Abashinzwe kubahiriza amategeko bagusabye kubihindura. Ohereza bundi bushya gusa niba ari byo.',

@@ -411,7 +411,7 @@ const en = {
         'Do enhanced due diligence before approving: check the source of funds and wealth, and record what you checked in the note.',
     'admin.role_applications.pep_confirm':
         'I have done enhanced due diligence on this person.',
-    'admin.role_applications.saves': '({count} saves)',
+    'admin.role_applications.saves': ', then {count} saves by the applicant',
     'role.apply.review.unchanged_title': "You haven't changed these yet",
     'role.apply.review.unchanged_body':
         'Compliance asked you to change them. Send it again only if they are already correct.',
