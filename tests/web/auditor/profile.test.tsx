@@ -673,6 +673,44 @@ describe('Auditor Profile', () => {
         });
     });
 
+    it('sends a tap undone while its save is on the way once that save is recorded', async () => {
+        let respond: (value: unknown) => void = () => {};
+        inertia.queue.push(
+            () =>
+                new Promise((resolve) => {
+                    respond = resolve;
+                }),
+        );
+        const { user, rerender } = renderWithUser(
+            <AuditorProfile {...props(availabilityFixture)} />,
+        );
+
+        await user.click(screen.getByRole('button', { name: 'Huye' }));
+        await waitFor(() => expect(inertia.calls).toHaveLength(1));
+        await user.click(screen.getByRole('button', { name: 'Huye' }));
+        expect(screen.getByRole('button', { name: 'Huye' })).toHaveAttribute(
+            'aria-pressed',
+            'false',
+        );
+
+        respond(operation({ code: 'AVAILABILITY_UPDATED', revision: 6 }));
+        const recorded = props(availabilityFixture);
+        recorded.availability = {
+            ...recorded.availability,
+            districts: ['Gasabo', 'Kicukiro', 'Nyarugenge', 'Huye'],
+            revision: 6,
+        };
+        rerender(<AuditorProfile {...recorded} />);
+
+        await waitFor(() => expect(inertia.calls).toHaveLength(2));
+        expect(inertia.calls[1]).toMatchObject({
+            body: {
+                districts: ['Gasabo', 'Kicukiro', 'Nyarugenge'],
+                expected_revision: 6,
+            },
+        });
+    });
+
     it('keeps a coverage change saved elsewhere when its own save meets a newer revision', async () => {
         inertia.queue.push(fails(409, { code: 'VERSION_CONFLICT' }));
         const page = props(availabilityFixture);

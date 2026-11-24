@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     AvailabilityLocked,
     StandingNote,
@@ -90,15 +90,19 @@ export function AvailabilitySection({
     // page last loaded, and the next waits for the reload, so quick taps are never lost (QA #769).
     const [draft, setDraft] = useState<Edits | null>(null);
     const [failed, setFailed] = useState(false);
-    const sentAt = useRef<number | null>(null);
+    const [sentAt, setSentAt] = useState<number | null>(null);
     const shown = draft === null ? saved : applyEdits(saved, draft, all);
     const chosen = shown.districts;
     const max = shown.max;
     const locked = !allowed;
     const pending = draft !== null && !sameCoverage(shown, saved);
 
-    if (draft !== null && !pending) {
-        // The server now holds the draft: show what it recorded from here on.
+    // A save on its way, or one waiting for the reload that brings its revision, may still change
+    // the saved coverage: the edits are kept until it is reconciled, so a tap undone in flight is sent.
+    const settled = center.idle && sentAt !== availability.revision;
+
+    if (draft !== null && !pending && settled) {
+        // The server now holds the edits: show what it recorded from here on.
         setDraft(null);
     }
 
@@ -107,7 +111,7 @@ export function AvailabilitySection({
             !pending ||
             draft === null ||
             !center.idle ||
-            sentAt.current === availability.revision
+            sentAt === availability.revision
         ) {
             return;
         }
@@ -121,7 +125,7 @@ export function AvailabilitySection({
             Object.values(provinces).flat(),
         );
         const timer = window.setTimeout(() => {
-            sentAt.current = availability.revision;
+            setSentAt(availability.revision);
             const sent = center.send(
                 {
                     name: 'availability.update',
@@ -146,7 +150,7 @@ export function AvailabilitySection({
 
                         setDraft(null);
                         setFailed(true);
-                        sentAt.current = null;
+                        setSentAt(null);
 
                         return false;
                     },
@@ -156,12 +160,12 @@ export function AvailabilitySection({
             if (!sent) {
                 setDraft(null);
                 setFailed(true);
-                sentAt.current = null;
+                setSentAt(null);
             }
         }, SAVE_DELAY_MS);
 
         return () => window.clearTimeout(timer);
-    }, [pending, draft, center, availability, provinces]);
+    }, [pending, draft, center, availability, provinces, sentAt]);
 
     const edits: Edits = draft ?? { add: [], drop: [], max: null };
     const change = (next: Edits) => {
