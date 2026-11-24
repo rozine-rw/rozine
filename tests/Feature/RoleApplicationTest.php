@@ -401,3 +401,19 @@ test('the pulse needs a signed-in, verified account and says nothing about an ac
     $this->actingAs($staff)->getJson(route('dashboard.version'))->assertOk()->assertJsonStructure(['version']);
     $this->get(route('dashboard'))->assertOk()->assertInertia(fn (Assert $page): Assert => $page->where('hub', null));
 });
+
+test('phone numbers must be Rwandan numbers, so an 11-digit local number is refused (QA 24 Nov 2026)', function (): void {
+    kycSent($this->person);
+    $this->actingAs($this->person)->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'business', 'step' => 'company',
+        'answers' => companyAnswers(['phone' => '07897267365'])])->assertSessionHasErrors(['company.phone']);
+    $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'business', 'step' => 'company',
+        'answers' => companyAnswers(['phone' => '0788 000 111'])])->assertSessionHasNoErrors();
+
+    $people = peopleAnswers();
+    $people['representative']['phone'] = '07897267365';
+    $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'business', 'step' => 'people', 'answers' => $people])
+        ->assertSessionHasErrors(['representative.phone']);
+    $people['representative']['phone'] = '250788000222';
+    $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'business', 'step' => 'people', 'answers' => $people])
+        ->assertSessionHasNoErrors();
+});

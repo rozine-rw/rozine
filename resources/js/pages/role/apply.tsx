@@ -116,7 +116,11 @@ function blankPerson(owner: boolean): RoleApplicationPerson {
  */
 export default function RoleApply(props: RoleApplicationProps) {
     const { t } = useTranslation();
-    const errors = usePage().props.errors as Errors;
+    const page = usePage<{ auth?: { user?: { name?: string } | null } }>();
+    const errors = page.props.errors as Errors;
+    const accountName = (page.props.auth?.user?.name ?? '')
+        .trim()
+        .toLowerCase();
     const { application } = props;
     const role = props.role;
     const editable = [
@@ -654,7 +658,15 @@ export default function RoleApply(props: RoleApplicationProps) {
                                                   )
                                                 : slot === 'board_resolution'
                                                   ? t(
-                                                        'role.apply.document.optional',
+                                                        directors.some(
+                                                            (director) =>
+                                                                director.full_name
+                                                                    .trim()
+                                                                    .toLowerCase() ===
+                                                                accountName,
+                                                        )
+                                                            ? 'role.apply.document.optional'
+                                                            : 'role.apply.document.resolution_needed',
                                                     )
                                                   : undefined,
                                         ),
@@ -1664,8 +1676,13 @@ function UploadTile({
                     <span className="block truncate text-[11.5px] text-rz-secondary">
                         {uploaded
                             ? `${uploaded.filename} · ${t('role.apply.document.replace')}`
-                            : (hint ?? t('role.apply.document.tap'))}
+                            : t('role.apply.document.tap')}
                     </span>
+                    {hint && (
+                        <span className="mt-0.5 block text-[11.5px] text-rz-muted">
+                            {hint}
+                        </span>
+                    )}
                 </span>
                 {mine && <UploadStatus percent={sending.percent} overlay />}
             </label>

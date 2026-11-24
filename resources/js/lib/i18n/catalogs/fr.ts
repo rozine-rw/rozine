@@ -376,6 +376,8 @@ const fr: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Les auditeurs partenaires ne peuvent pas avoir un autre rôle Rozine : ce compte ne peut donc pas demander l’accès Auditeur.',
     'suite.app.unavailable': 'Indisponible avec votre accès actuel',
+    'role.apply.document.resolution_needed':
+        "Requise : vous n'êtes pas inscrit comme administrateur.",
     'admin.kyc.checks.title': 'Contrôles automatiques',
     'admin.kyc.check.id_birth_year':
         "L'année de naissance dans le numéro d'identité correspond à la date de naissance",

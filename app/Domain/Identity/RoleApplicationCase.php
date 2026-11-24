@@ -350,11 +350,17 @@ final class RoleApplicationCase
         if ($company['registered_address'] === '') {
             $errors['company.registered_address'] = ['Enter the registered office address.'];
         }
-        if (preg_match('/^\+?[0-9 ]{9,20}$/D', $company['phone']) !== 1) {
+        if (! self::rwandanPhone($company['phone'])) {
             $errors['company.phone'] = ['Enter the company phone number, for example +250 788 000 000.'];
         }
 
         return [$company, $errors];
+    }
+
+    /** A Rwandan number: +250 or 250 then nine digits, or 0 then nine digits, spaces allowed (QA 24 Nov 2026). */
+    private static function rwandanPhone(string $phone): bool
+    {
+        return preg_match('/^(\+?250|0)[0-9]{9}$/D', str_replace(' ', '', $phone)) === 1;
     }
 
     /** @return array{0: Representative, 1: array<string, list<string>>} */
@@ -368,7 +374,7 @@ final class RoleApplicationCase
         if ($representative['title'] === '') {
             $errors['representative.title'] = ['Enter your role at the company, for example Managing Director.'];
         }
-        if (preg_match('/^\+?[0-9 ]{9,20}$/D', $representative['phone']) !== 1) {
+        if (! self::rwandanPhone($representative['phone'])) {
             $errors['representative.phone'] = ['Enter your phone number, for example +250 788 000 000.'];
         }
         if (! $representative['authorised']) {

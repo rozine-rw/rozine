@@ -369,6 +369,8 @@ const rw: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Abagenzuzi ntibashobora kugira urundi ruhare muri Rozine, bityo iyi konti ntishobora gusaba uburenganzira bw’Umugenzuzi.',
     'suite.app.unavailable': 'Ntibishoboka n’uburenganzira ufite ubu',
+    'role.apply.document.resolution_needed':
+        "Irakenewe: ntabwo uri ku rutonde rw'abayobozi.",
     'admin.kyc.checks.title': 'Igenzura ryikora',
     'admin.kyc.check.id_birth_year':
         'Umwaka w’amavuko uri mu nomero y’indangamuntu uhura n’itariki y’amavuko',

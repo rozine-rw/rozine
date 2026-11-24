@@ -363,6 +363,8 @@ const en = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Audit Partners can’t hold another Rozine role, so this account can’t ask for Auditor access.',
     'suite.app.unavailable': 'Not available with your current access',
+    'role.apply.document.resolution_needed':
+        'Needed: you are not listed as a director.',
     'admin.kyc.checks.title': 'Automated checks',
     'admin.kyc.check.id_birth_year':
         'Birth year in the ID number matches the date of birth',
