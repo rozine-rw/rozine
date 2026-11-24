@@ -386,6 +386,18 @@ const fr: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Les auditeurs partenaires ne peuvent pas avoir un autre rôle Rozine : ce compte ne peut donc pas demander l’accès Auditeur.',
     'suite.app.unavailable': 'Indisponible avec votre accès actuel',
+    'admin.role_applications.kyc_first':
+        'Approuvez d’abord le KYC du demandeur (page Utilisateurs). Puis approuvez cette demande.',
+    'admin.role_applications.declared_yes': 'confirmé',
+    'admin.role_applications.declared_no': 'non confirmé',
+    'kyc.rail.steps': 'Étapes',
+    'kyc.rail.step_of': 'Étape {current} sur {total}',
+    'kyc.rail.privacy_title': 'Vos documents restent privés',
+    'kyc.rail.privacy_body':
+        'Les fichiers que vous envoyez sont chiffrés, et seule la Conformité de Rozine peut les ouvrir.',
+    'kyc.rail.next_title': 'Et ensuite',
+    'kyc.rail.next_body':
+        'L’équipe Conformité de Rozine examine ce que vous envoyez. Si quelque chose doit changer, elle indique précisément quoi, et vous ne corrigez que cela.',
     'admin.role_applications.resent_title':
         'Renvoyée après votre demande de modifications',
     'admin.role_applications.resent_body': 'Vous avez demandé ceci le {date} :',
@@ -2569,7 +2581,7 @@ const fr: Catalog = {
     'admin.role.treasury': 'Trésorerie',
     'admin.role.access.treasury': 'Accès trésorerie',
     'admin.kyc.intro':
-        "Demandes de vérification d'identité de personnes qui souhaitent investir. Ouvrez-en une pour vérifier ses documents, puis approuvez-la ou rejetez-la avec un motif.",
+        'Vérifications d’identité de personnes qui souhaitent investir. Ouvrez-en une pour lire ses documents et ses contrôles automatiques. La décision se prend sur la page Utilisateurs, où chaque KYC est approuvé, renvoyé ou rejeté.',
     'admin.kyc.tabs': 'États de vérification',
     'admin.kyc.tab.submitted': "En attente d'examen",
     'admin.kyc.tab.decided': 'Traitées',

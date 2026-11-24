@@ -104,7 +104,9 @@ final class EloquentUserDirectoryStore implements UserDirectoryStore
 
     /**
      * Every account, one row each, with the flags the chips filter on. A role counts while its
-     * membership is not revoked; a staff account counts whether or not it is enabled.
+     * membership is not revoked; a staff account counts whether or not it is enabled. Last seen is
+     * the later of the account's latest session and its latest command (a save, upload or decision),
+     * so an account whose session has ended still shows when it last acted (QA, 24 Nov 2026).
      */
     private function accounts(): Builder
     {
@@ -113,7 +115,10 @@ final class EloquentUserDirectoryStore implements UserDirectoryStore
             ->leftJoin('staff_accounts', 'staff_accounts.user_id', '=', 'users.id')
             ->selectRaw("users.id, users.party_id, users.name, coalesce(users.closed_email, users.email) AS email, users.email_verified_at IS NOT NULL AS email_verified,
                 users.created_at AS signed_up_at, users.closed_at, users.closure_reason, iv.id AS verification_id, iv.submitted_at,
-                (SELECT max(s.last_activity) FROM sessions s WHERE s.user_id = users.id) AS last_activity,
+                GREATEST((SELECT max(s.last_activity) FROM sessions s WHERE s.user_id = users.id),
+                    (SELECT floor(extract(epoch FROM max(o.created_at)))::bigint FROM command_operations o WHERE o.actor_user_id = users.id),
+                    (SELECT floor(extract(epoch FROM max(v.created_at)))::bigint FROM investor_verification_versions v WHERE v.actor_user_id = users.id),
+                    (SELECT floor(extract(epoch FROM max(r.created_at)))::bigint FROM role_application_versions r WHERE r.actor_user_id = users.id)) AS last_activity,
                 CASE WHEN parties.verified_at IS NOT NULL OR iv.status = 'approved' THEN 'verified' WHEN iv.status = 'submitted' THEN 'in_review'
                     WHEN iv.status = 'rejected' THEN 'rejected' WHEN iv.id IS NOT NULL THEN 'in_progress' ELSE 'not_started' END AS kyc,
                 EXISTS (SELECT 1 FROM role_memberships m WHERE m.party_id = users.party_id AND m.role = 'investor' AND m.status <> 'revoked') AS is_investor, EXISTS (SELECT 1 FROM role_memberships m WHERE m.party_id = users.party_id AND m.role = 'business' AND m.status <> 'revoked') AS is_business, EXISTS (SELECT 1 FROM role_memberships m WHERE m.party_id = users.party_id AND m.role = 'auditor' AND m.status <> 'revoked') AS is_auditor,

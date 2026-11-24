@@ -455,10 +455,55 @@ export function RoleApplicationDrawer({
                             </dl>
                         )}
                         {answers.coverage && (
-                            <p className="mt-2 text-[12.5px] text-rz-body">
-                                {t('role.apply.coverage.districts')}:{' '}
-                                {answers.coverage.districts.join(', ')}
-                            </p>
+                            <>
+                                <p className="mt-2 text-[12.5px] text-rz-body">
+                                    {t('role.apply.coverage.districts')}:{' '}
+                                    {answers.coverage.districts.join(', ')}
+                                </p>
+                                <p className="mt-3 text-[12px] font-semibold text-rz-ink">
+                                    {t('role.apply.coverage.conflicts')}
+                                </p>
+                                <ul className="mt-1 space-y-1 text-[12.5px] text-rz-body">
+                                    {(
+                                        [
+                                            'no_conflicts',
+                                            'will_declare',
+                                            'ethics',
+                                        ] as const
+                                    ).map((key) => (
+                                        <li
+                                            key={key}
+                                            className="flex items-start gap-2"
+                                        >
+                                            <span
+                                                aria-hidden
+                                                className={
+                                                    answers.coverage?.[key]
+                                                        ? 'text-[#17795a]'
+                                                        : 'text-[#b3352a]'
+                                                }
+                                            >
+                                                {answers.coverage?.[key]
+                                                    ? '✓'
+                                                    : '✗'}
+                                            </span>
+                                            <span>
+                                                {t(
+                                                    `role.apply.coverage.${key}`,
+                                                )}
+                                                <span className="sr-only">
+                                                    {' '}
+                                                    {t(
+                                                        answers.coverage?.[key]
+                                                            ? 'admin.role_applications.declared_yes'
+                                                            : 'admin.role_applications.declared_no',
+                                                    )}
+                                                </span>
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </>
                         )}
                     </Section>
                 )}
@@ -521,13 +566,9 @@ export function RoleApplicationDrawer({
                                     )}
                                 </li>
                             ))}
-                            {application.problems.length > 0 && (
-                                <li>
-                                    {t('admin.role_applications.incomplete', {
-                                        fields: application.problems.join(', '),
-                                    })}
-                                </li>
-                            )}
+                            {application.problems.map((problem) => (
+                                <li key={problem}>{problem}</li>
+                            ))}
                         </ul>
                     </Section>
                 )}
@@ -719,9 +760,17 @@ export function RoleApplicationDrawer({
                                 ) && (
                                     <button
                                         type="button"
-                                        disabled={busy !== null}
+                                        disabled={
+                                            busy !== null ||
+                                            application.kyc !== 'approved'
+                                        }
+                                        aria-describedby={
+                                            application.kyc === 'approved'
+                                                ? undefined
+                                                : 'role-application-kyc-first'
+                                        }
                                         onClick={() => setConfirming(true)}
-                                        className="flex-1 rounded-[10px] bg-[#17795a] px-4 py-[9px] text-[12.5px] font-bold text-white disabled:opacity-60"
+                                        className="flex-1 rounded-[10px] bg-[#17795a] px-4 py-[9px] text-[12.5px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                         {t(
                                             `admin.role_applications.${application.role}.approve`,
@@ -730,6 +779,15 @@ export function RoleApplicationDrawer({
                                 )}
                             </div>
                         )}
+                        {application.allowed_actions.includes('approve') &&
+                            application.kyc !== 'approved' && (
+                                <p
+                                    id="role-application-kyc-first"
+                                    className="mt-2 text-[12px] font-semibold text-[#8a4b0f] dark:text-[#f0b37a]"
+                                >
+                                    {t('admin.role_applications.kyc_first')}
+                                </p>
+                            )}
                         <p className="mt-2 text-[11.5px] text-rz-muted">
                             {t('admin.role_applications.note_hint')}
                         </p>

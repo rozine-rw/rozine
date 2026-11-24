@@ -115,7 +115,7 @@ final class EloquentRoleApplicationStore implements RoleApplicationStore
             }, submitted: true);
     }
 
-    /** @return array<string, array{filename: string, media_type: string}> */
+    /** @return array<string, array{id: string, filename: string, media_type: string}> */
     public function uploads(int $userId): array
     {
         return $this->own($userId, null, function (User $user, Party $party, ?RoleApplication $record): array {
@@ -126,7 +126,7 @@ final class EloquentRoleApplicationStore implements RoleApplicationStore
             foreach ($current as $slot => $documentId) {
                 $document = $documents->get($documentId);
                 if ($document !== null) {
-                    $uploads[$slot] = ['filename' => $document->filename, 'media_type' => $document->media_type];
+                    $uploads[$slot] = ['id' => (string) $documentId, 'filename' => $document->filename, 'media_type' => $document->media_type];
                 }
             }
 
@@ -208,8 +208,12 @@ final class EloquentRoleApplicationStore implements RoleApplicationStore
             'history' => array_values(RoleApplicationVersion::query()->where('role_application_id', $record->id)->orderBy('revision')->get()
                 ->map(fn (RoleApplicationVersion $version): array => ['revision' => $version->revision, 'status' => $version->status,
                     'command' => $version->command, 'reason' => $version->reason, 'at' => $version->created_at->toIso8601String()])->all()),
-            'blockers' => $userId === null ? [] : array_values(array_unique(array_column($this->closures->investorBlockers((int) $userId), 'code'))),
-            'problems' => array_keys($this->cases->problems($record->state, $this->today(), $this->industries(), $this->districts())),
+            // What still stands in the way of approval only matters while it can be approved; on a decided
+            // application it would show rules added since (QA #752) as if they blocked it.
+            'blockers' => $userId === null || $record->status !== 'submitted' ? []
+                : array_values(array_unique(array_column($this->closures->investorBlockers((int) $userId), 'code'))),
+            'problems' => $record->status !== 'submitted' ? []
+                : array_values(array_unique(array_merge(...array_values($this->cases->problems($record->state, $this->today(), $this->industries(), $this->districts()))))),
             'business_id' => $record->business_id,
             'allowed_actions' => $record->status === 'submitted' ? ['approve', 'more', 'reject'] : []];
     }

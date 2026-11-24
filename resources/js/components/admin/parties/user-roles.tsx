@@ -45,18 +45,26 @@ const membershipTone = (membership: UserMembership): Tone =>
  */
 export function UserRoleChips({
     row,
+    current = false,
 }: {
     row: Pick<UserRow, 'memberships' | 'staff' | 'requested'>;
+    /** Only the roles held now; the drawer lists revoked ones with their dates underneath. */
+    current?: boolean;
 }) {
     const { t } = useTranslation();
+    const memberships = current
+        ? row.memberships.filter(
+              (membership) => membership.status !== 'revoked',
+          )
+        : row.memberships;
     const none =
-        row.memberships.length === 0 &&
+        memberships.length === 0 &&
         row.staff === null &&
         row.requested.length === 0;
 
     return (
         <span className="flex flex-wrap gap-1">
-            {row.memberships.map((membership) => (
+            {memberships.map((membership) => (
                 <Chip key={membership.role} tone={membershipTone(membership)}>
                     {membership.status === 'active'
                         ? t(`admin.users.role.${membership.role}`)

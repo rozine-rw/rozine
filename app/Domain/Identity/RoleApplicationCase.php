@@ -275,9 +275,9 @@ final class RoleApplicationCase
     public function revisable(array $state): array
     {
         if ($state['role'] === 'auditor') {
-            return ['licence.membership_number' => 'ICPAR membership number', 'licence.licence_number' => 'Practising certificate number',
+            return ['licence.membership_number' => 'ICPAR membership number', 'licence.licence_number' => 'Practising certificate number (the typed number)',
                 'licence.expires_on' => 'Licence valid until', 'licence.firm' => 'Audit firm', 'address' => 'Registered address', 'coverage.districts' => 'Districts you accept',
-                'coverage.declarations' => 'Conflicts and ethics declarations', 'documents.practising_certificate' => 'ICPAR practising certificate'];
+                'coverage.declarations' => 'Conflicts and ethics declarations', 'documents.practising_certificate' => 'ICPAR practising certificate (the uploaded file)'];
         }
         $items = ['company.legal_name' => 'Company legal name', 'company.rdb_code' => 'RDB company code', 'company.tin' => 'TIN',
             'company.company_type' => 'Company type', 'company.incorporation_date' => 'Date of incorporation', 'company.industry' => 'Sector',

@@ -26,7 +26,7 @@ const application = (
         email: 'aline@example.rw',
         two_factor: true,
     },
-    kyc: 'submitted',
+    kyc: 'approved',
     kyc_verification_id: null,
     state: {
         role: 'business',
@@ -291,5 +291,69 @@ describe('Approving and reviewing a resubmission', () => {
         expect(
             screen.getByText('1 item(s) you asked to change were not changed.'),
         ).toBeInTheDocument();
+    });
+});
+
+describe('Reviewing an auditor application (#757)', () => {
+    const auditor = (kyc: RoleApplicationReview['kyc']) =>
+        application({
+            role: 'auditor',
+            kyc,
+            state: {
+                role: 'auditor',
+                step: 'review',
+                answers: {
+                    declared: true,
+                    licence: {
+                        membership_number: 'ICPAR-0042',
+                        licence_number: 'PC-2026-11',
+                        expires_on: '2027-12-31',
+                        firm: '',
+                    },
+                    coverage: {
+                        districts: ['Gasabo'],
+                        no_conflicts: true,
+                        will_declare: true,
+                        ethics: false,
+                    },
+                },
+                documents: {},
+                note: null,
+            },
+        });
+
+    it('shows each conflicts and ethics declaration with its answer', () => {
+        renderWithUser(
+            <RoleApplicationDrawer
+                application={auditor('approved')}
+                close="/admin/auditors"
+            />,
+        );
+
+        expect(screen.getByText('Independence')).toBeInTheDocument();
+        const items = screen
+            .getAllByRole('listitem')
+            .filter((item) => /confirmed/u.test(item.textContent ?? ''));
+        expect(
+            items.map((item) => item.textContent?.trim().slice(0, 1)),
+        ).toEqual(['✓', '✓', '✗']);
+        expect(items[2]).toHaveTextContent('not confirmed');
+    });
+
+    it("keeps Approve off until the applicant's KYC is approved, and says why", () => {
+        renderWithUser(
+            <RoleApplicationDrawer
+                application={auditor('submitted')}
+                close="/admin/auditors"
+            />,
+        );
+
+        const approve = screen.getByRole('button', {
+            name: 'Approve and accredit',
+        });
+        expect(approve).toBeDisabled();
+        expect(approve).toHaveAccessibleDescription(
+            "Approve the applicant's own KYC first (Users page). Then approve this application.",
+        );
     });
 });

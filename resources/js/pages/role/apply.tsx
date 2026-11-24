@@ -3,6 +3,7 @@ import { Link, router, usePage } from '@inertiajs/react';
 import { createContext, use, useState } from 'react';
 import type { ReactNode } from 'react';
 import { InvestorAuthFrame } from '@/components/investor/auth/auth-frame';
+import { RailNote, StepRail } from '@/components/investor/auth/step-rail';
 import { ErrorBanner } from '@/components/rozine/form';
 import { UploadStatus } from '@/components/rozine/upload-status';
 import { useTranslation } from '@/hooks/use-translation';
@@ -335,6 +336,13 @@ export default function RoleApply(props: RoleApplicationProps) {
     const unchanged = (requested?.items ?? []).filter((item) => {
         if (item.key.startsWith('documents.')) {
             const slot = item.key.slice('documents.'.length);
+            const before = requested?.before?.documents?.[slot];
+
+            // Compare the stored document, not the name: the page may have reloaded since the upload,
+            // and a replacement can carry the same filename.
+            if (before !== undefined) {
+                return application.uploads[slot]?.id === before;
+            }
 
             return (
                 application.uploads[slot]?.filename ===
@@ -355,11 +363,42 @@ export default function RoleApply(props: RoleApplicationProps) {
         <Flags value={flags}>
             <InvestorAuthFrame
                 title={t(`role.apply.step.${step}.title` as MessageCode)}
-                layout="column"
+                layout="workspace"
+                aside={
+                    <StepRail
+                        kicker={t(kicker)}
+                        accent={ACCENT[role]}
+                        steps={steps.map((key) => ({
+                            key,
+                            label: t(
+                                `role.apply.step.${key}.title` as MessageCode,
+                            ),
+                        }))}
+                        current={
+                            application.status === 'submitted'
+                                ? steps.length
+                                : index
+                        }
+                        onOpen={
+                            editable
+                                ? (key) => setStep(key as typeof step)
+                                : undefined
+                        }
+                    >
+                        <RailNote
+                            title={t('kyc.rail.next_title')}
+                            body={t('kyc.rail.next_body')}
+                        />
+                        <RailNote
+                            title={t('kyc.rail.privacy_title')}
+                            body={t('kyc.rail.privacy_body')}
+                        />
+                    </StepRail>
+                }
             >
                 <div
                     data-audience={role}
-                    className="px-5 pt-[calc(env(safe-area-inset-top)+14px)] pb-10 lg:pt-14"
+                    className="px-5 pt-[calc(env(safe-area-inset-top)+14px)] pb-10 lg:px-0 lg:pt-10"
                 >
                     <Header
                         back={
@@ -373,7 +412,7 @@ export default function RoleApply(props: RoleApplicationProps) {
                         accent={ACCENT[role]}
                     />
                     <p
-                        className="mt-2 text-[12.5px] font-semibold tracking-[.05em] uppercase"
+                        className="mt-2 text-[12.5px] font-semibold tracking-[.05em] uppercase lg:hidden"
                         style={{ color: ACCENT[role] }}
                     >
                         {t(kicker)}
@@ -457,7 +496,7 @@ export default function RoleApply(props: RoleApplicationProps) {
                             )}
 
                             {step === 'company' && (
-                                <div className="mt-5 flex flex-col gap-[13px]">
+                                <div className="mt-5 flex flex-col gap-[13px] lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-6">
                                     <Field
                                         id="rdb_code"
                                         label={t('role.apply.company.rdb_code')}
@@ -621,8 +660,8 @@ export default function RoleApply(props: RoleApplicationProps) {
                             )}
 
                             {step === 'people' && (
-                                <div className="mt-5 flex flex-col gap-[13px]">
-                                    <div className="grid grid-cols-2 gap-2.5">
+                                <div className="mt-5 flex flex-col gap-[13px] lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-6">
+                                    <div className="grid grid-cols-2 gap-2.5 lg:col-span-2 lg:gap-x-6">
                                         <Field
                                             id="rep_title"
                                             label={t(
@@ -663,24 +702,26 @@ export default function RoleApply(props: RoleApplicationProps) {
                                             }
                                         />
                                     </div>
-                                    <Check
-                                        accent={ACCENT[role]}
-                                        checked={representative.authorised}
-                                        error={error(
-                                            'representative.authorised',
-                                        )}
-                                        onChange={(checked) =>
-                                            setAnswers({
-                                                ...answers,
-                                                representative: {
-                                                    ...representative,
-                                                    authorised: checked,
-                                                },
-                                            })
-                                        }
-                                    >
-                                        {t('role.apply.people.authorised')}
-                                    </Check>
+                                    <div className="lg:col-span-2">
+                                        <Check
+                                            accent={ACCENT[role]}
+                                            checked={representative.authorised}
+                                            error={error(
+                                                'representative.authorised',
+                                            )}
+                                            onChange={(checked) =>
+                                                setAnswers({
+                                                    ...answers,
+                                                    representative: {
+                                                        ...representative,
+                                                        authorised: checked,
+                                                    },
+                                                })
+                                            }
+                                        >
+                                            {t('role.apply.people.authorised')}
+                                        </Check>
+                                    </div>
                                     <PeopleList
                                         title={t('role.apply.people.directors')}
                                         people={directors}
@@ -713,7 +754,7 @@ export default function RoleApply(props: RoleApplicationProps) {
                             )}
 
                             {step === 'documents' && (
-                                <div className="mt-5 flex flex-col gap-2.5">
+                                <div className="mt-5 flex flex-col gap-2.5 lg:grid lg:grid-cols-2 lg:gap-x-6 lg:gap-y-3">
                                     {BUSINESS_DOCUMENTS.map((slot) =>
                                         tile(
                                             slot,
@@ -745,14 +786,14 @@ export default function RoleApply(props: RoleApplicationProps) {
                                             }),
                                         ),
                                     )}
-                                    <p className="text-[11.5px] text-rz-secondary">
+                                    <p className="text-[11.5px] text-rz-secondary lg:col-span-2">
                                         {t('role.apply.document.formats')}
                                     </p>
                                 </div>
                             )}
 
                             {step === 'licence' && (
-                                <div className="mt-5 flex flex-col gap-[13px]">
+                                <div className="mt-5 flex flex-col gap-[13px] lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-6">
                                     <Field
                                         id="membership_number"
                                         label={t(
@@ -772,7 +813,7 @@ export default function RoleApply(props: RoleApplicationProps) {
                                             })
                                         }
                                     />
-                                    <div className="grid grid-cols-2 gap-2.5">
+                                    <div className="grid grid-cols-2 gap-2.5 lg:col-span-2 lg:gap-x-6">
                                         <Field
                                             id="licence_number"
                                             label={t(
@@ -1136,7 +1177,7 @@ export default function RoleApply(props: RoleApplicationProps) {
                                 </div>
                             )}
 
-                            <div className="mt-8">
+                            <div className="mt-8 lg:flex lg:justify-end lg:border-t lg:border-rz-border lg:pt-6">
                                 {step === 'review' ? (
                                     <PrimaryButton
                                         accent={ACCENT[role]}
@@ -1219,8 +1260,8 @@ function RoleChoice(props: RoleApplicationProps) {
     const { t } = useTranslation();
 
     return (
-        <InvestorAuthFrame title={t('role.choice.title')} layout="column">
-            <div className="px-5 pt-[calc(env(safe-area-inset-top)+14px)] pb-10 lg:pt-14">
+        <InvestorAuthFrame title={t('role.choice.title')} layout="workspace">
+            <div className="px-5 pt-[calc(env(safe-area-inset-top)+14px)] pb-10 lg:px-0 lg:pt-10">
                 <Header
                     back={dashboard().url}
                     percent={null}
@@ -1235,7 +1276,7 @@ function RoleChoice(props: RoleApplicationProps) {
                 <p className="mt-1.5 text-[13.5px] text-rz-secondary">
                     {t('role.choice.subtitle')}
                 </p>
-                <div className="mt-4 flex flex-col gap-2.5">
+                <div className="mt-4 flex flex-col gap-2.5 lg:mt-8 lg:grid lg:grid-cols-3 lg:items-stretch lg:gap-5">
                     <div className={CARD}>
                         <div className="flex items-center justify-between">
                             <span className="text-[15px] font-semibold text-rz-ink">
@@ -1271,7 +1312,7 @@ function RoleChoice(props: RoleApplicationProps) {
                         </div>
                     ))}
                     {props.blockers.length > 0 && (
-                        <div className="rounded-2xl border border-[#f1d9bd] bg-[#fff8ef] px-4 py-3 dark:border-[rgba(255,180,100,.3)] dark:bg-[rgba(194,102,31,.12)]">
+                        <div className="rounded-2xl border border-[#f1d9bd] bg-[#fff8ef] px-4 py-3 lg:col-span-3 dark:border-[rgba(255,180,100,.3)] dark:bg-[rgba(194,102,31,.12)]">
                             <p className="text-[11px] font-bold tracking-[.05em] text-[#8a4b0f] uppercase dark:text-[#f0b37a]">
                                 {t('role.apply.blockers.title')}
                             </p>
@@ -1287,7 +1328,7 @@ function RoleChoice(props: RoleApplicationProps) {
                         </div>
                     )}
                     {props.kyc !== 'approved' && (
-                        <p className="text-[12px] text-rz-secondary">
+                        <p className="text-[12px] text-rz-secondary lg:col-span-3">
                             {t('role.choice.kyc_note')}{' '}
                             <a
                                 href={investorVerification().url}
@@ -1389,7 +1430,7 @@ function Header({
                         aria-valuemin={0}
                         aria-valuemax={100}
                         aria-valuenow={percent}
-                        className="h-1.5 flex-1 overflow-hidden rounded-[4px] bg-rz-border"
+                        className="h-1.5 flex-1 overflow-hidden rounded-[4px] bg-rz-border lg:invisible"
                     >
                         <div
                             className="h-full transition-[width] duration-400"
@@ -1401,7 +1442,7 @@ function Header({
                     </div>
                     <span
                         aria-hidden
-                        className="text-[12.5px] font-semibold text-rz-secondary"
+                        className="text-[12.5px] font-semibold text-rz-secondary lg:hidden"
                     >
                         {percent}%
                     </span>
@@ -1551,7 +1592,7 @@ function AddressFields({
     const { t } = useTranslation();
 
     return (
-        <fieldset className="flex flex-col gap-[13px]">
+        <fieldset className="flex flex-col gap-[13px] lg:col-span-2">
             <legend className={cn(LABEL, 'mb-2.5 tracking-[.06em]')}>
                 {t('role.apply.company.address')}
             </legend>
@@ -2011,7 +2052,7 @@ function PrimaryButton({
             type="button"
             disabled={disabled}
             onClick={onClick}
-            className="flex h-[52px] w-full items-center justify-center rounded-2xl text-[15px] font-semibold text-white disabled:opacity-60"
+            className="flex h-[52px] w-full items-center justify-center rounded-2xl text-[15px] font-semibold text-white disabled:opacity-60 lg:w-auto lg:min-w-[240px] lg:px-10"
             style={{ background: accent }}
         >
             {children}

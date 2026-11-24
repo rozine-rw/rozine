@@ -90,7 +90,11 @@ export type RoleApplicationProps = {
                 documents: Record<string, string>;
             };
         } | null;
-        uploads: Record<string, { filename: string; media_type: string }>;
+        /** `id` names the stored document, so a replaced file counts as changed even with the same name. */
+        uploads: Record<
+            string,
+            { id?: string; filename: string; media_type: string }
+        >;
     };
     kyc: KycStatus;
     blockers: string[];
@@ -166,6 +170,7 @@ export type RoleApplicationReview = {
         at: string;
     }[];
     blockers: string[];
+    /** Plain-language reasons the answers can't be approved yet; empty unless the application is submitted. */
     problems: string[];
     business_id: string | null;
     allowed_actions: string[];
