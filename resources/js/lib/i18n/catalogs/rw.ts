@@ -379,7 +379,6 @@ const rw: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Abagenzuzi ntibashobora kugira urundi ruhare muri Rozine, bityo iyi konti ntishobora gusaba uburenganzira bw’Umugenzuzi.',
     'suite.app.unavailable': 'Ntibishoboka n’uburenganzira ufite ubu',
-    'admin.role_applications.saves_one': ', hanyuma usaba abika inshuro 1',
     'admin.role_applications.status.resubmitted':
         'Yongeye koherezwa ngo isuzumwe',
     'role.apply.people.pick_director':

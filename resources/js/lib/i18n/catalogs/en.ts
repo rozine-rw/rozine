@@ -373,7 +373,6 @@ const en = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Audit Partners can’t hold another Rozine role, so this account can’t ask for Auditor access.',
     'suite.app.unavailable': 'Not available with your current access',
-    'admin.role_applications.saves_one': ', then 1 save by the applicant',
     'admin.role_applications.status.resubmitted': 'Sent again for review',
     'role.apply.people.pick_director':
         'Is a director also an owner? Pick them:',

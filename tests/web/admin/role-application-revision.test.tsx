@@ -359,30 +359,6 @@ describe('Reviewing an auditor application (#757)', () => {
 });
 
 describe('Application history', () => {
-    it('says one save in the singular (#771)', () => {
-        renderWithUser(
-            <RoleApplicationDrawer
-                application={application({
-                    history: [1, 2].map((revision) => ({
-                        revision,
-                        status: 'changes_requested',
-                        command:
-                            revision === 1
-                                ? 'application.more'
-                                : 'application.save',
-                        reason: null,
-                        at: `2026-11-24T1${revision}:00:00+02:00`,
-                    })),
-                })}
-                close="/admin/businesses"
-            />,
-        );
-
-        expect(
-            screen.getByText(/then 1 save by the applicant/u),
-        ).toBeInTheDocument();
-    });
-
     it('reads a send-back followed by applicant saves as one send-back, then the saves, then the resend', () => {
         const entry = (revision: number, status: string, command: string) => ({
             revision,
@@ -413,4 +389,73 @@ describe('Application history', () => {
             screen.queryByText('Waiting for review'),
         ).not.toBeInTheDocument();
     });
+});
+
+describe('A resent registered address (#771)', () => {
+    const company = (street: string) => ({
+        legal_name: 'Walk Five Ltd',
+        rdb_code: '108 123 456',
+        tin: '108123456',
+        company_type: 'private_limited',
+        incorporation_date: '2019-04-02',
+        industry: 'Agriculture',
+        province: 'Kigali City',
+        district: 'Kicukiro',
+        sector: '',
+        cell: '',
+        street,
+        phone: '+250 788 000 111',
+    });
+    const resent = (key: string, street: string) =>
+        application({
+            state: {
+                role: 'business',
+                step: 'review',
+                answers: { declared: true, company: company(street) },
+                documents: {},
+                note: 'Fix the address.',
+                revision: {
+                    note: 'Fix the address.',
+                    items: [{ key, label: 'Registered address', note: '' }],
+                    requested_at: '2026-11-24T08:31:00+02:00',
+                    before: {
+                        answers: {
+                            declared: false,
+                            company: company('KK 15 Rd, Kicukiro'),
+                        },
+                        documents: {},
+                    },
+                },
+            },
+        });
+
+    it.each(['company.address', 'company.registered_address'])(
+        'reads the address parts together under %s: untouched is Not changed, edited is Changed',
+        (key) => {
+            const { unmount } = renderWithUser(
+                <RoleApplicationDrawer
+                    application={resent(key, 'KK 15 Rd, Kicukiro')}
+                    close="/admin/businesses"
+                />,
+            );
+            expect(
+                screen.getByRole('region', {
+                    name: 'Sent again after you asked for changes',
+                }),
+            ).toHaveTextContent('Registered addressNot changed');
+            unmount();
+
+            renderWithUser(
+                <RoleApplicationDrawer
+                    application={resent(key, 'KK 15 Rd, Plot 12')}
+                    close="/admin/businesses"
+                />,
+            );
+            expect(
+                screen.getByRole('region', {
+                    name: 'Sent again after you asked for changes',
+                }),
+            ).toHaveTextContent('Registered addressChanged');
+        },
+    );
 });
