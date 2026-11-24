@@ -244,9 +244,7 @@ describe('Compliance identity queue', () => {
         renderWithUser(<AdminInvestorVerifications {...queue()} />);
 
         expect(
-            screen.getByText(
-                /Identity submissions from people who want to invest/,
-            ),
+            screen.getByText(/Identity checks from people who want to invest/),
         ).toBeInTheDocument();
         const tabs = screen.getByRole('navigation', {
             name: 'Verification states',

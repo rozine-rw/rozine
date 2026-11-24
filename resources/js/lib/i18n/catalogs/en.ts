@@ -373,6 +373,18 @@ const en = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Audit Partners can’t hold another Rozine role, so this account can’t ask for Auditor access.',
     'suite.app.unavailable': 'Not available with your current access',
+    'admin.role_applications.kyc_first':
+        "Approve the applicant's own KYC first (Users page). Then approve this application.",
+    'admin.role_applications.declared_yes': 'confirmed',
+    'admin.role_applications.declared_no': 'not confirmed',
+    'kyc.rail.steps': 'Steps',
+    'kyc.rail.step_of': 'Step {current} of {total}',
+    'kyc.rail.privacy_title': 'Your documents stay private',
+    'kyc.rail.privacy_body':
+        'Files you upload are stored encrypted, and only Rozine Compliance can open them.',
+    'kyc.rail.next_title': 'What happens next',
+    'kyc.rail.next_body':
+        'Rozine’s Compliance team reviews what you send. If anything needs changing, they mark exactly what, and you only fix that.',
     'admin.role_applications.resent_title':
         'Sent again after you asked for changes',
     'admin.role_applications.resent_body': 'You asked for these on {date}:',
@@ -2440,7 +2452,7 @@ const en = {
     'admin.role.treasury': 'Treasury',
     'admin.role.access.treasury': 'Treasury access',
     'admin.kyc.intro':
-        'Identity submissions from people who want to invest. Open one to check its documents, then approve or reject it with a reason.',
+        'Identity checks from people who want to invest. Open one to read its documents and automated checks. Decide it in the Users page, where each person’s KYC is approved, sent back or rejected.',
     'admin.kyc.tabs': 'Verification states',
     'admin.kyc.tab.submitted': 'Waiting for review',
     'admin.kyc.tab.decided': 'Decided',

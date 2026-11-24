@@ -49,6 +49,12 @@ final class EloquentAccountClosures implements AccountClosures
     public function close(int $userId, ?string $reason): array
     {
         return DB::transaction(function () use ($userId, $reason): array {
+            // Party first, then the account: two accounts of one party closing at once queue here, so
+            // the second sees the first as closed and the last close ends the roles and releases the ID.
+            $partyId = User::query()->whereKey($userId)->value('party_id');
+            if ($partyId !== null) {
+                DB::table('parties')->where('id', $partyId)->lockForUpdate()->first();
+            }
             $user = User::query()->lockForUpdate()->findOrFail($userId);
             if ($user->isClosed()) {
                 return [];
@@ -67,8 +73,10 @@ final class EloquentAccountClosures implements AccountClosures
             DB::table('sessions')->where('user_id', $userId)->delete();
             $user->tokens()->delete();
             $identityReleased = $this->releaseIdentity($user, $closedAt);
+            $rolesEnded = $this->endRoles($user);
 
-            $after = ['closed_at' => $closedAt->toIso8601String(), 'roles' => $roles, 'email_released' => true, 'identity_released' => $identityReleased];
+            $after = ['closed_at' => $closedAt->toIso8601String(), 'roles' => $roles, 'email_released' => true, 'identity_released' => $identityReleased,
+                'roles_ended' => $rolesEnded];
             $requestId = (string) Str::uuid();
             (new IdentityAuditEvent)->forceFill([
                 'id' => strtolower((string) Str::ulid()), 'actor_key' => 'user:'.$userId, 'actor_user_id' => $userId,
@@ -106,6 +114,26 @@ final class EloquentAccountClosures implements AccountClosures
         DB::table('verified_person_identities')->where('identity_digest', $identity->identity_digest)->delete();
 
         return true;
+    }
+
+    /**
+     * Revokes the Party's Investor, Business and Auditor memberships when no other open account
+     * shares it, so a closed account holds no role anywhere in the console (#746). The rows stay.
+     *
+     * @return list<string>
+     */
+    private function endRoles(User $user): array
+    {
+        if ($user->party_id === null || User::query()->where('party_id', $user->party_id)
+            ->whereKeyNot($user->id)->whereNull('closed_at')->exists()) {
+            return [];
+        }
+        $ended = DB::table('role_memberships')->where('party_id', $user->party_id)->where('status', '!=', 'revoked')
+            ->lockForUpdate()->orderBy('role')->pluck('role')->map(fn (mixed $role): string => (string) $role)->all();
+        DB::table('role_memberships')->where('party_id', $user->party_id)->where('status', '!=', 'revoked')
+            ->update(['status' => 'revoked', 'revision' => DB::raw('revision + 1'), 'updated_at' => now()]);
+
+        return array_values($ended);
     }
 
     /** @return list<string> */

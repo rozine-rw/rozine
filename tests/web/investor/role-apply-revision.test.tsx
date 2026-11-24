@@ -194,4 +194,50 @@ describe('Fixing an application Compliance sent back', () => {
             screen.getByRole('button', { name: 'Declaration' }),
         ).toBeInTheDocument();
     });
+
+    it('counts a replaced document as changed after the page reloads (#753)', () => {
+        const replaced = (documentId: string) => {
+            const base = flagged(
+                'documents.articles',
+                'Articles of Association',
+            );
+
+            return {
+                ...base,
+                application: {
+                    ...base.application,
+                    step: 'review',
+                    requested_changes: {
+                        ...base.application.requested_changes,
+                        items: [
+                            { key: 'declared', label: 'Declaration', note: '' },
+                            ...base.application.requested_changes.items,
+                        ],
+                        before: {
+                            answers: base.application.answers!,
+                            documents: { articles: 'doc-old' },
+                        },
+                    },
+                    uploads: {
+                        articles: {
+                            id: documentId,
+                            filename: 'articles.pdf',
+                            media_type: 'application/pdf',
+                        },
+                    },
+                },
+            };
+        };
+
+        const { unmount } = render(<RoleApply {...replaced('doc-new')} />);
+        expect(
+            screen.queryByRole('button', { name: 'Articles of Association' }),
+        ).not.toBeInTheDocument();
+        unmount();
+
+        render(<RoleApply {...replaced('doc-old')} />);
+        expect(
+            screen.getByRole('button', { name: 'Articles of Association' }),
+        ).toBeInTheDocument();
+    });
 });

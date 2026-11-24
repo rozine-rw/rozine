@@ -17,7 +17,10 @@ export default function InvestorVerified({
     const { t } = useTranslation();
 
     return (
-        <InvestorAuthFrame title={t('investor.verified.title')} layout="column">
+        <InvestorAuthFrame
+            title={t('investor.verified.title')}
+            layout="workspace"
+        >
             <div className="flex min-h-svh flex-1 flex-col items-center justify-center px-7 text-center lg:min-h-[694px]">
                 <span className="flex size-24 animate-[rz-pop_.5s_ease] items-center justify-center rounded-full bg-[rgba(29,158,117,.10)]">
                     <span className="flex size-[66px] items-center justify-center rounded-full bg-[#17795a]">

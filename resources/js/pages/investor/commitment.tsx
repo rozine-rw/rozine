@@ -75,7 +75,7 @@ export default function InvestorCommitment({
                 settled: !command.busy && !command.unresolved,
             }}
         >
-            <div className="mx-auto max-w-[560px] px-5 pt-[calc(env(safe-area-inset-top)+14px)] pb-10 lg:pt-6">
+            <div className="mx-auto max-w-[560px] px-5 pt-[calc(env(safe-area-inset-top)+14px)] pb-10 lg:max-w-[880px] lg:px-8 lg:pt-6">
                 <div className="flex items-center gap-[11px]">
                     <Link
                         href={links.close}
