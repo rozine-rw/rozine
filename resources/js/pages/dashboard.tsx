@@ -1,4 +1,5 @@
 import { Head, Link, router, useHttp } from '@inertiajs/react';
+import { Bell } from 'lucide-react';
 import { useRef, useState } from 'react';
 import {
     HubAside,
@@ -19,6 +20,7 @@ import {
     deals as investorDeals,
     verification as investorVerification,
 } from '@/routes/investor';
+import { edit as profile } from '@/routes/profile';
 import { show as roleApplication } from '@/routes/role-application';
 import { edit as security } from '@/routes/security';
 import { dashboard as staffDashboard } from '@/routes/staff';
@@ -217,35 +219,300 @@ export default function Launcher({
         void selectRole(pending.current);
     }
 
+    /** With the hub the apps sit under it in the main column, as designed; alone they fill the page. */
+    const unread = hub?.recent.filter((notice) => !notice.read).length ?? 0;
+    const initials = (hub?.name ?? '')
+        .split(/\s+/u)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('');
+    const appsSection = (
+        <section
+            aria-labelledby="suite-apps"
+            className="animate-rz-rise [animation-delay:.1s]"
+        >
+            <div className="mb-3.5 flex items-center gap-[9px]">
+                <HeadingTag
+                    id="suite-apps"
+                    className="text-xs font-bold tracking-[.12em] text-rz-muted uppercase"
+                >
+                    {t('suite.section.apps')}
+                </HeadingTag>
+                <div className="h-px flex-1 bg-rz-divider" />
+            </div>
+            {preview_links && (
+                <p className="mb-4 text-sm text-rz-muted">
+                    {t('suite.preview')}
+                </p>
+            )}
+            {failure ? (
+                <div
+                    role="alert"
+                    className="flex max-w-xl flex-col gap-4 rounded-[18px] border border-rz-hairline bg-rz-surface p-5"
+                >
+                    <p>
+                        {t(
+                            failure === 'MFA_REQUIRED'
+                                ? 'suite.mfa_required'
+                                : failure === 'NETWORK_ERROR'
+                                  ? 'suite.network_error'
+                                  : failure === 'IDEMPOTENCY_KEY_REUSED'
+                                    ? 'suite.command_conflict'
+                                    : 'suite.access_changed',
+                        )}
+                    </p>
+                    {failure === 'NETWORK_ERROR' && (
+                        <button
+                            type="button"
+                            disabled={opening}
+                            className="text-left font-semibold text-rz-accent-text"
+                            onClick={() => void selectRole(pending.current!)}
+                        >
+                            {t('suite.retry')}
+                        </button>
+                    )}
+                    {failure === 'MFA_REQUIRED' && (
+                        <Link
+                            href={security()}
+                            className="font-semibold text-rz-accent-text"
+                        >
+                            {t('suite.mfa_setup')}{' '}
+                            <span aria-hidden="true">→</span>
+                        </Link>
+                    )}
+                    <Link href={dashboard()} preserveState={false}>
+                        {t('suite.refresh_access')}
+                    </Link>
+                </div>
+            ) : (
+                <>
+                    {/* A staff account is dedicated to Admin (ADR-0001): no marketplace apps. */}
+                    {canAdmin ? null : listsApps(identity.code) ? (
+                        <>
+                            <ul
+                                className={`grid grid-cols-1 gap-3.5 sm:grid-cols-2 ${hub ? 'xl:grid-cols-3' : 'lg:grid-cols-4'}`}
+                            >
+                                {APPS.map((role) => (
+                                    <li
+                                        key={role}
+                                        data-audience={role}
+                                        className="flex"
+                                    >
+                                        {identity.available_roles.includes(
+                                            role,
+                                        ) ? (
+                                            <button
+                                                type="button"
+                                                aria-label={t(
+                                                    `suite.app.${role}.title`,
+                                                )}
+                                                disabled={
+                                                    opening ||
+                                                    command.processing ||
+                                                    refreshing ||
+                                                    (!canSelect &&
+                                                        !(
+                                                            canView &&
+                                                            identity.active_role ===
+                                                                role
+                                                        ))
+                                                }
+                                                onClick={() => openRole(role)}
+                                                className={`${CARD} disabled:cursor-not-allowed disabled:opacity-60`}
+                                            >
+                                                <AppCardBody
+                                                    role={role}
+                                                    summary={`suite.app.${role}.description`}
+                                                    action="suite.app.open"
+                                                />
+                                            </button>
+                                        ) : role === 'investor' &&
+                                          investorOffer !== null ? (
+                                            <button
+                                                type="button"
+                                                aria-expanded={addingInvestor}
+                                                aria-controls="add-investor-access"
+                                                onClick={() =>
+                                                    setAddingInvestor(true)
+                                                }
+                                                className={CARD}
+                                            >
+                                                <AppCardBody
+                                                    role={role}
+                                                    summary="suite.app.investor.add"
+                                                    action="suite.app.add_access"
+                                                />
+                                            </button>
+                                        ) : role === 'investor' &&
+                                          identity.code ===
+                                              'IDENTITY_VERIFICATION_REQUIRED' ? (
+                                            <Link
+                                                href={investorDeals()}
+                                                className={CARD}
+                                            >
+                                                <AppCardBody
+                                                    role={role}
+                                                    summary="suite.app.investor.preview"
+                                                    action="suite.app.browse"
+                                                />
+                                            </Link>
+                                        ) : role !== 'investor' &&
+                                          role_application ? (
+                                            <RoleSwitchCard
+                                                role={role}
+                                                application={role_application}
+                                            />
+                                        ) : (
+                                            <div className={CARD}>
+                                                <AppCardBody
+                                                    role={role}
+                                                    summary={unavailableSummary(
+                                                        role,
+                                                        accessOffer,
+                                                    )}
+                                                    action="suite.app.unavailable"
+                                                />
+                                            </div>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                            {investorOffer !== null && addingInvestor && (
+                                <AddInvestorAccess
+                                    key={investorOffer.terms.sha256}
+                                    offer={investorOffer}
+                                    expectedRevision={identity.context_revision}
+                                    onCancel={() => setAddingInvestor(false)}
+                                    onAdded={(context) => {
+                                        pending.current = {
+                                            role: 'investor',
+                                            expected_revision:
+                                                context.context_revision,
+                                            request_id: crypto.randomUUID(),
+                                        };
+                                        void selectRole(pending.current);
+                                    }}
+                                />
+                            )}
+                            {identity.code ===
+                                'IDENTITY_VERIFICATION_REQUIRED' &&
+                                verification === 'pending' && (
+                                    <p
+                                        role="status"
+                                        className="mt-4 text-sm text-rz-body"
+                                    >
+                                        {t(
+                                            'suite.blocker.IDENTITY_VERIFICATION_PENDING.body',
+                                        )}
+                                    </p>
+                                )}
+                            {identity.code ===
+                                'IDENTITY_VERIFICATION_REQUIRED' &&
+                                verification !== 'pending' && (
+                                    <p
+                                        role="status"
+                                        className="mt-4 text-sm text-rz-body"
+                                    >
+                                        {t(
+                                            'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title',
+                                        )}{' '}
+                                        <a
+                                            href={investorVerification().url}
+                                            className="font-semibold text-rz-accent-text"
+                                        >
+                                            {t(
+                                                'suite.blocker.action.verify_identity',
+                                            )}
+                                        </a>
+                                    </p>
+                                )}
+                        </>
+                    ) : (
+                        <BlockerCard code={identity.code} />
+                    )}
+                    {mfaRequired && (
+                        <div
+                            role="status"
+                            className="mt-4 flex flex-col gap-3 text-sm"
+                        >
+                            <p className="text-rz-body">
+                                {t('suite.mfa_required')}
+                            </p>
+                            <Link
+                                href={security()}
+                                className="inline-flex w-fit items-center rounded-xl bg-rz-accent px-4 py-2.5 font-semibold text-white"
+                            >
+                                {t('suite.mfa_setup')}{' '}
+                                <span aria-hidden="true">→</span>
+                            </Link>
+                        </div>
+                    )}
+                    {canAdmin && (
+                        <Link
+                            href={staffDashboard()}
+                            className="mt-4 inline-block rounded-[18px] border border-rz-hairline bg-rz-surface p-5 font-semibold text-rz-ink"
+                        >
+                            {t('suite.admin')}
+                        </Link>
+                    )}
+                    {opening && (
+                        <p role="status" className="mt-4 text-sm text-rz-muted">
+                            {t('suite.opening')}
+                        </p>
+                    )}
+                </>
+            )}
+        </section>
+    );
+
     return (
-        <div className="rz-surface rz-launcher-bg flex min-h-screen flex-col px-4 pt-6 pb-10 sm:px-10 sm:pt-[34px]">
+        <div className="rz-surface rz-launcher-bg flex min-h-screen flex-col px-4 pb-10 sm:px-10">
             <Head title={t('suite.head_title')} />
-            <header className="flex animate-rz-rise items-center gap-[15px]">
+            {/* Fixed on scroll and set apart from the page, with the Live state, updates and profile (design, 24 Nov 2026). */}
+            <header className="sticky top-0 z-30 -mx-4 flex animate-rz-rise items-center gap-3 border-b border-rz-hairline bg-rz-surface px-4 py-3 sm:-mx-10 sm:gap-[15px] sm:px-10">
                 <LogoLockup
                     title={t('common.brand.name')}
-                    className="block h-10 w-auto shrink-0 text-rz-brand-mark"
+                    className="block h-9 w-auto shrink-0 text-rz-brand-mark"
                 />
-                <p className="hidden min-w-0 text-[13px] font-medium text-rz-body sm:block">
-                    {t('suite.tagline')}
-                </p>
-                <span className="ml-auto hidden text-[11px] font-semibold tracking-[.09em] text-rz-faint uppercase lg:inline">
-                    {t('suite.motto')}
-                </span>
-                {preview_links === undefined && (
-                    <span className="ml-auto lg:ml-0">
-                        <LivePill />
-                    </span>
+                <span className="ml-auto" />
+                {preview_links === undefined && <LivePill />}
+                {hub && (
+                    <a
+                        href="#hub-recent"
+                        aria-label={t('suite.header.updates', {
+                            count: unread,
+                        })}
+                        className="relative flex size-10 items-center justify-center rounded-xl border border-rz-hairline bg-rz-surface text-rz-ink"
+                    >
+                        <Bell aria-hidden="true" className="size-[18px]" />
+                        {unread > 0 && (
+                            <span className="absolute -top-1 -right-1 flex min-w-[18px] items-center justify-center rounded-full bg-rz-danger px-1 text-[10px] font-bold text-white">
+                                {unread}
+                            </span>
+                        )}
+                    </a>
+                )}
+                {hub && (
+                    <Link
+                        href={profile()}
+                        aria-label={t('suite.header.profile')}
+                        data-audience="investor"
+                        className="flex size-10 items-center justify-center rounded-full bg-rz-accent-fill text-sm font-bold text-white"
+                    >
+                        {initials}
+                    </Link>
                 )}
                 <Link
                     href={logout()}
                     as="button"
-                    className={`${preview_links === undefined ? '' : 'ml-auto '}text-sm font-semibold text-rz-body`}
+                    className="text-sm font-semibold text-rz-body"
                 >
                     {t('suite.sign_out')}
                 </Link>
             </header>
             <main
-                className={`mx-auto mt-3.5 flex w-full max-w-[1320px] flex-1 flex-col gap-[30px] ${hub ? 'pt-4 pb-40' : 'justify-center'}`}
+                className={`mx-auto mt-6 flex w-full max-w-[1320px] flex-1 flex-col gap-[30px] ${hub ? 'pt-4 pb-40' : 'justify-center'}`}
             >
                 {hub && (
                     /* The launcher has no app scope, so the hub takes the Investor accent every account starts with. */
@@ -258,6 +525,7 @@ export default function Launcher({
                         <div className="flex flex-wrap items-start gap-6">
                             <div className="flex min-w-0 flex-[999_1_560px] flex-col gap-6">
                                 <HubWork hub={hub} />
+                                {appsSection}
                             </div>
                             <aside className="flex min-w-0 flex-[1_1_320px] flex-col gap-6">
                                 <HubAside hub={hub} />
@@ -265,264 +533,7 @@ export default function Launcher({
                         </div>
                     </div>
                 )}
-                <section
-                    aria-labelledby="suite-apps"
-                    className="animate-rz-rise [animation-delay:.1s]"
-                >
-                    <div className="mb-3.5 flex items-center gap-[9px]">
-                        <HeadingTag
-                            id="suite-apps"
-                            className="text-xs font-bold tracking-[.12em] text-rz-muted uppercase"
-                        >
-                            {t('suite.section.apps')}
-                        </HeadingTag>
-                        <div className="h-px flex-1 bg-rz-divider" />
-                    </div>
-                    {preview_links && (
-                        <p className="mb-4 text-sm text-rz-muted">
-                            {t('suite.preview')}
-                        </p>
-                    )}
-                    {failure ? (
-                        <div
-                            role="alert"
-                            className="flex max-w-xl flex-col gap-4 rounded-[18px] border border-rz-hairline bg-rz-surface p-5"
-                        >
-                            <p>
-                                {t(
-                                    failure === 'MFA_REQUIRED'
-                                        ? 'suite.mfa_required'
-                                        : failure === 'NETWORK_ERROR'
-                                          ? 'suite.network_error'
-                                          : failure === 'IDEMPOTENCY_KEY_REUSED'
-                                            ? 'suite.command_conflict'
-                                            : 'suite.access_changed',
-                                )}
-                            </p>
-                            {failure === 'NETWORK_ERROR' && (
-                                <button
-                                    type="button"
-                                    disabled={opening}
-                                    className="text-left font-semibold text-rz-accent-text"
-                                    onClick={() =>
-                                        void selectRole(pending.current!)
-                                    }
-                                >
-                                    {t('suite.retry')}
-                                </button>
-                            )}
-                            {failure === 'MFA_REQUIRED' && (
-                                <Link
-                                    href={security()}
-                                    className="font-semibold text-rz-accent-text"
-                                >
-                                    {t('suite.mfa_setup')}{' '}
-                                    <span aria-hidden="true">→</span>
-                                </Link>
-                            )}
-                            <Link href={dashboard()} preserveState={false}>
-                                {t('suite.refresh_access')}
-                            </Link>
-                        </div>
-                    ) : (
-                        <>
-                            {/* A staff account is dedicated to Admin (ADR-0001): no marketplace apps. */}
-                            {canAdmin ? null : listsApps(identity.code) ? (
-                                <>
-                                    <ul className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
-                                        {APPS.map((role) => (
-                                            <li
-                                                key={role}
-                                                data-audience={role}
-                                                className="flex"
-                                            >
-                                                {identity.available_roles.includes(
-                                                    role,
-                                                ) ? (
-                                                    <button
-                                                        type="button"
-                                                        aria-label={t(
-                                                            `suite.app.${role}.title`,
-                                                        )}
-                                                        disabled={
-                                                            opening ||
-                                                            command.processing ||
-                                                            refreshing ||
-                                                            (!canSelect &&
-                                                                !(
-                                                                    canView &&
-                                                                    identity.active_role ===
-                                                                        role
-                                                                ))
-                                                        }
-                                                        onClick={() =>
-                                                            openRole(role)
-                                                        }
-                                                        className={`${CARD} disabled:cursor-not-allowed disabled:opacity-60`}
-                                                    >
-                                                        <AppCardBody
-                                                            role={role}
-                                                            summary={`suite.app.${role}.description`}
-                                                            action="suite.app.open"
-                                                        />
-                                                    </button>
-                                                ) : role === 'investor' &&
-                                                  investorOffer !== null ? (
-                                                    <button
-                                                        type="button"
-                                                        aria-expanded={
-                                                            addingInvestor
-                                                        }
-                                                        aria-controls="add-investor-access"
-                                                        onClick={() =>
-                                                            setAddingInvestor(
-                                                                true,
-                                                            )
-                                                        }
-                                                        className={CARD}
-                                                    >
-                                                        <AppCardBody
-                                                            role={role}
-                                                            summary="suite.app.investor.add"
-                                                            action="suite.app.add_access"
-                                                        />
-                                                    </button>
-                                                ) : role === 'investor' &&
-                                                  identity.code ===
-                                                      'IDENTITY_VERIFICATION_REQUIRED' ? (
-                                                    <Link
-                                                        href={investorDeals()}
-                                                        className={CARD}
-                                                    >
-                                                        <AppCardBody
-                                                            role={role}
-                                                            summary="suite.app.investor.preview"
-                                                            action="suite.app.browse"
-                                                        />
-                                                    </Link>
-                                                ) : role !== 'investor' &&
-                                                  role_application ? (
-                                                    <RoleSwitchCard
-                                                        role={role}
-                                                        application={
-                                                            role_application
-                                                        }
-                                                    />
-                                                ) : (
-                                                    <div className={CARD}>
-                                                        <AppCardBody
-                                                            role={role}
-                                                            summary={unavailableSummary(
-                                                                role,
-                                                                accessOffer,
-                                                            )}
-                                                            action="suite.app.unavailable"
-                                                        />
-                                                    </div>
-                                                )}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                    {investorOffer !== null &&
-                                        addingInvestor && (
-                                            <AddInvestorAccess
-                                                key={investorOffer.terms.sha256}
-                                                offer={investorOffer}
-                                                expectedRevision={
-                                                    identity.context_revision
-                                                }
-                                                onCancel={() =>
-                                                    setAddingInvestor(false)
-                                                }
-                                                onAdded={(context) => {
-                                                    pending.current = {
-                                                        role: 'investor',
-                                                        expected_revision:
-                                                            context.context_revision,
-                                                        request_id:
-                                                            crypto.randomUUID(),
-                                                    };
-                                                    void selectRole(
-                                                        pending.current,
-                                                    );
-                                                }}
-                                            />
-                                        )}
-                                    {identity.code ===
-                                        'IDENTITY_VERIFICATION_REQUIRED' &&
-                                        verification === 'pending' && (
-                                            <p
-                                                role="status"
-                                                className="mt-4 text-sm text-rz-body"
-                                            >
-                                                {t(
-                                                    'suite.blocker.IDENTITY_VERIFICATION_PENDING.body',
-                                                )}
-                                            </p>
-                                        )}
-                                    {identity.code ===
-                                        'IDENTITY_VERIFICATION_REQUIRED' &&
-                                        verification !== 'pending' && (
-                                            <p
-                                                role="status"
-                                                className="mt-4 text-sm text-rz-body"
-                                            >
-                                                {t(
-                                                    'suite.blocker.IDENTITY_VERIFICATION_REQUIRED.title',
-                                                )}{' '}
-                                                <a
-                                                    href={
-                                                        investorVerification()
-                                                            .url
-                                                    }
-                                                    className="font-semibold text-rz-accent-text"
-                                                >
-                                                    {t(
-                                                        'suite.blocker.action.verify_identity',
-                                                    )}
-                                                </a>
-                                            </p>
-                                        )}
-                                </>
-                            ) : (
-                                <BlockerCard code={identity.code} />
-                            )}
-                            {mfaRequired && (
-                                <div
-                                    role="status"
-                                    className="mt-4 flex flex-col gap-3 text-sm"
-                                >
-                                    <p className="text-rz-body">
-                                        {t('suite.mfa_required')}
-                                    </p>
-                                    <Link
-                                        href={security()}
-                                        className="inline-flex w-fit items-center rounded-xl bg-rz-accent px-4 py-2.5 font-semibold text-white"
-                                    >
-                                        {t('suite.mfa_setup')}{' '}
-                                        <span aria-hidden="true">→</span>
-                                    </Link>
-                                </div>
-                            )}
-                            {canAdmin && (
-                                <Link
-                                    href={staffDashboard()}
-                                    className="mt-4 inline-block rounded-[18px] border border-rz-hairline bg-rz-surface p-5 font-semibold text-rz-ink"
-                                >
-                                    {t('suite.admin')}
-                                </Link>
-                            )}
-                            {opening && (
-                                <p
-                                    role="status"
-                                    className="mt-4 text-sm text-rz-muted"
-                                >
-                                    {t('suite.opening')}
-                                </p>
-                            )}
-                        </>
-                    )}
-                </section>
+                {!hub && appsSection}
             </main>
             {hub && (
                 <div data-audience="investor" data-testid="dashboard-urgent">

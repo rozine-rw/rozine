@@ -198,6 +198,10 @@ const en = {
     'suite.tagline': 'The Retail Capital Markets Layer for Emerging Economies',
     'suite.motto': 'One live core · every surface',
     'suite.section.apps': 'Your apps',
+    'suite.header.updates':
+        'Updates, {count} unread',
+    'suite.header.profile':
+        'Your profile',
     'suite.hub.live': 'Live',
     'suite.hub.greeting': 'Hello, {name}',
     'suite.hub.greeting_plain': 'Welcome',
