@@ -201,10 +201,8 @@ const rw: Catalog = {
         "Urwego rw'amasoko y'imari y'abantu bose ku bukungu buri kuzamuka",
     'suite.motto': 'Intangiriro imwe · ahantu hose',
     'suite.section.apps': 'Porogaramu zawe',
-    'suite.header.updates':
-        'Amakuru, {count} atarasomwa',
-    'suite.header.profile':
-        'Umwirondoro wawe',
+    'suite.header.updates': 'Amakuru, {count} atarasomwa',
+    'suite.header.profile': 'Umwirondoro wawe',
     'suite.hub.live': 'Bihita ako kanya',
     'suite.hub.greeting': 'Muraho, {name}',
     'suite.hub.greeting_plain': 'Murakaza neza',

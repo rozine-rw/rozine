@@ -205,10 +205,8 @@ const fr: Catalog = {
         'La couche des marchés de capitaux de détail pour les économies émergentes',
     'suite.motto': 'Un seul cœur en direct · chaque surface',
     'suite.section.apps': 'Vos applications',
-    'suite.header.updates':
-        'Mises à jour, {count} non lues',
-    'suite.header.profile':
-        'Votre profil',
+    'suite.header.updates': 'Mises à jour, {count} non lues',
+    'suite.header.profile': 'Votre profil',
     'suite.hub.live': 'En direct',
     'suite.hub.greeting': 'Bonjour, {name}',
     'suite.hub.greeting_plain': 'Bienvenue',
