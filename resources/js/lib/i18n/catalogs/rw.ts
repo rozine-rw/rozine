@@ -302,6 +302,14 @@ const rw: Catalog = {
         'Compliance irabisuzuma umwirondoro wawe umaze kwemezwa. Tuzabandikira bikimara gufatirwa umwanzuro.',
     'suite.hub.next.role_review_auditor.body':
         'Compliance irabisuzuma umwirondoro wawe umaze kwemezwa. Tuzabandikira bikimara gufatirwa umwanzuro.',
+    'suite.hub.next.role_send_business.body_approved':
+        'Umwirondoro wawe wemejwe, Compliance izabisuzuma ukimara kubyohereza.',
+    'suite.hub.next.role_send_auditor.body_approved':
+        'Umwirondoro wawe wemejwe, Compliance izasuzuma uruhushya rwawe rwa ICPAR ukimara kurwohereza.',
+    'suite.hub.next.role_review_business.body_approved':
+        'Compliance irimo gusuzuma ikigo cyawe. Tuzabandikira bikimara gufatirwa umwanzuro.',
+    'suite.hub.next.role_review_auditor.body_approved':
+        'Compliance irimo gusuzuma uruhushya rwawe rwa ICPAR. Tuzabandikira bikimara gufatirwa umwanzuro.',
     'suite.hub.next.role_reapply.title': 'Ongera usabe igihe witeguye',
     'suite.hub.next.role_reapply.body':
         'Kosora amakuru yawe wohereze ubusabe bushya.',
@@ -490,6 +498,10 @@ const rw: Catalog = {
         'Genzura ubucuruzi buri ku rubuga. Ongeraho uruhushya rwa ICPAR n’uturere ukoreramo kugira ngo uhindukire Umugenzuzi.',
     'suite.app.switch.one_role':
         'Konti igira uruhare rumwe gusa icyarimwe. Indi dosiye yawe iri kwa Compliance.',
+    'suite.app.switch.held_business':
+        'Konti igira uruhare rumwe icyarimwe, urwawe ni Ubucuruzi.',
+    'suite.app.switch.held_auditor':
+        'Konti igira uruhare rumwe icyarimwe, urwawe ni Umugenzuzi.',
     'suite.app.switch.under_review_summary':
         'Dosiye yawe iri ku itsinda rya Compliance. Tuzakubwira nimara gusuzumwa.',
     'suite.app.switch.asked_summary':
