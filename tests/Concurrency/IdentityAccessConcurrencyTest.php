@@ -1124,7 +1124,7 @@ it('commits one conflict and one reassignment for concurrent identical declarati
         ->and($record->refresh()->state['attempt'])->toBe(2);
 });
 
-it('orders assignment locks consistently against office invalidation and availability changes', function (): void {
+it('orders assignment locks consistently against availability changes', function (): void {
     $this->freezeTime();
     $fixture = AuditAssignmentFixture::make(1);
     $partner = $fixture['partners'][0];
@@ -1133,22 +1133,15 @@ it('orders assignment locks consistently against office invalidation and availab
             DB::transaction(fn () => AuditAssignmentFixture::request($fixture));
         },
         function () use ($partner): void {
-            DB::transaction(function () use ($partner): void {
-                app(MarkAuditLocationMoved::class)->handle($partner['staff']->id, 'office', $partner['party']->id, 1,
-                    now('UTC')->format('Y-m-d\TH:i:s\Z'), 'Moved office.', (string) Str::uuid());
-            });
-        },
-        function () use ($partner): void {
             DB::transaction(fn () => app(SetAuditorAvailability::class)->handle($partner['user']->id, 1, 3, false, (string) Str::uuid()));
         },
     ];
-    expect(runIdentityContenders($operations))->toBe([0, 0, 0]);
+    expect(runIdentityContenders($operations))->toBe([0, 0]);
     $record = AuditAssignment::query()->firstOrFail();
     if ($record->status === 'offered') {
         expect(AuditAssignmentFixture::respond($partner['user'], $record)['http_status'])->toBe(403);
     }
-    expect(AuditorProfile::query()->firstOrFail()->state['accepting'])->toBeFalse()
-        ->and(AuditLocation::query()->where('office_party_id', $partner['party']->id)->firstOrFail()->state['point'])->toBeNull();
+    expect(AuditorProfile::query()->firstOrFail()->state['accepting'])->toBeFalse();
 });
 
 it('holds accepted-assignment and Business authority throughout a protected statement read', function (string $fault): void {

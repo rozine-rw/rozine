@@ -178,7 +178,7 @@ it('rejects invalid or server-owned form fields', function (string $step, string
     ['seal', 'note', str_repeat('a', 101), 'AUDIT_STEP_INPUT_INVALID'],
     ['seal', 'note', "Bad\0text", 'AUDIT_STEP_INPUT_INVALID'],
     ['seal', 'note', "\xff", 'AUDIT_STEP_INPUT_INVALID'],
-    ['seal', 'note', null, 'AUDIT_STEP_INPUT_INVALID'],
+    ['seal', 'note', 42, 'AUDIT_STEP_INPUT_INVALID'],
 ]);
 
 it('retains exact large integers and allows an empty optional note', function (): void {
@@ -187,6 +187,9 @@ it('retains exact large integers and allows an empty optional note', function ()
     $state = $procedure->save('flash', 'ledger', $state['draft'], 'ledger', ['observed_stock' => str_repeat('9', 64), 'reconciled' => true], procedureSources());
     expect($state['draft']['fields']['ledger']['observed_stock'])->toBe(str_repeat('9', 64));
     $state = $procedure->save('flash', 'seal', $state['draft'], 'seal', ['note' => ''], procedureSources());
+    expect($state['draft']['note'])->toBe('');
+    // A left-empty optional field reaches the procedure as null once the request is trimmed.
+    $state = $procedure->save('flash', 'seal', $state['draft'], 'seal', ['note' => null], procedureSources());
     expect($state['draft']['note'])->toBe('');
 });
 
