@@ -296,6 +296,14 @@ const en = {
         'Compliance reviews it once your identity check is approved. We email you as soon as it is decided.',
     'suite.hub.next.role_review_auditor.body':
         'Compliance reviews it once your identity check is approved. We email you as soon as it is decided.',
+    'suite.hub.next.role_send_business.body_approved':
+        'Your identity is approved, so Compliance reviews it as soon as you send it.',
+    'suite.hub.next.role_send_auditor.body_approved':
+        'Your identity is approved, so Compliance reviews your ICPAR licence as soon as you send it.',
+    'suite.hub.next.role_review_business.body_approved':
+        'Compliance is reviewing your business now. We email you as soon as it is decided.',
+    'suite.hub.next.role_review_auditor.body_approved':
+        'Compliance is reviewing your ICPAR licence now. We email you as soon as it is decided.',
     'suite.hub.next.role_reapply.title': 'Apply again when ready',
     'suite.hub.next.role_reapply.body':
         'Correct your details and send a new application.',

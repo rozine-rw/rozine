@@ -306,6 +306,14 @@ const fr: Catalog = {
         'La Conformité l’examine une fois votre identité approuvée. Nous vous écrivons dès la décision.',
     'suite.hub.next.role_review_auditor.body':
         'La Conformité l’examine une fois votre identité approuvée. Nous vous écrivons dès la décision.',
+    'suite.hub.next.role_send_business.body_approved':
+        'Votre identité est approuvée : la Conformité l’examine dès que vous l’envoyez.',
+    'suite.hub.next.role_send_auditor.body_approved':
+        'Votre identité est approuvée : la Conformité examine votre licence ICPAR dès que vous l’envoyez.',
+    'suite.hub.next.role_review_business.body_approved':
+        'La Conformité examine votre entreprise. Nous vous écrivons dès la décision.',
+    'suite.hub.next.role_review_auditor.body_approved':
+        'La Conformité examine votre licence ICPAR. Nous vous écrivons dès la décision.',
     'suite.hub.next.role_reapply.title':
         'Refaites une demande quand vous êtes prêt',
     'suite.hub.next.role_reapply.body':
