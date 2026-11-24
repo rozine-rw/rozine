@@ -378,6 +378,52 @@ const fr: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Les auditeurs partenaires ne peuvent pas avoir un autre rôle Rozine : ce compte ne peut donc pas demander l’accès Auditeur.',
     'suite.app.unavailable': 'Indisponible avec votre accès actuel',
+    'admin.role_applications.resent_title':
+        'Renvoyée après votre demande de modifications',
+    'admin.role_applications.resent_body': 'Vous avez demandé ceci le {date} :',
+    'admin.role_applications.item_changed': 'Modifié',
+    'admin.role_applications.item_unchanged': 'Non modifié',
+    'admin.role_applications.business.confirm_title':
+        'Approuver et intégrer {name} ?',
+    'admin.role_applications.business.confirm_body':
+        "Cela crée l'entreprise avec {name} comme représentant et met fin à son rôle d'investisseur. Indiquez pourquoi dans la note.",
+    'admin.role_applications.auditor.confirm_title':
+        'Approuver {name} comme auditeur ?',
+    'admin.role_applications.auditor.confirm_body':
+        "Cela accrédite {name} comme auditeur et met fin à son rôle d'investisseur. Indiquez pourquoi dans la note.",
+    'admin.role_applications.confirm_unchanged':
+        '{count} élément(s) à modifier n’ont pas été modifiés.',
+    'admin.role_applications.confirm_note':
+        'Écrivez une note ci-dessus pour approuver.',
+    'admin.role_applications.company': 'Entreprise',
+    'admin.role_applications.rep_name': 'Représentant',
+    'admin.role_applications.rep_title': "Fonction dans l'entreprise",
+    'admin.role_applications.rep_phone': 'Téléphone du représentant',
+    'admin.role_applications.pep_title':
+        'Une personne politiquement exposée est déclarée',
+    'admin.role_applications.pep_body':
+        "Faites une vigilance renforcée avant d'approuver : vérifiez l'origine des fonds et du patrimoine, et notez ce que vous avez vérifié.",
+    'admin.role_applications.pep_confirm':
+        "J'ai effectué une vigilance renforcée sur cette personne.",
+    'admin.role_applications.saves': '({count} enregistrements)',
+    'role.apply.review.unchanged_title':
+        "Vous n'avez pas encore modifié ces éléments",
+    'role.apply.review.unchanged_body':
+        "La conformité vous a demandé de les modifier. Renvoyez seulement s'ils sont déjà corrects.",
+    'role.apply.document.resolution_needed':
+        "Requise : vous n'êtes pas inscrit comme administrateur.",
+    'admin.kyc.checks.title': 'Contrôles automatiques',
+    'admin.kyc.check.id_birth_year':
+        "L'année de naissance dans le numéro d'identité correspond à la date de naissance",
+    'admin.kyc.check.passport_format':
+        'Le numéro de passeport a 6 à 12 lettres ou chiffres',
+    'admin.kyc.check.passed': 'Réussi',
+    'admin.kyc.check.flagged': 'À vérifier',
+    'admin.kyc.fact.age': 'Âge',
+    'admin.kyc.fact.age_value': '{age} ans',
+    'admin.kyc.decide_in_users':
+        'Le KYC est approuvé ou refusé dans la page Utilisateurs.',
+    'admin.kyc.open_in_users': 'Ouvrir dans Utilisateurs',
     'admin.role_applications.business.title': 'Demandes d’entreprise (KYB)',
     'admin.role_applications.business.caption':
         'Investisseurs demandant à devenir représentant d’entreprise. Examinez l’entreprise, ses personnes et ses documents, puis décidez ici.',

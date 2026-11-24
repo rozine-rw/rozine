@@ -1,4 +1,4 @@
-import { usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { formatTimestamp } from '@/components/admin/format';
 import { KycDocuments } from '@/components/admin/kyc-documents';
@@ -68,6 +68,14 @@ export function KycReview({
                         label={t('admin.kyc.fact.date_of_birth')}
                         value={review.date_of_birth}
                     />
+                    {review.age !== undefined && review.age !== null && (
+                        <Fact
+                            label={t('admin.kyc.fact.age')}
+                            value={t('admin.kyc.fact.age_value', {
+                                age: String(review.age),
+                            })}
+                        />
+                    )}
                     <Fact
                         label={t('admin.kyc.fact.id_type')}
                         value={t(`admin.kyc.id_type.${review.id_type}`)}
@@ -90,6 +98,43 @@ export function KycReview({
                     )}
                 </dl>
             </section>
+            {review.checks && review.checks.length > 0 && (
+                <section
+                    aria-label={t('admin.kyc.checks.title')}
+                    className="mt-5"
+                >
+                    <h3
+                        className={cn(
+                            'text-[12px] font-bold tracking-[.05em] uppercase',
+                            LABEL,
+                        )}
+                    >
+                        {t('admin.kyc.checks.title')}
+                    </h3>
+                    <ul className="mt-2.5 overflow-hidden rounded-[13px] border border-rz-hairline bg-rz-surface">
+                        {review.checks.map((check) => (
+                            <li
+                                key={check.key}
+                                className="flex items-center gap-2 border-b border-[#eef2f8] px-[15px] py-2.5 text-[12.5px] last:border-b-0 dark:border-rz-divider"
+                            >
+                                <span className="flex-1 text-rz-ink">
+                                    {t(`admin.kyc.check.${check.key}`)}
+                                </span>
+                                <span
+                                    className={cn(
+                                        'rounded-md px-2 py-0.5 text-[10.5px] font-bold whitespace-nowrap',
+                                        check.outcome === 'passed'
+                                            ? 'bg-[rgba(29,158,117,.12)] text-[#17795a] dark:text-[#5fd3a5]'
+                                            : 'bg-[rgba(194,102,31,.12)] text-[#a3480a] dark:text-[#f0a060]',
+                                    )}
+                                >
+                                    {t(`admin.kyc.check.${check.outcome}`)}
+                                </span>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}
             <section aria-label={t('admin.kyc.documents')} className="mt-5">
                 <h3
                     className={cn(
@@ -166,6 +211,19 @@ export function KycReview({
                 >
                     {errors.form}
                 </p>
+            )}
+            {review.decide && review.status === 'submitted' && (
+                <div className="mt-5 flex flex-wrap items-center gap-3 rounded-[13px] border border-rz-hairline bg-rz-surface px-[15px] py-3 text-[12.5px] text-rz-body">
+                    <span className="flex-1">
+                        {t('admin.kyc.decide_in_users')}
+                    </span>
+                    <Link
+                        href={review.decide}
+                        className="font-bold text-rz-ink underline"
+                    >
+                        {t('admin.kyc.open_in_users')}
+                    </Link>
+                </div>
             )}
             {stage ? (
                 <ReasonStage

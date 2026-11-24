@@ -184,7 +184,7 @@ test("an account's drawer shows its roles, identity, sign-in security, access re
             ->where('user.links.close', ['url' => '/admin/users?role=investor', 'method' => 'get'])
             ->where('user.links.investor', ['url' => '/admin/investors?verification='.$caseId, 'method' => 'get'])
             ->where('user.links.business', null)->where('user.links.auditor', null)->where('user.links.staff', null)
-            ->where('user.links.access_requests', ['url' => '/admin/access-requests', 'method' => 'get']));
+            ->where('user.links.access_requests', null));
 
     // Staff accounts link to Staff & Roles and show their own access history; an Investor without a case opens by Party.
     $investor = usersPerson('Aline Investor', 1, ['verified_at' => now()]);
@@ -200,7 +200,7 @@ test("an account's drawer shows its roles, identity, sign-in security, access re
     $this->actingAs($this->officer)->get(route('staff.users.index', ['user' => 999999]))->assertNotFound();
 });
 
-test('a superadmin reaches the Business, Auditor and Access requests tools from an account that holds those roles', function (): void {
+test('a superadmin reaches the Business and Auditor tools from an account that holds those roles, and the retired Access requests page is not linked', function (): void {
     $superadmin = User::factory()->withTwoFactor()->create();
     StaffFixture::provision($superadmin, ['superadmin'], 'Users page assignment.');
     $person = usersPerson('Chantal Both', 4);
@@ -211,7 +211,7 @@ test('a superadmin reaches the Business, Auditor and Access requests tools from 
     $this->actingAs($superadmin)->get(route('staff.users.index', ['user' => $person->id]))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('user.links.business', ['url' => '/admin/businesses', 'method' => 'get'])
             ->where('user.links.auditor', ['url' => '/admin/auditors', 'method' => 'get'])
-            ->where('user.links.access_requests', ['url' => '/admin/access-requests', 'method' => 'get'])
+            ->where('user.links.access_requests', null)
             ->where('user.requested', [])->where('user.requests.0.role', 'business'));
 });
 

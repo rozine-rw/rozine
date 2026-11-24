@@ -238,7 +238,10 @@ test('compliance sends an application back naming the items to change, and the a
     $this->post(route('role-application.upload'), [...roleEnvelope($this->person), 'slot' => 'articles', 'file' => rolePdf('articles-signed.pdf')])->assertSessionHasNoErrors();
     $this->post(route('role-application.submit'), [...roleEnvelope($this->person), 'declared' => false])->assertSessionHasErrors('declared');
     $this->post(route('role-application.submit'), [...roleEnvelope($this->person), 'declared' => true])->assertSessionHasNoErrors();
-    expect($application->refresh()->status)->toBe('submitted')->and($application->state['note'])->toBeNull();
+    expect($application->refresh()->status)->toBe('submitted')->and($application->state['note'])->toBeNull()
+        // The send-back keeps what each item held, so Compliance sees the articles changed and the TIN did not.
+        ->and($application->state['revision']['before']['answers']['company']['tin'] ?? null)->toBe($application->state['answers']['company']['tin'] ?? '')
+        ->and($application->state['revision']['before']['documents']['articles'] ?? null)->not->toBe($application->state['documents']['articles'] ?? null);
 
     decideApplication($this, $this->officer, $application, 'reject', 'This company is already represented on Rozine.')->assertSessionHasNoErrors();
     expect($application->refresh()->status)->toBe('rejected')
@@ -400,4 +403,20 @@ test('the pulse needs a signed-in, verified account and says nothing about an ac
     $staff = User::factory()->create(['party_id' => null]);
     $this->actingAs($staff)->getJson(route('dashboard.version'))->assertOk()->assertJsonStructure(['version']);
     $this->get(route('dashboard'))->assertOk()->assertInertia(fn (Assert $page): Assert => $page->where('hub', null));
+});
+
+test('phone numbers must be Rwandan numbers, so an 11-digit local number is refused (QA 24 Nov 2026)', function (): void {
+    kycSent($this->person);
+    $this->actingAs($this->person)->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'business', 'step' => 'company',
+        'answers' => companyAnswers(['phone' => '07897267365'])])->assertSessionHasErrors(['company.phone']);
+    $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'business', 'step' => 'company',
+        'answers' => companyAnswers(['phone' => '0788 000 111'])])->assertSessionHasNoErrors();
+
+    $people = peopleAnswers();
+    $people['representative']['phone'] = '07897267365';
+    $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'business', 'step' => 'people', 'answers' => $people])
+        ->assertSessionHasErrors(['representative.phone']);
+    $people['representative']['phone'] = '250788000222';
+    $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'business', 'step' => 'people', 'answers' => $people])
+        ->assertSessionHasNoErrors();
 });

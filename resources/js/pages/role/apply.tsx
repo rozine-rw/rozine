@@ -46,6 +46,39 @@ const FLAG_KEYS: Record<string, string> = {
     expires_on: 'licence.expires_on',
     firm: 'licence.firm',
 };
+/** The form step that holds an item Compliance flagged, so "Fix now" opens where the change is made. */
+function stepForItem(key: string, role: 'business' | 'auditor'): string {
+    const head = key.split('.')[0];
+
+    if (head === 'documents') {
+        return role === 'auditor' ? 'licence' : 'documents';
+    }
+
+    return (
+        {
+            company: 'company',
+            representative: 'people',
+            directors: 'people',
+            owners: 'people',
+            licence: 'licence',
+            coverage: 'coverage',
+        }[head] ?? 'review'
+    );
+}
+
+/** The answer at a dotted key such as `company.tin`. */
+function valueAt(answers: object, key: string): unknown {
+    return key
+        .split('.')
+        .reduce<unknown>(
+            (value, part) =>
+                value !== null && typeof value === 'object'
+                    ? (value as Record<string, unknown>)[part]
+                    : undefined,
+            answers,
+        );
+}
+
 /** The items Compliance flagged, by key, with their note; empty when nothing was sent back. */
 const Flags = createContext<Record<string, string>>({});
 
@@ -116,7 +149,11 @@ function blankPerson(owner: boolean): RoleApplicationPerson {
  */
 export default function RoleApply(props: RoleApplicationProps) {
     const { t } = useTranslation();
-    const errors = usePage().props.errors as Errors;
+    const page = usePage<{ auth?: { user?: { name?: string } | null } }>();
+    const errors = page.props.errors as Errors;
+    const accountName = (page.props.auth?.user?.name ?? '')
+        .trim()
+        .toLowerCase();
     const { application } = props;
     const role = props.role;
     const editable = [
@@ -130,7 +167,24 @@ export default function RoleApply(props: RoleApplicationProps) {
         role !== null && application.role === role && application.step
             ? application.step
             : (steps[0] ?? 'review');
-    const [step, setStep] = useState<string>(reached);
+    const firstFlagged =
+        application.status === 'changes_requested'
+            ? application.requested_changes?.items[0]?.key
+            : undefined;
+    const [step, setStep] = useState<string>(() => {
+        const flaggedStep =
+            firstFlagged === undefined || role === null
+                ? undefined
+                : stepForItem(firstFlagged, role);
+
+        return flaggedStep !== undefined && steps.includes(flaggedStep)
+            ? flaggedStep
+            : reached;
+    });
+    const [sentBack] = useState(() => ({
+        answers: JSON.stringify(application.answers ?? {}),
+        uploads: application.uploads,
+    }));
     const [answers, setAnswers] = useState<RoleApplicationAnswers>(() =>
         application.role === role && application.answers
             ? application.answers
@@ -255,6 +309,24 @@ export default function RoleApply(props: RoleApplicationProps) {
         application.status === 'changes_requested'
             ? (application.requested_changes ?? null)
             : null;
+    const initialAnswers: object =
+        requested?.before?.answers ??
+        (JSON.parse(sentBack.answers) as Record<string, unknown>);
+    const unchanged = (requested?.items ?? []).filter((item) => {
+        if (item.key.startsWith('documents.')) {
+            const slot = item.key.slice('documents.'.length);
+
+            return (
+                application.uploads[slot]?.filename ===
+                sentBack.uploads[slot]?.filename
+            );
+        }
+
+        return (
+            JSON.stringify(valueAt(answers, item.key)) ===
+            JSON.stringify(valueAt(initialAnswers, item.key))
+        );
+    });
     const flags: Record<string, string> = Object.fromEntries(
         (requested?.items ?? []).map((item) => [item.key, item.note]),
     );
@@ -654,7 +726,15 @@ export default function RoleApply(props: RoleApplicationProps) {
                                                   )
                                                 : slot === 'board_resolution'
                                                   ? t(
-                                                        'role.apply.document.optional',
+                                                        directors.some(
+                                                            (director) =>
+                                                                director.full_name
+                                                                    .trim()
+                                                                    .toLowerCase() ===
+                                                                accountName,
+                                                        )
+                                                            ? 'role.apply.document.optional'
+                                                            : 'role.apply.document.resolution_needed',
                                                     )
                                                   : undefined,
                                         ),
@@ -845,6 +925,44 @@ export default function RoleApply(props: RoleApplicationProps) {
 
                             {step === 'review' && (
                                 <div className="mt-5 flex flex-col gap-2.5">
+                                    {unchanged.length > 0 && (
+                                        <div
+                                            role="status"
+                                            className="rounded-2xl border border-[#f1d9bd] bg-[#fff8ef] px-4 py-3 dark:border-[rgba(255,180,100,.3)] dark:bg-[rgba(194,102,31,.12)]"
+                                        >
+                                            <p className="text-[11px] font-bold tracking-[.05em] text-[#8a4b0f] uppercase dark:text-[#f0b37a]">
+                                                {t(
+                                                    'role.apply.review.unchanged_title',
+                                                )}
+                                            </p>
+                                            <ul className="mt-1 list-disc pl-5 text-[12.5px] text-rz-body">
+                                                {unchanged.map((item) => (
+                                                    <li key={item.key}>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                role !== null &&
+                                                                setStep(
+                                                                    stepForItem(
+                                                                        item.key,
+                                                                        role,
+                                                                    ),
+                                                                )
+                                                            }
+                                                            className="text-left font-semibold underline"
+                                                        >
+                                                            {item.label}
+                                                        </button>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                            <p className="mt-1.5 text-[12px] text-rz-secondary">
+                                                {t(
+                                                    'role.apply.review.unchanged_body',
+                                                )}
+                                            </p>
+                                        </div>
+                                    )}
                                     {props.kyc !== 'approved' && (
                                         <div className="rounded-2xl border border-[#f1d9bd] bg-[#fff8ef] px-4 py-3 dark:border-[rgba(255,180,100,.3)] dark:bg-[rgba(194,102,31,.12)]">
                                             <p className="text-[11px] font-bold tracking-[.05em] text-[#8a4b0f] uppercase dark:text-[#f0b37a]">
@@ -1664,8 +1782,13 @@ function UploadTile({
                     <span className="block truncate text-[11.5px] text-rz-secondary">
                         {uploaded
                             ? `${uploaded.filename} · ${t('role.apply.document.replace')}`
-                            : (hint ?? t('role.apply.document.tap'))}
+                            : t('role.apply.document.tap')}
                     </span>
+                    {hint && (
+                        <span className="mt-0.5 block text-[11.5px] text-rz-muted">
+                            {hint}
+                        </span>
+                    )}
                 </span>
                 {mine && <UploadStatus percent={sending.percent} overlay />}
             </label>
