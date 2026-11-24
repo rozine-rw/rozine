@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "28da73897bf12c955088f95a5b4974e6e9036fdf7348d661ba6281d7f6a9532d",
-    "coverageSetSha256": "3bb27ab4f3404bfc88702df6b846f75045acf3d6c792383639d9b498f90f9dd9",
+    "sourceManifestSha256": "e8254b7a5112ce734bf631bd0d66c68df3afc8f53e18028d3ae0a5dccbfdd62d",
+    "coverageSetSha256": "88458a009b7b35b4d2d0ce3bf729cb00d07a0e5f15f3bd118bc73609bc7d452d",
     "thresholds": {
         "critical": {
             "global": {
@@ -67,7 +67,6 @@
         "resources/js/components/admin/parties/action-log.tsx",
         "resources/js/components/admin/parties/business-audit.tsx",
         "resources/js/components/admin/parties/directory-table.tsx",
-        "resources/js/components/admin/parties/dispatch-location.tsx",
         "resources/js/components/admin/parties/invite-operator.tsx",
         "resources/js/components/admin/parties/onboard-business.tsx",
         "resources/js/components/admin/parties/party-drawer.tsx",
@@ -147,11 +146,11 @@
         "resources/js/components/auditor/home/home-body.tsx",
         "resources/js/components/auditor/home/top-row.tsx",
         "resources/js/components/auditor/job-commands.tsx",
+        "resources/js/components/auditor/jobs/district-coverage.tsx",
         "resources/js/components/auditor/jobs/eligible-card.tsx",
         "resources/js/components/auditor/jobs/jobs-body.tsx",
         "resources/js/components/auditor/jobs/monthly-section.tsx",
         "resources/js/components/auditor/jobs/offer-accept.tsx",
-        "resources/js/components/auditor/jobs/radius-map.tsx",
         "resources/js/components/auditor/keyframes.tsx",
         "resources/js/components/auditor/money.ts",
         "resources/js/components/auditor/portfolio/audit-calendar.tsx",
@@ -163,6 +162,7 @@
         "resources/js/components/auditor/profile/availability-section.tsx",
         "resources/js/components/auditor/profile/earnings-section.tsx",
         "resources/js/components/auditor/profile/identity-card.tsx",
+        "resources/js/components/auditor/pulse.ts",
         "resources/js/components/auditor/refresh.ts",
         "resources/js/components/auditor/sheets/bottom-sheet.tsx",
         "resources/js/components/auditor/sheets/conflict-sheet.tsx",
@@ -245,6 +245,7 @@
         "resources/js/components/investor/audit-drawer.tsx",
         "resources/js/components/investor/auth/auth-forms.tsx",
         "resources/js/components/investor/auth/auth-frame.tsx",
+        "resources/js/components/investor/auth/step-rail.tsx",
         "resources/js/components/investor/cart/whole-cart.tsx",
         "resources/js/components/investor/deals/checkout-sheet.tsx",
         "resources/js/components/investor/deals/deal-bits.tsx",

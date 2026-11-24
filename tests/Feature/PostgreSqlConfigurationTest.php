@@ -180,6 +180,10 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $disbursementPayouts->down();
     $servicingPayouts->down();
     $secondaryMarket->down();
+    // Role applications reference parties and Business profiles, which are rebuilt below, so they come off first and go back last.
+    $roleApplications = require database_path('migrations/2026_11_23_200000_create_role_applications.php');
+    $roleApplications->down();
+    expect(Schema::hasTable('role_applications'))->toBeFalse();
     // Legal consents and released identities reference parties, which are rebuilt below, so they come off first and go back last.
     $legalConsents = require database_path('migrations/2026_11_23_090000_create_legal_consents_table.php');
     $legalConsents->down();
@@ -521,6 +525,8 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $roleAccessRequests->up();
     $releasedIdentities->up();
     $legalConsents->up();
+    $roleApplications->up();
+    expect(Schema::hasTable('role_applications'))->toBeTrue();
     expect(Schema::hasTable('business_visit_ready_ticks'))->toBeTrue();
     $secondaryMarket->up();
     $servicingPayouts->up();
