@@ -390,3 +390,72 @@ describe('Application history', () => {
         ).not.toBeInTheDocument();
     });
 });
+
+describe('A resent registered address (#771)', () => {
+    const company = (street: string) => ({
+        legal_name: 'Walk Five Ltd',
+        rdb_code: '108 123 456',
+        tin: '108123456',
+        company_type: 'private_limited',
+        incorporation_date: '2019-04-02',
+        industry: 'Agriculture',
+        province: 'Kigali City',
+        district: 'Kicukiro',
+        sector: '',
+        cell: '',
+        street,
+        phone: '+250 788 000 111',
+    });
+    const resent = (key: string, street: string) =>
+        application({
+            state: {
+                role: 'business',
+                step: 'review',
+                answers: { declared: true, company: company(street) },
+                documents: {},
+                note: 'Fix the address.',
+                revision: {
+                    note: 'Fix the address.',
+                    items: [{ key, label: 'Registered address', note: '' }],
+                    requested_at: '2026-11-24T08:31:00+02:00',
+                    before: {
+                        answers: {
+                            declared: false,
+                            company: company('KK 15 Rd, Kicukiro'),
+                        },
+                        documents: {},
+                    },
+                },
+            },
+        });
+
+    it.each(['company.address', 'company.registered_address'])(
+        'reads the address parts together under %s: untouched is Not changed, edited is Changed',
+        (key) => {
+            const { unmount } = renderWithUser(
+                <RoleApplicationDrawer
+                    application={resent(key, 'KK 15 Rd, Kicukiro')}
+                    close="/admin/businesses"
+                />,
+            );
+            expect(
+                screen.getByRole('region', {
+                    name: 'Sent again after you asked for changes',
+                }),
+            ).toHaveTextContent('Registered addressNot changed');
+            unmount();
+
+            renderWithUser(
+                <RoleApplicationDrawer
+                    application={resent(key, 'KK 15 Rd, Plot 12')}
+                    close="/admin/businesses"
+                />,
+            );
+            expect(
+                screen.getByRole('region', {
+                    name: 'Sent again after you asked for changes',
+                }),
+            ).toHaveTextContent('Registered addressChanged');
+        },
+    );
+});

@@ -183,6 +183,21 @@ describe('Fixing an application Compliance sent back', () => {
         };
     };
 
+    it('flags the address fields for a send-back recorded before the address had parts (#771)', () => {
+        render(
+            <RoleApply
+                {...flagged('company.registered_address', 'Registered address')}
+            />,
+        );
+
+        expect(
+            screen.getByRole('heading', { level: 1, name: 'Your company' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText('Compliance asked you to change this.'),
+        ).toBeInTheDocument();
+    });
+
     it('opens on the step of the first flagged item', () => {
         render(
             <RoleApply
