@@ -373,6 +373,17 @@ const en = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Audit Partners can’t hold another Rozine role, so this account can’t ask for Auditor access.',
     'suite.app.unavailable': 'Not available with your current access',
+    'admin.role_applications.status.resubmitted': 'Sent again for review',
+    'role.apply.people.pick_director':
+        'Is a director also an owner? Pick them:',
+    'role.apply.people.add_other_owner': '+ Add an owner who isn’t a director',
+    'role.apply.people.director_badge': 'Director',
+    'role.apply.people.total': 'Shares listed: {total}% of 100%',
+    'role.apply.people.total_over':
+        'The shares add up to more than 100%. Lower a share.',
+    'role.apply.people.full':
+        'The shares add up to 100%, so no more owners can be added.',
+    'role.apply.people.share_range': 'Enter a share between 25 and 100.',
     'admin.role_applications.kyc_first':
         "Approve the applicant's own KYC first (Users page). Then approve this application.",
     'admin.role_applications.declared_yes': 'confirmed',
@@ -393,11 +404,11 @@ const en = {
     'admin.role_applications.business.confirm_title':
         'Approve and onboard {name}?',
     'admin.role_applications.business.confirm_body':
-        'This creates the business with {name} as its representative and ends their Investor role. Record why in the note.',
+        'This creates the business with {name} as its representative as their only role, replacing Investor if they hold it. Record why in the note.',
     'admin.role_applications.auditor.confirm_title':
         'Approve {name} as an Auditor?',
     'admin.role_applications.auditor.confirm_body':
-        'This accredits {name} as an Auditor and ends their Investor role. Record why in the note.',
+        'This accredits {name} as an Auditor, their only role, replacing Investor if they hold it. Record why in the note.',
     'admin.role_applications.confirm_unchanged':
         '{count} item(s) you asked to change were not changed.',
     'admin.role_applications.confirm_note': 'Write a note above to approve.',
@@ -476,7 +487,7 @@ const en = {
     'admin.role_applications.decision': 'Decision',
     'admin.role_applications.note': 'Note to the applicant',
     'admin.role_applications.note_hint':
-        'A note is required to reject. To send back, tick the items to change; a note is optional. Approving switches the applicant’s role, so they stop being an Investor.',
+        'A note is required to reject. To send back, tick the items to change; a note is optional. Approving makes this the applicant’s only role, replacing Investor if they hold it.',
     'admin.role_applications.reject': 'Reject',
     'admin.role_applications.more': 'Ask for more',
     'admin.revision.legend': 'What must the applicant change?',

@@ -88,7 +88,7 @@ final class RoleApplicationCase
             case 'people':
                 [$state['answers']['representative'], $representative] = $this->representative($input['representative'] ?? null);
                 [$state['answers']['directors'], $directors] = $this->directors($input['directors'] ?? null);
-                [$state['answers']['owners'], $owners] = $this->owners($input['owners'] ?? null);
+                [$state['answers']['owners'], $owners] = $this->owners($input['owners'] ?? null, $state['answers']['directors']);
                 $errors = [...$representative, ...$directors, ...$owners];
                 break;
             case 'documents':
@@ -396,10 +396,24 @@ final class RoleApplicationCase
             'id_number' => $person['id_number'], 'nationality' => $person['nationality']], $people), $errors];
     }
 
-    /** @return array{0: list<Owner>, 1: array<string, list<string>>} */
-    private function owners(mixed $input): array
+    /**
+     * Owners, each either one of the directors (picked from them, so the same name and ID) or someone
+     * who isn't a director (#761). An owner typed with a director's ID number under another name is
+     * the same ID claimed by two people, so it is refused.
+     *
+     * @param  list<Person>  $directors
+     * @return array{0: list<Owner>, 1: array<string, list<string>>}
+     */
+    private function owners(mixed $input, array $directors): array
     {
         [$people, $errors] = $this->people($input, 'owners', true);
+        $names = array_column($directors, 'full_name', 'id_number');
+        foreach ($people as $index => $person) {
+            $director = $names[$person['id_number']] ?? null;
+            if ($director !== null && mb_strtolower($director) !== mb_strtolower($person['full_name']) && ! isset($errors['owners.'.$index.'.id_number'])) {
+                $errors['owners.'.$index.'.id_number'] = ['This ID number is the director '.$director.'’s. Pick them from the directors instead.'];
+            }
+        }
 
         return [array_map(fn (array $person): array => ['full_name' => $person['full_name'], 'id_type' => $person['id_type'],
             'id_number' => $person['id_number'], 'nationality' => $person['nationality'], 'ownership_pct' => $person['ownership_pct'] ?? '',

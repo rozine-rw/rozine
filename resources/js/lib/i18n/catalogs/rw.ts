@@ -379,6 +379,19 @@ const rw: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Abagenzuzi ntibashobora kugira urundi ruhare muri Rozine, bityo iyi konti ntishobora gusaba uburenganzira bw’Umugenzuzi.',
     'suite.app.unavailable': 'Ntibishoboka n’uburenganzira ufite ubu',
+    'admin.role_applications.status.resubmitted':
+        'Yongeye koherezwa ngo isuzumwe',
+    'role.apply.people.pick_director':
+        'Hari umuyobozi na we ufite imigabane? Muhitemo:',
+    'role.apply.people.add_other_owner':
+        '+ Ongeraho nyir’imigabane utari umuyobozi',
+    'role.apply.people.director_badge': 'Umuyobozi',
+    'role.apply.people.total': 'Imigabane yanditswe: {total}% kuri 100%',
+    'role.apply.people.total_over': 'Imigabane irenze 100%. Gabanya umugabane.',
+    'role.apply.people.full':
+        'Imigabane igeze kuri 100%, nta wundi ushobora kongerwaho.',
+    'role.apply.people.share_range':
+        'Andika umugabane uri hagati ya 25 na 100.',
     'admin.role_applications.kyc_first':
         'Banza wemeze KYC y’usaba (ku rupapuro rw’Abakoresha). Hanyuma wemeze iyi dosiye.',
     'admin.role_applications.declared_yes': 'byemejwe',
@@ -399,11 +412,11 @@ const rw: Catalog = {
     'admin.role_applications.business.confirm_title':
         'Kwemeza no kwinjiza {name}?',
     'admin.role_applications.business.confirm_body':
-        'Ibi bishyiraho ikigo {name} akaba ari we ugihagarariye, kandi bigahagarika uruhare rwe rw’Umushoramari. Andika impamvu mu nyandiko.',
+        'Ibi bishyiraho ikigo {name} akaba ari we ugihagarariye; ruba uruhare rwe rwonyine, rusimbura urw’Umushoramari niba arufite. Andika impamvu mu nyandiko.',
     'admin.role_applications.auditor.confirm_title':
         'Kwemeza {name} nk’Umugenzuzi?',
     'admin.role_applications.auditor.confirm_body':
-        'Ibi byemeza {name} nk’Umugenzuzi kandi bigahagarika uruhare rwe rw’Umushoramari. Andika impamvu mu nyandiko.',
+        'Ibi byemeza {name} nk’Umugenzuzi; ruba uruhare rwe rwonyine, rusimbura urw’Umushoramari niba arufite. Andika impamvu mu nyandiko.',
     'admin.role_applications.confirm_unchanged':
         'Ibintu {count} wasabye guhindura ntibyahinduwe.',
     'admin.role_applications.confirm_note':
@@ -485,7 +498,7 @@ const rw: Catalog = {
     'admin.role_applications.decision': 'Icyemezo',
     'admin.role_applications.note': 'Ubutumwa ku usaba',
     'admin.role_applications.note_hint':
-        'Kwanga bisaba ubusobanuro. Kugira ngo usubize, hitamo ibyo guhindura; ubusobanuro si ngombwa. Kwemeza bihindura uruhare rw’usaba, akareka kuba Umushoramari.',
+        'Kwanga bisaba ubusobanuro. Kugira ngo usubize, hitamo ibyo guhindura; ubusobanuro si ngombwa. Kwemeza bituma uru ruba uruhare rwonyine rw’usaba, rusimbura urw’Umushoramari niba arufite.',
     'admin.role_applications.reject': 'Anga',
     'admin.role_applications.more': 'Saba ibindi',
     'admin.revision.legend': 'Ni iki usaba agomba guhindura?',
