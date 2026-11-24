@@ -49,6 +49,12 @@ final class EloquentAccountClosures implements AccountClosures
     public function close(int $userId, ?string $reason): array
     {
         return DB::transaction(function () use ($userId, $reason): array {
+            // Party first, then the account: two accounts of one party closing at once queue here, so
+            // the second sees the first as closed and the last close ends the roles and releases the ID.
+            $partyId = User::query()->whereKey($userId)->value('party_id');
+            if ($partyId !== null) {
+                DB::table('parties')->where('id', $partyId)->lockForUpdate()->first();
+            }
             $user = User::query()->lockForUpdate()->findOrFail($userId);
             if ($user->isClosed()) {
                 return [];
