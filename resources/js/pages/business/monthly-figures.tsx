@@ -261,7 +261,7 @@ export default function BusinessMonthlyFigures({
             links={links}
             showTabBar={false}
         >
-            <div className="mx-auto max-w-[560px] px-5 pt-[calc(env(safe-area-inset-top)+4px)] pb-10 lg:pt-6">
+            <div className="mx-auto max-w-[560px] px-5 pt-[calc(env(safe-area-inset-top)+4px)] pb-10 lg:max-w-[960px] lg:px-8 lg:pt-6">
                 <div className="flex items-center gap-3">
                     <Link
                         href={links.close.url}

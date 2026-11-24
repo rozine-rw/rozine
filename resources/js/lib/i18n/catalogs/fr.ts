@@ -386,6 +386,14 @@ const fr: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Les auditeurs partenaires ne peuvent pas avoir un autre rôle Rozine : ce compte ne peut donc pas demander l’accès Auditeur.',
     'suite.app.unavailable': 'Indisponible avec votre accès actuel',
+    'kyc.rail.steps': 'Étapes',
+    'kyc.rail.step_of': 'Étape {current} sur {total}',
+    'kyc.rail.privacy_title': 'Vos documents restent privés',
+    'kyc.rail.privacy_body':
+        'Les fichiers que vous envoyez sont chiffrés, et seule la Conformité de Rozine peut les ouvrir.',
+    'kyc.rail.next_title': 'Et ensuite',
+    'kyc.rail.next_body':
+        'L’équipe Conformité de Rozine examine ce que vous envoyez. Si quelque chose doit changer, elle indique précisément quoi, et vous ne corrigez que cela.',
     'admin.role_applications.resent_title':
         'Renvoyée après votre demande de modifications',
     'admin.role_applications.resent_body': 'Vous avez demandé ceci le {date} :',

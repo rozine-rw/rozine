@@ -379,6 +379,14 @@ const rw: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Abagenzuzi ntibashobora kugira urundi ruhare muri Rozine, bityo iyi konti ntishobora gusaba uburenganzira bw’Umugenzuzi.',
     'suite.app.unavailable': 'Ntibishoboka n’uburenganzira ufite ubu',
+    'kyc.rail.steps': 'Intambwe',
+    'kyc.rail.step_of': 'Intambwe ya {current} kuri {total}',
+    'kyc.rail.privacy_title': 'Inyandiko zawe zigumana ibanga',
+    'kyc.rail.privacy_body':
+        'Inyandiko wohereje zibikwa mu ibanga, kandi ni Ishami rishinzwe kubahiriza amategeko rya Rozine gusa rishobora kuzifungura.',
+    'kyc.rail.next_title': 'Ibikurikiraho',
+    'kyc.rail.next_body':
+        'Ishami rishinzwe kubahiriza amategeko risuzuma ibyo wohereje. Niba hari icyo gukosora, ryerekana neza icyo ari cyo, ugakosora icyo gusa.',
     'admin.role_applications.resent_title':
         'Yongeye koherezwa nyuma yo gusaba impinduka',
     'admin.role_applications.resent_body': 'Wabisabye ku wa {date}:',

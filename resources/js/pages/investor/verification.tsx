@@ -3,6 +3,7 @@ import { FileText } from 'lucide-react';
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 import { InvestorAuthFrame } from '@/components/investor/auth/auth-frame';
+import { RailNote, StepRail } from '@/components/investor/auth/step-rail';
 import { ErrorBanner } from '@/components/rozine/form';
 import { Icon } from '@/components/rozine/icon';
 import { UploadStatus } from '@/components/rozine/upload-status';
@@ -645,10 +646,39 @@ function VerificationForm({
     );
 
     return (
-        <InvestorAuthFrame title={t(`${heading}.title`)} layout="column">
+        <InvestorAuthFrame
+            title={t(`${heading}.title`)}
+            layout="workspace"
+            aside={
+                <StepRail
+                    kicker={t(
+                        props.investor_type === 'individual'
+                            ? KICKER[props.purpose ?? 'investor']
+                            : 'investor.kyc.kicker_entity',
+                    )}
+                    steps={steps.map((key) => ({
+                        key,
+                        label: t(`investor.kyc.${key}.title`),
+                    }))}
+                    current={submitted ? steps.length : index}
+                    onOpen={
+                        locked ? undefined : (key) => setViewing(key as Step)
+                    }
+                >
+                    <RailNote
+                        title={t('kyc.rail.next_title')}
+                        body={t('kyc.rail.next_body')}
+                    />
+                    <RailNote
+                        title={t('kyc.rail.privacy_title')}
+                        body={t('kyc.rail.privacy_body')}
+                    />
+                </StepRail>
+            }
+        >
             <form
                 onSubmit={submit}
-                className="px-5 pt-[calc(env(safe-area-inset-top)+14px)] pb-10 lg:pt-14"
+                className="px-5 pt-[calc(env(safe-area-inset-top)+14px)] pb-10 lg:px-0 lg:pt-10"
             >
                 <div className="flex items-center gap-3">
                     <Link
@@ -664,7 +694,7 @@ function VerificationForm({
                         aria-valuemin={0}
                         aria-valuemax={100}
                         aria-valuenow={percent}
-                        className="h-1.5 flex-1 overflow-hidden rounded-[4px] bg-rz-border"
+                        className="h-1.5 flex-1 overflow-hidden rounded-[4px] bg-rz-border lg:invisible"
                     >
                         <div
                             className="h-full bg-[linear-gradient(90deg,#1e3aff,#17795a)] transition-[width] duration-400"
@@ -673,12 +703,12 @@ function VerificationForm({
                     </div>
                     <span
                         aria-hidden
-                        className="text-[12.5px] font-semibold text-rz-secondary"
+                        className="text-[12.5px] font-semibold text-rz-secondary lg:hidden"
                     >
                         {percent}%
                     </span>
                 </div>
-                <p className="mt-2 text-[12.5px] font-semibold tracking-[.05em] text-rz-accent-app-text uppercase">
+                <p className="mt-2 text-[12.5px] font-semibold tracking-[.05em] text-rz-accent-app-text uppercase lg:hidden">
                     {t(
                         props.investor_type === 'individual'
                             ? KICKER[props.purpose ?? 'investor']
@@ -727,7 +757,7 @@ function VerificationForm({
 
                 {props.investor_type === 'individual' &&
                     step === 'personal' && (
-                        <div className="mt-5 flex flex-col gap-[13px]">
+                        <div className="mt-5 flex flex-col gap-[13px] lg:grid lg:grid-cols-2 lg:gap-x-6">
                             <div>
                                 <p className={LABEL}>
                                     {t('investor.kyc.country')}
@@ -1230,28 +1260,32 @@ function VerificationForm({
                     </p>
                 )}
                 {!locked && (
-                    <button
-                        type="submit"
-                        disabled={form.processing || sending !== null}
-                        aria-busy={form.processing || undefined}
-                        className="mt-6 h-[52px] w-full rounded-2xl bg-rz-accent-fill text-[15px] font-semibold text-white disabled:opacity-70"
-                    >
-                        {t(
-                            last
-                                ? 'investor.kyc.submit'
-                                : 'investor.auth.continue',
+                    <div className="flex flex-col lg:mt-8 lg:flex-row-reverse lg:justify-start lg:gap-3 lg:border-t lg:border-rz-border lg:pt-6">
+                        {!locked && (
+                            <button
+                                type="submit"
+                                disabled={form.processing || sending !== null}
+                                aria-busy={form.processing || undefined}
+                                className="mt-6 h-[52px] w-full rounded-2xl bg-rz-accent-fill text-[15px] font-semibold text-white disabled:opacity-70 lg:mt-0 lg:w-auto lg:min-w-[220px] lg:px-10"
+                            >
+                                {t(
+                                    last
+                                        ? 'investor.kyc.submit'
+                                        : 'investor.auth.continue',
+                                )}
+                            </button>
                         )}
-                    </button>
-                )}
-                {index > 0 && !locked && (
-                    <button
-                        type="button"
-                        onClick={() => setViewing(steps[index - 1])}
-                        disabled={sending !== null}
-                        className="mt-3 h-[46px] w-full rounded-2xl border border-rz-border bg-rz-surface text-[14px] font-semibold text-rz-ink disabled:opacity-70"
-                    >
-                        {t('investor.kyc.previous')}
-                    </button>
+                        {index > 0 && !locked && (
+                            <button
+                                type="button"
+                                onClick={() => setViewing(steps[index - 1])}
+                                disabled={sending !== null}
+                                className="mt-3 h-[46px] w-full rounded-2xl border border-rz-border bg-rz-surface text-[14px] font-semibold text-rz-ink disabled:opacity-70 lg:mt-0 lg:h-[52px] lg:w-auto lg:min-w-[160px] lg:px-8"
+                            >
+                                {t('investor.kyc.previous')}
+                            </button>
+                        )}
+                    </div>
                 )}
             </form>
         </InvestorAuthFrame>
