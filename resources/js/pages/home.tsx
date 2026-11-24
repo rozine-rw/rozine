@@ -417,6 +417,12 @@ const H1: CSSProperties = {
     textWrap: 'balance',
 };
 
+const BUSINESS_STANDARDS = [
+    ['3 years', 'of bank records'],
+    ['RWF 30M+', 'in yearly revenue'],
+    ['Books checked in person', 'by an accountant'],
+] as const;
+
 const H2_BIG: CSSProperties = {
     margin: 0,
     fontSize: 'clamp(34px,5vw,66px)',
@@ -1511,7 +1517,7 @@ export default function Home({ showAppEntry = false, auth }: SiteProps) {
                                             'rgba(255,255,255,.22)',
                                         )}
                                     >
-                                        From RWF 5,000 · back in 3 to 6 months
+                                        Invest in Rwandan Businesses
                                     </span>
                                     <h1 style={H1}>
                                         Earn up to{' '}
@@ -1523,8 +1529,7 @@ export default function Home({ showAppEntry = false, auth }: SiteProps) {
                                         >
                                             15%
                                         </span>{' '}
-                                        lending to profitable Rwandan
-                                        businesses.
+                                        lending to profitable businesses.
                                     </h1>
                                     <p
                                         style={{
@@ -1536,13 +1541,17 @@ export default function Home({ showAppEntry = false, auth }: SiteProps) {
                                             textWrap: 'pretty',
                                         }}
                                     >
-                                        <strong style={{ color: '#ffffff' }}>
-                                            Paid every month.
-                                        </strong>{' '}
-                                        Back the bakeries, hotels, farms and
-                                        fleets keeping Rwanda moving, and get
-                                        your money back with a return in 3 to 6
-                                        months.
+                                        Buy 3–6 month debt notes in audited
+                                        private businesses{' '}
+                                        <strong
+                                            style={{
+                                                color: '#6fd7b1',
+                                                fontWeight: 800,
+                                                whiteSpace: 'nowrap',
+                                            }}
+                                        >
+                                            from just RWF 5,000.
+                                        </strong>
                                     </p>
                                     <div
                                         style={{
@@ -1612,33 +1621,98 @@ export default function Home({ showAppEntry = false, auth }: SiteProps) {
                             <div
                                 style={{
                                     display: 'flex',
-                                    flexWrap: 'wrap',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'flex-end',
-                                    gap: '16px',
+                                    flexDirection: 'column',
+                                    gap: '18px',
                                 }}
                             >
-                                <h2 style={{ ...H2_BIG, maxWidth: '720px' }}>
-                                    The businesses you already love.{' '}
+                                <h2 style={{ ...H2_BIG, maxWidth: '760px' }}>
+                                    Businesses already{' '}
                                     <span style={{ color: '#1e3aff' }}>
-                                        Now you can back their growth, and get
-                                        paid for it.
+                                        making money.
                                     </span>
                                 </h2>
-                                <p
+                                <div
                                     style={{
-                                        margin: 0,
-                                        maxWidth: '340px',
-                                        fontSize: '15.5px',
-                                        lineHeight: 1.6,
-                                        color: '#69748a',
-                                        textWrap: 'pretty',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '10px',
                                     }}
                                 >
-                                    Profitable Rwandan businesses across every
-                                    sector, raising to grow, and paying you back
-                                    every month.
-                                </p>
+                                    <p
+                                        style={{
+                                            margin: 0,
+                                            fontSize: '15.5px',
+                                            lineHeight: 1.6,
+                                            color: '#69748a',
+                                        }}
+                                    >
+                                        Every business on Rozine has:
+                                    </p>
+                                    <ul
+                                        style={{
+                                            listStyle: 'none',
+                                            margin: 0,
+                                            padding: 0,
+                                            display: 'flex',
+                                            flexWrap: 'wrap',
+                                            gap: '8px 10px',
+                                        }}
+                                    >
+                                        {BUSINESS_STANDARDS.map(
+                                            ([highlight, detail]) => (
+                                                <li
+                                                    key={highlight}
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '8px',
+                                                        padding:
+                                                            '8px 14px 8px 10px',
+                                                        borderRadius: '999px',
+                                                        border: '1px solid #dde3ee',
+                                                        background: '#fff',
+                                                        fontSize: '15px',
+                                                        lineHeight: 1.3,
+                                                        color: '#4a5468',
+                                                    }}
+                                                >
+                                                    <svg
+                                                        aria-hidden="true"
+                                                        width="16"
+                                                        height="16"
+                                                        viewBox="0 0 18 18"
+                                                    >
+                                                        <circle
+                                                            cx="9"
+                                                            cy="9"
+                                                            r="9"
+                                                            fill="#e3f6ee"
+                                                        />
+                                                        <path
+                                                            d="M5.2 9.3l2.4 2.4 5.2-5.2"
+                                                            fill="none"
+                                                            stroke="#1d9e75"
+                                                            strokeWidth="2"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                        />
+                                                    </svg>
+                                                    <span>
+                                                        <strong
+                                                            style={{
+                                                                color: '#0c1830',
+                                                                fontWeight: 700,
+                                                            }}
+                                                        >
+                                                            {highlight}
+                                                        </strong>{' '}
+                                                        {detail}
+                                                    </span>
+                                                </li>
+                                            ),
+                                        )}
+                                    </ul>
+                                </div>
                             </div>
                             <div
                                 style={{
@@ -1708,9 +1782,10 @@ export default function Home({ showAppEntry = false, auth }: SiteProps) {
                                     textWrap: 'balance',
                                 }}
                             >
-                                Four taps from your phone{' '}
+                                Pick verified businesses, fund them alongside
+                                other investors,{' '}
                                 <span style={{ color: '#1e3aff' }}>
-                                    to a growing business.
+                                    get paid back monthly.
                                 </span>
                             </h2>
                             <div
@@ -1823,7 +1898,7 @@ export default function Home({ showAppEntry = false, auth }: SiteProps) {
                                 <AppCard
                                     dark={false}
                                     label="YOU CHOOSE"
-                                    title="See the numbers, then decide."
+                                    title="Every listing shows CPA-verified financials, the rating and exactly what you'll get back."
                                     image="app-deals.png"
                                     alt="The Rozine app showing a business raising"
                                     pins={[
@@ -2340,7 +2415,8 @@ export default function Home({ showAppEntry = false, auth }: SiteProps) {
                                     maxWidth: '820px',
                                 }}
                             >
-                                Built for businesses that already work.
+                                For Rwandan businesses with RWF 30M+ in revenue
+                                and a profitable record.
                             </h2>
                             <div
                                 style={{
@@ -2469,7 +2545,8 @@ export default function Home({ showAppEntry = false, auth }: SiteProps) {
                                             textWrap: 'balance',
                                         }}
                                     >
-                                        One rate. One fee. No surprises.
+                                        Pay 10–15% for the whole term, plus a 3%
+                                        fee only if your raise succeeds.
                                     </h2>
                                     <p
                                         style={{
@@ -2610,7 +2687,7 @@ export default function Home({ showAppEntry = false, auth }: SiteProps) {
                                         'Two business owners reviewing their numbers on a laptop',
                                         '50% 35%',
                                         'BE INVESTMENT READY',
-                                        'Grow into an investable business.',
+                                        'A readiness plan built from your own numbers, from first raise to the Rwanda Stock Exchange.',
                                         'Every month, the app shows you what to fix next, based on your own verified numbers, with short lessons to help. Stronger books mean bigger raises.',
                                     ],
                                 ] as const
@@ -2828,8 +2905,8 @@ export default function Home({ showAppEntry = false, auth }: SiteProps) {
                                         fontSize: 'clamp(44px,7vw,96px)',
                                     }}
                                 >
-                                    Every franc, followed from your phone and
-                                    back.
+                                    Your money sits in a separate bank account,
+                                    never in Rozine's.
                                 </h1>
                                 <p
                                     style={{
@@ -3017,7 +3094,8 @@ export default function Home({ showAppEntry = false, auth }: SiteProps) {
                                     fontSize: 'clamp(34px,5vw,62px)',
                                 }}
                             >
-                                Three labels. One published formula.
+                                Every business is rated Strong, Stable or
+                                Distressed, by a formula anyone can check.
                             </h2>
                             <p
                                 style={{
