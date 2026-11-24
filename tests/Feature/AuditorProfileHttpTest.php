@@ -115,10 +115,11 @@ it('renders a first-time Auditor profile from the protected facts with the contr
         'legal_documents' => app(LegalDocuments::class)->pages(),
         'auditor' => ['name' => 'Synthetic Partner', 'firm' => null, 'accreditation' => null, 'avatar_url' => null, 'since_year' => null],
         'quality_score' => null, 'on_time_pct' => null, 'jobs_done' => 0, 'open_jobs' => 0,
-        'contact' => ['email' => $fixture['user']->email, 'phone' => null, 'address' => null], 'security' => ['two_factor' => true],
+        'contact' => ['email' => $fixture['user']->email, 'phone' => null, 'address' => null, 'address_line' => null,
+            'update' => ['url' => '/auditor/address', 'method' => 'post']], 'security' => ['two_factor' => true],
         'standing' => ['current' => false, 'reason' => 'ACCREDITATION_REQUIRED'],
         'accreditation' => ['status' => 'none', 'revision' => 0, 'licence' => null, 'expires_on' => null, 'days_left' => null, 'submission' => ['status' => 'none']],
-        'availability' => ['accepting' => false, 'radius_km' => 30, 'max_active' => 3, 'revision' => 0, 'update' => ['url' => '/auditor/availability', 'method' => 'post']],
+        'availability' => ['accepting' => false, 'districts' => [], 'max_jobs_per_week' => 4, 'address' => null, 'max_active' => 3, 'revision' => 0, 'update' => ['url' => '/auditor/availability', 'method' => 'post']],
         'actions' => ['submit' => ['url' => '/auditor/accreditation', 'method' => 'post'],
             'renew' => ['url' => '/auditor/accreditation/renewal', 'method' => 'post'],
             'withdraw' => ['url' => '/auditor/accreditation/withdrawal', 'method' => 'post']],
@@ -187,7 +188,8 @@ it('shows an expired licence at the Rwanda date boundary', function (): void {
     $this->travel(1)->seconds();
     $this->get(route('auditor.profile'))->assertInertia(fn (Assert $page): Assert => $page
         ->where('standing', ['current' => false, 'reason' => 'ACCREDITATION_EXPIRED'])->where('accreditation.status', 'expired')
-        ->where('accreditation.days_left', -1)->where('allowed_actions', ['accreditation.renew']));
+        // Approval switched Accepting audits on, so the partner can still pause it while the licence is renewed.
+        ->where('accreditation.days_left', -1)->where('allowed_actions', ['accreditation.renew', 'availability.update']));
 });
 
 it('denies the profile to guests, other roles and an Auditor without two-factor authentication', function (): void {
@@ -302,6 +304,20 @@ it('withdraws the named pending submission and continues to the profile', functi
     $this->get(route('auditor.profile'))->assertInertia(fn (Assert $page): Assert => $page->where('accreditation.submission', ['status' => 'none']));
 });
 
+it('switches Accepting audits on at the first verification only, so a renewal keeps a pause', function (): void {
+    $fixture = AuditorFixture::make();
+    $submitted = AuditorFixture::submit($fixture['user']);
+    expect(AuditorProfile::query()->sole()->state['accepting'])->toBeFalse();
+    AuditorFixture::review($fixture['staff'], $fixture['party']->id, 1, 'approve', $submitted['data']['submission_id']);
+    expect(AuditorProfile::query()->sole()->state['accepting'])->toBeTrue();
+    $this->actingAs($fixture['user']);
+    profileHttpPost('auditor.availability.update', ['accepting' => false, 'identity_context_revision' => 1, 'expected_revision' => 2, 'request_id' => (string) Str::uuid()])
+        ->assertOk();
+    $renewal = profileHttpPost('auditor.accreditation.renew', profileHttpSubmission(['expected_revision' => 3]))->assertOk()->json('data.submission_id');
+    AuditorFixture::review($fixture['staff'], $fixture['party']->id, 4, 'approve', $renewal);
+    expect(AuditorProfile::query()->sole()->state['accepting'])->toBeFalse();
+});
+
 it('renews over its own route and records the renewal under its own command name', function (): void {
     $fixture = profileHttpApproved();
     $this->actingAs($fixture['user']);
@@ -331,6 +347,54 @@ it('updates availability in place and keeps a lapsed standing refusal with its o
         ->assertJsonPath('allowed_actions', ['accreditation.renew']);
     profileHttpPost('auditor.availability.update', ['accepting' => 'maybe', 'identity_context_revision' => 1, 'expected_revision' => 4, 'request_id' => (string) Str::uuid()])
         ->assertUnprocessable()->assertJsonValidationErrors(['accepting']);
+});
+
+it('saves the districts a partner accepts and their weekly limit in Rwanda\'s own order', function (): void {
+    $fixture = profileHttpApproved();
+    $this->actingAs($fixture['user']);
+    expect(AuditorProfile::query()->sole()->state['accepting'])->toBeTrue();
+    profileHttpPost('auditor.availability.update', ['accepting' => true, 'districts' => ['Rubavu', 'Gasabo', 'Kicukiro'], 'max_jobs_per_week' => 6,
+        'identity_context_revision' => 1, 'expected_revision' => 2, 'request_id' => (string) Str::uuid()])
+        ->assertOk()->assertJsonPath('code', 'AVAILABILITY_UPDATED');
+    $this->get(route('auditor.profile', ['section' => 'availability']))->assertInertia(fn (Assert $page): Assert => $page
+        ->where('availability.districts', ['Gasabo', 'Kicukiro', 'Rubavu'])->where('availability.max_jobs_per_week', 6)
+        ->where('availability.accepting', true)->has('provinces.Western', 7));
+    // Leaving the districts out keeps the ones already chosen.
+    profileHttpPost('auditor.availability.update', ['accepting' => false, 'identity_context_revision' => 1, 'expected_revision' => 3, 'request_id' => (string) Str::uuid()])
+        ->assertOk();
+    expect(AuditorProfile::query()->sole()->state)->toMatchArray(['accepting' => false, 'districts' => ['Gasabo', 'Kicukiro', 'Rubavu'], 'max_jobs_per_week' => 6]);
+    profileHttpPost('auditor.availability.update', ['accepting' => true, 'districts' => ['Atlantis'], 'max_jobs_per_week' => 4,
+        'identity_context_revision' => 1, 'expected_revision' => 4, 'request_id' => (string) Str::uuid()])->assertUnprocessable();
+    profileHttpPost('auditor.availability.update', ['accepting' => true, 'districts' => ['Gasabo'], 'max_jobs_per_week' => 21,
+        'identity_context_revision' => 1, 'expected_revision' => 4, 'request_id' => (string) Str::uuid()])
+        ->assertUnprocessable()->assertJsonValidationErrors(['max_jobs_per_week']);
+    profileHttpPost('auditor.availability.update', ['accepting' => true, 'districts' => ['Gasabo'], 'max_jobs_per_week' => 0,
+        'identity_context_revision' => 1, 'expected_revision' => 4, 'request_id' => (string) Str::uuid()])
+        ->assertUnprocessable()->assertJsonValidationErrors(['max_jobs_per_week']);
+    expect(AuditorProfile::query()->sole()->revision)->toBe(4);
+});
+
+it('saves the partner\'s registered address and continues to Personal & contact', function (): void {
+    $fixture = AuditorFixture::make();
+    $this->actingAs($fixture['user']);
+    $address = ['province' => 'Kigali City', 'district' => 'Gasabo', 'sector' => 'Kacyiru', 'cell' => 'Kamatamu', 'street' => 'KG 7 Ave'];
+    profileHttpPost('auditor.address.update', ['address' => [...$address, 'district' => 'Rubavu', 'sector' => ''],
+        'identity_context_revision' => 1, 'expected_revision' => 0, 'request_id' => (string) Str::uuid()])
+        ->assertUnprocessable()->assertJsonPath('code', 'VALIDATION_FAILED')
+        ->assertJsonPath('errors', ['address.sector' => ['Enter the sector name.'], 'address.district' => ['Choose a district in the selected province.']]);
+    $request = (string) Str::uuid();
+    profileHttpPost('auditor.address.update', ['address' => $address, 'identity_context_revision' => 1, 'expected_revision' => 0, 'request_id' => $request])
+        ->assertOk()->assertJsonPath('code', 'AUDITOR_CONTACT_SAVED')->assertJsonPath('revision', 1)
+        ->assertJsonPath('data.next', ['url' => '/auditor/profile?section=contact', 'method' => 'get']);
+    $this->getJson(route('auditor.operations.show', ['request_id' => $request, 'command' => 'contact.update']))->assertOk()
+        ->assertJsonPath('data.next.url', '/auditor/profile?section=contact');
+    $this->get(route('auditor.profile', ['section' => 'contact']))->assertInertia(fn (Assert $page): Assert => $page
+        ->where('contact.address', $address)->where('contact.address_line', 'KG 7 Ave, Kamatamu, Kacyiru, Gasabo')
+        ->where('availability.address', $address)->where('allowed_actions', ['accreditation.submit']));
+    // A rural premises with no street name keeps the street empty.
+    profileHttpPost('auditor.address.update', ['address' => [...$address, 'street' => null], 'identity_context_revision' => 1, 'expected_revision' => 1,
+        'request_id' => (string) Str::uuid()])->assertOk();
+    expect(AuditorProfile::query()->sole()->state['address']['street'])->toBe('');
 });
 
 it('looks up only this Party recorded outcomes', function (): void {

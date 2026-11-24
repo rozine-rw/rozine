@@ -142,7 +142,7 @@ describe('Auditor Academy', () => {
         fireEvent.click(screen.getByRole('button', { name: /Assignments/u }));
         expect(
             screen.getByRole('region', { name: 'Assignments' }),
-        ).toHaveTextContent('Within 30 km');
+        ).toHaveTextContent('Your districts');
     });
 
     it('offers a review once every lesson is done', () => {
@@ -216,9 +216,9 @@ describe('Auditor Academy', () => {
 
         const text = copy.join(' ');
 
-        expect(text).toContain('within 30 km');
+        expect(text).toContain('accepts the business’s district');
         expect(text).toContain('1.50 coverage');
         expect(text).toContain('40% of that fee');
-        expect(text).not.toMatch(/15 ?km|1\.25×|2% service fee|points/u);
+        expect(text).not.toMatch(/\d+ ?km|1\.25×|2% service fee|points/u);
     });
 });

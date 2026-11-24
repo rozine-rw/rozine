@@ -57,7 +57,7 @@ describe('Receiving work needs both the saved choice and current standing', () =
 
         expect(screen.getByText('Paused')).toBeInTheDocument();
         expect(screen.queryByText('Accepting audits')).not.toBeInTheDocument();
-        expect(screen.queryByText(/km radius · max/u)).not.toBeInTheDocument();
+        expect(screen.queryByText(/jobs\/week/u)).not.toBeInTheDocument();
         expect(screen.getByRole('note')).toHaveTextContent(PAUSED_UNTIL);
         /* The switch keeps the saved preference. */
         expect(

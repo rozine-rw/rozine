@@ -11,6 +11,9 @@ class UpdateAvailabilityRequest extends AuditorCommandRequest
     {
         return [
             'accepting' => ['required', 'boolean'],
+            'districts' => ['sometimes', 'array', 'max:30'],
+            'districts.*' => ['string', 'max:40'],
+            'max_jobs_per_week' => ['sometimes', 'integer', 'between:1,20'],
         ];
     }
 }

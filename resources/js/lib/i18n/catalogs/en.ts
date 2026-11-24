@@ -373,6 +373,17 @@ const en = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Audit Partners can’t hold another Rozine role, so this account can’t ask for Auditor access.',
     'suite.app.unavailable': 'Not available with your current access',
+    'admin.role_applications.status.resubmitted': 'Sent again for review',
+    'role.apply.people.pick_director':
+        'Is a director also an owner? Pick them:',
+    'role.apply.people.add_other_owner': '+ Add an owner who isn’t a director',
+    'role.apply.people.director_badge': 'Director',
+    'role.apply.people.total': 'Shares listed: {total}% of 100%',
+    'role.apply.people.total_over':
+        'The shares add up to more than 100%. Lower a share.',
+    'role.apply.people.full':
+        'The shares add up to 100%, so no more owners can be added.',
+    'role.apply.people.share_range': 'Enter a share between 25 and 100.',
     'admin.role_applications.kyc_first':
         "Approve the applicant's own KYC first (Users page). Then approve this application.",
     'admin.role_applications.declared_yes': 'confirmed',
@@ -393,11 +404,11 @@ const en = {
     'admin.role_applications.business.confirm_title':
         'Approve and onboard {name}?',
     'admin.role_applications.business.confirm_body':
-        'This creates the business with {name} as its representative and ends their Investor role. Record why in the note.',
+        'This creates the business with {name} as its representative as their only role, replacing Investor if they hold it. Record why in the note.',
     'admin.role_applications.auditor.confirm_title':
         'Approve {name} as an Auditor?',
     'admin.role_applications.auditor.confirm_body':
-        'This accredits {name} as an Auditor and ends their Investor role. Record why in the note.',
+        'This accredits {name} as an Auditor, their only role, replacing Investor if they hold it. Record why in the note.',
     'admin.role_applications.confirm_unchanged':
         '{count} item(s) you asked to change were not changed.',
     'admin.role_applications.confirm_note': 'Write a note above to approve.',
@@ -411,7 +422,7 @@ const en = {
         'Do enhanced due diligence before approving: check the source of funds and wealth, and record what you checked in the note.',
     'admin.role_applications.pep_confirm':
         'I have done enhanced due diligence on this person.',
-    'admin.role_applications.saves': '({count} saves)',
+    'admin.role_applications.saves': ', then {count} saves by the applicant',
     'role.apply.review.unchanged_title': "You haven't changed these yet",
     'role.apply.review.unchanged_body':
         'Compliance asked you to change them. Send it again only if they are already correct.',
@@ -476,7 +487,7 @@ const en = {
     'admin.role_applications.decision': 'Decision',
     'admin.role_applications.note': 'Note to the applicant',
     'admin.role_applications.note_hint':
-        'A note is required to reject. To send back, tick the items to change; a note is optional. Approving switches the applicant’s role, so they stop being an Investor.',
+        'A note is required to reject. To send back, tick the items to change; a note is optional. Approving makes this the applicant’s only role, replacing Investor if they hold it.',
     'admin.role_applications.reject': 'Reject',
     'admin.role_applications.more': 'Ask for more',
     'admin.revision.legend': 'What must the applicant change?',
@@ -2262,7 +2273,7 @@ const en = {
     'admin.design.app_control.feature.note_creation': 'RNP creation',
     'admin.design.app_control.feature.monthly_reports': 'Monthly reports',
     'admin.design.app_control.feature.auditor_sign_ups': 'Auditor sign-ups',
-    'admin.design.app_control.feature.auto_dispatch': '30km auto-dispatch',
+    'admin.design.app_control.feature.auto_dispatch': 'District auto-dispatch',
     'admin.design.app_control.feature.flash_audits': 'Flash Audits (24h)',
     'admin.design.app_control.state.live': 'Live',
     'admin.design.app_control.state.not_built': 'Not built yet',
@@ -3558,68 +3569,6 @@ const en = {
     'admin.parties.verify_licence': '✓ Verify licence',
     'admin.parties.reject': 'Reject',
     'admin.parties.licence_title': 'ICPAR licence & verification',
-    'admin.parties.office.title': 'Registered office',
-    'admin.parties.office.status': 'Dispatch location',
-    'admin.parties.office.state.verified': 'Verified',
-    'admin.parties.office.state.expired': 'Verification lapsed',
-    'admin.parties.office.state.missing': 'Not verified',
-    'admin.parties.office.note.missing':
-        'No office location is on record, so this partner is not offered jobs. Jobs only go to partners whose verified office is within 30 km of the business.',
-    'admin.parties.office.note.expired':
-        'This office was verified more than a year ago, so this partner is not offered jobs until it is verified again.',
-    'admin.parties.office.coordinates': 'Coordinates',
-    'admin.parties.office.point': '{latitude}, {longitude} (±{metres} m)',
-    'admin.parties.office.verified_on': 'Verified on',
-    'admin.parties.office.evidence': 'Evidence checked',
-    'admin.parties.office.record': 'Record verified office',
-    'admin.parties.office.reverify': 'Verify office again',
-    'admin.parties.office.form': 'Verify the registered office',
-    'admin.parties.office.form_body':
-        'Enter the office coordinates you checked against the evidence. Dispatch adds the accuracy to the distance, so a wide margin can put businesses out of range.',
-    'admin.parties.office.field.latitude': 'Latitude',
-    'admin.parties.office.field.longitude': 'Longitude',
-    'admin.parties.office.field.uncertainty_m': 'Accuracy (metres)',
-    'admin.parties.office.field.reference': 'Evidence checked',
-    'admin.parties.office.field.reason': 'Reason',
-    'admin.parties.office.placeholder.latitude': '-1.9441',
-    'admin.parties.office.placeholder.longitude': '30.0619',
-    'admin.parties.office.placeholder.uncertainty_m': '50',
-    'admin.parties.office.placeholder.reference':
-        'e.g. ICPAR register entry, site visit',
-    'admin.parties.office.placeholder.reason':
-        'e.g. Office address confirmed on the ICPAR register and by phone.',
-    'admin.parties.office.cta': 'Record as verified',
-    'admin.parties.premises.title': 'Business premises',
-    'admin.parties.premises.status': 'Dispatch location',
-    'admin.parties.premises.state.verified': 'Verified',
-    'admin.parties.premises.state.expired': 'Verification lapsed',
-    'admin.parties.premises.state.missing': 'Not verified',
-    'admin.parties.premises.note.missing':
-        'No premises location is on record, so no Audit Partner can be dispatched here. Jobs only go to partners whose verified office is within 30 km of these premises.',
-    'admin.parties.premises.note.expired':
-        'These premises were verified more than a year ago, so no Audit Partner is dispatched here until they are verified again.',
-    'admin.parties.premises.coordinates': 'Coordinates',
-    'admin.parties.premises.point': '{latitude}, {longitude} (±{metres} m)',
-    'admin.parties.premises.verified_on': 'Verified on',
-    'admin.parties.premises.evidence': 'Evidence checked',
-    'admin.parties.premises.record': 'Record verified premises',
-    'admin.parties.premises.reverify': 'Verify premises again',
-    'admin.parties.premises.form': 'Verify the business premises',
-    'admin.parties.premises.form_body':
-        'Enter the premises coordinates you checked against the evidence. Dispatch adds the accuracy to the distance, so a wide margin can put partners out of range.',
-    'admin.parties.premises.field.latitude': 'Latitude',
-    'admin.parties.premises.field.longitude': 'Longitude',
-    'admin.parties.premises.field.uncertainty_m': 'Accuracy (metres)',
-    'admin.parties.premises.field.reference': 'Evidence checked',
-    'admin.parties.premises.field.reason': 'Reason',
-    'admin.parties.premises.placeholder.latitude': '-1.9441',
-    'admin.parties.premises.placeholder.longitude': '30.0619',
-    'admin.parties.premises.placeholder.uncertainty_m': '50',
-    'admin.parties.premises.placeholder.reference':
-        'e.g. site visit, RDB registered address',
-    'admin.parties.premises.placeholder.reason':
-        'e.g. Premises confirmed on a site visit and against the RDB address.',
-    'admin.parties.premises.cta': 'Record as verified',
     'admin.parties.audit.title': 'Audit',
     'admin.parties.audit.none': 'No audit is open on this business.',
     'admin.parties.audit.closed_last':
@@ -3634,19 +3583,15 @@ const en = {
     'admin.parties.audit.overdue':
         'The 24-hour deadline passed on {date} without a sealed report. A Flash audit must be completed within 24 hours, so this one is in breach. It is listed in Open exceptions for Audit Operations to follow up.',
     'admin.parties.audit.reason.AUDIT_NO_ELIGIBLE_PARTNER':
-        'Audit Partners have verified offices within 30 km, but none can take this audit now (availability, capacity or independence). Dispatch attempts used: {attempts} of 3. Redispatch it once one can.',
+        'Audit Partners accept this business’s district, but none can take this audit now (availability, weekly limit, capacity or independence). Dispatch attempts used: {attempts} of 3. Redispatch it once one can.',
     'admin.parties.audit.reason.AUDIT_DISPATCH_EXHAUSTED':
         'Every dispatch attempt is used, or the deadline has passed, so this audit can no longer be redispatched.',
-    'admin.parties.audit.reason.AUDIT_PREMISES_UNVERIFIED':
-        'This business’s premises are not verified, so dispatch cannot measure the 30 km. Staff who verify businesses record them in the Premises section. Dispatch attempts used: {attempts} of 3.',
-    'admin.parties.audit.reason.AUDIT_NO_PARTNER_IN_RANGE':
-        'No Audit Partner has a verified office within 30 km of these premises. Approve a partner nearby or verify their office location. Dispatch attempts used: {attempts} of 3.',
     'admin.parties.audit.remedy': 'Open Audit Partners',
     'admin.parties.audit.field.reason': 'Reason',
     'admin.parties.audit.flash.open': 'Request Flash audit',
     'admin.parties.audit.flash.form': 'Request a Flash audit',
     'admin.parties.audit.flash.form_body':
-        'The audit is offered to the next eligible Audit Partner within 30 km and must be completed within 24 hours. The business is not told in advance.',
+        'The audit is offered to the next eligible Audit Partner who accepts this business’s district and must be completed within 24 hours. The business is not told in advance.',
     'admin.parties.audit.flash.placeholder':
         'e.g. Unusual movement on the revenue account this week.',
     'admin.parties.audit.flash.cta': 'Request Flash audit',
@@ -3680,10 +3625,10 @@ const en = {
     'admin.parties.audit.withdraw.done':
         'Audit withdrawn. You can request a new one.',
     'admin.parties.audit.reason.AUDIT_PARTNER_AVAILABLE':
-        'An Audit Partner within 30 km can take this audit now. Redispatch it to offer it to them. Dispatch attempts used: {attempts} of 3.',
+        'An Audit Partner who accepts this business’s district can take this audit now. Redispatch it to offer it to them. Dispatch attempts used: {attempts} of 3.',
     'admin.parties.audit.reason.AUDIT_INDEPENDENCE_REVIEW_REQUIRED':
-        'Audit Partners have verified offices within 30 km, but none has been reviewed as independent of this business for its current mandate, so dispatch can’t offer it to them. Record an independence review for a partner below. Dispatch attempts used: {attempts} of 3.',
-    'admin.parties.audit.partners.title': 'Audit Partners within 30 km',
+        'Audit Partners accept this business’s district, but none has been reviewed as independent of this business for its current mandate, so dispatch can’t offer it to them. Record an independence review for a partner below. Dispatch attempts used: {attempts} of 3.',
+    'admin.parties.audit.partners.title': 'Audit Partners in this district',
     'admin.parties.audit.partners.reviewed': 'Independence reviewed',
     'admin.parties.audit.partners.unreviewed': 'Not reviewed',
     'admin.parties.audit.independence.open':
@@ -3735,7 +3680,7 @@ const en = {
     'admin.parties.audit.review.open': 'Request statement review',
     'admin.parties.audit.review.form': 'Request a statement review',
     'admin.parties.audit.review.form_body':
-        'An Audit Partner within 30 km checks the uploaded statements against their originals. The request is for the statements shown here; if they change first, you’ll be asked to review them again.',
+        'An Audit Partner who accepts this business’s district checks the uploaded statements against their originals. The request is for the statements shown here; if they change first, you’ll be asked to review them again.',
     'admin.parties.audit.review.placeholder':
         'e.g. First review of the statements uploaded with the application.',
     'admin.parties.audit.review.cta': 'Request review',
@@ -3955,15 +3900,14 @@ const en = {
     'auditor.rating.label': 'Partner rating {score} out of 100',
     'auditor.availability.accepting': 'Accepting audits',
     'auditor.availability.paused': 'Paused',
-    'auditor.availability.home_sub':
-        '{radius} km radius · max {max} jobs at a time',
+    'auditor.availability.home_sub': '{districts} · max {max} jobs/week',
     'auditor.availability.home_paused':
         'Tap to start accepting flash audits again',
     'auditor.availability.toggle': 'Accepting audits',
     'auditor.home.nearby_one': '1 Flash Audit nearby',
     'auditor.home.nearby_other': '{count} Flash Audits nearby',
     'auditor.home.nearby_sub':
-        'Closest {distance}km · first to accept locks the file',
+        'In {districts} · first to accept locks the file',
     'auditor.home.in_progress': 'In progress',
     'auditor.job.step_of': 'Step {step} of {steps}',
     'auditor.job.status.overdue': 'Overdue',
@@ -3994,16 +3938,8 @@ const en = {
     'auditor.jobs.head_title': 'Jobs',
     'auditor.jobs.title': 'Audit jobs',
     'auditor.jobs.lead':
-        "Open field checks within {radius}km. First to accept locks the file. Each flash audit is due {hours} hours after it's sent out.",
-    'auditor.jobs.map_label':
-        'Map of your {radius} km dispatch radius with {count} open jobs at approximate positions',
-    'auditor.jobs.map_badge': '{radius}km radius · {count} open',
-    'auditor.jobs.map_label_page':
-        'Map of your {radius} km dispatch radius with {count} jobs on this page at approximate positions',
-    'auditor.jobs.map_badge_page': '{radius}km radius · {count} on this page',
+        "Open field checks in the districts you accept. First to accept locks the file. Each flash audit is due {hours} hours after it's sent out.",
     'auditor.jobs.assigned': 'In progress',
-    'auditor.jobs.distance': 'Distance',
-    'auditor.jobs.km': '{distance}km',
     'auditor.jobs.sector_unavailable': 'Sector unavailable',
     'auditor.jobs.kind_monthly': 'Monthly visit',
     'auditor.jobs.kind_flash': 'Flash audit',
@@ -4021,12 +3957,8 @@ const en = {
     'auditor.jobs.view_file': 'View full application →',
     'auditor.jobs.decline': 'Decline',
     'auditor.jobs.declare_conflict': 'Declare a conflict',
-    'auditor.jobs.office.missing':
-        "Rozine hasn't verified your office location yet, so no jobs can be sent to you. Jobs go to partners whose office is within {radius} km of the business. Contact Audit Operations to have it verified.",
-    'auditor.jobs.office.expired':
-        'Your office location was verified more than a year ago, so no new jobs can be sent to you until Rozine verifies it again. Contact Audit Operations.',
     'auditor.jobs.empty':
-        "No open jobs in your area. We'll ping you the moment a Tier 2 deal needs a field check within {radius}km.",
+        "No open jobs in your districts. We'll ping you the moment a business in one of them needs a field check.",
     'auditor.monthly.title': 'Monthly reports',
     'auditor.monthly.lead':
         "You open each month's audit file for the businesses you manage. Audit on site and seal before the 7th — the business then has 24 hours to dispute.",
@@ -4103,7 +4035,6 @@ const en = {
     'auditor.file.label': '{business} business file',
     'auditor.file.eyebrow_preview': 'Application preview',
     'auditor.file.eyebrow_file': 'Business file',
-    'auditor.file.place': '{district} · {distance}km',
     'auditor.file.continue': 'Continue the audit',
     'auditor.file.title': 'Review the application',
     'auditor.file.lead':
@@ -4582,12 +4513,6 @@ const en = {
         'You appear in the dispatch pool and can be offered flash audits.',
     'auditor.availability.paused_sub':
         'No new jobs are offered. Accepted jobs still run their clock.',
-    'auditor.availability.max_title': 'Jobs at a time',
-    'auditor.availability.max_sub':
-        'Dispatch stops offering you work past this.',
-    'auditor.availability.radius_title': 'Coverage',
-    'auditor.availability.radius_sub':
-        'Measured from your registered office to the business premises.',
     'business.rating.page_title': 'Financial health',
     'business.rating.page_subtitle':
         'Your score, capacity and verified financials.',
@@ -6608,7 +6533,6 @@ const en = {
     'auditor.photos.add_unavailable': 'Capture unavailable',
     'auditor.checkin.position_unavailable': 'Position unavailable',
     'auditor.ledger.ingested': 'Received · not yet reviewed',
-    'auditor.jobs.map_approximate': 'Approximate positions',
     'auditor.reason.label': 'Reason',
     'auditor.reason.explanation_required': 'Factual explanation (required)',
     'auditor.reason.explanation_optional': 'Explanation (optional)',
@@ -9330,14 +9254,15 @@ const en = {
     'auditor.academy.lesson.independence.topic2.option3':
         'Yes, if the amount is small',
     'auditor.academy.lesson.dispatch.title': 'Assignments',
-    'auditor.academy.lesson.dispatch.sub': 'Nearest eligible CPA, within 30 km',
-    'auditor.academy.lesson.dispatch.topic1.title': 'Within 30 km',
+    'auditor.academy.lesson.dispatch.sub':
+        'An eligible CPA in the business’s district',
+    'auditor.academy.lesson.dispatch.topic1.title': 'Your districts',
     'auditor.academy.lesson.dispatch.topic1.body':
-        'Work goes to the nearest eligible CPA whose office is within 30 km of the business premises. Eligible means a current licence, no declared conflict and rotation allowing it.',
+        'Work goes to an eligible CPA who accepts the business’s district, up to their weekly limit. Eligible means a current licence, no declared conflict and rotation allowing it. You choose your districts under Availability & coverage.',
     'auditor.academy.lesson.dispatch.topic1.q':
-        'A business is 31 km from your office. What happens?',
+        'A business is in a district you don’t accept. What happens?',
     'auditor.academy.lesson.dispatch.topic1.option1':
-        'It is offered to you if no one is nearer',
+        'It is offered to you if no one else is free',
     'auditor.academy.lesson.dispatch.topic1.option2':
         'You are never offered it',
     'auditor.academy.lesson.dispatch.topic1.option3':
@@ -9676,6 +9601,55 @@ const en = {
         one: '{count} month',
         other: '{count} months',
     },
+    'auditor.jobs.district': 'District',
+    'auditor.coverage.count_one': '1 district',
+    'auditor.coverage.count_other': '{count} districts',
+    'auditor.jobs.coverage_title': 'Districts you accept',
+    'auditor.jobs.coverage_badge': '{districts} · {count} open',
+    'auditor.jobs.coverage_badge_page': '{districts} · {count} on this page',
+    'auditor.jobs.coverage_none':
+        "You haven't chosen any districts yet, so no audits can be offered to you. Choose them under Availability & coverage.",
+    'auditor.jobs.coverage_paused':
+        "You're paused, so no new audits are offered until you turn Accepting audits back on.",
+    'auditor.jobs.coverage_weekly': 'Up to {max} jobs a week',
+    'auditor.jobs.coverage_edit': 'Edit coverage',
+    'auditor.availability.weekly_title': 'Max jobs per week',
+    'auditor.availability.weekly_sub':
+        'The engine stops offering you work past this.',
+    'auditor.availability.weekly_less': 'One fewer job per week',
+    'auditor.availability.weekly_more': 'One more job per week',
+    'auditor.availability.districts_title': 'Districts you accept',
+    'auditor.availability.districts_count': '{count} of {total} districts',
+    'auditor.availability.districts_none':
+        'Choose at least one district. Until you do, no audits can be offered to you.',
+    'auditor.profile.contact.add_address': 'Add your registered address',
+    'auditor.profile.contact.edit_address': 'Edit registered address',
+    'auditor.profile.contact.save': 'Save address',
+    'auditor.profile.contact.saving': 'Saving…',
+    'auditor.profile.contact.cancel': 'Cancel',
+    'role.apply.address.province': 'Province',
+    'role.apply.address.select_district': 'Select district',
+    'role.apply.address.sector': 'Sector',
+    'role.apply.address.sector_placeholder': 'Sector name',
+    'role.apply.address.cell': 'Cell',
+    'role.apply.address.cell_placeholder': 'Cell name',
+    'role.apply.address.street': 'Street',
+    'role.apply.address.street_placeholder': 'KG 5 Ave',
+    'role.apply.address.street_hint':
+        'Leave it empty if the premises has no street name.',
+    'admin.parties.audit.reason.AUDIT_DISTRICT_MISSING':
+        'This business has no registered district on record, so dispatch can’t match it to a partner. Ask the business to complete its registered address. Dispatch attempts used: {attempts} of 3.',
+    'admin.parties.audit.reason.AUDIT_NO_PARTNER_IN_DISTRICT':
+        'No Audit Partner accepts audits in this business’s district. Approve a partner who covers it, or ask a partner to add it to their districts. Dispatch attempts used: {attempts} of 3.',
+    'admin.parties.coverage.title': 'Dispatch coverage',
+    'admin.parties.coverage.status': 'Status',
+    'admin.parties.coverage.accepting': 'Accepting audits',
+    'admin.parties.coverage.paused': 'Paused',
+    'admin.parties.coverage.districts': 'Districts accepted',
+    'admin.parties.coverage.none': 'None chosen yet',
+    'admin.parties.coverage.weekly': 'Max jobs per week',
+    'admin.parties.coverage.address': 'Registered address',
+    'admin.parties.coverage.no_address': 'Not given yet',
 } as const;
 
 export default en;

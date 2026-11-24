@@ -229,20 +229,18 @@ describe('Auditor Home', () => {
         expect(screen.getByText('Mar 2027')).toBeInTheDocument();
         expect(screen.queryByText(/pass rate/i)).not.toBeInTheDocument();
         expect(
-            screen.getByText('30 km radius · max 3 jobs at a time'),
+            screen.getByText('3 districts · max 4 jobs/week'),
         ).toBeInTheDocument();
         expect(
             screen.getByRole('link', { name: /1 Flash Audit nearby/ }),
         ).toHaveAttribute('href', '/preview/auditor-jobs');
         expect(
-            screen.getByText('Closest 11.2km · first to accept locks the file'),
+            screen.getByText('In Gasabo · first to accept locks the file'),
         ).toBeInTheDocument();
         expect(
             screen.getByRole('link', { name: /Murakoze Tech/ }),
         ).toHaveAttribute('href', '/preview/auditor-audit-review');
-        expect(
-            screen.getByText('Kicukiro · 7.7km · Step 1 of 5'),
-        ).toBeInTheDocument();
+        expect(screen.getByText('Kicukiro · Step 1 of 5')).toBeInTheDocument();
         expect(
             screen.getAllByRole('timer', { name: 'Time left on this job' })[0],
         ).toHaveTextContent(/20:59:5\d/);
@@ -502,7 +500,7 @@ describe('Auditor Home', () => {
                 quality_score={null}
                 earned_this_month={null}
                 availability={{ ...props.availability, accepting: false }}
-                nearby={{ count: 0, closest_km: null }}
+                nearby={{ count: 0, districts: [] }}
                 in_progress={[]}
                 activity={[]}
                 unread_notifications={0}
@@ -545,13 +543,15 @@ describe('Auditor Home', () => {
             <AuditorHome
                 {...fixture()}
                 server_time="2026-10-03T12:00:00Z"
-                nearby={{ count: 3, closest_km: null }}
+                nearby={{ count: 3, districts: [] }}
             />,
         );
 
         expect(screen.getByText('Good afternoon,')).toBeInTheDocument();
         expect(screen.getByText('3 Flash Audits nearby')).toBeInTheDocument();
-        expect(screen.queryByText(/Closest/)).not.toBeInTheDocument();
+        expect(
+            screen.queryByText(/first to accept locks the file/),
+        ).not.toBeInTheDocument();
     });
 
     it('leaves out the tabs and the nearby-work link whose routes the server has not published', () => {

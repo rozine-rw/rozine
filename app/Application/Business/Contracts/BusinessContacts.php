@@ -21,6 +21,16 @@ interface BusinessContacts
     public function current(string $businessId): ?array;
 
     /**
+     * Records the contact a Business was approved with (its KYB registered address, the company
+     * phone and the representative's e-mail) as its first version, so the Profile and audit dispatch
+     * start from it. Does nothing once the Business has a contact, or when the details do not form a
+     * valid contact. Runs inside the approval's transaction.
+     *
+     * @param  array<string, mixed>  $details
+     */
+    public function adopt(string $businessId, string $actorPartyId, array $details): void;
+
+    /**
      * @param  array<string, mixed>  $input
      * @return array<string, mixed>
      */

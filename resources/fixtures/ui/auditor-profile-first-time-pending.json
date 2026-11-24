@@ -35,7 +35,44 @@
         "contact": {
             "email": "diane.uwase@uwaseco.rw",
             "phone": null,
-            "address": null
+            "address": null,
+            "address_line": null,
+            "update": {
+                "url": "/auditor/address",
+                "method": "post"
+            }
+        },
+        "provinces": {
+            "Kigali City": ["Gasabo", "Kicukiro", "Nyarugenge"],
+            "Northern": ["Burera", "Gakenke", "Gicumbi", "Musanze", "Rulindo"],
+            "Southern": [
+                "Gisagara",
+                "Huye",
+                "Kamonyi",
+                "Muhanga",
+                "Nyamagabe",
+                "Nyanza",
+                "Nyaruguru",
+                "Ruhango"
+            ],
+            "Eastern": [
+                "Bugesera",
+                "Gatsibo",
+                "Kayonza",
+                "Kirehe",
+                "Ngoma",
+                "Nyagatare",
+                "Rwamagana"
+            ],
+            "Western": [
+                "Karongi",
+                "Ngororero",
+                "Nyabihu",
+                "Nyamasheke",
+                "Rubavu",
+                "Rusizi",
+                "Rutsiro"
+            ]
         },
         "security": {
             "two_factor": true
@@ -70,7 +107,9 @@
         },
         "availability": {
             "accepting": false,
-            "radius_km": 30,
+            "districts": ["Gasabo", "Kicukiro", "Nyarugenge"],
+            "max_jobs_per_week": 4,
+            "address": null,
             "max_active": 3,
             "revision": 5,
             "update": {

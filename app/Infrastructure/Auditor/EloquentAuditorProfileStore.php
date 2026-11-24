@@ -14,8 +14,10 @@ use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Auditor\AccreditationCertificate;
 use App\Domain\Auditor\AccreditationProfile;
 use App\Domain\Auditor\AccreditationView;
+use App\Domain\Auditor\AuditorDispatch;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Identity\PartyNoticeKind;
+use App\Domain\Identity\RwandaAddress;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Models\AuditorCertificate;
@@ -70,11 +72,51 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
             ['submission_id' => $submissionId], fn (array $state): array => $this->profiles->withdraw($state, $submissionId));
     }
 
-    /** @return array<string, mixed> */
-    public function availability(int $userId, int $contextRevision, int $expectedRevision, bool $accepting, string $requestId): array
+    /**
+     * @param  list<mixed>|null  $districts
+     * @return array<string, mixed>
+     */
+    public function availability(int $userId, int $contextRevision, int $expectedRevision, bool $accepting, string $requestId, ?array $districts = null, ?int $maxJobsPerWeek = null): array
     {
-        return $this->executeOwn($userId, $contextRevision, $expectedRevision, 'availability.update', $requestId,
-            ['accepting' => $accepting], fn (array $state): array => $this->profiles->availability($state, $accepting, now()->toDateTimeImmutable()));
+        $input = ['accepting' => $accepting, ...($districts === null ? [] : ['districts' => $districts]), ...($maxJobsPerWeek === null ? [] : ['max_jobs_per_week' => $maxJobsPerWeek])];
+
+        return $this->executeOwn($userId, $contextRevision, $expectedRevision, 'availability.update', $requestId, $input,
+            function (array $state) use ($accepting, $districts, $maxJobsPerWeek): array {
+                if ($districts !== null || $maxJobsPerWeek !== null) {
+                    $state = $this->profiles->coverage($state, $districts ?? $state['districts'], $maxJobsPerWeek ?? $state['max_jobs_per_week'], self::allDistricts());
+                }
+
+                return $this->profiles->availability($state, $accepting, now()->toDateTimeImmutable());
+            });
+    }
+
+    /**
+     * @param  array<string, mixed>  $address
+     * @return array<string, mixed>
+     */
+    public function address(int $userId, int $contextRevision, int $expectedRevision, array $address, string $requestId): array
+    {
+        return $this->executeOwn($userId, $contextRevision, $expectedRevision, 'contact.update', $requestId,
+            ['address_sha256' => hash('sha256', (string) json_encode(array_intersect_key($address, array_flip(RwandaAddress::FIELDS))))],
+            function (array $state) use ($address): array {
+                /** @var array<string, list<string>> $provinces */
+                $provinces = (array) config('rwanda.districts', []);
+                [$state['address'], $errors] = RwandaAddress::fromInput($address, $provinces, 'address.');
+                if ($errors !== []) {
+                    throw new CommandRejection('VALIDATION_FAILED', 422, fieldErrors: $errors);
+                }
+
+                return $state;
+            });
+    }
+
+    /** @return list<string> Rwanda's thirty districts, province by province. */
+    public static function allDistricts(): array
+    {
+        /** @var list<string> $districts */
+        $districts = array_merge(...array_values((array) config('rwanda.districts', [])));
+
+        return $districts;
     }
 
     /** @return array<string, mixed> */
@@ -92,7 +134,7 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
                     });
                 }, function () use ($profile, $partyId, $actorId, $expectedRevision, $decision, $submissionId, $checkedAt, $reference, $reason): OperationResult {
                     $this->revision($profile, $expectedRevision);
-                    $state = $this->profiles->review($profile->state ?? $this->profiles->empty(), $decision, $submissionId, $checkedAt, $reference, $reason, now()->toDateTimeImmutable());
+                    $state = $this->profiles->review($this->profiles->normalize($profile->state ?? []), $decision, $submissionId, $checkedAt, $reference, $reason, now()->toDateTimeImmutable());
                     $record = $this->persist($profile, $partyId, $state, $expectedRevision);
                     $this->history($record, $actorId, 'accreditation.review', $reason);
                     if ($decision === 'approve' || $decision === 'reject') {
@@ -106,7 +148,11 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
         });
     }
 
-    public function accreditFromIdentityCheck(int $actorId, string $partyId, string $licence, string $expiresOn, string $filename, string $content, string $reference, string $reason): void
+    /**
+     * @param  list<string>  $districts
+     * @param  array{province: string, district: string, sector: string, cell: string, street: string}|null  $address
+     */
+    public function accreditFromIdentityCheck(int $actorId, string $partyId, string $licence, string $expiresOn, string $filename, string $content, string $reference, string $reason, array $districts = [], ?array $address = null): void
     {
         if (AuditorProfile::query()->where('party_id', $partyId)->lockForUpdate()->exists()) {
             throw new CommandRejection('ACCREDITATION_ACTION_NOT_ALLOWED', 409);
@@ -114,7 +160,9 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
         $certificateId = strtolower((string) Str::ulid());
         $source = $this->certificates->describe($filename, $content);
         $now = now()->toDateTimeImmutable();
-        $state = $this->profiles->submit($this->profiles->empty(), $certificateId, $licence, $expiresOn, $now);
+        $state = $this->profiles->coverage($this->profiles->empty(), $districts, AuditorDispatch::DEFAULT_MAX_JOBS_PER_WEEK, self::allDistricts());
+        $state['address'] = $address;
+        $state = $this->profiles->submit($state, $certificateId, $licence, $expiresOn, $now);
         $state = $this->profiles->review($state, 'approve', $certificateId, now()->utc()->format('Y-m-d\TH:i:s\Z'), $reference, $reason, $now);
         $record = $this->persist(null, $partyId, $state, 0);
         (new AuditorCertificate)->forceFill([...$source, 'id' => $certificateId, 'auditor_profile_id' => $record->id,
@@ -140,6 +188,19 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
         return $reminded;
     }
 
+    public function coverage(int $actorId, string $partyId): ?array
+    {
+        return $this->staff->handle($actorId, 'audit.partners.verify', function () use ($partyId): ?array {
+            $profile = AuditorProfile::query()->where('party_id', $partyId)->first();
+            if ($profile === null) {
+                return null;
+            }
+            $state = $this->profiles->normalize($profile->state);
+
+            return ['accepting' => $state['accepting'], 'districts' => $state['districts'], 'max_jobs_per_week' => $state['max_jobs_per_week'], 'address' => $state['address']];
+        });
+    }
+
     /** @return array<string, mixed> */
     public function accreditation(int $userId, int $contextRevision): array
     {
@@ -147,7 +208,7 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
 
         return $this->own($userId, $contextRevision, $partyId, fn (?AuditorProfile $profile): array => $this->roles->handle($userId, 'auditor', $partyId, $contextRevision,
             function () use ($profile, $contextRevision): array {
-                $state = $profile->state ?? $this->profiles->empty();
+                $state = $this->profiles->normalize($profile->state ?? []);
                 $hash = $state['submission']['status'] === 'pending'
                     ? AuditorCertificate::query()->where('auditor_profile_id', $profile?->id)->whereKey($state['submission']['id'])->value('sha256')
                     : null;
@@ -170,7 +231,7 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
     /** @return array<string, mixed> */
     public function findOperation(int $userId, int $contextRevision, string $command, string $requestId): array
     {
-        if (! in_array($command, ['accreditation.submit', 'accreditation.renew', 'accreditation.withdraw', 'availability.update'], true)) {
+        if (! in_array($command, ['accreditation.submit', 'accreditation.renew', 'accreditation.withdraw', 'availability.update', 'contact.update'], true)) {
             throw new CommandRejection('OPERATION_NOT_FOUND', 404);
         }
         $partyId = $this->party($userId);
@@ -229,7 +290,7 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
                 $this->roles->handle($userId, 'auditor', $partyId, $contextRevision, fn (): bool => true);
             }, function () use ($profile, $partyId, $userId, $expectedRevision, $command, $change, $afterSave): OperationResult {
                 $this->revision($profile, $expectedRevision);
-                $state = $change($profile->state ?? $this->profiles->empty());
+                $state = $change($this->profiles->normalize($profile->state ?? []));
                 $record = $this->persist($profile, $partyId, $state, $expectedRevision);
                 if ($afterSave !== null) {
                     $afterSave($record);
@@ -238,6 +299,7 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
                 $code = match ($command) {
                     'accreditation.submit', 'accreditation.renew' => 'ACCREDITATION_SUBMITTED',
                     'accreditation.withdraw' => 'ACCREDITATION_WITHDRAWN',
+                    'contact.update' => 'AUDITOR_CONTACT_SAVED',
                     default => 'AVAILABILITY_UPDATED',
                 };
 
@@ -320,6 +382,6 @@ final class EloquentAuditorProfileStore implements AuditorProfileStore
     private function snapshot(?AuditorProfile $profile, string $partyId): array
     {
         return ['id' => $profile?->id, 'party_id' => $partyId, 'revision' => $profile->revision ?? 0,
-            'state' => $profile->state ?? $this->profiles->empty()];
+            'state' => $this->profiles->normalize($profile->state ?? [])];
     }
 }

@@ -29,8 +29,11 @@ const props = (
                 company_type: 'private_limited',
                 incorporation_date: '2019-04-02',
                 industry: 'Agriculture',
+                province: 'Western',
                 district: 'Rubavu',
-                registered_address: 'KN 4 Ave, Gisenyi',
+                sector: 'Gisenyi',
+                cell: 'Amahoro',
+                street: 'KN 4 Ave, Gisenyi',
                 phone: '+250 788 000 111',
             },
         },
@@ -43,7 +46,11 @@ const props = (
                     label: 'TIN',
                     note: 'Does not match the certificate.',
                 },
-                { key: 'company.district', label: 'District', note: '' },
+                {
+                    key: 'company.address',
+                    label: 'Registered address',
+                    note: '',
+                },
                 {
                     key: 'documents.articles',
                     label: 'Articles of Association',
@@ -59,7 +66,11 @@ const props = (
     blockers: [],
     two_factor: true,
     identity_context_revision: 3,
-    catalog: { industries: ['Agriculture'], districts: ['Rubavu'] },
+    catalog: {
+        industries: ['Agriculture'],
+        districts: ['Rubavu'],
+        provinces: { Western: ['Rubavu'] },
+    },
 });
 
 beforeEach(() => resetInertia());
@@ -184,6 +195,33 @@ describe('Fixing an application Compliance sent back', () => {
         ).toBeInTheDocument();
     });
 
+    it('opens on the earliest flagged step, whatever order the items were listed in', () => {
+        const base = flagged('documents.articles', 'Articles of Association');
+        render(
+            <RoleApply
+                {...base}
+                application={{
+                    ...base.application,
+                    requested_changes: {
+                        ...base.application.requested_changes,
+                        items: [
+                            ...base.application.requested_changes.items,
+                            {
+                                key: 'company.address',
+                                label: 'Registered address',
+                                note: '',
+                            },
+                        ],
+                    },
+                }}
+            />,
+        );
+
+        expect(
+            screen.getByRole('heading', { level: 1, name: 'Your company' }),
+        ).toBeInTheDocument();
+    });
+
     it('warns on Check and send about flagged items left unchanged', () => {
         render(<RoleApply {...flagged('declared', 'Declaration')} />);
 
@@ -195,7 +233,7 @@ describe('Fixing an application Compliance sent back', () => {
         ).toBeInTheDocument();
     });
 
-    it('counts a replaced document as changed after the page reloads (#753)', () => {
+    it('counts a replaced document as changed after the page reloads, and drops its flag (#753)', () => {
         const replaced = (documentId: string) => {
             const base = flagged(
                 'documents.articles',
@@ -206,13 +244,8 @@ describe('Fixing an application Compliance sent back', () => {
                 ...base,
                 application: {
                     ...base.application,
-                    step: 'review',
                     requested_changes: {
                         ...base.application.requested_changes,
-                        items: [
-                            { key: 'declared', label: 'Declaration', note: '' },
-                            ...base.application.requested_changes.items,
-                        ],
                         before: {
                             answers: base.application.answers!,
                             documents: { articles: 'doc-old' },
@@ -229,15 +262,19 @@ describe('Fixing an application Compliance sent back', () => {
             };
         };
 
+        // The page opens on Documents, the step holding the flag; a replaced file loses its flag.
         const { unmount } = render(<RoleApply {...replaced('doc-new')} />);
         expect(
-            screen.queryByRole('button', { name: 'Articles of Association' }),
+            screen.getByRole('heading', { name: /documents/i }),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText('Compliance asked you to change this.'),
         ).not.toBeInTheDocument();
         unmount();
 
         render(<RoleApply {...replaced('doc-old')} />);
         expect(
-            screen.getByRole('button', { name: 'Articles of Association' }),
+            screen.getByText('Compliance asked you to change this.'),
         ).toBeInTheDocument();
     });
 });

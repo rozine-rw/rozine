@@ -70,14 +70,10 @@ export function EligibleCard({
                     </span>
                     <span className="shrink-0 text-right">
                         <span className="block text-[10.5px] font-bold text-rz-slate uppercase">
-                            {t('auditor.jobs.distance')}
+                            {t('auditor.jobs.district')}
                         </span>
                         <span className="block text-[14px] font-bold text-rz-ink">
-                            {job.distance_km === null
-                                ? NO_FIGURE
-                                : t('auditor.jobs.km', {
-                                      distance: job.distance_km,
-                                  })}
+                            {job.district}
                         </span>
                     </span>
                 </span>

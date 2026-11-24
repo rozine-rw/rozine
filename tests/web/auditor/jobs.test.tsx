@@ -38,7 +38,7 @@ const UUID = /^[0-9a-f-]{36}$/u;
 beforeEach(() => inertia.reset());
 
 describe('Auditor Jobs', () => {
-    it('shows the dispatch radius and each eligible job with its engine figures', () => {
+    it('shows the districts the partner accepts and each eligible job with its engine figures', () => {
         render(<AuditorJobs {...props()} />);
 
         expect(screen.getByTestId('head')).toHaveTextContent('Jobs');
@@ -47,23 +47,32 @@ describe('Auditor Jobs', () => {
         ).toBeInTheDocument();
         expect(
             screen.getByText(
-                "Open field checks within 30km. First to accept locks the file. Each flash audit is due 24 hours after it's sent out.",
+                "Open field checks in the districts you accept. First to accept locks the file. Each flash audit is due 24 hours after it's sent out.",
             ),
         ).toBeInTheDocument();
+        const coverage = screen.getByRole('region', {
+            name: 'Districts you accept',
+        });
+
+        expect(coverage).toHaveTextContent('Gasabo1');
+        expect(coverage).toHaveTextContent('Kicukiro');
+        expect(coverage).toHaveTextContent('Nyarugenge');
         expect(
-            screen.getByRole('img', {
-                name: 'Map of your 30 km dispatch radius with 1 open jobs at approximate positions',
-            }),
+            within(coverage).getByText('3 districts · 1 open'),
         ).toBeInTheDocument();
-        expect(screen.getByText('Approximate positions')).toBeInTheDocument();
-        expect(screen.getByText('30km radius · 1 open')).toBeInTheDocument();
+        expect(
+            within(coverage).getByText('Up to 4 jobs a week'),
+        ).toBeInTheDocument();
+        expect(
+            within(coverage).getByRole('link', { name: 'Edit coverage' }),
+        ).toHaveAttribute('href', '/auditor/profile?section=availability');
 
         const card = screen.getByRole('article', { name: 'Huye Motors' });
 
         expect(
             within(card).getByText('Logistics · Gasabo · 3h ago'),
         ).toBeInTheDocument();
-        expect(within(card).getByText('11.2km')).toBeInTheDocument();
+        expect(within(card).getByText('District')).toBeInTheDocument();
         expect(within(card).getByText('RWF 51.2M')).toBeInTheDocument();
         expect(within(card).getByText('1.02×')).toBeInTheDocument();
         expect(within(card).getByText('6mo')).toBeInTheDocument();
@@ -587,28 +596,39 @@ describe('Auditor Jobs', () => {
 
     it.each([
         [
-            'missing',
-            "Rozine hasn't verified your office location yet, so no jobs can be sent to you. Jobs go to partners whose office is within 30 km of the business. Contact Audit Operations to have it verified.",
+            'no districts',
+            { accepting: true, districts: [], max_jobs_per_week: 4 },
+            "You haven't chosen any districts yet, so no audits can be offered to you. Choose them under Availability & coverage.",
         ],
         [
-            'expired',
-            'Your office location was verified more than a year ago, so no new jobs can be sent to you until Rozine verifies it again. Contact Audit Operations.',
+            'paused',
+            { accepting: false, districts: ['Huye'], max_jobs_per_week: 4 },
+            "You're paused, so no new audits are offered until you turn Accepting audits back on.",
         ],
     ] as const)(
-        'says why no jobs arrive while the office is %s',
-        (office, message) => {
-            render(<AuditorJobs {...props(emptyFixture)} office={office} />);
-
-            expect(screen.getByRole('status', { name: '' })).toHaveTextContent(
-                message,
+        'says why no jobs arrive with %s',
+        (_case, coverage, message) => {
+            render(
+                <AuditorJobs
+                    {...props(emptyFixture)}
+                    coverage={{
+                        ...coverage,
+                        districts: [...coverage.districts],
+                    }}
+                />,
             );
+
+            expect(screen.getByText(message)).toHaveAttribute('role', 'status');
         },
     );
 
-    it('says nothing about a verified office', () => {
-        render(<AuditorJobs {...props(emptyFixture)} office="verified" />);
+    it('says nothing more when the partner accepts audits in their districts', () => {
+        render(<AuditorJobs {...props(emptyFixture)} />);
 
-        expect(screen.queryByText(/office location/u)).not.toBeInTheDocument();
+        expect(
+            screen.queryByText(/haven't chosen any districts/u),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByText(/You're paused/u)).not.toBeInTheDocument();
     });
 
     it('explains an empty area and an empty month', () => {
@@ -616,7 +636,7 @@ describe('Auditor Jobs', () => {
 
         expect(
             screen.getByText(
-                "No open jobs in your area. We'll ping you the moment a Tier 2 deal needs a field check within 30km.",
+                "No open jobs in your districts. We'll ping you the moment a business in one of them needs a field check.",
             ),
         ).toBeInTheDocument();
         expect(
@@ -842,8 +862,8 @@ describe('Auditor Jobs on the live S-C projection', () => {
         expect(
             within(card).getByText('Sector unavailable · Nyarugenge · 40m ago'),
         ).toBeInTheDocument();
-        /* Distance, requested, DSCR and term: four dashes, and no zero anywhere. */
-        expect(within(card).getAllByText('—')).toHaveLength(4);
+        /* Requested, DSCR and term: three dashes, and no zero anywhere. */
+        expect(within(card).getAllByText('—')).toHaveLength(3);
         expect(
             within(card).queryByText(/^RWF 0|^0mo$|^0km$/u),
         ).not.toBeInTheDocument();
@@ -887,21 +907,22 @@ describe('Auditor Jobs on the live S-C projection', () => {
         });
     });
 
-    it('pins only the offers with a position and never centres a missing one', () => {
+    it('counts the offers on this page in each district the partner accepts', () => {
         render(<AuditorJobs {...props(liveMinimalFixture)} />);
 
-        const map = screen.getByRole('img', {
-            name: 'Map of your 30 km dispatch radius with 2 jobs on this page at approximate positions',
+        const coverage = screen.getByRole('region', {
+            name: 'Districts you accept',
         });
-        const pins = within(map).getAllByTestId('radius-pin');
 
         expect(
-            within(map).getByText('30km radius · 2 on this page'),
+            within(coverage).getByText('3 districts · 2 on this page'),
         ).toBeInTheDocument();
-        expect(pins).toHaveLength(1);
-        expect(pins[0]).toHaveStyle({
-            left: 'calc(50% + -7.233333333333333px)',
-        });
+        expect(within(coverage).getByText('Nyarugenge')).toHaveTextContent(
+            'Nyarugenge2',
+        );
+        expect(within(coverage).getByText('Gasabo')).toHaveTextContent(
+            /^Gasabo$/u,
+        );
     });
 
     it('leaves the Monthly section out while the server sends none', () => {
@@ -925,7 +946,7 @@ describe('Auditor Jobs on the live S-C projection', () => {
         const card = screen.getByRole('link', { name: /Gikondo Metal Works/ });
 
         expect(card).toHaveAttribute('href', `/auditor/jobs/${job.id}`);
-        expect(within(card).getByText('Kicukiro · 6.4km')).toBeInTheDocument();
+        expect(within(card).getByText('Kicukiro')).toBeInTheDocument();
         expect(within(card).queryByText(/Step/u)).not.toBeInTheDocument();
         expect(
             within(card).queryByText(/Review|sign off/u),
@@ -982,7 +1003,7 @@ describe('Auditor Jobs, live details', () => {
         ).toHaveAttribute('href', '/auditor/conflicts');
     });
 
-    it('gives the district alone when the distance cannot be stated', () => {
+    it('gives the district with the step the work is on', () => {
         const base = props(liveMinimalFixture);
 
         render(
@@ -991,7 +1012,6 @@ describe('Auditor Jobs, live details', () => {
                 assigned={[
                     {
                         ...base.assigned[0],
-                        distance_km: null,
                         step: 2,
                         steps: 5,
                     },
@@ -1018,12 +1038,7 @@ describe('Auditor Jobs, paged', () => {
             NEXT,
         );
         expect(
-            screen.getByRole('img', {
-                name: 'Map of your 30 km dispatch radius with 2 jobs on this page at approximate positions',
-            }),
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText('30km radius · 2 on this page'),
+            screen.getByText('3 districts · 2 on this page'),
         ).toBeInTheDocument();
         expect(screen.queryByText(/2 open/u)).not.toBeInTheDocument();
         /* A page count is never a total: the Jobs tab carries no badge. */
@@ -1070,15 +1085,10 @@ describe('Auditor Jobs, paged', () => {
         expect(
             screen.queryByRole('link', { name: 'Show more' }),
         ).not.toBeInTheDocument();
-        /* The last page after `?before=` holds a subset: no badge, and the map says so. */
+        /* The last page after `?before=` holds a subset: no badge, and the coverage card says so. */
         expect(screen.queryByLabelText(/open offers/u)).not.toBeInTheDocument();
         expect(
-            screen.getByText('30km radius · 2 on this page'),
-        ).toBeInTheDocument();
-        expect(
-            screen.getByRole('img', {
-                name: 'Map of your 30 km dispatch radius with 2 jobs on this page at approximate positions',
-            }),
+            screen.getByText('3 districts · 2 on this page'),
         ).toBeInTheDocument();
     });
 
@@ -1091,7 +1101,7 @@ describe('Auditor Jobs, paged', () => {
         expect(
             screen.getAllByLabelText('2 open offers').length,
         ).toBeGreaterThan(0);
-        expect(screen.getByText('30km radius · 2 open')).toBeInTheDocument();
+        expect(screen.getByText('3 districts · 2 open')).toBeInTheDocument();
         expect(screen.getByText('Monthly visit')).toBeInTheDocument();
         expect(
             screen.queryByLabelText(/Flash Audits/u),

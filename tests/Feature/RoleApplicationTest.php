@@ -6,6 +6,7 @@ use App\Application\Identity\SaveInvestorVerification;
 use App\Application\Identity\SubmitInvestorVerification;
 use App\Application\Identity\UploadInvestorVerificationDocument;
 use App\Models\AuditorProfile;
+use App\Models\BusinessContactVersion;
 use App\Models\BusinessProfile;
 use App\Models\IdentityAuditEvent;
 use App\Models\InvestorVerification;
@@ -82,7 +83,7 @@ function roleEnvelope(User $user, ?int $revision = null): array
 function companyAnswers(array $overrides = []): array
 {
     return ['legal_name' => 'Kivu Harvest Ltd', 'rdb_code' => '108 123 456', 'tin' => '108123456', 'company_type' => 'private_limited',
-        'incorporation_date' => '2019-04-02', 'industry' => 'Agriculture', 'district' => 'Rubavu', 'registered_address' => 'KN 4 Ave, Gisenyi',
+        'incorporation_date' => '2019-04-02', 'industry' => 'Agriculture', 'province' => 'Western', 'district' => 'Rubavu', 'sector' => 'Gisenyi', 'cell' => 'Amahoro', 'street' => 'KN 4 Ave',
         'phone' => '+250 788 000 111', ...$overrides];
 }
 
@@ -201,7 +202,10 @@ test('compliance reviews business KYB on the Businesses page and approves it onl
     $roles = RoleMembership::query()->where('party_id', $this->person->party_id)->pluck('status', 'role')->all();
     expect($application->status)->toBe('approved')->and(BusinessProfile::query()->whereKey($application->business_id)->exists())->toBeTrue()
         ->and($roles)->toEqual(['investor' => 'revoked', 'business' => 'active'])
-        ->and(IdentityAuditEvent::query()->where('action', 'membership.role_switch')->sole()->actor_user_id)->toBe($this->officer->id);
+        ->and(IdentityAuditEvent::query()->where('action', 'membership.role_switch')->sole()->actor_user_id)->toBe($this->officer->id)
+        // The KYB registered address becomes the Business's first contact, so its Profile and audit dispatch start from Rubavu.
+        ->and(BusinessContactVersion::query()->where('business_id', $application->business_id)->sole()->payload)
+        ->toMatchArray(['province' => 'Western', 'district' => 'Rubavu', 'sector' => 'Gisenyi', 'cell' => 'Amahoro', 'street' => 'KN 4 Ave', 'phone' => '0788000111']);
 
     // Exactly one role now: the launcher no longer offers a switch and the page sends them home.
     $this->actingAs($this->person->refresh())->get(route('role-application.show'))->assertRedirect(route('dashboard'));
@@ -233,6 +237,15 @@ test('the staff drawer lists approval problems in plain words, and only while th
 
     $drawer()->assertInertia(fn (Assert $page): Assert => $page->where('application.status', 'approved')
         ->where('application.problems', [])->where('application.blockers', [])->where('application.allowed_actions', []));
+});
+
+test('applications of a closed account leave the staff queue and its counts (#746)', function (): void {
+    kycSent($this->person);
+    businessSent($this, $this->person);
+    User::query()->whereKey($this->person->id)->update(['closed_at' => now()]);
+
+    $this->actingAs($this->officer)->get(route('staff.businesses.index'))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('applications.entries', [])->where('applications.counts', []));
 });
 
 test('compliance sends an application back naming the items to change, and the applicant fixes and resends it', function (): void {
@@ -292,7 +305,8 @@ test('an auditor sends their licence and coverage, and approval accredits them a
     $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'auditor', 'step' => 'licence',
         'answers' => ['membership_number' => 'ICPAR/M/0042', 'licence_number' => 'PC-2026-118', 'expires_on' => '2027-12-31', 'firm' => '']])->assertSessionHasNoErrors();
     $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'auditor', 'step' => 'coverage',
-        'answers' => ['districts' => ['Gasabo', 'Kicukiro'], 'no_conflicts' => true, 'will_declare' => true, 'ethics' => true]])->assertSessionHasNoErrors();
+        'answers' => ['address' => ['province' => 'Kigali City', 'district' => 'Gasabo', 'sector' => 'Kacyiru', 'cell' => 'Kamatamu', 'street' => 'KG 7 Ave'],
+            'districts' => ['Gasabo', 'Kicukiro'], 'no_conflicts' => true, 'will_declare' => true, 'ethics' => true]])->assertSessionHasNoErrors();
 
     // Without two-factor authentication the application is not sent.
     $this->person->forceFill(['two_factor_secret' => null, 'two_factor_confirmed_at' => null])->save();
@@ -313,7 +327,10 @@ test('an auditor sends their licence and coverage, and approval accredits them a
     $roles = RoleMembership::query()->where('party_id', $this->person->party_id)->pluck('status', 'role')->all();
     $profile = AuditorProfile::query()->where('party_id', $this->person->party_id)->sole();
     expect($application->refresh()->status)->toBe('approved')->and($roles)->toEqual(['investor' => 'revoked', 'auditor' => 'active'])
-        ->and($profile->state['standing'])->toMatchArray(['status' => 'active', 'licence' => 'PC-2026-118', 'expires_on' => '2027-12-31']);
+        ->and($profile->state['standing'])->toMatchArray(['status' => 'active', 'licence' => 'PC-2026-118', 'expires_on' => '2027-12-31'])
+        // The districts and address from the application carry into dispatch, and approval switches Accepting audits on.
+        ->and($profile->state)->toMatchArray(['accepting' => true, 'districts' => ['Gasabo', 'Kicukiro'], 'max_jobs_per_week' => 4,
+            'address' => ['province' => 'Kigali City', 'district' => 'Gasabo', 'sector' => 'Kacyiru', 'cell' => 'Kamatamu', 'street' => 'KG 7 Ave']]);
 });
 
 test('a staff member who does not verify businesses sees no applications and cannot decide one', function (): void {
@@ -448,4 +465,31 @@ test('phone numbers must be Rwandan numbers, so an 11-digit local number is refu
     $people['representative']['phone'] = '250788000222';
     $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'business', 'step' => 'people', 'answers' => $people])
         ->assertSessionHasNoErrors();
+});
+
+test('owners hold 25 to 100 percent between them, are listed once, and a director\'s ID stays that director\'s (#761)', function (): void {
+    kycSent($this->person);
+    $this->actingAs($this->person)->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'business', 'step' => 'company',
+        'answers' => companyAnswers()])->assertSessionHasNoErrors();
+    $save = fn (array $people) => $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'business', 'step' => 'people', 'answers' => $people]);
+
+    $people = peopleAnswers();
+    $people['owners'][1]['ownership_pct'] = '50';
+    $save($people)->assertSessionHasErrors(['owners' => 'The shares add up to more than 100%.']);
+
+    $people = peopleAnswers();
+    $people['owners'][1]['ownership_pct'] = '0';
+    $save($people)->assertSessionHasErrors(['owners.1.ownership_pct']);
+
+    $people = peopleAnswers();
+    $people['owners'][1] = [...$people['owners'][0], 'ownership_pct' => '40'];
+    $save($people)->assertSessionHasErrors(['owners.1.id_number' => 'This person is already listed.']);
+
+    $people = peopleAnswers();
+    $people['owners'][0]['full_name'] = 'Someone Else';
+    $save($people)->assertSessionHasErrors(['owners.0.id_number' => 'This ID number is the director Aline Uwase’s. Pick them from the directors instead.']);
+
+    $people = peopleAnswers();
+    $people['owners'][0]['full_name'] = 'aline uwase';
+    $save($people)->assertSessionHasNoErrors();
 });

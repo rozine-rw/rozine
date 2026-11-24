@@ -88,9 +88,11 @@ final class EloquentAuditorDirectoryStore implements AuditorDirectoryStore
             ->where(fn (Builder $partner) => $partner->whereExists(fn (Builder $membership) => $membership->selectRaw('1')->from('role_memberships')
                 ->whereColumn('role_memberships.party_id', 'parties.id')->where('role_memberships.role', 'auditor'))
                 ->orWhereExists(fn (Builder $profile) => $profile->selectRaw('1')->from('auditor_profiles')->whereColumn('auditor_profiles.party_id', 'parties.id')))
+            // A Party whose every account is closed holds no role (#746), so it leaves the registry.
+            ->whereExists(fn (Builder $open) => $open->selectRaw('1')->from('users')->whereColumn('users.party_id', 'parties.id')->whereNull('users.closed_at'))
             ->selectRaw("parties.id AS party_id,
-                coalesce((SELECT u.name FROM users u WHERE u.party_id = parties.id ORDER BY u.id LIMIT 1), '') AS name,
-                coalesce((SELECT u.email FROM users u WHERE u.party_id = parties.id ORDER BY u.id LIMIT 1), '') AS email,
+                coalesce((SELECT u.name FROM users u WHERE u.party_id = parties.id AND u.closed_at IS NULL ORDER BY u.id LIMIT 1), '') AS name,
+                coalesce((SELECT u.email FROM users u WHERE u.party_id = parties.id AND u.closed_at IS NULL ORDER BY u.id LIMIT 1), '') AS email,
                 (SELECT count(*) FROM audit_assignments a WHERE a.party_id = parties.id AND a.status = 'accepted') AS active_engagements");
     }
 

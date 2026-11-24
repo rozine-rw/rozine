@@ -228,8 +228,11 @@ describe('Approving and reviewing a resubmission', () => {
                                 company_type: 'private_limited',
                                 incorporation_date: '2019-04-02',
                                 industry: 'Agriculture',
+                                province: 'Western',
                                 district: 'Rubavu',
-                                registered_address: 'KN 4 Ave',
+                                sector: 'Gisenyi',
+                                cell: 'Amahoro',
+                                street: 'KN 4 Ave',
                                 phone: '+250 788 000 111',
                             },
                         },
@@ -260,8 +263,11 @@ describe('Approving and reviewing a resubmission', () => {
                                         company_type: 'private_limited',
                                         incorporation_date: '2019-04-02',
                                         industry: 'Agriculture',
+                                        province: 'Western',
                                         district: 'Rubavu',
-                                        registered_address: 'KN 4 Ave',
+                                        sector: 'Gisenyi',
+                                        cell: 'Amahoro',
+                                        street: 'KN 4 Ave',
                                         phone: '+250 788 000 111',
                                     },
                                 },
@@ -349,5 +355,38 @@ describe('Reviewing an auditor application (#757)', () => {
         expect(approve).toHaveAccessibleDescription(
             "Approve the applicant's own KYC first (Users page). Then approve this application.",
         );
+    });
+});
+
+describe('Application history', () => {
+    it('reads a send-back followed by applicant saves as one send-back, then the saves, then the resend', () => {
+        const entry = (revision: number, status: string, command: string) => ({
+            revision,
+            status,
+            command,
+            reason: null,
+            at: `2026-11-24T1${revision}:00:00+02:00`,
+        });
+        renderWithUser(
+            <RoleApplicationDrawer
+                application={application({
+                    history: [
+                        entry(1, 'changes_requested', 'application.more'),
+                        entry(2, 'changes_requested', 'application.save'),
+                        entry(3, 'changes_requested', 'application.save'),
+                        entry(4, 'submitted', 'application.submit'),
+                    ],
+                })}
+                close="/admin/businesses"
+            />,
+        );
+
+        expect(
+            screen.getByText(/then 2 saves by the applicant/u),
+        ).toBeInTheDocument();
+        expect(screen.getByText('Sent again for review')).toBeInTheDocument();
+        expect(
+            screen.queryByText('Waiting for review'),
+        ).not.toBeInTheDocument();
     });
 });

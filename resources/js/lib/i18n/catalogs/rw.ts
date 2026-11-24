@@ -379,6 +379,19 @@ const rw: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Abagenzuzi ntibashobora kugira urundi ruhare muri Rozine, bityo iyi konti ntishobora gusaba uburenganzira bw’Umugenzuzi.',
     'suite.app.unavailable': 'Ntibishoboka n’uburenganzira ufite ubu',
+    'admin.role_applications.status.resubmitted':
+        'Yongeye koherezwa ngo isuzumwe',
+    'role.apply.people.pick_director':
+        'Hari umuyobozi na we ufite imigabane? Muhitemo:',
+    'role.apply.people.add_other_owner':
+        '+ Ongeraho nyir’imigabane utari umuyobozi',
+    'role.apply.people.director_badge': 'Umuyobozi',
+    'role.apply.people.total': 'Imigabane yanditswe: {total}% kuri 100%',
+    'role.apply.people.total_over': 'Imigabane irenze 100%. Gabanya umugabane.',
+    'role.apply.people.full':
+        'Imigabane igeze kuri 100%, nta wundi ushobora kongerwaho.',
+    'role.apply.people.share_range':
+        'Andika umugabane uri hagati ya 25 na 100.',
     'admin.role_applications.kyc_first':
         'Banza wemeze KYC y’usaba (ku rupapuro rw’Abakoresha). Hanyuma wemeze iyi dosiye.',
     'admin.role_applications.declared_yes': 'byemejwe',
@@ -399,11 +412,11 @@ const rw: Catalog = {
     'admin.role_applications.business.confirm_title':
         'Kwemeza no kwinjiza {name}?',
     'admin.role_applications.business.confirm_body':
-        'Ibi bishyiraho ikigo {name} akaba ari we ugihagarariye, kandi bigahagarika uruhare rwe rw’Umushoramari. Andika impamvu mu nyandiko.',
+        'Ibi bishyiraho ikigo {name} akaba ari we ugihagarariye; ruba uruhare rwe rwonyine, rusimbura urw’Umushoramari niba arufite. Andika impamvu mu nyandiko.',
     'admin.role_applications.auditor.confirm_title':
         'Kwemeza {name} nk’Umugenzuzi?',
     'admin.role_applications.auditor.confirm_body':
-        'Ibi byemeza {name} nk’Umugenzuzi kandi bigahagarika uruhare rwe rw’Umushoramari. Andika impamvu mu nyandiko.',
+        'Ibi byemeza {name} nk’Umugenzuzi; ruba uruhare rwe rwonyine, rusimbura urw’Umushoramari niba arufite. Andika impamvu mu nyandiko.',
     'admin.role_applications.confirm_unchanged':
         'Ibintu {count} wasabye guhindura ntibyahinduwe.',
     'admin.role_applications.confirm_note':
@@ -417,7 +430,7 @@ const rw: Catalog = {
     'admin.role_applications.pep_body':
         'Banza ugenzure byimbitse mbere yo kwemeza: genzura inkomoko y’amafaranga n’umutungo, wandike ibyo wagenzuye mu nyandiko.',
     'admin.role_applications.pep_confirm': 'Nagenzuye byimbitse uyu muntu.',
-    'admin.role_applications.saves': '(byabitswe {count})',
+    'admin.role_applications.saves': ', hanyuma usaba abika inshuro {count}',
     'role.apply.review.unchanged_title': 'Ibi ntabwo urabihindura',
     'role.apply.review.unchanged_body':
         'Abashinzwe kubahiriza amategeko bagusabye kubihindura. Ohereza bundi bushya gusa niba ari byo.',
@@ -485,7 +498,7 @@ const rw: Catalog = {
     'admin.role_applications.decision': 'Icyemezo',
     'admin.role_applications.note': 'Ubutumwa ku usaba',
     'admin.role_applications.note_hint':
-        'Kwanga bisaba ubusobanuro. Kugira ngo usubize, hitamo ibyo guhindura; ubusobanuro si ngombwa. Kwemeza bihindura uruhare rw’usaba, akareka kuba Umushoramari.',
+        'Kwanga bisaba ubusobanuro. Kugira ngo usubize, hitamo ibyo guhindura; ubusobanuro si ngombwa. Kwemeza bituma uru ruba uruhare rwonyine rw’usaba, rusimbura urw’Umushoramari niba arufite.',
     'admin.role_applications.reject': 'Anga',
     'admin.role_applications.more': 'Saba ibindi',
     'admin.revision.legend': 'Ni iki usaba agomba guhindura?',
@@ -2366,7 +2379,7 @@ const rw: Catalog = {
     'admin.design.app_control.feature.auditor_sign_ups':
         "Kwiyandikisha kw'abagenzuzi",
     'admin.design.app_control.feature.auto_dispatch':
-        'Kohereza mu buryo bwikora muri km 30',
+        'Kohereza byikora hakurikijwe akarere',
     'admin.design.app_control.feature.flash_audits':
         'Igenzura ryihuse (amasaha 24)',
     'admin.design.app_control.state.live': 'Irakora',
@@ -3716,68 +3729,6 @@ const rw: Catalog = {
     'admin.parties.verify_licence': '✓ Emeza uruhushya',
     'admin.parties.reject': 'Anga',
     'admin.parties.licence_title': 'Uruhushya rwa ICPAR no kwemeza',
-    'admin.parties.office.title': 'Ibiro byanditswe',
-    'admin.parties.office.status': 'Aho yoherezwa ava',
-    'admin.parties.office.state.verified': 'Byemejwe',
-    'admin.parties.office.state.expired': 'Kwemeza byarangiye',
-    'admin.parties.office.state.missing': 'Ntibyemejwe',
-    'admin.parties.office.note.missing':
-        'Nta biro byanditswe, bityo uyu mufatanyabikorwa ntahabwa akazi. Akazi gahabwa abafatanyabikorwa bafite ibiro byemejwe biri muri km 30 uvuye ku kigo.',
-    'admin.parties.office.note.expired':
-        'Ibi biro byemejwe hashize umwaka urenga, bityo uyu mufatanyabikorwa ntahabwa akazi kugeza byongeye kwemezwa.',
-    'admin.parties.office.coordinates': 'Aho biherereye',
-    'admin.parties.office.point': '{latitude}, {longitude} (±{metres} m)',
-    'admin.parties.office.verified_on': 'Byemejwe ku wa',
-    'admin.parties.office.evidence': 'Ibimenyetso byagenzuwe',
-    'admin.parties.office.record': 'Andika ibiro byemejwe',
-    'admin.parties.office.reverify': 'Ongera wemeze ibiro',
-    'admin.parties.office.form': 'Emeza ibiro byanditswe',
-    'admin.parties.office.form_body':
-        'Andika aho ibiro biherereye wagenzuye ukoresheje ibimenyetso. Kohereza byongera ubusobanuro ku ntera, bityo ikinyuranyo kinini gishobora gusiga ibigo hanze.',
-    'admin.parties.office.field.latitude': 'Latitude',
-    'admin.parties.office.field.longitude': 'Longitude',
-    'admin.parties.office.field.uncertainty_m': 'Ubusobanuro (metero)',
-    'admin.parties.office.field.reference': 'Ibimenyetso byagenzuwe',
-    'admin.parties.office.field.reason': 'Impamvu',
-    'admin.parties.office.placeholder.latitude': '-1.9441',
-    'admin.parties.office.placeholder.longitude': '30.0619',
-    'admin.parties.office.placeholder.uncertainty_m': '50',
-    'admin.parties.office.placeholder.reference':
-        'urugero: urutonde rwa ICPAR, gusura aho biri',
-    'admin.parties.office.placeholder.reason':
-        "urugero: Aderesi y'ibiro yemejwe ku rutonde rwa ICPAR no kuri telefoni.",
-    'admin.parties.office.cta': 'Andika ko byemejwe',
-    'admin.parties.premises.title': 'Aho ubucuruzi bukorera',
-    'admin.parties.premises.status': 'Aho koherezwa',
-    'admin.parties.premises.state.verified': 'Byemejwe',
-    'admin.parties.premises.state.expired': 'Kwemeza byarangiye',
-    'admin.parties.premises.state.missing': 'Ntibyemejwe',
-    'admin.parties.premises.note.missing':
-        'Nta hantu ubucuruzi bukorera handitswe, bityo nta Mugenzuzi ushobora koherezwa hano. Akazi gahabwa abagenzuzi gusa bafite ibiro byemejwe biri munsi ya km 30 uvuye aha.',
-    'admin.parties.premises.note.expired':
-        'Aha hantu hemejwe hashize umwaka urenga, bityo nta Mugenzuzi woherezwa hano kugeza hongeye kwemezwa.',
-    'admin.parties.premises.coordinates': 'Aho biherereye',
-    'admin.parties.premises.point': '{latitude}, {longitude} (±{metres} m)',
-    'admin.parties.premises.verified_on': 'Byemejwe ku wa',
-    'admin.parties.premises.evidence': 'Ibimenyetso byagenzuwe',
-    'admin.parties.premises.record': 'Andika aho bakorera hemejwe',
-    'admin.parties.premises.reverify': 'Ongera wemeze aho bakorera',
-    'admin.parties.premises.form': 'Emeza aho ubucuruzi bukorera',
-    'admin.parties.premises.form_body':
-        'Andika aho hantu wagenzuye ukurikije ibimenyetso. Kohereza byongera ubusobanuro ku ntera, bityo intera nini ishobora gutuma abagenzuzi barenga intera.',
-    'admin.parties.premises.field.latitude': 'Latitude',
-    'admin.parties.premises.field.longitude': 'Longitude',
-    'admin.parties.premises.field.uncertainty_m': 'Ubusobanuro (metero)',
-    'admin.parties.premises.field.reference': 'Ibimenyetso byagenzuwe',
-    'admin.parties.premises.field.reason': 'Impamvu',
-    'admin.parties.premises.placeholder.latitude': '-1.9441',
-    'admin.parties.premises.placeholder.longitude': '30.0619',
-    'admin.parties.premises.placeholder.uncertainty_m': '50',
-    'admin.parties.premises.placeholder.reference':
-        'urugero: gusura aho bakorera, aderesi yanditswe muri RDB',
-    'admin.parties.premises.placeholder.reason':
-        'urugero: Aho bakorera hemejwe mu gusura no kuri aderesi ya RDB.',
-    'admin.parties.premises.cta': 'Andika ko byemejwe',
     'admin.parties.audit.title': 'Igenzura',
     'admin.parties.audit.none': 'Nta genzura rifunguye kuri ubu bucuruzi.',
     'admin.parties.audit.closed_last':
@@ -3792,19 +3743,15 @@ const rw: Catalog = {
     'admin.parties.audit.overdue':
         'Amasaha 24 yarangiye ku wa {date} nta raporo ifunze. Igenzura ritunguranye rigomba kurangira mu masaha 24, bityo iri ryarenze ku itegeko. Riri mu bidasanzwe bifunguye kugira ngo Ibikorwa by’igenzura birikurikirane.',
     'admin.parties.audit.reason.AUDIT_NO_ELIGIBLE_PARTNER':
-        'Hari abagenzuzi bafite ibiro byemejwe muri kilometero 30, ariko nta n’umwe ushobora gufata iri genzura ubu (kuboneka, ubushobozi cyangwa ubwigenge). Inshuro zo kurioherereza zakoreshejwe: {attempts} kuri 3. Ryohereze ukundi igihe umwe abishoboye.',
+        'Hari abagenzuzi bemera akarere k’ubu bucuruzi, ariko nta n’umwe ushobora gufata iri genzura ubu (kuboneka, umubare ntarengwa w’icyumweru, ubushobozi cyangwa ubwigenge). Inshuro zo kohereza zakoreshejwe: {attempts} kuri 3. Ryohereze undi nibamara kuboneka.',
     'admin.parties.audit.reason.AUDIT_DISPATCH_EXHAUSTED':
         'Inshuro zose zo kurioherereza zarakoreshejwe cyangwa igihe cyararenze, ntirishobora koherezwa ukundi.',
-    'admin.parties.audit.reason.AUDIT_PREMISES_UNVERIFIED':
-        'Aho ubu bucuruzi bukorera ntiharemezwa, bityo kohereza ntibishobora gupima kilometero 30. Abakozi bemeza ubucuruzi bahandika mu gice cy’Aho bukorera. Inshuro zo kurioherereza zakoreshejwe: {attempts} kuri 3.',
-    'admin.parties.audit.reason.AUDIT_NO_PARTNER_IN_RANGE':
-        'Nta mugenzuzi ufite ibiro byemejwe muri kilometero 30 z’aho ubu bucuruzi bukorera. Emeza umugenzuzi uri hafi cyangwa wemeze aho ibiro bye biri. Inshuro zo kurioherereza zakoreshejwe: {attempts} kuri 3.',
     'admin.parties.audit.remedy': 'Fungura Abagenzuzi',
     'admin.parties.audit.field.reason': 'Impamvu',
     'admin.parties.audit.flash.open': 'Saba igenzura ritunguranye',
     'admin.parties.audit.flash.form': 'Saba igenzura ritunguranye',
     'admin.parties.audit.flash.form_body':
-        'Igenzura rihabwa umugenzuzi ukurikira wemerewe uri muri kilometero 30, rigomba kurangira mu masaha 24. Ubucuruzi ntibubimenyeshwa mbere.',
+        'Igenzura rihabwa umugenzuzi ukurikiraho wemewe wemera akarere k’ubu bucuruzi, kandi rigomba gukorwa mu masaha 24. Ubucuruzi ntibumenyeshwa mbere.',
     'admin.parties.audit.flash.placeholder':
         'urugero: Imikoreshereze idasanzwe kuri konti y’amafaranga yinjiye muri iki cyumweru.',
     'admin.parties.audit.flash.cta': 'Saba igenzura ritunguranye',
@@ -3838,10 +3785,10 @@ const rw: Catalog = {
     'admin.parties.audit.withdraw.done':
         'Igenzura ryakuweho. Ushobora gusaba irindi.',
     'admin.parties.audit.reason.AUDIT_PARTNER_AVAILABLE':
-        'Hari umugenzuzi uri muri km 30 ushobora gufata iri genzura ubu. Ryohereze ukundi kugira ngo arihabwe. Inshuro zo kohereza zakoreshejwe: {attempts} kuri 3.',
+        'Umugenzuzi wemera akarere k’ubu bucuruzi ashobora gufata iri genzura ubu. Ryohereze kugira ngo arihabwe. Inshuro zo kohereza zakoreshejwe: {attempts} kuri 3.',
     'admin.parties.audit.reason.AUDIT_INDEPENDENCE_REVIEW_REQUIRED':
-        'Hari abagenzuzi bafite ibiro byemejwe biri muri km 30, ariko nta n’umwe wasuzumwe ko yigenga kuri ubu bucuruzi muri manda yabwo iriho, bityo ntirishobora kubahabwa. Andika isuzuma ry’ubwigenge ry’umugenzuzi uri hasi. Inshuro zo kohereza zakoreshejwe: {attempts} kuri 3.',
-    'admin.parties.audit.partners.title': 'Abagenzuzi bari muri km 30',
+        'Hari abagenzuzi bemera akarere k’ubu bucuruzi, ariko nta n’umwe wasuzumwe ko yigenga kuri ubu bucuruzi muri manda yabwo y’ubu, bityo ntibashobora kurihabwa. Andika isuzuma ry’ubwigenge ry’umugenzuzi uri hasi. Inshuro zo kohereza zakoreshejwe: {attempts} kuri 3.',
+    'admin.parties.audit.partners.title': 'Abagenzuzi bo muri aka karere',
     'admin.parties.audit.partners.reviewed': 'Ubwigenge bwasuzumwe',
     'admin.parties.audit.partners.unreviewed': 'Ntirasuzumwa',
     'admin.parties.audit.independence.open':
@@ -3894,7 +3841,7 @@ const rw: Catalog = {
     'admin.parties.audit.review.open': 'Saba isuzuma ry’inyandiko za konti',
     'admin.parties.audit.review.form': 'Saba isuzuma ry’inyandiko za konti',
     'admin.parties.audit.review.form_body':
-        'Umugenzuzi uri muri kilometero 30 agereranya inyandiko zoherejwe n’iz’umwimerere. Ubusabe ni ubw’inyandiko zigaragara hano; nizihinduka mbere, uzasabwa kongera kuzisuzuma.',
+        'Umugenzuzi wemera akarere k’ubu bucuruzi agenzura raporo za konti zashyizweho azigereranya n’umwimerere. Isaba rireba raporo zigaragara hano; nizihinduka mbere, uzasabwa kongera kuzisuzuma.',
     'admin.parties.audit.review.placeholder':
         'urugero: Isuzuma rya mbere ry’inyandiko zoherejwe hamwe n’ubusabe.',
     'admin.parties.audit.review.cta': 'Saba isuzuma',
@@ -4120,14 +4067,13 @@ const rw: Catalog = {
     'auditor.availability.accepting': 'Ndakira amagenzura',
     'auditor.availability.paused': 'Byahagaritswe',
     'auditor.availability.home_sub':
-        'Mu birometero {radius} · imirimo {max} icyarimwe',
+        '{districts} · imirimo {max} ntarengwa ku cyumweru',
     'auditor.availability.home_paused':
         'Kanda wongere wakire amagenzura yihuse',
     'auditor.availability.toggle': 'Kwakira amagenzura',
     'auditor.home.nearby_one': 'Igenzura ryihuse 1 hafi yawe',
     'auditor.home.nearby_other': 'Amagenzura yihuse {count} hafi yawe',
-    'auditor.home.nearby_sub':
-        'Irya hafi ni kuri km {distance} · uwemeye mbere afata dosiye',
+    'auditor.home.nearby_sub': 'Muri {districts} · uwemeye mbere afata dosiye',
     'auditor.home.in_progress': 'Birakorwa',
     'auditor.job.step_of': 'Intambwe {step} kuri {steps}',
     'auditor.job.status.overdue': 'Yarenze igihe',
@@ -4158,16 +4104,8 @@ const rw: Catalog = {
     'auditor.jobs.head_title': 'Imirimo',
     'auditor.jobs.title': "Imirimo y'igenzura",
     'auditor.jobs.lead':
-        'Igenzura ryo ku kibanza riri mu birometero {radius}. Uwemeye mbere afata dosiye. Buri igenzura ryihuse rigomba kurangira mu masaha {hours} nyuma yo koherezwa.',
-    'auditor.jobs.map_label':
-        "Ikarita y'akarere ka km {radius} ufite imirimo {count} ifunguye, aho iri hagereranyijwe",
-    'auditor.jobs.map_badge': 'km {radius} · {count} ifunguye',
-    'auditor.jobs.map_label_page':
-        "Ikarita y'akarere ka km {radius} ifite imirimo {count} kuri uru rupapuro, aho iri hagereranyijwe",
-    'auditor.jobs.map_badge_page': 'km {radius} · {count} kuri uru rupapuro',
+        'Igenzura ryo ku butaka riri mu turere wemera. Uwemeye mbere afata dosiye. Buri genzura ryihuse rigomba gukorwa mu masaha {hours} nyuma yo koherezwa.',
     'auditor.jobs.assigned': 'Birakorwa',
-    'auditor.jobs.distance': 'Intera',
-    'auditor.jobs.km': 'km {distance}',
     'auditor.jobs.sector_unavailable': 'Urwego ntirubonetse',
     'auditor.jobs.kind_monthly': 'Isura rya buri kwezi',
     'auditor.jobs.kind_flash': 'Igenzura ryihuse',
@@ -4185,12 +4123,8 @@ const rw: Catalog = {
     'auditor.jobs.view_file': 'Reba ubusabe bwose →',
     'auditor.jobs.decline': 'Anga',
     'auditor.jobs.declare_conflict': 'Tangaza inyungu bwite',
-    'auditor.jobs.office.missing':
-        "Rozine ntiremeza aho ibiro byawe biherereye, bityo nta kazi gashobora koherezwa. Akazi gahabwa abafatanyabikorwa bafite ibiro biri muri km {radius} uvuye ku kigo. Vugana n'Ishami ry'Igenzura kugira ngo bibyemeze.",
-    'auditor.jobs.office.expired':
-        "Aho ibiro byawe biherereye byemejwe hashize umwaka urenga, bityo nta kazi gashya koherezwa kugeza Rozine yongeye kubyemeza. Vugana n'Ishami ry'Igenzura.",
     'auditor.jobs.empty':
-        'Nta murimo ufunguye mu karere kawe. Tuzakumenyesha igihe dosiye yo ku rwego rwa 2 ikeneye igenzura mu birometero {radius}.',
+        'Nta murimo ufunguye mu turere twawe. Tuzakumenyesha ako kanya ubucuruzi bwo muri kimwe muri two bukeneye igenzura ryo ku butaka.',
     'auditor.monthly.title': 'Raporo za buri kwezi',
     'auditor.monthly.lead':
         "Buri kwezi ufungura dosiye y'igenzura y'ubucuruzi ukurikirana. Genzura aho bakorera kandi ufunge mbere y'itariki 7 — ubucuruzi buhabwa amasaha 24 yo kujurira.",
@@ -4269,7 +4203,6 @@ const rw: Catalog = {
     'auditor.file.label': "Dosiye y'ikigo {business}",
     'auditor.file.eyebrow_preview': "Incamake y'ubusabe",
     'auditor.file.eyebrow_file': "Dosiye y'ikigo",
-    'auditor.file.place': '{district} · km {distance}',
     'auditor.file.continue': 'Komeza igenzura',
     'auditor.file.title': 'Suzuma ubusabe',
     'auditor.file.lead':
@@ -4754,11 +4687,6 @@ const rw: Catalog = {
         'Uri mu bashobora guhabwa imirimo kandi ushobora guhabwa amagenzura yihuse.',
     'auditor.availability.paused_sub':
         'Nta murimo mushya uhabwa. Imirimo wemeye ikomeza igihe cyayo.',
-    'auditor.availability.max_title': 'Imirimo icyarimwe',
-    'auditor.availability.max_sub': "Nyuma y'aha nta murimo uzahabwa.",
-    'auditor.availability.radius_title': 'Aho ukorera',
-    'auditor.availability.radius_sub':
-        'Bipimwa uhereye ku biro byawe byanditswe kugera ku kigo.',
 
     'business.rating.page_title': "Ubuzima bw'imari",
     'business.rating.page_subtitle':
@@ -6844,7 +6772,6 @@ const rw: Catalog = {
     'auditor.photos.add_unavailable': 'Gufata ntibiboneka',
     'auditor.checkin.position_unavailable': 'Aho uri ntibiboneka',
     'auditor.ledger.ingested': 'Byakiriwe · ntibirasuzumwa',
-    'auditor.jobs.map_approximate': 'Aho biri hagereranyijwe',
     'auditor.reason.label': 'Impamvu',
     'auditor.reason.explanation_required':
         'Ibisobanuro bishingiye ku byabaye (ni ngombwa)',
@@ -9633,14 +9560,14 @@ const rw: Catalog = {
         'Yego, niba amafaranga ari make',
     'auditor.academy.lesson.dispatch.title': 'Akazi uhabwa',
     'auditor.academy.lesson.dispatch.sub':
-        'Umugenzuzi wujuje ibisabwa uri hafi, muri km 30',
-    'auditor.academy.lesson.dispatch.topic1.title': 'Muri km 30',
+        'CPA wemewe ukorera mu karere k’ubucuruzi',
+    'auditor.academy.lesson.dispatch.topic1.title': 'Uturere twawe',
     'auditor.academy.lesson.dispatch.topic1.body':
-        'Akazi gahabwa umucungamari wujuje ibisabwa uri hafi kurusha abandi, ufite ibiro biri muri km 30 uvuye aho ubucuruzi bukorera. Kujuja ibisabwa bivuze kugira uruhushya rugifite agaciro, nta nyungu zivuguruzanya wagaragaje, kandi uburyo bwo gusimburana bubyemera.',
+        'Imirimo ihabwa CPA wemewe wemera akarere k’ubucuruzi, atarenze umubare ntarengwa we w’icyumweru. Wemewe bivuga uruhushya rugifite agaciro, nta kwivanga kwatangajwe kandi uburyo bwo gusimburana bubyemera. Uhitamo uturere twawe muri Igihe uboneka n’aho ukorera.',
     'auditor.academy.lesson.dispatch.topic1.q':
-        'Ubucuruzi buri kuri km 31 uvuye ku biro byawe. Bigenda bite?',
+        'Ubucuruzi buri mu karere utemera. Bigenda bite?',
     'auditor.academy.lesson.dispatch.topic1.option1':
-        'Burahabwa wowe niba nta wundi uri hafi',
+        'Urahabwa niba nta wundi uboneka',
     'auditor.academy.lesson.dispatch.topic1.option2': 'Ntuzigera ubuhabwa',
     'auditor.academy.lesson.dispatch.topic1.option3':
         'Ushobora kubusaba ku rutonde',
@@ -10002,6 +9929,56 @@ const rw: Catalog = {
         one: 'Ukwezi {count}',
         other: 'Amezi {count}',
     },
+    'auditor.jobs.district': 'Akarere',
+    'auditor.coverage.count_one': 'Akarere 1',
+    'auditor.coverage.count_other': 'Uturere {count}',
+    'auditor.jobs.coverage_title': 'Uturere wemera',
+    'auditor.jobs.coverage_badge': '{districts} · {count} ifunguye',
+    'auditor.jobs.coverage_badge_page':
+        '{districts} · {count} kuri uru rupapuro',
+    'auditor.jobs.coverage_none':
+        "Ntabwo urahitamo uturere, bityo nta genzura wahabwa. Uduhitemo muri Igihe uboneka n'aho ukorera.",
+    'auditor.jobs.coverage_paused':
+        'Wahagaritse, bityo nta genzura rishya uhabwa kugeza wongeye gufungura Kwemera amagenzura.',
+    'auditor.jobs.coverage_weekly': 'Imirimo igera kuri {max} ku cyumweru',
+    'auditor.jobs.coverage_edit': 'Hindura aho ukorera',
+    'auditor.availability.weekly_title': 'Imirimo ntarengwa ku cyumweru',
+    'auditor.availability.weekly_sub':
+        'Sisitemu ireka kuguha imirimo urenze uyu mubare.',
+    'auditor.availability.weekly_less': 'Umurimo umwe ugabanuke ku cyumweru',
+    'auditor.availability.weekly_more': 'Umurimo umwe wiyongere ku cyumweru',
+    'auditor.availability.districts_title': 'Uturere wemera',
+    'auditor.availability.districts_count': 'Uturere {count} kuri {total}',
+    'auditor.availability.districts_none':
+        "Hitamo nibura akarere kamwe. Mbere y'uko ubikora, nta genzura wahabwa.",
+    'auditor.profile.contact.add_address': 'Ongeraho aderesi yawe yanditse',
+    'auditor.profile.contact.edit_address': 'Hindura aderesi yanditse',
+    'auditor.profile.contact.save': 'Bika aderesi',
+    'auditor.profile.contact.saving': 'Birabikwa…',
+    'auditor.profile.contact.cancel': 'Hagarika',
+    'role.apply.address.province': 'Intara',
+    'role.apply.address.select_district': 'Hitamo akarere',
+    'role.apply.address.sector': 'Umurenge',
+    'role.apply.address.sector_placeholder': "Izina ry'umurenge",
+    'role.apply.address.cell': 'Akagari',
+    'role.apply.address.cell_placeholder': "Izina ry'akagari",
+    'role.apply.address.street': 'Umuhanda',
+    'role.apply.address.street_placeholder': 'KG 5 Ave',
+    'role.apply.address.street_hint':
+        "Bireke ubusa niba aho ukorera hadafite izina ry'umuhanda.",
+    'admin.parties.audit.reason.AUDIT_DISTRICT_MISSING':
+        'Ubu bucuruzi nta karere kanditse bufite, bityo ntibushobora guhuzwa n’umugenzuzi. Saba ubucuruzi kuzuza aderesi yabwo yanditse. Inshuro zo kohereza zakoreshejwe: {attempts} kuri 3.',
+    'admin.parties.audit.reason.AUDIT_NO_PARTNER_IN_DISTRICT':
+        'Nta mugenzuzi wemera amagenzura mu karere k’ubu bucuruzi. Emeza umugenzuzi ugakorera, cyangwa usabe umugenzuzi kukongera mu turere twe. Inshuro zo kohereza zakoreshejwe: {attempts} kuri 3.',
+    'admin.parties.coverage.title': 'Aho yoherezwa imirimo',
+    'admin.parties.coverage.status': 'Uko ahagaze',
+    'admin.parties.coverage.accepting': 'Yemera amagenzura',
+    'admin.parties.coverage.paused': 'Yahagaritse',
+    'admin.parties.coverage.districts': 'Uturere yemera',
+    'admin.parties.coverage.none': 'Nta na kamwe arahitamo',
+    'admin.parties.coverage.weekly': 'Imirimo ntarengwa ku cyumweru',
+    'admin.parties.coverage.address': 'Aderesi yanditse',
+    'admin.parties.coverage.no_address': 'Ntiyatanzwe',
 };
 
 export default rw;

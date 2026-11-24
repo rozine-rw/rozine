@@ -63,7 +63,7 @@ describe('Auditor business file', () => {
         expect(
             within(sheet).getByRole('timer', { name: 'Time left on this job' }),
         ).toHaveTextContent(/2[01]:[0-5][0-9]:[0-5][0-9]/u);
-        expect(within(sheet).getByText('Gasabo · 11.2km')).toBeInTheDocument();
+        expect(within(sheet).getByText('Gasabo')).toBeInTheDocument();
         expect(within(sheet).getByText('RWF 51.2M')).toBeInTheDocument();
         expect(within(sheet).getByText('6 months')).toBeInTheDocument();
         expect(within(sheet).getByText('10.0% total')).toBeInTheDocument();
@@ -517,14 +517,13 @@ describe('Auditor business file on the live S-C projection', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('gives the district alone and leaves out an empty use of funds', () => {
+    it('gives the district and leaves out an empty use of funds', () => {
         const base = live();
         const file = base.file as BusinessFile;
 
         render(
             <AuditorFile
                 {...base}
-                job={{ ...base.job, distance_km: null }}
                 file={{ ...file, raise: { ...file.raise, use_of_funds: '' } }}
                 blocked={null}
             />,

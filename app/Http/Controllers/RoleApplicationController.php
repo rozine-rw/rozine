@@ -68,7 +68,7 @@ class RoleApplicationController extends Controller
             'blockers' => $standing['blockers'],
             'two_factor' => $request->user()?->hasEnabledTwoFactorAuthentication() === true,
             'identity_context_revision' => $standing['identity_context_revision'],
-            'catalog' => ['industries' => OnboardBusiness::sectors(), 'districts' => array_merge(...array_values((array) config('rwanda.districts', [])))],
+            'catalog' => ['industries' => OnboardBusiness::sectors(), 'districts' => array_merge(...array_values((array) config('rwanda.districts', []))), 'provinces' => (array) config('rwanda.districts', [])],
         ]);
     }
 

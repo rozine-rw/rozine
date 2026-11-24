@@ -14,7 +14,7 @@ use Closure;
  * @phpstan-type ConflictReceipt array{conflict_id: string, kind: string, declared_at: string, note: string, blocking: true, status: 'reassignment_pending'|'reassigned'|'closed'}
  * @phpstan-type OwnConflict array{assignment_id: string, business_id: string, conflict: ConflictReceipt}
  * @phpstan-type ConflictPage array{data: list<OwnConflict>, next_cursor: string|null}
- * @phpstan-type Work array{assignment: View, business: array{name: string, industry: string, district: string}, distance_upper_bound_m: int|null, report?: array{id: string, status: string, publication_status: string|null, due_at?: string|null, variance_pct?: string|null, proofs?: int}|null}
+ * @phpstan-type Work array{assignment: View, business: array{name: string, industry: string, district: string}, report?: array{id: string, status: string, publication_status: string|null, due_at?: string|null, variance_pct?: string|null, proofs?: int}|null}
  * @phpstan-type WorkIdentifiers array{party_id: string, ids: list<string>, next_cursor: string|null}
  * @phpstan-type OperationsCase array{audit_reviews: list<array{report_id: string, status: string, due_at?: string|null, publication_available?: bool, unavailable_reason?: string|null}>, id: string, business_id: string, revision: int, kind: string, status: string, original_dispatch_at: string, complete_by: string|null, attempt: int, operations_reason: string|null, closed_at: string|null, allowed_actions: list<string>}
  * @phpstan-type OfferOutcome array{outcome: 'open'|'accepted'|'declined'|'expired'|'withdrawn', type: 'flash'|'routine'|'statement_review', held: bool}
@@ -201,18 +201,18 @@ interface AuditAssignmentStore
 
     /**
      * Why audit dispatch would find no partner for the assignment now, for staff who manage
-     * assignments: the Business's premises are not verified, no partner office is verified within
-     * 30 km of them, no partner in range has an independence review for the current mandate, or the
-     * reviewed partners in range cannot take it (availability, capacity, conflict or already tried).
-     * Null when a partner can take it.
+     * assignments: the Business has no registered district, no partner accepts audits in its
+     * district, no partner there has an independence review for the current mandate, or the
+     * reviewed partners there cannot take it (availability, capacity, weekly limit, conflict or
+     * already tried). Null when a partner can take it.
      *
-     * @return 'AUDIT_PREMISES_UNVERIFIED'|'AUDIT_NO_PARTNER_IN_RANGE'|'AUDIT_INDEPENDENCE_REVIEW_REQUIRED'|'AUDIT_NO_ELIGIBLE_PARTNER'|null
+     * @return 'AUDIT_DISTRICT_MISSING'|'AUDIT_NO_PARTNER_IN_DISTRICT'|'AUDIT_INDEPENDENCE_REVIEW_REQUIRED'|'AUDIT_NO_ELIGIBLE_PARTNER'|null
      */
     public function dispatchBlocker(int $actorId, string $assignmentId): ?string;
 
     /**
-     * The Audit Partners with a verified office within 30 km of the Business's verified premises, and
-     * whether each has an independence review for the Business's current mandate.
+     * The Audit Partners who accept audits in the Business's district, and whether each has an
+     * independence review for the Business's current mandate.
      *
      * @return list<array{party_id: string, name: string, revision: int, reviewed: bool}>
      */

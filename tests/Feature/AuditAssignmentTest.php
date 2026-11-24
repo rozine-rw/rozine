@@ -6,10 +6,10 @@ use App\Application\Auditor\AdvanceAuditAssignment;
 use App\Application\Auditor\AdvanceExpiredAuditOffers;
 use App\Application\Auditor\FindAuditAssignmentOperation;
 use App\Application\Auditor\GetAuditAssignment;
-use App\Application\Auditor\MarkAuditLocationMoved;
 use App\Application\Auditor\RecordAuditorIndependence;
 use App\Application\Auditor\RequestAuditAssignment;
 use App\Application\Auditor\RespondToAuditAssignment;
+use App\Application\Auditor\SetAuditorAvailability;
 use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Auditor\AuditEngagementState;
@@ -270,16 +270,15 @@ it('keeps expired offers private until the persisted redispatch takes place', fu
     expect(fn () => app(GetAuditAssignment::class)->handle($fixture['partners'][0]['user']->id, 1, $record->id))->toThrow(CommandRejection::class, 'ASSIGNMENT_ACCEPTANCE_EXPIRED');
 });
 
-it('rechecks standing availability coordinates and reviewed independence on acceptance', function (string $change, string $code): void {
+it('rechecks standing availability district coverage and reviewed independence on acceptance', function (string $change, string $code): void {
     $fixture = Fixture::make(1);
     $record = Fixture::request($fixture);
     $partner = $fixture['partners'][0];
     if ($change === 'review') {
         $review = AuditorIndependenceReview::query()->firstOrFail();
         $review->forceFill(['state' => [...$review->state, 'mandate_version' => 99]])->save();
-    } elseif ($change === 'move') {
-        app(MarkAuditLocationMoved::class)->handle($partner['staff']->id, 'office', $partner['party']->id, 1,
-            now('UTC')->format('Y-m-d\TH:i:s\Z'), 'Office moved.', (string) Str::uuid());
+    } elseif ($change === 'coverage') {
+        app(SetAuditorAvailability::class)->handle($partner['user']->id, 1, 3, true, (string) Str::uuid(), ['Rubavu'], 4);
     } else {
         $profile = AuditorProfile::query()->firstOrFail();
         $state = $profile->state;
@@ -294,7 +293,7 @@ it('rechecks standing availability coordinates and reviewed independence on acce
     if (! in_array($change, ['standing', 'review'], true)) {
         expect(app(GetAuditAssignment::class)->handle($partner['user']->id, 1, $record->id)['allowed_actions'])->not->toContain('assignment.accept');
     }
-})->with([['review', 'AUDITOR_INDEPENDENCE_REVIEW_REQUIRED'], ['move', 'AUDITOR_LOCATION_REVIEW_REQUIRED'], ['pause', 'AUDITOR_UNAVAILABLE'], ['standing', 'ACCREDITATION_SUSPENDED']]);
+})->with([['review', 'AUDITOR_INDEPENDENCE_REVIEW_REQUIRED'], ['coverage', 'AUDITOR_OUTSIDE_COVERAGE'], ['pause', 'AUDITOR_UNAVAILABLE'], ['standing', 'ACCREDITATION_SUSPENDED']]);
 
 it('records conflicts after acceptance and when the Business identity or mandate has lapsed', function (string $change): void {
     $fixture = Fixture::make();

@@ -57,7 +57,8 @@ final class AccreditationView
         return ['standing' => ['current' => $current, 'reason' => $reason],
             'accreditation' => ['status' => $status, 'revision' => $revision, 'licence' => $standing['licence'], 'expires_on' => $standing['expires_on'],
                 'days_left' => $expiry === null ? null : (int) $today->diff($expiry)->format('%r%a'), 'submission' => $submission],
-            'availability' => ['accepting' => $state['accepting'], 'radius_km' => 30, 'max_active' => 3, 'revision' => $revision],
+            'availability' => ['accepting' => $state['accepting'], 'districts' => $state['districts'], 'max_jobs_per_week' => $state['max_jobs_per_week'],
+                'address' => $state['address'], 'max_active' => 3, 'revision' => $revision],
             'allowed_actions' => $actions];
     }
 }

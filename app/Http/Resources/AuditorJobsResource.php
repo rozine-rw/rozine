@@ -10,11 +10,13 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /**
  * @phpstan-import-type AuditApplication from \App\Application\Business\Contracts\BusinessApplicationStore
  * @phpstan-import-type Summary from \App\Application\Auditor\GetAuditEngagementSummary
+ * @phpstan-import-type State from \App\Domain\Auditor\AccreditationProfile
  *
- * @phpstan-type Page array{data: list<AuditApplication>, next_cursor: string|null, identity_context_revision: int, limit: int, engagement: Summary, office?: 'verified'|'expired'|'missing'}
+ * @phpstan-type Coverage array{accepting: bool, districts: list<string>, max_jobs_per_week: int}
+ * @phpstan-type Page array{data: list<AuditApplication>, next_cursor: string|null, identity_context_revision: int, limit: int, engagement: Summary, coverage?: Coverage}
  *
- * `office` says whether dispatch can measure the 30 km from the partner's registered office; the
- * file's background list carries none, so it reads null there.
+ * `coverage` is what dispatch matches the partner on: whether they accept audits, the districts
+ * they accept and their weekly limit. The file's background list carries none, so it reads null there.
  */
 class AuditorJobsResource extends JsonResource
 {
@@ -46,8 +48,8 @@ class AuditorJobsResource extends JsonResource
             }
         }
 
-        return [...self::envelope($page['identity_context_revision']), 'radius_km' => 30, 'flash_hours' => 24,
-            'engagement' => (new AuditorEngagementSummaryResource($page['engagement']))->resolve($request), 'office' => $page['office'] ?? null,
+        return [...self::envelope($page['identity_context_revision']), 'flash_hours' => 24,
+            'engagement' => (new AuditorEngagementSummaryResource($page['engagement']))->resolve($request), 'coverage' => $page['coverage'] ?? null,
             'eligible' => $eligible, 'assigned' => $assigned, 'monthly' => array_merge(...array_values($monthly)) === [] ? null : $monthly,
             'decline_options' => self::declineOptions(), 'outcome' => null, 'links' => self::links($request),
             'pagination' => self::pagination($request, 'jobs.index', $page['next_cursor'], $page['limit'])];
@@ -91,6 +93,15 @@ class AuditorJobsResource extends JsonResource
         return $monthly;
     }
 
+    /**
+     * @param  State  $state
+     * @return Coverage
+     */
+    public static function coverage(array $state): array
+    {
+        return ['accepting' => $state['accepting'], 'districts' => $state['districts'], 'max_jobs_per_week' => $state['max_jobs_per_week']];
+    }
+
     /** @return array<string, mixed> */
     public static function envelope(int $contextRevision): array
     {
@@ -100,18 +111,16 @@ class AuditorJobsResource extends JsonResource
 
     /**
      * @param  AuditApplication  $record
-     * @return array{id: string, revision: int, kind: string, business: string, district: string, distance_km: string|null, state: string, deadline: array{due_at: string}|null, accept_by: string|null, complete_by: string|null, reassigned_from: null, allowed_actions: list<string>}
+     * @return array{id: string, revision: int, kind: string, business: string, district: string, state: string, deadline: array{due_at: string}|null, accept_by: string|null, complete_by: string|null, reassigned_from: null, allowed_actions: list<string>}
      */
     public static function job(array $record): array
     {
         $assignment = $record['work']['assignment'];
         $accepted = $assignment['status'] === 'accepted';
         $due = $assignment['kind'] === 'flash' ? $assignment['complete_by'] : $assignment['visit_by'];
-        $distance = $record['work']['distance_upper_bound_m'];
 
         return ['id' => $assignment['id'], 'revision' => $assignment['revision'], 'kind' => $assignment['kind'] === 'routine' ? 'monthly' : 'flash',
             'business' => $record['work']['business']['name'], 'district' => $record['work']['business']['district'],
-            'distance_km' => $distance === null ? null : number_format($distance / 1000, 1, '.', ''),
             'state' => $accepted ? 'assigned' : 'offered', 'deadline' => $accepted && $due !== null ? ['due_at' => $due] : null,
             'accept_by' => $accepted ? null : $assignment['accept_by'], 'complete_by' => $assignment['complete_by'],
             'reassigned_from' => null, 'allowed_actions' => $assignment['allowed_actions']];

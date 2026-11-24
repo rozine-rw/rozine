@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Application\Auditor\GetAuditEngagementSummary;
 use App\Application\Auditor\GetAuditorAccreditation;
 use App\Application\Auditor\GetAuditorEarnings;
+use App\Application\Auditor\GetAuditorPulse;
 use App\Application\Auditor\ListAuditJobs;
 use App\Application\Auditor\ListAuditorFiledReports;
 use App\Application\Identity\AuthorizeActiveRole;
@@ -30,7 +31,7 @@ class AuditorHomeController extends Controller
 
     public function __invoke(Request $request, AuthorizeActiveRole $identity, GetAuditorAccreditation $accreditation,
         GetAuditEngagementSummary $engagements, ListAuditJobs $jobs, ListAuditorFiledReports $reports, ReadPartyNotices $notices,
-        GetAuditorEarnings $earnings): Response
+        GetAuditorEarnings $earnings, GetAuditorPulse $pulse): Response
     {
         $userId = (int) $request->user()?->getAuthIdentifier();
         $revision = (int) $identity->context($userId, 'auditor')['context_revision'];
@@ -44,6 +45,7 @@ class AuditorHomeController extends Controller
             'track_record' => $reports->trackRecord($userId, $revision),
             'unread_notifications' => $notices->unread($userId),
             'earnings' => $earnings->handle($userId, $revision),
+            'pulse' => $pulse->handle($userId),
         ]))->resolve($request));
     }
 }

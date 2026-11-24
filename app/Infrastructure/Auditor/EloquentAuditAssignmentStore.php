@@ -17,6 +17,7 @@ use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Operations\Contracts\OverdueAudits;
+use App\Domain\Auditor\AccreditationProfile;
 use App\Domain\Auditor\AuditEngagementState;
 use App\Domain\Auditor\AuditorDispatch;
 use App\Domain\Auditor\AuditorIndependence;
@@ -25,8 +26,6 @@ use App\Domain\Auditor\AuditReadPolicy;
 use App\Domain\Auditor\AuditReportWindow;
 use App\Domain\Auditor\AuditVariance;
 use App\Domain\Auditor\MonthlyReportReview;
-use App\Domain\Auditor\VerifiedAuditLocation;
-use App\Domain\Auditor\Wgs84Distance;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Identity\PartyNoticeKind;
 use App\Domain\Operations\CommandRejection;
@@ -34,14 +33,13 @@ use App\Domain\Operations\OperationResult;
 use App\Models\AuditAssignment;
 use App\Models\AuditAssignmentVersion;
 use App\Models\AuditConflictDeclaration;
-use App\Models\AuditLocation;
 use App\Models\AuditorIndependenceReview;
 use App\Models\AuditorProfile;
 use App\Models\AuditReport;
 use App\Models\AuditReportPublication;
 use App\Models\AuditReportSeal;
+use App\Models\BusinessContactVersion;
 use Closure;
-use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as Query;
 use Illuminate\Support\Facades\DB;
@@ -78,8 +76,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         private AuditorDispatch $dispatch,
         private AuditorStanding $standing,
         private AuditorIndependence $independence,
-        private VerifiedAuditLocation $locations,
-        private Wgs84Distance $distance,
+        private AccreditationProfile $profiles,
         private CanonicalJson $json,
         private AuthorizeActiveRole $roles,
         private AuthorizeStaffPermission $staff,
@@ -315,8 +312,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                     ->first(['audit_reports.id', 'audit_reports.status', 'publications.status as publication_status']) : null;
 
                 return $operation(['assignment' => $view,
-                    'business' => ['name' => $profile['name'], 'industry' => $profile['industry'], 'district' => $profile['district']],
-                    'distance_upper_bound_m' => $candidate['distance_upper_bound_m'],
+                    'business' => ['name' => $profile['name'], 'industry' => $profile['industry'], 'district' => $candidate['business_district']],
                     'report' => $report === null ? null : ['id' => $report->id, 'status' => $report->status, 'publication_status' => $report->getAttribute('publication_status'),
                         'due_at' => (new AuditReportWindow)->dueAt($view['period']), ...$this->dispute($report->id, $report->getAttribute('publication_status'))]]);
             }, [$partyId]);
@@ -758,12 +754,13 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
 
         return $this->scope($actorId, null, $this->businessId($assignmentId), false, function (array $context, array $candidates) use ($assignmentId): ?string {
             $now = now()->toDateTimeImmutable();
-            $nearby = $this->nearby($context['business']['id'], $now);
-            if ($nearby === null) {
-                return 'AUDIT_PREMISES_UNVERIFIED';
+            $district = $this->businessDistrict($context['business']['id'], $context['business']['profile']['district']);
+            if ($district === '') {
+                return 'AUDIT_DISTRICT_MISSING';
             }
+            $nearby = $this->covering($district);
             if ($nearby === []) {
-                return 'AUDIT_NO_PARTNER_IN_RANGE';
+                return 'AUDIT_NO_PARTNER_IN_DISTRICT';
             }
             // Dispatch only considers partners with a current independence review for this mandate.
             $reviewed = array_filter($candidates, fn (array $candidate): bool => in_array($candidate['id'], $nearby, true));
@@ -782,7 +779,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
         $this->staff->check($actorId, 'audit.assignments.manage');
 
         return $this->scope($actorId, null, $businessId, false, function (array $context) use ($businessId): array {
-            $nearby = $this->nearby($businessId, now()->toDateTimeImmutable()) ?? [];
+            $nearby = $this->covering($this->businessDistrict($businessId, $context['business']['profile']['district']));
             $names = DB::table('users')->whereIn('party_id', $nearby)->orderBy('id')->get(['party_id', 'name'])->unique('party_id')->pluck('name', 'party_id');
             $reviews = AuditorIndependenceReview::query()->where('business_id', $businessId)->whereIn('party_id', $nearby)->get()->keyBy('party_id');
             $partners = array_map(function (string $partyId) use ($names, $reviews, $context): array {
@@ -798,26 +795,32 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
     }
 
     /**
-     * The partners whose verified office is within 30 km of the Business's verified premises, measured
-     * as dispatch measures it, or null while the premises are not verified.
+     * The partners who accept audits in the district, in party order (Erastus, 24 Nov 2026: a
+     * partner can audit a Business when its district is one they accept).
      *
-     * @return list<string>|null
+     * @return list<string>
      */
-    private function nearby(string $businessId, DateTimeImmutable $now): ?array
+    private function covering(string $district): array
     {
-        $site = AuditLocation::query()->where('business_id', $businessId)->first()->state ?? $this->locations->empty();
-        $point = $site['point'];
-        if ($point === null || VerifiedAuditLocation::standing($site, $now) !== 'verified') {
-            return null;
+        if ($district === '') {
+            return [];
         }
 
-        return array_values(AuditLocation::query()->whereNotNull('office_party_id')->orderBy('office_party_id')->get()
-            ->filter(function (AuditLocation $office) use ($site, $point, $now): bool {
-                $state = $office->state;
-                $bound = $state['point'] !== null && VerifiedAuditLocation::standing($state, $now) === 'verified' ? $this->distance->upperBound($state['point'], $point) : null;
+        return array_values(AuditorProfile::query()->orderBy('party_id')->get()
+            ->filter(fn (AuditorProfile $profile): bool => AuditorDispatch::covers($this->profiles->normalize($profile->state)['districts'], $district))
+            ->map(fn (AuditorProfile $profile): string => $profile->party_id)->all());
+    }
 
-                return $bound !== null && $bound + (int) $state['uncertainty_m'] + (int) $site['uncertainty_m'] <= 30000;
-            })->map(fn (AuditLocation $office): string => (string) $office->office_party_id)->all());
+    /**
+     * The district audit dispatch matches a Business on: its registered address as its mandate keeps
+     * it current, or the district it was onboarded with until it saves one.
+     */
+    private function businessDistrict(string $businessId, string $onboarded): string
+    {
+        $contact = BusinessContactVersion::query()->where('business_id', $businessId)->orderByDesc('version')->first();
+        $district = $contact?->payload['district'] ?? null;
+
+        return is_string($district) && $district !== '' ? $district : $onboarded;
     }
 
     /** @return OperationsCase */
@@ -923,7 +926,7 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
     }
 
     /**
-     * Business -> actor -> sorted Parties -> sorted profiles -> shared engagement catalog -> locations -> independence.
+     * Business -> actor -> sorted Parties -> sorted profiles -> shared engagement catalog -> independence.
      * Responses lock assignment then journal; new requests lock journal then look up the assignment.
      * The Business lock serializes both paths. Participant reads/acceptance lock only their candidate.
      * The Party lock serializes capacity across Businesses and all logins for that Auditor.
@@ -944,8 +947,8 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
 
                 return $this->engagements->withCurrentAcceptances($ids, function (array $acceptances) use ($context, $ids, $profiles, $operation): mixed {
                     $businessId = $context['business']['id'];
-                    $premises = AuditLocation::query()->where('business_id', $businessId)->lockForUpdate()->first();
-                    $offices = AuditLocation::query()->whereIn('office_party_id', $ids)->orderBy('office_party_id')->lockForUpdate()->get()->keyBy('office_party_id');
+                    $district = $this->businessDistrict($businessId, $context['business']['profile']['district']);
+                    $weekly = $this->acceptedThisWeek($ids);
                     $reviews = AuditorIndependenceReview::query()->where('business_id', $businessId)->whereIn('party_id', $ids)->orderBy('party_id')->lockForUpdate()->get()->keyBy('party_id');
                     [$activeCounts, $reports] = $this->workload($businessId, $ids);
                     $lastOffers = AuditAssignmentVersion::query()->selectRaw('DISTINCT ON (party_id) party_id, snapshot')->whereIn('party_id', $ids)->where('status', 'offered')->orderBy('party_id')->orderByDesc('id')->get()->keyBy('party_id');
@@ -960,15 +963,15 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                         } catch (CommandRejection) {
                             continue;
                         }
-                        $office = $offices->get($profile->party_id)->state ?? $this->locations->empty();
-                        $site = $premises->state ?? $this->locations->empty();
+                        $state = $this->profiles->normalize($profile->state);
                         $tie = $context['role_ties'][$profile->party_id] ?? null;
                         $last = $lastOffers->get($profile->party_id);
-                        $candidates[] = ['engagement' => $acceptances[$profile->party_id] ?? null, 'id' => $profile->party_id, 'standing' => $profile->state['standing'], 'accepting' => $profile->state['accepting'],
+                        $candidates[] = ['engagement' => $acceptances[$profile->party_id] ?? null, 'id' => $profile->party_id, 'standing' => $state['standing'], 'accepting' => $state['accepting'],
                             'active_count' => $activeCounts[$profile->party_id] ?? 0,
                             'consecutive_reports' => $this->consecutive($reports, $profile->party_id),
-                            'last_assigned_at' => $last === null ? null : $last->snapshot['state']['offered_at'], 'office' => $office, 'premises' => $site,
-                            'distance_upper_bound_m' => $office['point'] === null || $site['point'] === null ? null : $this->distance->upperBound($office['point'], $site['point']),
+                            'last_assigned_at' => $last === null ? null : $last->snapshot['state']['offered_at'],
+                            'districts' => $state['districts'], 'business_district' => $district,
+                            'accepted_this_week' => $weekly[$profile->party_id] ?? 0, 'max_jobs_per_week' => $state['max_jobs_per_week'],
                             ...$facts, 'current_role_tie' => $facts['current_role_tie'] || ($tie['current'] ?? false),
                             'role_tie_ended_at' => $tie === null ? $facts['role_tie_ended_at'] : max($tie['ended_at'], $facts['role_tie_ended_at']),
                             'unresolved_conflict' => $facts['unresolved_conflict'] || in_array($profile->party_id, $conflicted, true)];
@@ -977,6 +980,24 @@ final class EloquentAuditAssignmentStore implements AuditAssignmentStore
                     return $operation($context, $candidates);
                 });
             });
+    }
+
+    /**
+     * How many offers each partner accepted since Monday in Kigali, which their weekly limit caps.
+     *
+     * @param  list<string>  $partyIds
+     * @return array<string, int>
+     */
+    private function acceptedThisWeek(array $partyIds): array
+    {
+        $monday = now('Africa/Kigali')->startOfWeek()->utc();
+
+        /** @var array<string, int> $counts */
+        $counts = AuditAssignmentVersion::query()->whereIn('party_id', $partyIds)->where('status', 'accepted')->where('created_at', '>=', $monday)
+            ->get(['assignment_id', 'party_id'])->unique(fn (AuditAssignmentVersion $version): string => $version->assignment_id.'|'.$version->party_id)
+            ->countBy('party_id')->all();
+
+        return $counts;
     }
 
     /**
