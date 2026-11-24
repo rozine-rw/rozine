@@ -35,6 +35,27 @@ const sameCoverage = (left: Coverage, right: Coverage): boolean =>
         (district, index) => district === right.districts[index],
     );
 
+/**
+ * The partner's own unsaved edits: districts they added or dropped, and the weekly limit only if
+ * they changed it. Applying them to the latest saved coverage keeps a change made elsewhere (another
+ * tab, another device) to a district or limit they did not touch.
+ */
+type Edits = { add: string[]; drop: string[]; max: number | null };
+
+const applyEdits = (
+    saved: Coverage,
+    edits: Edits,
+    order: string[],
+): Coverage => ({
+    districts: order.filter(
+        (district) =>
+            edits.add.includes(district) ||
+            (saved.districts.includes(district) &&
+                !edits.drop.includes(district)),
+    ),
+    max: edits.max ?? saved.max,
+});
+
 const STEP =
     'flex size-[34px] items-center justify-center rounded-[10px] bg-rz-page text-[18px] font-bold text-rz-ink transition-colors hover:bg-rz-hairline disabled:cursor-not-allowed disabled:opacity-40 dark:bg-rz-surface-muted';
 
@@ -65,16 +86,16 @@ export function AvailabilitySection({
         districts: availability.districts,
         max: availability.max_jobs_per_week,
     };
-    // Taps change a local draft at once; one save carries the whole draft with the revision the
+    // Taps record the partner's edits at once; one save carries them, applied to the revision the
     // page last loaded, and the next waits for the reload, so quick taps are never lost (QA #769).
-    const [draft, setDraft] = useState<Coverage | null>(null);
+    const [draft, setDraft] = useState<Edits | null>(null);
     const [failed, setFailed] = useState(false);
     const sentAt = useRef<number | null>(null);
-    const shown = draft ?? saved;
+    const shown = draft === null ? saved : applyEdits(saved, draft, all);
     const chosen = shown.districts;
     const max = shown.max;
     const locked = !allowed;
-    const pending = draft !== null && !sameCoverage(draft, saved);
+    const pending = draft !== null && !sameCoverage(shown, saved);
 
     if (draft !== null && !pending) {
         // The server now holds the draft: show what it recorded from here on.
@@ -91,6 +112,14 @@ export function AvailabilitySection({
             return;
         }
 
+        const next = applyEdits(
+            {
+                districts: availability.districts,
+                max: availability.max_jobs_per_week,
+            },
+            draft,
+            Object.values(provinces).flat(),
+        );
         const timer = window.setTimeout(() => {
             sentAt.current = availability.revision;
             const sent = center.send(
@@ -100,15 +129,16 @@ export function AvailabilitySection({
                     route: availability.update,
                     payload: {
                         accepting: availability.accepting,
-                        districts: draft.districts,
-                        max_jobs_per_week: draft.max,
+                        districts: next.districts,
+                        max_jobs_per_week: next.max,
                         expected_revision: availability.revision,
                     },
                 },
                 {
                     onRefused: (code) => {
                         if (code === 'VERSION_CONFLICT') {
-                            // Someone saved first: load the newer revision, then send the draft again.
+                            // Saved elsewhere first: load the newer revision, then send only this
+                            // partner's edits on top of it, so the other change is kept.
                             router.reload();
 
                             return true;
@@ -131,21 +161,24 @@ export function AvailabilitySection({
         }, SAVE_DELAY_MS);
 
         return () => window.clearTimeout(timer);
-    }, [pending, draft, center, availability]);
+    }, [pending, draft, center, availability, provinces]);
 
-    const change = (next: Coverage) => {
+    const edits: Edits = draft ?? { add: [], drop: [], max: null };
+    const change = (next: Edits) => {
         setFailed(false);
         setDraft(next);
     };
-    const flip = (district: string) =>
-        change({
-            max,
-            districts: chosen.includes(district)
-                ? chosen.filter((item) => item !== district)
-                : all.filter(
-                      (item) => item === district || chosen.includes(item),
-                  ),
-        });
+    const setMax = (next: number) => change({ ...edits, max: next });
+    const flip = (district: string) => {
+        const add = edits.add.filter((item) => item !== district);
+        const drop = edits.drop.filter((item) => item !== district);
+
+        change(
+            chosen.includes(district)
+                ? { ...edits, add, drop: [...drop, district] }
+                : { ...edits, add: [...add, district], drop },
+        );
+    };
     const summary = [
         t('auditor.availability.districts_count', {
             count: chosen.length,
@@ -216,9 +249,7 @@ export function AvailabilitySection({
                             className={STEP}
                             aria-label={t('auditor.availability.weekly_less')}
                             disabled={locked || max <= MIN_JOBS_PER_WEEK}
-                            onClick={() =>
-                                change({ districts: chosen, max: max - 1 })
-                            }
+                            onClick={() => setMax(max - 1)}
                         >
                             −
                         </button>
@@ -233,9 +264,7 @@ export function AvailabilitySection({
                             className={STEP}
                             aria-label={t('auditor.availability.weekly_more')}
                             disabled={locked || max >= MAX_JOBS_PER_WEEK}
-                            onClick={() =>
-                                change({ districts: chosen, max: max + 1 })
-                            }
+                            onClick={() => setMax(max + 1)}
                         >
                             +
                         </button>

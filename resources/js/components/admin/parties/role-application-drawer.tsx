@@ -811,9 +811,7 @@ export function RoleApplicationDrawer({
                                         `admin.role_applications.status.${entry.status}` as MessageCode,
                                     )}
                                 </span>
-                                {entry.count === 2 &&
-                                    t('admin.role_applications.saves_one')}
-                                {entry.count > 2 &&
+                                {entry.count > 1 &&
                                     t('admin.role_applications.saves', {
                                         count: String(entry.count - 1),
                                     })}{' '}

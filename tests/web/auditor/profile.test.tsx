@@ -673,6 +673,34 @@ describe('Auditor Profile', () => {
         });
     });
 
+    it('keeps a coverage change saved elsewhere when its own save meets a newer revision', async () => {
+        inertia.queue.push(fails(409, { code: 'VERSION_CONFLICT' }));
+        const page = props(availabilityFixture);
+        const { user, rerender } = renderWithUser(<AuditorProfile {...page} />);
+
+        await user.click(screen.getByRole('button', { name: 'Huye' }));
+        await waitFor(() => expect(inertia.reloads).toHaveLength(1));
+
+        // Another tab dropped Gasabo, added Rubavu and raised the limit meanwhile.
+        const newer = props(availabilityFixture);
+        newer.availability = {
+            ...newer.availability,
+            districts: ['Kicukiro', 'Nyarugenge', 'Rubavu'],
+            max_jobs_per_week: 6,
+            revision: 6,
+        };
+        rerender(<AuditorProfile {...newer} />);
+
+        await waitFor(() => expect(inertia.calls).toHaveLength(2));
+        expect(inertia.calls[1]).toMatchObject({
+            body: {
+                districts: ['Kicukiro', 'Nyarugenge', 'Huye', 'Rubavu'],
+                max_jobs_per_week: 6,
+                expected_revision: 6,
+            },
+        });
+    });
+
     it('says so and shows the saved districts again when a coverage save is refused', async () => {
         inertia.queue.push(fails(429, { code: 'TOO_MANY_ATTEMPTS' }));
         const { user } = renderWithUser(
