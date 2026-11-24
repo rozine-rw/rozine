@@ -318,7 +318,9 @@ test('the dashboard hub follows the person through their KYC and application, an
     $hub = fn (): array => $this->actingAs($this->person)->get(route('dashboard'))->assertOk()->viewData('page')['props']['hub'];
 
     $start = $pulse();
-    expect($pulse())->toBe($start);
+    expect($pulse())->toBe($start)
+        // The page carries the fingerprint of what it rendered, so it can tell when the facts moved on.
+        ->and($this->actingAs($this->person)->get(route('dashboard'))->viewData('page')['props']['pulse'])->toBe($start);
     $before = $hub();
     expect($before['name'])->toBe('Aline')
         ->and(array_column($before['steps'], 'state', 'key'))->toBe(['account' => 'done', 'email' => 'done', 'kyc' => 'current', 'open' => 'upcoming'])
@@ -329,7 +331,8 @@ test('the dashboard hub follows the person through their KYC and application, an
     $kyc = kycSent($this->person);
     Notification::assertSentTo($this->person, OnboardingUpdate::class, fn (OnboardingUpdate $mail): bool => $mail->event === 'kyc_received');
     $sent = $pulse();
-    expect($sent)->not->toBe($start);
+    expect($sent)->not->toBe($start)
+        ->and($this->actingAs($this->person)->get(route('dashboard'))->viewData('page')['props']['pulse'])->toBe($sent);
     $hub = $hub();
     expect($hub['steps'][2]['state'])->toBe('review')->and($hub['next'])->toBe(['kyc_review'])->and($hub['actions'])->toBe([])
         ->and($hub['recent'][0]['kind'])->toBe('verification.submitted');
