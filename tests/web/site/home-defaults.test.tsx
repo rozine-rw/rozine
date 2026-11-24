@@ -27,7 +27,9 @@ describe('the landing page address', () => {
         window.history.replaceState(null, '', '/#how-it-works');
         render(<Home />);
 
-        expect(h1()).toHaveTextContent('Every franc, followed');
+        expect(h1()).toHaveTextContent(
+            'Your money sits in a separate bank account',
+        );
     });
 
     it("opens Invest for the earlier site's investor link", () => {

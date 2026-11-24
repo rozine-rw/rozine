@@ -41,6 +41,25 @@ describe('the landing page views', () => {
         ).toBeInTheDocument();
     });
 
+    it('lists what every business on Rozine has', () => {
+        render(<Home />);
+
+        expect(
+            screen.getByText('Every business on Rozine has:'),
+        ).toBeInTheDocument();
+        const standards = screen
+            .getAllByRole('listitem')
+            .map((item) => item.textContent);
+
+        expect(standards).toEqual(
+            expect.arrayContaining([
+                '3 years of bank records',
+                'RWF 30M+ in yearly revenue',
+                'Books checked in person by an accountant',
+            ]),
+        );
+    });
+
     it('switches to every tab from the header and gives each its own address', () => {
         render(<Home />);
 
@@ -57,7 +76,9 @@ describe('the landing page views', () => {
 
         fireEvent.click(tab('How it works'));
         expect(
-            heading('Every franc, followed from your phone and back.'),
+            heading(
+                "Your money sits in a separate bank account, never in Rozine's.",
+            ),
         ).toBeInTheDocument();
         expect(window.location.hash).toBe('#how-it-works');
 
@@ -79,7 +100,9 @@ describe('the landing page views', () => {
         fireEvent.click(
             screen.getByRole('button', { name: 'See how it works' }),
         );
-        expect(heading(/Every franc/)).toBeInTheDocument();
+        expect(
+            heading(/Your money sits in a separate bank account/),
+        ).toBeInTheDocument();
 
         fireEvent.click(screen.getByRole('button', { name: 'Rozine home' }));
         expect(heading(/Earn up to/)).toBeInTheDocument();
@@ -87,7 +110,9 @@ describe('the landing page views', () => {
         fireEvent.click(
             screen.getByRole('button', { name: 'See how it all works →' }),
         );
-        expect(heading(/Every franc/)).toBeInTheDocument();
+        expect(
+            heading(/Your money sits in a separate bank account/),
+        ).toBeInTheDocument();
 
         fireEvent.click(tab('Invest'));
         fireEvent.click(
