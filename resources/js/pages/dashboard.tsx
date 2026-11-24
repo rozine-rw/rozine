@@ -63,6 +63,8 @@ type LauncherProps = {
      * what is done and their newest onboarding updates. Absent for staff and in previews.
      */
     hub?: OnboardingHub | null;
+    /** The fingerprint of the facts on screen, compared with `dashboard.version` to stay live. */
+    pulse?: string;
     /** Supplied only by local/testing synthetic fixture previews. */
     preview_links?: Partial<Record<RoleApp, RouteLink>>;
 };
@@ -102,6 +104,7 @@ export default function Launcher({
     access_requests,
     role_application,
     hub,
+    pulse,
     preview_links,
 }: LauncherProps) {
     const { t } = useTranslation();
@@ -119,10 +122,11 @@ export default function Launcher({
             'access_requests',
             'role_application',
             'hub',
+            'pulse',
         ],
         preview_links === undefined,
         true,
-        dashboardVersion().url,
+        { url: dashboardVersion().url, shown: pulse ?? null },
     );
     const canSelect = identity.allowed_actions.includes('identity.select_role');
     const canView = identity.allowed_actions.includes('identity.view_role');
