@@ -81,10 +81,10 @@ describe('Owners on the People step (#761)', () => {
             screen.queryByRole('button', {
                 name: '+ Add an owner who isn’t a director',
             }),
-        ).toBeNull();
+        ).not.toBeInTheDocument();
         expect(
             screen.queryByRole('button', { name: '+ Jane Walkfive' }),
-        ).toBeNull();
+        ).not.toBeInTheDocument();
 
         fireEvent.change(screen.getByLabelText('Share (%)'), {
             target: { value: '60' },
