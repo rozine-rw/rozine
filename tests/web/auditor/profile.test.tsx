@@ -29,7 +29,7 @@ import securityFixture from '../../../resources/fixtures/ui/auditor-profile-secu
 import telemetryFixture from '../../../resources/fixtures/ui/auditor-profile-telemetry.json';
 import profileFixture from '../../../resources/fixtures/ui/auditor-profile.json';
 import { renderWithUser } from '../helpers/render-with-user';
-import { answers, inertia, invalid, operation } from './inertia';
+import { answers, fails, inertia, invalid, operation } from './inertia';
 
 vi.mock('@inertiajs/react', () => import('./inertia'));
 
@@ -611,6 +611,12 @@ describe('Auditor Profile', () => {
         );
 
         await view.user.click(screen.getByRole('button', { name: 'Huye' }));
+        expect(screen.getByRole('button', { name: 'Huye' })).toHaveAttribute(
+            'aria-pressed',
+            'true',
+        );
+        expect(screen.getByText(/Saving…/u)).toBeInTheDocument();
+        await waitFor(() => expect(inertia.calls).toHaveLength(1));
         expect(inertia.calls[0]).toMatchObject({
             url: '/preview/auditor-profile',
             body: {
@@ -626,15 +632,64 @@ describe('Auditor Profile', () => {
             <AuditorProfile {...props(availabilityFixture)} />,
         );
 
+        const before = inertia.calls.length;
+
         await utils.user.click(
             screen.getByRole('button', { name: 'One more job per week' }),
         );
+        await waitFor(() => expect(inertia.calls).toHaveLength(before + 1));
         expect(inertia.calls.at(-1)).toMatchObject({
             body: {
                 districts: ['Gasabo', 'Kicukiro', 'Nyarugenge'],
                 max_jobs_per_week: 5,
             },
         });
+    });
+
+    it('saves quick taps together as one change, so none is lost (QA #769)', async () => {
+        const { user } = renderWithUser(
+            <AuditorProfile {...props(availabilityFixture)} />,
+        );
+
+        await user.click(screen.getByRole('button', { name: 'Huye' }));
+        await user.click(screen.getByRole('button', { name: 'Musanze' }));
+        await user.click(screen.getByRole('button', { name: 'Gasabo' }));
+        await user.click(
+            screen.getByRole('button', { name: 'One more job per week' }),
+        );
+
+        expect(
+            screen.getByText(
+                /^4 of 30 districts · Kicukiro, Nyarugenge, Musanze \+1/u,
+            ),
+        ).toBeInTheDocument();
+        await waitFor(() => expect(inertia.calls).toHaveLength(1));
+        expect(inertia.calls[0]).toMatchObject({
+            body: {
+                districts: ['Kicukiro', 'Nyarugenge', 'Musanze', 'Huye'],
+                max_jobs_per_week: 5,
+                expected_revision: 5,
+            },
+        });
+    });
+
+    it('says so and shows the saved districts again when a coverage save is refused', async () => {
+        inertia.queue.push(fails(429, { code: 'TOO_MANY_ATTEMPTS' }));
+        const { user } = renderWithUser(
+            <AuditorProfile {...props(availabilityFixture)} />,
+        );
+
+        await user.click(screen.getByRole('button', { name: 'Huye' }));
+
+        expect(
+            await screen.findByText(
+                'Your coverage was not saved. Check your connection and try again.',
+            ),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Huye' })).toHaveAttribute(
+            'aria-pressed',
+            'false',
+        );
     });
 
     it('warns that no audits can be offered without a district and keeps the limit within 1 to 20', () => {

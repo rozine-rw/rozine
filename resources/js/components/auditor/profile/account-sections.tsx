@@ -189,6 +189,15 @@ function FieldError({ message }: { message?: string }) {
  * address, which they edit here. The district of operation is the districts they accept audits in,
  * set under Availability & coverage. No phone is held for a partner, so it reads "Not provided".
  */
+/** The address fields the contact section shows their own errors beside. */
+export const ADDRESS_ERROR_FIELDS = [
+    'address.province',
+    'address.district',
+    'address.sector',
+    'address.cell',
+    'address.street',
+];
+
 export function ContactSection({
     contact,
     provinces,

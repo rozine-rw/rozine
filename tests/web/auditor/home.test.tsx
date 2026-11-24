@@ -232,7 +232,9 @@ describe('Auditor Home', () => {
             screen.getByText('3 districts · max 4 jobs/week'),
         ).toBeInTheDocument();
         expect(
-            screen.getByRole('link', { name: /1 Flash Audit nearby/ }),
+            screen.getByRole('link', {
+                name: /1 Flash Audit in your districts/,
+            }),
         ).toHaveAttribute('href', '/preview/auditor-jobs');
         expect(
             screen.getByText('In Gasabo · first to accept locks the file'),
@@ -525,7 +527,7 @@ describe('Auditor Home', () => {
         expect(
             screen.getByText('Tap to start accepting flash audits again'),
         ).toBeInTheDocument();
-        expect(screen.queryByText(/nearby/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/in your districts/)).not.toBeInTheDocument();
         expect(screen.queryByText('In progress')).not.toBeInTheDocument();
         expect(
             screen.getByText('Nothing has happened on your files yet.'),
@@ -548,7 +550,9 @@ describe('Auditor Home', () => {
         );
 
         expect(screen.getByText('Good afternoon,')).toBeInTheDocument();
-        expect(screen.getByText('3 Flash Audits nearby')).toBeInTheDocument();
+        expect(
+            screen.getByText('3 Flash Audits in your districts'),
+        ).toBeInTheDocument();
         expect(
             screen.queryByText(/first to accept locks the file/),
         ).not.toBeInTheDocument();
@@ -565,7 +569,7 @@ describe('Auditor Home', () => {
         );
 
         expect(
-            screen.queryByText(/Flash Audit nearby/),
+            screen.queryByText(/Flash Audit in your districts/),
         ).not.toBeInTheDocument();
 
         for (const nav of screen.getAllByRole('navigation', {
