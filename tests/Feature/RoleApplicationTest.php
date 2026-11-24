@@ -466,3 +466,30 @@ test('phone numbers must be Rwandan numbers, so an 11-digit local number is refu
     $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'business', 'step' => 'people', 'answers' => $people])
         ->assertSessionHasNoErrors();
 });
+
+test('owners hold 25 to 100 percent between them, are listed once, and a director\'s ID stays that director\'s (#761)', function (): void {
+    kycSent($this->person);
+    $this->actingAs($this->person)->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'business', 'step' => 'company',
+        'answers' => companyAnswers()])->assertSessionHasNoErrors();
+    $save = fn (array $people) => $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'business', 'step' => 'people', 'answers' => $people]);
+
+    $people = peopleAnswers();
+    $people['owners'][1]['ownership_pct'] = '50';
+    $save($people)->assertSessionHasErrors(['owners' => 'The shares add up to more than 100%.']);
+
+    $people = peopleAnswers();
+    $people['owners'][1]['ownership_pct'] = '0';
+    $save($people)->assertSessionHasErrors(['owners.1.ownership_pct']);
+
+    $people = peopleAnswers();
+    $people['owners'][1] = [...$people['owners'][0], 'ownership_pct' => '40'];
+    $save($people)->assertSessionHasErrors(['owners.1.id_number' => 'This person is already listed.']);
+
+    $people = peopleAnswers();
+    $people['owners'][0]['full_name'] = 'Someone Else';
+    $save($people)->assertSessionHasErrors(['owners.0.id_number' => 'This ID number is the director Aline Uwase’s. Pick them from the directors instead.']);
+
+    $people = peopleAnswers();
+    $people['owners'][0]['full_name'] = 'aline uwase';
+    $save($people)->assertSessionHasNoErrors();
+});

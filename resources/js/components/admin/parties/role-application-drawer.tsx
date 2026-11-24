@@ -171,7 +171,12 @@ export function RoleApplicationDrawer({
         return [
             ...lines,
             {
-                status: entry.status,
+                // Sent again after a send-back reads as such, not as a first submission.
+                status:
+                    entry.status === 'submitted' &&
+                    last?.status === 'changes_requested'
+                        ? 'resubmitted'
+                        : entry.status,
                 at: entry.at,
                 reason: entry.reason,
                 count: 1,

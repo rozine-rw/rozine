@@ -359,7 +359,7 @@ describe('Reviewing an auditor application (#757)', () => {
 });
 
 describe('Application history', () => {
-    it('reads a send-back followed by applicant saves as one send-back, then the saves', () => {
+    it('reads a send-back followed by applicant saves as one send-back, then the saves, then the resend', () => {
         const entry = (revision: number, status: string, command: string) => ({
             revision,
             status,
@@ -374,6 +374,7 @@ describe('Application history', () => {
                         entry(1, 'changes_requested', 'application.more'),
                         entry(2, 'changes_requested', 'application.save'),
                         entry(3, 'changes_requested', 'application.save'),
+                        entry(4, 'submitted', 'application.submit'),
                     ],
                 })}
                 close="/admin/businesses"
@@ -383,5 +384,9 @@ describe('Application history', () => {
         expect(
             screen.getByText(/then 2 saves by the applicant/u),
         ).toBeInTheDocument();
+        expect(screen.getByText('Sent again for review')).toBeInTheDocument();
+        expect(
+            screen.queryByText('Waiting for review'),
+        ).not.toBeInTheDocument();
     });
 });

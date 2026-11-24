@@ -386,6 +386,18 @@ const fr: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Les auditeurs partenaires ne peuvent pas avoir un autre rôle Rozine : ce compte ne peut donc pas demander l’accès Auditeur.',
     'suite.app.unavailable': 'Indisponible avec votre accès actuel',
+    'admin.role_applications.status.resubmitted': 'Renvoyée pour examen',
+    'role.apply.people.pick_director':
+        'Un administrateur est-il aussi propriétaire ? Choisissez-le :',
+    'role.apply.people.add_other_owner':
+        '+ Ajouter un propriétaire qui n’est pas administrateur',
+    'role.apply.people.director_badge': 'Administrateur',
+    'role.apply.people.total': 'Parts déclarées : {total} % sur 100 %',
+    'role.apply.people.total_over':
+        'Les parts dépassent 100 %. Réduisez une part.',
+    'role.apply.people.full':
+        'Les parts atteignent 100 %, vous ne pouvez plus ajouter de propriétaire.',
+    'role.apply.people.share_range': 'Indiquez une part entre 25 et 100.',
     'admin.role_applications.kyc_first':
         'Approuvez d’abord le KYC du demandeur (page Utilisateurs). Puis approuvez cette demande.',
     'admin.role_applications.declared_yes': 'confirmé',
@@ -406,11 +418,11 @@ const fr: Catalog = {
     'admin.role_applications.business.confirm_title':
         'Approuver et intégrer {name} ?',
     'admin.role_applications.business.confirm_body':
-        "Cela crée l'entreprise avec {name} comme représentant et met fin à son rôle d'investisseur. Indiquez pourquoi dans la note.",
+        "Cela crée l'entreprise avec {name} comme représentant ; ce sera son seul rôle, à la place d'investisseur s'il l'est. Indiquez pourquoi dans la note.",
     'admin.role_applications.auditor.confirm_title':
         'Approuver {name} comme auditeur ?',
     'admin.role_applications.auditor.confirm_body':
-        "Cela accrédite {name} comme auditeur et met fin à son rôle d'investisseur. Indiquez pourquoi dans la note.",
+        "Cela accrédite {name} comme auditeur, son seul rôle, à la place d'investisseur s'il l'est. Indiquez pourquoi dans la note.",
     'admin.role_applications.confirm_unchanged':
         '{count} élément(s) à modifier n’ont pas été modifiés.',
     'admin.role_applications.confirm_note':
@@ -495,7 +507,7 @@ const fr: Catalog = {
     'admin.role_applications.decision': 'Décision',
     'admin.role_applications.note': 'Note au demandeur',
     'admin.role_applications.note_hint':
-        'Une note est requise pour refuser. Pour renvoyer, cochez les éléments à modifier ; la note est facultative. Approuver change le rôle du demandeur, qui cesse d’être Investisseur.',
+        'Une note est requise pour refuser. Pour renvoyer, cochez les éléments à modifier ; la note est facultative. Approuver en fait le seul rôle du demandeur, à la place d’Investisseur s’il l’est.',
     'admin.role_applications.reject': 'Rejeter',
     'admin.role_applications.more': 'Demander plus',
     'admin.revision.legend': 'Que doit modifier le demandeur ?',

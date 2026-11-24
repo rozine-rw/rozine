@@ -178,19 +178,20 @@ export default function RoleApply(props: RoleApplicationProps) {
         role !== null && application.role === role && application.step
             ? application.step
             : (steps[0] ?? 'review');
-    const firstFlagged =
-        application.status === 'changes_requested'
-            ? application.requested_changes?.items[0]?.key
-            : undefined;
+    // A sent-back application opens on the earliest step holding a flagged item, whatever order
+    // Compliance listed the items in.
     const [step, setStep] = useState<string>(() => {
-        const flaggedStep =
-            firstFlagged === undefined || role === null
-                ? undefined
-                : stepForItem(firstFlagged, role);
+        const flaggedSteps =
+            application.status === 'changes_requested' && role !== null
+                ? (application.requested_changes?.items ?? []).map((item) =>
+                      stepForItem(item.key, role),
+                  )
+                : [];
+        const earliest = steps.find((candidate) =>
+            flaggedSteps.includes(candidate),
+        );
 
-        return flaggedStep !== undefined && steps.includes(flaggedStep)
-            ? flaggedStep
-            : reached;
+        return earliest ?? reached;
     });
     const [sentBack] = useState(() => ({
         answers: JSON.stringify(application.answers ?? {}),
@@ -297,7 +298,7 @@ export default function RoleApply(props: RoleApplicationProps) {
         authorised: false,
     };
     const directors = answers.directors ?? [blankPerson(false)];
-    const owners = answers.owners ?? [blankPerson(true)];
+    const owners = answers.owners ?? [];
     const licence = answers.licence ?? {
         membership_number: '',
         licence_number: '',
@@ -355,8 +356,16 @@ export default function RoleApply(props: RoleApplicationProps) {
             JSON.stringify(valueAt(initialAnswers, item.key))
         );
     });
+    // A document flagged for change loses its flag once it is replaced; a typed answer keeps its note
+    // in view while it is being edited.
     const flags: Record<string, string> = Object.fromEntries(
-        (requested?.items ?? []).map((item) => [item.key, item.note]),
+        (requested?.items ?? [])
+            .filter(
+                (item) =>
+                    !item.key.startsWith('documents.') ||
+                    unchanged.includes(item),
+            )
+            .map((item) => [item.key, item.note]),
     );
 
     return (
@@ -725,7 +734,6 @@ export default function RoleApply(props: RoleApplicationProps) {
                                     <PeopleList
                                         title={t('role.apply.people.directors')}
                                         people={directors}
-                                        owners={false}
                                         accent={ACCENT[role]}
                                         errors={errors}
                                         field="directors"
@@ -733,16 +741,19 @@ export default function RoleApply(props: RoleApplicationProps) {
                                             setAnswers({
                                                 ...answers,
                                                 directors: list,
+                                                owners: followDirectors(
+                                                    directors,
+                                                    list,
+                                                    owners,
+                                                ),
                                             })
                                         }
                                     />
-                                    <PeopleList
-                                        title={t('role.apply.people.owners')}
-                                        people={owners}
-                                        owners
+                                    <OwnersList
+                                        owners={owners}
+                                        directors={directors}
                                         accent={ACCENT[role]}
                                         errors={errors}
-                                        field="owners"
                                         onChange={(list) =>
                                             setAnswers({
                                                 ...answers,
@@ -1735,7 +1746,6 @@ function Check({
 function PeopleList({
     title,
     people,
-    owners,
     accent,
     errors,
     field,
@@ -1743,10 +1753,9 @@ function PeopleList({
 }: {
     title: string;
     people: RoleApplicationPerson[];
-    owners: boolean;
     accent: string;
     errors: Errors;
-    field: 'directors' | 'owners';
+    field: 'directors';
     onChange: (people: RoleApplicationPerson[]) => void;
 }) {
     const { t } = useTranslation();
@@ -1813,33 +1822,6 @@ function PeopleList({
                                 }
                             />
                         </div>
-                        {owners && (
-                            <>
-                                <Field
-                                    id={`${field}_${index}_share`}
-                                    label={t('role.apply.people.share')}
-                                    value={person.ownership_pct ?? ''}
-                                    inputMode="numeric"
-                                    error={
-                                        errors[
-                                            `${field}.${index}.ownership_pct`
-                                        ]
-                                    }
-                                    onChange={(value) =>
-                                        update(index, { ownership_pct: value })
-                                    }
-                                />
-                                <Check
-                                    accent={accent}
-                                    checked={person.pep === true}
-                                    onChange={(checked) =>
-                                        update(index, { pep: checked })
-                                    }
-                                >
-                                    {t('role.apply.people.pep')}
-                                </Check>
-                            </>
-                        )}
                         {people.length > 1 && (
                             <button
                                 type="button"
@@ -1859,16 +1841,312 @@ function PeopleList({
             {people.length < 12 && (
                 <button
                     type="button"
-                    onClick={() => onChange([...people, blankPerson(owners)])}
+                    onClick={() => onChange([...people, blankPerson(false)])}
                     className="mt-2.5 w-full rounded-2xl border-[1.5px] border-dashed border-rz-border py-3 text-[13px] font-semibold"
                     style={{ color: accent }}
                 >
-                    {t(
-                        owners
-                            ? 'role.apply.people.add_owner'
-                            : 'role.apply.people.add_director',
-                    )}
+                    {t('role.apply.people.add_director')}
                 </button>
+            )}
+        </div>
+    );
+}
+
+/** Whether an owner is that director: the same ID number and the same name. */
+function isSamePerson(
+    owner: RoleApplicationPerson,
+    director: RoleApplicationPerson,
+): boolean {
+    const id = (person: RoleApplicationPerson) =>
+        person.id_number.replace(/\s+/g, '').toUpperCase();
+    const name = (person: RoleApplicationPerson) =>
+        person.full_name.trim().toLowerCase();
+
+    return (
+        id(director) !== '' &&
+        id(owner) === id(director) &&
+        name(owner) === name(director)
+    );
+}
+
+/** The sum of the shares typed so far, ignoring what isn't a number. */
+function shareTotal(owners: RoleApplicationPerson[]): number {
+    return owners.reduce((total, owner) => {
+        const share = Number.parseFloat(owner.ownership_pct ?? '');
+
+        return Number.isFinite(share) ? total + share : total;
+    }, 0);
+}
+
+/**
+ * An owner picked from the directors follows that director: correcting the director's name, ID or
+ * nationality corrects the owner too, so the two never drift apart.
+ */
+function followDirectors(
+    before: RoleApplicationPerson[],
+    after: RoleApplicationPerson[],
+    owners: RoleApplicationPerson[],
+): RoleApplicationPerson[] {
+    if (before.length !== after.length) {
+        return owners;
+    }
+
+    const changed = before.findIndex((director, at) => director !== after[at]);
+
+    if (changed === -1) {
+        return owners;
+    }
+
+    const { full_name, id_type, id_number, nationality } = after[changed];
+
+    return owners.map((owner) =>
+        isSamePerson(owner, before[changed])
+            ? { ...owner, full_name, id_type, id_number, nationality }
+            : owner,
+    );
+}
+
+/**
+ * Owners of 25% or more (Erastus, 24 Nov 2026, #761). A director who also owns shares is picked from
+ * the directors, not typed again; only an owner who isn't a director is typed in. The running total
+ * shows as shares are typed, and once it reaches 100% no one else can be added.
+ */
+function OwnersList({
+    owners,
+    directors,
+    accent,
+    errors,
+    onChange,
+}: {
+    owners: RoleApplicationPerson[];
+    directors: RoleApplicationPerson[];
+    accent: string;
+    errors: Errors;
+    onChange: (owners: RoleApplicationPerson[]) => void;
+}) {
+    const { t } = useTranslation();
+    const total = shareTotal(owners);
+    const full = total >= 100;
+    const remaining = Math.max(0, 100 - total);
+    const candidates = directors.filter(
+        (director) =>
+            director.full_name.trim() !== '' &&
+            director.id_number.trim() !== '' &&
+            !owners.some((owner) => isSamePerson(owner, director)),
+    );
+    const update = (index: number, change: Partial<RoleApplicationPerson>) =>
+        onChange(
+            owners.map((owner, at) =>
+                at === index ? { ...owner, ...change } : owner,
+            ),
+        );
+    const add = (person: RoleApplicationPerson) =>
+        onChange([
+            ...owners,
+            {
+                ...person,
+                ownership_pct: remaining >= 25 ? String(remaining) : '',
+                pep: false,
+            },
+        ]);
+    const formatted = String(Math.round(total * 100) / 100);
+
+    return (
+        <div>
+            <p className={cn(LABEL, 'mt-2')}>{t('role.apply.people.owners')}</p>
+            <Flag id="owners" />
+            <FieldError message={errors.owners} />
+            <div className="flex flex-col gap-2.5">
+                {owners.map((owner, index) => {
+                    const director = directors.some((candidate) =>
+                        isSamePerson(owner, candidate),
+                    );
+                    const shareError = errors[`owners.${index}.ownership_pct`];
+
+                    return (
+                        <div
+                            key={index}
+                            className={cn(CARD, 'flex flex-col gap-2.5')}
+                        >
+                            {director ? (
+                                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                                    <span className="text-[14px] font-semibold">
+                                        {owner.full_name}
+                                    </span>
+                                    <span
+                                        className="rounded-full px-2 py-0.5 text-[10.5px] font-semibold uppercase"
+                                        style={{
+                                            color: accent,
+                                            backgroundColor: `${accent}14`,
+                                        }}
+                                    >
+                                        {t('role.apply.people.director_badge')}
+                                    </span>
+                                    <span className="w-full text-[12px] text-rz-secondary">
+                                        {t(
+                                            `role.apply.people.${owner.id_type}`,
+                                        )}{' '}
+                                        {owner.id_number} · {owner.nationality}
+                                    </span>
+                                    <FieldError
+                                        message={
+                                            errors[`owners.${index}.id_number`]
+                                        }
+                                    />
+                                </div>
+                            ) : (
+                                <>
+                                    <Field
+                                        id={`owners_${index}_name`}
+                                        label={t('role.apply.people.full_name')}
+                                        value={owner.full_name}
+                                        error={
+                                            errors[`owners.${index}.full_name`]
+                                        }
+                                        onChange={(value) =>
+                                            update(index, { full_name: value })
+                                        }
+                                    />
+                                    <div className="flex gap-2">
+                                        {(
+                                            ['national_id', 'passport'] as const
+                                        ).map((type) => (
+                                            <Chip
+                                                key={type}
+                                                accent={accent}
+                                                active={owner.id_type === type}
+                                                onClick={() =>
+                                                    update(index, {
+                                                        id_type: type,
+                                                    })
+                                                }
+                                            >
+                                                {t(`role.apply.people.${type}`)}
+                                            </Chip>
+                                        ))}
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2.5">
+                                        <Field
+                                            id={`owners_${index}_id`}
+                                            label={t(
+                                                'role.apply.people.id_number',
+                                            )}
+                                            value={owner.id_number}
+                                            error={
+                                                errors[
+                                                    `owners.${index}.id_number`
+                                                ]
+                                            }
+                                            onChange={(value) =>
+                                                update(index, {
+                                                    id_number: value,
+                                                })
+                                            }
+                                        />
+                                        <Field
+                                            id={`owners_${index}_nationality`}
+                                            label={t(
+                                                'role.apply.people.nationality',
+                                            )}
+                                            value={owner.nationality}
+                                            error={
+                                                errors[
+                                                    `owners.${index}.nationality`
+                                                ]
+                                            }
+                                            onChange={(value) =>
+                                                update(index, {
+                                                    nationality: value,
+                                                })
+                                            }
+                                        />
+                                    </div>
+                                </>
+                            )}
+                            <Field
+                                id={`owners_${index}_share`}
+                                label={t('role.apply.people.share')}
+                                value={owner.ownership_pct ?? ''}
+                                inputMode="numeric"
+                                error={shareError}
+                                onChange={(value) =>
+                                    update(index, { ownership_pct: value })
+                                }
+                            />
+                            <Check
+                                accent={accent}
+                                checked={owner.pep === true}
+                                onChange={(checked) =>
+                                    update(index, { pep: checked })
+                                }
+                            >
+                                {t('role.apply.people.pep')}
+                            </Check>
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    onChange(
+                                        owners.filter((_, at) => at !== index),
+                                    )
+                                }
+                                className="self-start text-[12px] font-semibold text-rz-danger-text"
+                            >
+                                {t('role.apply.people.remove')}
+                            </button>
+                        </div>
+                    );
+                })}
+            </div>
+            <p
+                aria-live="polite"
+                className={cn(
+                    'mt-2.5 text-[12.5px] font-semibold',
+                    total > 100 ? 'text-rz-danger-text' : 'text-rz-secondary',
+                )}
+            >
+                {t('role.apply.people.total', { total: formatted })}
+                {total > 100 && <> · {t('role.apply.people.total_over')}</>}
+            </p>
+            {full ? (
+                <p className="mt-1.5 text-[12px] text-rz-secondary">
+                    {t('role.apply.people.full')}
+                </p>
+            ) : (
+                owners.length < 12 && (
+                    <>
+                        {candidates.length > 0 && (
+                            <div className="mt-2.5">
+                                <p className="text-[12.5px] text-rz-secondary">
+                                    {t('role.apply.people.pick_director')}
+                                </p>
+                                <div className="mt-1.5 flex flex-wrap gap-2">
+                                    {candidates.map((director) => (
+                                        <button
+                                            key={director.id_number}
+                                            type="button"
+                                            onClick={() => add(director)}
+                                            className="rounded-full border-[1.5px] px-3.5 py-2 text-[13px] font-semibold"
+                                            style={{
+                                                color: accent,
+                                                borderColor: accent,
+                                            }}
+                                        >
+                                            + {director.full_name}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        <button
+                            type="button"
+                            onClick={() => add(blankPerson(true))}
+                            className="mt-2.5 w-full rounded-2xl border-[1.5px] border-dashed border-rz-border py-3 text-[13px] font-semibold"
+                            style={{ color: accent }}
+                        >
+                            {t('role.apply.people.add_other_owner')}
+                        </button>
+                    </>
+                )
             )}
         </div>
     );
