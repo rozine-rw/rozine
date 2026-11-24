@@ -2545,8 +2545,8 @@ export default function Home({ showAppEntry = false, auth }: SiteProps) {
                                             textWrap: 'balance',
                                         }}
                                     >
-                                        Pay 10–15% for the whole term, plus a 3%
-                                        fee only if your raise succeeds.
+                                        Clear pricing for the whole term, plus a
+                                        3% fee only if your raise succeeds.
                                     </h2>
                                     <p
                                         style={{
@@ -2558,9 +2558,9 @@ export default function Home({ showAppEntry = false, auth }: SiteProps) {
                                         }}
                                     >
                                         Your return to investors is set from
-                                        your verified rating and term: 12.5% to
-                                        15% of the amount, for the whole term,
-                                        never per year. Rozine charges a
+                                        your verified rating and term and shown
+                                        in your offer. It applies to the whole
+                                        term, never per year. Rozine charges a
                                         one-time 3% platform fee when your raise
                                         is funded. Stronger businesses pay less.
                                     </p>
