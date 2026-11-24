@@ -431,6 +431,15 @@ describe('Launcher with the hub', () => {
         expect(screen.getByRole('alertdialog')).toHaveTextContent(
             'Your identity check needs changes',
         );
+        // The launcher has no app scope: without one the accent buttons and the progress bar are
+        // transparent, so the hub and its urgent card carry the Investor accent themselves.
+        expect(screen.getByTestId('dashboard-hub')).toHaveAttribute(
+            'data-audience',
+            'investor',
+        );
+        const urgent = screen.getByTestId('dashboard-urgent');
+        expect(urgent).toHaveAttribute('data-audience', 'investor');
+        expect(within(urgent).getByRole('alertdialog')).toBeInTheDocument();
         vi.unstubAllGlobals();
     });
 });

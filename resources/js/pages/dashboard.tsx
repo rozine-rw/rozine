@@ -248,7 +248,12 @@ export default function Launcher({
                 className={`mx-auto mt-3.5 flex w-full max-w-[1320px] flex-1 flex-col gap-[30px] ${hub ? 'pt-4 pb-40' : 'justify-center'}`}
             >
                 {hub && (
-                    <div className="flex animate-rz-rise flex-col gap-6">
+                    /* The launcher has no app scope, so the hub takes the Investor accent every account starts with. */
+                    <div
+                        data-audience="investor"
+                        data-testid="dashboard-hub"
+                        className="flex animate-rz-rise flex-col gap-6"
+                    >
                         <HubOverview hub={hub} />
                         <div className="flex flex-wrap items-start gap-6">
                             <div className="flex min-w-0 flex-[999_1_560px] flex-col gap-6">
@@ -519,7 +524,11 @@ export default function Launcher({
                     )}
                 </section>
             </main>
-            {hub && <UrgentFlashcards actions={hub.actions} />}
+            {hub && (
+                <div data-audience="investor" data-testid="dashboard-urgent">
+                    <UrgentFlashcards actions={hub.actions} />
+                </div>
+            )}
         </div>
     );
 }
