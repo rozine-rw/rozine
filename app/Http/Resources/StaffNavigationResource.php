@@ -70,8 +70,11 @@ class StaffNavigationResource extends JsonResource
         foreach (StaffSectionController::SECTIONS as $slug => $section) {
             $pending[$section] = $pendingPage($slug);
         }
+        // KYC is decided in the Users drawer only (Erastus, 23 Nov 2026), so the web Compliance link opens
+        // the Users list filtered to identities waiting for review; the API keeps its review queue.
         $compliance = in_array('investors.verify', $permissions, true)
-            ? ['url' => route($prefix.'staff.investor-verifications.index', [], false), 'method' => 'get'] : $pendingPage('compliance');
+            ? ['url' => $prefix === '' ? route('staff.users.index', ['kyc' => 'in_review'], false)
+                : route($prefix.'staff.investor-verifications.index', [], false), 'method' => 'get'] : $pendingPage('compliance');
         // The staging mail testers page exists only on staging (the `uat` isolation profile), for
         // whoever may manage the list; it sits in the console group of the sidebar.
         $mailTesters = $prefix === '' && app()->environment(['staging', 'uat']) && in_array('staging.mail.testers.manage', $permissions, true)
@@ -83,9 +86,8 @@ class StaffNavigationResource extends JsonResource
             'messaging' => in_array('messaging.view', $permissions, true)
                 ? ['url' => route($prefix.'staff.messaging.index', [], false), 'method' => 'get'] : $pendingPage('messaging'),
             'repayments' => null, 'mail_testers' => $mailTesters,
-            // Business and Auditor access requests (#616), for whoever may act on either kind (the
-            // permissions BrowseRoleAccessRequests checks).
-            'access_requests' => $prefix === '' && array_intersect(['businesses.verify', 'audit.partners.verify'], $permissions) !== []
-                ? ['url' => route('staff.access-requests.index', [], false), 'method' => 'get'] : null];
+            // The old Business and Auditor access requests page (#616) is retired from the console:
+            // business KYB is decided on Businesses and auditor licences on Auditors (Erastus, 23 Nov 2026).
+            'access_requests' => null];
     }
 }

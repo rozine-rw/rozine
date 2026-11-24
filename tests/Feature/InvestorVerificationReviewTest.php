@@ -95,7 +95,7 @@ test('the queue lists submitted cases oldest first and pages by cursor', functio
             ->where('active_tab', 'submitted')->where('policy', [['key' => 'miss_grace', 'value' => '', 'term' => 'late_from_due'],
                 ['key' => 'default_at', 'value' => '', 'term' => 'day_31'], ['key' => 'kyc_reverify', 'value' => '', 'term' => 'not_set'],
                 ['key' => 'auto_freeze', 'value' => '', 'term' => 'not_set'], ['key' => 'minimum_age', 'value' => '18']])->where('tabs.0.count', 2)->where('tabs.1.count', 0)
-            ->where('nav.investors.url', '/admin/investors')->where('nav.compliance.url', '/admin/investor-verifications')->where('nav.applications', null)
+            ->where('nav.investors.url', '/admin/investors')->where('nav.compliance.url', '/admin/users?kyc=in_review')->where('nav.applications', null)
             ->has('entries', 1)->where('entries.0.id', $first->id)->where('entries.0.name', 'Aline Uwase')
             ->where('entries.0.email', $this->person->email)->where('entries.0.id_type', 'national_id')->where('entries.0.selected', false)
             ->where('entries.0.link.url', '/admin/investor-verifications?tab=submitted&verification='.$first->id)

@@ -1307,6 +1307,60 @@ describe('Party 360', () => {
         ]);
     });
 
+    it('shows a waiting submission read-only with its automated checks, age and a link to decide it in Users', () => {
+        const base = party(overdueFixture);
+        const detail: PartyDetail = {
+            ...base,
+            actions: {},
+            verification: {
+                id: 'case-b',
+                revision: 6,
+                status: 'submitted',
+                purpose: 'investor',
+                submitted_at: '2026-10-06T08:00:00+00:00',
+                account: { name: 'Walk Three', email: 'walk3@example.test' },
+                date_of_birth: '05 / 05 / 1990',
+                id_type: 'national_id',
+                id_number: '1200180012345678',
+                age: 36,
+                checks: [
+                    { key: 'age', outcome: 'passed' },
+                    { key: 'id_birth_year', outcome: 'flagged' },
+                ],
+                decide: {
+                    url: '/admin/users?q=walk3%40example.test',
+                    method: 'get',
+                },
+                decision: null,
+                documents: [],
+                history: [],
+                links: { close: { url: '/admin/investors', method: 'get' } },
+                actions: {},
+            },
+        };
+        renderWithUser(
+            <AdminParties {...props(overdueFixture)} party={detail} />,
+        );
+
+        const submission = screen.getByRole('region', {
+            name: 'Identity submission',
+        });
+        const checks = within(submission).getByRole('region', {
+            name: 'Automated checks',
+        });
+        expect(checks).toHaveTextContent('Age 18 or overPassed');
+        expect(checks).toHaveTextContent(
+            'Birth year in the ID number matches the date of birthCheck this',
+        );
+        expect(submission).toHaveTextContent('36 years');
+        expect(
+            within(submission).queryByRole('button', { name: 'Approve' }),
+        ).not.toBeInTheDocument();
+        expect(
+            within(submission).getByRole('link', { name: 'Open in Users' }),
+        ).toHaveAttribute('href', '/admin/users?q=walk3%40example.test');
+    });
+
     it('opens a live investor without a waiting submission on Overview', () => {
         renderWithUser(
             <AdminParties

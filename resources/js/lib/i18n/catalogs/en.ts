@@ -363,6 +363,18 @@ const en = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Audit Partners can’t hold another Rozine role, so this account can’t ask for Auditor access.',
     'suite.app.unavailable': 'Not available with your current access',
+    'admin.kyc.checks.title': 'Automated checks',
+    'admin.kyc.check.id_birth_year':
+        'Birth year in the ID number matches the date of birth',
+    'admin.kyc.check.passport_format':
+        'Passport number has 6 to 12 letters or digits',
+    'admin.kyc.check.passed': 'Passed',
+    'admin.kyc.check.flagged': 'Check this',
+    'admin.kyc.fact.age': 'Age',
+    'admin.kyc.fact.age_value': '{age} years',
+    'admin.kyc.decide_in_users':
+        'KYC is approved or rejected in the Users page.',
+    'admin.kyc.open_in_users': 'Open in Users',
     'admin.role_applications.business.title': 'Business applications (KYB)',
     'admin.role_applications.business.caption':
         'Investors asking to switch to Business representative. Review the company, its people and documents, then decide here.',

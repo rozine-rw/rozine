@@ -97,6 +97,10 @@ class StaffInvestorDirectoryResource extends JsonResource
                 'reason' => $entry['reason']], $party['history']),
             'kyc' => ['state' => $row['kyc'], 'due_on' => null], 'licence' => null, 'freeze' => null, 'release_blocked' => null, 'restrictions' => [],
             'restricted_since' => $party['restricted_since'], 'links' => ['close' => $close], 'actions' => (object) [],
-            'verification' => $review === null ? null : StaffInvestorVerificationsResource::review($review, $close, $prefix)];
+            // KYC is decided in the Users drawer only (Erastus, 23 Nov 2026): on the web the 360 shows
+            // the submission read-only, with a link to the account there.
+            'verification' => $review === null ? null : ($prefix === '' ? [...StaffInvestorVerificationsResource::review($review, $close, $prefix),
+                'actions' => (object) [], 'decide' => ['url' => route('staff.users.index', ['q' => $review['account']['email']], false), 'method' => 'get']]
+                : StaffInvestorVerificationsResource::review($review, $close, $prefix))];
     }
 }

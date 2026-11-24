@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -63,6 +65,42 @@ class StaffInvestorVerificationsResource extends JsonResource
             'review' => $page['review'] === null ? null : self::review($page['review'], $link($position), $prefix)];
     }
 
+    /** The person's age today in Kigali from the stored "DD / MM / YYYY" date of birth, or null before one is given. */
+    private static function age(?string $dateOfBirth): ?int
+    {
+        $birth = self::birthDate($dateOfBirth);
+
+        return $birth === null ? null : $birth->diff(new DateTimeImmutable('now', new DateTimeZone('Africa/Kigali')))->y;
+    }
+
+    private static function birthDate(?string $dateOfBirth): ?DateTimeImmutable
+    {
+        $birth = DateTimeImmutable::createFromFormat('!d / m / Y', (string) $dateOfBirth, new DateTimeZone('Africa/Kigali'));
+
+        return $birth === false ? null : $birth;
+    }
+
+    /**
+     * What the automated checks actually establish, each passed or flagged for Compliance (#744). A
+     * Rwandan national ID carries the holder's birth year in digits two to five, so a national ID whose
+     * year differs from the date of birth is flagged; a passport number is only checked for its shape.
+     *
+     * @param  array<string, mixed>  $state
+     * @return list<array{key: string, outcome: 'passed'|'flagged'}>
+     */
+    private static function reviewChecks(array $state): array
+    {
+        $birth = self::birthDate(is_string($state['date_of_birth'] ?? null) ? $state['date_of_birth'] : null);
+        $number = is_string($state['id_number'] ?? null) ? $state['id_number'] : '';
+        $checks = [['key' => 'age', 'outcome' => $birth !== null && self::age($birth->format('d / m / Y')) >= 18 ? 'passed' : 'flagged']];
+        $checks[] = ($state['id_type'] ?? null) === 'passport'
+            ? ['key' => 'passport_format', 'outcome' => preg_match('/^[A-Z0-9]{6,12}$/D', $number) === 1 ? 'passed' : 'flagged']
+            : ['key' => 'id_birth_year', 'outcome' => $birth !== null && preg_match('/^[0-9]{16}$/D', $number) === 1
+                && substr($number, 1, 4) === $birth->format('Y') ? 'passed' : 'flagged'];
+
+        return $checks;
+    }
+
     /**
      * @param  Review  $review
      * @param  array{url: string, method: string}  $close
@@ -76,6 +114,7 @@ class StaffInvestorVerificationsResource extends JsonResource
             'licence' => $review['licence'], 'submitted_at' => $review['submitted_at'],
             'account' => $review['account'], 'date_of_birth' => $review['state']['date_of_birth'], 'id_type' => $review['state']['id_type'],
             'id_number' => $review['state']['id_number'], 'decision' => $review['state']['decision'],
+            'age' => self::age($review['state']['date_of_birth']), 'checks' => self::reviewChecks($review['state']),
             'documents' => array_map(function (array $document) use ($review, $prefix): array {
                 $route = ['verification' => $review['id'], 'document' => $document['id']];
 

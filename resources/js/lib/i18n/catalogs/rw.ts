@@ -369,6 +369,18 @@ const rw: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Abagenzuzi ntibashobora kugira urundi ruhare muri Rozine, bityo iyi konti ntishobora gusaba uburenganzira bw’Umugenzuzi.',
     'suite.app.unavailable': 'Ntibishoboka n’uburenganzira ufite ubu',
+    'admin.kyc.checks.title': 'Igenzura ryikora',
+    'admin.kyc.check.id_birth_year':
+        'Umwaka w’amavuko uri mu nomero y’indangamuntu uhura n’itariki y’amavuko',
+    'admin.kyc.check.passport_format':
+        'Nomero ya pasiporo ifite inyuguti cyangwa imibare 6 kugeza kuri 12',
+    'admin.kyc.check.passed': 'Byemejwe',
+    'admin.kyc.check.flagged': 'Bigenzure',
+    'admin.kyc.fact.age': 'Imyaka',
+    'admin.kyc.fact.age_value': 'Imyaka {age}',
+    'admin.kyc.decide_in_users':
+        'KYC yemezwa cyangwa yangwa ku rupapuro rw’Abakoresha.',
+    'admin.kyc.open_in_users': 'Fungura mu Bakoresha',
     'admin.role_applications.business.title': 'Dosiye z’ubucuruzi (KYB)',
     'admin.role_applications.business.caption':
         'Abashoramari basaba guhindukira abahagarariye ubucuruzi. Suzuma ikigo, abantu bacyo n’inyandiko, hanyuma ufate icyemezo hano.',

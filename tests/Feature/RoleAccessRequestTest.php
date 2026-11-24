@@ -140,7 +140,7 @@ it('shows staff who grant each role the requests for it, newest first, and refus
     $rows = RoleAccessRequest::query()->orderByDesc('created_at')->get();
     expect($props['roles'])->toBe(['business', 'auditor'])
         ->and($props['links'])->toBe(['business' => ['url' => '/admin/businesses', 'method' => 'get'], 'auditor' => ['url' => '/admin/auditors', 'method' => 'get']])
-        ->and($props['nav']['access_requests'])->toBe(['url' => '/admin/access-requests', 'method' => 'get'])
+        ->and($props['nav']['access_requests'])->toBeNull()
         ->and($props['viewer']['role'])->toBe('compliance')
         ->and($props['requests'])->toBe([
             ['id' => $rows[0]->id, 'role' => 'auditor', 'name' => 'Jean Mugisha', 'email' => $auditor->email, 'organization' => 'Ledger & Co',

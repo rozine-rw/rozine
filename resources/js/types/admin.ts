@@ -2082,6 +2082,15 @@ export type InvestorVerificationReview = {
     date_of_birth: string;
     id_type: KycIdType;
     id_number: string;
+    /** The person's age today, from the date of birth; null before one is given. */
+    age?: number | null;
+    /** What the automated checks establish, each passed or flagged for Compliance. */
+    checks?: {
+        key: 'age' | 'id_birth_year' | 'passport_format';
+        outcome: 'passed' | 'flagged';
+    }[];
+    /** Where this submission is decided, when it is shown read-only here. */
+    decide?: RouteLink;
     decision: {
         outcome: 'approved' | 'rejected';
         reason: string;

@@ -376,6 +376,18 @@ const fr: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Les auditeurs partenaires ne peuvent pas avoir un autre rôle Rozine : ce compte ne peut donc pas demander l’accès Auditeur.',
     'suite.app.unavailable': 'Indisponible avec votre accès actuel',
+    'admin.kyc.checks.title': 'Contrôles automatiques',
+    'admin.kyc.check.id_birth_year':
+        "L'année de naissance dans le numéro d'identité correspond à la date de naissance",
+    'admin.kyc.check.passport_format':
+        'Le numéro de passeport a 6 à 12 lettres ou chiffres',
+    'admin.kyc.check.passed': 'Réussi',
+    'admin.kyc.check.flagged': 'À vérifier',
+    'admin.kyc.fact.age': 'Âge',
+    'admin.kyc.fact.age_value': '{age} ans',
+    'admin.kyc.decide_in_users':
+        'Le KYC est approuvé ou refusé dans la page Utilisateurs.',
+    'admin.kyc.open_in_users': 'Ouvrir dans Utilisateurs',
     'admin.role_applications.business.title': 'Demandes d’entreprise (KYB)',
     'admin.role_applications.business.caption':
         'Investisseurs demandant à devenir représentant d’entreprise. Examinez l’entreprise, ses personnes et ses documents, puis décidez ici.',
