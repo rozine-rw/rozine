@@ -431,6 +431,31 @@ describe('Launcher with the hub', () => {
         expect(screen.getByRole('alertdialog')).toHaveTextContent(
             'Your identity check needs changes',
         );
+        // The launcher has no app scope: without one the accent buttons and the progress bar are
+        // transparent, so the hub and its urgent card carry the Investor accent themselves.
+        expect(screen.getByTestId('dashboard-hub')).toHaveAttribute(
+            'data-audience',
+            'investor',
+        );
+        // The fixed header carries the updates bell with its unread count, and the profile.
+        expect(
+            screen.getByRole('link', { name: 'Updates, 1 unread' }),
+        ).toHaveAttribute('href', '#hub-recent');
+        expect(
+            screen.getByRole('link', { name: 'Your profile' }),
+        ).toHaveTextContent('A');
+        expect(
+            screen.queryByText('One live core · every surface'),
+        ).not.toBeInTheDocument();
+        // The apps sit in the main column under the hub, as designed.
+        expect(
+            within(screen.getByTestId('dashboard-hub')).getByRole('heading', {
+                name: 'Your apps',
+            }),
+        ).toBeInTheDocument();
+        const urgent = screen.getByTestId('dashboard-urgent');
+        expect(urgent).toHaveAttribute('data-audience', 'investor');
+        expect(within(urgent).getByRole('alertdialog')).toBeInTheDocument();
         vi.unstubAllGlobals();
     });
 });
