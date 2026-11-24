@@ -373,6 +373,10 @@ const en = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Audit Partners can’t hold another Rozine role, so this account can’t ask for Auditor access.',
     'suite.app.unavailable': 'Not available with your current access',
+    'admin.role_applications.kyc_first':
+        "Approve the applicant's own KYC first (Users page). Then approve this application.",
+    'admin.role_applications.declared_yes': 'confirmed',
+    'admin.role_applications.declared_no': 'not confirmed',
     'kyc.rail.steps': 'Steps',
     'kyc.rail.step_of': 'Step {current} of {total}',
     'kyc.rail.privacy_title': 'Your documents stay private',
@@ -2448,7 +2452,7 @@ const en = {
     'admin.role.treasury': 'Treasury',
     'admin.role.access.treasury': 'Treasury access',
     'admin.kyc.intro':
-        'Identity submissions from people who want to invest. Open one to check its documents, then approve or reject it with a reason.',
+        'Identity checks from people who want to invest. Open one to read its documents and automated checks. Decide it in the Users page, where each person’s KYC is approved, sent back or rejected.',
     'admin.kyc.tabs': 'Verification states',
     'admin.kyc.tab.submitted': 'Waiting for review',
     'admin.kyc.tab.decided': 'Decided',

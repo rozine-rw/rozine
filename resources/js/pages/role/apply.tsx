@@ -316,6 +316,13 @@ export default function RoleApply(props: RoleApplicationProps) {
     const unchanged = (requested?.items ?? []).filter((item) => {
         if (item.key.startsWith('documents.')) {
             const slot = item.key.slice('documents.'.length);
+            const before = requested?.before?.documents?.[slot];
+
+            // Compare the stored document, not the name: the page may have reloaded since the upload,
+            // and a replacement can carry the same filename.
+            if (before !== undefined) {
+                return application.uploads[slot]?.id === before;
+            }
 
             return (
                 application.uploads[slot]?.filename ===

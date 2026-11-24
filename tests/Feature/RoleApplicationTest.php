@@ -161,7 +161,8 @@ test('a business application is filled in step by step, checked, and sent before
 
     // The applicant sees it under review and can view their own upload, but can no longer change it.
     $this->get(route('role-application.show'))->assertInertia(fn (Assert $page): Assert => $page->where('role', 'business')
-        ->where('application.status', 'submitted')->where('application.uploads.articles.filename', 'articles.pdf'));
+        ->where('application.status', 'submitted')->where('application.uploads.articles.filename', 'articles.pdf')
+        ->where('application.uploads.articles.id', fn (string $id): bool => RoleApplicationDocument::query()->whereKey($id)->exists()));
     expect($this->get(route('role-application.document', 'articles'))->assertOk()->headers->get('Content-Security-Policy'))
         ->toBe("default-src 'none'; sandbox");
     $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'business', 'step' => 'company', 'answers' => companyAnswers()])
@@ -206,6 +207,32 @@ test('compliance reviews business KYB on the Businesses page and approves it onl
     $this->actingAs($this->person->refresh())->get(route('role-application.show'))->assertRedirect(route('dashboard'));
     // A retried approval replays without onboarding twice.
     expect(BusinessProfile::query()->count())->toBe(1);
+});
+
+test('the staff drawer lists approval problems in plain words, and only while the application can be approved (#752)', function (): void {
+    $kyc = kycSent($this->person);
+    $application = businessSent($this, $this->person);
+    // A rule added after sending (24 Nov: Rwandan phone numbers only) now rejects a stored answer.
+    $state = $application->state;
+    $state['answers']['representative']['phone'] = '12345';
+    $application->forceFill(['state' => $state])->save();
+    $drawer = fn (): TestResponse => $this->actingAs($this->officer)
+        ->get(route('staff.businesses.index', ['application' => $application->id]));
+
+    $drawer()->assertInertia(fn (Assert $page): Assert => $page
+        ->where('application.problems', ['Enter your phone number, for example +250 788 000 000.']));
+
+    approveKyc($this, $this->officer, $kyc);
+    $state['answers']['representative']['phone'] = '+250 788 000 222';
+    $application->forceFill(['state' => $state])->save();
+    decideApplication($this, $this->officer, $application, 'approve')->assertSessionHasNoErrors();
+    $application->refresh();
+    $state = $application->state;
+    $state['answers']['representative']['phone'] = '12345';
+    $application->forceFill(['state' => $state])->save();
+
+    $drawer()->assertInertia(fn (Assert $page): Assert => $page->where('application.status', 'approved')
+        ->where('application.problems', [])->where('application.blockers', [])->where('application.allowed_actions', []));
 });
 
 test('compliance sends an application back naming the items to change, and the applicant fixes and resends it', function (): void {

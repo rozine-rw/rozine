@@ -379,6 +379,10 @@ const rw: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Abagenzuzi ntibashobora kugira urundi ruhare muri Rozine, bityo iyi konti ntishobora gusaba uburenganzira bw’Umugenzuzi.',
     'suite.app.unavailable': 'Ntibishoboka n’uburenganzira ufite ubu',
+    'admin.role_applications.kyc_first':
+        'Banza wemeze KYC y’usaba (ku rupapuro rw’Abakoresha). Hanyuma wemeze iyi dosiye.',
+    'admin.role_applications.declared_yes': 'byemejwe',
+    'admin.role_applications.declared_no': 'ntibyemejwe',
     'kyc.rail.steps': 'Intambwe',
     'kyc.rail.step_of': 'Intambwe ya {current} kuri {total}',
     'kyc.rail.privacy_title': 'Inyandiko zawe zigumana ibanga',
@@ -2562,7 +2566,7 @@ const rw: Catalog = {
     'admin.role.treasury': 'Imari',
     'admin.role.access.treasury': "Uburenganzira bw'imari",
     'admin.kyc.intro':
-        "Ibisabwa byo kugenzura umwirondoro by'abantu bashaka gushora imari. Fungura kimwe urebe inyandiko zacyo, hanyuma ucyemeze cyangwa ucyange ugaragaza impamvu.",
+        'Igenzura ry’umwirondoro ry’abantu bashaka gushora imari. Fungura rimwe usome inyandiko zaryo n’igenzura ryikora. Ufatira icyemezo ku rupapuro rw’Abakoresha, aho KYC ya buri muntu yemezwa, isubizwa cyangwa yangwa.',
     'admin.kyc.tabs': "Imiterere y'igenzura",
     'admin.kyc.tab.submitted': 'Bitegereje gusuzumwa',
     'admin.kyc.tab.decided': 'Byafatiwe icyemezo',
