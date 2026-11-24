@@ -7,7 +7,9 @@ use App\Application\Identity\CloseAccount;
 use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Wallet\RecordBusinessDeposit;
 use App\Domain\Identity\SandboxNotice;
+use App\Infrastructure\Auditor\EloquentAuditorDirectoryStore;
 use App\Infrastructure\Identity\EloquentAccountClosures;
+use App\Infrastructure\Identity\EloquentRoleAccessRequests;
 use App\Infrastructure\Secondary\EloquentSecondaryMarket;
 use App\Models\AuditReport;
 use App\Models\BusinessCampaign;
@@ -339,4 +341,29 @@ test('closing an account ends its roles, so an auditor on a closed account is no
         ->map(fn ($row): array => [(string) $row->role, (string) $row->status, (int) $row->revision])->all())
         ->toBe([['auditor', 'revoked', 3], ['investor', 'revoked', 3]])
         ->and(IdentityAuditEvent::query()->where('action', 'account.close')->sole()->after['roles_ended'])->toBe(['auditor']);
+});
+
+test('roles of parties closed before #746 are ended, and closed parties leave the Auditors registry and access requests', function () {
+    $closed = User::factory()->create(['party_id' => Party::factory(), 'closed_at' => now()]);
+    $shared = Party::factory()->create();
+    $closedTwin = User::factory()->create(['party_id' => $shared->id, 'closed_at' => now()]);
+    $open = User::factory()->create(['party_id' => $shared->id, 'name' => 'Still Open']);
+    $membership = fn (string $party, string $status): array => ['id' => strtolower((string) Str::ulid()), 'party_id' => $party, 'role' => 'auditor',
+        'status' => $status, 'revision' => 1, 'created_at' => now(), 'updated_at' => now()];
+    DB::table('role_memberships')->insert([$membership($closed->party_id, 'active'), $membership($shared->id, 'active')]);
+    foreach ([$closed, $open] as $user) {
+        DB::table('role_access_requests')->insert(['id' => strtolower((string) Str::ulid()), 'party_id' => $user->party_id, 'role' => 'auditor',
+            'organization' => 'Firm', 'reference' => 'ICPAR-1', 'phone' => '+250788000000', 'note' => null, 'operation_id' => strtolower((string) Str::ulid()), 'created_at' => now()]);
+    }
+
+    $directory = app(EloquentAuditorDirectoryStore::class)->directory('all', '', 50);
+    expect(array_column($directory['rows'], 'party_id'))->toBe([$shared->id])
+        ->and($directory['rows'][0]['name'])->toBe('Still Open')
+        ->and(array_column(app(EloquentRoleAccessRequests::class)->forStaff(['auditor']), 'name'))->toBe(['Still Open']);
+
+    (require database_path('migrations/2026_11_24_140000_end_roles_of_fully_closed_parties.php'))->up();
+
+    expect(DB::table('role_memberships')->where('party_id', $closed->party_id)->first(['status', 'revision']))
+        ->toEqual((object) ['status' => 'revoked', 'revision' => 2])
+        ->and(DB::table('role_memberships')->where('party_id', $shared->id)->value('status'))->toBe('active');
 });

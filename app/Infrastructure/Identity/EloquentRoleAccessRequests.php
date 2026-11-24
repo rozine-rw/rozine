@@ -77,6 +77,8 @@ final class EloquentRoleAccessRequests implements RoleAccessRequests
         /** @var list<StaffRow> $rows */
         $rows = array_values(RoleAccessRequest::query()->whereIn('role_access_requests.role', $roles)
             ->join('users', 'users.party_id', '=', 'role_access_requests.party_id')
+            // A closed account holds no role (#746): its old requests leave the staff list.
+            ->whereNull('users.closed_at')
             ->join('parties', 'parties.id', '=', 'role_access_requests.party_id')
             ->leftJoin('role_memberships', function (JoinClause $join): void {
                 $join->on('role_memberships.party_id', '=', 'role_access_requests.party_id')

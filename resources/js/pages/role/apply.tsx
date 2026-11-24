@@ -813,7 +813,7 @@ export default function RoleApply(props: RoleApplicationProps) {
                                             })
                                         }
                                     />
-                                    <div className="grid grid-cols-2 gap-2.5 lg:col-span-2 lg:gap-x-6">
+                                    <div className="grid grid-cols-1 gap-2.5 min-[440px]:grid-cols-2 lg:col-span-2 lg:gap-x-6">
                                         <Field
                                             id="licence_number"
                                             label={t(

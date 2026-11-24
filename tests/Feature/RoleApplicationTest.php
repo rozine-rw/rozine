@@ -239,6 +239,15 @@ test('the staff drawer lists approval problems in plain words, and only while th
         ->where('application.problems', [])->where('application.blockers', [])->where('application.allowed_actions', []));
 });
 
+test('applications of a closed account leave the staff queue and its counts (#746)', function (): void {
+    kycSent($this->person);
+    businessSent($this, $this->person);
+    User::query()->whereKey($this->person->id)->update(['closed_at' => now()]);
+
+    $this->actingAs($this->officer)->get(route('staff.businesses.index'))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('applications.entries', [])->where('applications.counts', []));
+});
+
 test('compliance sends an application back naming the items to change, and the applicant fixes and resends it', function (): void {
     Notification::fake();
     kycSent($this->person);
