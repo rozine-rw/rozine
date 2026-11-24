@@ -142,3 +142,148 @@ describe('Asking an applicant for changes', () => {
         inertia.errors = {};
     });
 });
+
+describe('Approving and reviewing a resubmission', () => {
+    const person = {
+        full_name: 'Aline Uwase',
+        id_type: 'national_id' as const,
+        id_number: '1199080012345678',
+        nationality: 'Rwandan',
+    };
+
+    it('asks for a note and enhanced due diligence on a PEP before onboarding, and labels the representative', async () => {
+        const { user } = renderWithUser(
+            <RoleApplicationDrawer
+                application={application({
+                    state: {
+                        role: 'business',
+                        step: 'review',
+                        answers: {
+                            declared: true,
+                            representative: {
+                                title: 'Managing Director',
+                                phone: '+250 788 000 222',
+                                authorised: true,
+                            },
+                            directors: [person],
+                            owners: [
+                                { ...person, ownership_pct: '60', pep: true },
+                            ],
+                        },
+                        documents: {},
+                        note: null,
+                    },
+                })}
+                close="/admin/businesses"
+            />,
+        );
+
+        expect(screen.getByText('Representative phone')).toBeInTheDocument();
+        expect(screen.getAllByText('PEP')).toHaveLength(2);
+        await user.click(
+            screen.getByRole('button', { name: 'Approve and onboard' }),
+        );
+        expect(post).not.toHaveBeenCalled();
+        const stage = screen.getByRole('group', {
+            name: 'Approve and onboard Aline Uwase?',
+        });
+        const approve = within(stage).getByRole('button', {
+            name: 'Approve and onboard',
+        });
+        expect(approve).toBeDisabled();
+        fireEvent.change(screen.getByLabelText(/note/iu), {
+            target: { value: 'Registry, owners and IDs match.' },
+        });
+        expect(approve).toBeDisabled();
+        await user.click(
+            within(stage).getByLabelText(
+                'I have done enhanced due diligence on this person.',
+            ),
+        );
+        await user.click(approve);
+        expect(post.mock.calls[0][1]).toMatchObject({
+            decision: 'approve',
+            note: 'Registry, owners and IDs match.',
+        });
+        act(() => post.mock.calls[0][2].onFinish());
+        await user.click(within(stage).getByRole('button', { name: 'Cancel' }));
+        expect(
+            screen.queryByRole('group', { name: /Approve and onboard/u }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('shows what Compliance asked for on a resubmission and which items changed', async () => {
+        const { user } = renderWithUser(
+            <RoleApplicationDrawer
+                application={application({
+                    state: {
+                        role: 'business',
+                        step: 'review',
+                        answers: {
+                            declared: true,
+                            company: {
+                                legal_name: 'Kivu Harvest Ltd',
+                                rdb_code: '108 123 456',
+                                tin: '108123457',
+                                company_type: 'private_limited',
+                                incorporation_date: '2019-04-02',
+                                industry: 'Agriculture',
+                                district: 'Rubavu',
+                                registered_address: 'KN 4 Ave',
+                                phone: '+250 788 000 111',
+                            },
+                        },
+                        documents: { articles: 'doc-1' },
+                        note: 'Fix these.',
+                        revision: {
+                            note: 'Fix these.',
+                            items: [
+                                {
+                                    key: 'company.tin',
+                                    label: 'TIN',
+                                    note: 'Does not match.',
+                                },
+                                {
+                                    key: 'documents.articles',
+                                    label: 'Articles of Association',
+                                    note: '',
+                                },
+                            ],
+                            requested_at: '2026-11-24T08:31:00+02:00',
+                            before: {
+                                answers: {
+                                    declared: false,
+                                    company: {
+                                        legal_name: 'Kivu Harvest Ltd',
+                                        rdb_code: '108 123 456',
+                                        tin: '108123456',
+                                        company_type: 'private_limited',
+                                        incorporation_date: '2019-04-02',
+                                        industry: 'Agriculture',
+                                        district: 'Rubavu',
+                                        registered_address: 'KN 4 Ave',
+                                        phone: '+250 788 000 111',
+                                    },
+                                },
+                                documents: { articles: 'doc-1' },
+                            },
+                        },
+                    },
+                })}
+                close="/admin/businesses"
+            />,
+        );
+
+        const banner = screen.getByRole('region', {
+            name: 'Sent again after you asked for changes',
+        });
+        expect(banner).toHaveTextContent('TINChangedDoes not match.');
+        expect(banner).toHaveTextContent('Articles of AssociationNot changed');
+        await user.click(
+            screen.getByRole('button', { name: 'Approve and onboard' }),
+        );
+        expect(
+            screen.getByText('1 item(s) you asked to change were not changed.'),
+        ).toBeInTheDocument();
+    });
+});

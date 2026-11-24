@@ -369,6 +369,36 @@ const rw: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Abagenzuzi ntibashobora kugira urundi ruhare muri Rozine, bityo iyi konti ntishobora gusaba uburenganzira bw’Umugenzuzi.',
     'suite.app.unavailable': 'Ntibishoboka n’uburenganzira ufite ubu',
+    'admin.role_applications.resent_title':
+        'Yongeye koherezwa nyuma yo gusaba impinduka',
+    'admin.role_applications.resent_body': 'Wabisabye ku wa {date}:',
+    'admin.role_applications.item_changed': 'Byahinduwe',
+    'admin.role_applications.item_unchanged': 'Ntibyahinduwe',
+    'admin.role_applications.business.confirm_title':
+        'Kwemeza no kwinjiza {name}?',
+    'admin.role_applications.business.confirm_body':
+        'Ibi bishyiraho ikigo {name} akaba ari we ugihagarariye, kandi bigahagarika uruhare rwe rw’Umushoramari. Andika impamvu mu nyandiko.',
+    'admin.role_applications.auditor.confirm_title':
+        'Kwemeza {name} nk’Umugenzuzi?',
+    'admin.role_applications.auditor.confirm_body':
+        'Ibi byemeza {name} nk’Umugenzuzi kandi bigahagarika uruhare rwe rw’Umushoramari. Andika impamvu mu nyandiko.',
+    'admin.role_applications.confirm_unchanged':
+        'Ibintu {count} wasabye guhindura ntibyahinduwe.',
+    'admin.role_applications.confirm_note':
+        'Andika inyandiko hejuru kugira ngo wemeze.',
+    'admin.role_applications.company': 'Ikigo',
+    'admin.role_applications.rep_name': 'Uhagarariye',
+    'admin.role_applications.rep_title': 'Inshingano mu kigo',
+    'admin.role_applications.rep_phone': 'Telefoni y’uhagarariye',
+    'admin.role_applications.pep_title':
+        'Hari umuntu ufite aho ahuriye na politiki wavuzwe',
+    'admin.role_applications.pep_body':
+        'Banza ugenzure byimbitse mbere yo kwemeza: genzura inkomoko y’amafaranga n’umutungo, wandike ibyo wagenzuye mu nyandiko.',
+    'admin.role_applications.pep_confirm': 'Nagenzuye byimbitse uyu muntu.',
+    'admin.role_applications.saves': '(byabitswe {count})',
+    'role.apply.review.unchanged_title': 'Ibi ntabwo urabihindura',
+    'role.apply.review.unchanged_body':
+        'Abashinzwe kubahiriza amategeko bagusabye kubihindura. Ohereza bundi bushya gusa niba ari byo.',
     'role.apply.document.resolution_needed':
         "Irakenewe: ntabwo uri ku rutonde rw'abayobozi.",
     'admin.kyc.checks.title': 'Igenzura ryikora',

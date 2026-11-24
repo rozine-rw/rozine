@@ -26,7 +26,7 @@ use App\Domain\Operations\CommandRejection;
  *     licence?: Licence, coverage?: Coverage, declared: bool
  * }
  * @phpstan-type RevisionItem array{key: string, label: string, note: string}
- * @phpstan-type Revision array{note: string|null, items: list<RevisionItem>, requested_at: string}
+ * @phpstan-type Revision array{note: string|null, items: list<RevisionItem>, requested_at: string, before?: array{answers: Answers, documents: array<string, string>}}
  * @phpstan-type State array{role: 'business'|'auditor', step: string, answers: Answers, documents: array<string, string>, note: string|null, revision?: Revision}
  */
 final class RoleApplicationCase
@@ -249,7 +249,10 @@ final class RoleApplicationCase
         $state['note'] = $note;
         $state['answers']['declared'] = false;
         if ($items !== []) {
-            $state['revision'] = ['note' => $note, 'items' => $items, 'requested_at' => $requestedAt];
+            // What the flagged items held when they were sent back, so the applicant and Compliance can
+            // both see which ones changed on the resubmission (QA 24 Nov 2026).
+            $state['revision'] = ['note' => $note, 'items' => $items, 'requested_at' => $requestedAt,
+                'before' => ['answers' => $state['answers'], 'documents' => $state['documents']]];
         } else {
             unset($state['revision']);
         }

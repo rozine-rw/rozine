@@ -238,7 +238,10 @@ test('compliance sends an application back naming the items to change, and the a
     $this->post(route('role-application.upload'), [...roleEnvelope($this->person), 'slot' => 'articles', 'file' => rolePdf('articles-signed.pdf')])->assertSessionHasNoErrors();
     $this->post(route('role-application.submit'), [...roleEnvelope($this->person), 'declared' => false])->assertSessionHasErrors('declared');
     $this->post(route('role-application.submit'), [...roleEnvelope($this->person), 'declared' => true])->assertSessionHasNoErrors();
-    expect($application->refresh()->status)->toBe('submitted')->and($application->state['note'])->toBeNull();
+    expect($application->refresh()->status)->toBe('submitted')->and($application->state['note'])->toBeNull()
+        // The send-back keeps what each item held, so Compliance sees the articles changed and the TIN did not.
+        ->and($application->state['revision']['before']['answers']['company']['tin'] ?? null)->toBe($application->state['answers']['company']['tin'] ?? '')
+        ->and($application->state['revision']['before']['documents']['articles'] ?? null)->not->toBe($application->state['documents']['articles'] ?? null);
 
     decideApplication($this, $this->officer, $application, 'reject', 'This company is already represented on Rozine.')->assertSessionHasNoErrors();
     expect($application->refresh()->status)->toBe('rejected')

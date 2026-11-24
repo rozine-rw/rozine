@@ -155,3 +155,43 @@ describe('An application Compliance sent back', () => {
         expect(screen.queryByText(/^Compliance/u)).not.toBeInTheDocument();
     });
 });
+
+describe('Fixing an application Compliance sent back', () => {
+    const flagged = (key: string, label: string) => {
+        const base = props();
+
+        return {
+            ...base,
+            application: {
+                ...base.application,
+                requested_changes: {
+                    ...base.application.requested_changes!,
+                    items: [{ key, label, note: '' }],
+                },
+            },
+        };
+    };
+
+    it('opens on the step of the first flagged item', () => {
+        render(
+            <RoleApply
+                {...flagged('documents.articles', 'Articles of Association')}
+            />,
+        );
+
+        expect(
+            screen.getByRole('heading', { level: 1, name: 'Documents' }),
+        ).toBeInTheDocument();
+    });
+
+    it('warns on Check and send about flagged items left unchanged', () => {
+        render(<RoleApply {...flagged('declared', 'Declaration')} />);
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            "You haven't changed these yet",
+        );
+        expect(
+            screen.getByRole('button', { name: 'Declaration' }),
+        ).toBeInTheDocument();
+    });
+});

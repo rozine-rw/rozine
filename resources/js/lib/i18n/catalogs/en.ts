@@ -363,6 +363,36 @@ const en = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Audit Partners can’t hold another Rozine role, so this account can’t ask for Auditor access.',
     'suite.app.unavailable': 'Not available with your current access',
+    'admin.role_applications.resent_title':
+        'Sent again after you asked for changes',
+    'admin.role_applications.resent_body': 'You asked for these on {date}:',
+    'admin.role_applications.item_changed': 'Changed',
+    'admin.role_applications.item_unchanged': 'Not changed',
+    'admin.role_applications.business.confirm_title':
+        'Approve and onboard {name}?',
+    'admin.role_applications.business.confirm_body':
+        'This creates the business with {name} as its representative and ends their Investor role. Record why in the note.',
+    'admin.role_applications.auditor.confirm_title':
+        'Approve {name} as an Auditor?',
+    'admin.role_applications.auditor.confirm_body':
+        'This accredits {name} as an Auditor and ends their Investor role. Record why in the note.',
+    'admin.role_applications.confirm_unchanged':
+        '{count} item(s) you asked to change were not changed.',
+    'admin.role_applications.confirm_note': 'Write a note above to approve.',
+    'admin.role_applications.company': 'Company',
+    'admin.role_applications.rep_name': 'Representative',
+    'admin.role_applications.rep_title': 'Role at the company',
+    'admin.role_applications.rep_phone': 'Representative phone',
+    'admin.role_applications.pep_title':
+        'A politically exposed person is named',
+    'admin.role_applications.pep_body':
+        'Do enhanced due diligence before approving: check the source of funds and wealth, and record what you checked in the note.',
+    'admin.role_applications.pep_confirm':
+        'I have done enhanced due diligence on this person.',
+    'admin.role_applications.saves': '({count} saves)',
+    'role.apply.review.unchanged_title': "You haven't changed these yet",
+    'role.apply.review.unchanged_body':
+        'Compliance asked you to change them. Send it again only if they are already correct.',
     'role.apply.document.resolution_needed':
         'Needed: you are not listed as a director.',
     'admin.kyc.checks.title': 'Automated checks',
