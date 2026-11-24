@@ -65,6 +65,7 @@
         "resources/js/actions/App/Http/Controllers/BusinessWalletController.ts",
         "resources/js/actions/App/Http/Controllers/ChangeFeedController.ts",
         "resources/js/actions/App/Http/Controllers/DashboardController.ts",
+        "resources/js/actions/App/Http/Controllers/DashboardVersionController.ts",
         "resources/js/actions/App/Http/Controllers/EmailVerificationCodeController.ts",
         "resources/js/actions/App/Http/Controllers/EnterAppController.ts",
         "resources/js/actions/App/Http/Controllers/IdentityManagementController.ts",
@@ -301,6 +302,7 @@
         "resources/js/routes/business/wallet/index.ts",
         "resources/js/routes/business/wallet/operations/index.ts",
         "resources/js/routes/changes/index.ts",
+        "resources/js/routes/dashboard/index.ts",
         "resources/js/routes/identity/access-requests/index.ts",
         "resources/js/routes/identity/active-role/index.ts",
         "resources/js/routes/identity/bookmarks/index.ts",
@@ -448,6 +450,7 @@
         "resources/js/components/admin/reason-stage.tsx",
         "resources/js/components/admin/repayments/panels.tsx",
         "resources/js/components/admin/repayments/repayment-drawer.tsx",
+        "resources/js/components/admin/revision-picker.tsx",
         "resources/js/components/admin/search-empty.tsx",
         "resources/js/components/admin/section-designs.ts",
         "resources/js/components/admin/today/today-panels.tsx",
@@ -686,6 +689,7 @@
         "resources/js/components/rozine/c3-notice.tsx",
         "resources/js/components/rozine/column-sheet.tsx",
         "resources/js/components/rozine/connectivity-notice.tsx",
+        "resources/js/components/rozine/dashboard-hub.tsx",
         "resources/js/components/rozine/form.tsx",
         "resources/js/components/rozine/help-center.tsx",
         "resources/js/components/rozine/icon-shapes.ts",
@@ -876,10 +880,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 845,
-        "generated": 364,
+        "totalTrackedSources": 849,
+        "generated": 366,
         "declarationOnly": 22,
-        "authoredExecutable": 459
+        "authoredExecutable": 461
     },
-    "coverageSetSha256": "b0b6747f5b6a18bc3b680d98feef93067a7d6e04a891b9e5067874ae2f102834"
+    "coverageSetSha256": "3bb27ab4f3404bfc88702df6b846f75045acf3d6c792383639d9b498f90f9dd9"
 }

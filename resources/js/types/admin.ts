@@ -2101,6 +2101,8 @@ export type InvestorVerificationReview = {
         at: string;
     }[];
     links: { close: RouteLink };
+    /** The answers and documents Compliance may ask the person to change, key to label. */
+    revisable?: Record<string, string>;
     /** Present only while the case waits for review. */
     actions: { approve?: RouteAction; reject?: RouteAction };
 };

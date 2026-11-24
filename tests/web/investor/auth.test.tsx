@@ -470,6 +470,62 @@ describe('Verification', () => {
         });
     });
 
+    it('lists what Compliance asked to change while the check is reopened, and hides it once sent', () => {
+        const requested = {
+            reason: 'The selfie is too dark.',
+            requested_at: '2026-11-24T08:27:00+02:00',
+            items: [
+                { key: 'selfie', label: 'Selfie', note: 'Use daylight.' },
+                { key: 'date_of_birth', label: 'Date of birth', note: '' },
+            ],
+        };
+        const { unmount } = render(
+            <InvestorVerification
+                {...({
+                    ...clone<InvestorVerificationProps>(personalFixture),
+                    status: 'draft',
+                    requested_changes: requested,
+                } as InvestorVerificationProps)}
+            />,
+        );
+        const panel = screen.getByRole('region', {
+            name: 'Compliance asked you to change',
+        });
+        expect(panel).toHaveTextContent('“The selfie is too dark.”');
+        expect(panel).toHaveTextContent('Selfie: Use daylight.');
+        expect(panel).toHaveTextContent('Date of birth');
+        unmount();
+        const { unmount: unmountQuiet } = render(
+            <InvestorVerification
+                {...({
+                    ...clone<InvestorVerificationProps>(personalFixture),
+                    status: 'draft',
+                    requested_changes: { ...requested, reason: '' },
+                } as InvestorVerificationProps)}
+            />,
+        );
+        expect(
+            screen.getByRole('region', {
+                name: 'Compliance asked you to change',
+            }),
+        ).not.toHaveTextContent('“');
+        unmountQuiet();
+        render(
+            <InvestorVerification
+                {...({
+                    ...clone<InvestorVerificationProps>(personalFixture),
+                    status: 'submitted',
+                    requested_changes: requested,
+                } as InvestorVerificationProps)}
+            />,
+        );
+        expect(
+            screen.queryByRole('region', {
+                name: 'Compliance asked you to change',
+            }),
+        ).not.toBeInTheDocument();
+    });
+
     it('verifies an individual: date of birth, document photos, then a selfie', async () => {
         const user = userEvent.setup();
         const { unmount: unmountFirst } = render(

@@ -35,8 +35,8 @@ final readonly class BrowseMessageHistory
             'category' => PartyNoticeKind::tryFrom($delivery['kind'])?->category() ?? 'general'], array_slice($deliveries, 0, $limit));
 
         return ['deliveries' => $page, 'older' => count($deliveries) > $limit ? $page[$limit - 1]['id'] : null,
-            'automations' => array_map(fn (PartyNoticeKind $kind): array => ['kind' => $kind->value, 'category' => $kind->category(),
-                'audience' => $kind->audience(), 'channels' => $kind->mailed() ? ['in_app', 'mail'] : ['in_app']], PartyNoticeKind::cases()),
+            'automations' => array_values(array_map(fn (PartyNoticeKind $kind): array => ['kind' => $kind->value, 'category' => $kind->category(),
+                'audience' => $kind->audience(), 'channels' => $kind->mailed() ? ['in_app', 'mail'] : ['in_app']], PartyNoticeKind::cases())),
             'templates' => self::templates()];
     }
 

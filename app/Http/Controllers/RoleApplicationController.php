@@ -60,6 +60,8 @@ class RoleApplicationController extends Controller
             'application' => [
                 'status' => $standing['status'], 'revision' => $standing['revision'], 'role' => $standing['role'],
                 'step' => $standing['state']['step'] ?? null, 'answers' => $standing['state']['answers'] ?? null, 'note' => $standing['state']['note'] ?? null,
+                // The answers and documents Compliance flagged when it asked for more, shown on the form until it is sent again.
+                'requested_changes' => $standing['status'] === 'changes_requested' ? ($standing['state']['revision'] ?? null) : null,
                 'uploads' => $applications->uploads($userId),
             ],
             'kyc' => $standing['kyc'],

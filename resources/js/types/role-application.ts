@@ -65,6 +65,12 @@ export type RoleApplicationProps = {
         step: string | null;
         answers: RoleApplicationAnswers | null;
         note: string | null;
+        /** What Compliance asked to change when it sent the application back (24 Nov 2026). */
+        requested_changes?: {
+            note: string | null;
+            items: { key: string; label: string; note: string }[];
+            requested_at: string;
+        } | null;
         uploads: Record<string, { filename: string; media_type: string }>;
     };
     kyc: KycStatus;
@@ -129,6 +135,8 @@ export type RoleApplicationReview = {
     problems: string[];
     business_id: string | null;
     allowed_actions: string[];
+    /** The answers and documents Compliance may ask the applicant to change, key to label. */
+    revisable: Record<string, string>;
 };
 
 export type RoleApplicationQueue = {

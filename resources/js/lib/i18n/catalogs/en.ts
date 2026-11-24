@@ -198,6 +198,154 @@ const en = {
     'suite.tagline': 'The Retail Capital Markets Layer for Emerging Economies',
     'suite.motto': 'One live core · every surface',
     'suite.section.apps': 'Your apps',
+    'suite.hub.live': 'Live',
+    'suite.hub.greeting': 'Hello, {name}',
+    'suite.hub.greeting_plain': 'Welcome',
+    'suite.hub.summary':
+        'You are {done} of {total} steps into setting up your account.',
+    'suite.hub.summary_complete': 'Your account is set up.',
+    'suite.hub.needs_one': '1 thing needs you now.',
+    'suite.hub.needs_many': '{count} things need you now.',
+    'suite.hub.setup.title': 'Your setup',
+    'suite.hub.setup.percent': '{percent}% done',
+    'suite.hub.step.account': 'Account created',
+    'suite.hub.step.email': 'Email verified',
+    'suite.hub.step.kyc': 'Identity check',
+    'suite.hub.step.role_business': 'Business check',
+    'suite.hub.step.role_auditor': 'Auditor licence check',
+    'suite.hub.step.open_investor': 'Start investing',
+    'suite.hub.step.open_business': 'Open Business',
+    'suite.hub.step.open_auditor': 'Open Auditor',
+    'suite.hub.state.done': 'Done',
+    'suite.hub.state.attention': 'Changes requested',
+    'suite.hub.state.rejected': 'Not approved',
+    'suite.hub.state.review': 'With Compliance',
+    'suite.hub.state.current': 'To do',
+    'suite.hub.state.upcoming': 'After approval',
+    'suite.hub.needs.title': 'Needs you now',
+    'suite.hub.needs.empty':
+        'Nothing needs you right now. We will tell you here and by email when something does.',
+    'suite.hub.tag.urgent': 'Urgent · from Compliance',
+    'suite.hub.tag.todo': 'To do',
+    'suite.hub.tag.recommended': 'Recommended',
+    'suite.hub.items_label': 'Items to change',
+    'suite.hub.action.kyc_changes.title':
+        'Compliance needs changes to your identity check',
+    'suite.hub.action.kyc_changes.body':
+        'Change the items below, then send it again.',
+    'suite.hub.action.role_changes_business.title':
+        'Compliance needs changes to your business application',
+    'suite.hub.action.role_changes_auditor.title':
+        'Compliance needs changes to your Auditor application',
+    'suite.hub.action.role_changes.body':
+        'Change the items below, then send it again. You can still change any other answer.',
+    'suite.hub.action.role_rejected_business.title':
+        'Your business application was not approved',
+    'suite.hub.action.role_rejected_auditor.title':
+        'Your Auditor application was not approved',
+    'suite.hub.action.role_rejected.body':
+        'Your Investor account is unchanged. You can correct your details and apply again.',
+    'suite.hub.action.kyc_start.title': 'Verify your identity',
+    'suite.hub.action.kyc_start.body':
+        'Every account starts here. It takes about 5 minutes with your ID and a selfie.',
+    'suite.hub.action.kyc_continue.title': 'Finish your identity check',
+    'suite.hub.action.kyc_continue.body':
+        'You started it. Pick up where you left off.',
+    'suite.hub.action.role_continue_business.title':
+        'Finish your business application',
+    'suite.hub.action.role_continue_auditor.title':
+        'Finish your Auditor application',
+    'suite.hub.action.role_continue.body':
+        'Send it to Compliance once your answers and documents are in.',
+    'suite.hub.action.two_factor.title': 'Turn on two-factor sign-in',
+    'suite.hub.action.two_factor.body':
+        'Protects your account and wallet. Takes 2 minutes with an authenticator app.',
+    'suite.hub.action.two_factor.body_auditor':
+        'Auditors need it before they can open the Auditor app. Takes 2 minutes.',
+    'suite.hub.button.fix': 'Fix now',
+    'suite.hub.button.reapply': 'Review and apply again',
+    'suite.hub.button.start': 'Start',
+    'suite.hub.button.continue': 'Continue',
+    'suite.hub.button.setup': 'Set up',
+    'suite.hub.next.title': 'What happens next',
+    'suite.hub.your_business': 'Your business',
+    'suite.hub.next.kyc_send.title': 'Send your identity check',
+    'suite.hub.next.kyc_send.body':
+        'Compliance reviews it, usually within 1 working day.',
+    'suite.hub.next.kyc_resend.title': 'Compliance re-checks your identity',
+    'suite.hub.next.kyc_resend.body':
+        'Usually within 1 working day of you sending the fixes. We email you either way.',
+    'suite.hub.next.kyc_review.title': 'Compliance reviews your identity',
+    'suite.hub.next.kyc_review.body':
+        'Usually within 1 working day. We email you as soon as it is decided.',
+    'suite.hub.next.role_send_business.title': 'Send your business application',
+    'suite.hub.next.role_send_auditor.title': 'Send your Auditor application',
+    'suite.hub.next.role_send_business.body':
+        'Compliance reviews it once your identity check is approved.',
+    'suite.hub.next.role_send_auditor.body':
+        'Compliance reviews your ICPAR licence once your identity check is approved.',
+    'suite.hub.next.role_resend.title': 'Send your application again',
+    'suite.hub.next.role_resend.body':
+        'Change the items Compliance named, then send it. You can still change any other answer.',
+    'suite.hub.next.role_review_business.title': '{company} is reviewed',
+    'suite.hub.next.role_review_auditor.title':
+        'Your ICPAR licence is reviewed',
+    'suite.hub.next.role_review_business.body':
+        'Compliance reviews it once your identity check is approved. We email you as soon as it is decided.',
+    'suite.hub.next.role_review_auditor.body':
+        'Compliance reviews it once your identity check is approved. We email you as soon as it is decided.',
+    'suite.hub.next.role_reapply.title': 'Apply again when ready',
+    'suite.hub.next.role_reapply.body':
+        'Correct your details and send a new application.',
+    'suite.hub.next.role_switch_business.title':
+        'Your account switches to Business',
+    'suite.hub.next.role_switch_business.body':
+        'Then you can apply for funding. Prepare 12 months of bank statements to save time.',
+    'suite.hub.next.role_switch_auditor.title':
+        'Your account switches to Auditor',
+    'suite.hub.next.role_switch_auditor.body':
+        'Then you can receive audit jobs near you.',
+    'suite.hub.next.investor_ready.title': 'Browse open deals',
+    'suite.hub.next.investor_ready.body':
+        'Your account is ready. Open Investor to see the businesses raising now.',
+    'suite.hub.next.business_ready.title': 'Open Business',
+    'suite.hub.next.business_ready.body':
+        'Your business is approved. Open Business to apply for funding.',
+    'suite.hub.next.auditor_ready.title': 'Open Auditor',
+    'suite.hub.next.auditor_ready.body':
+        'You are an active Audit Partner. Open Auditor to see your jobs.',
+    'suite.hub.done.title': 'Done',
+    'suite.hub.done.account': 'Account created',
+    'suite.hub.done.email': 'Email verified',
+    'suite.hub.done.two_factor': 'Two-factor sign-in on',
+    'suite.hub.done.kyc_sent': 'Identity check sent',
+    'suite.hub.done.kyc_approved': 'Identity verified',
+    'suite.hub.done.role_sent_business': 'Business application sent',
+    'suite.hub.done.role_sent_auditor': 'Auditor application sent',
+    'suite.hub.done.role_approved_business': 'Business approved',
+    'suite.hub.done.role_approved_auditor': 'ICPAR licence verified',
+    'suite.hub.recent.title': 'Recent updates',
+    'suite.hub.recent.empty': 'Updates from Compliance show here.',
+    'suite.hub.recent.emailed': 'Emailed',
+    'suite.hub.help.title': 'Need a hand?',
+    'suite.hub.help.body': 'Our team answers within 1 working day.',
+    'suite.hub.help.contact': 'Contact support',
+    'suite.hub.flash.label': 'Urgent',
+    'suite.hub.flash.source': 'Compliance · {time}',
+    'suite.hub.flash.position': '{index} of {total}',
+    'suite.hub.flash.previous': 'Previous',
+    'suite.hub.flash.next': 'Next',
+    'suite.hub.flash.later': 'Later',
+    'suite.hub.flash.details': 'View details',
+    'suite.hub.flash.kyc_title': 'Your identity check needs changes',
+    'suite.hub.flash.role_title_business':
+        'Your business application needs changes',
+    'suite.hub.flash.role_title_auditor':
+        'Your Auditor application needs changes',
+    'suite.hub.flash.body_items':
+        'Compliance flagged: {items}. Fix them so your review can finish.',
+    'suite.hub.flash.body':
+        'Compliance sent it back. Fix it so your review can finish.',
     'suite.app.open': 'Open app →',
     'suite.app.browse': 'Browse deals →',
     'suite.app.request_access': 'Request access →',
@@ -262,9 +410,23 @@ const en = {
     'admin.role_applications.decision': 'Decision',
     'admin.role_applications.note': 'Note to the applicant',
     'admin.role_applications.note_hint':
-        'A note is required to send back or reject. Approving switches the applicant’s role, so they stop being an Investor.',
+        'A note is required to reject. To send back, tick the items to change; a note is optional. Approving switches the applicant’s role, so they stop being an Investor.',
     'admin.role_applications.reject': 'Reject',
     'admin.role_applications.more': 'Ask for more',
+    'admin.revision.legend': 'What must the applicant change?',
+    'admin.revision.group.details': 'Personal details and photos',
+    'admin.revision.group.company': 'Company',
+    'admin.revision.group.people': 'People',
+    'admin.revision.group.licence': 'ICPAR licence',
+    'admin.revision.group.coverage': 'Coverage',
+    'admin.revision.group.documents': 'Documents',
+    'admin.revision.note_label': 'What to fix in {item}',
+    'admin.revision.note_placeholder': 'What to fix (optional)',
+    'admin.revision.ask_title': 'Ask for changes',
+    'admin.revision.ask_body':
+        'Tick each item the applicant must change. They see them flagged on their form, and get an email and an in-app notice.',
+    'admin.revision.send_one': 'Send back with 1 item',
+    'admin.revision.send_many': 'Send back with {count} items',
     'admin.role_applications.approving': 'Approving…',
     'admin.role_applications.history': 'History',
     'suite.app.business.switch':
@@ -404,6 +566,11 @@ const en = {
         'Auditors must protect their account with two-factor authentication before sending their application.',
     'role.apply.two_factor.action': 'Open security settings',
     'role.apply.asked_for_more': 'Compliance asked for changes',
+    'role.apply.flag.change': 'Compliance asked you to change this.',
+    'role.apply.flag.note': 'Compliance: {note}',
+    'role.apply.flag.list_title': 'Change these, then send it again:',
+    'role.apply.flag.still_editable':
+        'You can still change any other answer before you send it again.',
     'role.apply.rejected': 'Your last application was not approved',
     'role.apply.send': 'Send to Compliance',
     'role.apply.sending': 'Sending…',
@@ -1861,6 +2028,16 @@ const en = {
         'Compliance approves an identity check',
     'admin.messaging.trigger.verification.rejected':
         'Compliance sends an identity check back',
+    'admin.messaging.trigger.verification.submitted':
+        'A person sends their identity check',
+    'admin.messaging.trigger.role.application_submitted':
+        'A person sends a Business or Auditor application',
+    'admin.messaging.trigger.role.application_returned':
+        'Compliance sends a Business or Auditor application back',
+    'admin.messaging.trigger.role.application_approved':
+        'Compliance approves a Business or Auditor application',
+    'admin.messaging.trigger.role.application_rejected':
+        'Compliance rejects a Business or Auditor application',
     'admin.messaging.trigger.market.units_bought': 'A resale purchase settles',
     'admin.messaging.trigger.market.units_sold': "A holder's listed units sell",
     'admin.messaging.trigger.wallet.payout_received':
@@ -1950,6 +2127,7 @@ const en = {
     'admin.messaging.rule.verification_approved': 'Verification approved',
     'admin.messaging.rule.raise_fully_funded': 'Raise fully funded',
     'admin.messaging.template.account.new_device_sign_in': 'New device sign-in',
+    'admin.messaging.template.account.onboarding_update': 'Onboarding update',
     'admin.messaging.template.account.one_time_code': 'One-time code',
     'admin.messaging.template.account.reset_password': 'Reset password',
     'admin.messaging.template.account.verify_email': 'Verify email address',
@@ -2290,17 +2468,17 @@ const en = {
     'admin.kyc.command.verification.approve': 'Approved by Compliance',
     'admin.kyc.command.verification.reject': 'Rejected by Compliance',
     'admin.kyc.approve': 'Approve',
-    'admin.kyc.reject': 'Reject',
+    'admin.kyc.reject': 'Send back',
     'admin.kyc.stage.approve.title': 'Approve this identity',
     'admin.kyc.stage.approve.body':
         'This verifies the person and opens their Investor access. Say what you checked.',
     'admin.kyc.stage.approve.cta': 'Approve identity',
     'admin.kyc.stage.approve.placeholder':
         'e.g. The ID photo, number and selfie match the account holder',
-    'admin.kyc.stage.reject.title': 'Reject this submission',
+    'admin.kyc.stage.reject.title': 'Send this check back for changes',
     'admin.kyc.stage.reject.body':
-        'The person sees your reason and can correct their details.',
-    'admin.kyc.stage.reject.cta': 'Reject submission',
+        'Tick what the person must change and say why. They are emailed and see each item flagged on their form.',
+    'admin.kyc.stage.reject.cta': 'Send back for changes',
     'admin.kyc.stage.reject.placeholder':
         'e.g. The ID photo is blurred. Upload a sharper photo.',
     'admin.nav.mail_testers': 'Staging mail testers',
@@ -5467,6 +5645,9 @@ const en = {
     'investor.kyc.previous': 'Previous step',
     'investor.kyc.submitted_notice':
         'Your details are with our Compliance team. We will tell you when they have been reviewed.',
+    'investor.kyc.requested.title': 'Compliance asked you to change',
+    'investor.kyc.requested.still_editable':
+        'Change these, then send it again. You can still change any other answer.',
     'investor.kyc.rejected_notice':
         'Compliance could not verify these details: {reason}. Correct them and submit again.',
     'investor.kyc.verifying': 'Verifying your identity…',
@@ -7841,6 +8022,27 @@ const en = {
         'Your identity details need another look',
     'investor.notices.verification.rejected.body':
         'Compliance could not verify your details: {reason}',
+    'investor.notices.verification.submitted.title': 'Identity check received',
+    'investor.notices.verification.submitted.body':
+        'Compliance has your details and usually decides within 1 working day. We will email you.',
+    'investor.notices.role.application_submitted.title': 'Application received',
+    'investor.notices.role.application_submitted.body_business':
+        'Compliance has the application for {company}. It is decided once your identity is approved.',
+    'investor.notices.role.application_submitted.body_auditor':
+        'Compliance has your Auditor application. It is decided once your identity is approved.',
+    'investor.notices.role.application_returned.title':
+        'Compliance asked for changes',
+    'investor.notices.role.application_returned.body':
+        'Change {items}, then send your application again.',
+    'investor.notices.role.application_approved.title': 'Application approved',
+    'investor.notices.role.application_approved.body_business':
+        '{company} is approved. Your account is now a Business account.',
+    'investor.notices.role.application_approved.body_auditor':
+        'Your ICPAR licence is approved. Your account is now an Auditor account.',
+    'investor.notices.role.application_rejected.title':
+        'Application not approved',
+    'investor.notices.role.application_rejected.body':
+        'Compliance could not approve it: {note}',
     'investor.checkout.risks.title': 'Before you invest',
     'investor.checkout.risks.lead':
         'Please read these five statements. You confirm them once; checkout then has nothing extra to ask.',

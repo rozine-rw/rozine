@@ -37,6 +37,7 @@ class StaffInvestorVerificationController extends Controller
         'VERIFIED_PARTICIPANT_ACCOUNT_REQUIRED' => 'The account needs a verified email and cannot be a staff or operator account.',
         'IDEMPOTENCY_CONFLICT' => 'That request was already used for different details. Try again.',
         'VERIFICATION_DOCUMENT_REQUIRED' => 'A document on this case is missing, so it cannot be approved. Reject it so the person can upload it again.',
+        'REVISION_ITEM_INVALID' => 'One of the ticked items is not on this case. Review it again.',
         'VERIFICATION_DOCUMENT_INTEGRITY_FAILED' => 'A document on this case no longer matches what was uploaded, so it cannot be approved. Reject it so the person can upload it again.',
     ];
 
@@ -86,7 +87,12 @@ class StaffInvestorVerificationController extends Controller
 
     public function reject(DecideInvestorVerificationRequest $request): RedirectResponse|OperationResource
     {
-        return $this->answer($request, $this->review->reject(...$this->command($request)), 'Identity rejected. :name will see your reason and can correct their details.');
+        /** @var list<array{key: string, note: string}> $items */
+        $items = array_values(array_map(fn (array $item): array => ['key' => (string) $item['key'], 'note' => (string) ($item['note'] ?? '')],
+            (array) $request->validated('items', [])));
+
+        return $this->answer($request, $this->review->reject(...[...$this->command($request), $items]),
+            'Sent back to :name. They have been emailed and see your reason and each item you ticked.');
     }
 
     /** @return array{int, string, int, string, string} */

@@ -2,6 +2,8 @@ import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Drawer, DrawerClose } from '@/components/admin/drawer';
+import { RevisionPicker } from '@/components/admin/revision-picker';
+import type { PickedItem } from '@/components/admin/revision-picker';
 import { useTranslation } from '@/hooks/use-translation';
 import type { MessageCode } from '@/lib/i18n/types';
 import { formatDate, formatDateTime } from '@/lib/rozine/format';
@@ -96,6 +98,8 @@ export function RoleApplicationDrawer({
     const { t, locale } = useTranslation();
     const errors = usePage().props.errors as Record<string, string>;
     const [note, setNote] = useState('');
+    const [asking, setAsking] = useState(false);
+    const [items, setItems] = useState<PickedItem[]>([]);
     const [busy, setBusy] = useState<Decision | null>(null);
     const answers = application.state.answers;
     const name =
@@ -126,6 +130,7 @@ export function RoleApplicationDrawer({
             {
                 decision,
                 note,
+                ...(decision === 'more' ? { items } : {}),
                 expected_revision: application.revision,
                 request_id: crypto.randomUUID(),
             },
@@ -377,36 +382,82 @@ export function RoleApplicationDrawer({
                                 {errors.note ?? errors.form}
                             </p>
                         )}
-                        <div className="mt-3 flex flex-wrap gap-2">
-                            <button
-                                type="button"
-                                disabled={busy !== null}
-                                onClick={() => send('reject')}
-                                className="rounded-[10px] border border-[#fdeaea] bg-rz-surface px-3.5 py-[9px] text-[12.5px] font-bold text-[#b3352a] disabled:opacity-60 dark:border-rz-danger-tint dark:text-[#ff6b6f]"
-                            >
-                                {t('admin.role_applications.reject')}
-                            </button>
-                            <button
-                                type="button"
-                                disabled={busy !== null}
-                                onClick={() => send('more')}
-                                className="rounded-[10px] border border-rz-hairline bg-rz-surface px-3.5 py-[9px] text-[12.5px] font-bold text-rz-slate disabled:opacity-60"
-                            >
-                                {t('admin.role_applications.more')}
-                            </button>
-                            <button
-                                type="button"
-                                disabled={busy !== null}
-                                onClick={() => send('approve')}
-                                className="flex-1 rounded-[10px] bg-[#17795a] px-4 py-[9px] text-[12.5px] font-bold text-white disabled:opacity-60"
-                            >
-                                {busy === 'approve'
-                                    ? t('admin.role_applications.approving')
-                                    : t(
-                                          `admin.role_applications.${application.role}.approve`,
-                                      )}
-                            </button>
-                        </div>
+                        {asking ? (
+                            <div className="mt-3">
+                                <p className="text-[13px] font-semibold text-rz-ink">
+                                    {t('admin.revision.ask_title')}
+                                </p>
+                                <p className="mt-1 text-[12px] text-rz-body">
+                                    {t('admin.revision.ask_body')}
+                                </p>
+                                <RevisionPicker
+                                    revisable={application.revisable}
+                                    value={items}
+                                    onChange={setItems}
+                                    error={
+                                        errors.items ??
+                                        Object.entries(errors).find(([key]) =>
+                                            key.startsWith('items.'),
+                                        )?.[1]
+                                    }
+                                    idPrefix="role-application-revision"
+                                />
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setAsking(false)}
+                                        className="rounded-[10px] border border-rz-hairline bg-rz-surface px-3.5 py-[9px] text-[12.5px] font-semibold text-rz-slate"
+                                    >
+                                        {t('admin.stage.cancel')}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        disabled={
+                                            busy !== null || items.length === 0
+                                        }
+                                        onClick={() => send('more')}
+                                        className="flex-1 rounded-[10px] bg-[#c2661f] px-4 py-[9px] text-[12.5px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        {items.length === 1
+                                            ? t('admin.revision.send_one')
+                                            : t('admin.revision.send_many', {
+                                                  count: items.length,
+                                              })}
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                                <button
+                                    type="button"
+                                    disabled={busy !== null}
+                                    onClick={() => send('reject')}
+                                    className="rounded-[10px] border border-[#fdeaea] bg-rz-surface px-3.5 py-[9px] text-[12.5px] font-bold text-[#b3352a] disabled:opacity-60 dark:border-rz-danger-tint dark:text-[#ff6b6f]"
+                                >
+                                    {t('admin.role_applications.reject')}
+                                </button>
+                                <button
+                                    type="button"
+                                    disabled={busy !== null}
+                                    onClick={() => setAsking(true)}
+                                    className="rounded-[10px] border border-rz-hairline bg-rz-surface px-3.5 py-[9px] text-[12.5px] font-bold text-rz-slate disabled:opacity-60"
+                                >
+                                    {t('admin.role_applications.more')}
+                                </button>
+                                <button
+                                    type="button"
+                                    disabled={busy !== null}
+                                    onClick={() => send('approve')}
+                                    className="flex-1 rounded-[10px] bg-[#17795a] px-4 py-[9px] text-[12.5px] font-bold text-white disabled:opacity-60"
+                                >
+                                    {busy === 'approve'
+                                        ? t('admin.role_applications.approving')
+                                        : t(
+                                              `admin.role_applications.${application.role}.approve`,
+                                          )}
+                                </button>
+                            </div>
+                        )}
                         <p className="mt-2 text-[11.5px] text-rz-muted">
                             {t('admin.role_applications.note_hint')}
                         </p>

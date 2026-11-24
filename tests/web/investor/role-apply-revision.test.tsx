@@ -1,0 +1,121 @@
+import { render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
+import RoleApply from '@/pages/role/apply';
+import type { RoleApplicationProps } from '@/types/role-application';
+import { resetInertia } from '../admin/inertia-mock';
+
+vi.mock('@inertiajs/react', async () => {
+    const mock = await import('../admin/inertia-mock');
+
+    return { ...mock, router: { ...mock.router, post: vi.fn() } };
+});
+
+const props = (
+    overrides: Partial<RoleApplicationProps['application']> = {},
+    step = 'company',
+): RoleApplicationProps => ({
+    role: 'business',
+    application: {
+        status: 'changes_requested',
+        revision: 12,
+        role: 'business',
+        step,
+        answers: {
+            declared: false,
+            company: {
+                legal_name: 'Kivu Harvest Ltd',
+                rdb_code: '108 123 456',
+                tin: '108123456',
+                company_type: 'private_limited',
+                incorporation_date: '2019-04-02',
+                industry: 'Agriculture',
+                district: 'Rubavu',
+                registered_address: 'KN 4 Ave, Gisenyi',
+                phone: '+250 788 000 111',
+            },
+        },
+        note: 'Two small fixes and we can approve.',
+        requested_changes: {
+            note: 'Two small fixes and we can approve.',
+            items: [
+                {
+                    key: 'company.tin',
+                    label: 'TIN',
+                    note: 'Does not match the certificate.',
+                },
+                { key: 'company.district', label: 'District', note: '' },
+                {
+                    key: 'documents.articles',
+                    label: 'Articles of Association',
+                    note: '',
+                },
+            ],
+            requested_at: '2026-11-24T08:31:00+02:00',
+        },
+        uploads: {},
+        ...overrides,
+    },
+    kyc: 'submitted',
+    blockers: [],
+    two_factor: true,
+    identity_context_revision: 3,
+    catalog: { industries: ['Agriculture'], districts: ['Rubavu'] },
+});
+
+beforeEach(() => resetInertia());
+
+describe('An application Compliance sent back', () => {
+    it('lists the items to change and flags each one on the form, which stays editable', () => {
+        render(<RoleApply {...props()} />);
+
+        expect(
+            screen.getByText('Change these, then send it again:'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                (_, element) =>
+                    element?.tagName === 'LI' &&
+                    element.textContent ===
+                        'TIN: Does not match the certificate.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'You can still change any other answer before you send it again.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText('Compliance: Does not match the certificate.'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText('Compliance asked you to change this.'),
+        ).toBeInTheDocument();
+        expect(screen.getByLabelText(/TIN/u)).toHaveClass(
+            'border-rz-warning-text',
+        );
+        expect(screen.getByLabelText(/TIN/u)).toBeEnabled();
+        expect(screen.getByLabelText(/Registered name/iu)).not.toHaveClass(
+            'border-rz-warning-text',
+        );
+    });
+
+    it('lists the items even without a note, and flags a document', () => {
+        render(<RoleApply {...props({ note: null }, 'documents')} />);
+
+        expect(
+            screen.getByText('Change these, then send it again:'),
+        ).toBeInTheDocument();
+        expect(
+            screen.getAllByText('Compliance asked you to change this.').length,
+        ).toBeGreaterThan(0);
+    });
+
+    it('shows no flags once the application is sent again', () => {
+        render(<RoleApply {...props({ status: 'draft', note: null })} />);
+
+        expect(
+            screen.queryByText('Change these, then send it again:'),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByText(/^Compliance/u)).not.toBeInTheDocument();
+    });
+});

@@ -29,7 +29,7 @@ namespace App\Application\Identity\Contracts;
  *     licence: array{number: string, expires_on: string}|null, submitted_at: string|null,
  *     account: array{name: string, email: string}, state: State, documents: list<ReviewDocument>,
  *     history: list<array{revision: int, status: string, command: string, reason: string|null, at: string}>,
- *     allowed_actions: list<'approve'|'reject'>
+ *     revisable: array<string, string>, allowed_actions: list<'approve'|'reject'>
  * }
  */
 interface InvestorVerificationReviewStore
@@ -46,6 +46,12 @@ interface InvestorVerificationReviewStore
     /** @return array<string, mixed> */
     public function approve(int $actorId, string $verificationId, int $expectedRevision, string $reason, string $requestId): array;
 
-    /** @return array<string, mixed> */
-    public function reject(int $actorId, string $verificationId, int $expectedRevision, string $reason, string $requestId): array;
+    /**
+     * Sends the case back with the reason and, when the reviewer ticked them, the answers and documents to
+     * change (`$items`, each `{key, note?}`), which the person sees flagged; they may still change any answer.
+     *
+     * @param  list<mixed>  $items
+     * @return array<string, mixed>
+     */
+    public function reject(int $actorId, string $verificationId, int $expectedRevision, string $reason, string $requestId, array $items = []): array;
 }

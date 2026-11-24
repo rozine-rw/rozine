@@ -1,5 +1,8 @@
 import { useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { RevisionPicker } from '@/components/admin/revision-picker';
+import type { PickedItem } from '@/components/admin/revision-picker';
 import { EXPLAIN } from '@/components/admin/ui';
 import { FieldError } from '@/components/rozine/form';
 import { useTranslation } from '@/hooks/use-translation';
@@ -38,6 +41,11 @@ type ReasonStageProps = {
     onCancel: () => void;
     /** Extra facts the server needs with the reason, e.g. the record revision. */
     payload?: Record<string, string | number>;
+    /**
+     * The answers and documents the person may be asked to change (24 Nov 2026). When given,
+     * Compliance ticks at least one, and they are sent as `items` with the reason.
+     */
+    revisable?: Record<string, string>;
 };
 
 /**
@@ -56,15 +64,21 @@ export function ReasonStage({
     viewer,
     onCancel,
     payload = {},
+    revisable,
 }: ReasonStageProps) {
     const { t } = useTranslation();
     const form = useForm({ reason: '', ...payload });
     const reason = String(form.data.reason);
-    const empty = reason.trim() === '';
+    const [items, setItems] = useState<PickedItem[]>([]);
+    const picking =
+        revisable !== undefined && Object.keys(revisable).length > 0;
+    const empty = reason.trim() === '' || (picking && items.length === 0);
+    const errors = form.errors as Record<string, string | undefined>;
     const fieldId = `reason-${action.url.replace(/[^a-z0-9]+/gi, '-')}`;
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
+        form.transform((data) => (picking ? { ...data, items } : data));
         form.post(action.url, { preserveScroll: true, onSuccess: onCancel });
     };
 
@@ -81,6 +95,20 @@ export function ReasonStage({
             <p className={cn('mt-[5px] text-[12.5px] leading-[1.55]', EXPLAIN)}>
                 {body}
             </p>
+            {picking && (
+                <RevisionPicker
+                    revisable={revisable}
+                    value={items}
+                    onChange={setItems}
+                    error={
+                        errors.items ??
+                        Object.entries(errors).find(([key]) =>
+                            key.startsWith('items.'),
+                        )?.[1]
+                    }
+                    idPrefix={`${fieldId}-items`}
+                />
+            )}
             <label htmlFor={fieldId} className="sr-only">
                 {t('admin.stage.reason_label')}
             </label>

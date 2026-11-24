@@ -21,7 +21,8 @@ use DateTimeZone;
  *     uploads: array{front: string|null, back: string|null, selfie: string|null, certificate?: string|null},
  *     licence_number?: string,
  *     licence_expires_on?: string,
- *     decision: array{outcome: 'approved'|'rejected', reason: string, decided_at: string}|null
+ *     decision: array{outcome: 'approved'|'rejected', reason: string, decided_at: string, items?: list<array{key: string, label: string, note: string}>}|null,
+ *     revision?: array{reason: string, items: list<array{key: string, label: string, note: string}>, requested_at: string}
  * }
  */
 final class InvestorVerificationCase
@@ -150,6 +151,25 @@ final class InvestorVerificationCase
         if (($state['uploads']['certificate'] ?? null) === null) {
             throw new CommandRejection('VERIFICATION_CERTIFICATE_REQUIRED', 422, fieldErrors: ['icpar_certificate' => ['Upload your ICPAR licence certificate.']]);
         }
+    }
+
+    /**
+     * Every answer and document Compliance may ask the person to change when it sends the check back,
+     * keyed as the form names them, with the label the person and the email show (24 Nov 2026).
+     *
+     * @param  State  $state
+     * @return array<string, string>
+     */
+    public function revisable(array $state, string $purpose = 'investor'): array
+    {
+        $passport = $state['id_type'] === 'passport';
+        $items = ['date_of_birth' => 'Date of birth', 'id_type' => 'ID type', 'id_number' => $passport ? 'Passport number' : 'National ID number',
+            'id_front' => $passport ? 'Passport photo page' : 'ID front photo', ...($passport ? [] : ['id_back' => 'ID back photo']), 'selfie' => 'Selfie'];
+        if ($purpose === 'auditor') {
+            $items += ['licence_number' => 'ICPAR licence number', 'licence_expires_on' => 'Licence expiry date', 'icpar_certificate' => 'ICPAR licence certificate'];
+        }
+
+        return $items;
     }
 
     /**

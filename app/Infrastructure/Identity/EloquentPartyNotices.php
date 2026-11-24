@@ -10,6 +10,7 @@ use App\Models\PartyNotice;
 use App\Models\PartyNoticeDelivery;
 use App\Models\User;
 use App\Notifications\Account\NewDeviceSignIn;
+use App\Notifications\Account\OnboardingUpdate;
 use App\Notifications\Auditor\AccreditationDecided;
 use App\Notifications\Auditor\AuditJobType;
 use App\Notifications\Auditor\JobOffered;
@@ -41,10 +42,10 @@ use Throwable;
  */
 final readonly class EloquentPartyNotices implements PartyNotices
 {
-    public function record(string $partyId, PartyNoticeKind $kind, array $facts, string $eventKey, ?array $mailTo = null): void
+    public function record(string $partyId, PartyNoticeKind $kind, array $facts, string $eventKey, ?array $mailTo = null, array $items = []): void
     {
         $notice = new PartyNotice;
-        $notice->forceFill(['party_id' => $partyId, 'kind' => $kind->value, 'event_key' => $eventKey, 'facts' => $facts,
+        $notice->forceFill(['party_id' => $partyId, 'kind' => $kind->value, 'event_key' => $eventKey, 'facts' => $items === [] ? $facts : [...$facts, 'items' => $items],
             'created_at' => now('UTC')]);
         $inserted = PartyNotice::query()->insertOrIgnore([...$notice->getAttributes(), 'id' => $notice->newUniqueId()]);
         if ($inserted === 0) {
@@ -53,7 +54,7 @@ final readonly class EloquentPartyNotices implements PartyNotices
         $id = (string) PartyNotice::query()->where('event_key', $eventKey)->value('id');
         $this->receipt($id, 'in_app', null, 'delivered', null);
         if ($kind->mailed()) {
-            DB::afterCommit(fn () => $this->mail($id, $mailTo ?? $this->accounts($partyId), $this->message($kind, $facts)));
+            DB::afterCommit(fn () => $this->mail($id, $mailTo ?? $this->accounts($partyId), $this->message($kind, $facts, $items)));
         }
     }
 
@@ -175,8 +176,11 @@ final readonly class EloquentPartyNotices implements PartyNotices
         return array_values(array_map(intval(...), User::query()->where('party_id', $partyId)->orderBy('id')->pluck('id')->all()));
     }
 
-    /** @param  array<string, string>  $facts */
-    private function message(PartyNoticeKind $kind, array $facts): RozineMail
+    /**
+     * @param  array<string, string>  $facts
+     * @param  list<array{label: string, note: string}>  $items
+     */
+    private function message(PartyNoticeKind $kind, array $facts, array $items): RozineMail
     {
         return match ($kind) {
             PartyNoticeKind::NewDevice => new NewDeviceSignIn($facts['device'], CarbonImmutable::parse($facts['signed_in_at']), route('security.edit')),
@@ -203,8 +207,25 @@ final readonly class EloquentPartyNotices implements PartyNotices
             PartyNoticeKind::VerificationApproved => isset($facts['purpose'])
                 ? VerificationDecided::approvedFor($facts['purpose'], route('dashboard'))
                 : VerificationDecided::approved(route('investor.deals')),
-            default => VerificationDecided::rejected($facts['reason'], route('investor.verification')),
+            PartyNoticeKind::VerificationSubmitted => OnboardingUpdate::kycReceived(route('dashboard')),
+            PartyNoticeKind::RoleApplicationSubmitted => OnboardingUpdate::roleReceived(self::role($facts), $facts['company'] ?? null, route('dashboard')),
+            PartyNoticeKind::RoleApplicationReturned => OnboardingUpdate::roleReturned(self::role($facts), $facts['company'] ?? null, $facts['note'] ?? '',
+                $items, route('role-application.show')),
+            PartyNoticeKind::RoleApplicationApproved => OnboardingUpdate::roleApproved(self::role($facts), $facts['company'] ?? null, route('dashboard')),
+            PartyNoticeKind::RoleApplicationRejected => OnboardingUpdate::roleRejected(self::role($facts), $facts['company'] ?? null, $facts['note'] ?? '', route('dashboard')),
+            default => VerificationDecided::rejected($facts['reason'], route('investor.verification'), $items),
         };
+    }
+
+    /**
+     * The role an application notice is about.
+     *
+     * @param  array<string, string>  $facts
+     * @return 'business'|'auditor'
+     */
+    private static function role(array $facts): string
+    {
+        return ($facts['role'] ?? '') === 'auditor' ? 'auditor' : 'business';
     }
 
     /**

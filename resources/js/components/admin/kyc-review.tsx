@@ -177,6 +177,9 @@ export function KycReview({
                     action={stage.action}
                     viewer={viewer}
                     onCancel={() => setStage(null)}
+                    revisable={
+                        stage.kind === 'reject' ? review.revisable : undefined
+                    }
                     payload={{
                         request_id: requestId,
                         expected_revision: review.revision,
