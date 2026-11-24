@@ -11,6 +11,7 @@ use App\Application\Business\Contracts\BusinessDirectoryStore;
 use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Environment\UatMoneySimulation;
 use App\Domain\Auditor\AuditEngagementState;
+use App\Domain\Auditor\VerifiedAuditLocation;
 use App\Domain\Auditor\Wgs84Distance;
 use App\Domain\Operations\CommandRejection;
 use App\Infrastructure\Auditor\EloquentAuditSourceFactsStore;
@@ -53,18 +54,18 @@ beforeEach(function (): void {
     $this->freezeSecond();
 });
 
-it('records a check-in at the premises and both required photos for a simulated Business\'s accepted audit, once', function (): void {
+it('records a check-in and both required photos for a simulated Business\'s accepted audit, once', function (): void {
     $fixture = Fixture::accepted();
     asStagingAuditDemo(strtoupper($fixture['audit']['business']));
-    $premises = AuditLocation::query()->where('business_id', $fixture['audit']['business'])->sole()->state['point'];
-    expect($premises)->not->toBeNull();
+    // Premises are no longer verified, so the synthetic check-in uses central Kigali.
+    $premises = EloquentAuditSourceFactsStore::KIGALI;
 
     [$code, $output] = recordDemoAuditSources();
     expect($code)->toBe(0)->and($output)->toContain($fixture['assignment']->id.': check-in and photos recorded');
 
     $at = now('UTC')->subMinutes(5)->format('Y-m-d\TH:i:s\Z');
     $facts = app(GetAuditSourceFacts::class)->handle($fixture['partner']['user']->id, 1, $fixture['assignment']->id);
-    $position = [...app(Wgs84Distance::class)->point($premises['latitude'] ?? '', $premises['longitude'] ?? ''), 'accuracy_m' => 12];
+    $position = [...app(Wgs84Distance::class)->point($premises['latitude'], $premises['longitude']), 'accuracy_m' => 12];
     expect($facts['check_in'] ?? null)->toEqual(['at' => $at, 'position' => $position, 'review_required' => false])
         ->and(array_column($facts['photos']['required'] ?? [], 'id'))->toBe(['storefront', 'inventory'])
         ->and(array_column($facts['photos']['required'] ?? [], 'captured_at'))->toBe([$at, $at])
@@ -191,8 +192,9 @@ it('reports an assignment that cannot take the capture and carries on with the o
     $broken = Fixture::accepted();
     $fixture = Fixture::accepted();
     asStagingAuditDemo($broken['audit']['business'], $fixture['audit']['business']);
-    $premises = AuditLocation::query()->where('business_id', $broken['audit']['business'])->sole();
-    $premises->forceFill(['state' => [...$premises->state, 'point' => ['latitude' => 'not-a-latitude', 'longitude' => '30.0619']]])->saveQuietly();
+    // A legacy premises point retained from before premises verification was removed, now unreadable.
+    AuditLocation::factory()->create(['office_party_id' => null, 'business_id' => $broken['audit']['business'],
+        'state' => [...app(VerifiedAuditLocation::class)->empty(), 'point' => ['latitude' => 'not-a-latitude', 'longitude' => '30.0619']]]);
     Exceptions::fake();
 
     [$code, $output] = recordDemoAuditSources();
