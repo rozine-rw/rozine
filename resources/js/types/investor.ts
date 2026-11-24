@@ -1,4 +1,5 @@
 import type { ProspectusInputs, ReadinessRequirementCode } from './business';
+import type { LegalDocumentText } from './legal';
 import type { Money } from './money';
 import type { RouteAction, RouteLink } from './routing';
 import type {
@@ -682,8 +683,9 @@ export type InvestorType = 'individual' | 'institution';
 export type KycState = 'verified' | 'pending' | 'unverified' | 'expired';
 
 /**
- * The design's profile sub-pages (Investor.dc.html L9933–9941). `plan`, `help`, `terms` and
- * `privacy` have no approved content yet and show an empty state. `automation`
+ * The design's profile sub-pages (Investor.dc.html L9933–9941), plus the Disclaimers. `plan` has
+ * no approved content yet and shows an empty state; `terms`, `privacy` and `disclaimers` show the
+ * current document in place. `automation`
  * (MVP-INVESTOR-SCR-09) is a gated explainer only: Auto-Deploy cannot run in the MVP (D-61, C-29),
  * so it carries no mandate, tier or outcome data.
  */
@@ -697,6 +699,7 @@ export type ProfileSection =
     | 'help'
     | 'terms'
     | 'privacy'
+    | 'disclaimers'
     | 'automation';
 
 export type LinkedAccount = FundingMethod & {
@@ -716,6 +719,8 @@ export type StatementFile = {
 
 export type InvestorProfileProps = {
     section: ProfileSection;
+    /** On the Terms, Privacy Notice or Disclaimers section, that document read in place; otherwise null. */
+    legal_document: LegalDocumentText | null;
     identity: {
         name: string;
         email: string;
@@ -766,6 +771,7 @@ export type InvestorProfileProps = {
         help: RouteLink;
         terms: RouteLink;
         privacy: RouteLink;
+        disclaimers: RouteLink;
         /** Present only when the server offers the gated Auto-Deploy explainer. */
         automation?: RouteLink;
         verification: RouteLink | null;
@@ -904,10 +910,16 @@ export type InvestorVerificationProps =
           date_of_birth: string;
           id_type: IdDocument;
           id_number: string;
+          /** An Auditor check also carries the ICPAR licence, verified with the identity in one review. */
+          licence_number?: string;
+          /** YYYY-MM-DD. */
+          licence_expires_on?: string;
           uploads: {
               front: UploadState;
               back: UploadState;
               selfie: UploadState;
+              /** The ICPAR licence certificate, for an Auditor check only. */
+              certificate?: UploadState;
           };
           links: { back: RouteLink };
           actions: {

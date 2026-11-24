@@ -57,7 +57,10 @@ describe('Access requests', () => {
                         outcome: null,
                         handled_at: null,
                         identity_verified: true,
-                        grant: { url: '/admin/auditors', method: 'get' },
+                        grant: {
+                            url: '/admin/access-requests/01JAUDITOR/grant',
+                            method: 'post',
+                        },
                     },
                     {
                         id: '01JBUSINESS',
@@ -99,9 +102,14 @@ describe('Access requests', () => {
         expect(
             within(auditor).getByRole('link', { name: 'grace@example.test' }),
         ).toHaveAttribute('href', 'mailto:grace@example.test');
-        expect(
-            within(auditor).getByRole('link', { name: 'Auditor Network →' }),
-        ).toHaveAttribute('href', '/admin/auditors');
+        const grant = within(auditor).getByRole('button', {
+            name: 'Grant Auditor access',
+        });
+        expect(grant).toHaveAttribute(
+            'data-href',
+            '/admin/access-requests/01JAUDITOR/grant',
+        );
+        expect(grant).toHaveAttribute('data-method', 'post');
 
         const business = rowOf('Jean Mugisha');
 

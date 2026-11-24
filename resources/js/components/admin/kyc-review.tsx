@@ -44,10 +44,12 @@ export function KycReview({
     review,
     viewer,
     returnTo,
+    returnUser,
 }: {
     review: InvestorVerificationReview;
     viewer: StaffViewer;
-    returnTo?: 'directory';
+    returnTo?: 'directory' | 'users';
+    returnUser?: string;
 }) {
     const { t } = useTranslation();
     const { errors } = usePage<{ errors: Record<string, string> }>().props;
@@ -74,6 +76,12 @@ export function KycReview({
                         label={t('admin.kyc.fact.id_number')}
                         value={review.id_number}
                     />
+                    {review.licence && (
+                        <Fact
+                            label={t('admin.kyc.licence.title')}
+                            value={`${t('admin.kyc.licence.number', { number: review.licence.number })} · ${t('admin.kyc.licence.expires', { date: review.licence.expires_on })}`}
+                        />
+                    )}
                     {review.submitted_at && (
                         <Fact
                             label={t('admin.kyc.fact.submitted_at')}
@@ -173,6 +181,9 @@ export function KycReview({
                         request_id: requestId,
                         expected_revision: review.revision,
                         ...(returnTo && { return_to: returnTo }),
+                        ...(returnUser !== undefined && {
+                            return_user: returnUser,
+                        }),
                     }}
                 />
             ) : (

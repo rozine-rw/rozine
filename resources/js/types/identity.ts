@@ -146,3 +146,19 @@ export type SaveRoleBookmarkInput = {
 export type RoleApp = MarketplaceRole;
 export type IdentityCode = IdentityContext['code'];
 export type IdentityParty = NonNullable<IdentityContext['party']>;
+
+/**
+ * Where a person's own KYC and their application to switch from Investor to Business or Auditor
+ * stand (role switch, 23 Nov 2026). `status` is `none` before anything is saved.
+ */
+export type RoleApplicationOffer = {
+    kyc: 'none' | 'draft' | 'submitted' | 'approved' | 'rejected';
+    status:
+        | 'none'
+        | 'draft'
+        | 'submitted'
+        | 'changes_requested'
+        | 'approved'
+        | 'rejected';
+    role: 'business' | 'auditor' | null;
+};

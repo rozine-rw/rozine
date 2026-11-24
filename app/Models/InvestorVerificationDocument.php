@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * @property string $id
  * @property string $investor_verification_id
- * @property 'front'|'back'|'selfie' $slot
+ * @property 'front'|'back'|'selfie'|'certificate' $slot
  * @property string $filename
  * @property string $media_type
  * @property int $size_bytes

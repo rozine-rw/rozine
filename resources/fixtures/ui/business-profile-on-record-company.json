@@ -143,6 +143,10 @@
                 "privacy": {
                     "url": "/preview/business-profile-privacy",
                     "method": "get"
+                },
+                "disclaimers": {
+                    "url": "/preview/business-profile-disclaimers",
+                    "method": "get"
                 }
             },
             "security_settings": {

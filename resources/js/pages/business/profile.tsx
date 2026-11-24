@@ -15,10 +15,10 @@ import {
     HELP_GROUPS,
     HELP_UPDATED,
 } from '@/components/business/profile/help-answers';
-import { LegalDocument } from '@/components/business/profile/legal-document';
 import { LinkedAccounts } from '@/components/business/profile/linked-accounts';
 import { ProfileMenu } from '@/components/business/profile/profile-menu';
 import { DeleteAccountRow } from '@/components/delete-user';
+import { LegalDocumentBody } from '@/components/legal/legal-document-body';
 import { HelpCenter } from '@/components/rozine/help-center';
 import { SupportChat } from '@/components/rozine/support-chat';
 import { useTranslation } from '@/hooks/use-translation';
@@ -159,12 +159,17 @@ export default function BusinessProfile({
                             />
                         </>
                     )}
-                    {(section === 'terms' || section === 'privacy') &&
-                        (legal === null ? (
-                            <PendingSection kind={section} />
-                        ) : (
-                            <LegalDocument kind={section} document={legal} />
-                        ))}
+                    {legal !== null && (
+                        <LegalDocumentBody
+                            document={legal}
+                            className="mt-4 rounded-2xl border border-rz-border bg-rz-surface p-5 [&_h1]:sr-only"
+                            targets={{
+                                terms: links.sections.terms?.url,
+                                privacy: links.sections.privacy?.url,
+                                disclaimers: links.sections.disclaimers?.url,
+                            }}
+                        />
+                    )}
                 </section>
             </div>
         </BusinessShell>

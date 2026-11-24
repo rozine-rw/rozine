@@ -54,6 +54,7 @@ use App\Http\Controllers\InvestorWalletController;
 use App\Http\Controllers\LegalDocumentController;
 use App\Http\Controllers\PulseController;
 use App\Http\Controllers\RoleAccessRequestController;
+use App\Http\Controllers\RoleApplicationController;
 use App\Http\Controllers\RoleBookmarkController;
 use App\Http\Controllers\RoleHomeController;
 use App\Http\Controllers\SiteController;
@@ -78,6 +79,7 @@ use App\Http\Controllers\StaffNotesController;
 use App\Http\Controllers\StaffPaymentsController;
 use App\Http\Controllers\StaffPrimaryMarketController;
 use App\Http\Controllers\StaffReconciliationController;
+use App\Http\Controllers\StaffRoleApplicationController;
 use App\Http\Controllers\StaffSectionController;
 use App\Http\Controllers\StaffStagingMailTesterController;
 use App\Http\Controllers\StaffSystemHealthController;
@@ -142,12 +144,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('auditor/profile', [AuditorProfileController::class, 'show'])->name('auditor.profile');
 });
 
+// Switching from Investor to Business representative or Auditor, once the person's own KYC is sent.
+Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('role')->name('role-application.')->group(function (): void {
+    Route::get('/', [RoleApplicationController::class, 'show'])->name('show');
+    Route::post('steps', [RoleApplicationController::class, 'save'])->name('save');
+    Route::post('documents', [RoleApplicationController::class, 'upload'])->name('upload');
+    Route::get('documents/{slot}', [RoleApplicationController::class, 'document'])->where('slot', '[a-z_]+|id:[A-Z0-9]{6,16}')->name('document');
+    Route::post('submit', [RoleApplicationController::class, 'submit'])->name('submit');
+});
+
 Route::middleware(['auth', 'verified', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('investor')->name('investor.')->group(function (): void {
     Route::get('deals', [InvestorDealsController::class, 'index'])->name('deals');
     Route::get('verification', [InvestorVerificationController::class, 'show'])->name('verification');
     Route::post('verification/steps', [InvestorVerificationController::class, 'save'])->name('verification.save');
     Route::post('verification/documents', [InvestorVerificationController::class, 'upload'])->name('verification.upload');
-    Route::get('verification/documents/{side}', [InvestorVerificationController::class, 'document'])->whereIn('side', ['front', 'back', 'selfie'])
+    Route::get('verification/documents/{side}', [InvestorVerificationController::class, 'document'])->whereIn('side', ['front', 'back', 'selfie', 'certificate'])
         ->name('verification.document');
     Route::post('verification/submit', [InvestorVerificationController::class, 'submit'])->name('verification.submit');
     Route::get('verified', [InvestorProfileController::class, 'verified'])->name('verified');
@@ -426,9 +437,16 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::get('admin/payments', StaffPaymentsController::class)->name('staff.payments.index');
     Route::get('admin/coverage', StaffCoverageController::class)->name('staff.coverage.index');
     Route::get('admin/access-requests', [RoleAccessRequestController::class, 'index'])->name('staff.access-requests.index');
+    Route::post('admin/access-requests/{accessRequest}/grant', [RoleAccessRequestController::class, 'grant'])->whereUlid('accessRequest')->name('staff.access-requests.grant');
     Route::get('admin/complaints', [StaffComplaintController::class, 'index'])->name('staff.complaints.index');
     Route::get('admin/system-health', StaffSystemHealthController::class)->name('staff.system-health.index');
     Route::post('admin/complaints/{complaint}/answers', [StaffComplaintController::class, 'answer'])->whereUlid('complaint')->name('staff.complaints.answer');
+});
+
+Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/role-applications')->name('staff.role-applications.')->group(function (): void {
+    Route::get('{application}/documents/{document}', [StaffRoleApplicationController::class, 'document'])
+        ->whereUlid(['application', 'document'])->name('document');
+    Route::post('{application}/decide', [StaffRoleApplicationController::class, 'decide'])->whereUlid('application')->name('decide');
 });
 
 Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/investor-verifications')->name('staff.investor-verifications.')->group(function (): void {

@@ -1,5 +1,11 @@
-// eslint-disable-next-line testing-library/no-manual-cleanup
-import { cleanup, render, screen, within } from '@testing-library/react';
+import {
+    // eslint-disable-next-line testing-library/no-manual-cleanup
+    cleanup,
+    fireEvent,
+    render,
+    screen,
+    within,
+} from '@testing-library/react';
 import type { ComponentProps, ReactNode } from 'react';
 import {
     afterEach,
@@ -10,6 +16,7 @@ import {
     vi,
 } from 'vite-plus/test';
 import { RiskWarning } from '@/components/investor/deals/risk-warning';
+import { LegalDocumentBody } from '@/components/legal/legal-document-body';
 import LegalDocumentPage from '@/pages/legal/document';
 import LegalReview from '@/pages/legal/review';
 import type { LegalDocumentLink } from '@/types/legal';
@@ -229,5 +236,46 @@ describe('The public legal documents and the review page', () => {
         expect(
             screen.getByRole('link', { name: 'Read the disclaimers' }),
         ).toHaveAttribute('href', '/disclaimers');
+    });
+});
+
+describe('A legal document read inside the app', () => {
+    const body = {
+        key: 'terms' as const,
+        title: 'Terms and Conditions',
+        version: 'terms-test',
+        sha256: 'a'.repeat(64),
+        html: '<h1>Terms</h1><p>Read the <a href="/privacy">Privacy Notice</a>, the <a href="/disclaimers">Disclaimers</a> and <a href="#plain">this note</a>.</p><p id="plain">Plain text.</p>',
+    };
+
+    it('points only the documents it has a target for, and opens only a closed section', () => {
+        render(
+            <>
+                <LegalDocumentBody
+                    document={body}
+                    targets={{ privacy: '#privacy-section' }}
+                />
+                <details id="privacy-section">
+                    <summary>Privacy</summary>
+                    <p>Inside</p>
+                </details>
+            </>,
+        );
+        const article = screen.getByRole('article', {
+            name: 'Terms and Conditions',
+        });
+
+        expect(
+            within(article).getByRole('link', { name: 'Disclaimers' }),
+        ).toHaveAttribute('href', '/disclaimers');
+        fireEvent.click(within(article).getByText('Plain text.'));
+        fireEvent.click(
+            within(article).getByRole('link', { name: 'this note' }),
+        );
+        expect(screen.getByText('Inside')).not.toBeVisible();
+        fireEvent.click(
+            within(article).getByRole('link', { name: 'Privacy Notice' }),
+        );
+        expect(screen.getByText('Inside')).toBeVisible();
     });
 });

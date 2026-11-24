@@ -53,6 +53,7 @@ import RoleHomeController from './RoleHomeController'
 import AuditorHomeController from './AuditorHomeController'
 import StaffHomeController from './StaffHomeController'
 import AuditorProfileController from './AuditorProfileController'
+import RoleApplicationController from './RoleApplicationController'
 import InvestorProfileController from './InvestorProfileController'
 import InvestorPortfolioController from './InvestorPortfolioController'
 import InvestorLotController from './InvestorLotController'
@@ -80,6 +81,7 @@ import StaffAuditReportController from './StaffAuditReportController'
 import StaffSectionController from './StaffSectionController'
 import StaffUserDirectoryController from './StaffUserDirectoryController'
 import StaffCartReleaseController from './StaffCartReleaseController'
+import StaffRoleApplicationController from './StaffRoleApplicationController'
 import StaffStagingMailTesterController from './StaffStagingMailTesterController'
 
 const Controllers = {
@@ -138,6 +140,7 @@ const Controllers = {
     AuditorHomeController: Object.assign(AuditorHomeController, AuditorHomeController),
     StaffHomeController: Object.assign(StaffHomeController, StaffHomeController),
     AuditorProfileController: Object.assign(AuditorProfileController, AuditorProfileController),
+    RoleApplicationController: Object.assign(RoleApplicationController, RoleApplicationController),
     InvestorProfileController: Object.assign(InvestorProfileController, InvestorProfileController),
     InvestorPortfolioController: Object.assign(InvestorPortfolioController, InvestorPortfolioController),
     InvestorLotController: Object.assign(InvestorLotController, InvestorLotController),
@@ -165,6 +168,7 @@ const Controllers = {
     StaffSectionController: Object.assign(StaffSectionController, StaffSectionController),
     StaffUserDirectoryController: Object.assign(StaffUserDirectoryController, StaffUserDirectoryController),
     StaffCartReleaseController: Object.assign(StaffCartReleaseController, StaffCartReleaseController),
+    StaffRoleApplicationController: Object.assign(StaffRoleApplicationController, StaffRoleApplicationController),
     StaffStagingMailTesterController: Object.assign(StaffStagingMailTesterController, StaffStagingMailTesterController),
 }
 

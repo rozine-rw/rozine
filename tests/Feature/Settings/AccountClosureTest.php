@@ -148,7 +148,7 @@ test('a closed account releases the verified ID, so the same person can be verif
     $officer = User::factory()->withTwoFactor()->create();
     StaffFixture::provision($officer, ['compliance'], 'Compliance review assignment.');
     $verify = fn (User $person): array => app(IdentityAccessStore::class)->verifyInvestor($officer->id, $person->id, 'rw-nid:1199080012345678',
-        'investor-verification:case@1', 'Matches.', (string) Str::uuid(), fn (): array => [], grantsInvestorAccess: false);
+        'investor-verification:case@1', 'Matches.', (string) Str::uuid(), fn (): array => [], grantedRole: null);
 
     $first = User::factory()->create(['party_id' => Party::factory()]);
     $verify($first);

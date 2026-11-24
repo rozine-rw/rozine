@@ -206,7 +206,7 @@ describe('Applications queue', () => {
         expect(screen.getByText('Auto-approve')).toBeInTheDocument();
         expect(screen.getByText('Route to audit')).toBeInTheDocument();
         expect(screen.getByText('Needs review')).toBeInTheDocument();
-        expect(screen.getByText('Pending audit')).toBeInTheDocument();
+        expect(screen.getByText('Not rated yet')).toBeInTheDocument();
         expect(screen.getByText('Weak')).toBeInTheDocument();
         expect(screen.getAllByText('Approved').length).toBeGreaterThan(0);
         expect(screen.getAllByText('Rejected').length).toBeGreaterThan(1);

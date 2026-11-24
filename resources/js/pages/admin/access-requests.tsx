@@ -99,6 +99,8 @@ function Row({ row }: { row: AccessRequestRow }) {
                 {row.outcome === null ? (
                     <Link
                         href={row.grant}
+                        as={row.grant.method === 'get' ? 'a' : 'button'}
+                        preserveScroll
                         className="shrink-0 rounded-lg border border-rz-hairline bg-rz-surface px-3 py-1.5 text-[11.5px] font-semibold text-rz-slate"
                     >
                         {t(`admin.access_requests.grant.${row.role}`)}

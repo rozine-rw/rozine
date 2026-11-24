@@ -40,7 +40,7 @@ interface InvestorVerificationStore
     /**
      * What the person's current uploads are, by side, for them to look at again: never the bytes.
      *
-     * @return array<'front'|'back'|'selfie', array{filename: string, media_type: string}>
+     * @return array<'front'|'back'|'selfie'|'certificate', array{filename: string, media_type: string}>
      */
     public function uploads(int $userId): array;
 

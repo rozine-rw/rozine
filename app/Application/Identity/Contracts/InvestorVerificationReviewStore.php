@@ -21,11 +21,12 @@ namespace App\Application\Identity\Contracts;
  *     stats: array{completion_pct: string|null, verified: int, total: int, turnaround_hours: string|null, approved_30d: int, rejected_30d: int}
  * }
  * @phpstan-type ReviewDocument array{
- *     id: string, slot: 'front'|'back'|'selfie', filename: string, media_type: string, size_bytes: int,
+ *     id: string, slot: 'front'|'back'|'selfie'|'certificate', filename: string, media_type: string, size_bytes: int,
  *     sha256: string, uploaded_at: string, current: bool
  * }
  * @phpstan-type Review array{
- *     id: string, revision: int, status: 'draft'|'submitted'|'approved'|'rejected', purpose: 'investor'|'business'|'auditor', submitted_at: string|null,
+ *     id: string, revision: int, status: 'draft'|'submitted'|'approved'|'rejected', purpose: 'investor'|'business'|'auditor',
+ *     licence: array{number: string, expires_on: string}|null, submitted_at: string|null,
  *     account: array{name: string, email: string}, state: State, documents: list<ReviewDocument>,
  *     history: list<array{revision: int, status: string, command: string, reason: string|null, at: string}>,
  *     allowed_actions: list<'approve'|'reject'>

@@ -39,6 +39,13 @@ final class EloquentAccountClosures implements AccountClosures
         return ['roles' => $this->roles($user), 'blockers' => $this->blockers($user)];
     }
 
+    public function investorBlockers(int $userId): array
+    {
+        $party = User::query()->whereKey($userId)->value('party_id');
+
+        return is_string($party) ? $this->investor($party) : [];
+    }
+
     public function close(int $userId, ?string $reason): array
     {
         return DB::transaction(function () use ($userId, $reason): array {

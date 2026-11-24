@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import type { BusinessProfileProps, ProfileSection } from '@/types/business';
 
 /**
- * The design's seven menu rows (Business.dc.html L5022–5028), in its order. A section the server
+ * The design's seven menu rows (Business.dc.html L5022–5028), in its order, then the Disclaimers. A section the server
  * sends no link for is left out.
  */
 const ITEMS: { key: ProfileSection; icon: IconName }[] = [
@@ -17,6 +17,7 @@ const ITEMS: { key: ProfileSection; icon: IconName }[] = [
     { key: 'support', icon: 'question' },
     { key: 'terms', icon: 'document' },
     { key: 'privacy', icon: 'lock-key' },
+    { key: 'disclaimers', icon: 'shield' },
 ];
 
 type ProfileMenuProps = Pick<
