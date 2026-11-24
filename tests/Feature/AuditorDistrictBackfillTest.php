@@ -60,3 +60,33 @@ it('gives partners already on file districts, a weekly limit and an address, and
         ->and($decided->refresh()->state['answers'])->toBe(['company' => ['district' => 'Rubavu', 'registered_address' => 'Old']]);
     expect(count($all))->toBe(30);
 });
+
+it('reshapes the address kept when an open Business application was sent back, so only a real street edit reads changed (QA #771)', function (): void {
+    $old = ['legal_name' => 'QA Walk Five Foods Ltd', 'district' => 'Kicukiro', 'registered_address' => 'KK 15 Rd, Kicukiro'];
+    $items = [['key' => 'company.district', 'label' => 'District', 'note' => 'Check the district.'],
+        ['key' => 'company.registered_address', 'label' => 'Registered address', 'note' => 'Add the street number.']];
+    $sendBack = function (string $status, array $answers) use ($old, $items): RoleApplication {
+        $application = backfillApplication(Party::factory()->verified()->create()->id, 'business', $status, ['company' => $answers]);
+        $application->forceFill(['state' => [...$application->state, 'revision' => ['note' => 'Fix the address.', 'items' => $items,
+            'requested_at' => '2026-11-24T09:00:00Z', 'before' => ['answers' => ['company' => $old], 'documents' => []]]]])->save();
+
+        return $application;
+    };
+    $untouched = $sendBack('submitted', $old);
+    $edited = $sendBack('submitted', [...$old, 'registered_address' => 'KK 15 Rd 42, Kicukiro']);
+    $approved = $sendBack('approved', $old);
+    $approvedBefore = $approved->refresh()->state;
+    $plain = backfillApplication(Party::factory()->verified()->create()->id, 'business', 'submitted', ['company' => $old]);
+
+    (require database_path('migrations/2026_11_24_120352_backfill_auditor_districts_and_registered_addresses.php'))->up();
+    (require database_path('migrations/2026_11_24_214317_reshape_sent_back_business_address_snapshots.php'))->up();
+
+    $reshaped = ['legal_name' => 'QA Walk Five Foods Ltd', 'district' => 'Kicukiro', 'province' => 'Kigali City', 'sector' => '', 'cell' => '',
+        'street' => 'KK 15 Rd, Kicukiro'];
+    $revision = ['note' => 'Fix the address.', 'items' => $items, 'requested_at' => '2026-11-24T09:00:00Z',
+        'before' => ['answers' => ['company' => $reshaped], 'documents' => []]];
+    expect($untouched->refresh()->state)->toMatchArray(['answers' => ['company' => $reshaped], 'revision' => $revision])
+        ->and($edited->refresh()->state)->toMatchArray(['answers' => ['company' => [...$reshaped, 'street' => 'KK 15 Rd 42, Kicukiro']], 'revision' => $revision])
+        ->and($approved->refresh()->state)->toBe($approvedBefore)
+        ->and($plain->refresh()->state)->not->toHaveKey('revision');
+});

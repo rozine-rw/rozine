@@ -437,6 +437,7 @@ const fr: Catalog = {
         "Faites une vigilance renforcée avant d'approuver : vérifiez l'origine des fonds et du patrimoine, et notez ce que vous avez vérifié.",
     'admin.role_applications.pep_confirm':
         "J'ai effectué une vigilance renforcée sur cette personne.",
+    'admin.role_applications.saves_one': ', puis 1 enregistrement du demandeur',
     'admin.role_applications.saves':
         ', puis {count} enregistrements du demandeur',
     'role.apply.review.unchanged_title':
