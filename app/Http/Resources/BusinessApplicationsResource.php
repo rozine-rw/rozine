@@ -22,7 +22,8 @@ class BusinessApplicationsResource extends JsonResource
                 $application['link'] = ['url' => route($prefix.'show', ['business' => $entry['business_id'], 'application' => $application['id']], false), 'method' => 'get'];
             }
 
-            $report = $entry['audit_report'] ?? null;
+            // The co-sign policy flag drives only the Business Home card; this list keeps its published shape.
+            $report = is_array($entry['audit_report'] ?? null) ? array_diff_key($entry['audit_report'], ['cosign' => true]) : null;
             if ($report !== null) {
                 $report['link'] = ['url' => route($request->routeIs('api.*') ? 'api.v1.business.audit-reports.show' : 'business.audit-reports.show',
                     ['business' => $entry['business_id'], 'report' => $report['id']], false), 'method' => 'get'];

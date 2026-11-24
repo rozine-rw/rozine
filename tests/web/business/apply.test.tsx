@@ -80,6 +80,7 @@ vi.mock('@inertiajs/core', async (importOriginal) => ({
                 inertia.onResponse = null;
             };
         },
+        onError: () => () => undefined,
     },
 }));
 
@@ -2682,6 +2683,16 @@ describe('Apply — submitted', () => {
         ).toBeInTheDocument();
         expect(screen.queryByText(/^Note ID/u)).not.toBeInTheDocument();
 
+        // What was signed, in francs, and the limit that sized it (QA #673).
+        const offer = screen.getByRole('region', { name: 'Your offer' });
+        expect(offer).toHaveTextContent('RWF 33,915,000');
+        expect(offer).toHaveTextContent('RWF 6,268,622 × 6 months');
+        expect(offer).toHaveTextContent('RWF 3,696,735 (10.9% flat)');
+        expect(offer).toHaveTextContent('RWF 37,611,735');
+        expect(offer).toHaveTextContent(
+            'Sized to what your business can carry (you asked for RWF 35,000,000).',
+        );
+
         const stages = within(
             screen.getByRole('list', { name: 'Application progress' }),
         ).getAllByRole('listitem');
@@ -2696,6 +2707,49 @@ describe('Apply — submitted', () => {
         expect(
             screen.queryByRole('button', { name: 'Continue' }),
         ).not.toBeInTheDocument();
+    });
+
+    it('names the 1.5× last-repaid-note limit when it sized a repeat raise', () => {
+        const page = props(submittedStep);
+        const quote = page.quote as Extract<
+            NonNullable<typeof page.quote>,
+            { status: 'ready' }
+        >;
+
+        page.quote = {
+            ...quote,
+            reason_codes: ['REPEAT_GROWTH_CAPPED', 'DSCR_SCALED'],
+        };
+        render(<BusinessApply {...page} />);
+
+        expect(
+            screen.getByRole('region', { name: 'Your offer' }),
+        ).toHaveTextContent(
+            'Capped at 1.5 times the last note you repaid in full (you asked for RWF 35,000,000).',
+        );
+    });
+
+    it('names the 1.5× limit beside the others when a repeat raise gets the full amount (QA #673)', () => {
+        const page = props(submittedStep);
+        const quote = page.quote as Extract<
+            NonNullable<typeof page.quote>,
+            { status: 'ready' }
+        >;
+
+        page.quote = {
+            ...quote,
+            principal: quote.requested_principal,
+            offered_principal: quote.requested_principal,
+            reason_codes: [],
+            repeat_growth_limit: { currency: 'RWF', amount: '52500000' },
+        };
+        render(<BusinessApply {...page} />);
+
+        expect(
+            screen.getByRole('region', { name: 'Your offer' }),
+        ).toHaveTextContent(
+            'You are raising the full RWF 35,000,000 you asked for: it fits your cash flow, 35% of your yearly revenue less what you already owe, RWF 52,500,000 (1.5 times the last note you repaid in full), and the RWF 100M maximum.',
+        );
     });
 
     it('shows the note ID once the server has issued one', () => {

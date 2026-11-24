@@ -102,6 +102,11 @@ it('refuses a commitment whose campaign closure bound no cash return to it', fun
         {
             return [...$this->real->presentation($campaignId), 'closed' => true, 'closure' => 'expired'];
         }
+
+        public function raise(string $campaignId): array
+        {
+            return $this->real->raise($campaignId);
+        }
     });
 
     $this->actingAs($investor['user'])->get(route('investor.commitments.show', $commitment))->assertStatus(409)

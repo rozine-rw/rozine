@@ -23,6 +23,7 @@ use App\Models\BusinessFundingMethod;
 use App\Models\BusinessProfile;
 use App\Models\BusinessProviderEvent;
 use App\Models\DepositPolicy;
+use App\Models\IdentityOperator;
 use App\Models\InvestorFundingMethod;
 use App\Models\Party;
 use App\Models\RoleMembership;
@@ -139,13 +140,16 @@ it('declines a staging deposit paid from the declining test number and credits n
         ->and(app(GetInvestorWallet::class)->handle($tester['user']->id, 1)['wallet']['total']['amount'])->toBe('0');
 });
 
-it('refuses a new Business deposit on UAT and still settles one accepted before, through the Business provider path', function (): void {
+it('refuses a new Business deposit on UAT while its money simulation is off and still settles one accepted before, through the Business provider path', function (): void {
     $business = stagingBusiness();
     $this->actingAs($business['user'])->postJson(route('business.wallet.deposit', $business['business']->id), stagingDeposit($business['method'], '30000'))->assertOk();
     expect(app(GetBusinessWallet::class)->handle($business['user']->id, 1, $business['business']->id)['allowed_actions'])->toBe(['business.wallet.deposit', 'business.wallet.withdraw']);
 
     asStaging();
+    config(['app.uat_money_simulation' => false]);
     $this->postJson(route('business.wallet.deposit', $business['business']->id), stagingDeposit($business['method'], '40000'))
+        ->assertForbidden()->assertJsonPath('code', 'SYNTHETIC_BUSINESS_FUNDING_OFF');
+    $this->postJson(route('business.wallet.withdraw', $business['business']->id), stagingDeposit($business['method'], '1000'))
         ->assertForbidden()->assertJsonPath('code', 'SYNTHETIC_BUSINESS_FUNDING_OFF');
     expect(BusinessDepositIntent::query()->count())->toBe(1)
         ->and(app(GetBusinessWallet::class)->handle($business['user']->id, 1, $business['business']->id)['allowed_actions'])->toBe([]);
@@ -154,6 +158,34 @@ it('refuses a new Business deposit on UAT and still settles one accepted before,
         ->and(BusinessProviderEvent::query()->sole()->only(['state', 'disposition', 'environment', 'amount']))
         ->toBe(['state' => 'succeeded', 'disposition' => 'applied', 'environment' => 'uat', 'amount' => '30000'])
         ->and(BusinessDepositCredit::query()->count())->toBe(1)->and(WalletProviderEvent::query()->count())->toBe(0);
+});
+
+it('lets a Business deposit and withdraw on UAT only while its money simulation is on and names that Business, so it can repay a raise', function (): void {
+    $business = stagingBusiness();
+    asStaging();
+    expect(config('app.uat_money_simulation'))->toBeFalse();
+    config(['app.uat_money_simulation' => true]);
+
+    // The switch alone opens nothing: an empty list, or a list naming another Business, refuses deposits and withdrawals.
+    foreach ([[], [strtolower((string) Str::ulid())]] as $named) {
+        config(['app.uat_money_simulation_businesses' => $named]);
+        $this->actingAs($business['user'])->postJson(route('business.wallet.deposit', $business['business']->id), stagingDeposit($business['method'], '40000'))
+            ->assertForbidden()->assertJsonPath('code', 'SYNTHETIC_BUSINESS_FUNDING_OFF');
+        $this->postJson(route('business.wallet.withdraw', $business['business']->id), stagingDeposit($business['method'], '1000'))
+            ->assertForbidden()->assertJsonPath('code', 'SYNTHETIC_BUSINESS_FUNDING_OFF');
+        expect(app(GetBusinessWallet::class)->handle($business['user']->id, 1, $business['business']->id)['allowed_actions'])->toBe([])
+            ->and(BusinessDepositIntent::query()->count())->toBe(0);
+    }
+
+    config(['app.uat_money_simulation_businesses' => [strtoupper($business['business']->id)]]);
+    $this->actingAs($business['user'])->postJson(route('business.wallet.deposit', $business['business']->id), stagingDeposit($business['method'], '40000'))->assertOk();
+    expect(app(GetBusinessWallet::class)->handle($business['user']->id, 1, $business['business']->id)['allowed_actions'])->toBe(['business.wallet.deposit', 'business.wallet.withdraw'])
+        ->and(BusinessDepositIntent::query()->count())->toBe(1);
+
+    expect(Artisan::call('wallet:dispatch-deposits'))->toBe(0)
+        ->and(BusinessProviderEvent::query()->sole()->only(['state', 'disposition', 'environment', 'amount']))
+        ->toBe(['state' => 'succeeded', 'disposition' => 'applied', 'environment' => 'uat', 'amount' => '40000'])
+        ->and(BusinessDepositCredit::query()->count())->toBe(1);
 });
 
 it('leaves local and testing deposits to the manual event hook', function (): void {
@@ -673,6 +705,8 @@ it('stops a revoked tester\'s new deposits, still settles the deposits already a
         ->and(Artisan::output())->toContain('Wallet tester revoked');
     $this->actingAs($tester['user'])->postJson(route('investor.wallet.deposit'), stagingDeposit($tester['method'], '20000'))
         ->assertForbidden()->assertJsonPath('code', 'SYNTHETIC_TESTER_REQUIRED');
+    $this->postJson(route('investor.wallet.withdraw'), stagingDeposit($tester['method'], '1000'))
+        ->assertForbidden()->assertJsonPath('code', 'SYNTHETIC_TESTER_REQUIRED');
     expect(WalletDepositIntent::query()->count())->toBe(1)
         ->and(app(GetInvestorWallet::class)->handle($tester['user']->id, 1)['allowed_actions'])->toBe([])
         ->and(WalletDepositCredit::query()->count())->toBe(1)
@@ -763,3 +797,67 @@ it('settles UAT withdrawals through their signed outcome: paid to the good numbe
     app()->terminate();
     expect(WalletWithdrawalEvent::query()->count())->toBe(2);
 });
+
+it('names the staging demo resale buyer a wallet tester on deploy, only while the UAT money simulation is on', function (): void {
+    $migration = require database_path('migrations/2026_11_16_180000_name_uat_demo_wallet_tester.php');
+    $buyer = InvestorWalletFixture::investor('qa-kyc3@rozine.rw')['user'];
+
+    // Off UAT, or on UAT with the simulation off, nothing is named.
+    $migration->up();
+    asStaging();
+    $migration->up();
+    expect(SyntheticWalletTesterChange::query()->count())->toBe(0);
+
+    config(['app.uat_money_simulation' => true]);
+    $migration->up();
+    $migration->up();
+    expect(SyntheticWalletTesterChange::query()->sole()->only(['party_id', 'action']))->toBe(['party_id' => $buyer->party_id, 'action' => 'granted'])
+        ->and(InvestorFundingMethod::query()->where('party_id', $buyer->party_id)->whereNotNull('verified_at')->pluck('label')->all())->toBe(['MTN MoMo']);
+    $migration->down();
+    expect(SyntheticWalletTesterChange::query()->count())->toBe(1);
+});
+
+it('gives staging QA a third resale buyer on deploy: Investor access and a wallet, only while the UAT money simulation is on', function (): void {
+    $migration = require database_path('migrations/2026_11_19_190000_name_uat_third_resale_buyer.php');
+    $party = Party::factory()->verified()->create();
+    $buyer = User::factory()->for($party)->create(['email' => 'qa-kyc2@rozine.rw']);
+    RoleMembership::factory()->for($party)->active()->create(['role' => 'business']);
+    $operator = User::factory()->withTwoFactor()->create(['email' => 'qa-admin@rozine.rw']);
+    IdentityOperator::factory()->create(['user_id' => $operator->id]);
+    InvestorWalletFixture::policy(minimum: '1000', maximum: '5000000');
+
+    // Off UAT, or on UAT with the simulation off, nothing changes.
+    $migration->up();
+    asStaging();
+    $migration->up();
+    expect(RoleMembership::query()->where('party_id', $party->id)->where('role', 'investor')->exists())->toBeFalse()
+        ->and(SyntheticWalletTesterChange::query()->count())->toBe(0);
+
+    config(['app.uat_money_simulation' => true]);
+    $migration->up();
+    $migration->up();
+    expect(RoleMembership::query()->where('party_id', $party->id)->orderBy('role')->pluck('status', 'role')->all())->toBe(['business' => 'active', 'investor' => 'active'])
+        ->and(SyntheticWalletTesterChange::query()->sole()->only(['party_id', 'action']))->toBe(['party_id' => $buyer->party_id, 'action' => 'granted'])
+        ->and(InvestorFundingMethod::query()->where('party_id', $party->id)->whereNotNull('verified_at')->pluck('label')->all())->toBe(['MTN MoMo']);
+    $migration->down();
+    expect(SyntheticWalletTesterChange::query()->count())->toBe(1);
+});
+
+it('leaves the third resale buyer alone when it is not a verified person or no identity operator can grant access', function (bool $verified, bool $operatorEnabled, bool $operatorMfa): void {
+    $migration = require database_path('migrations/2026_11_19_190000_name_uat_third_resale_buyer.php');
+    $party = $verified ? Party::factory()->verified()->create() : Party::factory()->create();
+    User::factory()->for($party)->create(['email' => 'qa-kyc2@rozine.rw']);
+    $operator = ($operatorMfa ? User::factory()->withTwoFactor() : User::factory())->create(['email' => 'qa-admin@rozine.rw']);
+    IdentityOperator::factory()->create(['user_id' => $operator->id, 'enabled' => $operatorEnabled]);
+    asStaging();
+    config(['app.uat_money_simulation' => true]);
+
+    $migration->up();
+
+    expect(RoleMembership::query()->where('party_id', $party->id)->exists())->toBeFalse()
+        ->and(SyntheticWalletTesterChange::query()->count())->toBe(0);
+})->with([
+    'identity not verified' => [false, true, true],
+    'operator disabled' => [true, false, true],
+    'operator refused for want of an authenticator' => [true, true, false],
+]);

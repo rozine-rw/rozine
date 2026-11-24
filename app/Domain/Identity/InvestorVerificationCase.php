@@ -6,6 +6,7 @@ namespace App\Domain\Identity;
 
 use App\Domain\Operations\CommandRejection;
 use DateTimeImmutable;
+use DateTimeZone;
 
 /**
  * An individual Investor's own identity submission (MVP-INVESTOR-SCR-03). It holds the answers and
@@ -17,7 +18,9 @@ use DateTimeImmutable;
  *     date_of_birth: string,
  *     id_type: 'national_id'|'passport'|'drivers_license',
  *     id_number: string,
- *     uploads: array{front: string|null, back: string|null, selfie: string|null},
+ *     uploads: array{front: string|null, back: string|null, selfie: string|null, certificate?: string|null},
+ *     licence_number?: string,
+ *     licence_expires_on?: string,
  *     decision: array{outcome: 'approved'|'rejected', reason: string, decided_at: string}|null
  * }
  */
@@ -25,7 +28,7 @@ final class InvestorVerificationCase
 {
     public const STEPS = ['personal', 'document', 'liveness'];
 
-    public const SLOTS = ['id_front' => 'front', 'id_back' => 'back', 'selfie' => 'selfie'];
+    public const SLOTS = ['id_front' => 'front', 'id_back' => 'back', 'selfie' => 'selfie', 'icpar_certificate' => 'certificate'];
 
     public const MINIMUM_AGE = 18;
 
@@ -38,12 +41,14 @@ final class InvestorVerificationCase
 
     /**
      * Records one step's answers and moves to the next step. A rejected submission reopens as a draft.
+     * A check made for Auditor access also takes the ICPAR licence and its certificate with the ID
+     * document, so Compliance verifies both in one review.
      *
      * @param  State  $state
      * @param  array<string, mixed>  $input
      * @return State
      */
-    public function save(array $state, string $status, string $step, array $input, DateTimeImmutable $now): array
+    public function save(array $state, string $status, string $step, array $input, DateTimeImmutable $now, string $purpose = 'investor'): array
     {
         $this->editable($status);
         $this->reachable($state, $step);
@@ -53,6 +58,10 @@ final class InvestorVerificationCase
         } elseif ($step === 'document') {
             [$state['id_type'], $state['id_number']] = $this->document((string) ($input['id_type'] ?? ''), (string) ($input['id_number'] ?? ''));
             $this->documentsUploaded($state);
+            if ($purpose === 'auditor') {
+                [$state['licence_number'], $state['licence_expires_on']] = $this->licence((string) ($input['licence_number'] ?? ''), (string) ($input['licence_expires_on'] ?? ''), $now);
+                $this->certificateUploaded($state);
+            }
         } else {
             throw new CommandRejection('VERIFICATION_STEP_INVALID', 422, fieldErrors: ['step' => ['Submit the final step instead of saving it.']]);
         }
@@ -71,7 +80,7 @@ final class InvestorVerificationCase
     {
         $this->editable($status);
         if (! array_key_exists($slot, self::SLOTS)) {
-            throw new CommandRejection('VERIFICATION_SLOT_INVALID', 422, fieldErrors: ['slot' => ['Choose the ID front, ID back or selfie.']]);
+            throw new CommandRejection('VERIFICATION_SLOT_INVALID', 422, fieldErrors: ['slot' => ['Choose the ID front, ID back, selfie or licence certificate.']]);
         }
         $state['uploads'][self::SLOTS[$slot]] = $documentId;
         $state['decision'] = null;
@@ -85,10 +94,10 @@ final class InvestorVerificationCase
      * @param  State  $state
      * @return State
      */
-    public function submit(array $state, string $status, DateTimeImmutable $now): array
+    public function submit(array $state, string $status, DateTimeImmutable $now, string $purpose = 'investor'): array
     {
         $this->editable($status);
-        $this->complete($state, $now);
+        $this->complete($state, $now, $purpose);
         $state['decision'] = null;
 
         return $state;
@@ -99,7 +108,7 @@ final class InvestorVerificationCase
      *
      * @param  State  $state
      */
-    public function complete(array $state, DateTimeImmutable $now): void
+    public function complete(array $state, DateTimeImmutable $now, string $purpose = 'investor'): void
     {
         $this->reachable($state, 'liveness');
         $this->dateOfBirth($state['date_of_birth'], $now);
@@ -107,6 +116,39 @@ final class InvestorVerificationCase
         $this->documentsUploaded($state);
         if ($state['uploads']['selfie'] === null) {
             throw new CommandRejection('VERIFICATION_SELFIE_REQUIRED', 422, fieldErrors: ['selfie' => ['Take a selfie to finish.']]);
+        }
+        if ($purpose === 'auditor') {
+            $this->licence($state['licence_number'] ?? '', $state['licence_expires_on'] ?? '', $now);
+            $this->certificateUploaded($state);
+        }
+    }
+
+    /**
+     * The ICPAR licence an Auditor check carries (AUD-R01): its number as on the certificate, and an
+     * expiry that has not passed in Kigali.
+     *
+     * @return array{string, string}
+     */
+    private function licence(string $number, string $expiresOn, DateTimeImmutable $now): array
+    {
+        $number = trim($number);
+        if ($number === '' || mb_strlen($number) > 32 || ! mb_check_encoding($number, 'UTF-8') || preg_match('/[\p{Cc}\p{Cf}]/u', $number) === 1) {
+            throw new CommandRejection('VERIFICATION_LICENCE_INVALID', 422, fieldErrors: ['licence_number' => ['Enter your ICPAR licence number, at most 32 characters.']]);
+        }
+        $expiry = DateTimeImmutable::createFromFormat('!Y-m-d', $expiresOn);
+        if ($expiry === false || $expiry->format('Y-m-d') !== $expiresOn
+            || $expiresOn < $now->setTimezone(new DateTimeZone('Africa/Kigali'))->format('Y-m-d')) {
+            throw new CommandRejection('VERIFICATION_LICENCE_EXPIRY_INVALID', 422, fieldErrors: ['licence_expires_on' => ['Enter the expiry date on a current licence certificate.']]);
+        }
+
+        return [$number, $expiresOn];
+    }
+
+    /** @param State $state */
+    private function certificateUploaded(array $state): void
+    {
+        if (($state['uploads']['certificate'] ?? null) === null) {
+            throw new CommandRejection('VERIFICATION_CERTIFICATE_REQUIRED', 422, fieldErrors: ['icpar_certificate' => ['Upload your ICPAR licence certificate.']]);
         }
     }
 

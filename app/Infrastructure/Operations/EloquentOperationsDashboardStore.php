@@ -47,7 +47,7 @@ final class EloquentOperationsDashboardStore implements OperationsDashboardStore
             ->whereRaw("m.terms->>'status' = 'active'")->whereRaw("m.terms->>'effective_at' <= ?", [$now])
             ->whereRaw("(m.terms->>'expires_at' IS NULL OR m.terms->>'expires_at' > ?)", [$now])->count();
         $disbursed = DB::table('disbursements AS d')->join('disbursement_closings AS closing', 'closing.disbursement_id', '=', 'd.id')
-            ->where('closing.kind', 'issued')->sum('d.amount');
+            ->where('closing.kind', 'issued')->sum(DB::raw('d.amount - d.platform_fee'));
         $waiting = DB::selectOne("SELECT count(*) AS total FROM disbursements d
             WHERE (SELECT f_state FROM disbursement_fold(d.id)) IN ('ready', 'awaiting_second_approver', 'on_hold')");
 
@@ -55,6 +55,12 @@ final class EloquentOperationsDashboardStore implements OperationsDashboardStore
             'disbursements_waiting' => (int) ($waiting->total ?? 0), 'disbursed' => (string) $disbursed,
             'notes' => ['live' => (int) ($notes->live ?? 0), 'funded' => (int) ($notes->funded ?? 0),
                 'repaying' => (int) ($notes->repaying ?? 0), 'failed' => (int) ($notes->failed ?? 0)]];
+    }
+
+    public function partyNames(array $partyIds): array
+    {
+        return DB::table('users')->whereIn('party_id', $partyIds)->orderBy('id')->get(['party_id', 'name'])
+            ->unique('party_id')->mapWithKeys(fn (object $user): array => [(string) $user->party_id => (string) $user->name])->all();
     }
 
     public function noteStates(): array
@@ -105,7 +111,7 @@ final class EloquentOperationsDashboardStore implements OperationsDashboardStore
             ->selectRaw('COALESCE(sum(l.amount), 0)::text AS amount, count(DISTINCT e.id) AS total')->first());
         $disbursed = DB::table('disbursements AS d')->join('disbursement_closings AS closing', 'closing.disbursement_id', '=', 'd.id')
             ->where('closing.kind', 'issued')->where('closing.created_at', '>=', $from)
-            ->selectRaw('COALESCE(sum(d.amount), 0)::text AS amount, count(*) AS total')->first();
+            ->selectRaw('COALESCE(sum(d.amount - d.platform_fee), 0)::text AS amount, count(*) AS total')->first();
 
         return ['deposits' => $entries(self::DEPOSITS), 'withdrawals' => $entries(self::PAYOUTS), 'disbursed' => $movement($disbursed)];
     }

@@ -135,6 +135,20 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
                     reference: 'RZC-01K7NQ0C2Y',
                 },
             },
+            {
+                ...page.notices[0],
+                id: 'one-note',
+                kind: 'primary.commitment_confirmed',
+                facts: {
+                    business: 'Rugali Textiles',
+                    units: '1',
+                    amount: '5000',
+                    currency: 'RWF',
+                    fee_tier: 'standard',
+                    fee_rate_bps: '1500',
+                    reference: 'RZC-01K7NQ0C3Z',
+                },
+            },
         ] as InvestorNotices['notices'];
         render(<InvestorDeals {...deals()} />);
         inertia.queue.push(answers({ data: page }));
@@ -145,6 +159,11 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
 
         expect(item).toHaveTextContent(
             'Purchase confirmedYou committed RWF 500,000 to Umuganda Supply for 100 notes, at a 15.0% earnings fee. Reference RZC-01K7NQ0C2Y.',
+        );
+        expect(
+            within(panel).getByRole('button', { name: /Rugali/u }),
+        ).toHaveTextContent(
+            'You committed RWF 5,000 to Rugali Textiles for 1 note, at a 15.0% earnings fee.',
         );
     });
 
@@ -352,6 +371,56 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
         expect(items[1]).not.toHaveTextContent('Invalid Date');
     });
 
+    it('words a resale bought and sold with its units, amount and fee (QA #656)', async () => {
+        const user = userEvent.setup();
+        const inbox = notices();
+        const [first] = inbox.notices;
+
+        inbox.notices = [
+            {
+                ...first,
+                id: 'bought',
+                kind: 'market.units_bought',
+                facts: {
+                    amount: '9000',
+                    currency: 'RWF',
+                    units: '2',
+                    title: 'Kivu Harvest Ltd',
+                },
+            },
+            {
+                ...first,
+                id: 'sold',
+                kind: 'market.units_sold',
+                facts: {
+                    amount: '8820',
+                    currency: 'RWF',
+                    units: '1',
+                    fee: '180',
+                    title: 'Kivu Harvest Ltd',
+                },
+            },
+        ] as InvestorNotices['notices'];
+        render(<InvestorDeals {...deals()} />);
+        const panel = await openBell(user);
+
+        inertia.queue.push(answers({ data: inbox }));
+        await user.click(
+            screen.getByRole('button', { name: 'Notifications, 2 unread' }),
+        );
+
+        const items = await within(panel).findAllByRole('button', {
+            name: /Units/u,
+        });
+
+        expect(items[0]).toHaveTextContent(
+            'Units boughtYou bought 2 notes of Kivu Harvest Ltd on the market for RWF 9,000.',
+        );
+        expect(items[1]).toHaveTextContent(
+            'Units soldYour 1 note of Kivu Harvest Ltd sold. RWF 8,820 reached your wallet after the RWF 180 resale fee.',
+        );
+    });
+
     it('words a sent and a returned withdrawal with the account they went to', async () => {
         const user = userEvent.setup();
         const inbox = notices();
@@ -447,6 +516,83 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
         );
         expect(items[1]).toHaveTextContent(
             'Funds sentRWF 3,000,000 for Cold room was sent to Bank of Kigali ···· 4417.',
+        );
+    });
+
+    it('words readiness notices with the stage moved and the requirement and its day', async () => {
+        const user = userEvent.setup();
+        const inbox = notices();
+        const [first] = inbox.notices;
+        const requirement = {
+            business_id: 'b',
+            code: 'F2',
+            due_on: '2027-01-08',
+        };
+
+        inbox.notices = [
+            {
+                ...first,
+                id: 'stage',
+                kind: 'business.readiness_stage_changed',
+                facts: {
+                    business_id: 'b',
+                    stage: '3',
+                    previous: '2',
+                    period: '2026-10',
+                },
+            },
+            {
+                ...first,
+                id: 'due',
+                kind: 'business.readiness_requirement_due',
+                facts: requirement,
+            },
+            {
+                ...first,
+                id: 'closing',
+                kind: 'business.readiness_requirement_closing',
+                facts: requirement,
+            },
+            {
+                ...first,
+                id: 'overdue',
+                kind: 'business.readiness_requirement_overdue',
+                facts: requirement,
+            },
+        ] as InvestorNotices['notices'];
+        render(<InvestorDeals {...deals()} />);
+        const panel = await openBell(user);
+
+        inertia.queue.push(answers({ data: inbox }));
+        await user.click(
+            screen.getByRole('button', { name: 'Notifications, 2 unread' }),
+        );
+
+        expect(
+            await within(panel).findByRole('button', {
+                name: /Readiness stage changed/u,
+            }),
+        ).toHaveTextContent(
+            'Your October 2026 report moved you from Stage 2 · Growth to Stage 3 · Scale.',
+        );
+        expect(
+            within(panel).getByRole('button', {
+                name: /New readiness requirement/u,
+            }),
+        ).toHaveTextContent(
+            'Qualified accountant now applies to your business. Meet it by 8 Jan 2027.',
+        );
+        expect(
+            within(panel).getByRole('button', {
+                name: /Requirement due soon/u,
+            }),
+        ).toHaveTextContent(
+            'Qualified accountant is due by 8 Jan 2027. Your CPA confirms it at the next visit.',
+        );
+        expect(
+            within(panel).getByRole('button', { name: /Requirement overdue/u }),
+        ).toHaveTextContent(
+            'Qualified accountant was due on 8 Jan 2027. Your next raise waits until it is met.',
         );
     });
 

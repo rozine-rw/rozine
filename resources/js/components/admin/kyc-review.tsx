@@ -44,10 +44,12 @@ export function KycReview({
     review,
     viewer,
     returnTo,
+    returnUser,
 }: {
     review: InvestorVerificationReview;
     viewer: StaffViewer;
-    returnTo?: 'directory';
+    returnTo?: 'directory' | 'users';
+    returnUser?: string;
 }) {
     const { t } = useTranslation();
     const { errors } = usePage<{ errors: Record<string, string> }>().props;
@@ -74,6 +76,12 @@ export function KycReview({
                         label={t('admin.kyc.fact.id_number')}
                         value={review.id_number}
                     />
+                    {review.licence && (
+                        <Fact
+                            label={t('admin.kyc.licence.title')}
+                            value={`${t('admin.kyc.licence.number', { number: review.licence.number })} · ${t('admin.kyc.licence.expires', { date: review.licence.expires_on })}`}
+                        />
+                    )}
                     {review.submitted_at && (
                         <Fact
                             label={t('admin.kyc.fact.submitted_at')}
@@ -154,7 +162,7 @@ export function KycReview({
             {errors.form && (
                 <p
                     role="alert"
-                    className="mt-4 rounded-[11px] bg-[rgba(229,72,77,.1)] px-3.5 py-2.5 text-[12.5px] font-semibold text-[#c2292e]"
+                    className="mt-4 rounded-[11px] bg-[rgba(229,72,77,.1)] px-3.5 py-2.5 text-[12.5px] font-semibold text-[#c2292e] dark:text-rz-danger-text"
                 >
                     {errors.form}
                 </p>
@@ -173,6 +181,9 @@ export function KycReview({
                         request_id: requestId,
                         expected_revision: review.revision,
                         ...(returnTo && { return_to: returnTo }),
+                        ...(returnUser !== undefined && {
+                            return_user: returnUser,
+                        }),
                     }}
                 />
             ) : (
@@ -187,7 +198,7 @@ export function KycReview({
                                         action: reject,
                                     })
                                 }
-                                className="h-[42px] flex-1 rounded-[11px] border border-[#e5484d] text-[13.5px] font-bold text-[#c2292e]"
+                                className="h-[42px] flex-1 rounded-[11px] border border-[#e5484d] text-[13.5px] font-bold text-[#c2292e] dark:text-rz-danger-text"
                             >
                                 {t('admin.kyc.reject')}
                             </button>

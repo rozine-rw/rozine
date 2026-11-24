@@ -2,6 +2,7 @@
 """Select POC/full execution, or reuse fresh GitHub evidence for the exact tree."""
 
 import datetime
+import contextlib
 import contextvars
 import copy
 import io
@@ -15,7 +16,7 @@ import threading
 import time
 import zipfile
 from collections.abc import Mapping
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, as_completed, wait
 from pathlib import Path
 
 from poc_validation import POC_JOBS, POC_STEPS, STATIC_JOB, static_evidence, catalog_evidence
@@ -23,7 +24,8 @@ from poc_validation import POC_JOBS, POC_STEPS, STATIC_JOB, static_evidence, cat
 FULL_JOBS = [
     "Board sync offline tests", "PHP 8.5 quality gate", "TypeScript/React quality gate",
     "PostgreSQL concurrency lane", "PHP gate negative controls", "Deployment admission negative controls",
-    *[f"PHP 8.5 tests (shard {shard}/4)" for shard in range(1, 5)],
+    *[f"PHP 8.5 tests (shard {shard}/8)" for shard in range(1, 9)],
+    *[f"PostgreSQL concurrency lane (shard {shard}/4)" for shard in range(1, 5)],
     *[f"PHP negative controls ({group})" for group in ["architecture", "business", "auditor", "coverage"]],
 ]
 REUSE_JOBS = ["Select CI scope", "Board sync offline tests", "Reuse POC validation evidence"]
@@ -38,11 +40,97 @@ MAX_EVIDENCE_BYTES = 1024 * 1024
 # Maximum wait only: the current native job and combined POC budget can shorten it.
 FOLLOWER_PUBLICATION_WAIT_SECONDS = 300
 FOLLOWER_PUBLICATION_CLEANUP_SECONDS = 60
+# Failed peers older than this are not scanned for a matching tree. Every scanned
+# peer costs an identity download plus native reads, and the workflow token's
+# hourly API budget fits only about one 30-day scan once ~340 runs have failed.
+FAILED_PEER_WINDOW = datetime.timedelta(days=3)
 _follower_read_deadline = contextvars.ContextVar("follower_read_deadline", default=None)
 _recovery_read_deadline = contextvars.ContextVar("recovery_read_deadline", default=None)
 _follower_publication_deadlines = {}
 _lookup_counts = {}
 _lookup_counts_lock = threading.Lock()
+_commit_reads = contextvars.ContextVar("commit_reads", default=None)
+
+
+class ImmutableCommitReads:
+    """Single-flight immutable Git objects for one selection, never native run state."""
+
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.reads = {}
+
+    def read(self, repository, sha):
+        deadlines = [(value, reason) for value, reason in
+                     ((_follower_read_deadline.get(), "follower_decision_publication_timeout"),
+                      (_recovery_read_deadline.get(), "recovery_evidence_lookup_timeout")) if value is not None]
+        deadline, reason = min(deadlines) if deadlines else (None, None)
+        if deadline is not None and time.monotonic() >= deadline:
+            raise CoordinationRefusal(reason)
+        key = (repository, sha)
+        with self.lock:
+            owner = key not in self.reads
+            future = self.reads.setdefault(key, Future())
+        if owner:
+            try:
+                future.set_result(api(f"repos/{repository}/git/commits/{sha}"))
+            except BaseException as error:
+                future.set_exception(error)
+        try:
+            result = future.result(timeout=None if deadline is None else max(0, deadline - time.monotonic()))
+        except TimeoutError:
+            if deadline is not None and time.monotonic() >= deadline:
+                raise CoordinationRefusal(reason) from None
+            raise
+        if deadline is not None and time.monotonic() >= deadline:
+            raise CoordinationRefusal(reason)
+        return copy.deepcopy(result)
+
+
+def immutable_commit(repository, sha):
+    reads = _commit_reads.get()
+    return reads.read(repository, sha) if reads is not None else api(f"repos/{repository}/git/commits/{sha}")
+
+
+def historical_identities(repository, runs, inventory, blocking_tree=None):
+    """Keep four readers busy without batch barriers; consume results in history order.
+
+    With ``blocking_tree``, a peer whose natively verified tree differs is returned
+    after its proof and commit checks, without its job and attempt reads: only a
+    peer on the same tree can block, so those reads cannot change the decision."""
+    readers = ThreadPoolExecutor(max_workers=4)
+    pending, ready = {}, {}
+    remaining = iter(enumerate(runs))
+    next_result = 0
+
+    def submit():
+        item = next(remaining, None)
+        if item is not None:
+            index, run = item
+            artifact = inventory[f"ci-coordination-identity-{run['id']}-{run['run_attempt']}"]
+            context = contextvars.copy_context()
+            pending[readers.submit(context.run, coordination_identity, repository, run, artifact=artifact,
+                                   blocking_tree=blocking_tree)] = (index, run)
+
+    try:
+        for _ in range(4):
+            submit()
+        while pending:
+            done, _ = wait(pending, return_when=FIRST_COMPLETED)
+            for future in done:
+                index, run = pending.pop(future)
+                ready[index] = (run, future)
+            # Admit only in the original order, including refusals. Completed later
+            # reads may refill the bounded pool while an earlier read is still slow.
+            while next_result in ready:
+                run, future = ready.pop(next_result)
+                yield run, future.result()
+                next_result += 1
+            for _ in done:
+                submit()
+    finally:
+        for future in pending:
+            future.cancel()
+        readers.shutdown(wait=True, cancel_futures=True)
 
 
 def count_lookup(name, amount=1):
@@ -304,7 +392,7 @@ def verify_recovery_source(repository, source, tree):
             or (decision["source_run"], decision["source_attempt"]) != own or "recovery" not in decision):
         raise CoordinationRefusal("recovery_is_not_original_complete_execution")
     proof = read(repository, source)
-    commit = api(f"repos/{repository}/git/commits/{proof['tested_sha']}")
+    commit = immutable_commit(repository, proof['tested_sha'])
     validate_proof(proof, source, run_jobs(repository, source), commit, tree, repository, "poc")
     validate_recovery_failures(repository, source, decision["recovery"])
     latest = same_attempt(repository, source)
@@ -514,7 +602,7 @@ def successful_steps(jobs, name, steps, *, artifact_verified=False):
             raise CoordinationRefusal("identity_or_decision_step_not_successful")
 
 
-def coordination_identity(repository, run, *, reader=None, artifact=None):
+def coordination_identity(repository, run, *, reader=None, artifact=None, blocking_tree=None):
     if reader is not None and artifact is not None:
         raise ValueError("identity reader and indexed descriptor cannot be combined")
     proof = ((reader or download_evidence)(repository, run, "ci-coordination-identity") if artifact is None else
@@ -528,7 +616,7 @@ def coordination_identity(repository, run, *, reader=None, artifact=None):
         validate_recovery_intent(proof["recovery_intent"], run)
     if any(not re.fullmatch(SHA, str(proof.get(key, ""))) for key in ("tested_sha", "tree_sha", "head_sha")):
         raise CoordinationRefusal("coordination_identity_invalid_sha")
-    commit = api(f"repos/{repository}/git/commits/{proof['tested_sha']}")
+    commit = immutable_commit(repository, proof['tested_sha'])
     if commit.get("sha") != proof["tested_sha"] or commit["tree"]["sha"] != proof["tree_sha"]:
         raise CoordinationRefusal("coordination_identity_native_tree_mismatch")
     if run["event"] == "pull_request":
@@ -538,6 +626,12 @@ def coordination_identity(repository, run, *, reader=None, artifact=None):
             raise CoordinationRefusal("coordination_identity_pr_contract_mismatch")
     elif run["event"] not in ("push", "workflow_dispatch") or run.get("head_branch") not in ("dev", "uat") or proof["tested_sha"] != run["head_sha"]:
         raise CoordinationRefusal("coordination_identity_target_mismatch")
+    if blocking_tree is not None and proof["tree_sha"] != blocking_tree:
+        # The tree is bound natively above. A failed peer on another tree can
+        # never block this selection, so its mutable job/attempt reads (two API
+        # requests per peer, the bulk of the hourly token budget) are skipped.
+        count_lookup("unrelated_peers_without_job_reads")
+        return proof
     for read in range(3):
         jobs = run_jobs(repository, run)
         try:
@@ -727,6 +821,16 @@ def pending_follower_ids(env, runs, tree):
 
 
 def canonical_selection(env):
+    # A different selection always starts cold. Only content-addressed Git objects
+    # can be shared; jobs, attempts, inventories and the final guards stay live.
+    token = _commit_reads.set(ImmutableCommitReads())
+    try:
+        return select_canonical_candidate(env)
+    finally:
+        _commit_reads.reset(token)
+
+
+def select_canonical_candidate(env):
     repository = env["GITHUB_REPOSITORY"]
     if command("git", "rev-parse", "HEAD") != env["GITHUB_SHA"]:
         raise CoordinationRefusal("selector_checkout_mismatch")
@@ -760,11 +864,16 @@ def canonical_selection(env):
         revalidate_historical_inventory(repository, inventory, relevant_names)
         refreshed_sources.add((str(source["id"]), str(source["run_attempt"])))
 
+    peer_scan_started = datetime.datetime.now(datetime.timezone.utc)
     for run in runs:
         if (run["status"] != "completed" or run["conclusion"] == "success"
                 or retry and attempt_order(run)[0] < retry_started):
             continue
         if run["id"] in covered and terminal_failure_pin(run) == covered[run["id"]]:
+            continue
+        # A rerun of an old run ID is as recent as its latest attempt activity.
+        if peer_scan_started - attempt_order(run)[0] > FAILED_PEER_WINDOW:
+            count_lookup("failed_peers_outside_window")
             continue
         name = f"ci-coordination-identity-{run['id']}-{run['run_attempt']}"
         relevant_names.add(name)
@@ -786,17 +895,13 @@ def canonical_selection(env):
     # Each immutable identity still receives all native tree/job/attempt checks.
     # Bound independent reads instead of serially downloading every old proof.
     try:
-        with ThreadPoolExecutor(max_workers=4) as readers:
-            for start in range(0, len(failed_peers), 4):
-                batch = failed_peers[start:start + 4]
-                identities = readers.map(lambda run: coordination_identity(repository, run, artifact=inventory[
-                    f"ci-coordination-identity-{run['id']}-{run['run_attempt']}"]), batch)
-                for run, failed_identity in zip(batch, identities):
-                    if failed_identity["tree_sha"] == tree:
-                        if intent or run["head_sha"] not in possible_recovery_heads:
-                            diagnostic("canonical_peer_unsuccessful", run)
-                            raise CoordinationRefusal("canonical_peer_unsuccessful_no_takeover")
-                        matching_failed.append(run)
+        with contextlib.closing(historical_identities(repository, failed_peers, inventory, tree)) as identities:
+            for run, failed_identity in identities:
+                if failed_identity["tree_sha"] == tree:
+                    if intent or run["head_sha"] not in possible_recovery_heads:
+                        diagnostic("canonical_peer_unsuccessful", run)
+                        raise CoordinationRefusal("canonical_peer_unsuccessful_no_takeover")
+                    matching_failed.append(run)
     except MissingEvidence:
         raise CoordinationRefusal("coordination_index_changed_during_failed_peer_validation") from None
     deadline = time.monotonic() + 45
@@ -904,7 +1009,7 @@ def validate_source(repository, run, tree, scope):
     proof = download_evidence(repository, run)
     if proof.get("tree_sha") != tree or proof.get("scope") != scope:
         raise ValueError("source tree or scope differs")
-    commit = api(f"repos/{repository}/git/commits/{proof['tested_sha']}")
+    commit = immutable_commit(repository, proof['tested_sha'])
     validate_proof(proof, run, run_jobs(repository, run), commit, tree, repository, scope)
     if run["event"] == "pull_request":
         pull = api(f"repos/{repository}/pulls/{proof['pull_number']}")
@@ -939,7 +1044,7 @@ def immutable_merge_identity(repository, run):
     age = datetime.datetime.now(datetime.timezone.utc) - datetime.datetime.fromisoformat(run["created_at"].replace("Z", "+00:00"))
     if age.total_seconds() < 0 or age > datetime.timedelta(days=30):
         raise ValueError("PR merge identity is stale")
-    tested = api(f"repos/{repository}/git/commits/{proof['tested_sha']}")
+    tested = immutable_commit(repository, proof['tested_sha'])
     if (tested.get("sha") != proof["tested_sha"] or tested["tree"]["sha"] != proof["tree_sha"]
             or [parent["sha"] for parent in tested["parents"]] != [proof["base_sha"], run["head_sha"]]):
         raise ValueError("PR merge identity does not match native ordered parents/tree")
@@ -975,6 +1080,58 @@ def preflight_merge_identity(repository, run):
     return proof
 
 
+def complete_attempt_jobs(repository, run):
+    # Absence of other work is provable only from a complete inventory that is
+    # bound to this attempt and unchanged across two reads. Anything less
+    # returns None, so the caller keeps refusing.
+    endpoint = f"repos/{repository}/actions/runs/{run['id']}/attempts/{run['run_attempt']}/jobs?per_page=100"
+
+    def read():
+        responses = pages(endpoint)
+        if not responses or any(not isinstance(response, dict) or not isinstance(response.get("jobs"), list)
+                                for response in responses):
+            return None
+        total = responses[0].get("total_count")
+        if type(total) is not int or not 0 < total <= 1000:
+            return None
+        jobs = [job for response in responses for job in response["jobs"]]
+        if (any(response.get("total_count") != total for response in responses)
+                or any(not isinstance(job, dict) or type(job.get("id")) is not int or job["id"] <= 0 for job in jobs)
+                or len(jobs) != total or len({job["id"] for job in jobs}) != total
+                or any(job.get("run_id") != run["id"] or job.get("run_attempt") != run["run_attempt"] for job in jobs)):
+            return None
+        return sorted(jobs, key=lambda job: job["id"])
+
+    first = read()
+    if first is None or read() != first:
+        diagnostic("peer_job_inventory_incomplete_or_changed", run)
+        return None
+    return first
+
+
+def refused_before_identity(repository, run):
+    # A finished run whose identity job refused (for example a stale base SHA)
+    # published no evidence and ran no tree-bound work, so its failure says
+    # nothing about any tree. Any other job that ran, or an unsettled run,
+    # keeps the absence unexplained and the selection refuses.
+    if run.get("status") != "completed":
+        return False
+    jobs = complete_attempt_jobs(repository, run)
+    if jobs is None:
+        return False
+    identity = [job for job in jobs if job["name"] == IDENTITY_JOB]
+    if (len(identity) != 1 or identity[0].get("status") != "completed"
+            or identity[0].get("conclusion") not in ("failure", "cancelled", "timed_out")):
+        return False
+    for job in jobs:
+        allowed = ("skipped", "success") if job["name"] == "Board sync offline tests" else ("skipped",)
+        if job is not identity[0] and (job.get("status") != "completed" or job.get("conclusion") not in allowed):
+            return False
+    same_attempt(repository, run)
+    diagnostic("peer_refused_before_identity", run)
+    return True
+
+
 def newer_run_blocks(repository, run, source, tree):
     # A later rerun attempt keeps the same run ID. Its status is authoritative.
     if run["id"] == source["id"]:
@@ -983,7 +1140,7 @@ def newer_run_blocks(repository, run, source, tree):
         return False
     if run["head_sha"] == source["head_sha"]:
         return True
-    commit = api(f"repos/{repository}/git/commits/{run['head_sha']}")
+    commit = immutable_commit(repository, run['head_sha'])
     if commit["tree"]["sha"] == tree:
         return True
     if run["event"] == "pull_request":
@@ -995,11 +1152,16 @@ def newer_run_blocks(repository, run, source, tree):
             try:
                 return immutable_merge_identity(repository, run)["tree_sha"] == tree
             except MissingEvidence:
-                return preflight_merge_identity(repository, run)["tree_sha"] == tree
+                try:
+                    return preflight_merge_identity(repository, run)["tree_sha"] == tree
+                except MissingEvidence:
+                    if refused_before_identity(repository, run):
+                        return False
+                    raise
         expected = {"schema": 2, "repository": repository, "run_id": str(run["id"]), "run_attempt": str(run["run_attempt"])}
         if any(proof.get(key) != value for key, value in expected.items()) or not re.fullmatch(SHA, str(proof.get("tested_sha", ""))):
             raise ValueError("failed-run merge evidence has unverifiable provenance")
-        tested = api(f"repos/{repository}/git/commits/{proof['tested_sha']}")
+        tested = immutable_commit(repository, proof['tested_sha'])
         if (tested["sha"] != proof["tested_sha"] or tested["tree"]["sha"] != proof.get("tree_sha")
                 or len(tested["parents"]) != 2 or tested["parents"][1]["sha"] != run["head_sha"]):
             raise ValueError("failed-run merge tree does not bind the actual source head")

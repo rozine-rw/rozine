@@ -56,11 +56,21 @@ function Row({ row }: { row: C3DisbursementRow }) {
             >
                 {row.business} · {row.note_title}
             </span>
-            <span role="cell" className="truncate text-[12px] text-rz-body">
+            <span
+                role="cell"
+                className="min-w-0 text-[12px] [overflow-wrap:anywhere] text-rz-body"
+            >
                 {row.destination}
             </span>
             <span role="cell" className="text-[12.5px] font-bold text-rz-ink">
                 {formatRwfShort(row.amount)}
+                {row.platform_fee != null && (
+                    <span className="block text-[11px] font-medium text-rz-secondary">
+                        {t('admin.disbursements.net', {
+                            amount: formatRwfShort(row.platform_fee.payout),
+                        })}
+                    </span>
+                )}
             </span>
             <span role="cell">
                 <ProviderStateChip state={row.provider_state} />
@@ -101,6 +111,7 @@ export default function AdminDisbursements(props: C3AdminDisbursementsProps) {
         <AdminFrame
             section="disbursements"
             {...props}
+            searchable={false}
             overlay={
                 props.disbursement && (
                     <DisbursementDrawer

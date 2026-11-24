@@ -21,7 +21,7 @@ final class GetInvestorVerification
     /**
      * What the person's current uploads are, by side, so their own page can show them again.
      *
-     * @return array<'front'|'back'|'selfie', array{filename: string, media_type: string}>
+     * @return array<'front'|'back'|'selfie'|'certificate', array{filename: string, media_type: string}>
      */
     public function uploads(int $userId): array
     {
@@ -36,6 +36,23 @@ final class GetInvestorVerification
     public function document(int $userId, string $side): array
     {
         return $this->store->ownDocument($userId, $side);
+    }
+
+    /**
+     * The app an account's own check is for and where it stands, or null for an account the check
+     * does not describe, which each command then refuses in its own words.
+     *
+     * @return array{purpose: string, status: string}|null
+     */
+    public function standing(int $userId): ?array
+    {
+        try {
+            $submission = $this->store->get($userId);
+        } catch (IdentityViolation) {
+            return null;
+        }
+
+        return ['purpose' => $submission['purpose'], 'status' => $submission['status']];
     }
 
     /**

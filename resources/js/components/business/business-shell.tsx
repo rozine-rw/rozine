@@ -6,7 +6,12 @@ import type { ChangeBeacon } from '@/hooks/use-change-beacon';
 import { useTranslation } from '@/hooks/use-translation';
 import type { BusinessShellLinks } from '@/types/business';
 
-export type BusinessTab = 'home' | 'reports' | 'market' | 'profile';
+export type BusinessTab =
+    | 'home'
+    | 'reports'
+    | 'readiness'
+    | 'market'
+    | 'profile';
 
 /** The Business tab glyphs, drawn exactly as the design's tab bar and sidebar draw them. */
 const GLYPHS: Record<BusinessTab, ReactNode> = {
@@ -27,6 +32,17 @@ const GLYPHS: Record<BusinessTab, ReactNode> = {
                 stroke="currentColor"
                 strokeWidth="1.8"
                 strokeLinecap="round"
+            />
+        </svg>
+    ),
+    readiness: (
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path
+                d="M4 20h4v-5h4v-5h4V5h4"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
             />
         </svg>
     ),
@@ -79,7 +95,7 @@ type BusinessShellProps = {
 
 /**
  * The Business app frame, with the design's four tabs in its order: Home, Reports, Market and
- * Profile. A destination the server leaves null is hidden from the sidebar and the tab bar alike.
+ * Profile, and BRS v3.0's Readiness tab (APP-B01) after Reports. A destination the server leaves null is hidden from the sidebar and the tab bar alike.
  */
 export function BusinessShell({
     title,
@@ -91,22 +107,22 @@ export function BusinessShell({
 }: BusinessShellProps) {
     const { t } = useTranslation();
     useChangeBeacon(beacon);
-    const nav = (['home', 'reports', 'market', 'profile'] as const).flatMap(
-        (key) => {
-            const href = links[key];
+    const nav = (
+        ['home', 'reports', 'readiness', 'market', 'profile'] as const
+    ).flatMap((key) => {
+        const href = links[key];
 
-            return href === null
-                ? []
-                : [
-                      {
-                          key,
-                          label: t(`business.nav.${key}`),
-                          href,
-                          glyph: GLYPHS[key],
-                      },
-                  ];
-        },
-    );
+        return href === null
+            ? []
+            : [
+                  {
+                      key,
+                      label: t(`business.nav.${key}`),
+                      href,
+                      glyph: GLYPHS[key],
+                  },
+              ];
+    });
 
     return (
         <AppFrame

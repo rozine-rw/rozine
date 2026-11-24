@@ -1,8 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
+import visitReady from './visit-ready'
 import operations from './operations'
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::show
-* @see app/Http/Controllers/BusinessRepaymentController.php:27
+* @see app/Http/Controllers/BusinessRepaymentController.php:31
 * @route '/business/{business}/repayments'
 */
 export const show = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -17,7 +18,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::show
-* @see app/Http/Controllers/BusinessRepaymentController.php:27
+* @see app/Http/Controllers/BusinessRepaymentController.php:31
 * @route '/business/{business}/repayments'
 */
 show.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -44,7 +45,7 @@ show.url = (args: { business: string | number } | [business: string | number ] |
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::show
-* @see app/Http/Controllers/BusinessRepaymentController.php:27
+* @see app/Http/Controllers/BusinessRepaymentController.php:31
 * @route '/business/{business}/repayments'
 */
 show.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -54,7 +55,7 @@ show.get = (args: { business: string | number } | [business: string | number ] |
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::show
-* @see app/Http/Controllers/BusinessRepaymentController.php:27
+* @see app/Http/Controllers/BusinessRepaymentController.php:31
 * @route '/business/{business}/repayments'
 */
 show.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -64,7 +65,7 @@ show.head = (args: { business: string | number } | [business: string | number ] 
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::show
-* @see app/Http/Controllers/BusinessRepaymentController.php:27
+* @see app/Http/Controllers/BusinessRepaymentController.php:31
 * @route '/business/{business}/repayments'
 */
 const showForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -74,7 +75,7 @@ const showForm = (args: { business: string | number } | [business: string | numb
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::show
-* @see app/Http/Controllers/BusinessRepaymentController.php:27
+* @see app/Http/Controllers/BusinessRepaymentController.php:31
 * @route '/business/{business}/repayments'
 */
 showForm.get = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -84,7 +85,7 @@ showForm.get = (args: { business: string | number } | [business: string | number
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::show
-* @see app/Http/Controllers/BusinessRepaymentController.php:27
+* @see app/Http/Controllers/BusinessRepaymentController.php:31
 * @route '/business/{business}/repayments'
 */
 showForm.head = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -101,7 +102,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::pay
-* @see app/Http/Controllers/BusinessRepaymentController.php:35
+* @see app/Http/Controllers/BusinessRepaymentController.php:59
 * @route '/business/{business}/repayments'
 */
 export const pay = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -116,7 +117,7 @@ pay.definition = {
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::pay
-* @see app/Http/Controllers/BusinessRepaymentController.php:35
+* @see app/Http/Controllers/BusinessRepaymentController.php:59
 * @route '/business/{business}/repayments'
 */
 pay.url = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -143,7 +144,7 @@ pay.url = (args: { business: string | number } | [business: string | number ] | 
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::pay
-* @see app/Http/Controllers/BusinessRepaymentController.php:35
+* @see app/Http/Controllers/BusinessRepaymentController.php:59
 * @route '/business/{business}/repayments'
 */
 pay.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -153,7 +154,7 @@ pay.post = (args: { business: string | number } | [business: string | number ] |
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::pay
-* @see app/Http/Controllers/BusinessRepaymentController.php:35
+* @see app/Http/Controllers/BusinessRepaymentController.php:59
 * @route '/business/{business}/repayments'
 */
 const payForm = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -163,7 +164,7 @@ const payForm = (args: { business: string | number } | [business: string | numbe
 
 /**
 * @see \App\Http\Controllers\BusinessRepaymentController::pay
-* @see app/Http/Controllers/BusinessRepaymentController.php:35
+* @see app/Http/Controllers/BusinessRepaymentController.php:59
 * @route '/business/{business}/repayments'
 */
 payForm.post = (args: { business: string | number } | [business: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -176,6 +177,7 @@ pay.form = payForm
 const repayments = {
     show: Object.assign(show, show),
     pay: Object.assign(pay, pay),
+    visitReady: Object.assign(visitReady, visitReady),
     operations: Object.assign(operations, operations),
 }
 

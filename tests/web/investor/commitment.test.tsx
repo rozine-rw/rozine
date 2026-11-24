@@ -55,7 +55,7 @@ describe('Commitment', () => {
         ).toBeInTheDocument();
         expect(
             screen.getByText(
-                "The raise is still open. Your commitment is final; if the raise doesn't fill, your money comes back to your wallet.",
+                "The raise is still open. You can withdraw this commitment for a full refund until the raise reaches 100%. If the raise doesn't fill, your money comes back to your wallet.",
             ),
         ).toBeInTheDocument();
 
@@ -73,9 +73,9 @@ describe('Commitment', () => {
         expect(page).toHaveTextContent(
             'Maturity dateSet when notes are issued',
         );
-        expect(page).toHaveTextContent(
-            'Policy · disclosuresynthetic-primary-policy-0 · disclosure-2026-09.1',
-        );
+        // No engineering policy ids on an investor screen (#593); this disclosure carries no date.
+        expect(page).not.toHaveTextContent('synthetic-primary-policy-0');
+        expect(page).not.toHaveTextContent('Disclosure');
         expect(page).toHaveTextContent('Total returnRWF 4,050');
 
         const receipt = screen.getByRole('region', {
@@ -93,29 +93,45 @@ describe('Commitment', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('names the disclosure by its date rather than its id (#593)', () => {
+        const page = props();
+
+        page.commitment!.terms.disclosure_version =
+            'primary-disclosure-2026-10-13';
+        render(<InvestorCommitment {...page} />);
+
+        expect(document.body).toHaveTextContent(
+            'DisclosureVersion of 13 Oct 2026',
+        );
+        expect(document.body).not.toHaveTextContent('primary-disclosure');
+    });
+
     it('cancels a confirmed commitment only after a second step, fee-free', async () => {
         const user = userEvent.setup();
 
         render(<InvestorCommitment {...props()} />);
         await user.click(
-            screen.getByRole('button', { name: 'Cancel commitment' }),
+            screen.getByRole('button', { name: 'Withdraw commitment' }),
         );
 
         const step = screen.getByRole('group', {
-            name: 'Cancel this commitment?',
+            name: 'Withdraw this commitment?',
         });
 
+        // On a phone the confirm opens below the fold, so focus moves to it (#593).
+        expect(step).toHaveFocus();
+
         expect(step).toHaveTextContent(
-            "Your principal goes back to Available in full, with no fee. You'll no longer hold these notes.",
+            'Your full amount goes back to Available at once, with no fee. You can withdraw until the raise reaches 100%.',
         );
         expect(step).not.toHaveTextContent(/released|back on sale/i);
         await user.click(within(step).getByRole('button', { name: 'Keep it' }));
         expect(
-            screen.queryByRole('group', { name: 'Cancel this commitment?' }),
+            screen.queryByRole('group', { name: 'Withdraw this commitment?' }),
         ).not.toBeInTheDocument();
 
         await user.click(
-            screen.getByRole('button', { name: 'Cancel commitment' }),
+            screen.getByRole('button', { name: 'Withdraw commitment' }),
         );
         inertia.queue.push(
             answers({
@@ -132,7 +148,7 @@ describe('Commitment', () => {
             }),
         );
         await user.click(
-            screen.getByRole('button', { name: 'Yes, cancel and refund' }),
+            screen.getByRole('button', { name: 'Yes, withdraw and refund' }),
         );
         expect(inertia.calls[0]).toMatchObject({
             url: '/preview/investor-commitment-cancelled',
@@ -155,10 +171,10 @@ describe('Commitment', () => {
 
         inertia.queue.push(fails(409, { code: 'COMMITMENT_LOCKED' }));
         await user.click(
-            screen.getByRole('button', { name: 'Cancel commitment' }),
+            screen.getByRole('button', { name: 'Withdraw commitment' }),
         );
         await user.click(
-            screen.getByRole('button', { name: 'Yes, cancel and refund' }),
+            screen.getByRole('button', { name: 'Yes, withdraw and refund' }),
         );
 
         expect(
@@ -182,7 +198,7 @@ describe('Commitment', () => {
             screen.getByText('Fully funded — awaiting payout'),
         ).toBeInTheDocument();
         expect(
-            screen.queryByRole('button', { name: 'Cancel commitment' }),
+            screen.queryByRole('button', { name: 'Withdraw commitment' }),
         ).not.toBeInTheDocument();
     });
 
@@ -193,7 +209,7 @@ describe('Commitment', () => {
         render(<InvestorCommitment {...data} />);
 
         expect(
-            screen.queryByRole('button', { name: 'Cancel commitment' }),
+            screen.queryByRole('button', { name: 'Withdraw commitment' }),
         ).not.toBeInTheDocument();
     });
 
@@ -204,10 +220,10 @@ describe('Commitment', () => {
 
         expect(screen.getByText('Not yet confirmed')).toBeInTheDocument();
         await user.click(
-            screen.getByRole('button', { name: 'Cancel commitment' }),
+            screen.getByRole('button', { name: 'Withdraw commitment' }),
         );
         expect(
-            screen.getByRole('button', { name: 'Yes, cancel and refund' }),
+            screen.getByRole('button', { name: 'Yes, withdraw and refund' }),
         ).toBeDisabled();
     });
 
@@ -218,7 +234,7 @@ describe('Commitment', () => {
             screen.getByText('Fully funded — awaiting payout'),
         ).toBeInTheDocument();
         expect(
-            screen.queryByRole('button', { name: 'Cancel commitment' }),
+            screen.queryByRole('button', { name: 'Withdraw commitment' }),
         ).not.toBeInTheDocument();
         expect(inertia.reload).not.toHaveBeenCalled();
     });
@@ -339,7 +355,7 @@ describe('Commitment', () => {
             screen.getByText('Committed — issued after disbursement'),
         ).toBeInTheDocument();
         expect(
-            screen.queryByRole('button', { name: 'Cancel commitment' }),
+            screen.queryByRole('button', { name: 'Withdraw commitment' }),
         ).not.toBeInTheDocument();
     });
 });

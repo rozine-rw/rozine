@@ -1,6 +1,7 @@
 import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
+import { LegalConsentFields } from '@/components/legal/legal-consent-fields';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
@@ -12,17 +13,21 @@ import { audienceQuery, authBranding } from '@/layouts/auth-layout';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
 import type { AuthAudience } from '@/types';
+import type { LegalDocumentLink } from '@/types/legal';
 
 type Props = {
     passwordRules: string;
     /** The CMA sandbox notice, word for word, with the version and digest the acknowledgement binds. */
     sandboxNotice: { version: string; text: string; sha256: string };
+    /** The Terms, Privacy Notice and Disclaimers: each must be ticked before the account is created. */
+    legalDocuments: LegalDocumentLink[];
     audience?: AuthAudience;
 };
 
 export default function Register({
     passwordRules,
     sandboxNotice,
+    legalDocuments,
     audience = null,
 }: Props) {
     const { t } = useTranslation();
@@ -175,6 +180,12 @@ export default function Register({
                                     message={errors.password_confirmation}
                                 />
                             </div>
+
+                            <LegalConsentFields
+                                documents={legalDocuments}
+                                errors={errors}
+                                tabIndex={5}
+                            />
 
                             <Button
                                 type="submit"

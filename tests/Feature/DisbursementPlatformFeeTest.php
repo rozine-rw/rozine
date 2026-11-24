@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Disbursement\Contracts\DisbursementClosingEvidence;
+use App\Application\Disbursement\Contracts\DisbursementPayoutLedger;
 use App\Application\Disbursement\Contracts\PlatformFeeLedger;
 use App\Application\Disbursement\ReconcileDisbursements;
 use App\Application\Identity\ConfigureStaffAccess;
@@ -17,6 +18,7 @@ use App\Models\LedgerEntry;
 use App\Models\PartyNotice;
 use App\Models\User;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
@@ -65,12 +67,35 @@ it('sends the Business its raise less the fee, posts the fee once on issue and t
     $this->actingAs($treasury)->get(route('staff.ledger.index', ['entry' => $entry->id]))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('entry.kind', 'platform_fee')->where('entry.from', 'Disbursement settlement')
             ->where('entry.to', 'Platform fee revenue')->where('entry.amount.amount', '324000'));
+    // The outbound leg is found by the payout's bank reference (QA #663).
+    foreach ([$intent->provider_reference, ' '.$intent->provider_reference.' '] as $search) {
+        $this->actingAs($treasury)->get(route('staff.ledger.index', ['q' => $search]))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('entries', fn (Collection $rows): bool => $rows->contains('id', $entry->id))->etc());
+    }
+
+    // The net sent to the Business leaves settlement in its own entry, so settlement ends empty, and staff
+    // find it by the disbursement's reference or its amount as they type it (QA #663).
+    $payout = LedgerEntry::query()->where('kind', 'disbursement_payout')->sole();
+    expect([$payout->source_type, $payout->source_id, $payout->origin_operation_id, $payout->wallet_id])->toBe(['disbursement_closing', $closing->id, $intent->operation_id, $entry->wallet_id])
+        ->and(platformFeeLines($payout->id))->toBe(['disbursement_settlement' => '10476000', 'withdrawal_clearing' => '-10476000'])
+        ->and((string) DB::scalar("SELECT coalesce(sum(CASE WHEN direction = 'credit' THEN amount ELSE -amount END), 0)::text FROM ledger_lines
+            JOIN ledger_accounts ON ledger_accounts.id = ledger_lines.account_id WHERE ledger_accounts.kind = 'disbursement_settlement'"))->toBe('0');
+    $this->actingAs($treasury)->get(route('staff.ledger.index', ['entry' => $payout->id]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('entry.kind', 'disbursement')->where('entry.from', 'Disbursement settlement')
+            ->where('entry.to', 'Withdrawal clearing (provider)')->where('entry.amount.amount', '10476000'));
+    foreach (['DSB-'.strtoupper(substr($disbursement->id, -8)), '10,476,000', 'RWF 10476000', 'disbursement'] as $search) {
+        $this->actingAs($treasury)->get(route('staff.ledger.index', ['q' => $search]))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('entries', fn (Collection $rows): bool => $rows->contains('id', $payout->id))->etc());
+    }
+    $this->actingAs($treasury)->get(route('staff.ledger.index', ['q' => '10,476,001']))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('entries', [])->etc());
 
     $sent = PartyNotice::query()->where('kind', 'business.disbursement_sent')->sole();
     expect($sent->facts)->toMatchArray(['amount' => '10476000', 'principal' => '10800000', 'platform_fee' => '324000']);
 
     app(ReconcileDisbursements::class)->handle();
     expect(LedgerEntry::query()->where('kind', 'disbursement_platform_fee')->count())->toBe(1)
+        ->and(LedgerEntry::query()->where('kind', 'disbursement_payout')->count())->toBe(1)
         ->and(AuditPartnerCredit::query()->count())->toBe(1);
 });
 
@@ -97,7 +122,41 @@ it('takes the fee from a synthetic payout but posts nothing for a Business with 
 
     expect($intent->amount)->toBe('2910000')
         ->and(DisbursementClosing::query()->where('disbursement_id', $disbursement->id)->sole()->kind)->toBe('issued')
-        ->and(LedgerEntry::query()->where('kind', 'disbursement_platform_fee')->exists())->toBeFalse();
+        ->and(LedgerEntry::query()->where('kind', 'disbursement_platform_fee')->exists())->toBeFalse()
+        ->and(LedgerEntry::query()->where('kind', 'disbursement_payout')->exists())->toBeFalse();
+});
+
+it('replays a posted payout without a second entry, refuses one under another operation, and binds it to its intent amount (QA #663)', function (): void {
+    ['campaign' => $campaign] = PrimaryIssuanceFixture::close('2026-10-09T22:30:00+00:00');
+    $disbursement = Disbursement::query()->where('business_campaign_id', $campaign->campaignId)->sole();
+    $intent = DisbursementIntent::query()->where('disbursement_id', $disbursement->id)->sole();
+    $closing = DisbursementClosing::query()->where('disbursement_id', $disbursement->id)->sole();
+    $ledger = app(DisbursementPayoutLedger::class);
+    $post = fn (string $operationId): bool => DB::transaction(fn (): bool => $ledger->post($disbursement->business_id, $closing->id, $operationId, (string) $intent->amount));
+
+    expect($post($intent->operation_id))->toBeTrue()->and(LedgerEntry::query()->where('kind', 'disbursement_payout')->count())->toBe(1)
+        ->and(fn (): bool => $post(strtolower((string) Str::ulid())))->toThrow(WalletViolation::class, 'WALLET_POSTING_CONFLICT');
+
+    // A payout entry the database cannot bind to its closing's intent amount is refused at commit.
+    $entry = LedgerEntry::query()->where('kind', 'disbursement_payout')->sole();
+    // The entry the ledger posted passes the commit check; the test's own transaction never commits, so run it now.
+    DB::statement('SET CONSTRAINTS ledger_entries_disbursement_payout_bound, ledger_lines_entry_disbursement_payout_bound IMMEDIATE');
+    DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+    DB::statement('ALTER TABLE ledger_entries DROP CONSTRAINT ledger_entries_kind_source_type_source_id_unique');
+    DB::statement('SET CONSTRAINTS ALL DEFERRED');
+    expect(fn () => DB::transaction(function () use ($entry): void {
+        $copy = strtolower((string) Str::ulid());
+        DB::table('ledger_entries')->insert([...collect($entry->getAttributes())->except(['id', 'wallet_owner', 'created_xid'])->all(), 'id' => $copy]);
+        foreach (DB::table('ledger_lines')->where('entry_id', $entry->id)->get() as $line) {
+            DB::table('ledger_lines')->insert([...(array) $line, 'id' => strtolower((string) Str::ulid()), 'entry_id' => $copy, 'amount' => '1']);
+        }
+        DB::statement('SET CONSTRAINTS ledger_entries_disbursement_payout_bound IMMEDIATE');
+    }))->toThrow(QueryException::class, 'must move exactly its intent amount');
+    expect(fn () => DB::transaction(function () use ($entry): void {
+        DB::table('ledger_entries')->insert([...collect($entry->getAttributes())->except(['id', 'wallet_owner', 'created_xid'])->all(),
+            'id' => strtolower((string) Str::ulid()), 'source_id' => strtolower((string) Str::ulid())]);
+        DB::statement('SET CONSTRAINTS ledger_entries_disbursement_payout_bound IMMEDIATE');
+    }))->toThrow(QueryException::class, 'must settle an issued closing');
 });
 
 it('shows a disbursement opened before the fee rule with no fee, and refuses a fee the rule did not compute', function (): void {

@@ -6,6 +6,7 @@ import notes from './notes'
 import reports from './reports'
 import sections from './sections'
 import investors from './investors'
+import users from './users'
 import businesses from './businesses'
 import auditors from './auditors'
 import staff from './staff'
@@ -17,8 +18,10 @@ import exceptions from './exceptions'
 import primaryMarket from './primary-market'
 import payments from './payments'
 import coverage from './coverage'
+import accessRequests from './access-requests'
 import complaints from './complaints'
 import systemHealth from './system-health'
+import roleApplications from './role-applications'
 import investorVerifications from './investor-verifications'
 import stagingMailTesters from './staging-mail-testers'
 import changes from './changes'
@@ -111,6 +114,7 @@ const staffNamespace = {
     reports: Object.assign(reports, reports),
     sections: Object.assign(sections, sections),
     investors: Object.assign(investors, investors),
+    users: Object.assign(users, users),
     businesses: Object.assign(businesses, businesses),
     auditors: Object.assign(auditors, auditors),
     dashboard: Object.assign(dashboard, dashboard),
@@ -123,8 +127,10 @@ const staffNamespace = {
     primaryMarket: Object.assign(primaryMarket, primaryMarket),
     payments: Object.assign(payments, payments),
     coverage: Object.assign(coverage, coverage),
+    accessRequests: Object.assign(accessRequests, accessRequests),
     complaints: Object.assign(complaints, complaints),
     systemHealth: Object.assign(systemHealth, systemHealth),
+    roleApplications: Object.assign(roleApplications, roleApplications),
     investorVerifications: Object.assign(investorVerifications, investorVerifications),
     stagingMailTesters: Object.assign(stagingMailTesters, stagingMailTesters),
     changes: Object.assign(changes, changes),

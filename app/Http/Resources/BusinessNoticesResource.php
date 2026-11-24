@@ -24,7 +24,7 @@ class BusinessNoticesResource extends JsonResource
         $prefix = $request->routeIs('api.*') ? 'api.v1.' : '';
         $business = $inbox['business_id'];
 
-        return ['unread' => $inbox['unread'],
+        return ['unread' => $inbox['unread'], 'server_time' => now()->toIso8601String(),
             'notices' => array_map(fn (array $notice): array => [...$notice,
                 'link' => ['url' => match ($notice['kind']) {
                     'business.application_approved' => route($prefix.'business.applications.publish.show',
@@ -33,6 +33,10 @@ class BusinessNoticesResource extends JsonResource
                         ['business' => $business, 'report' => (string) $notice['facts']['report_id']], false),
                     'business.raise_expired', 'business.raise_funded', 'business.disbursement_sent' => route($prefix.'business.campaigns.show', ['business' => $business, 'campaign' => (string) $notice['facts']['campaign_id']], false),
                     'business.reporting_window_open' => route('business.audit-prep', ['business' => $business], false),
+                    'business.readiness_stage_changed', 'business.readiness_requirement_due', 'business.readiness_requirement_closing',
+                    'business.readiness_requirement_overdue' => route('business.readiness', ['business' => $business], false),
+                    'business.visit_ready_open', 'business.visit_ready_reminder' => route('business.repayments.show', ['business' => $business], false),
+                    'business.repayment_received' => route($prefix.'business.wallet.show', ['business' => $business, 'receipt' => (string) $notice['facts']['repayment_id']], false),
                     'support.complaint_answered', 'support.complaint_resolved' => route('business.profile', ['business' => $business, 'section' => 'support'], false),
                     default => route($prefix.'business.wallet.show', ['business' => $business], false),
                 }, 'method' => 'get'],

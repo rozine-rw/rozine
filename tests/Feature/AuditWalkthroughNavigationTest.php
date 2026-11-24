@@ -75,7 +75,7 @@ it('links the Business list only to its own latest unamended sealed report, and 
     $link = ['url' => '/api/v1/business/'.$fixture['audit']['business'].'/audit-reports/'.$fixture['report']->id, 'method' => 'get'];
     $due = AuditReportPublication::query()->sole()->due_at->utc()->format('Y-m-d\TH:i:s\Z');
     expect($read()[0]['audit_report'])->toBe(['id' => $fixture['report']->id, 'kind' => 'flash', 'status' => 'pending', 'due_at' => $due, 'link' => $link]);
-    Fixture::cosign($fixture);
+    Fixture::publish($fixture);
     expect($read()[0]['audit_report']['status'])->toBe('published');
     app(AmendAuditReport::class)->handle($fixture['user']->id, 1, $fixture['report']->id, $fixture['report']->refresh()->revision, (string) Str::uuid());
     expect($read()[0]['audit_report'])->toBeNull();
@@ -114,7 +114,7 @@ it('renders route and model misses as a neutral browser 404 and preserves JSON r
 it('excludes published assignments before pagination and restores a draft amendment to active work', function (): void {
     $fixture = Fixture::ready();
     Fixture::seal($fixture);
-    Fixture::cosign($fixture);
+    Fixture::publish($fixture);
     $active = [];
     foreach (range(1, 2) as $number) {
         $authority = BusinessAuthorityFixture::make();

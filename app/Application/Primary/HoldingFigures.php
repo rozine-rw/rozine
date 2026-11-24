@@ -4,22 +4,27 @@ declare(strict_types=1);
 
 namespace App\Application\Primary;
 
+use App\Application\Primary\Contracts\HoldingPayouts;
 use App\Application\Primary\Contracts\InvestorHoldings;
 use Brick\Math\BigInteger;
 use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;
 
 /**
- * The figures an Investor sees for issued Holdings, from the issue alone. Nothing is serviced yet,
- * so nothing has been received: every Holding is valued at what was invested, with no gain, and
- * every scheduled instalment still due is a projection. An instalment reaches the Investor net of
+ * The figures an Investor sees for issued Holdings, from the issue and what servicing has paid on
+ * to each so far (`HoldingPayouts`). A Holding is valued at what was invested plus the gross return
+ * received, and every scheduled instalment still unpaid and due today or later is a projection. An instalment reaches the Investor net of
  * the earnings fee locked at commitment, rounded half up per instalment as the checkout quoted it.
  *
  * @phpstan-import-type IssuedHoldingRecord from InvestorHoldings
  * @phpstan-import-type Money from InvestorHoldings
+ * @phpstan-import-type HoldingPayout from HoldingPayouts
  *
  * @phpstan-type Card array{name: string, accent: string, industry: string, district: string, rating: array{band: string, score: string}, investors: int}
- * @phpstan-type HeldPosition array{holding: IssuedHoldingRecord, card: Card}
+ * @phpstan-type HeldPosition array{holding: IssuedHoldingRecord, card: Card, paid: list<HoldingPayout>}
+ * @phpstan-type Projectable array{holding: array{schedule: list<array{index: int, due_on: string, principal: Money, return: Money}>, terms: array{earnings_fee: array{rate_bps: int}}},
+ *     card: array{name: string, accent: string}, paid: list<HoldingPayout>}
+ * @phpstan-type Received array{made: int, principal: BigInteger, return: BigInteger, net: BigInteger}
  * @phpstan-type Projected array{due_on: string, amount: Money, name: string, accent: string}
  */
 final class HoldingFigures
@@ -57,9 +62,33 @@ final class HoldingFigures
     }
 
     /**
-     * The scheduled instalments due today or later in Kigali, earliest first, each net.
+     * The Holding as its units still held carry it, once some were sold on the market: its
+     * principal, schedule, total return and payout fee scaled to the units left (rounded down),
+     * the issue's own record left as it was recorded.
      *
-     * @param  list<HeldPosition>  $positions
+     * @param  IssuedHoldingRecord  $holding
+     * @return IssuedHoldingRecord
+     */
+    public static function held(array $holding, int $resold): array
+    {
+        if ($resold === 0) {
+            return $holding;
+        }
+        $units = (int) $holding['units'];
+        $left = $units - $resold;
+        $scale = fn (string $amount): array => self::money(BigInteger::of($amount)->multipliedBy($left)->dividedBy($units, RoundingMode::Down));
+
+        return [...$holding, 'principal' => $scale($holding['principal']['amount']),
+            'schedule' => array_map(fn (array $entry): array => [...$entry, 'principal' => $scale($entry['principal']['amount']),
+                'return' => $scale($entry['return']['amount'])], $holding['schedule']),
+            'rights' => [...$holding['rights'], 'total_return' => $scale($holding['rights']['total_return']['amount'])],
+            'terms' => [...$holding['terms'], 'payout_fee' => $scale($holding['terms']['payout_fee']['amount'])]];
+    }
+
+    /**
+     * The scheduled instalments not yet paid and due today or later in Kigali, earliest first, each net.
+     *
+     * @param  list<Projectable>  $positions
      * @return list<Projected>
      */
     public static function upcoming(array $positions, CarbonImmutable $now): array
@@ -67,8 +96,9 @@ final class HoldingFigures
         $today = $now->setTimezone(self::ZONE)->format('Y-m-d');
         $projected = [];
         foreach ($positions as $position) {
+            $paid = self::paidInstalments($position['paid']);
             foreach ($position['holding']['schedule'] as $entry) {
-                if ($entry['due_on'] >= $today) {
+                if ($entry['due_on'] >= $today && ! in_array($entry['index'], $paid, true)) {
                     $projected[] = ['due_on' => $entry['due_on'], 'amount' => self::net($entry, $position['holding']['terms']['earnings_fee']['rate_bps']),
                         'name' => $position['card']['name'], 'accent' => $position['card']['accent']];
                 }
@@ -83,6 +113,34 @@ final class HoldingFigures
     public static function kigaliMidnight(string $date): string
     {
         return CarbonImmutable::parse($date, self::ZONE)->startOfDay()->toIso8601String();
+    }
+
+    /**
+     * What servicing has paid on a Holding so far: the instalments paid, and the gross principal,
+     * gross return and net that reached the wallet.
+     *
+     * @param  list<HoldingPayout>  $payouts
+     * @return Received
+     */
+    public static function received(array $payouts): array
+    {
+        $principal = $return = $net = BigInteger::zero();
+        foreach ($payouts as $payout) {
+            $principal = $principal->plus($payout['principal']);
+            $return = $return->plus($payout['return']);
+            $net = $net->plus($payout['net']);
+        }
+
+        return ['made' => count(self::paidInstalments($payouts)), 'principal' => $principal, 'return' => $return, 'net' => $net];
+    }
+
+    /**
+     * @param  list<HoldingPayout>  $payouts
+     * @return list<int>
+     */
+    public static function paidInstalments(array $payouts): array
+    {
+        return array_values(array_unique(array_merge([], ...array_map(fn (array $payout): array => $payout['instalments'], $payouts))));
     }
 
     /** Half-up whole percent of a part in a whole; zero for an empty whole. */

@@ -12,8 +12,8 @@ use App\Domain\Operations\CommandRejection;
 /**
  * The Investor purchase commands as the transport sends them (C3 v2 §2c, AC-04): reserve, confirm
  * and release, and the lookup of each by its own `request_id`. Reserve and confirm take their
- * admission from `PrimaryAdmission`; release needs none. A confirmed commitment is final (INV-R03,
- * Terms §5.5), so cancel always refuses; its money comes back only when the raise does not fill.
+ * admission from `PrimaryAdmission`; release and cancel need none. A confirmed commitment may be
+ * withdrawn (cancel) until its raise reaches 100%, and is final from then on (BRS v3.0 INV-R03).
  */
 final class ManagePrimaryCheckout
 {
@@ -46,12 +46,18 @@ final class ManagePrimaryCheckout
     }
 
     /**
-     * Refuses `COMMITMENT_FINAL` (409) for every commitment, known or not, so the answer says nothing
-     * about whose it is. Earlier `primary.cancel` operations can still be looked up.
+     * The Investor withdraws a commitment before its raise reaches 100% (BRS v3.0 INV-R03): a full,
+     * fee-free refund to Available, and the units go back on offer. From 100% the commitment is
+     * final and this refuses `COMMITMENT_LOCKED` (409). The commitment is resolved to its campaign and
+     * reservation first; one of another Party is not found, as an unknown one is.
+     *
+     * @return array<string, mixed>
      */
-    public function cancel(): never
+    public function cancel(int $userId, int $contextRevision, string $commitmentId, int $expectedRevision, string $requestId): array
     {
-        throw new CommandRejection('COMMITMENT_FINAL', 409);
+        $target = $this->index->commitment($commitmentId);
+
+        return $this->checkout->withdraw($userId, $contextRevision, $target['campaign_id'], $target['reservation_id'], $expectedRevision, $requestId);
     }
 
     /**

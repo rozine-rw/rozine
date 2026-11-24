@@ -38,7 +38,8 @@ it('retains a real ES256 signature and consumes the bound proof once while prese
     expect($record->proof_sha256)->toBe(hash('sha256', $proof['proof']))->and($record->toArray())->not->toHaveKeys(['proof_sha256', 'credential_binding']);
     $request = (string) Str::uuid();
     $receipt = Fixture::seal($fixture, $proof['proof'], $request);
-    expect($receipt['code'])->toBe('AUDIT_SEALED')->and($receipt['revision'])->toBe(6)
+    // A first Flash visit is the baseline: five more steps than a later Flash visit (VIS-R02).
+    expect($receipt['code'])->toBe('AUDIT_SEALED')->and($receipt['revision'])->toBe(11)
         ->and($record->refresh()->consumed_at)->not->toBeNull()
         ->and(Fixture::seal($fixture, $proof['proof'], $request))->toBe($receipt)
         ->and(app(FindAuditReportOperation::class)->handle($fixture['user']->id, 1, 'audit.seal', $request))->toBe($receipt);
@@ -110,7 +111,7 @@ it('serves separate private step-up and journalled seal commands on both transpo
         return $api ? $response->json('data') : $response->viewData('page')['props'];
     };
     expect($read()['allowed_actions'])->toContain('audit.seal');
-    $body = ['audit_id' => $fixture['report']->id, 'expected_revision' => 5, 'identity_context_revision' => 1, 'request_id' => (string) Str::uuid()];
+    $body = ['audit_id' => $fixture['report']->id, 'expected_revision' => 10, 'identity_context_revision' => 1, 'request_id' => (string) Str::uuid()];
     $proof = $this->postJson(route($prefix.'reports.step-up', ['report' => $fixture['report']->id]),
         [...$body, 'digest' => $fixture['fields']['digest'], 'code' => $fixture['code']])->assertOk()->assertJsonStructure(['proof', 'expires_at'])->json('proof');
     $response = $this->postJson(route($prefix.'reports.seal', ['report' => $fixture['report']->id]),
@@ -118,7 +119,7 @@ it('serves separate private step-up and journalled seal commands on both transpo
     $this->getJson(route($prefix.'reports.operations.show', ['request_id' => $body['request_id'], 'command' => 'audit.seal']))
         ->assertOk()->assertJsonPath('data.sealed.signature_ref', $response->json('data.sealed.signature_ref'));
     expect($read()['stage']['step'])->toBe('sealed')->and($read()['stage']['seal_status'])->toBe('valid');
-    app(AmendAuditReport::class)->handle($fixture['user']->id, 1, $fixture['report']->id, 6, (string) Str::uuid());
+    app(AmendAuditReport::class)->handle($fixture['user']->id, 1, $fixture['report']->id, 11, (string) Str::uuid());
     expect($read()['stage']['amended_by'])->not->toBeNull();
     if ($api) {
         Sanctum::actingAs($fixture['user'], ['auditor:read']);
@@ -132,7 +133,7 @@ it('serves separate private step-up and journalled seal commands on both transpo
 it('returns precise wrong-code errors and a shared five-attempt account throttle', function (): void {
     $fixture = Fixture::ready();
     $this->actingAs($fixture['user']);
-    $body = ['audit_id' => $fixture['report']->id, 'expected_revision' => 5, 'identity_context_revision' => 1,
+    $body = ['audit_id' => $fixture['report']->id, 'expected_revision' => 10, 'identity_context_revision' => 1,
         'request_id' => (string) Str::uuid(), 'digest' => $fixture['fields']['digest'], 'code' => $fixture['code'] === '000000' ? '111111' : '000000'];
     for ($i = 0; $i < 5; $i++) {
         $this->postJson(route('auditor.reports.step-up', ['report' => $fixture['report']->id]), $body)->assertUnprocessable()->assertJsonValidationErrors('code');
@@ -165,10 +166,10 @@ it('records malformed step inputs without losing existing receipt identities', f
     ['user' => $user, 'report' => $report] = AuditLedgerFixture::ready();
     $request = (string) Str::uuid();
     $input = ['observed_stock' => $amount, 'reconciled' => true];
-    $result = app(SaveAuditReportStep::class)->handle($user->id, 1, $report->id, 4, 'ledger', $input, $request);
+    $result = app(SaveAuditReportStep::class)->handle($user->id, 1, $report->id, 9, 'ledger', $input, $request);
     expect($result['code'])->toBe('AUDIT_STEP_INPUT_INVALID')->and($result['field_errors'])->toHaveKey('observed_stock')
         ->and(app(FindAuditReportOperation::class)->handle($user->id, 1, 'audit.save_step', $request))->toBe($result);
-    expect(fn () => app(SaveAuditReportStep::class)->handle($user->id, 1, $report->id, 4, 'ledger', [...$input, 'observed_stock' => 1.25], $request))
+    expect(fn () => app(SaveAuditReportStep::class)->handle($user->id, 1, $report->id, 9, 'ledger', [...$input, 'observed_stock' => 1.25], $request))
         ->toThrow(CommandRejection::class, 'IDEMPOTENCY_CONFLICT');
 })->with([3.14, 9007199254740992, "38\u{2028}000"]);
 

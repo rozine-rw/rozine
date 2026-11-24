@@ -33,6 +33,6 @@ it('refuses negative active capital', function (): void {
 
 it('pins the five KYC-R05 statements to their version and digest', function (): void {
     expect(RiskStatements::STATEMENTS)->toHaveCount(5)
-        ->and(RiskStatements::VERSION)->toBe('brs-2.0-kyc-r05')
+        ->and(RiskStatements::VERSION)->toBe('brs-3.0-kyc-r05')
         ->and(RiskStatements::sha256())->toMatch('/^[0-9a-f]{64}$/')->toBe(RiskStatements::sha256());
 });

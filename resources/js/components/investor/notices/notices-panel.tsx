@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { useModalDialog } from '@/hooks/use-modal-dialog';
 import { useTranslation } from '@/hooks/use-translation';
+import type { MessageCode } from '@/lib/i18n/types';
 import {
     formatDate,
     formatDateTime,
@@ -26,8 +27,23 @@ const stroke = {
 const TONES: Record<InvestorNotice['kind'], Tone> = {
     'wallet.deposit_received': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
         icon: <path d="M12 5v14M5 12l7 7 7-7" {...stroke} />,
+    },
+    'wallet.payout_received': {
+        bar: 'bg-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
+        icon: <path d="M4 17l5-5 4 4 7-7M14 9h6v6" {...stroke} />,
+    },
+    'market.units_bought': {
+        bar: 'bg-rz-accent-fill',
+        tile: 'bg-[rgba(36,99,235,.10)] text-rz-accent',
+        icon: <path d="M7 7h10v10M7 17L17 7" {...stroke} />,
+    },
+    'market.units_sold': {
+        bar: 'bg-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
+        icon: <path d="M17 17H7V7M17 7L7 17" {...stroke} />,
     },
     'wallet.withdrawal_sent': {
         bar: 'bg-[#0c1830] dark:bg-rz-slate',
@@ -36,7 +52,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'wallet.withdrawal_returned': {
         bar: 'bg-[#b07a12]',
-        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418]',
+        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418] dark:text-rz-warning-text',
         icon: (
             <path
                 d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"
@@ -46,7 +62,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'primary.refunded': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
         icon: (
             <path
                 d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"
@@ -56,7 +72,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'primary.report_published': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
         icon: (
             <path
                 d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6zM9 12l2 2 4-4.5"
@@ -66,12 +82,12 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'primary.raise_funded': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
         icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
     },
     'primary.commitment_confirmed': {
         bar: 'bg-[#1e3aff]',
-        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff] dark:text-rz-investor-text',
         icon: (
             <>
                 <rect x="4" y="6" width="16" height="12" rx="2" {...stroke} />
@@ -81,7 +97,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'primary.holding_issued': {
         bar: 'bg-[#1e3aff]',
-        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff] dark:text-rz-investor-text',
         icon: (
             <>
                 <rect x="4" y="6" width="16" height="12" rx="2" {...stroke} />
@@ -91,7 +107,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'verification.approved': {
         bar: 'bg-[#1e3aff]',
-        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff] dark:text-rz-investor-text',
         icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
     },
     'security.password_changed': {
@@ -126,27 +142,27 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'verification.rejected': {
         bar: 'bg-[#b3383c]',
-        tile: 'bg-[rgba(179,56,60,.1)] text-[#b3383c]',
+        tile: 'bg-[rgba(179,56,60,.1)] text-[#b3383c] dark:text-rz-danger-text',
         icon: <path d="M12 7v6M12 16.5v.5" {...stroke} />,
     },
     'business.raise_funded': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
         icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
     },
     'business.disbursement_sent': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
         icon: <path d="M5 12h14M13 6l6 6-6 6" {...stroke} />,
     },
     'business.deposit_received': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
         icon: <path d="M12 5v14M5 12l7 7 7-7" {...stroke} />,
     },
     'business.application_approved': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
         icon: <path d="M5 12.5l4.5 4.5L19 7.5" {...stroke} />,
     },
     'business.withdrawal_sent': {
@@ -154,9 +170,14 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
         tile: 'bg-[rgba(12,24,48,.08)] text-[#0c1830] dark:text-rz-ink',
         icon: <path d="M12 19V5M5 12l7-7 7 7" {...stroke} />,
     },
+    'business.repayment_received': {
+        bar: 'bg-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
+        icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
+    },
     'business.withdrawal_returned': {
         bar: 'bg-[#b07a12]',
-        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418]',
+        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418] dark:text-rz-warning-text',
         icon: (
             <path
                 d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"
@@ -166,7 +187,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'business.report_sealed': {
         bar: 'bg-[#1e3aff]',
-        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff] dark:text-rz-investor-text',
         icon: (
             <>
                 <rect
@@ -193,7 +214,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'business.reporting_window_open': {
         bar: 'bg-[#1e3aff]',
-        tile: 'bg-[rgba(30,58,255,.10)] text-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.10)] text-[#1e3aff] dark:text-rz-investor-text',
         icon: (
             <>
                 <rect
@@ -208,19 +229,95 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
             </>
         ),
     },
+    'business.readiness_stage_changed': {
+        bar: 'bg-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.10)] text-[#1e3aff] dark:text-rz-investor-text',
+        icon: <path d="M4 20h4v-5h4v-5h4V5h4" {...stroke} />,
+    },
+    'business.readiness_requirement_due': {
+        bar: 'bg-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.10)] text-[#1e3aff] dark:text-rz-investor-text',
+        icon: (
+            <>
+                <rect
+                    x="5"
+                    y="3.5"
+                    width="14"
+                    height="17"
+                    rx="2.4"
+                    {...stroke}
+                />
+                <path d="m8.5 12 2.5 2.5 4.5-5" {...stroke} />
+            </>
+        ),
+    },
+    'business.readiness_requirement_closing': {
+        bar: 'bg-[#b07a12]',
+        tile: 'bg-[rgba(176,122,18,.12)] text-[#b07a12]',
+        icon: (
+            <>
+                <circle cx="12" cy="12" r="8" {...stroke} />
+                <path d="M12 8v4l2.5 2.5" {...stroke} />
+            </>
+        ),
+    },
+    'business.readiness_requirement_overdue': {
+        bar: 'bg-[#c2410c]',
+        tile: 'bg-[rgba(194,65,12,.12)] text-[#c2410c] dark:text-rz-warning-text',
+        icon: (
+            <>
+                <circle cx="12" cy="12" r="8" {...stroke} />
+                <path d="M12 7.5v5.5M12 16.2v.3" {...stroke} />
+            </>
+        ),
+    },
+    'business.visit_ready_open': {
+        bar: 'bg-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.10)] text-[#1e3aff] dark:text-rz-investor-text',
+        icon: (
+            <>
+                <rect
+                    x="5.5"
+                    y="4.5"
+                    width="13"
+                    height="15"
+                    rx="2.4"
+                    {...stroke}
+                />
+                <path d="m8.5 12 2 2 4.5-4.5" {...stroke} />
+            </>
+        ),
+    },
+    'business.visit_ready_reminder': {
+        bar: 'bg-[#b07a12]',
+        tile: 'bg-[rgba(176,122,18,.12)] text-[#b07a12]',
+        icon: (
+            <>
+                <rect
+                    x="5.5"
+                    y="4.5"
+                    width="13"
+                    height="15"
+                    rx="2.4"
+                    {...stroke}
+                />
+                <path d="M9 10h6M9 14h4" {...stroke} />
+            </>
+        ),
+    },
     'auditor.accreditation_approved': {
         bar: 'bg-[#1e3aff]',
-        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff] dark:text-rz-investor-text',
         icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
     },
     'auditor.accreditation_rejected': {
         bar: 'bg-[#b3383c]',
-        tile: 'bg-[rgba(179,56,60,.1)] text-[#b3383c]',
+        tile: 'bg-[rgba(179,56,60,.1)] text-[#b3383c] dark:text-rz-danger-text',
         icon: <path d="M12 7v6M12 16.5v.5" {...stroke} />,
     },
     'support.complaint_answered': {
         bar: 'bg-[#1e3aff]',
-        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff]',
+        tile: 'bg-[rgba(30,58,255,.1)] text-[#1e3aff] dark:text-rz-investor-text',
         icon: (
             <path
                 d="M21 11.5a8.5 8.5 0 0 1-12.4 7.55L3.5 20.5l1.45-5.05A8.5 8.5 0 1 1 21 11.5Z"
@@ -230,12 +327,12 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'support.complaint_resolved': {
         bar: 'bg-[#17795a]',
-        tile: 'bg-[rgba(23,121,90,.1)] text-[#157357]',
+        tile: 'bg-[rgba(23,121,90,.1)] text-[#157357] dark:text-rz-positive',
         icon: <path d="m5 12.5 4.5 4.5L19 7.5" {...stroke} />,
     },
     'auditor.accreditation_renewal_due': {
         bar: 'bg-[#0c1830] dark:bg-rz-slate',
-        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418]',
+        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418] dark:text-rz-warning-text',
         icon: (
             <>
                 <path d="M3 9.5 12 5l9 4.5-9 4.5Z" {...stroke} />
@@ -245,7 +342,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'auditor.report_reminder': {
         bar: 'bg-[#0c1830] dark:bg-rz-slate',
-        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418]',
+        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418] dark:text-rz-warning-text',
         icon: (
             <>
                 <path d="M3 9.5 12 5l9 4.5-9 4.5Z" {...stroke} />
@@ -255,7 +352,7 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
     },
     'auditor.job_offered': {
         bar: 'bg-[#0c1830] dark:bg-rz-slate',
-        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418]',
+        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418] dark:text-rz-warning-text',
         icon: (
             <>
                 <path
@@ -314,12 +411,14 @@ export function useNotices(href: RouteLink) {
  * catalogs by kind.
  */
 /**
- * "5 days ago" (design notifications panel), counted from the page's server clock. Without one the
- * notice keeps its exact Kigali date and time.
+ * "5 days ago" (design notifications panel), counted from the inbox's own server clock, so every
+ * role's bell reads alike (#595), or else the page's. Without either the notice keeps its exact
+ * Kigali date and time.
  */
-function useNoticeTime(): (at: string) => string {
+function useNoticeTime(inboxTime?: string): (at: string) => string {
     const { t, locale } = useTranslation();
-    const serverTime: unknown = usePage().props.server_time;
+    const pageTime: unknown = usePage().props.server_time;
+    const serverTime = inboxTime ?? pageTime;
 
     return (at: string) => {
         if (typeof serverTime !== 'string') {
@@ -361,12 +460,15 @@ function useNoticeTime(): (at: string) => string {
 export function NoticesPanel({
     notices: { inbox, failed, load, send },
     onClose,
+    audience = 'investor',
 }: {
     notices: ReturnType<typeof useNotices>;
     onClose: () => void;
+    /** Whose bell this is, for the notices whose wording differs by role (#595). */
+    audience?: NoticeAudience;
 }) {
     const { t, locale } = useTranslation();
-    const noticeTime = useNoticeTime();
+    const noticeTime = useNoticeTime(inbox?.server_time);
 
     const dialog = useModalDialog<HTMLElement>(onClose);
 
@@ -402,7 +504,7 @@ export function NoticesPanel({
                 role="dialog"
                 aria-modal="true"
                 aria-label={t('investor.notices.title')}
-                className="dark:bg-rz-bg fixed inset-y-0 right-0 z-[71] flex w-[88%] max-w-[352px] animate-[rz-slide_.28s_cubic-bezier(.22,.61,.36,1)_both] flex-col bg-[#f4f7fc] shadow-[-18px_0_44px_-10px_rgba(20,45,95,.34)] lg:w-[380px] lg:max-w-none"
+                className="fixed inset-y-0 right-0 z-[71] flex w-[88%] max-w-[352px] animate-[rz-slide_.28s_cubic-bezier(.22,.61,.36,1)_both] flex-col bg-[#f4f7fc] shadow-[-18px_0_44px_-10px_rgba(20,45,95,.34)] lg:w-[380px] lg:max-w-none dark:bg-rz-page"
             >
                 <header className="flex shrink-0 items-center gap-[9px] border-b border-rz-border bg-rz-surface px-4 pt-[calc(env(safe-area-inset-top)+20px)] pb-3.5">
                     <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -437,7 +539,7 @@ export function NoticesPanel({
                         type="button"
                         onClick={onClose}
                         aria-label={t('investor.notices.close')}
-                        className="dark:bg-rz-surface-2 size-8 shrink-0 rounded-[10px] bg-[#f1f4f9] text-[15px] text-rz-secondary"
+                        className="size-8 shrink-0 rounded-[10px] bg-[#f1f4f9] text-[15px] text-rz-secondary dark:bg-rz-surface-muted"
                     >
                         ✕
                     </button>
@@ -537,7 +639,7 @@ export function NoticesPanel({
                                             )}
                                         </span>
                                         <span className="mt-[3px] block text-xs leading-normal text-rz-secondary">
-                                            {body(notice, t, locale)}
+                                            {body(notice, t, locale, audience)}
                                         </span>
                                     </span>
                                 </button>
@@ -550,15 +652,86 @@ export function NoticesPanel({
     );
 }
 
+type NoticeAudience = 'investor' | 'business' | 'auditor';
+
+const VERIFIED_BODY = {
+    investor: 'investor.notices.verification.approved.body',
+    business: 'investor.notices.verification.approved.body_business',
+    auditor: 'investor.notices.verification.approved.body_auditor',
+} as const;
+
+type JobOfferedFacts = Extract<
+    InvestorNotice,
+    { kind: 'auditor.job_offered' }
+>['facts'];
+
+/** An open offer's sentence, by the job's type. */
+const JOB_OFFERED_BODY = {
+    flash: 'investor.notices.auditor.job_offered.body_flash',
+    routine: 'investor.notices.auditor.job_offered.body_routine',
+    statement_review:
+        'investor.notices.auditor.job_offered.body_statement_review',
+} as const satisfies Record<JobOfferedFacts['type'], MessageCode>;
+
+/** The job's type as a settled offer names it. */
+const JOB_OFFERED_TYPE = {
+    flash: 'investor.notices.auditor.job_offered.type.flash',
+    routine: 'investor.notices.auditor.job_offered.type.routine',
+    statement_review:
+        'investor.notices.auditor.job_offered.type.statement_review',
+} as const satisfies Record<JobOfferedFacts['type'], MessageCode>;
+
+/** A settled offer's sentence, by how it turned out. */
+const JOB_OFFERED_SETTLED = {
+    accepted: 'investor.notices.auditor.job_offered.accepted',
+    declined: 'investor.notices.auditor.job_offered.declined',
+    expired: 'investor.notices.auditor.job_offered.expired',
+    withdrawn: 'investor.notices.auditor.job_offered.withdrawn',
+} as const satisfies Record<
+    Exclude<NonNullable<JobOfferedFacts['outcome']>, 'open'>,
+    MessageCode
+>;
+
 function body(
     notice: InvestorNotice,
     t: ReturnType<typeof useTranslation>['t'],
     locale: string,
+    audience: NoticeAudience,
 ): string {
     switch (notice.kind) {
         case 'wallet.deposit_received':
             return t('investor.notices.wallet.deposit_received.body', {
                 amount: formatRwf(notice.facts),
+            });
+        case 'wallet.payout_received':
+            return t('investor.notices.wallet.payout_received.body', {
+                net: formatRwf(notice.facts),
+                gross: formatRwf({
+                    currency: notice.facts.currency,
+                    amount: notice.facts.gross,
+                }),
+                fee: formatRwf({
+                    currency: notice.facts.currency,
+                    amount: notice.facts.fee,
+                }),
+                title: notice.facts.title,
+                instalments: notice.facts.instalments,
+            });
+        case 'market.units_bought':
+            return t('investor.notices.market.units_bought.body', {
+                count: Number(notice.facts.units),
+                amount: formatRwf(notice.facts),
+                title: notice.facts.title,
+            });
+        case 'market.units_sold':
+            return t('investor.notices.market.units_sold.body', {
+                count: Number(notice.facts.units),
+                amount: formatRwf(notice.facts),
+                fee: formatRwf({
+                    currency: notice.facts.currency,
+                    amount: notice.facts.fee,
+                }),
+                title: notice.facts.title,
             });
         case 'wallet.withdrawal_sent':
             return t('investor.notices.wallet.withdrawal_sent.body', {
@@ -582,12 +755,12 @@ function body(
             return t('investor.notices.primary.raise_funded.body', {
                 business: notice.facts.business,
                 amount: formatRwf(notice.facts),
-                units: notice.facts.units,
+                count: Number(notice.facts.units),
             });
         case 'primary.commitment_confirmed':
             return t('investor.notices.primary.commitment_confirmed.body', {
                 business: notice.facts.business,
-                units: notice.facts.units,
+                count: Number(notice.facts.units),
                 amount: formatRwf(notice.facts),
                 rate: (Number(notice.facts.fee_rate_bps) / 100).toFixed(1),
                 reference: notice.facts.reference,
@@ -595,7 +768,7 @@ function body(
         case 'primary.holding_issued':
             return t('investor.notices.primary.holding_issued.body', {
                 business: notice.facts.business,
-                units: notice.facts.units,
+                count: Number(notice.facts.units),
                 amount: formatRwf(notice.facts),
                 maturity: formatRwf({
                     currency: 'RWF',
@@ -658,7 +831,7 @@ function body(
                 reason: notice.facts.reason,
             });
         case 'verification.approved':
-            return t('investor.notices.verification.approved.body');
+            return t(VERIFIED_BODY[audience]);
         case 'security.password_changed':
             return t('investor.notices.security.password_changed.body');
         case 'security.new_device':
@@ -682,6 +855,12 @@ function body(
                 title: notice.facts.title,
                 amount: formatRwf(notice.facts),
                 months: notice.facts.term_months,
+            });
+        case 'business.repayment_received':
+            return t('investor.notices.business.repayment_received.body', {
+                amount: formatRwf(notice.facts),
+                title: notice.facts.title,
+                instalments: notice.facts.instalments,
             });
         case 'business.withdrawal_sent':
             return t('investor.notices.business.withdrawal_sent.body', {
@@ -716,6 +895,42 @@ function body(
                     locale,
                 ),
                 date: formatDate(notice.facts.closes_at, locale),
+            });
+        case 'business.readiness_stage_changed':
+            return t('investor.notices.business.readiness_stage_changed.body', {
+                stage: t(
+                    `business.readiness.stage.${notice.facts.stage}` as 'business.readiness.stage.0',
+                ),
+                previous: t(
+                    `business.readiness.stage.${notice.facts.previous}` as 'business.readiness.stage.0',
+                ),
+                month: formatMonthYearLong(
+                    `${notice.facts.period}-01T00:00:00+02:00`,
+                    locale,
+                ),
+            });
+        case 'business.readiness_requirement_due':
+        case 'business.readiness_requirement_closing':
+        case 'business.readiness_requirement_overdue':
+            return t(`investor.notices.${notice.kind}.body`, {
+                requirement: t(
+                    `business.readiness.requirement.${notice.facts.code}.title`,
+                ),
+                date: formatDate(
+                    `${notice.facts.due_on}T00:00:00+02:00`,
+                    locale,
+                ),
+            });
+        case 'business.visit_ready_open':
+            return t('investor.notices.business.visit_ready_open.body', {
+                date: formatDate(notice.facts.due_on, locale),
+                items: notice.facts.items,
+            });
+        case 'business.visit_ready_reminder':
+            return t('investor.notices.business.visit_ready_reminder.body', {
+                date: formatDate(notice.facts.due_on, locale),
+                open: notice.facts.open,
+                items: notice.facts.items,
             });
         case 'auditor.accreditation_approved':
             return t('investor.notices.auditor.accreditation_approved.body', {
@@ -756,17 +971,22 @@ function body(
                     date: formatDate(notice.facts.due_at, locale),
                 },
             );
-        case 'auditor.job_offered':
-            return t(
-                notice.facts.type === 'flash'
-                    ? 'investor.notices.auditor.job_offered.body_flash'
-                    : 'investor.notices.auditor.job_offered.body_routine',
-                {
-                    business: notice.facts.business,
-                    location: notice.facts.location,
-                    time: formatDateTime(notice.facts.accept_by, locale),
-                },
-            );
+        case 'auditor.job_offered': {
+            const outcome = notice.facts.outcome ?? 'open';
+            const facts = {
+                business: notice.facts.business,
+                location: notice.facts.location,
+                time: formatDateTime(notice.facts.accept_by, locale),
+            };
+
+            /* Once the offer is settled the notice says how, not "accept by" a time gone by (#587). */
+            return outcome === 'open'
+                ? t(JOB_OFFERED_BODY[notice.facts.type], facts)
+                : t(JOB_OFFERED_SETTLED[outcome], {
+                      ...facts,
+                      job: t(JOB_OFFERED_TYPE[notice.facts.type]),
+                  });
+        }
         case 'business.raise_expired':
             return t('investor.notices.business.raise_expired.body', {
                 title: notice.facts.title,

@@ -191,6 +191,10 @@ it('answers a refused hold with each refused line in its receipt, directly and f
     ($this->acknowledge)();
     $quote = ($this->quote)()->assertOk()->json('data');
     $requestId = (string) Str::uuid();
+    $refusedCampaign = max($this->campaign->id, $this->second->id);
+    /** @var list<array{cart_line_id: string, campaign_id: string}> $quotedLines */
+    $quotedLines = $quote['lines'];
+    $refusedLine = array_values(array_filter($quotedLines, fn (array $line): bool => $line['campaign_id'] === $refusedCampaign))[0];
 
     $refused = ($this->reserve)($quote, $requestId)->assertUnprocessable()->json();
     ($this->committed)();
@@ -199,7 +203,8 @@ it('answers a refused hold with each refused line in its receipt, directly and f
         ->and($refused['data'])->toMatchArray(['current' => null, 'next' => null])
         ->and($refused['data']['receipt'])->toMatchArray(['atomic' => true, 'financial_effect' => 'none', 'cart_refusals' => []])
         ->and($refused['data']['receipt']['line_refusals'])->toHaveCount(1)
-        ->and($refused['data']['receipt']['line_refusals'][0])->toMatchArray(['code' => 'INSUFFICIENT_AVAILABLE_FUNDS', 'http_status' => 422])
+        ->and($refused['data']['receipt']['line_refusals'][0])->toMatchArray(['cart_line_id' => $refusedLine['cart_line_id'],
+            'campaign_id' => $refusedLine['campaign_id'], 'code' => 'INSUFFICIENT_AVAILABLE_FUNDS', 'http_status' => 422])
         ->and(($this->lookup)($requestId, ['command' => 'cart.reserve'])->assertUnprocessable()->json('data.receipt.line_refusals'))
         ->toBe($refused['data']['receipt']['line_refusals']);
 });

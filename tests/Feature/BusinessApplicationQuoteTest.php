@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Application\Business\Contracts\ServicingRecord;
 use App\Application\Business\EvaluateBusinessApplication;
 use App\Application\Business\FindBusinessOperation;
+use App\Application\Business\GetBusinessApplicationPage;
 use App\Application\Business\GetBusinessApplicationQuote;
 use App\Application\Business\RecordIsolatedBusinessCreditFacts;
 use App\Application\Business\SaveBusinessApplication;
@@ -60,6 +62,62 @@ it('publishes one immutable replayable quote with a minimal public offer and exa
     expect(fn () => BusinessQuoteFixture::evaluate($fixture, accepted: '5000000', request: $request))->toThrow(CommandRejection::class, 'IDEMPOTENCY_CONFLICT');
 });
 
+it('caps a repeat raise at 1.5 times the last note repaid in full, and refuses to accept more (REP-R05)', function (): void {
+    $fixture = BusinessQuoteFixture::make();
+    app()->instance(ServicingRecord::class, new class implements ServicingRecord
+    {
+        public function forBusiness(string $businessId): array
+        {
+            return ['repaid' => [['campaign_id' => 'older', 'exposure_reservation_id' => 'older-reservation', 'principal' => '20000000'],
+                ['campaign_id' => 'latest', 'exposure_reservation_id' => 'latest-reservation', 'principal' => '6000000']], 'instalments_paid' => 12, 'paid_on_time' => 12];
+        }
+    });
+
+    $result = BusinessQuoteFixture::evaluate($fixture);
+    expect($result['data']['quote']['principal']['amount'])->toBe('9000000')
+        ->and($result['data']['quote']['offered_principal']['amount'])->toBe('9000000')
+        ->and($result['data']['quote']['reason_codes'])->toContain('REPEAT_GROWTH_CAPPED')
+        ->and($result['data']['quote']['repeat_growth_limit'])->toEqual(['currency' => 'RWF', 'amount' => '9000000']);
+    $payload = BusinessApplicationQuote::query()->firstOrFail()->payload;
+    expect($payload['result']['inputs']['last_repaid_principal'])->toBe('6000000')
+        ->and(app(ApplicationUnderwriting::class)->evaluate($payload['result']['inputs']))->toBe($payload['result']);
+    expect(BusinessQuoteFixture::evaluate($fixture, 3, '9005000'))->toMatchArray(['status' => 'rejected', 'code' => 'INVALID_ACCEPTED_PRINCIPAL', 'http_status' => 422]);
+});
+
+/** @param  list<string>  $principals */
+function repaidServicing(array $principals): ServicingRecord
+{
+    return new class($principals) implements ServicingRecord
+    {
+        /** @param  list<string>  $principals */
+        public function __construct(private array $principals) {}
+
+        public function forBusiness(string $businessId): array
+        {
+            return ['repaid' => array_map(fn (string $principal, int $index): array => ['campaign_id' => "repaid-{$index}",
+                'exposure_reservation_id' => "reservation-{$index}", 'principal' => $principal], $this->principals, array_keys($this->principals)),
+                'instalments_paid' => 6, 'paid_on_time' => 6];
+        }
+    };
+}
+
+it('names the 1.5 times limit on an application signed before the limit existed, only when the offer is within it (QA #673)', function (): void {
+    $fixture = BusinessQuoteFixture::ready();
+    BusinessQuoteFixture::submit($fixture, BusinessQuoteFixture::acceptance($fixture));
+    $signed = BusinessQuoteFixture::quote($fixture);
+    expect($signed['repeat_growth_limit'] ?? null)->toBeNull();
+
+    app()->instance(ServicingRecord::class, repaidServicing([$signed['principal']['amount']]));
+    expect(BusinessQuoteFixture::quote($fixture)['repeat_growth_limit'] ?? null)->not->toBeNull()
+        // The application page reads the signed review, which names it too.
+        ->and(BusinessQuoteFixture::review($fixture)['quote']['repeat_growth_limit'] ?? null)->toEqual(BusinessQuoteFixture::quote($fixture)['repeat_growth_limit'] ?? 'missing')
+        // The business/apply page's own quote prop is built from the page read, which must name it as well.
+        ->and(app(GetBusinessApplicationPage::class)->handle($fixture['audit']['authority']['users'][0]->id, 1, $fixture['audit']['business'],
+            $fixture['application']->id)['review']['quote']['repeat_growth_limit'] ?? null)->toEqual(BusinessQuoteFixture::quote($fixture)['repeat_growth_limit'] ?? 'missing');
+    app()->instance(ServicingRecord::class, repaidServicing(['20000000', '3000000']));
+    expect(BusinessQuoteFixture::quote($fixture))->toHaveKey('repeat_growth_limit', null);
+});
+
 it('keeps the original request and maximum offer when publishing a lower accepted amount', function (): void {
     $fixture = BusinessQuoteFixture::make();
     $first = BusinessQuoteFixture::evaluate($fixture);
@@ -68,6 +126,7 @@ it('keeps the original request and maximum offer when publishing a lower accepte
         ->and($lower['data']['quote']['principal']['amount'])->toBe('5000000')
         ->and($lower['data']['quote']['offered_principal']['amount'])->toBe('10800000')
         ->and($lower['data']['quote']['requested_principal']['amount'])->toBe('10800000')
+        ->and($lower['data']['quote']['repeat_growth_limit'])->toBeNull()
         ->and($lower['data']['quote']['interest']['amount'])->toBe('555000')
         ->and($lower['data']['quote']['quote_id'])->not->toBe($first['data']['quote']['quote_id'])
         ->and(BusinessQuoteFixture::quote($fixture))->toEqual($lower['data']['quote']);
@@ -295,14 +354,32 @@ it('refuses an original request below 1.50 rather than accepting its former coun
     $this->assertDatabaseCount('business_application_signatures', 0);
 });
 
-it('invalidates legacy pending quotes without rewriting their retained payload or operation receipt', function (): void {
+it('does not rescue an unaffordable repeat request through its growth cap or a smaller acceptance', function (): void {
+    $fixture = BusinessQuoteFixture::make(requestedPrincipal: '12000000');
+    app()->instance(ServicingRecord::class, repaidServicing(['6000000']));
+    $request = (string) Str::uuid();
+
+    $receipt = BusinessQuoteFixture::evaluate($fixture, accepted: '9000000', request: $request);
+
+    expect($receipt['data']['quote']['status'])->toBe('refused')
+        ->and($receipt['data']['quote']['code'])->toBe('DSCR_BELOW_CUTOFF')
+        ->and($receipt['data']['quote'])->not->toHaveKey('principal')
+        ->and(BusinessQuoteFixture::evaluate($fixture, accepted: '9000000', request: $request))->toBe($receipt)
+        ->and(app(FindBusinessOperation::class)->handle($fixture['audit']['authority']['users'][0]->id, 1, 'evaluate', $request))->toBe($receipt);
+    $payload = BusinessApplicationQuote::query()->firstOrFail()->payload;
+    expect($payload['result']['inputs']['requested_principal'])->toBe('12000000')
+        ->and($payload['result']['inputs']['last_repaid_principal'])->toBe('6000000')
+        ->and($payload['result']['maximum_capacity']['offer'])->toBeNull();
+    $this->assertDatabaseCount('business_application_submissions', 0);
+    $this->assertDatabaseCount('business_application_signatures', 0);
+});
+
+it('invalidates legacy pending quotes without rewriting their retained payload or operation receipt', function (string $legacyVersion): void {
     $fixture = BusinessQuoteFixture::make();
-    Event::listen('eloquent.creating: '.BusinessApplicationQuote::class, function (BusinessApplicationQuote $quote): void {
+    Event::listen('eloquent.creating: '.BusinessApplicationQuote::class, function (BusinessApplicationQuote $quote) use ($legacyVersion): void {
         $payload = $quote->payload;
-        $payload['calculation_version'] = 'application-underwriting-2';
-        $payload['result']['calculation_version'] = 'application-underwriting-2';
-        $payload['result']['capacity']['calculator_version'] = 'underwriting-1';
-        $payload['result']['maximum_capacity']['calculator_version'] = 'underwriting-1';
+        $payload['calculation_version'] = $legacyVersion;
+        $payload['result']['calculation_version'] = $legacyVersion;
         $quote->forceFill(['payload' => $payload, 'sha256' => hash('sha256', app(CanonicalJson::class)->encode($payload))]);
     });
     $request = (string) Str::uuid();
@@ -322,4 +399,4 @@ it('invalidates legacy pending quotes without rewriting their retained payload o
     $this->assertDatabaseCount('business_application_quotes', 2);
     $this->assertDatabaseCount('business_application_submissions', 0);
     $this->assertDatabaseCount('business_application_signatures', 0);
-});
+})->with(['application-underwriting-2', 'application-underwriting-2-repeat-growth', 'application-underwriting-3']);

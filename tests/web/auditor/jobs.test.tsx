@@ -576,7 +576,7 @@ describe('Auditor Jobs', () => {
         expect(screen.getByText('In progress')).toBeInTheDocument();
         expect(screen.getByText('Overdue')).toBeInTheDocument();
         expect(screen.getByText('Sent back')).toBeInTheDocument();
-        expect(screen.getByText('Awaiting co-sign')).toBeInTheDocument();
+        expect(screen.getByText('In dispute window')).toBeInTheDocument();
         expect(screen.getAllByText('RWF 162M')).toHaveLength(4);
         expect(screen.getAllByText('1.3×')).toHaveLength(3);
         expect(
@@ -709,7 +709,7 @@ describe('Auditor Jobs', () => {
         expect(within(running).getByRole('timer')).toBeInTheDocument();
         expect(within(finished).getByText('Monthly visit')).toBeInTheDocument();
         expect(
-            within(finished).getByText('Awaiting co-signature'),
+            within(finished).getByText('In dispute window'),
         ).toBeInTheDocument();
         expect(within(finished).queryByRole('timer')).not.toBeInTheDocument();
     });
@@ -770,7 +770,7 @@ describe('Auditor outcomes', () => {
                 cosign_due_on: '2026-10-07',
             },
             'Audit sealed and filed',
-            'The field report for Huye Motors is sealed. Huye Motors co-signs by 7 Oct 2026; the engine rates the business from your findings.',
+            'The field report for Huye Motors is sealed. Huye Motors can dispute it until 7 Oct 2026; the engine rates the business from your findings.',
         ],
         [
             {
@@ -780,7 +780,7 @@ describe('Auditor outcomes', () => {
                 cosign_due_on: '2026-10-07',
             },
             'Audit sealed and filed',
-            'The September 2026 report for GreenLeaf Agro — its uploaded statements and your factual findings — is sealed. GreenLeaf Agro co-signs by 7 Oct 2026.',
+            'The September 2026 report for GreenLeaf Agro — its uploaded statements and your factual findings — is sealed. GreenLeaf Agro can dispute it until 7 Oct 2026.',
         ],
         [
             { kind: 'changes_requested', business: 'GreenLeaf Agro' },

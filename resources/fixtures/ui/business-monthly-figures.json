@@ -1,0 +1,53 @@
+{
+    "component": "business/monthly-figures",
+    "props": {
+        "identity_context_revision": 3,
+        "period": "2026-09-01",
+        "seal_by": "2026-10-07",
+        "forecast_period": "2026-10-01",
+        "forecast_basis": "10000000",
+        "cost_categories": [
+            "stock",
+            "staff",
+            "premises",
+            "transport",
+            "taxes",
+            "other"
+        ],
+        "sent": null,
+        "links": {
+            "submit": {
+                "url": "/preview/business-monthly-figures",
+                "method": "post"
+            },
+            "close": {
+                "url": "/preview/business-audit-prep",
+                "method": "get"
+            },
+            "home": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/business-reports",
+                "method": "get"
+            },
+            "readiness": {
+                "url": "/preview/business-readiness",
+                "method": "get"
+            },
+            "market": {
+                "url": "/preview/business-market",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/business-profile",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        }
+    }
+}

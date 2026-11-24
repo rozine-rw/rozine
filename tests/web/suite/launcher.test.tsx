@@ -4,7 +4,7 @@ import type { ComponentProps } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import { LogoLockup, LogoMark } from '@/components/rozine/logo';
 import Launcher from '@/pages/dashboard';
-import type { IdentityCode, IdentityContext } from '@/types';
+import type { IdentityCode, IdentityContext, RoleAccessOffer } from '@/types';
 import mfaBlockedFixture from '../../../resources/fixtures/ui/launcher-auditor-mfa-blocked.json';
 import auditorFixture from '../../../resources/fixtures/ui/launcher-auditor.json';
 import lostMembershipFixture from '../../../resources/fixtures/ui/launcher-lost-membership.json';
@@ -17,32 +17,55 @@ const mocks = vi.hoisted(() => ({
     command: { processing: false, transform: vi.fn(), submit: vi.fn() },
     visit: vi.fn(),
     reload: vi.fn(),
+    form: {
+        errors: {} as Record<string, string>,
+        processing: false,
+        submit: vi.fn(),
+        data: {} as Record<string, string>,
+    },
 }));
-vi.mock('@inertiajs/react', () => ({
-    Head: ({ title }: { title: string }) => (
-        <span data-testid="page-title">{title}</span>
-    ),
-    Link: ({
-        children,
-        href,
-        as,
-        preserveState: _preserveState,
-        ...props
-    }: Omit<ComponentProps<'a'>, 'href'> & {
-        href: string | { url: string };
-        as?: string;
-        preserveState?: boolean;
-    }) =>
-        as === 'button' ? (
-            <button>{children}</button>
-        ) : (
-            <a href={typeof href === 'string' ? href : href.url} {...props}>
-                {children}
-            </a>
+vi.mock('@inertiajs/react', async () => {
+    const { useState } = await import('react');
+
+    return {
+        Head: ({ title }: { title: string }) => (
+            <span data-testid="page-title">{title}</span>
         ),
-    useHttp: () => mocks.command,
-    router: { visit: mocks.visit, reload: mocks.reload },
-}));
+        Link: ({
+            children,
+            href,
+            as,
+            preserveState: _preserveState,
+            ...props
+        }: Omit<ComponentProps<'a'>, 'href'> & {
+            href: string | { url: string };
+            as?: string;
+            preserveState?: boolean;
+        }) =>
+            as === 'button' ? (
+                <button>{children}</button>
+            ) : (
+                <a href={typeof href === 'string' ? href : href.url} {...props}>
+                    {children}
+                </a>
+            ),
+        useHttp: () => mocks.command,
+        useForm: (initial: Record<string, string>) => {
+            const [data, setData] = useState(initial);
+            mocks.form.data = data;
+
+            return {
+                data,
+                errors: mocks.form.errors,
+                processing: mocks.form.processing,
+                setData: (key: string, value: string) =>
+                    setData((current) => ({ ...current, [key]: value })),
+                submit: mocks.form.submit,
+            };
+        },
+        router: { visit: mocks.visit, reload: mocks.reload },
+    };
+});
 const identityFrom = (fixture: { props: { identity: unknown } }) =>
     fixture.props.identity as IdentityContext;
 const ready = identityFrom(readyFixture);
@@ -57,6 +80,8 @@ const selected = (
 beforeEach(() => {
     vi.clearAllMocks();
     mocks.command.processing = false;
+    mocks.form.errors = {};
+    mocks.form.processing = false;
 });
 
 describe('Suite launcher', () => {
@@ -75,12 +100,9 @@ describe('Suite launcher', () => {
             'Discover verified businesses, invest, track returns.',
         );
         expect(within(apps[2]).queryByRole('button')).not.toBeInTheDocument();
-        expect(within(apps[2]).getByRole('link')).toHaveAttribute(
-            'href',
-            'mailto:hello@rozine.rw',
-        );
-        expect(within(apps[2]).getByRole('link')).toHaveTextContent(
-            /^Auditor.*Request access →$/u,
+        expect(within(apps[2]).queryByRole('link')).not.toBeInTheDocument();
+        expect(apps[2]).toHaveTextContent(
+            /^Auditor.*Not available with your current access$/u,
         );
         await userEvent.click(within(apps[0]).getByRole('button'));
         expect(mocks.command.transform.mock.calls[0][0]()).toEqual({
@@ -353,7 +375,12 @@ describe('Suite launcher', () => {
         expect(screen.getByRole('button', { name: 'Investor' })).toBeEnabled();
     });
     it('opens the Investor deals while the identity is verified and offers the other apps on request', () => {
-        render(<Launcher identity={identityFrom(pendingFixture)} />);
+        render(
+            <Launcher
+                identity={identityFrom(pendingFixture)}
+                role_application={{ kyc: 'none', status: 'none', role: null }}
+            />,
+        );
         const apps = screen.getAllByRole('listitem');
 
         expect(apps.map((app) => app.dataset.audience)).toEqual([
@@ -371,14 +398,18 @@ describe('Suite launcher', () => {
         expect(within(apps[0]).getByRole('link')).toHaveTextContent(
             'Browse open deals now. Investing opens once your identity is verified.Browse deals →',
         );
-        expect(within(apps[1]).getByRole('link')).toHaveAttribute(
-            'href',
-            'mailto:hello@rozine.rw',
-        );
-        expect(within(apps[2]).getByRole('link')).toHaveAttribute(
-            'href',
-            'mailto:hello@rozine.rw',
-        );
+
+        // Everyone starts with the same identity check (KYC); a role switch is offered once it is sent.
+        for (const app of [apps[1], apps[2]]) {
+            expect(within(app).getByRole('link')).toHaveAttribute(
+                'href',
+                '/investor/verification',
+            );
+            expect(within(app).getByRole('link')).toHaveTextContent(
+                /Verify your identity first →$/u,
+            );
+        }
+
         expect(screen.getByRole('status')).toHaveTextContent(
             'Ready to invest?',
         );
@@ -491,7 +522,7 @@ describe('Suite launcher preview states', () => {
         expect(mocks.visit).not.toHaveBeenCalled();
     });
 
-    it('offers every app on request after a lost membership', () => {
+    it('explains every app it cannot open after a lost membership', () => {
         render(<Launcher identity={identityFrom(lostMembershipFixture)} />);
 
         const apps = screen.getAllByRole('listitem');
@@ -503,12 +534,9 @@ describe('Suite launcher preview states', () => {
         expect(screen.queryByRole('status')).not.toBeInTheDocument();
 
         for (const app of apps) {
-            expect(within(app).getByRole('link')).toHaveAttribute(
-                'href',
-                'mailto:hello@rozine.rw',
-            );
-            expect(within(app).getByRole('link')).toHaveTextContent(
-                /Request access →$/u,
+            expect(within(app).queryByRole('link')).not.toBeInTheDocument();
+            expect(app).toHaveTextContent(
+                /Not available with your current access$/u,
             );
         }
     });
@@ -564,7 +592,7 @@ describe('Adding Investor access to a verified Business member', () => {
         link: { url: '/identity/investor-access', method: 'post' as const },
     };
 
-    it('asks for the Investor terms, then adds the role and opens the Investor app', async () => {
+    it('shows the Investor terms, agrees by continuing, then adds the role and opens the Investor app', async () => {
         mocks.command.submit
             .mockResolvedValueOnce({
                 data: {
@@ -593,12 +621,11 @@ describe('Adding Investor access to a verified Business member', () => {
         });
 
         expect(panel).toHaveTextContent('I accept the Rozine Investor Terms.');
-        expect(confirm).toBeDisabled();
-        await userEvent.click(
-            within(panel).getByRole('checkbox', {
-                name: 'I have read and accept these Investor terms.',
-            }),
+        expect(panel).toHaveTextContent(
+            'Continuing means you agree to these Investor terms.',
         );
+        expect(within(panel).queryByRole('checkbox')).not.toBeInTheDocument();
+        expect(confirm).toBeEnabled();
         await userEvent.click(confirm);
 
         expect(mocks.command.submit.mock.calls[0][0]).toEqual(offer.link);
@@ -619,15 +646,13 @@ describe('Adding Investor access to a verified Business member', () => {
         );
     });
 
-    it('asks again when the Investor terms change while the panel is open', async () => {
+    it('agrees to the terms on screen when they change while the panel is open', async () => {
         const { rerender } = render(
             <Launcher identity={businessMember} investor_access={offer} />,
         );
         await userEvent.click(
             screen.getByRole('button', { name: /Start investing →/u }),
         );
-        await userEvent.click(screen.getByRole('checkbox'));
-        expect(screen.getByRole('checkbox')).toBeChecked();
 
         rerender(
             <Launcher
@@ -650,10 +675,14 @@ describe('Adding Investor access to a verified Business member', () => {
         expect(panel).toHaveTextContent(
             'I accept the revised Rozine Investor Terms.',
         );
-        expect(within(panel).getByRole('checkbox')).not.toBeChecked();
-        expect(
+        await userEvent.click(
             within(panel).getByRole('button', { name: 'Add Investor access' }),
-        ).toBeDisabled();
+        );
+        expect(mocks.command.transform.mock.calls[0][0]()).toMatchObject({
+            terms_version: 'investor-access-2026-11-01',
+            terms_sha256: 'b'.repeat(64),
+            accepted: true,
+        });
     });
 
     it.each([
@@ -679,7 +708,6 @@ describe('Adding Investor access to a verified Business member', () => {
             await userEvent.click(
                 screen.getByRole('button', { name: /Start investing →/u }),
             );
-            await userEvent.click(screen.getByRole('checkbox'));
             await userEvent.click(
                 screen.getByRole('button', { name: 'Add Investor access' }),
             );
@@ -703,7 +731,6 @@ describe('Adding Investor access to a verified Business member', () => {
         await userEvent.click(
             screen.getByRole('button', { name: /Start investing →/u }),
         );
-        await userEvent.click(screen.getByRole('checkbox'));
         await userEvent.click(
             screen.getByRole('button', { name: 'Add Investor access' }),
         );
@@ -725,7 +752,6 @@ describe('Adding Investor access to a verified Business member', () => {
         await userEvent.click(
             screen.getByRole('button', { name: /Start investing →/u }),
         );
-        await userEvent.click(screen.getByRole('checkbox'));
 
         const confirm = screen.getByRole('button', {
             name: 'Add Investor access',
@@ -742,7 +768,7 @@ describe('Adding Investor access to a verified Business member', () => {
         expect(mocks.visit).not.toHaveBeenCalled();
     });
 
-    it('closes the panel on cancel, and asks for access when the server sends no offer', async () => {
+    it('closes the panel on cancel, and offers nothing to open when the server sends no offer', async () => {
         const { unmount } = render(
             <Launcher identity={businessMember} investor_access={offer} />,
         );
@@ -757,8 +783,170 @@ describe('Adding Investor access to a verified Business member', () => {
         unmount();
 
         render(<Launcher identity={businessMember} />);
-        expect(
-            within(screen.getAllByRole('listitem')[0]).getByRole('link'),
-        ).toHaveTextContent(/Request access →$/u);
+        expect(screen.getAllByRole('listitem')[0]).toHaveTextContent(
+            /Not available with your current access$/u,
+        );
+    });
+});
+
+describe('Asking for Business or Auditor access', () => {
+    const offer = (
+        requestable: ('business' | 'auditor')[],
+        sent: Partial<Record<'business' | 'auditor', string>> = {},
+        unavailable: RoleAccessOffer['unavailable'] = {},
+    ) => ({
+        requestable,
+        sent,
+        unavailable,
+        link: { url: '/identity/access-requests', method: 'post' as const },
+    });
+    const investor: IdentityContext = {
+        ...ready,
+        available_roles: ['investor'],
+    };
+
+    it('offers to switch to Business or Auditor once the person has sent their own KYC', () => {
+        render(
+            <Launcher
+                identity={investor}
+                role_application={{
+                    kyc: 'submitted',
+                    status: 'none',
+                    role: null,
+                }}
+            />,
+        );
+        const [, business, auditor] = screen.getAllByRole('listitem');
+
+        expect(within(business).getByRole('link')).toHaveAttribute(
+            'href',
+            '/role?for=business',
+        );
+        expect(business).toHaveTextContent(/Switch to this role →$/u);
+        expect(within(auditor).getByRole('link')).toHaveAttribute(
+            'href',
+            '/role?for=auditor',
+        );
+    });
+
+    it('shows a sent application on its card and keeps the other role closed, since an account holds one role', () => {
+        render(
+            <Launcher
+                identity={investor}
+                role_application={{
+                    kyc: 'submitted',
+                    status: 'submitted',
+                    role: 'business',
+                }}
+            />,
+        );
+        const [, business, auditor] = screen.getAllByRole('listitem');
+
+        expect(within(business).getByRole('status')).toHaveTextContent(
+            /Under review$/u,
+        );
+        expect(within(business).queryByRole('link')).not.toBeInTheDocument();
+        expect(auditor).toHaveTextContent(
+            'An account holds one role at a time.',
+        );
+        expect(within(auditor).queryByRole('link')).not.toBeInTheDocument();
+    });
+
+    it('sends the person back to fix an application Compliance returned, or to continue a draft', () => {
+        const { rerender } = render(
+            <Launcher
+                identity={investor}
+                role_application={{
+                    kyc: 'approved',
+                    status: 'changes_requested',
+                    role: 'auditor',
+                }}
+            />,
+        );
+
+        expect(screen.getAllByRole('listitem')[2]).toHaveTextContent(
+            /Compliance asked for a few changes\..*Fix and send again →$/u,
+        );
+
+        rerender(
+            <Launcher
+                identity={investor}
+                role_application={{
+                    kyc: 'approved',
+                    status: 'draft',
+                    role: 'business',
+                }}
+            />,
+        );
+        expect(screen.getAllByRole('listitem')[1]).toHaveTextContent(
+            /Continue your application →$/u,
+        );
+        expect(screen.getAllByRole('listitem')[2]).toHaveTextContent(
+            /Switch to this role →$/u,
+        );
+    });
+
+    it('says why a card cannot be asked for (#622)', () => {
+        const { rerender } = render(
+            <Launcher
+                identity={investor}
+                access_requests={offer(
+                    [],
+                    {},
+                    {
+                        business: 'ROLE_ON_RECORD',
+                        auditor: 'AUDITOR_ONLY_ROLE',
+                    },
+                )}
+            />,
+        );
+        const [, business, auditor] = screen.getAllByRole('listitem');
+
+        expect(business).toHaveTextContent(
+            'Your Business access is already on record with Rozine. Contact Rozine support to change it.',
+        );
+        expect(auditor).toHaveTextContent(
+            'Audit Partners can’t hold another Rozine role, so this account can’t ask for Auditor access.',
+        );
+        expect(auditor).toHaveTextContent(
+            /Not available with your current access$/u,
+        );
+
+        rerender(
+            <Launcher
+                identity={investor}
+                access_requests={offer(
+                    [],
+                    {},
+                    {
+                        business: 'AUDITOR_ACCOUNT',
+                        auditor: 'ROLE_ON_RECORD',
+                    },
+                )}
+            />,
+        );
+        expect(screen.getAllByRole('listitem')[1]).toHaveTextContent(
+            'Audit Partners can’t hold another Rozine role, so this Auditor account can’t ask for Business access.',
+        );
+        expect(screen.getAllByRole('listitem')[2]).toHaveTextContent(
+            'Your Auditor access is already on record with Rozine. Contact Rozine support to change it.',
+        );
+
+        // A reason the card has no wording for keeps the card's own description.
+        rerender(
+            <Launcher
+                identity={investor}
+                access_requests={offer(
+                    [],
+                    {},
+                    {
+                        business: 'AUDITOR_ONLY_ROLE',
+                    },
+                )}
+            />,
+        );
+        expect(screen.getAllByRole('listitem')[1]).not.toHaveTextContent(
+            'Audit Partners',
+        );
     });
 });

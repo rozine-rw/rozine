@@ -149,7 +149,7 @@ function MessageForm({
             {form.errors.body !== undefined && (
                 <p
                     role="alert"
-                    className="mt-1.5 px-1 text-[12px] font-semibold text-[#b3352a]"
+                    className="mt-1.5 px-1 text-[12px] font-semibold text-[#b3352a] dark:text-rz-danger-text"
                 >
                     {form.errors.body}
                 </p>
@@ -224,6 +224,13 @@ export function SupportChat({
                     </ul>
                 </section>
             )}
+
+            {/* Room below the last answers so the floating chat button never covers them (#596). */}
+            <div
+                aria-hidden
+                data-testid="support-chat-clearance"
+                className="h-20 lg:h-16"
+            />
 
             {!isOpen && (
                 <button

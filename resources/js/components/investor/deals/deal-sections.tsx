@@ -1,9 +1,10 @@
+import { Link } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { PhotoFill } from '@/components/investor/deals/deal-bits';
 import { raiseOpen, useTimeLeft } from '@/components/investor/deals/time-left';
 import { POSITIVE_TEXT, RATING_STYLE } from '@/components/investor/tokens';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatCount, formatRwfShort } from '@/lib/rozine/format';
+import { formatCount, formatDate, formatRwfShort } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { C3DealDetail, UseOfFunds } from '@/types/investor';
 
@@ -324,6 +325,69 @@ export function PhotosRow({
                         </figcaption>
                     </figure>
                 ))}
+            </div>
+        </Section>
+    );
+}
+
+/**
+ * The signed prospectus, first under Details (BRS v3.0 PRO-R04): its version, who signed it and
+ * when, its fingerprint, and Read, which opens it in the app. Nothing shows before it is signed.
+ */
+export function ProspectusCard({
+    deal,
+    variant,
+}: {
+    deal: Pick<C3DealDetail, 'prospectus' | 'links'>;
+    variant: Variant;
+}) {
+    const { t, locale } = useTranslation();
+    const prospectus = deal.prospectus ?? null;
+    const read = deal.links.prospectus ?? null;
+
+    if (prospectus === null || read === null) {
+        return null;
+    }
+
+    return (
+        <Section
+            title={t('investor.deal.prospectus.title', {
+                version: prospectus.version,
+            })}
+            variant={variant}
+            badge={
+                <SourceBadge kind="verified" variant={variant}>
+                    {t('investor.deal.prospectus.signed')}
+                </SourceBadge>
+            }
+        >
+            <div
+                className={cn(
+                    'flex items-center justify-between gap-3 rounded-xl bg-rz-surface-sunken',
+                    variant === 'phone'
+                        ? 'mt-[9px] px-3 py-3'
+                        : 'mt-2.5 p-[11px]',
+                )}
+            >
+                <div className="min-w-0 text-[12px] text-rz-secondary">
+                    <p className="text-rz-ink">
+                        {t('investor.deal.prospectus.signed_by', {
+                            name: prospectus.signed_by,
+                            date: formatDate(prospectus.signed_at, locale),
+                        })}
+                    </p>
+                    <p className="mt-0.5 truncate font-mono text-[11px]">
+                        {t('investor.deal.prospectus.fingerprint', {
+                            fingerprint: prospectus.fingerprint.slice(0, 12),
+                        })}
+                    </p>
+                </div>
+                <Link
+                    href={read}
+                    className="shrink-0 rounded-[10px] bg-rz-accent-soft px-3 py-2 text-[12.5px] font-bold text-rz-accent-app-text"
+                >
+                    {t('investor.deal.prospectus.read')}
+                </Link>
             </div>
         </Section>
     );

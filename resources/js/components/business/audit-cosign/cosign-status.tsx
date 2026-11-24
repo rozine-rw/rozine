@@ -27,6 +27,8 @@ export function CosignStatus({
     const { t, locale } = useTranslation();
     const disputed = cosign.dispute !== null;
     const reviewPolicy = underReviewWindow(cosign);
+    /* BRS v3.0 AUD-R04: a Business never co-signs a reviewed report, so it lists no signatures unless one was kept from before. */
+    const showSignatures = !reviewPolicy || cosign.signed_count > 0;
     const published = (publishedAt: string): string => {
         switch (cosign.published_reason) {
             case 'auto_approved':
@@ -45,15 +47,21 @@ export function CosignStatus({
     return (
         <>
             <SectionLabel>
-                {t('business.audit_cosign.status.title')}
+                {t(
+                    showSignatures
+                        ? 'business.audit_cosign.status.title'
+                        : 'business.audit_cosign.status.title_review',
+                )}
             </SectionLabel>
             <div className="mt-[11px] flex flex-wrap items-center justify-between gap-2">
-                <p className="text-[13.5px] font-semibold text-rz-ink">
-                    {t('business.audit_cosign.status.count', {
-                        signed: cosign.signed_count,
-                        required: cosign.required_signatures,
-                    })}
-                </p>
+                {showSignatures && (
+                    <p className="text-[13.5px] font-semibold text-rz-ink">
+                        {t('business.audit_cosign.status.count', {
+                            signed: cosign.signed_count,
+                            required: cosign.required_signatures,
+                        })}
+                    </p>
+                )}
                 {report.published_at !== null && (
                     <span className="rounded-[10px] bg-rz-accent-soft px-[9px] py-1 text-[11px] font-semibold text-rz-accent-app-text">
                         {published(report.published_at)}
@@ -91,51 +99,58 @@ export function CosignStatus({
                         )}
                     </p>
                 )}
-            <ul
-                aria-label={t('business.audit_cosign.status.signers')}
-                className="mt-2.5 overflow-hidden rounded-2xl border border-rz-border bg-rz-surface"
-            >
-                {cosign.signers.map((signer) => (
-                    <li
-                        key={`${signer.name}-${signer.is_you}`}
-                        aria-current={signer.is_you || undefined}
-                        className={cn(
-                            'flex items-center justify-between gap-3 border-b border-[#eef2f9] px-[15px] py-[13px] last:border-b-0 dark:border-rz-divider',
-                            signer.is_you && 'bg-rz-accent-soft',
-                        )}
-                    >
-                        <p className="flex min-w-0 items-center gap-2 text-[13.5px] font-semibold text-rz-ink">
-                            <span className="truncate">{signer.name}</span>
-                            {signer.is_you && (
-                                <span className="shrink-0 rounded-md bg-rz-accent-fill px-1.5 py-px text-[10px] font-bold tracking-[.04em] text-white uppercase">
-                                    {t('business.audit_cosign.status.you')}
-                                </span>
-                            )}
-                        </p>
-                        <span
+            {showSignatures && (
+                <ul
+                    aria-label={t('business.audit_cosign.status.signers')}
+                    className="mt-2.5 overflow-hidden rounded-2xl border border-rz-border bg-rz-surface"
+                >
+                    {cosign.signers.map((signer) => (
+                        <li
+                            key={`${signer.name}-${signer.is_you}`}
+                            aria-current={signer.is_you || undefined}
                             className={cn(
-                                'inline-flex shrink-0 items-center rounded-[10px] px-[9px] py-1 text-[11px] font-semibold',
-                                signer.state === 'signed'
-                                    ? 'bg-rz-accent-soft text-rz-accent-app-text'
-                                    : 'bg-[rgba(105,116,138,.10)] text-rz-secondary',
+                                'flex items-center justify-between gap-3 border-b border-[#eef2f9] px-[15px] py-[13px] last:border-b-0 dark:border-rz-divider',
+                                signer.is_you && 'bg-rz-accent-soft',
                             )}
                         >
-                            {signer.signed_at !== null
-                                ? t('business.audit_cosign.status.signed_on', {
-                                      date: formatDayMonth(
-                                          signer.signed_at,
-                                          locale,
-                                      ),
-                                  })
-                                : report.published_at !== null
-                                  ? t('business.audit_cosign.status.not_signed')
-                                  : t(
-                                        `business.audit_cosign.status.${signer.state}`,
-                                    )}
-                        </span>
-                    </li>
-                ))}
-            </ul>
+                            <p className="flex min-w-0 items-center gap-2 text-[13.5px] font-semibold text-rz-ink">
+                                <span className="truncate">{signer.name}</span>
+                                {signer.is_you && (
+                                    <span className="shrink-0 rounded-md bg-rz-accent-fill px-1.5 py-px text-[10px] font-bold tracking-[.04em] text-white uppercase">
+                                        {t('business.audit_cosign.status.you')}
+                                    </span>
+                                )}
+                            </p>
+                            <span
+                                className={cn(
+                                    'inline-flex shrink-0 items-center rounded-[10px] px-[9px] py-1 text-[11px] font-semibold',
+                                    signer.state === 'signed'
+                                        ? 'bg-rz-accent-soft text-rz-accent-app-text'
+                                        : 'bg-[rgba(105,116,138,.10)] text-rz-secondary',
+                                )}
+                            >
+                                {signer.signed_at !== null
+                                    ? t(
+                                          'business.audit_cosign.status.signed_on',
+                                          {
+                                              date: formatDayMonth(
+                                                  signer.signed_at,
+                                                  locale,
+                                              ),
+                                          },
+                                      )
+                                    : report.published_at !== null
+                                      ? t(
+                                            'business.audit_cosign.status.not_signed',
+                                        )
+                                      : t(
+                                            `business.audit_cosign.status.${signer.state}`,
+                                        )}
+                            </span>
+                        </li>
+                    ))}
+                </ul>
+            )}
         </>
     );
 }

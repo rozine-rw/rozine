@@ -14,6 +14,8 @@ import {
     LicenceQueue,
     RegistryHeading,
 } from '@/components/admin/parties/review-queue';
+import { RoleApplicationDrawer } from '@/components/admin/parties/role-application-drawer';
+import { RoleApplicationQueuePanel } from '@/components/admin/parties/role-application-queue';
 import { SearchEmpty } from '@/components/admin/search-empty';
 import {
     KpiTile,
@@ -24,6 +26,17 @@ import {
 import { useTranslation } from '@/hooks/use-translation';
 import type { AdminPartiesProps, AdminSection, PartyKind } from '@/types/admin';
 import type { LicenceQueues } from '@/types/admin-audit';
+import type {
+    RoleApplicationQueue,
+    RoleApplicationReview,
+} from '@/types/role-application';
+
+/** The role-switch review the Businesses and Auditors pages carry for a viewer who decides it. */
+type RoleApplications = {
+    applications?: RoleApplicationQueue | null;
+    application?: RoleApplicationReview | null;
+    applications_close?: string;
+};
 
 const SECTION: Record<PartyKind, AdminSection> = {
     business: 'businesses',
@@ -39,7 +52,9 @@ const SECTION: Record<PartyKind, AdminSection> = {
  * Audit Partners also see the licences waiting for review, queued above their directory.
  * Filtering and sorting are server queries; the page never re-sorts or re-counts rows itself.
  */
-export default function AdminParties(props: AdminPartiesProps & LicenceQueues) {
+export default function AdminParties(
+    props: AdminPartiesProps & LicenceQueues & RoleApplications,
+) {
     const { t } = useTranslation();
     const format = useStatFormatter();
     const section = SECTION[props.kind];
@@ -49,12 +64,20 @@ export default function AdminParties(props: AdminPartiesProps & LicenceQueues) {
             section={section}
             {...props}
             overlay={
-                props.party && (
-                    <PartyDrawer
-                        key={props.party.id}
-                        party={props.party}
-                        viewer={props.viewer}
+                props.application && props.applications_close ? (
+                    <RoleApplicationDrawer
+                        key={props.application.id}
+                        application={props.application}
+                        close={props.applications_close}
                     />
+                ) : (
+                    props.party && (
+                        <PartyDrawer
+                            key={props.party.id}
+                            party={props.party}
+                            viewer={props.viewer}
+                        />
+                    )
                 )
             }
         >
@@ -79,6 +102,12 @@ export default function AdminParties(props: AdminPartiesProps & LicenceQueues) {
                         />
                     ))}
                 </div>
+            )}
+            {props.applications && props.applications_close && (
+                <RoleApplicationQueuePanel
+                    queue={props.applications}
+                    path={props.applications_close.split('?')[0]}
+                />
             )}
             {props.requests && (
                 <LicenceQueue kind="requests" entries={props.requests} />

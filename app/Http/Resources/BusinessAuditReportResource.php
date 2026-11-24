@@ -28,7 +28,7 @@ class BusinessAuditReportResource extends JsonResource
             $values = AuditorJobsResource::figures(array_intersect_key($finding, array_flip(['reported', 'observed', 'difference'])));
 
             return ['code' => $finding['code'], 'title' => match ($finding['measure']) {
-                'stock_value' => __('Stock value'), 'cash' => __('Cash balance'), 'stock_units' => __('Inventory units'), default => __('Operating status'),
+                'stock_value' => __('Stock value'), 'cash' => __('Cash balance'), 'stock_units' => __('Inventory units'), 'costs' => __('Costs'), 'owner_drawings' => __('Owner drawings'), default => __('Operating status'),
             }, 'body' => isset($finding['reported']) ? __('Reported: :reported. Observed: :observed. Difference: :difference.', $values)
                 : __('Observed status: :observed.', $values), 'evidence_ids' => $finding['evidence_ids']];
         }, $report['findings']);

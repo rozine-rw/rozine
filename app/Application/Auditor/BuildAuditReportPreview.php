@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Auditor;
 
 use App\Application\Operations\Contracts\CanonicalJson;
+use App\Domain\Auditor\AuditProcedure;
 use App\Domain\Evidence\StatementAuditReview;
 use App\Domain\Underwriting\ExactFinancialValue;
 
@@ -34,22 +35,38 @@ final class BuildAuditReportPreview
             ? [['stock_value', $sources['reported_stock'], $fields['observed_stock'] ?? null, $sources['declaration']['id'] ?? null]]
             : [['cash', $sources['reported_cash'], $fields['cash'] ?? null, $sources['verification']['id'] ?? null],
                 ['stock_units', $sources['reported_units'], $fields['stock_units'] ?? null, $sources['declaration']['id'] ?? null]];
+        $declared = $sources['declared'] ?? null;
+        if ($report['kind'] === 'monthly' && $declared !== null) {
+            /* BRS v3 VIS-R01 steps 5 and 7: the costs and owner drawings the CPA verified, against what the Business declared (VIS-R04). */
+            $costs = $draft['fields']['costs']['costs'] ?? null;
+            $comparisons[] = ['costs', $declared['costs_total'], is_array($costs) ? AuditProcedure::total($costs) : null, $sources['verification']['id'] ?? null];
+            $comparisons[] = ['owner_drawings', $declared['drawings'], $draft['fields']['drawings']['owner_drawings'] ?? null, $sources['verification']['id'] ?? null];
+        }
         $requiresNote = false;
+        $explained = false;
         foreach ($comparisons as [$measure, $reported, $observed, $sourceId]) {
             if ($reported === null || $observed === null || $sourceId === null) {
                 continue;
             }
             $difference = (string) ExactFinancialValue::amount($observed)->minus(ExactFinancialValue::amount($reported));
             $requiresNote = $requiresNote || $difference !== '0';
-            $findings[] = ['code' => strtoupper($measure).($difference === '0' ? '_MATCHED' : '_DIFFERENCE'),
+            $finding = ['code' => strtoupper($measure).($difference === '0' ? '_MATCHED' : '_DIFFERENCE'),
                 'measure' => $measure, 'reported' => $reported, 'observed' => $observed, 'difference' => $difference, 'evidence_ids' => [$sourceId]];
+            /* BRS v3 VIS-R01 step 9: the first difference carries the cause codes that explain every difference to the franc. */
+            $explanations = $draft['fields']['differences']['explanations'] ?? [];
+            if (! $explained && $measure !== 'stock_units' && $difference !== '0' && $explanations !== []) {
+                $finding['explained_by'] = $explanations;
+                $explained = true;
+            }
+            $findings[] = $finding;
         }
         if ($report['kind'] === 'monthly' && isset($fields['operational_status'])) {
             $findings[] = ['code' => 'OPERATIONAL_STATUS_OBSERVED', 'measure' => 'operational_status',
                 'observed' => $fields['operational_status'], 'evidence_ids' => $sources['photos'] === null ? [] : [$sources['photos']['id']]];
             $requiresNote = $requiresNote || $fields['operational_status'] !== 'active';
         }
-        $sourcePins = array_intersect_key($sources, array_flip(['verification', 'check_in', 'photos', 'declaration']));
+        $sourcePins = array_filter(array_intersect_key($sources, array_flip(['verification', 'check_in', 'photos', 'declaration', 'submission'])),
+            fn (?array $pin, string $key): bool => $key !== 'submission' || $pin !== null, ARRAY_FILTER_USE_BOTH);
         $originals = array_map(fn (array $document): array => ['id' => $document['id'], 'sha256' => $document['sha256'], 'kind' => 'statement'], $sources['documents']);
         foreach ($sources['ledger_documents'] ?? [] as $document) {
             $originals[] = ['id' => $document['id'], 'sha256' => $document['sha256'], 'kind' => 'ledger'];

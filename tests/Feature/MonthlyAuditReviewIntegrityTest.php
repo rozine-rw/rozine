@@ -66,7 +66,9 @@ it('retains a disputed parent until its authorized replacement is sealed and sta
     expect($amended['code'])->toBe('AUDIT_AMENDMENT_CREATED')->and($parent->fresh()->status)->toBe($staffRequired ? 'escalated' : 'disputed');
     $child = AuditReport::query()->whereKey($amended['data']['audit_id'])->firstOrFail();
     foreach (['statements' => [], 'count' => ['cash' => '108000000', 'stock_units' => '190', 'operational_status' => 'active',
-        'financial_proofs' => ['bank', 'momo'], 'inventory_proofs' => ['photo']], 'photos' => ['titles' => ['extra-1' => 'Stock room']]] as $step => $fields) {
+        'financial_proofs' => ['bank', 'momo'], 'inventory_proofs' => ['photo']], 'cash_sales' => ['undeposited_cash_sales' => '15000'], 'costs' => ['costs' => ['stock' => '400000', 'staff' => '250000', 'premises' => '80000', 'transport' => '30000', 'taxes' => '20000', 'other' => '0']], 'drawings' => ['owner_drawings' => '0'], 'loans' => ['loans' => []], 'differences' => ['explanations' => []], 'staff' => ['staff_count' => '6', 'rssb_checked' => true], 'expiries' => ['tax_clearance_expires_on' => '2027-03-31', 'rssb_clearance_expires_on' => '2027-06-30'],
+        'loan_use' => ['loan_use' => 'as_planned', 'loan_use_note' => ''], 'changes' => ['changes' => ['new_debt' => false, 'director_change' => false, 'ownership_change' => false, 'legal_claim' => false]],
+        'photos' => ['titles' => ['extra-1' => 'Stock room']]] as $step => $fields) {
         expect(app(SaveAuditReportStep::class)->handle($fixture['user']->id, 1, $child->id, $child->refresh()->revision, $step, $fields, (string) Str::uuid())['code'])->toBe('AUDIT_STEP_SAVED');
     }
     $prepared = Fixture::prepare([...$fixture, 'report' => $child]);
@@ -176,8 +178,8 @@ it('denies stale review stages and invalid staff decisions without publishing', 
 });
 
 it('returns the retained signature for a second UUID without recording another signature', function (): void {
-    $fixture = Fixture::ready(kind: 'monthly');
-    Fixture::seal($fixture);
+    $fixture = Fixture::ready();
+    Fixture::sealLegacy($fixture);
     $result = Fixture::cosign($fixture);
     $retry = Fixture::cosign($fixture, revision: 2);
     expect($retry['code'])->toBe('REPORT_PUBLISHED')->and($retry['data'])->toBe($result['data']);

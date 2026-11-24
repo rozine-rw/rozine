@@ -13,6 +13,7 @@ use App\Application\Auditor\Contracts\PublishedMonthlyReports;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Business\Contracts\BusinessNoticeAudience;
 use App\Application\Business\WithBusinessAuthority;
+use App\Application\Environment\UatMoneySimulation;
 use App\Application\Evidence\Contracts\StatementStore;
 use App\Application\Evidence\WithBusinessStatementVerification;
 use App\Application\Identity\AuthorizeStaffPermission;
@@ -21,6 +22,7 @@ use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Application\Primary\Contracts\BusinessHolders;
+use App\Domain\Auditor\AuditProcedure;
 use App\Domain\Auditor\AuditReportWindow;
 use App\Domain\Auditor\MonthlyReportReview;
 use App\Domain\Identity\IdentityViolation;
@@ -52,7 +54,8 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
         private OperationJournal $journal, private CanonicalJson $json, private AuditReportWindow $window, private AuditSourceFactsStore $sourceFacts,
         private MonthlyReportReview $reviewPolicy, private StatementStore $statements,
         private BusinessAuthorityStore $businesses, private AuthorizeStaffPermission $staff,
-        private PartyNotices $notices, private BusinessNoticeAudience $audience, private BusinessHolders $holders) {}
+        private PartyNotices $notices, private BusinessNoticeAudience $audience, private BusinessHolders $holders,
+        private UatMoneySimulation $simulation) {}
 
     /** How long before a monthly review window closes the Business is reminded (BRS NTF-R01). */
     private const int CLOSING_REMINDER_HOURS = 2;
@@ -154,18 +157,20 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
             });
     }
 
-    /** @return array{id: string, kind: string, status: string, due_at: string|null}|null */
+    /** @return array{id: string, kind: string, status: string, due_at: string|null, cosign: bool}|null */
     public function latestForBusiness(string $businessId): ?array
     {
         $report = AuditReport::query()->join('audit_report_publications as publications', 'publications.audit_report_id', '=', 'audit_reports.id')
             ->where('audit_reports.business_id', $businessId)->where('audit_reports.status', 'sealed')
             ->whereNotExists(fn (Builder $query): Builder => $query->selectRaw('1')->from('audit_reports as amendments')
                 ->whereColumn('amendments.amends_id', 'audit_reports.id'))
-            ->orderByDesc('audit_reports.id')->first(['audit_reports.id', 'audit_reports.kind', 'publications.status as publication_status', 'publications.due_at']);
+            ->orderByDesc('audit_reports.id')->first(['audit_reports.id', 'audit_reports.kind', 'publications.status as publication_status', 'publications.due_at', 'publications.policy_version']);
         $due = $report?->getAttribute('due_at');
 
         return $report === null ? null : ['id' => $report->id, 'kind' => $report->kind, 'status' => $report->getAttribute('publication_status'),
-            'due_at' => $due === null ? null : CarbonImmutable::parse($due)->utc()->format('Y-m-d\TH:i:s\Z')];
+            'due_at' => $due === null ? null : CarbonImmutable::parse($due)->utc()->format('Y-m-d\TH:i:s\Z'),
+            // Only a report sealed before its kind had a review window still waits for the Business's co-signature.
+            'cosign' => ! MonthlyReportReview::reviewed($report->getAttribute('policy_version'))];
     }
 
     /** @return array<string, mixed> */
@@ -191,6 +196,10 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
 
                 return $this->journal->execute('party:'.$partyId, $userId, 'report.cosign', $requestId, 'audit.publication', $publication->id,
                     $input, function (): void {}, function () use ($publication, $seal, $business, $partyId, $userId, $current, $expectedRevision, $reportRevision, $mandateVersion, $digest, $accepted, $note): OperationResult {
+                        /* BRS v3.0 AUD-R04: one CPA seals; the Business may dispute within 24 hours but never co-signs. */
+                        if ($this->monthly($publication)) {
+                            throw new CommandRejection('REPORT_COSIGN_NOT_REQUIRED', revision: $publication->revision);
+                        }
                         if ($publication->revision !== $expectedRevision) {
                             throw new CommandRejection('VERSION_CONFLICT', revision: $publication->revision);
                         }
@@ -218,10 +227,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                             throw new CommandRejection('AUDIT_PUBLICATION_UNAVAILABLE', revision: $publication->revision);
                         }
                         $at = now('UTC')->toImmutable();
-                        if ($this->monthly($publication)) {
-                            $this->reviewPolicy->requireOpen($publication->status, $publication->due_at->toIso8601String(), $at->toDateTimeImmutable());
-                        }
-                        if (! $this->monthly($publication) && ! $this->window->mayPublish($seal->payload['report']['period'], $at->toDateTimeImmutable())) {
+                        if (! $this->window->mayPublish($seal->payload['report']['period'], $at->toDateTimeImmutable())) {
                             throw new CommandRejection('REPORT_WINDOW_CLOSED', revision: $publication->revision);
                         }
                         $payload = ['report_id' => $publication->audit_report_id, 'report_revision' => $reportRevision, 'digest' => $digest,
@@ -233,11 +239,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                             'actor_party_id' => $partyId, 'actor_user_id' => $userId, 'payload' => $payload,
                             'sha256' => hash('sha256', $this->json->encode($payload)), 'created_at' => $at])->save();
                         $signed = AuditReportSignature::query()->where('audit_report_publication_id', $publication->id)->pluck('actor_party_id')->all();
-                        $complete = $this->monthly($publication) || array_diff($business['mandate']['required_signatories'], $signed) === [];
-                        if ($this->monthly($publication)) {
-                            $this->event($publication, 'report.cosign', 'party', $userId, $partyId, ['signature_id' => $signature->id, 'published_reason' => 'signed'], at: $at);
-                            $publication->published_reason = 'signed';
-                        }
+                        $complete = array_diff($business['mandate']['required_signatories'], $signed) === [];
                         $publication->forceFill(['revision' => $publication->revision + 1, 'status' => $complete ? 'published' : 'pending',
                             'published_at' => $complete ? $at : null])->save();
                         $this->noticeHolders($publication);
@@ -326,16 +328,23 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
     {
         $seal = rescue(fn (): AuditReportSeal => $this->seal($publication), null, false);
         $monthly = $seal?->payload['sources']['monthly'] ?? null;
-        /** @var list<array{code: string, observed?: mixed}> $findings */
+        /** @var list<array{code: string, measure?: string, observed?: mixed}> $findings */
         $findings = $seal?->payload['report']['findings'] ?? [];
         $operational = array_find($findings, fn (array $finding): bool => $finding['code'] === 'OPERATIONAL_STATUS_OBSERVED');
         $note = AuditReportSignature::query()->where('audit_report_publication_id', $publication->id)->orderBy('id')->get()
             ->map(fn (AuditReportSignature $signature): string => (string) ($signature->payload['note'] ?? ''))->first(fn (string $text): bool => $text !== '');
 
+        $fields = $seal?->payload['report']['draft']['fields'] ?? [];
+        $costs = $fields['costs']['costs'] ?? null;
+        $drawings = $fields['drawings']['owner_drawings'] ?? null;
+
         return $seal === null || ! is_array($monthly) ? null : ['report_id' => $publication->audit_report_id, 'period' => (string) $monthly['period'],
             'inflow' => (string) $monthly['inflow'], 'outflow' => (string) $monthly['outflow'], 'net' => (string) $monthly['net'],
+            'verified_out' => is_array($costs) && is_string($drawings) ? AuditProcedure::total([...array_values($costs), $drawings]) : null,
             'operational_status' => (string) ($operational['observed'] ?? 'active'),
-            'differences' => array_any($findings, fn (array $finding): bool => str_ends_with($finding['code'], '_DIFFERENCE')),
+            // Cash and stock gaps put a deal on watch; a cost or drawings gap against the declaration is record keeping, read by Record Gap.
+            'differences' => array_any($findings, fn (array $finding): bool => str_ends_with($finding['code'], '_DIFFERENCE')
+                && ! in_array($finding['measure'] ?? null, ['costs', 'owner_drawings'], true)),
             'auditor' => ['name' => (string) $seal->payload['auditor_name'], 'licence' => (string) $seal->payload['report']['licence'],
                 'sealed_on' => substr((string) $seal->payload['sealed_at'], 0, 10)],
             'auditor_note' => (string) $seal->payload['report']['draft']['note'], 'business_note' => $note ?? ''];
@@ -462,7 +471,7 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
             : $this->window->mayPublish($seal->payload['report']['period'], now()->toDateTimeImmutable()));
         $own = $signatures->get($partyId);
         $person = array_find($business['mandate']['people'], fn (array $person): bool => $person['party_id'] === $partyId);
-        $canSign = $available && $publication->status === 'pending' && $own === null
+        $canSign = ! $this->monthly($publication) && $available && $publication->status === 'pending' && $own === null
             && in_array($partyId, $business['mandate']['required_signatories'], true) && in_array('report.cosign', $person['permissions'] ?? [], true);
 
         return ['business' => ['id' => $business['id'], 'name' => $business['profile']['name']],
@@ -720,8 +729,10 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
     /** @return array{inspected: int, published: int, blocked: array<string, string>, next_cursor: string|null} */
     public function advanceDue(int $limit = 100, ?string $after = null): array
     {
+        // Staging demo only (UAT money simulation): a simulated Business's review window ends at once.
+        $simulated = $this->simulation->active() ? array_map(fn (mixed $id): string => strtolower(trim((string) $id)), (array) config('app.uat_money_simulation_businesses')) : [];
         $ids = AuditReportPublication::query()->whereIn('policy_version', MonthlyReportReview::REVIEW_POLICIES)->where('status', 'pending')
-            ->where('due_at', '<=', now('UTC'))->when($after !== null, fn ($query) => $query->where('id', '>', $after))
+            ->where(fn ($query) => $query->where('due_at', '<=', now('UTC'))->orWhereIn('business_id', $simulated))->when($after !== null, fn ($query) => $query->where('id', '>', $after))
             ->orderBy('id')->limit(max(1, min(100, $limit)))->get(['id', 'business_id', 'audit_report_id']);
         $published = 0;
         $blocked = [];
@@ -731,16 +742,19 @@ final class EloquentAuditReportPublicationStore implements AuditReportPublicatio
                     function (array $business, ?array $verification) use ($candidate): int {
                         $publication = AuditReportPublication::query()->whereKey($candidate->id)->lockForUpdate()->firstOrFail();
                         $this->reviewData($publication);
-                        if (! $this->reviewPolicy->mayAutoApprove($publication->status, $publication->due_at->toIso8601String(), now()->toDateTimeImmutable())) {
+                        // The simulated review closes at its window's end, recorded at that time so the retained
+                        // history stays one the database accepts (auto-approval only once the window has ended).
+                        $early = $this->simulation->covers($publication->business_id) && $publication->due_at->isFuture();
+                        $at = $early ? $publication->due_at->utc()->toImmutable() : now('UTC')->toImmutable();
+                        if (! $this->reviewPolicy->mayAutoApprove($publication->status, $publication->due_at->toIso8601String(), $at->toDateTimeImmutable())) {
                             return 0;
                         }
 
                         return $this->withCurrentEvidence($publication, $this->seal($publication), $business, $verification,
-                            function (bool $current) use ($publication): int {
+                            function (bool $current) use ($publication, $at): int {
                                 if (! $current) {
                                     throw new CommandRejection('AUDIT_PUBLICATION_UNAVAILABLE');
                                 }
-                                $at = now('UTC')->toImmutable();
                                 $this->event($publication, 'report.auto_approve', 'system', null, null, ['published_reason' => 'auto_approved'], at: $at);
                                 $publication->forceFill(['revision' => $publication->revision + 1, 'status' => 'published',
                                     'published_at' => $at, 'published_reason' => 'auto_approved'])->save();

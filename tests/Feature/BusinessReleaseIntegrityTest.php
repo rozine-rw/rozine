@@ -18,7 +18,7 @@ beforeEach(function (): void {
     $this->freezeSecond();
     $this->fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($this->fixture);
-    AuditSealingFixture::cosign($this->fixture);
+    AuditSealingFixture::publish($this->fixture);
     $this->store = app(BusinessCampaignStore::class);
 });
 

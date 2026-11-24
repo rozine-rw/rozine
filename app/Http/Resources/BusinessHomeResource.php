@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -11,7 +12,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * `BusinessHomeProps` for both transports. It shapes already authorized facts and adds real routes
  * only: a destination with no live route yet (withdraw) is null, as are Rating, Reports and
  * Profile on the bearer transport, which has no such read. Headroom is the engine's capacity on the
- * rated application less the raises signed since that quote, null before a rating; on-time share is not invented. The bell opens the Business's own notices with their real unread count.
+ * rated application less the raises signed since that quote, null before a rating; the on-time share counts only instalments actually paid, and a note repaid in full reads completed. The bell opens the Business's own notices with their real unread count.
  *
  * Today leads with the business's latest sealed audit report while it waits for co-signatures,
  * linked to its co-sign page, which rechecks authority. The pre-listing flash report has no other
@@ -20,6 +21,10 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * web. An open draft with a signature on its current offer asks each signatory still to sign for
  * theirs, and tells everyone else on the mandate who it is waiting for. An open draft its evidence
  * does not yet qualify says what it is waiting on, so Today never reads "all caught up" over it.
+ *
+ * On the web, once a Note is issued Today names its next instalment, and from D−14 the visit-ready
+ * checklist with how many items are ticked, both linked to Repayments (QA #579). Such a Note is
+ * filed as repaying. The bearer transport carries neither: it has no Repayments read.
  */
 class BusinessHomeResource extends JsonResource
 {
@@ -33,7 +38,9 @@ class BusinessHomeResource extends JsonResource
         $business = (string) $entry['business_id'];
         $profile = $entry['profile'];
         $campaign = fn (string $id): array => self::link($request, 'business.campaigns.show', ['business' => $business, 'campaign' => $id]);
-        $notes = array_map(fn (array $note): array => ['id' => $note['campaign_id'], 'title' => $note['title'], 'status' => $note['status'],
+        $scheduled = $request->routeIs('api.*') ? [] : array_column($data['issued'] ?? [], 'note_id');
+        $notes = array_map(fn (array $note): array => ['id' => $note['campaign_id'], 'title' => $note['title'],
+            'status' => $note['status'] === 'funded' && in_array($note['campaign_id'], $scheduled, true) ? 'repaying' : $note['status'],
             'created_at' => $note['created_at'], 'funded_pct' => $note['funded_pct'], 'investors' => $note['investors'], 'raised' => $note['raised'],
             'target' => $note['target'], 'link' => $campaign($note['campaign_id'])], $raises['notes']);
         $live = array_find($notes, fn (array $note): bool => $note['status'] === 'active');
@@ -42,7 +49,7 @@ class BusinessHomeResource extends JsonResource
         $placeholder = '00000000-0000-0000-0000-000000000000';
         $wallet = fn (array $query = []): array => self::link($request, 'business.wallet.show', ['business' => $business, ...$query]);
         $report = $entry['audit_report'] ?? null;
-        $cosign = $report === null || $report['status'] !== 'pending' || $request->routeIs('api.*') ? [] : [['kind' => 'audit_cosign', 'report_kind' => $report['kind'], 'due_at' => $report['due_at'] ?? null,
+        $cosign = $report === null || $report['status'] !== 'pending' || $request->routeIs('api.*') ? [] : [['kind' => 'audit_cosign', 'report_kind' => $report['kind'], 'cosign' => $report['cosign'] ?? false, 'due_at' => $report['due_at'] ?? null,
             'hours_left' => ($report['due_at'] ?? null) === null ? null : max(0, (int) ceil((strtotime($report['due_at']) - now()->getTimestamp()) / 3600)),
             'link' => self::link($request, 'business.audit-reports.show', ['business' => $business, 'report' => $report['id']])]];
         $signing = $entry['draft_signatures'] ?? null;
@@ -52,6 +59,24 @@ class BusinessHomeResource extends JsonResource
         $blocked = $entry['draft_blocked'] ?? null;
         $waiting = $blocked === null || $draft === null ? [] : [['kind' => 'application_blocked', 'title' => ($entry['draft_title'] ?? '') === '' ? null : $entry['draft_title'], 'code' => $blocked,
             'link' => self::link($request, 'business.applications.show', ['business' => $business, 'application' => $draft])]];
+        $repayments = fn (): array => self::link($request, 'business.repayments.show', ['business' => $business]);
+        $issued = $request->routeIs('api.*') ? [] : $data['issued'] ?? [];
+        $today = CarbonImmutable::now('Africa/Kigali')->toDateString();
+        $visit = $request->routeIs('api.*') ? null : $data['visit_ready'] ?? null;
+        $ready = $visit === null ? [] : [['kind' => 'visit_ready', 'due_on' => $visit['due_on'], 'visit_from' => $visit['visit_from'], 'visit_by' => $visit['visit_by'],
+            'ready' => count(array_intersect(array_column($visit['items'], 'key'), $visit['ticked'])), 'total' => count($visit['items']), 'link' => $repayments()]];
+        $due = [];
+        $statement = $request->routeIs('api.*') ? null : $data['statement'] ?? null;
+        $paid = $statement === null ? [] : [strtolower((string) $statement['note']['id']) => array_column(array_filter($statement['schedule'],
+            fn (array $row): bool => $row['status'] === 'paid'), 'index')];
+        foreach ($issued as $schedule) {
+            $settled = $paid[strtolower((string) $schedule['note_id'])] ?? [];
+            $next = array_find($schedule['instalments'], fn (array $row): bool => $row['due_on'] >= $today && ! in_array($row['index'], $settled, true));
+            if ($next !== null) {
+                $due[] = ['kind' => 'repayment_due', 'amount' => $next['total'], 'note_title' => $schedule['title'], 'due_on' => $next['due_on'], 'link' => $repayments()];
+            }
+        }
+        usort($due, fn (array $left, array $right): int => strcmp($left['due_on'], $right['due_on']));
         $audit = $data['audit_window'] ?? null;
         $window = $audit === null || $request->routeIs('api.*') ? [] : [['kind' => 'audit_window', 'month' => $audit['period'], 'window_open' => true,
             'days_left' => $audit['days_left'], 'sealed_by' => $audit['seal_by'], 'link' => self::link($request, 'business.audit-prep', ['business' => $business])]];
@@ -60,9 +85,9 @@ class BusinessHomeResource extends JsonResource
             'rating' => $raises['rating'], 'wallet' => ['available' => $data['wallet']['available']], 'unread_notifications' => $data['unread_notices'],
             'live_raise' => $live === null ? null : ['title' => $live['title'], 'funded_pct' => $live['funded_pct'], 'investors' => $live['investors'],
                 'raised' => $live['raised'], 'target' => $live['target'], 'link' => $live['link']],
-            'today' => [...$cosign, ...$signature, ...$waiting, ...$window, ...array_map(fn (array $released): array => ['kind' => 'application_approved', 'title' => $released['title'], 'fee' => ['currency' => 'RWF', 'amount' => '0'],
+            'today' => [...$cosign, ...$ready, ...$due, ...$signature, ...$waiting, ...$window, ...array_map(fn (array $released): array => ['kind' => 'application_approved', 'title' => $released['title'], 'fee' => ['currency' => 'RWF', 'amount' => '0'],
                 'link' => self::link($request, 'business.applications.publish.show', ['business' => $business, 'application' => $released['application_id']])], $raises['released'])],
-            'capital' => [...$raises['capital'], 'repaid' => $data['wallet']['repaid'], 'on_time_pct' => null],
+            'capital' => [...$raises['capital'], 'repaid' => $data['wallet']['repaid'], 'on_time_pct' => $raises['on_time_pct'] ?? null],
             'notes' => $notes, 'headroom' => $raises['sizing']['headroom'] ?? null,
             'links' => ['home' => self::link($request, 'business.show', ['business' => $business]),
                 'launcher' => ['url' => route($request->routeIs('api.*') ? 'api.v1.identity.show' : 'dashboard', [], false), 'method' => 'get'],
@@ -76,15 +101,16 @@ class BusinessHomeResource extends JsonResource
     }
 
     /**
-     * The Business shell's Reports and Profile tabs for one business, for every Business page to
-     * share. Both are web pages only, so on the bearer transport they stay null and hidden.
+     * The Business shell's Reports, Readiness, Market and Profile tabs for one business, for every
+     * Business page to share. All are web pages only, so on the bearer transport they stay null and hidden.
      *
-     * @return array{reports: array{url: string, method: 'get'}|null, profile: array{url: string, method: 'get'}|null}
+     * @return array{reports: array{url: string, method: 'get'}|null, readiness: array{url: string, method: 'get'}|null, market: array{url: string, method: 'get'}|null, profile: array{url: string, method: 'get'}|null}
      */
     public static function tabs(Request $request, string $business): array
     {
-        return $request->routeIs('api.*') ? ['reports' => null, 'market' => null, 'profile' => null]
-            : ['reports' => self::link($request, 'business.reports', ['business' => $business]), 'market' => self::link($request, 'business.market', ['business' => $business]),
+        return $request->routeIs('api.*') ? ['reports' => null, 'readiness' => null, 'market' => null, 'profile' => null]
+            : ['reports' => self::link($request, 'business.reports', ['business' => $business]), 'readiness' => self::link($request, 'business.readiness', ['business' => $business]),
+                'market' => self::link($request, 'business.market', ['business' => $business]),
                 'profile' => self::link($request, 'business.profile', ['business' => $business])];
     }
 

@@ -33,8 +33,9 @@ const ORIGINAL_STAFF_PERMISSIONS = [
         'disbursements.view', 'staging.mail.testers.manage', 'staff.manage', 'reconciliation.view', 'exceptions.view', 'messaging.view', 'primary.view', 'payments.view', 'complaints.answer', 'health.view'],
 ];
 
-it('preserves the complete existing permission matrix in Spatie, with the cart release retry added later', function (string $role): void {
-    $later = in_array($role, ['treasury', 'compliance', 'superadmin'], true) ? ['cart.releases.resolve'] : [];
+it('preserves the complete existing permission matrix in Spatie, with the cart release retry and Compliance\'s market halts added later', function (string $role): void {
+    $later = [...(in_array($role, ['treasury', 'compliance', 'superadmin'], true) ? ['cart.releases.resolve'] : []),
+        ...($role === 'compliance' ? ['secondary.halt', 'secondary.listings.cancel'] : [])];
     expect(StaffFixture::permissions([$role]))->toEqualCanonicalizing(['admin.open', ...ORIGINAL_STAFF_PERMISSIONS[$role], ...$later]);
 })->with(['analyst', 'approver', 'treasury', 'compliance', 'superadmin']);
 

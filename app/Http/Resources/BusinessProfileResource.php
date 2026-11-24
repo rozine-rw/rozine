@@ -19,8 +19,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * ownership-transfer command, so none is offered. `security` reports whether two-factor sign-in is
  * on, managed on the account's security settings. Linked accounts lists the Business's own verified
  * accounts; a holder of `business.wallet.withdraw` gets the link form with its banks and an unlink on
- * each account wherever an account can be verified, and otherwise none is offered. The legal documents have no Business read yet, so `legal` is null and its
- * section shows an empty state. The support center's answers have no approved content either, but
+ * each account wherever an account can be verified, and otherwise none is offered. On the Terms, Privacy Notice or Disclaimers section, `legal` is that document's
+ * current wording, read in place; elsewhere it is null. The support center's answers have no approved content either, but
  * its support chat is real: the Business's complaints with their reference, clocks and conversation
  * (BRS v2.0 CMP-R03), a reply on each one not yet resolved, and where a first message opens a new one. Every Business read is refused unless its
  * parties are verified, hence `verified`.
@@ -28,7 +28,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class BusinessProfileResource extends JsonResource
 {
     /** The design's menu order (Business.dc.html L5022–5028); `GetBusinessProfile::SECTIONS` routes the same list. */
-    private const array SECTIONS = ['company', 'security', 'permissions', 'linked', 'support', 'terms', 'privacy'];
+    private const array SECTIONS = ['company', 'security', 'permissions', 'linked', 'support', 'terms', 'privacy', 'disclaimers'];
 
     /** @return array<string, mixed> */
     public function toArray(Request $request): array
@@ -55,12 +55,13 @@ class BusinessProfileResource extends JsonResource
                 'signatory' => in_array($person['party_id'], $mandate['required_signatories'], true)], $mandate['people']),
             'security' => ['two_factor' => $data['two_factor'], 'login_alerts' => $data['login_alerts'],
                 'update_login_alerts' => ['url' => route('login-alerts.update', [], false), 'method' => 'put']],
-            'provinces' => self::provinces(), 'legal' => null,
+            'provinces' => self::provinces(), 'legal' => $data['legal'] ?? null,
             'support' => ['open' => ['url' => route('business.complaints.store', $parameters, false), 'method' => 'post'],
                 'complaints' => array_map(fn (array $complaint): array => [...$complaint, 'reply' => $complaint['status'] === 'resolved' ? null
                     : ['url' => route('business.complaints.reply', [...$parameters, 'complaint' => $complaint['id']], false), 'method' => 'post']],
                     $data['complaints'])],
-            'linked' => ['add' => $data['can_link'] ? ['url' => route('business.profile.link', $parameters, false), 'method' => 'post'] : null, 'banks' => $data['banks'],
+            // Whether Rozine has opened payout linking at all, so an empty list can say why there is nothing to do yet (#592).
+            'linked' => ['add' => $data['can_link'] ? ['url' => route('business.profile.link', $parameters, false), 'method' => 'post'] : null, 'banks' => $data['banks'], 'open' => $data['linking_open'],
                 'accounts' => array_map(fn (array $method): array => ['id' => $method['id'], 'kind' => $method['kind'] === 'bank' ? 'bank' : 'mobile_money',
                     'name' => $method['label'], 'detail' => $method['masked'], 'unlink' => $data['can_link']
                         ? ['url' => route('business.profile.unlink', [...$parameters, 'method' => $method['id']], false), 'method' => 'post'] : null], $data['methods'])],

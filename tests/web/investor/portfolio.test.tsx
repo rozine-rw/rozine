@@ -237,6 +237,74 @@ describe('Portfolio', () => {
         ).toHaveAttribute('href', '/preview/investor-deals');
     });
 
+    it('lists units bought on the market on the Secondary tab (QA #656)', () => {
+        const props = portfolio(secondaryFixture);
+
+        props.bought = [
+            {
+                lot_id: 'lot-1',
+                note_id: 'note-1',
+                name: 'Kivu Harvest Ltd',
+                accent: props.industries[0]?.accent ?? 'blue',
+                industry: 'Agriculture',
+                units: '2',
+                price: { currency: 'RWF', amount: '4500' },
+                paid: { currency: 'RWF', amount: '9000' },
+                bought_at: '2026-11-16T16:16:00+00:00',
+                link: { url: '/investor/market', method: 'get' },
+            },
+        ];
+        render(<InvestorPortfolio {...props} />);
+
+        const section = screen.getByRole('region', {
+            name: 'Bought on the market',
+        });
+
+        expect(within(section).getByRole('link')).toHaveTextContent(
+            /Kivu Harvest Ltd2 units at RWF 4,500 each · bought .*RWF 9,000/u,
+        );
+        expect(screen.queryByText('Nothing here yet')).not.toBeInTheDocument();
+    });
+
+    it('shows units sold on the market on the Holding, with those still held (QA #656)', () => {
+        const props = holding(holdingMinimalFixture);
+
+        props.holding.resold_units = '2';
+        render(<InvestorHolding {...props} />);
+
+        expect(screen.getByText('Sold on the market')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                `2 notes · ${Number(props.holding.issue.units) - 2} still held`,
+            ),
+        ).toBeInTheDocument();
+    });
+
+    it('marks a paid instalment with its date and net, and shows the rest as scheduled (QA #645)', () => {
+        const props = holding(holdingMinimalFixture);
+        const [first, ...rest] = props.holding.issue.schedule;
+
+        props.holding.schedule = [
+            {
+                ...first,
+                principal: { currency: 'RWF', amount: '500000' },
+                return: { currency: 'RWF', amount: '55500' },
+                paid_on: '2026-11-16',
+                net: { currency: 'RWF', amount: '548840' },
+            },
+            ...rest.map((row) => ({ ...row, paid_on: null, net: null })),
+        ];
+        render(<InvestorHolding {...props} />);
+
+        const rows = screen
+            .getAllByRole('row')
+            .filter((row) => /Paid/u.test(row.textContent ?? ''));
+        expect(rows).toHaveLength(1);
+        expect(rows[0]).toHaveTextContent(/RWF 548,840 net/u);
+        expect(rows[0]).toHaveTextContent('RWF 500,000');
+        expect(rows[0]).toHaveTextContent('RWF 55,500');
+    });
+
     it('renders the live empty portfolio with no empty breakdowns and no unlinked tab', () => {
         const props = portfolio(portfolioMinimalFixture);
 

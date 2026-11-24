@@ -35,7 +35,7 @@ function bpAccepted(string $email): array
 {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     $signatory = $fixture['audit']['authority']['users'][0];
     $signatory->forceFill(['email' => $email, 'password' => BP_PASSWORD])->save();
 

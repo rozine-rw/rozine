@@ -213,7 +213,7 @@ export function FileReview({
                                 DIVIDER,
                             )}
                         >
-                            <span className="flex size-[34px] shrink-0 items-center justify-center rounded-[10px] bg-rz-surface text-[#a4521a]">
+                            <span className="flex size-[34px] shrink-0 items-center justify-center rounded-[10px] bg-rz-surface text-[#a4521a] dark:text-rz-warning-text">
                                 <DocGlyph />
                             </span>
                             <span className="min-w-0 flex-1">
@@ -461,7 +461,7 @@ export function FileReview({
                                 >
                                     <span
                                         aria-hidden
-                                        className="text-[12px] text-[#a4521a]"
+                                        className="text-[12px] text-[#a4521a] dark:text-rz-warning-text"
                                     >
                                         ●
                                     </span>

@@ -206,7 +206,8 @@ test('approval verifies the person through the one writer and activates the Inve
         ->assertInertia(fn (Assert $page) => $page->where('tabs.0.count', 0)->where('tabs.1.count', 1)->where('entries.0.status', 'approved')
             ->where('entries.0.decided_at', now()->toIso8601String())->where('review.decision.outcome', 'approved')
             ->where('review.documents.0.link.url', fn (string $url): bool => str_starts_with($url, '/admin/investor-verifications/'))
-            ->where('review.actions', []));
+            ->where('review.actions', [])
+            ->hasFlash('toast', ['type' => 'success', 'message' => 'Identity approved. Aline Uwase can now invest.']));
     $this->actingAs($this->person->refresh())->get(route('investor.verification'))->assertRedirect(route('dashboard'));
 });
 
@@ -219,6 +220,9 @@ test('rejection keeps the reason for the participant, whose next edit reopens th
         ->toBe(['rejected', 7, 'The ID photo is blurred. Upload a sharper photo.'])
         ->and(Party::query()->findOrFail($this->person->party_id)->verified_at)->toBeNull()
         ->and(RoleMembership::query()->count())->toBe(0);
+    $this->actingAs($this->officer)->get(route('staff.investor-verifications.index', ['tab' => 'decided', 'verification' => $case->id]))
+        ->assertInertia(fn (Assert $page) => $page->hasFlash('toast', ['type' => 'success',
+            'message' => 'Identity rejected. Aline Uwase will see your reason and can correct their details.']));
 
     $this->actingAs($this->person)->get(route('investor.verification'))
         ->assertInertia(fn (Assert $page) => $page->where('status', 'rejected')->where('decision_reason', 'The ID photo is blurred. Upload a sharper photo.'));

@@ -1,3 +1,5 @@
+import type { ProspectusInputs, ReadinessRequirementCode } from './business';
+import type { LegalDocumentText } from './legal';
 import type { Money } from './money';
 import type { RouteAction, RouteLink } from './routing';
 import type {
@@ -478,7 +480,23 @@ export type InvestorPortfolioProps = {
     concentration: Concentration | null;
     /** Uninvested wallet cash, or null when there is none. */
     idle: Money | null;
+    /** Units bought on the market and still held, listed on the Secondary tab. */
+    bought?: BoughtLot[];
     links: InvestorAppLinks;
+};
+
+/** Units bought on the market and still held, at the price paid. */
+export type BoughtLot = {
+    lot_id: string;
+    note_id: string;
+    name: string;
+    accent: BusinessAccent;
+    industry: string;
+    units: string;
+    price: Money;
+    paid: Money;
+    bought_at: string;
+    link: RouteLink;
 };
 
 export type RecoveryStepState = 'done' | 'current' | 'pending';
@@ -665,8 +683,9 @@ export type InvestorType = 'individual' | 'institution';
 export type KycState = 'verified' | 'pending' | 'unverified' | 'expired';
 
 /**
- * The design's profile sub-pages (Investor.dc.html L9933–9941). `plan`, `help`, `terms` and
- * `privacy` have no approved content yet and show an empty state. `automation`
+ * The design's profile sub-pages (Investor.dc.html L9933–9941), plus the Disclaimers. `plan` has
+ * no approved content yet and shows an empty state; `terms`, `privacy` and `disclaimers` show the
+ * current document in place. `automation`
  * (MVP-INVESTOR-SCR-09) is a gated explainer only: Auto-Deploy cannot run in the MVP (D-61, C-29),
  * so it carries no mandate, tier or outcome data.
  */
@@ -680,6 +699,7 @@ export type ProfileSection =
     | 'help'
     | 'terms'
     | 'privacy'
+    | 'disclaimers'
     | 'automation';
 
 export type LinkedAccount = FundingMethod & {
@@ -699,6 +719,8 @@ export type StatementFile = {
 
 export type InvestorProfileProps = {
     section: ProfileSection;
+    /** On the Terms, Privacy Notice or Disclaimers section, that document read in place; otherwise null. */
+    legal_document: LegalDocumentText | null;
     identity: {
         name: string;
         email: string;
@@ -749,6 +771,7 @@ export type InvestorProfileProps = {
         help: RouteLink;
         terms: RouteLink;
         privacy: RouteLink;
+        disclaimers: RouteLink;
         /** Present only when the server offers the gated Auto-Deploy explainer. */
         automation?: RouteLink;
         verification: RouteLink | null;
@@ -881,14 +904,22 @@ export type InvestorVerificationProps =
     | ({
           investor_type: 'individual';
           step: KycStep;
+          /** The app this identity check is for: only an Investor check grants Investor access. */
+          purpose?: 'investor' | 'business' | 'auditor';
           country: string;
           date_of_birth: string;
           id_type: IdDocument;
           id_number: string;
+          /** An Auditor check also carries the ICPAR licence, verified with the identity in one review. */
+          licence_number?: string;
+          /** YYYY-MM-DD. */
+          licence_expires_on?: string;
           uploads: {
               front: UploadState;
               back: UploadState;
               selfie: UploadState;
+              /** The ICPAR licence certificate, for an Auditor check only. */
+              certificate?: UploadState;
           };
           links: { back: RouteLink };
           actions: {
@@ -1101,6 +1132,29 @@ export type WalletEntry =
       }
     | {
           id: string;
+          movement: 'external';
+          /** A business's note repayment paid on to the Investor, net of the fee on earnings. */
+          kind: 'repayment';
+          direction: 'in';
+          amount: Money;
+          counterparty: string;
+          occurred_at: string;
+          link: RouteLink;
+      }
+    | {
+          id: string;
+          movement: 'external';
+          /** A resale trade: paid for units bought on the market, or received (net of the fee) for units sold. */
+          kind: 'resale';
+          direction: 'in' | 'out';
+          amount: Money;
+          counterparty: string;
+          units: string;
+          occurred_at: string;
+          link: RouteLink;
+      }
+    | {
+          id: string;
           movement: 'internal';
           kind: 'hold' | 'hold_release' | 'commitment' | 'commitment_refund';
           from: WalletBucket;
@@ -1135,6 +1189,90 @@ export type C3InvestorShellLinks = {
 export type InvestorShellPageProps = {
     identity_context_revision: number;
     links: C3InvestorShellLinks;
+};
+
+/** A live resale listing on the Market board (BRS v3.0 §12), with what this Investor may do with it. */
+export type MarketListing = {
+    listing_id: string;
+    note_id: string;
+    deal_name: string;
+    remaining_units: string;
+    /** Per unit, whole francs. */
+    price: Money;
+    listed_at: string;
+    expires_at: string;
+    /** The Investor's own listing. */
+    mine: boolean;
+    /** Held by another buyer's live reservation. */
+    /** Other buyers' reservations hold every unit still listed, so there is nothing to buy right now. */
+    reserved: boolean;
+    /** Units other buyers hold in live reservations ('0' when none); the rest stays buyable. */
+    reserved_units?: string;
+    /** The Investor's own live reservation of it, if any. */
+    reservation: {
+        reservation_id: string;
+        units: string;
+        price: Money;
+        buyer_pays: Money;
+        expires_at: string;
+    } | null;
+    actions: {
+        reserve: RouteAction | null;
+        settle: RouteAction | null;
+        withdraw: RouteAction | null;
+    };
+};
+
+/** A lot the Investor holds, with the units not already listed and the price cap per unit. */
+export type MarketSellableLot = {
+    lot_id: string;
+    note_id: string;
+    deal_name: string;
+    units: string;
+    free_units: string;
+    cap: Money;
+    /** Whether the note's trading window is open now. */
+    tradable: boolean;
+};
+
+export type MarketTrade = {
+    transfer_id: string;
+    side: 'buy' | 'sell';
+    deal_name: string;
+    units: string;
+    price: Money;
+    /** What the buyer paid, or what the seller received. */
+    amount: Money;
+    fee: Money;
+    settled_at: string;
+};
+
+/** One of the Investor's own listings that ended unsold: withdrawn, cancelled by staff or a halt, or expired. */
+export type MarketClosedListing = {
+    listing_id: string;
+    deal_name: string;
+    listed_units: string;
+    remaining_units: string;
+    price: Money;
+    listed_at: string;
+    state: 'cancelled' | 'expired';
+    cancelled_by: 'seller' | 'staff' | 'halt' | null;
+    ended_at: string;
+};
+
+/** `investor-market-v1`: the Market page with the resale board. */
+export type InvestorMarketProps = InvestorShellPageProps & {
+    contract_version: 'investor-market-v1';
+    server_time: string;
+    market: {
+        open: boolean;
+        listings: MarketListing[];
+        sellable: MarketSellableLot[];
+        trades: MarketTrade[];
+        /** Newest first; absent from older payloads. */
+        closed?: MarketClosedListing[];
+    };
+    actions: { list: RouteAction | null };
 };
 
 export type C3InvestorWalletProps = InvestorPageContract & {
@@ -1238,7 +1376,17 @@ export type C3DealCard = {
     story: string;
     rate_pct: string;
     term_months: number;
-    links: { detail: RouteLink };
+    /** `prospectus` is set on the focused deal when its business signed a prospectus. */
+    links: { detail: RouteLink; prospectus?: RouteLink | null };
+};
+
+/** The signed prospectus's identity as the deal shows it (BRS v3.0 PRO-R04). */
+export type ProspectusSummary = {
+    version: number;
+    fingerprint: string;
+    signed_at: string;
+    /** The official representative's name, as their profile gives it. */
+    signed_by: string;
 };
 
 /** Allowlisted aggregates only (H9). EBITDA is unavailable unless it was sourced as EBITDA. */
@@ -1278,6 +1426,8 @@ export type MonthlyUpdateSummary = Omit<MonthlyUpdate, 'photos'> & {
 };
 
 export type C3DealDetail = C3DealCard & {
+    /** Null until the business signs its prospectus. */
+    prospectus?: ProspectusSummary | null;
     use_of_funds: UseOfFunds[];
     financials: C3DealFinancials;
     /** The engine's published rating basis; null until the engine publishes one. */
@@ -1562,6 +1712,15 @@ export type Commitment = {
  * server's exact wording is shown, because the acknowledgement binds its version and digest.
  * `action` is null once they are acknowledged.
  */
+/** The shared `risk_acknowledgement` prop: statements still to acknowledge at app open (KYC-R05). */
+export type InvestorRiskAcknowledgementDue = {
+    version: string;
+    statements_sha256: string;
+    statements: { key: string; text: string }[];
+    identity_context_revision: number;
+    action: RouteAction;
+};
+
 export type InvestorRiskStatements = {
     version: string;
     statements_sha256: string;
@@ -1584,6 +1743,23 @@ export type InvestorNotice = {
     read_action: RouteAction | null;
 } & (
     | { kind: 'wallet.deposit_received'; facts: Money }
+    | {
+          kind: 'wallet.payout_received';
+          facts: Money & {
+              gross: string;
+              fee: string;
+              title: string;
+              instalments: string;
+          };
+      }
+    | {
+          kind: 'market.units_bought';
+          facts: Money & { units: string; title: string };
+      }
+    | {
+          kind: 'market.units_sold';
+          facts: Money & { units: string; fee: string; title: string };
+      }
     | {
           kind: 'wallet.withdrawal_sent';
           facts: Money & { account: string; received: string };
@@ -1634,6 +1810,14 @@ export type InvestorNotice = {
           facts: Money & { title: string; term_months: string };
       }
     | {
+          kind: 'business.repayment_received';
+          facts: Money & {
+              repayment_id: string;
+              title: string;
+              instalments: string;
+          };
+      }
+    | {
           kind: 'business.withdrawal_sent';
           facts: Money & { account: string; received: string };
       }
@@ -1668,10 +1852,18 @@ export type InvestorNotice = {
     | {
           kind: 'auditor.job_offered';
           facts: {
-              type: 'flash' | 'routine';
+              /** The job's real type; a statement review is named as one (#587). */
+              type: 'flash' | 'routine' | 'statement_review';
               business: string;
               location: string;
               accept_by: string;
+              /** How the offer turned out, read when the Auditor bell lists it; absent elsewhere. */
+              outcome?:
+                  | 'open'
+                  | 'accepted'
+                  | 'declined'
+                  | 'expired'
+                  | 'withdrawn';
           };
       }
     | {
@@ -1689,6 +1881,26 @@ export type InvestorNotice = {
     | {
           kind: 'business.reporting_window_open';
           facts: { period: string; closes_at: string };
+      }
+    | {
+          kind: 'business.visit_ready_open';
+          facts: { due_on: string; items: string };
+      }
+    | {
+          kind: 'business.visit_ready_reminder';
+          facts: { due_on: string; open: string; items: string };
+      }
+    | {
+          kind: 'business.readiness_stage_changed';
+          /** Stages as '0'–'4'; `period` is the report month (YYYY-MM) that moved it. */
+          facts: { stage: string; previous: string; period: string };
+      }
+    | {
+          kind:
+              | 'business.readiness_requirement_due'
+              | 'business.readiness_requirement_closing'
+              | 'business.readiness_requirement_overdue';
+          facts: { code: ReadinessRequirementCode; due_on: string };
       }
     | {
           kind: 'business.raise_funded';
@@ -1722,6 +1934,8 @@ export type InvestorNotice = {
 /** The account's newest notices behind the bell, with the unread count. */
 export type InvestorNotices = {
     unread: number;
+    /** The server's clock when the inbox was read, for "5 minutes ago". */
+    server_time?: string;
     notices: InvestorNotice[];
     actions: { read_all: RouteAction | null };
 };
@@ -1851,6 +2065,10 @@ export type C3HoldingDetail = Omit<HoldingDetail, 'updates'> & {
     updates: MonthlyUpdateSummary[];
     /** The newest published monthly report, which sets the Holding's health; null before the first. */
     latest_report?: Pick<MonthlyUpdate, 'month' | 'status' | 'summary'> | null;
+    /** How many of the Holding's units were sold on the market. */
+    resold_units?: string;
+    /** The schedule as it stands now: paid rows with what was paid, the rest for the units still held. */
+    schedule?: HoldingScheduleRow[];
     issue: IssuedHolding;
 };
 
@@ -1861,6 +2079,35 @@ export type C3InvestorHoldingProps = InvestorPageContract & {
         /** The change beacon for the Investor's purchases, with its render-time cursor; null in previews. */
         changes?: RouteLink | null;
     };
+};
+
+/** One instalment of a bought lot: paid to it, paid to the seller before the purchase, or still to come. */
+export type LotInstalment = {
+    index: number;
+    due_on: string;
+    /** What the instalment pays on the units held, net of the earnings fee. */
+    expected: Money;
+    status: 'paid' | 'before_purchase' | 'upcoming';
+    paid_on: string | null;
+    net: Money | null;
+};
+
+/** The bought-lot page (`investor-lot-v1`): one lot bought on the market, its cost, payouts and schedule. */
+export type InvestorLotProps = {
+    contract_version: 'investor-lot-v1';
+    identity_context_revision: number;
+    server_time: string;
+    lot: BoughtLot & {
+        received: Money;
+        payments_made: number;
+        payments_total: number;
+        next_payment: { amount: Money; due_on: string } | null;
+        matures_on: string;
+        /** Every instalment of the note is paid: nothing left to receive or resell. */
+        repaid: boolean;
+        schedule: LotInstalment[];
+    };
+    links: InvestorAppLinks & { back: RouteLink; changes?: RouteLink | null };
 };
 
 /* ------------------------------------------------------------------------------------------ */
@@ -2106,3 +2353,51 @@ export type C4InvestorPortfolioProps = InvestorServicingPageContract &
             Record<'invested' | 'realised' | 'outstanding_principal', RouteLink>
         >;
     };
+
+/** The signed prospectus behind one deal, read in the app before paying (BRS v3.0 PRO-R04). */
+/**
+ * The signed prospectus as an Investor may read it: the Business's own inputs without the ids of
+ * the private documents behind them (`quoted_lines` and `contracted_months` say which lines cite one).
+ */
+export type InvestorProspectusInputs = Omit<
+    ProspectusInputs,
+    'use_of_funds' | 'forecast'
+> & {
+    use_of_funds: { label: string; amount: string }[];
+    forecast: { month: string; revenue: string; costs: string }[];
+};
+
+export type InvestorProspectusProps = {
+    contract_version: 'investor-prospectus-v1';
+    server_time: string;
+    deal: { campaign_id: string; name: string };
+    prospectus: ProspectusSummary;
+    inputs: InvestorProspectusInputs;
+    facts: {
+        principal: string;
+        term_months: number;
+        instalment: string;
+        verified_monthly_revenue: string;
+        latest_sealed_report_at: string | null;
+        platform_fee: string;
+        net_of_fee: string;
+    };
+    /** Indexes of the use-of-funds lines that cite an uploaded quote or invoice. */
+    quoted_lines: number[];
+    /** The forecast months that cite an uploaded signed contract. */
+    contracted_months: string[];
+    /** Back to the deal, and the same signed version as a PDF download. */
+    links: C3InvestorShellLinks & { back: RouteLink; pdf: RouteLink };
+};
+
+/** One instalment of a Holding's schedule as it stands now (QA #645). */
+export type HoldingScheduleRow = {
+    index: number;
+    due_on: string;
+    principal: Money;
+    return: Money;
+    /** The Kigali date it was paid, or null while it is still to come. */
+    paid_on: string | null;
+    /** What reached the wallet, on the first instalment a payout covered; null otherwise. */
+    net: Money | null;
+};

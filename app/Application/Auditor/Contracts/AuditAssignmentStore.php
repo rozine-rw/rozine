@@ -17,8 +17,9 @@ use Closure;
  * @phpstan-type Work array{assignment: View, business: array{name: string, industry: string, district: string}, distance_upper_bound_m: int|null, report?: array{id: string, status: string, publication_status: string|null, due_at?: string|null, variance_pct?: string|null, proofs?: int}|null}
  * @phpstan-type WorkIdentifiers array{party_id: string, ids: list<string>, next_cursor: string|null}
  * @phpstan-type OperationsCase array{audit_reviews: list<array{report_id: string, status: string, due_at?: string|null, publication_available?: bool, unavailable_reason?: string|null}>, id: string, business_id: string, revision: int, kind: string, status: string, original_dispatch_at: string, complete_by: string|null, attempt: int, operations_reason: string|null, closed_at: string|null, allowed_actions: list<string>}
+ * @phpstan-type OfferOutcome array{outcome: 'open'|'accepted'|'declined'|'expired'|'withdrawn', type: 'flash'|'routine'|'statement_review', held: bool}
  * @phpstan-type Assignment array{id: string, business_id: string, revision: int, state: State}
- * @phpstan-type AcceptedAssignment array{id: string, business_id: string, party_id: string, revision: int, kind: string, original_dispatch_at?: string, business_revision: int, mandate_version: int, mandate_sha256: string, engagement: Acceptance, independence: array{id: string, revision: int, checked_at: string, evidence_reference: string, sha256: string}, accreditation: array{profile_revision: int, status: string, licence: string|null, expires_on: string|null, checked_at: string|null}}
+ * @phpstan-type AcceptedAssignment array{id: string, business_id: string, party_id: string, revision: int, kind: string, original_dispatch_at?: string, period?: string, business_revision: int, mandate_version: int, mandate_sha256: string, engagement: Acceptance, independence: array{id: string, revision: int, checked_at: string, evidence_reference: string, sha256: string}, accreditation: array{profile_revision: int, status: string, licence: string|null, expires_on: string|null, checked_at: string|null}}
  */
 interface AuditAssignmentStore
 {
@@ -50,6 +51,18 @@ interface AuditAssignmentStore
     /** @return View */
     public function get(int $userId, int $contextRevision, string $assignmentId): array;
 
+    /**
+     * How each offer the user's Party was sent has turned out, for the notices that announced them
+     * (#587): still open, accepted, declined (or stepped away from by a conflict), expired, or
+     * withdrawn or given to someone else. It also gives the job's real type, a statement review
+     * included, and whether the Party still holds the job, so a notice can open it. Assignments the
+     * Party was never offered are left out.
+     *
+     * @param  list<string>  $assignmentIds
+     * @return array<string, OfferOutcome>
+     */
+    public function offerOutcomes(int $userId, array $assignmentIds): array;
+
     /** @return OwnConflict */
     public function ownConflict(int $userId, int $contextRevision, string $assignmentId): array;
 
@@ -61,14 +74,15 @@ interface AuditAssignmentStore
 
     /**
      * Holds current offered/accepted assignment authority through a minimal case-summary read.
-     * Original evidence still requires withAccepted.
+     * Original evidence still requires withAccepted. `$completed` also admits the partner's own
+     * completed engagement, for reading a report it sealed after the next audit opened.
      *
      * @template TResult
      *
      * @param  Closure(Work): TResult  $operation
      * @return TResult
      */
-    public function withCurrent(int $userId, int $contextRevision, string $assignmentId, Closure $operation): mixed;
+    public function withCurrent(int $userId, int $contextRevision, string $assignmentId, Closure $operation, bool $completed = false): mixed;
 
     /**
      * Hold current accepted-assignment authority through the protected operation.
@@ -127,14 +141,23 @@ interface AuditAssignmentStore
     /**
      * Trusted scheduler only: dispatches the Business's routine audit once per Kigali month and returns
      * the new assignment, or null when an engagement is still open, closed or already dispatched this month.
+     * A named `$period` (`YYYY-MM`) audits that month instead, beside this month's own dispatch; only the
+     * staging demo names one.
      */
-    public function requestMonthly(string $businessId): ?string;
+    public function requestMonthly(string $businessId, ?string $period = null): ?string;
 
     /**
      * Trusted scheduler only: dispatches an unannounced Flash audit to the Business and returns the new
      * assignment, or null when an engagement is still open or was closed.
      */
     public function requestFlash(string $businessId): ?string;
+
+    /**
+     * Trusted servicing only: dispatches the late visit for an instalment at day 7 of arrears (BRS v3
+     * AUD-R08) and returns the new assignment, or null when an engagement is still open or was closed,
+     * or this instalment already had its visit.
+     */
+    public function requestArrears(string $businessId, string $instalmentId): ?string;
 
     /** @return array<string, mixed> */
     public function advance(int $actorId, string $assignmentId, int $expectedRevision, string $requestId): array;

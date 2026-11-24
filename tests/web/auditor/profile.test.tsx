@@ -703,6 +703,70 @@ describe('Auditor Profile', () => {
         },
     );
 
+    it('opens the Terms, Privacy Notice and Disclaimers in place under Terms & legal', () => {
+        const page = props(legalFixture);
+
+        render(<AuditorProfile {...page} />);
+
+        for (const document of page.legal_documents) {
+            const article = screen.getByRole('article', {
+                name: document.title,
+                hidden: true,
+            });
+            expect(article).not.toBeVisible();
+            fireEvent.click(
+                screen.getByText(document.title, { selector: 'summary span' }),
+            );
+            expect(article).toBeVisible();
+            expect(
+                screen.getByText(
+                    `Version ${document.version} · Fingerprint (SHA-256) ${document.sha256}`,
+                ),
+            ).toBeVisible();
+        }
+    });
+
+    it('opens the other document in place from a link inside one', () => {
+        render(<AuditorProfile {...props(legalFixture)} />);
+
+        fireEvent.click(
+            screen.getByText('Terms and Conditions', {
+                selector: 'summary span',
+            }),
+        );
+        const terms = screen.getByRole('article', {
+            name: 'Terms and Conditions',
+        });
+        const privacy = screen.getByRole('article', {
+            name: 'Privacy Notice',
+            hidden: true,
+        });
+        expect(privacy).not.toBeVisible();
+        const link = within(terms).getAllByRole('link', {
+            name: 'Privacy Notice',
+        })[0];
+        expect(link).toHaveAttribute('href', '#legal-privacy');
+        fireEvent.click(link);
+        expect(privacy).toBeVisible();
+    });
+
+    it('still offers the three documents without an engagement summary', () => {
+        render(
+            <AuditorProfile
+                {...props({
+                    props: { ...legalFixture.props, engagement: null },
+                })}
+            />,
+        );
+
+        expect(
+            screen.queryByRole('link', { name: /Engagement terms/u }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByText('Disclaimers', { selector: 'summary span' }),
+        ).toBeInTheDocument();
+    });
+
     it('states every platform fee share credited this month and how each was worked out', () => {
         render(<AuditorProfile {...props(earningsFixture)} />);
 
@@ -737,13 +801,7 @@ describe('Auditor Profile', () => {
         ).toBeInTheDocument();
     });
 
-    it.each([
-        [payoutFixture, 'No payout account yet'],
-        [
-            { props: { ...legalFixture.props, engagement: null } },
-            'Coming to the app soon',
-        ],
-    ])(
+    it.each([[payoutFixture, 'No payout account yet']])(
         'shows %#: the design section, empty until there is something to read',
         (fixture, title) => {
             render(<AuditorProfile {...props(fixture)} />);

@@ -9,6 +9,7 @@ use App\Application\Business\Contracts\BusinessExposureStore;
 use App\Application\Business\Contracts\CampaignClosureEvidence;
 use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Business\Contracts\PublishedCampaignEvidence;
+use App\Application\Business\Contracts\ServicingRecord;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Domain\Operations\CommandRejection;
@@ -20,6 +21,7 @@ use App\Models\BusinessExposureReservation;
 use App\Models\BusinessProfile;
 use Brick\Math\BigInteger;
 use Brick\Math\BigRational;
+use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 use RuntimeException;
@@ -28,7 +30,8 @@ use RuntimeException;
 final class EloquentPrimaryCampaignSource implements PrimaryCampaignSource
 {
     public function __construct(private PublishedCampaignEvidence $publications, private CampaignClosureEvidence $closures,
-        private BusinessExposureStore $exposures, private CanonicalJson $json, private BusinessConnections $connections, private CampaignFundingEvidence $fundings) {}
+        private BusinessExposureStore $exposures, private CanonicalJson $json, private BusinessConnections $connections, private CampaignFundingEvidence $fundings,
+        private ServicingRecord $servicing) {}
 
     public function lockBusiness(string $campaignId): void
     {
@@ -84,6 +87,14 @@ final class EloquentPrimaryCampaignSource implements PrimaryCampaignSource
             'closed' => $closure !== null, 'closure' => $phase];
     }
 
+    /** @return array{principal: string, expires_at: DateTimeImmutable} */
+    public function raise(string $campaignId): array
+    {
+        $campaign = BusinessCampaign::query()->whereKey($campaignId)->firstOrFail();
+
+        return ['principal' => $campaign->principal, 'expires_at' => $campaign->expires_at->toDateTimeImmutable()];
+    }
+
     /** @return CampaignInput */
     private function lockedInput(string $campaignId, bool $requireOpen, bool $allowElapsed = false): array
     {
@@ -113,7 +124,10 @@ final class EloquentPrimaryCampaignSource implements PrimaryCampaignSource
         $exposure = array_find($this->exposures->current($campaign->business_id), fn (array $item): bool => $item['id'] === $campaign->exposure_reservation_id);
         $reservation = BusinessExposureReservation::query()->whereKey($campaign->exposure_reservation_id)->firstOrFail();
         $quoteBinding = $payload['binding']['application']['quote'] ?? [];
-        $retainedPrincipal = $exposure['principal'] ?? ($closure['principal_released'] ?? null);
+        // A note repaid in full has released its exposure (`BusinessExposureStore::current`); its principal stays retained.
+        $repaid = array_find($exposure !== null || $closure !== null ? [] : $this->servicing->forBusiness($campaign->business_id)['repaid'],
+            fn (array $note): bool => $note['exposure_reservation_id'] === $campaign->exposure_reservation_id);
+        $retainedPrincipal = $exposure['principal'] ?? ($closure['principal_released'] ?? ($repaid === null ? null : $reservation->principal));
         if ($retainedPrincipal !== $campaign->principal
             || ($reservation->payload['quote_id'] ?? null) !== ($quoteBinding['id'] ?? null)
             || ($reservation->payload['quote_sha256'] ?? null) !== ($quoteBinding['sha256'] ?? null)) {

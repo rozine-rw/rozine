@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Identity\LegalDocuments;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -31,3 +32,23 @@ pest()->extend(TestCase::class)
     ->in('Concurrency');
 
 pest()->tia()->locally();
+
+/**
+ * The sign-up fields that tick the Terms, the Privacy Notice and the Disclaimers, each with the
+ * digest of its current wording.
+ *
+ * @return array{legal_documents: array<string, string>, legal_agreements: array<string, string>}
+ */
+function legalConsentFields(): array
+{
+    $documents = app(LegalDocuments::class)->current();
+
+    return ['legal_documents' => array_column($documents, 'sha256', 'key'),
+        'legal_agreements' => array_fill_keys(array_column($documents, 'key'), '1')];
+}
+
+/** @return array<string, string> The digest of each current legal document, keyed by document. */
+function legalDigests(): array
+{
+    return legalConsentFields()['legal_documents'];
+}

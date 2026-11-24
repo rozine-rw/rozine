@@ -14,15 +14,15 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * credit line's), the reference it moved under and its amount (the entry's debits). The opened
  * entry lists every line as a posting with its account and code, the totals and whether they
  * balance, and who started its money flow (`origin`), which is not who posted it. No posting has
- * ever been corrected, so no entry links a contra. `older` pages back from the last row shown and
- * `newest` returns to the first page.
+ * ever been corrected, so no entry links a contra. `older` pages back from the last row shown,
+ * `newer` steps forward one page (#623), and `newest` returns to the first page when that is further.
  *
  * @phpstan-import-type Entry from \App\Application\Operations\Contracts\LedgerJournal
  * @phpstan-import-type Line from \App\Application\Operations\Contracts\LedgerJournal
  * @phpstan-import-type OpenedEntry from \App\Application\Operations\BrowseLedger
  *
  * @phpstan-type Page array{
- *     entries: list<Entry>, total: int, next_before: string|null, entry: OpenedEntry|null,
+ *     entries: list<Entry>, total: int, next_before: string|null, newer_before: string|null, entry: OpenedEntry|null,
  *     search: string, limit: int, before: string|null, roles: list<string>, permissions: list<string>
  * }
  */
@@ -37,7 +37,9 @@ class StaffLedgerResource extends JsonResource
         'withdrawal_hold' => 'withdrawal', 'withdrawal_payout' => 'withdrawal', 'withdrawal_return' => 'withdrawal',
         'business_withdrawal_hold' => 'withdrawal', 'business_withdrawal_payout' => 'withdrawal', 'business_withdrawal_return' => 'withdrawal',
         'primary_hold' => 'investment', 'primary_commit' => 'investment', 'primary_release' => 'investment', 'primary_refund' => 'investment',
-        'primary_issue' => 'disbursement', 'disbursement_platform_fee' => 'platform_fee', 'business_repayment_debit' => 'repayment',
+        'primary_issue' => 'disbursement', 'disbursement_payout' => 'disbursement', 'disbursement_platform_fee' => 'platform_fee', 'business_repayment_debit' => 'repayment',
+        'servicing_payout' => 'distribution',
+        'secondary_hold' => 'secondary', 'secondary_release' => 'secondary', 'secondary_purchase' => 'secondary', 'secondary_sale' => 'secondary',
     ];
 
     /** Each platform account's name and code. */
@@ -45,7 +47,8 @@ class StaffLedgerResource extends JsonResource
         'deposit_clearing' => ['Deposit clearing (provider)', 'DEP-CLR'], 'deposit_fee_revenue' => ['Deposit fee revenue', 'DEP-FEE'],
         'disbursement_settlement' => ['Disbursement settlement', 'DSB-SET'], 'repayment_clearing' => ['Repayment clearing', 'RPY-CLR'],
         'withdrawal_clearing' => ['Withdrawal clearing (provider)', 'WDR-CLR'], 'platform_fee_revenue' => ['Platform fee revenue', 'PLT-FEE'],
-        'audit_partner_fee_payable' => ['Audit Partner fee payable', 'AUD-PAY'],
+        'audit_partner_fee_payable' => ['Audit Partner fee payable', 'AUD-PAY'], 'earnings_fee_revenue' => ['Earnings fee revenue', 'ERN-FEE'],
+        'secondary_settlement' => ['Resale settlement', 'SEC-SET'], 'secondary_fee_revenue' => ['Resale fee revenue', 'SEC-FEE'],
     ];
 
     /** Each wallet bucket's name and code. */
@@ -75,7 +78,8 @@ class StaffLedgerResource extends JsonResource
             'entries' => array_map(fn (array $row): array => self::row($row, $link([...$query, 'entry' => $row['id']])), $page['entries']),
             'total' => $page['total'], 'more' => $page['before'] === null ? $more : null,
             'older' => $page['next_before'] === null ? null : $link([...$first, 'before' => $page['next_before']]),
-            'newest' => $page['before'] === null ? null : $link($first),
+            'newer' => $page['before'] === null ? null : $link($page['newer_before'] === null ? $first : [...$first, 'before' => $page['newer_before']]),
+            'newest' => $page['before'] === null || $page['newer_before'] === null ? null : $link($first),
             'entry' => $entry === null ? null : [...self::row($entry, $link([...$query, 'entry' => $entry['id']])),
                 'operation_id' => $entry['operation_id'] ?? $entry['id'],
                 'posted_by' => ['actor' => 'System · '.str_replace('_', ' ', $entry['kind']), 'at' => $entry['at'], 'reason' => null],

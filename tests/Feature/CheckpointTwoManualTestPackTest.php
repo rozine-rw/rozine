@@ -29,7 +29,7 @@ it('creates usable staged cases and preserves existing data and manual progress 
     $this->assertDatabaseCount('business_applications', 5);
     $this->assertDatabaseCount('audit_reports', 3);
     $this->assertDatabaseCount('audit_report_publications', 2);
-    $this->assertDatabaseCount('audit_report_signatures', 1);
+    $this->assertDatabaseCount('audit_report_signatures', 0);
     $this->assertDatabaseHas('audit_report_publications', ['audit_report_id' => $pack['scenarios']['published']['report'], 'status' => 'published']);
     $this->assertDatabaseHas('audit_report_publications', ['audit_report_id' => $pack['scenarios']['cosign']['report'], 'status' => 'pending']);
     $secrets = [];
@@ -46,8 +46,9 @@ it('creates usable staged cases and preserves existing data and manual progress 
         ->and(array_unique($secrets))->toHaveCount(15);
     $auditor = User::query()->where('email', 'auditor-seal@c2.rozine.invalid')->firstOrFail();
     expect(app(GetAuditProcedure::class)->handle($auditor->id, 1, $pack['scenarios']['seal']['report'])['can_seal'])->toBeTrue();
+    // BRS v3 AUD-R04: the Business no longer co-signs; the sealed report waits out its 24-hour window.
     $owner = User::query()->where('email', 'business-cosign@c2.rozine.invalid')->firstOrFail();
-    expect(app(GetBusinessAuditReport::class)->handle($owner->id, 1, $pack['scenarios']['cosign']['business'], $pack['scenarios']['cosign']['report'])['can_cosign'])->toBeTrue();
+    expect(app(GetBusinessAuditReport::class)->handle($owner->id, 1, $pack['scenarios']['cosign']['business'], $pack['scenarios']['cosign']['report'])['can_cosign'])->toBeFalse();
     expect(app(VerifyAuditReportSeal::class)->handle($pack['scenarios']['published']['report'])['seal_status'])->toBe('valid');
     $this->actingAs($owner)->get($pack['scenarios']['cosign']['report_path'])->assertOk();
     $owner->forceFill(['name' => 'Manually changed name'])->save();

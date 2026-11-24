@@ -241,6 +241,7 @@
                 }
             ],
             "reason_codes": ["PRINCIPAL_CAPPED_AT_CAPACITY"],
+            "repeat_growth_limit": null,
             "rate_basis": {
                 "band": "strong",
                 "floor_pct": "10.0",
@@ -572,6 +573,10 @@
                     "url": "/preview/business-reports",
                     "method": "get"
                 },
+                "readiness": {
+                    "url": "/preview/business-readiness",
+                    "method": "get"
+                },
                 "market": {
                     "url": "/preview/business-market",
                     "method": "get"
@@ -622,6 +627,10 @@
             },
             "reports": {
                 "url": "/preview/business-reports",
+                "method": "get"
+            },
+            "readiness": {
+                "url": "/preview/business-readiness",
                 "method": "get"
             },
             "market": {

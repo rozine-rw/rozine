@@ -13,6 +13,7 @@ use App\Application\Business\Contracts\BusinessApplicationStore;
 use App\Application\Business\Contracts\BusinessAuthorityStore;
 use App\Application\Business\Contracts\BusinessCreditFactsStore;
 use App\Application\Business\Contracts\BusinessExposureStore;
+use App\Application\Business\Contracts\ServicingRecord;
 use App\Application\Business\WithBusinessAuthority;
 use App\Application\Evidence\Contracts\StatementStore;
 use App\Application\Evidence\WithBusinessStatementVerification;
@@ -33,6 +34,7 @@ use App\Domain\Operations\OperationResult;
 use App\Domain\Underwriting\ApplicationUnderwriting;
 use App\Domain\Underwriting\ExactFinancialValue;
 use App\Domain\Underwriting\FlatReturnPricing;
+use App\Domain\Underwriting\LoanCapacity;
 use App\Domain\Underwriting\UnderwritingObservationWindow;
 use App\Domain\Underwriting\UnderwritingViolation;
 use App\Models\BusinessApplication;
@@ -60,6 +62,7 @@ use RuntimeException;
  * @phpstan-import-type Terms from \App\Domain\Business\MandateAuthority
  * @phpstan-import-type EvaluationExpectation from BusinessApplicationStore
  * @phpstan-import-type Selection from UnderwritingObservationWindow
+ * @phpstan-import-type Work from \App\Application\Auditor\Contracts\AuditAssignmentStore
  * @phpstan-import-type AuditBinding from BusinessApplicationStore
  * @phpstan-import-type AcceptedAssignment from \App\Application\Auditor\Contracts\AuditAssignmentStore
  */
@@ -88,6 +91,7 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
         private StatementStore $statements,
         private PublishedApplicationReport $publishedReports,
         private ChangeFeed $changes,
+        private ServicingRecord $servicing,
     ) {}
 
     /**
@@ -138,7 +142,7 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
                 }
                 $window = $this->observationWindow($verification, $credit, now('UTC')->toImmutable());
                 $principal = $quote->payload['result']['capacity']['offer']['principal']['amount'];
-                $result = $this->calculate($application->draft['target'], $application->draft['term_months'], $verification, $credit,
+                $result = $this->calculate($business['id'], $application->draft['target'], $application->draft['term_months'], $verification, $credit,
                     $quote->payload['accepted_principal'], $window, $quote->payload['accepted_commitments']);
                 if (! $result['eligible'] || $this->json->encode($result) !== $this->json->encode($quote->payload['result'])
                     || $principal !== $reservation->principal) {
@@ -413,7 +417,7 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
                             $window = $this->observationWindow($verification, $credit, $now);
                             $calendar = $window['calendar'];
                             $commitments = $this->exposures->current($business['id']);
-                            $result = $this->calculate($draft['target'], $draft['term_months'], $verification, $credit, $acceptedPrincipal, $window, $commitments);
+                            $result = $this->calculate($business['id'], $draft['target'], $draft['term_months'], $verification, $credit, $acceptedPrincipal, $window, $commitments);
                             $prior = BusinessApplicationQuote::query()->where('business_application_id', $application->id)->orderByDesc('revision')->first();
                             $quote = new BusinessApplicationQuote;
                             $quote->id = (string) Str::ulid();
@@ -600,7 +604,7 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
                         $application = $this->application($businessId, $applicationId);
                         $submitted = $application->status === 'submitted' ? $this->submittedSnapshot($application) : null;
                         $quote = $application->status === 'submitted' ? null : $this->currentQuote($application, $business, $verification, $credit);
-                        $review = $submitted === null ? $this->reviewForQuote($application, $business, $quote, $release) : $submitted['review'];
+                        $review = $submitted === null ? $this->reviewForQuote($application, $business, $quote, $release) : $this->submittedReview($application);
                         $pending = $this->pendingApplication($businessId, $applicationId);
 
                         return ['review' => $review, 'business_id' => $businessId, 'identity_context_revision' => $contextRevision,
@@ -797,7 +801,14 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
     /** @return array<string, mixed> */
     private function submittedReview(BusinessApplication $application): array
     {
-        return $this->submittedSnapshot($application)['review'];
+        $review = $this->submittedSnapshot($application)['review'];
+        $quote = $review['quote'] ?? null;
+        // A quote signed before the 1.5x limit existed carries none: name the limit when the offer is within it (QA #673).
+        if (is_array($quote) && ($quote['status'] ?? null) === 'ready' && ($quote['repeat_growth_limit'] ?? null) === null) {
+            $review['quote']['repeat_growth_limit'] = $this->repeatGrowthLimit($application->business_id, null, $quote['principal']['amount']);
+        }
+
+        return $review;
     }
 
     /** @return array<string, mixed> */
@@ -822,21 +833,28 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
      * @param  Verification|null  $verification
      * @param  CreditSnapshot|null  $credit
      * @param  Selection  $window
+     *                             A Business with a note repaid in full raises at most 1.5 times its last one (REP-R05); the key is
+     *                             left out otherwise, so a first raise's replay record is unchanged.
      * @param  list<array{id: string, principal: string}>  $commitments
      * @return array<string, mixed>
      */
-    private function calculate(string $requestedPrincipal, int $tenorMonths, ?array $verification, ?array $credit, ?string $acceptedPrincipal, array $window, array $commitments): array
+    private function calculate(string $businessId, string $requestedPrincipal, int $tenorMonths, ?array $verification, ?array $credit, ?string $acceptedPrincipal, array $window, array $commitments): array
     {
         if ($verification === null || ! $verification['current'] || ! $window['fresh']) {
             return ['eligible' => false, 'code' => 'UNDERWRITING_EVIDENCE_REQUIRED'];
         }
         $verified = $verification['payload'];
+        $inputs = ['requested_principal' => $requestedPrincipal, 'tenor_months' => $tenorMonths,
+            'accepted_principal' => $acceptedPrincipal, 'accepted_commitments' => $commitments, 'months' => $window['months'], ...$window['calendar'],
+            'recurring_owner_draw' => $verified['review']['recurring_owner_draw'],
+            'obligations' => [...$verified['review']['obligations'], ...($credit['facts']['obligations'] ?? [])],
+            'history' => $credit['facts']['history'] ?? null, 'restriction_active' => $credit['facts']['restriction_active'] ?? false];
+        $repaid = $this->servicing->forBusiness($businessId)['repaid'];
+        if ($repaid !== []) {
+            $inputs['last_repaid_principal'] = $repaid[array_key_last($repaid)]['principal'];
+        }
         try {
-            return $this->underwriting->evaluate(['requested_principal' => $requestedPrincipal, 'tenor_months' => $tenorMonths,
-                'accepted_principal' => $acceptedPrincipal, 'accepted_commitments' => $commitments, 'months' => $window['months'], ...$window['calendar'],
-                'recurring_owner_draw' => $verified['review']['recurring_owner_draw'],
-                'obligations' => [...$verified['review']['obligations'], ...($credit['facts']['obligations'] ?? [])],
-                'history' => $credit['facts']['history'] ?? null, 'restriction_active' => $credit['facts']['restriction_active'] ?? false]);
+            return $this->underwriting->evaluate($inputs);
         } catch (UnderwritingViolation $failure) {
             throw new CommandRejection($failure->reasonCode, 422, fieldErrors: [
                 $acceptedPrincipal === null ? 'target' : 'accepted_principal' => ['Choose a permitted principal on the RWF 5,000 note grid.'],
@@ -942,18 +960,29 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
     }
 
     /** @return AuditApplication */
-    public function audit(int $userId, int $contextRevision, string $assignmentId, ?string $applicationId = null): array
+    public function audit(int $userId, int $contextRevision, string $assignmentId, ?string $applicationId = null, bool $completed = false): array
     {
-        return $this->assignments->handle($userId, $contextRevision, $assignmentId, function (array $work) use ($applicationId): array {
-            $application = BusinessApplication::query()->where('business_id', $work['assignment']['business_id'])
-                ->when($applicationId !== null, fn (Builder $query): Builder => $query->whereKey($applicationId))
-                ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END', ['submitted'])->orderByDesc('id')->first();
+        return $completed
+            ? $this->assignments->read($userId, $contextRevision, $assignmentId, fn (array $work): array => $this->auditApplication($work, $applicationId))
+            : $this->assignments->handle($userId, $contextRevision, $assignmentId, fn (array $work): array => $this->auditApplication($work, $applicationId));
+    }
 
-            return ['work' => $work, 'application' => $application === null ? null : ['id' => $application->id, 'revision' => $application->revision,
-                'status' => $application->status,
-                'title' => $application->draft['title'], 'target' => $application->draft['target'], 'term_months' => $application->draft['term_months'],
-                'use_of_funds' => $application->draft['use_of_funds']]];
-        });
+    /**
+     * The application a CPA audits for the assignment's Business: the one named, else the submitted one, else the newest.
+     *
+     * @param  Work  $work
+     * @return AuditApplication
+     */
+    private function auditApplication(array $work, ?string $applicationId): array
+    {
+        $application = BusinessApplication::query()->where('business_id', $work['assignment']['business_id'])
+            ->when($applicationId !== null, fn (Builder $query): Builder => $query->whereKey($applicationId))
+            ->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END', ['submitted'])->orderByDesc('id')->first();
+
+        return ['work' => $work, 'application' => $application === null ? null : ['id' => $application->id, 'revision' => $application->revision,
+            'status' => $application->status,
+            'title' => $application->draft['title'], 'target' => $application->draft['target'], 'term_months' => $application->draft['term_months'],
+            'use_of_funds' => $application->draft['use_of_funds']]];
     }
 
     /**
@@ -1022,6 +1051,8 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
         }
         $offer = $result['capacity']['offer'];
         $instalments = array_values($offer['instalments']);
+        // A repeat raise is also limited to 1.5 times the last note repaid in full (REP-R05), binding or not.
+        $growthLimit = $this->repeatGrowthLimit($payload['business_id'], $result['inputs']['last_repaid_principal'] ?? null, $offer['principal']['amount'], true);
 
         return ['status' => 'ready', 'quote_id' => $quote->id, 'quote_revision' => $quote->revision,
             'policy_version' => $payload['policy_version'], 'evidence_version' => $payload['evidence']['sha256'],
@@ -1034,8 +1065,30 @@ final class EloquentBusinessApplicationStore implements AcceptedApplicationStore
             'schedule' => array_map(fn (int $index, array $amount): array => ['instalment' => $index + 1, 'amount' => $amount],
                 array_keys($instalments), $instalments),
             'reason_codes' => $result['capacity']['reason_codes'],
+            'repeat_growth_limit' => $growthLimit,
             'rate_basis' => ['band' => strtolower($result['scorecard']['band']), 'floor_pct' => '10.0', 'cap_pct' => '15.0',
                 'term_premium' => $result['pricing']['premium_percentage_points']]];
+    }
+
+    /**
+     * The 1.5 times limit on a repeat raise (REP-R05), named only when the offer is within it. A current quote
+     * records the last repaid note when there is one; an application signed before the limit existed did not,
+     * so the servicing record supplies it.
+     *
+     * @return array{currency: 'RWF', amount: string}|null
+     */
+    private function repeatGrowthLimit(string $businessId, ?string $recorded, string $principal, bool $calculated = false): ?array
+    {
+        if ($recorded === null && ! $calculated) {
+            $repaid = $this->servicing->forBusiness($businessId)['repaid'];
+            $recorded = $repaid === [] ? null : $repaid[array_key_last($repaid)]['principal'];
+        }
+        if ($recorded === null) {
+            return null;
+        }
+        $limit = ExactFinancialValue::floor(ExactFinancialValue::amount($recorded)->toBigRational()->multipliedBy(LoanCapacity::REPEAT_GROWTH));
+
+        return ExactFinancialValue::amount($principal)->isGreaterThan($limit) ? null : ['currency' => 'RWF', 'amount' => (string) $limit];
     }
 
     /**

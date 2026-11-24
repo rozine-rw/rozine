@@ -22,7 +22,7 @@ beforeEach(function (): void {
     $this->freezeSecond();
     $this->fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($this->fixture);
-    AuditSealingFixture::cosign($this->fixture);
+    AuditSealingFixture::publish($this->fixture);
     $this->store = app(BusinessCampaignStore::class);
     $this->user = $this->fixture['audit']['authority']['users'][0];
     $this->business = $this->fixture['audit']['business'];
@@ -195,7 +195,7 @@ it('stops at the requested expiry batch size', function (): void {
     $other['user']->forceFill(['two_factor_secret' => encrypt($secret)])->save();
     $other['code'] = $totp->getCurrentOtp($secret);
     AuditSealingFixture::seal($other);
-    AuditSealingFixture::cosign($other);
+    AuditSealingFixture::publish($other);
     $this->store->release($other['audit']['staff']->id, $other['application']->id, 0, 'Reviewed.', (string) Str::uuid());
     $this->store->publish($other['audit']['authority']['users'][0]->id, 1, $other['audit']['business'], $other['application']->id,
         $other['application']->refresh()->revision, 'listing-fee-waiver-1', (string) Str::uuid());

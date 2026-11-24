@@ -59,6 +59,12 @@ const HEALTH_TONE: Record<PartyDetail['health'], Tone> = {
     licence_pending: 'amber',
     frozen: 'red',
     not_tracked: 'grey',
+    kyb_pending: 'amber',
+    not_applied: 'amber',
+    applying: 'amber',
+    applied: 'blue',
+    auditing: 'blue',
+    listed: 'green',
 };
 
 const SECTION =
@@ -675,11 +681,17 @@ export function PartyDrawer({
                                 </button>
                             )}
                             {reasonStage(['freeze', 'release'])}
-                            <p className="mt-2 text-[11.5px] leading-[1.5] text-rz-muted">
-                                {t('admin.parties.freeze_caption', {
-                                    app: t(`admin.parties.app.${party.kind}`),
-                                })}
-                            </p>
+                            {(freeze || release || !frozen) && (
+                                <p className="mt-2 text-[11.5px] leading-[1.5] text-rz-muted">
+                                    {freeze || release
+                                        ? t('admin.parties.freeze_caption', {
+                                              app: t(
+                                                  `admin.parties.app.${party.kind}`,
+                                              ),
+                                          })
+                                        : t('admin.parties.freeze_unavailable')}
+                                </p>
+                            )}
                             <TrailList
                                 title={t('admin.parties.restrictions')}
                                 entries={party.restrictions}

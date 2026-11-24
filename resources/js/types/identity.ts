@@ -37,6 +37,30 @@ export type InvestorAccessOffer = {
     link: { url: string; method: 'post' };
 };
 
+/** The marketplace roles a person asks Rozine's staff for from the launcher (#616). */
+export type RequestableRole = 'business' | 'auditor';
+
+/**
+ * Which roles the person may ask for from the launcher, when they already asked (ISO time, per
+ * role), and where the request is sent. Granting the role stays with staff.
+ */
+export type RoleAccessOffer = {
+    requestable: RequestableRole[];
+    /** Empty roles are left out (an empty map arrives as `[]`). */
+    sent: Partial<Record<RequestableRole, string>>;
+    /**
+     * Why a role that is neither requestable nor sent cannot be asked for (#622). Empty roles are
+     * left out (an empty map arrives as `[]`).
+     */
+    unavailable: Partial<
+        Record<
+            RequestableRole,
+            'ROLE_ON_RECORD' | 'AUDITOR_ONLY_ROLE' | 'AUDITOR_ACCOUNT'
+        >
+    >;
+    link: { url: string; method: 'post' };
+};
+
 export type AddInvestorAccessInput = {
     expected_revision: number;
     terms_version: string;
@@ -122,3 +146,19 @@ export type SaveRoleBookmarkInput = {
 export type RoleApp = MarketplaceRole;
 export type IdentityCode = IdentityContext['code'];
 export type IdentityParty = NonNullable<IdentityContext['party']>;
+
+/**
+ * Where a person's own KYC and their application to switch from Investor to Business or Auditor
+ * stand (role switch, 23 Nov 2026). `status` is `none` before anything is saved.
+ */
+export type RoleApplicationOffer = {
+    kyc: 'none' | 'draft' | 'submitted' | 'approved' | 'rejected';
+    status:
+        | 'none'
+        | 'draft'
+        | 'submitted'
+        | 'changes_requested'
+        | 'approved'
+        | 'rejected';
+    role: 'business' | 'auditor' | null;
+};

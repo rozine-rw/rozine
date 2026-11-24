@@ -23,7 +23,13 @@ it('installs Business deposit records behind an in-flight Investor posting witho
     $businessWithdrawals = require database_path('migrations/2026_10_14_104058_create_business_wallet_withdrawals.php');
     $platformFee = require database_path('migrations/2026_10_16_161905_add_platform_fee_to_disbursements.php');
     $automaticDisbursement = require database_path('migrations/2026_10_16_180415_disburse_funded_campaigns_automatically.php');
-    $restore = function () use ($migration, $businessRepayments, $businessWithdrawals, $platformFee, $automaticDisbursement): void {
+    // The secondary market rebinds the ledger entry sources too, so it comes off first and goes back last.
+    // Servicing payouts reference Business repayments and rebind the ledger kinds after the secondary market, so they come off before it and go back after it.
+    $servicingPayouts = require database_path('migrations/2026_11_14_120000_create_servicing_payouts.php');
+    $disbursementPayouts = require database_path('migrations/2026_11_19_180000_add_disbursement_payout_entries.php');
+    $concurrentReservations = require database_path('migrations/2026_11_19_200000_allow_concurrent_secondary_reservations.php');
+    $secondaryMarket = require database_path('migrations/2026_11_11_060000_create_secondary_market_tables.php');
+    $restore = function () use ($migration, $businessRepayments, $businessWithdrawals, $platformFee, $automaticDisbursement, $secondaryMarket, $servicingPayouts, $disbursementPayouts, $concurrentReservations): void {
         if (! Schema::hasTable('business_deposit_intents')) {
             $migration->up();
         }
@@ -31,7 +37,15 @@ it('installs Business deposit records behind an in-flight Investor posting witho
         $businessWithdrawals->up();
         $platformFee->up();
         $automaticDisbursement->up();
+        $secondaryMarket->up();
+        $servicingPayouts->up();
+        $disbursementPayouts->up();
+        $concurrentReservations->up();
     };
+    $concurrentReservations->down();
+    $disbursementPayouts->down();
+    $servicingPayouts->down();
+    $secondaryMarket->down();
     $automaticDisbursement->down();
     $platformFee->down();
     $businessWithdrawals->down();

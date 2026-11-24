@@ -504,7 +504,7 @@ export default function BusinessStatementTranscription({
                                                 <span
                                                     className={
                                                         open === 0
-                                                            ? 'text-rz-success-text'
+                                                            ? 'text-rz-positive'
                                                             : 'text-rz-danger-text'
                                                     }
                                                 >

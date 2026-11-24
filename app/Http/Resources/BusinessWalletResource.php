@@ -29,11 +29,11 @@ class BusinessWalletResource extends JsonResource
 
         return ['contract_version' => 'business-servicing-v1', 'identity_context_revision' => $context, 'server_time' => now()->toIso8601String(),
             'allowed_actions' => $request->routeIs('api.*') && ! $request->user()?->tokenCan('business:command') ? [] : $data['allowed_actions'],
-            'business' => $data['business'], 'wallet' => $data['wallet'], 'funding' => $data['funding'],
+            'business' => $data['business'], 'wallet' => $data['wallet'], 'funding' => $data['funding'], 'linking_open' => (bool) ($data['linking_open'] ?? false),
             'deposits' => array_map(fn (array $deposit): array => self::deposit($request, $business, $context, $deposit), $data['deposits']),
             'withdrawals' => array_map(fn (array $withdrawal): array => self::withdrawal($request, $business, $context, $withdrawal), $data['withdrawals']),
             'history' => ['movement' => $movement,
-                'filters' => array_map(fn (string $key): array => ['key' => $key, 'active' => $key === $movement, 'link' => $wallet(['movement' => $key, ...$range])], ['external', 'internal']),
+                'filters' => array_map(fn (string $key): array => ['key' => $key, 'active' => $key === $movement, 'link' => $wallet(['movement' => $key, ...$range])], ['all', 'external', 'internal']),
                 'items' => array_map(fn (array $item): array => [...$item, 'link' => $wallet(['receipt' => $item['id']])], $data['history']['items']),
                 'pagination' => ['next' => $data['history']['next_before'] === null ? null : $wallet(['movement' => $movement, ...$range, 'before' => $data['history']['next_before']])],
                 'range' => ['from' => $range['from'] ?? null, 'to' => $range['to'] ?? null, 'base' => $wallet(['movement' => $movement])]],

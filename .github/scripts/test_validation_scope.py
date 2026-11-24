@@ -765,7 +765,7 @@ class SeparateStaticEvidenceTests(unittest.TestCase):
                 if "--paginate" in args:return json.dumps([{"jobs":jobs}])
                 run=self.run if len(calls)==1 or final_run is None else final_run
                 return json.dumps(run)
-            with patch.dict(os.environ,env),patch.object(budget.subprocess,"check_output",side_effect=output),patch.object(budget.time,"monotonic",side_effect=[0,91] if timeout else lambda:0),patch.object(budget.time,"sleep"),contextlib.redirect_stdout(io.StringIO()):
+            with patch.dict(os.environ,env),patch.object(budget.subprocess,"check_output",side_effect=output),patch.object(budget.time,"monotonic",side_effect=[0,budget.PEER_WAIT_SECONDS+1] if timeout else lambda:0),patch.object(budget.time,"sleep"),contextlib.redirect_stdout(io.StringIO()):
                 budget.main()
             self.assertTrue(summary.exists())
             self.assertTrue(any("/attempts/2/jobs?" in args[-1] for args in calls))
@@ -779,6 +779,18 @@ class SeparateStaticEvidenceTests(unittest.TestCase):
         for name in [poc.CATALOG_JOB,poc.WEB_JOB,poc.BOARD_JOB]:
             jobs=copy.deepcopy(self.jobs);next(j for j in jobs if j["name"]==name).update(status="in_progress",conclusion=None)
             with self.subTest(pending=name),self.assertRaisesRegex(ValueError,"queued/running"):self.run_budget(jobs,timeout=True)
+
+    def test_budget_waits_past_ninety_seconds_for_a_slower_php_catalog(self):
+        pending=copy.deepcopy(self.jobs);next(j for j in pending if j["name"]==poc.CATALOG_JOB).update(status="in_progress",conclusion=None)
+        pages=iter([pending,self.jobs])
+        with tempfile.TemporaryDirectory() as directory:
+            env={"GITHUB_REPOSITORY":"rozine-rw/rozine","GITHUB_RUN_ID":"99","GITHUB_RUN_ATTEMPT":"2","GITHUB_STEP_SUMMARY":str(Path(directory)/"summary")}
+            def output(args,**kwargs):
+                return json.dumps([{"jobs":next(pages)}]) if "--paginate" in args else json.dumps(self.run)
+            with patch.dict(os.environ,env),patch.object(budget.subprocess,"check_output",side_effect=output),patch.object(budget.time,"monotonic",side_effect=[0,120,240]),patch.object(budget.time,"sleep") as sleep,contextlib.redirect_stdout(io.StringIO()):
+                budget.main()
+            sleep.assert_called_once_with(budget.PEER_POLL_SECONDS)
+            self.assertTrue(Path(env["GITHUB_STEP_SUMMARY"]).exists())
 
     def test_new_poc_record_is_exact_checkout_and_never_claims_legacy_job_set(self):
         env={"GITHUB_REPOSITORY":"rozine-rw/rozine","GITHUB_RUN_ID":"99","GITHUB_RUN_ATTEMPT":"2","GITHUB_SHA":"b"*40}
@@ -1178,7 +1190,7 @@ class MergeIdentityTests(unittest.TestCase):
         return zipped_proof("merge-identity.json", self.proof)
 
     def classify(self):
-        with patch.object(policy, "api", side_effect=self.api), patch.object(policy, "command", side_effect=self.command), patch.object(policy, "run_jobs", return_value=self.jobs):
+        with patch.object(policy, "api", side_effect=self.api), patch.object(policy, "command", side_effect=self.command), patch.object(policy, "run_jobs", return_value=self.jobs), patch.object(policy, "pages", return_value=[{"total_count": len(self.jobs), "jobs": self.jobs}]):
             return policy.newer_run_blocks(self.repository, self.run, self.source, "c" * 40)
 
     def test_actual_artifact_lookup_excludes_only_proven_different_merge_trees(self):
@@ -1197,6 +1209,83 @@ class MergeIdentityTests(unittest.TestCase):
     def test_unknown_legacy_run_cannot_be_excluded(self):
         self.artifacts = []
         with self.assertRaises(policy.MissingEvidence): self.classify()
+
+    def refused_jobs(self):
+        names = [(policy.IDENTITY_JOB, "failure"), ("Board sync offline tests", "success"),
+                 ("Select CI scope", "skipped"), ("Reuse POC validation evidence", "skipped")]
+        return [{"id": 500 + index, "run_id": 100, "run_attempt": 2, "name": name, "status": "completed", "conclusion": conclusion}
+                for index, (name, conclusion) in enumerate(names)]
+
+    def classify_inventory(self, *reads):
+        # Patch below the job reader so its completeness checks run for real.
+        self.artifacts = []
+        endpoint = f"repos/{self.repository}/actions/runs/100/attempts/2/jobs?per_page=100"
+        inventory = iter(copy.deepcopy(list(reads)))
+
+        def pages(requested, **kwargs):
+            self.assertEqual(requested, endpoint)
+            return next(inventory)
+
+        with patch.object(policy, "api", side_effect=self.api), patch.object(policy, "command", side_effect=self.command), patch.object(policy, "pages", side_effect=pages):
+            return policy.newer_run_blocks(self.repository, self.run, self.source, "c" * 40)
+
+    def test_run_refused_before_identity_cannot_block(self):
+        jobs = self.refused_jobs()
+        whole = [{"total_count": 4, "jobs": jobs}]
+        self.assertFalse(self.classify_inventory(whole, whole))
+        split = [{"total_count": 4, "jobs": jobs[:2]}, {"total_count": 4, "jobs": jobs[2:]}]
+        self.assertFalse(self.classify_inventory(split, split))
+        for scenario in ["identity succeeded", "identity pending", "duplicate identity", "no identity", "test ran", "board failed", "job pending", "run pending"]:
+            changed = copy.deepcopy(jobs)
+            run = copy.deepcopy(self.run)
+            if scenario == "identity succeeded": changed[0]["conclusion"] = "success"
+            elif scenario == "identity pending": changed[0].update(status="in_progress", conclusion=None)
+            elif scenario == "duplicate identity": changed.append(dict(changed[0], id=600))
+            elif scenario == "no identity": changed.pop(0)
+            elif scenario == "test ran": changed[2]["conclusion"] = "failure"
+            elif scenario == "board failed": changed[1]["conclusion"] = "failure"
+            elif scenario == "job pending": changed[3].update(status="queued", conclusion=None)
+            elif scenario == "run pending": run.update(status="in_progress", conclusion=None)
+            read = [{"total_count": len(changed), "jobs": changed}]
+            original = self.run
+            self.run = run
+            with self.subTest(scenario=scenario), self.assertRaises(policy.MissingEvidence): self.classify_inventory(read, read)
+            self.run = original
+
+    def test_refused_peer_needs_a_complete_stable_job_inventory(self):
+        jobs = self.refused_jobs()
+        whole = [{"total_count": 4, "jobs": jobs}]
+        later = copy.deepcopy(jobs)
+        later[2].update(status="in_progress", conclusion=None)
+        added = jobs + [{"id": 600, "run_id": 100, "run_attempt": 2, "name": "PHP 8.5 tests (shard 1/8)", "status": "completed", "conclusion": "failure"}]
+        scenarios = {
+            # A job the reader never saw could have run tree-bound work.
+            "missing page": ([{"total_count": 5, "jobs": jobs}], whole),
+            "short later page": ([{"total_count": 5, "jobs": jobs[:2]}, {"total_count": 5, "jobs": jobs[2:]}], whole),
+            "page totals disagree": ([{"total_count": 4, "jobs": jobs[:2]}, {"total_count": 5, "jobs": jobs[2:]}], whole),
+            "duplicate job id": ([{"total_count": 4, "jobs": jobs[:3] + [dict(jobs[3], id=jobs[0]["id"])]}], whole),
+            "job without id": ([{"total_count": 4, "jobs": jobs[:3] + [{k: v for k, v in jobs[3].items() if k != "id"}]}], whole),
+            "boolean job id": ([{"total_count": 4, "jobs": jobs[:3] + [dict(jobs[3], id=True)]}], whole),
+            "job from another attempt": ([{"total_count": 4, "jobs": jobs[:3] + [dict(jobs[3], run_attempt=1)]}], whole),
+            "job from another run": ([{"total_count": 4, "jobs": jobs[:3] + [dict(jobs[3], run_id=101)]}], whole),
+            "string total": ([{"total_count": "4", "jobs": jobs}], whole),
+            "zero total": ([{"total_count": 0, "jobs": []}], whole),
+            "total over bound": ([{"total_count": 1001, "jobs": jobs}], whole),
+            "no pages": ([], whole),
+            "malformed page": ([{"total_count": 4}], whole),
+            "malformed job": ([{"total_count": 4, "jobs": jobs[:3] + ["job"]}], whole),
+            # The inventory must not move between two complete reads.
+            "job changed on reread": (whole, [{"total_count": 4, "jobs": later}]),
+            "job added on reread": (whole, [{"total_count": 5, "jobs": added}]),
+            "reread incomplete": (whole, [{"total_count": 5, "jobs": jobs}]),
+        }
+        for scenario, reads in scenarios.items():
+            with self.subTest(scenario=scenario), self.assertRaises(policy.MissingEvidence): self.classify_inventory(*reads)
+
+    def test_rerun_while_classifying_refused_run_refuses(self):
+        self.latest = dict(self.run, run_attempt=3)
+        whole = [{"total_count": 4, "jobs": self.refused_jobs()}]
+        with self.assertRaisesRegex(policy.CoordinationRefusal, "^run_or_attempt_changed$"): self.classify_inventory(whole, whole)
 
     def test_expired_duplicate_unreadable_legacy_evidence_never_falls_back(self):
         for scenario in ["expired", "duplicate", "malformed", "download failure", "API failure"]:
@@ -1451,7 +1540,7 @@ class PreflightClassificationTests(unittest.TestCase):
 
     @contextlib.contextmanager
     def server(self):
-        with patch.object(policy, "api", side_effect=self.api), patch.object(policy, "command", side_effect=self.command), patch.object(policy, "run_jobs", return_value=self.jobs), patch.object(policy.time, "sleep"):
+        with patch.object(policy, "api", side_effect=self.api), patch.object(policy, "command", side_effect=self.command), patch.object(policy, "run_jobs", return_value=self.jobs), patch.object(policy, "pages", return_value=[{"total_count": len(self.jobs), "jobs": self.jobs}]), patch.object(policy.time, "sleep"):
             yield
 
     def classify(self):
@@ -2335,6 +2424,40 @@ class CanonicalCoordinationTests(NativeCoordinationFixture):
         self.assertEqual(peak, 4)
         self.assertCountEqual(checked, peers)
 
+    def test_matching_failed_peer_outside_the_scan_window_is_not_read(self):
+        old = (datetime.datetime.now(datetime.timezone.utc) - policy.FAILED_PEER_WINDOW
+               - datetime.timedelta(minutes=5)).isoformat()
+        self.failed_peer(307, matching=True)
+        self.runs[307].update(created_at=old, updated_at=old, run_started_at=old)
+        downloads = []
+        real = policy.coordination_identity
+        def identity(repository, run, **kwargs):
+            downloads.append(run["id"])
+            return real(repository, run, **kwargs)
+        with self.server(), patch.object(policy, "coordination_identity", side_effect=identity):
+            self.assertNotEqual(policy.canonical_selection(self.env())["mode"], "refusal")
+        self.assertNotIn(307, downloads)
+
+    def test_matching_failed_peer_inside_the_scan_window_still_refuses(self):
+        recent = (datetime.datetime.now(datetime.timezone.utc) - policy.FAILED_PEER_WINDOW
+                  + datetime.timedelta(minutes=5)).isoformat()
+        self.failed_peer(307, matching=True)
+        self.runs[307].update(created_at=recent, updated_at=recent, run_started_at=recent)
+        with self.server(), self.assertRaisesRegex(policy.CoordinationRefusal, "canonical_peer_unsuccessful_no_takeover"):
+            policy.canonical_selection(self.env())
+
+    def test_matching_failed_rerun_of_an_old_run_inside_the_scan_window_still_refuses(self):
+        now = datetime.datetime.now(datetime.timezone.utc)
+        old = (now - policy.FAILED_PEER_WINDOW - datetime.timedelta(days=1)).isoformat()
+        for key in ("run_started_at", "updated_at"):
+            with self.subTest(recent=key):
+                self.setUp()
+                self.failed_peer(307, matching=True)
+                self.runs[307].update(created_at=old, run_started_at=old, updated_at=old)
+                self.runs[307][key] = (now - datetime.timedelta(minutes=5)).isoformat()
+                with self.server(), self.assertRaisesRegex(policy.CoordinationRefusal, "canonical_peer_unsuccessful_no_takeover"):
+                    policy.canonical_selection(self.env())
+
     def test_parallel_historical_reads_still_refuse_a_matching_failed_peer(self):
         for number in range(300, 308):
             self.failed_peer(number, matching=number == 307)
@@ -2344,7 +2467,7 @@ class CanonicalCoordinationTests(NativeCoordinationFixture):
 
     def test_parallel_historical_reads_cannot_ignore_failed_identity_publication(self):
         for number in range(300, 308):
-            self.failed_peer(number)
+            self.failed_peer(number, matching=number == 307)
         self.jobs[307][0]["steps"][-1]["conclusion"] = "failure"
         with self.server(), self.assertRaisesRegex(policy.CoordinationRefusal, "identity_or_decision_step_not_successful"):
             policy.canonical_selection(self.env())
@@ -2595,7 +2718,8 @@ class CanonicalCoordinationTests(NativeCoordinationFixture):
             self.assertEqual(old, new)
             final_pages = after["repository_pages"] - before["repository_pages"]
             self.assertEqual(after["run_inventories"], before["run_inventories"] - peers)
-            self.assertEqual(after["total"], before["total"] - peers + final_pages)
+            # Each unrelated peer also skips its jobs and attempt reads (#549).
+            self.assertEqual(after["total"], before["total"] - 3 * peers + final_pages)
             self.assertEqual(after["archives"], before["archives"])
             print("Historical request fixture: " + json.dumps({"peers": peers, "old": before, "new": after}, sort_keys=True))
 
@@ -2619,7 +2743,7 @@ class CanonicalCoordinationTests(NativeCoordinationFixture):
         old, before = self.measured_historical_selection(legacy=True, api_override=api)
         new, after = self.measured_historical_selection(api_override=api)
         self.assertEqual(old, new)
-        self.assertEqual(after["total"], before["total"] + 3)
+        self.assertEqual(after["total"], before["total"] + 3 - 2)
         print("Small-peer large-inventory fixture: " + json.dumps({"old": before, "new": after}, sort_keys=True))
 
     def test_indexed_reads_retain_the_original_per_run_thousand_artifact_bound(self):
@@ -2640,7 +2764,10 @@ class CanonicalCoordinationTests(NativeCoordinationFixture):
                  "cancelled job", "pending job", "failed upload", "legacy source")
         for case in cases:
             self.setUp()
-            self.failed_peer(300, matching=case == "matching tree")
+            # Job and attempt reads now run only for a peer on the same native tree
+            # (#549): those cases use a matching peer so both paths still refuse.
+            job_case = case in ("missing job", "failed job", "skipped job", "cancelled job", "pending job", "failed upload")
+            self.failed_peer(300, matching=case == "matching tree" or job_case)
             proof = self.artifacts[300]["ci-coordination-identity"]
             if case == "execute": self.artifacts[100].pop("validation-tree")
             if case == "wrong repository": proof["repository"] = "fork/repo"
@@ -2744,7 +2871,7 @@ class CanonicalCoordinationTests(NativeCoordinationFixture):
     def test_historical_native_attempt_and_jobs_are_still_read_fresh(self):
         for case in ("attempt", "jobs"):
             self.setUp()
-            self.failed_peer(300)
+            self.failed_peer(300, matching=True)
             def api(endpoint, **kwargs):
                 result = copy.deepcopy(self.api(endpoint, **kwargs))
                 if endpoint.endswith("/runs/300") and case == "attempt": result["run_attempt"] = 2
@@ -2753,6 +2880,31 @@ class CanonicalCoordinationTests(NativeCoordinationFixture):
             with self.subTest(case=case):
                 result, _ = self.measured_historical_selection(api_override=api)
                 self.assertEqual(result[0], "refusal")
+                self.assertNotIn("canonical_peer_unsuccessful", result[2])
+
+    def test_failed_peer_on_another_native_tree_skips_job_and_attempt_reads(self):
+        for case in ("attempt", "jobs", "valid"):
+            self.setUp()
+            self.failed_peer(300)
+            reads = []
+            def api(endpoint, **kwargs):
+                if endpoint.endswith("/runs/300") or "/runs/300/attempts/" in endpoint: reads.append(endpoint)
+                result = copy.deepcopy(self.api(endpoint, **kwargs))
+                if endpoint.endswith("/runs/300") and case == "attempt": result["run_attempt"] = 2
+                return result
+            if case == "jobs": self.jobs[300][0]["steps"][-1]["conclusion"] = "failure"
+            with self.subTest(case=case):
+                result, counts = self.measured_historical_selection(api_override=api)
+                self.assertEqual(result[0], "decision")
+                self.assertEqual(reads, [])
+
+    def test_failed_peer_with_a_forged_native_tree_still_refuses(self):
+        self.failed_peer(300)
+        proof = self.artifacts[300]["ci-coordination-identity"]
+        proof["tree_sha"] = self.tree
+        result, _ = self.measured_historical_selection()
+        self.assertEqual(result[0], "refusal")
+        self.assertIn("coordination_identity_native_tree_mismatch", result[2])
 
     def test_final_multipage_comparison_detects_changed_metadata_off_first_page(self):
         for number in range(300, 500):
@@ -3600,9 +3752,12 @@ class FreshCompleteRecoveryTests(NativeCoordinationFixture):
 
     def test_delayed_192_peer_multipage_discovery_keeps_final_guards_within_cap(self):
         # Conservative serialized synthetic command latency; no live API timing.
-        old, before, old_seconds = self.measured_snapshot_selection(189, legacy=True, delay=1)
+        # Immutable commit reuse saves another three commands in both paths.
+        # At 1.1s per command the legacy extra history read still exceeds the
+        # unchanged deadline, while the complete shared snapshot fits.
+        old, before, old_seconds = self.measured_snapshot_selection(189, legacy=True, delay=1.1)
         self.setUp()
-        new, after, new_seconds = self.measured_snapshot_selection(189, delay=1)
+        new, after, new_seconds = self.measured_snapshot_selection(189, delay=1.1)
         self.assertEqual(old[0], "refusal")
         self.assertEqual(old_seconds, 45)
         self.assertEqual((new[0], new[1]["source_run"]), ("decision", "200"))

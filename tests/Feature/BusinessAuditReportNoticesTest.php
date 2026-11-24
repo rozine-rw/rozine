@@ -65,7 +65,7 @@ it('reminds the Business once as its monthly review window closes, and never aft
 
     $second = Fixture::ready(kind: 'monthly');
     Fixture::seal($second);
-    Fixture::cosign($second);
+    Fixture::publish($second);
     $this->travel(23)->hours();
     Artisan::call('audits:advance-reviews');
     expect($closing()->count())->toBe(1);

@@ -26,6 +26,8 @@ use App\Application\Auditor\Contracts\MonthlyAuditBusinesses;
 use App\Application\Auditor\Contracts\NoteAuditPartner;
 use App\Application\Auditor\Contracts\PublishedApplicationReport;
 use App\Application\Auditor\Contracts\PublishedMonthlyReports;
+use App\Application\Business\Contracts\AcademyAttemptStore;
+use App\Application\Business\Contracts\AcademyContent;
 use App\Application\Business\Contracts\AcceptedApplicationStore;
 use App\Application\Business\Contracts\AuditedRaises;
 use App\Application\Business\Contracts\BusinessApplicationStore;
@@ -37,31 +39,48 @@ use App\Application\Business\Contracts\BusinessContacts;
 use App\Application\Business\Contracts\BusinessCreditFactsStore;
 use App\Application\Business\Contracts\BusinessDirectoryStore;
 use App\Application\Business\Contracts\BusinessExposureStore;
+use App\Application\Business\Contracts\BusinessMandatesInForce;
 use App\Application\Business\Contracts\BusinessNoticeAudience;
 use App\Application\Business\Contracts\BusinessPhotos;
+use App\Application\Business\Contracts\BusinessProspectuses;
 use App\Application\Business\Contracts\CampaignClosureEvidence;
+use App\Application\Business\Contracts\CampaignTitles;
+use App\Application\Business\Contracts\EnteredBusinesses;
+use App\Application\Business\Contracts\HeldVisitDocuments;
 use App\Application\Business\Contracts\InvestorDealCatalogue;
+use App\Application\Business\Contracts\MonthlySubmissionStore;
 use App\Application\Business\Contracts\NoteServicing;
 use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Business\Contracts\PublishedCampaignEvidence;
+use App\Application\Business\Contracts\ReadinessRequirementStore;
+use App\Application\Business\Contracts\ServicingPayouts;
+use App\Application\Business\Contracts\ServicingRecord;
+use App\Application\Business\Contracts\ServicingStatements;
 use App\Application\Business\Contracts\StaffApplicationQueue;
+use App\Application\Business\Contracts\UpcomingInstalments;
+use App\Application\Business\Contracts\VisitReadyTicks;
+use App\Application\Disbursement\Contracts\DisbursedCampaigns;
 use App\Application\Disbursement\Contracts\DisbursementClosingEvidence;
 use App\Application\Disbursement\Contracts\DisbursementFeeFacts;
+use App\Application\Disbursement\Contracts\DisbursementPayoutLedger;
 use App\Application\Disbursement\Contracts\DisbursementStore;
 use App\Application\Disbursement\Contracts\FundedCampaigns;
 use App\Application\Disbursement\Contracts\PayoutDestinations;
 use App\Application\Disbursement\Contracts\PayoutProvider;
 use App\Application\Disbursement\Contracts\PlatformFeeLedger;
+use App\Application\Disbursement\Contracts\SimulatedRaiseFunding;
 use App\Application\Disbursement\Contracts\SyntheticDisbursementFixtures;
 use App\Application\Disbursement\Contracts\SyntheticPayoutScripts;
 use App\Application\Disbursement\SyntheticDisbursementGuard;
 use App\Application\Environment\Contracts\DemoFixtureStore;
 use App\Application\Environment\Contracts\StagingMailTesterStore;
 use App\Application\Environment\EnvironmentIsolation;
+use App\Application\Environment\UatMoneySimulation;
 use App\Application\Evidence\Contracts\StatementExtractionQueue;
 use App\Application\Evidence\Contracts\StatementReviews;
 use App\Application\Evidence\Contracts\StatementStore;
 use App\Application\Evidence\Contracts\StatementTextExtractor;
+use App\Application\Identity\Contracts\AccountClosures;
 use App\Application\Identity\Contracts\AccountDevices;
 use App\Application\Identity\Contracts\Authenticator;
 use App\Application\Identity\Contracts\Complaints;
@@ -71,8 +90,13 @@ use App\Application\Identity\Contracts\IdentityRepository;
 use App\Application\Identity\Contracts\InvestorDirectoryStore;
 use App\Application\Identity\Contracts\InvestorVerificationReviewStore;
 use App\Application\Identity\Contracts\InvestorVerificationStore;
+use App\Application\Identity\Contracts\LegalConsents;
+use App\Application\Identity\Contracts\LegalDocumentLibrary;
 use App\Application\Identity\Contracts\PartyNotices;
+use App\Application\Identity\Contracts\RoleAccessRequests;
+use App\Application\Identity\Contracts\RoleApplicationStore;
 use App\Application\Identity\Contracts\StaffDirectoryStore;
+use App\Application\Identity\Contracts\UserDirectoryStore;
 use App\Application\Identity\RecognizeSignInDevice;
 use App\Application\Operations\Contracts\AccountHolds;
 use App\Application\Operations\Contracts\ActivityTrailStore;
@@ -93,6 +117,7 @@ use App\Application\Primary\Contracts\CartCheckouts;
 use App\Application\Primary\Contracts\CartSettlementAlerts;
 use App\Application\Primary\Contracts\FundedPurchaseChanges;
 use App\Application\Primary\Contracts\HeldNoteCapital;
+use App\Application\Primary\Contracts\HoldingPayouts;
 use App\Application\Primary\Contracts\HoldingSource;
 use App\Application\Primary\Contracts\InvestorCart;
 use App\Application\Primary\Contracts\InvestorCartQuotes;
@@ -108,11 +133,17 @@ use App\Application\Primary\Contracts\PrimaryReservations;
 use App\Application\Primary\Contracts\RetainedNoteSchedules;
 use App\Application\Primary\Contracts\RiskAcknowledgements;
 use App\Application\Pulse\Contracts\PulseSignupRepository;
+use App\Application\Secondary\Contracts\NoteUnitHolders;
+use App\Application\Secondary\Contracts\SecondaryBoard;
+use App\Application\Secondary\Contracts\SecondaryLedger;
 use App\Application\Secondary\Contracts\SecondaryMarket;
+use App\Application\Secondary\Contracts\SecondaryMarketSweep;
+use App\Application\Secondary\Contracts\SecondaryNotes;
 use App\Application\Wallet\Contracts\BusinessPayoutAccounts;
 use App\Application\Wallet\Contracts\BusinessWalletStore;
 use App\Application\Wallet\Contracts\BusinessWithdrawals;
 use App\Application\Wallet\Contracts\DepositProvider;
+use App\Application\Wallet\Contracts\NoteRepayments;
 use App\Application\Wallet\Contracts\PayoutAccounts;
 use App\Application\Wallet\Contracts\PayoutAccountVerifier;
 use App\Application\Wallet\Contracts\PrimaryCashReceipts;
@@ -145,10 +176,13 @@ use App\Infrastructure\Auditor\EloquentAuditReportStore;
 use App\Infrastructure\Auditor\EloquentAuditSourceFactsStore;
 use App\Infrastructure\Auditor\EloquentAuditStepUp;
 use App\Infrastructure\Auditor\EloquentBusinessAuditWindows;
+use App\Infrastructure\Auditor\EloquentEnteredBusinesses;
 use App\Infrastructure\Auditor\EloquentMonthlyAuditBusinesses;
 use App\Infrastructure\Auditor\EloquentNoteAuditPartner;
 use App\Infrastructure\Auditor\EloquentOverdueAudits;
 use App\Infrastructure\Auditor\JoseAuditReportCryptography;
+use App\Infrastructure\Auditor\SealedAuditCertificates;
+use App\Infrastructure\Business\EloquentAcademyAttemptStore;
 use App\Infrastructure\Business\EloquentBusinessApplicationStore;
 use App\Infrastructure\Business\EloquentBusinessAuthorityStore;
 use App\Infrastructure\Business\EloquentBusinessCampaignStore;
@@ -157,19 +191,31 @@ use App\Infrastructure\Business\EloquentBusinessContacts;
 use App\Infrastructure\Business\EloquentBusinessCreditFactsStore;
 use App\Infrastructure\Business\EloquentBusinessDirectoryStore;
 use App\Infrastructure\Business\EloquentBusinessExposureReservations;
+use App\Infrastructure\Business\EloquentBusinessMandatesInForce;
 use App\Infrastructure\Business\EloquentBusinessNoticeAudience;
 use App\Infrastructure\Business\EloquentBusinessPhotos;
+use App\Infrastructure\Business\EloquentBusinessProspectuses;
+use App\Infrastructure\Business\EloquentMonthlySubmissionStore;
 use App\Infrastructure\Business\EloquentPrimaryCampaignSource;
+use App\Infrastructure\Business\EloquentReadinessRequirementStore;
 use App\Infrastructure\Business\EloquentStaffApplicationQueue;
+use App\Infrastructure\Business\EloquentVisitReadyTicks;
+use App\Infrastructure\Business\FileAcademyContent;
+use App\Infrastructure\Business\IssuedNoteInstalments;
+use App\Infrastructure\Business\PublishedCampaignTitles;
 use App\Infrastructure\Business\RetainedAuditedRaises;
 use App\Infrastructure\Business\RetainedCampaignClosures;
 use App\Infrastructure\Business\RetainedCampaignPublication;
 use App\Infrastructure\Business\RetainedInvestorDeals;
+use App\Infrastructure\Business\SimulatedCommittedRaiseFunding;
 use App\Infrastructure\Business\UnavailableNoteServicing;
+use App\Infrastructure\Business\UnavailableServicingRecord;
 use App\Infrastructure\Disbursement\EloquentCampaignDisbursementProgress;
+use App\Infrastructure\Disbursement\EloquentDisbursedCampaigns;
 use App\Infrastructure\Disbursement\EloquentDisbursementClosingEvidence;
 use App\Infrastructure\Disbursement\EloquentDisbursementFeeFacts;
 use App\Infrastructure\Disbursement\EloquentDisbursementStore;
+use App\Infrastructure\Disbursement\SimulatedFundedCampaigns;
 use App\Infrastructure\Disbursement\SyntheticDisbursementSources;
 use App\Infrastructure\Disbursement\SyntheticPayoutProvider;
 use App\Infrastructure\Disbursement\UnavailableFundedCampaigns;
@@ -181,6 +227,7 @@ use App\Infrastructure\Evidence\EloquentStatementExtractionQueue;
 use App\Infrastructure\Evidence\EloquentStatementReviews;
 use App\Infrastructure\Evidence\EloquentStatementStore;
 use App\Infrastructure\Evidence\IsolatedStatementTextExtractor;
+use App\Infrastructure\Identity\EloquentAccountClosures;
 use App\Infrastructure\Identity\EloquentAccountDevices;
 use App\Infrastructure\Identity\EloquentComplaints;
 use App\Infrastructure\Identity\EloquentConsentCatalog;
@@ -189,10 +236,16 @@ use App\Infrastructure\Identity\EloquentIdentityRepository;
 use App\Infrastructure\Identity\EloquentInvestorDirectoryStore;
 use App\Infrastructure\Identity\EloquentInvestorVerificationReviewStore;
 use App\Infrastructure\Identity\EloquentInvestorVerificationStore;
+use App\Infrastructure\Identity\EloquentLegalConsents;
 use App\Infrastructure\Identity\EloquentPartyNotices;
+use App\Infrastructure\Identity\EloquentRoleAccessRequests;
+use App\Infrastructure\Identity\EloquentRoleApplicationStore;
 use App\Infrastructure\Identity\EloquentStaffDirectoryStore;
+use App\Infrastructure\Identity\EloquentUserDirectoryStore;
+use App\Infrastructure\Identity\FileLegalDocumentLibrary;
 use App\Infrastructure\Identity\FortifyAuthenticator;
 use App\Infrastructure\Identity\MailCartSettlementAlerts;
+use App\Infrastructure\Identity\OpenAccountUserProvider;
 use App\Infrastructure\Operations\EloquentAccountHolds;
 use App\Infrastructure\Operations\EloquentActivityTrailStore;
 use App\Infrastructure\Operations\EloquentLedgerJournal;
@@ -206,6 +259,7 @@ use App\Infrastructure\Primary\CurrentPrimaryAdmission;
 use App\Infrastructure\Primary\EloquentCampaignCommitments;
 use App\Infrastructure\Primary\EloquentCampaignReservationSummary;
 use App\Infrastructure\Primary\EloquentCartCheckouts;
+use App\Infrastructure\Primary\EloquentFundedCampaigns;
 use App\Infrastructure\Primary\EloquentInvestorCart;
 use App\Infrastructure\Primary\EloquentInvestorCartQuotes;
 use App\Infrastructure\Primary\EloquentInvestorHoldings;
@@ -222,12 +276,21 @@ use App\Infrastructure\Primary\RetainedHoldingSource;
 use App\Infrastructure\Primary\RetainedInvestorCheckoutFacts;
 use App\Infrastructure\Primary\RetainedIssuedHoldings;
 use App\Infrastructure\Primary\RetainedPrimaryFunding;
+use App\Infrastructure\Primary\ServicingHoldingPayouts;
 use App\Infrastructure\Primary\TransactionalRetainedNoteSchedules;
 use App\Infrastructure\Pulse\EloquentPulseSignupRepository;
+use App\Infrastructure\Secondary\EloquentNoteUnitHolders;
+use App\Infrastructure\Secondary\EloquentSecondaryMarket;
+use App\Infrastructure\Secondary\RetainedSecondaryNotes;
+use App\Infrastructure\Secondary\SimulatedSecondaryBoard;
+use App\Infrastructure\Secondary\SimulatedSecondaryMarket;
 use App\Infrastructure\Secondary\UnavailableSecondaryMarket;
 use App\Infrastructure\Wallet\EloquentBusinessPayoutAccounts;
+use App\Infrastructure\Wallet\EloquentBusinessPayoutDestinations;
 use App\Infrastructure\Wallet\EloquentBusinessWalletStore;
 use App\Infrastructure\Wallet\EloquentBusinessWithdrawals;
+use App\Infrastructure\Wallet\EloquentDisbursementPayoutLedger;
+use App\Infrastructure\Wallet\EloquentNoteRepayments;
 use App\Infrastructure\Wallet\EloquentPayoutAccounts;
 use App\Infrastructure\Wallet\EloquentPlatformFeeLedger;
 use App\Infrastructure\Wallet\EloquentPrimaryCashReceipts;
@@ -237,19 +300,27 @@ use App\Infrastructure\Wallet\EloquentSyntheticWalletFixtures;
 use App\Infrastructure\Wallet\EloquentSyntheticWalletTesters;
 use App\Infrastructure\Wallet\EloquentWalletPostings;
 use App\Infrastructure\Wallet\EloquentWalletStore;
+use App\Infrastructure\Wallet\SimulatedNoteServicing;
+use App\Infrastructure\Wallet\SimulatedServicingPayouts;
+use App\Infrastructure\Wallet\SimulatedServicingRecord;
 use App\Infrastructure\Wallet\SyntheticDepositProvider;
 use App\Infrastructure\Wallet\SyntheticDepositSettlement;
 use App\Infrastructure\Wallet\SyntheticPayoutAccountVerifier;
 use App\Infrastructure\Wallet\SyntheticWithdrawalProvider;
 use App\Infrastructure\Wallet\UnavailableDepositProvider;
 use App\Infrastructure\Wallet\UnavailablePayoutAccountVerifier;
+use App\Infrastructure\Wallet\UnavailableServicingPayouts;
 use App\Infrastructure\Wallet\UnavailableWithdrawalProvider;
+use App\Infrastructure\Wallet\WalletSecondaryLedger;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Database\Console\Seeds\SeedCommand;
 use Illuminate\Http\Request;
 use Illuminate\Mail\Markdown;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -279,19 +350,34 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PulseSignupRepository::class, EloquentPulseSignupRepository::class);
         $this->app->bind(DemoFixtureStore::class, EloquentDemoFixtureStore::class);
         $this->app->bind(IdentityRepository::class, EloquentIdentityRepository::class);
+        $this->app->bind(LegalConsents::class, EloquentLegalConsents::class);
+        $this->app->singleton(LegalDocumentLibrary::class, FileLegalDocumentLibrary::class);
+        $this->app->bind(AccountClosures::class, EloquentAccountClosures::class);
+        $this->app->bind(NoteRepayments::class, EloquentNoteRepayments::class);
         $this->app->bind(IdentityAccessStore::class, EloquentIdentityAccessStore::class);
+        $this->app->bind(RoleAccessRequests::class, EloquentRoleAccessRequests::class);
         $this->app->bind(CanonicalJson::class, JcsCanonicalJson::class);
         $this->app->bind(OperationJournal::class, EloquentOperationJournal::class);
         $this->app->bind(OperationRecords::class, EloquentOperationRecords::class);
         $this->app->bind(ChangeFeed::class, PostgresChangeFeed::class);
         $this->app->bind(BusinessAuthorityStore::class, EloquentBusinessAuthorityStore::class);
         $this->app->bind(BusinessNoticeAudience::class, EloquentBusinessNoticeAudience::class);
+        $this->app->bind(BusinessMandatesInForce::class, EloquentBusinessMandatesInForce::class);
+        $this->app->bind(ReadinessRequirementStore::class, EloquentReadinessRequirementStore::class);
+        $this->app->bind(MonthlySubmissionStore::class, EloquentMonthlySubmissionStore::class);
+        $this->app->bind(AcademyAttemptStore::class, EloquentAcademyAttemptStore::class);
+        $this->app->bind(AcademyContent::class, FileAcademyContent::class);
+        $this->app->bind(EnteredBusinesses::class, EloquentEnteredBusinesses::class);
         $this->app->bind(BusinessCreditFactsStore::class, EloquentBusinessCreditFactsStore::class);
         $this->app->bind(BusinessApplicationStore::class, EloquentBusinessApplicationStore::class);
         $this->app->bind(BusinessCampaignStore::class, EloquentBusinessCampaignStore::class);
         $this->app->bind(PrimaryCampaignSource::class, EloquentPrimaryCampaignSource::class);
         $this->app->bind(BusinessConnections::class, EloquentBusinessConnections::class);
         $this->app->bind(BusinessContacts::class, EloquentBusinessContacts::class);
+        $this->app->bind(VisitReadyTicks::class, EloquentVisitReadyTicks::class);
+        $this->app->bind(HeldVisitDocuments::class, SealedAuditCertificates::class);
+        $this->app->bind(BusinessProspectuses::class, EloquentBusinessProspectuses::class);
+        $this->app->bind(UpcomingInstalments::class, IssuedNoteInstalments::class);
         $this->app->bind(BusinessAuditWindows::class, EloquentBusinessAuditWindows::class);
         $this->app->bind(PublishedCampaignEvidence::class, RetainedCampaignPublication::class);
         $this->app->bind(InvestorDealCatalogue::class, RetainedInvestorDeals::class);
@@ -308,8 +394,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(StatementReviews::class, EloquentStatementReviews::class);
         $this->app->bind(AuditorProfileStore::class, EloquentAuditorProfileStore::class);
         $this->app->bind(InvestorVerificationStore::class, EloquentInvestorVerificationStore::class);
+        $this->app->bind(RoleApplicationStore::class, EloquentRoleApplicationStore::class);
         $this->app->bind(InvestorVerificationReviewStore::class, EloquentInvestorVerificationReviewStore::class);
         $this->app->bind(InvestorDirectoryStore::class, EloquentInvestorDirectoryStore::class);
+        $this->app->bind(UserDirectoryStore::class, EloquentUserDirectoryStore::class);
         $this->app->bind(BusinessDirectoryStore::class, EloquentBusinessDirectoryStore::class);
         $this->app->bind(AuditorDirectoryStore::class, EloquentAuditorDirectoryStore::class);
         $this->app->bind(AuditReportRegisterStore::class, EloquentAuditReportRegisterStore::class);
@@ -335,7 +423,17 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(WalletStore::class, EloquentWalletStore::class);
         $this->app->bind(BusinessWalletStore::class, EloquentBusinessWalletStore::class);
         $this->app->bind(BusinessWithdrawals::class, EloquentBusinessWithdrawals::class);
-        $this->app->bind(NoteServicing::class, UnavailableNoteServicing::class);
+        // Servicing and Investor payouts are simulated on UAT while its money simulation is on (Erastus, 14 Nov 2026);
+        // everywhere else nothing services until the servicing domain (S4-B/C) is bound.
+        $servicing = fn (): NoteServicing&ServicingStatements => $this->app->make(UatMoneySimulation::class)->active()
+            ? $this->app->make(SimulatedNoteServicing::class) : new UnavailableNoteServicing;
+        $this->app->bind(NoteServicing::class, $servicing);
+        $this->app->bind(ServicingStatements::class, $servicing);
+        $this->app->bind(ServicingRecord::class, fn (): ServicingRecord => $this->app->make(UatMoneySimulation::class)->active()
+            ? $this->app->make(SimulatedServicingRecord::class) : new UnavailableServicingRecord);
+        $this->app->bind(CampaignTitles::class, PublishedCampaignTitles::class);
+        $this->app->bind(ServicingPayouts::class, fn (): ServicingPayouts => $this->app->make(UatMoneySimulation::class)->active()
+            ? $this->app->make(SimulatedServicingPayouts::class) : new UnavailableServicingPayouts);
         $this->app->bind(WalletPostings::class, EloquentWalletPostings::class);
         $this->app->bind(PrimaryCommittedCash::class, EloquentPrimaryCommittedCash::class);
         $this->app->bind(PrimaryCashReceipts::class, EloquentPrimaryCashReceipts::class);
@@ -361,6 +459,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(InvestorCheckoutFacts::class, RetainedInvestorCheckoutFacts::class);
         $this->app->bind(HeldNoteCapital::class, RetainedHeldNoteCapital::class);
         $this->app->bind(InvestorHoldings::class, EloquentInvestorHoldings::class);
+        $this->app->bind(HoldingPayouts::class, ServicingHoldingPayouts::class);
         $this->app->bind(PrimaryPurchaseIndex::class, EloquentPrimaryPurchaseIndex::class);
         $this->app->bind(PrimaryCommitmentView::class, EloquentPrimaryCommitmentView::class);
         $this->app->bind(PrimaryReservations::class, EloquentPrimaryReservations::class);
@@ -387,30 +486,60 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(SyntheticWalletTesters::class, EloquentSyntheticWalletTesters::class);
         $this->app->singleton(SyntheticSettlement::class, SyntheticDepositSettlement::class);
         $this->registerDisbursements();
-        // Secondary trading stays off until Phase 3 acceptance (BRS v2.0 §12).
-        $this->app->bind(SecondaryMarket::class, UnavailableSecondaryMarket::class);
+        // Secondary trading stays off until Erastus switches it on (BRS v3.0 §12, `app.secondary_trading`); he opened it
+        // on UAT with the money simulation (14 Nov 2026).
+        $this->app->bind(SecondaryNotes::class, RetainedSecondaryNotes::class);
+        $this->app->bind(NoteUnitHolders::class, EloquentNoteUnitHolders::class);
+        $this->app->bind(SecondaryLedger::class, WalletSecondaryLedger::class);
+        $this->app->bind(SecondaryMarketSweep::class, EloquentSecondaryMarket::class);
+        $this->app->bind(SecondaryMarket::class, fn (): SecondaryMarket => match (true) {
+            config('app.secondary_trading') === true => $this->app->make(EloquentSecondaryMarket::class),
+            $this->app->make(UatMoneySimulation::class)->active() => new SimulatedSecondaryMarket($this->app->make(EloquentSecondaryMarket::class),
+                $this->app->make(UatMoneySimulation::class)),
+            default => $this->app->make(UnavailableSecondaryMarket::class),
+        });
+        $this->app->bind(SecondaryBoard::class, fn (): SecondaryBoard => match (true) {
+            config('app.secondary_trading') === true => $this->app->make(EloquentSecondaryMarket::class),
+            $this->app->make(UatMoneySimulation::class)->active() => new SimulatedSecondaryBoard($this->app->make(EloquentSecondaryMarket::class),
+                $this->app->make(UatMoneySimulation::class)),
+            default => $this->app->make(UnavailableSecondaryMarket::class),
+        });
     }
 
     /**
-     * Disbursement ports. Outside local/testing with live money off, every funding, destination and
-     * provider port is its unavailable adapter, so disbursement fails closed; staff connections are
+     * Disbursement ports. Local and testing use the synthetic fixtures. UAT with its money simulation on
+     * uses the retained funding source, the Business's own linked account and the synthetic provider.
+     * Everywhere else every funding, destination and provider port is its unavailable adapter, so
+     * disbursement fails closed; staff connections are
      * answered by the real source, which itself answers `unavailable` without full evidence.
      */
     private function registerDisbursements(): void
     {
         $this->app->bind(DisbursementStore::class, EloquentDisbursementStore::class);
         $this->app->bind(PlatformFeeLedger::class, EloquentPlatformFeeLedger::class);
+        $this->app->bind(DisbursementPayoutLedger::class, EloquentDisbursementPayoutLedger::class);
         $this->app->bind(NoteAuditPartner::class, EloquentNoteAuditPartner::class);
         $this->app->bind(DisbursementClosingEvidence::class, EloquentDisbursementClosingEvidence::class);
         $this->app->bind(CampaignDisbursementProgress::class, EloquentCampaignDisbursementProgress::class);
+        $this->app->bind(DisbursedCampaigns::class, EloquentDisbursedCampaigns::class);
         $this->app->bind(FundedPurchaseChanges::class, RetainedFundedPurchaseChanges::class);
         $this->app->bind(BusinessHolders::class, RetainedBusinessHolders::class);
         $this->app->singleton(SyntheticDisbursementSources::class);
         $synthetic = fn (): bool => $this->app->make(SyntheticDisbursementGuard::class)->allowed();
-        $this->app->bind(FundedCampaigns::class, fn (): FundedCampaigns => $synthetic() ? $this->app->make(SyntheticDisbursementSources::class) : new UnavailableFundedCampaigns);
-        $this->app->bind(PayoutDestinations::class, fn (): PayoutDestinations => $synthetic() ? $this->app->make(SyntheticDisbursementSources::class) : new UnavailablePayoutDestinations);
+        $simulated = fn (): bool => $this->app->make(UatMoneySimulation::class)->active();
+        $this->app->bind(FundedCampaigns::class, fn (): FundedCampaigns => match (true) {
+            $synthetic() => $this->app->make(SyntheticDisbursementSources::class),
+            $simulated() => new SimulatedFundedCampaigns($this->app->make(EloquentFundedCampaigns::class), $this->app->make(UatMoneySimulation::class)),
+            default => new UnavailableFundedCampaigns,
+        });
+        $this->app->bind(SimulatedRaiseFunding::class, SimulatedCommittedRaiseFunding::class);
+        $this->app->bind(PayoutDestinations::class, fn (): PayoutDestinations => match (true) {
+            $synthetic() => $this->app->make(SyntheticDisbursementSources::class),
+            $simulated() => $this->app->make(EloquentBusinessPayoutDestinations::class),
+            default => new UnavailablePayoutDestinations,
+        });
         $this->app->bind(SyntheticDisbursementFixtures::class, fn (): SyntheticDisbursementFixtures => $this->app->make(SyntheticDisbursementSources::class));
-        $this->app->bind(PayoutProvider::class, fn (): PayoutProvider => $synthetic() ? $this->app->make(SyntheticPayoutProvider::class) : new UnavailablePayoutProvider);
+        $this->app->bind(PayoutProvider::class, fn (): PayoutProvider => $synthetic() || $simulated() ? $this->app->make(SyntheticPayoutProvider::class) : new UnavailablePayoutProvider);
         $this->app->bind(SyntheticPayoutScripts::class, SyntheticPayoutProvider::class);
     }
 
@@ -422,6 +551,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
         $this->configureHead();
         $this->recognizeSignInDevices();
+        Auth::provider('open-accounts', fn (Application $app, array $config): OpenAccountUserProvider => new OpenAccountUserProvider($app->make(Hasher::class), $config['model']));
         RateLimiter::for('changes', fn (Request $request): Limit => Limit::perMinute(30)->by('changes:'.$request->user()?->getAuthIdentifier()));
         RateLimiter::for('audit-step-up', fn (Request $request): array => [
             Limit::perMinute(5)->by('account:'.$request->user()?->getAuthIdentifier()),
@@ -499,7 +629,7 @@ class AppServiceProvider extends ServiceProvider
             ->meta('author', 'Rozine')
             ->canonical()
             ->og(type: OgType::Website, title: 'Rozine', siteName: 'Rozine', locale: 'en_RW')
-            ->ogImage(url('/og-image.png'), alt: 'Rozine — the capital market for everyone else', width: 1200, height: 630, type: ImageType::Png)
+            ->ogImage(url('/og-image-v2.png'), alt: 'Rozine: earn up to 15% lending to profitable Rwandan businesses', width: 1200, height: 630, type: ImageType::Png)
             ->twitter(card: TwitterCard::SummaryWithLargeImage, title: 'Rozine')
             ->robots(app()->isProduction()
                 ? [RobotsRule::Index, RobotsRule::Follow]

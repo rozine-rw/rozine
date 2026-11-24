@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Application\Auditor\RequestArrearsVisit;
 use App\Application\Business\CreateBusinessApplication;
 use App\Application\Business\EvaluateBusinessApplication;
 use App\Application\Business\GetBusinessApplicationQuote;
@@ -57,7 +58,10 @@ final class BusinessQuoteFixture
         }
         $transcribed = app(RecordStatementTranscription::class)->handle($owner->id, 1, $audit['business'], 1,
             [['id' => 'bank-a', 'active_from' => $first->format('Y-m'), 'active_until' => null]], $months, $statements, StatementFixture::reviewed($owner->id, $audit['business']), (string) Str::uuid());
-        $assignment = AuditAssignmentFixture::request($audit, $auditKind);
+        // A late visit is sent by servicing at day 7 of arrears, not requested by staff (BRS v3 AUD-R08).
+        $assignment = $auditKind === 'arrears'
+            ? AuditAssignment::query()->findOrFail(app(RequestArrearsVisit::class)->handle($audit['business'], 'synthetic-instalment-1'))
+            : AuditAssignmentFixture::request($audit, $auditKind);
         AuditAssignmentFixture::respond($audit['partners'][0]['user'], $assignment);
         $review = StatementFixture::review([$source => hash('sha256', $csv)]);
         $review['recurring_owner_draw'] = '0';

@@ -60,7 +60,7 @@ function c3Released(TestCase $test): array
 {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     $fixture['audit']['authority']['users'][0]->forceFill(['email' => 'c3-signatory@example.test', 'password' => C3_PASSWORD])->save();
     $application = $fixture['application'];
     $test->actingAs($fixture['audit']['staff'])->postJson(route('staff.applications.release', ['application' => $application->id]), [

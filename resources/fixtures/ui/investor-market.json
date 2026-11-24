@@ -1,7 +1,9 @@
 {
     "component": "investor/market",
     "props": {
+        "contract_version": "investor-market-v1",
         "identity_context_revision": 3,
+        "server_time": "2026-11-16T14:00:00+02:00",
         "links": {
             "deals": {
                 "url": "/preview/investor-deals",
@@ -35,6 +37,16 @@
                 "url": "/preview/launcher-ready",
                 "method": "get"
             }
+        },
+        "market": {
+            "open": true,
+            "listings": [],
+            "sellable": [],
+            "trades": [],
+            "closed": []
+        },
+        "actions": {
+            "list": null
         }
     }
 }

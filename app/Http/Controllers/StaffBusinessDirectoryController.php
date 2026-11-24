@@ -12,7 +12,9 @@ use App\Application\Business\BrowseBusinessDirectory;
 use App\Application\Business\OnboardBusiness;
 use App\Application\Evidence\GetStaffStatementAuditReadiness;
 use App\Application\Evidence\RequestStatementReview;
+use App\Application\Identity\BrowseRoleAccessRequests;
 use App\Application\Identity\GetStaffAccess;
+use App\Application\Identity\ReviewRoleApplications;
 use App\Application\Operations\PlatformPolicies;
 use App\Http\Requests\Auditor\ResolveAuditAssignmentRequest;
 use App\Http\Requests\Staff\ListBusinessDirectoryRequest;
@@ -106,7 +108,7 @@ class StaffBusinessDirectoryController extends Controller
     public function __construct(private BrowseBusinessDirectory $directory) {}
 
     public function index(ListBusinessDirectoryRequest $request, GetStaffAccess $access, GetAuditLocation $location, GetBusinessAuditEngagement $audits,
-        GetStaffStatementAuditReadiness $statements): Response|StaffBusinessDirectoryResource
+        GetStaffStatementAuditReadiness $statements, BrowseRoleAccessRequests $requests, ReviewRoleApplications $applications): Response|StaffBusinessDirectoryResource
     {
         $actorId = (int) $request->user()?->getAuthIdentifier();
         /** @var 'all' $chip */
@@ -120,6 +122,8 @@ class StaffBusinessDirectoryController extends Controller
         $staff = $access->handle($actorId);
         $business = $selected === null ? null : $this->directory->business($actorId, (string) $selected);
 
+        $onboard = $request->validated('onboard_request');
+        $prefill = $onboard === null ? null : $requests->onboardingPrefill($actorId, (string) $onboard);
         $resource = new StaffBusinessDirectoryResource([...$this->directory->directory($actorId, $chip, $sort, $sector, $search, self::LIMIT), 'policy' => PlatformPolicies::businesses(),
             'chip' => $chip, 'sort' => $sort, 'sector' => $sector, 'search' => $search,
             'business' => $business,
@@ -130,9 +134,18 @@ class StaffBusinessDirectoryController extends Controller
                     'partners' => $audits->partners($actorId, $business['row']['business_id']),
                     'statements' => $statements->handle($actorId, $business['row']['business_id'])] : null,
             'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions'], 'onboarded' => session('business_onboarded'),
-            'onboarding_sectors' => OnboardBusiness::sectors()]);
+            'onboarding_sectors' => OnboardBusiness::sectors(),
+            'onboarding_prefill' => $prefill, 'onboarding_request_closed' => $onboard !== null && $prefill === null]);
 
-        return $request->routeIs('api.*') ? $resource : Inertia::render('admin/parties', $resource->resolve($request));
+        if ($request->routeIs('api.*')) {
+            return $resource;
+        }
+        $tab = (string) $request->query('kyb', 'submitted');
+        $selectedApplication = $request->query('application');
+
+        return Inertia::render('admin/parties', [...$resource->resolve($request), ...$applications->page($actorId, 'business',
+            in_array('businesses.verify', $staff['allowed_actions'], true), $tab, is_string($selectedApplication) ? $selectedApplication : null),
+            'applications_close' => route('staff.businesses.index', ['kyb' => $tab])]);
     }
 
     /**

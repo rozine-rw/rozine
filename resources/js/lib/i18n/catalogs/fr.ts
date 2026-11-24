@@ -7,6 +7,25 @@
 import type { Catalog } from '@/lib/i18n/types';
 
 const fr: Catalog = {
+    'legal.back_home': 'Retour à Rozine',
+    'legal.nav_label': 'Documents juridiques',
+    'legal.fingerprint': 'Version {version} · Empreinte (SHA-256) {hash}',
+    'legal.review_banner':
+        'Ces documents sont nouveaux ou ont changé. Acceptez les versions actuelles pour continuer à utiliser Rozine.',
+    'legal.review_banner_cta': 'Lire et accepter',
+    'legal.review.head_title': 'Accepter pour continuer',
+    'legal.review.title': 'Veuillez lire et accepter avant de continuer',
+    'legal.review.lead':
+        'Nos Conditions générales, notre Avis de confidentialité et nos Avertissements sont nouveaux ou ont changé. Ouvrez chacun d’eux, puis cochez la case pour les accepter. Nous enregistrons la version acceptée et l’heure.',
+    'legal.review.submit': 'Accepter et continuer',
+    'legal.review.processing': 'Enregistrement…',
+    'legal.consent.legend': 'Conditions, confidentialité et avertissements',
+    'legal.consent.terms_before': 'J’ai lu et j’accepte les',
+    'legal.consent.privacy_before': 'J’ai lu et j’accepte le',
+    'legal.consent.disclaimers_before': 'J’ai lu et je comprends les',
+    'legal.risk_warning':
+        'Investir comporte des risques, y compris la perte du capital. Les rendements ne sont pas garantis.',
+    'legal.risk_warning_link': 'Lire les avertissements',
     'suite.sign_out': 'Se déconnecter',
     'site.app_entry.label': 'Applications Rozine',
     'site.app_entry.sign_in': 'Se connecter',
@@ -154,6 +173,7 @@ const fr: Catalog = {
     'auth.verify_email.submit': 'Vérifier l’e-mail',
     'auth.verify_email.resend': 'Envoyer un nouveau code',
     'auth.verify_email.log_out': 'Se déconnecter',
+    'auth.confirm_password.cancel': 'Annuler et revenir aux paramètres',
     'auth.confirm_password.head_title': 'Confirmer le mot de passe',
     'auth.confirm_password.layout_title': 'Confirmer le mot de passe',
     'auth.confirm_password.layout_description':
@@ -189,13 +209,255 @@ const fr: Catalog = {
     'suite.app.browse': 'Voir les offres →',
     'suite.app.request_access': "Demander l'accès →",
     'suite.app.add_access': 'Commencer à investir →',
+    'suite.app.request_sent': 'Demande envoyée ✓',
+    'suite.app.request_sent_summary':
+        'L’équipe Rozine a reçu votre demande et vous contactera.',
+    'suite.app.verify_first': 'Vérifiez d’abord votre identité →',
+    'suite.app.unavailable_reason.business_on_record':
+        'Votre accès Entreprise est déjà enregistré chez Rozine. Contactez le support Rozine pour le modifier.',
+    'suite.app.unavailable_reason.auditor_account':
+        'Les auditeurs partenaires ne peuvent pas avoir un autre rôle Rozine : ce compte Auditeur ne peut donc pas demander l’accès Entreprise.',
+    'suite.app.unavailable_reason.auditor_on_record':
+        'Votre accès Auditeur est déjà enregistré chez Rozine. Contactez le support Rozine pour le modifier.',
+    'suite.app.unavailable_reason.auditor_only_role':
+        'Les auditeurs partenaires ne peuvent pas avoir un autre rôle Rozine : ce compte ne peut donc pas demander l’accès Auditeur.',
+    'suite.app.unavailable': 'Indisponible avec votre accès actuel',
+    'admin.role_applications.business.title': 'Demandes d’entreprise (KYB)',
+    'admin.role_applications.business.caption':
+        'Investisseurs demandant à devenir représentant d’entreprise. Examinez l’entreprise, ses personnes et ses documents, puis décidez ici.',
+    'admin.role_applications.business.kicker': 'Demande entreprise',
+    'admin.role_applications.business.approve': 'Approuver et intégrer',
+    'admin.role_applications.auditor.title': 'Demandes d’auditeur',
+    'admin.role_applications.auditor.caption':
+        'Investisseurs demandant à devenir auditeur. Vérifiez le certificat ICPAR dans le registre, puis décidez ici.',
+    'admin.role_applications.auditor.kicker': 'Demande auditeur',
+    'admin.role_applications.auditor.approve': 'Approuver et accréditer',
+    'admin.role_applications.tabs': 'Statut des demandes',
+    'admin.role_applications.tab.submitted': 'En attente',
+    'admin.role_applications.tab.changes_requested': 'Renvoyées',
+    'admin.role_applications.tab.approved': 'Approuvées',
+    'admin.role_applications.tab.rejected': 'Rejetées',
+    'admin.role_applications.empty.submitted': 'Rien en attente d’examen.',
+    'admin.role_applications.empty.changes_requested':
+        'Aucune demande renvoyée.',
+    'admin.role_applications.empty.approved':
+        'Aucune demande approuvée pour l’instant.',
+    'admin.role_applications.empty.rejected': 'Aucune demande rejetée.',
+    'admin.role_applications.kyc_approved': 'KYC approuvé',
+    'admin.role_applications.kyc_pending': 'KYC en attente',
+    'admin.role_applications.review': 'Examiner',
+    'admin.role_applications.sent_on': 'Envoyée le {date}',
+    'admin.role_applications.drawer_label': 'Demande de {name}',
+    'admin.role_applications.status.draft': 'Brouillon',
+    'admin.role_applications.status.submitted': 'En attente d’examen',
+    'admin.role_applications.status.changes_requested':
+        'Renvoyée pour modifications',
+    'admin.role_applications.status.approved': 'Approuvée',
+    'admin.role_applications.status.rejected': 'Rejetée',
+    'admin.role_applications.identity': 'KYC du demandeur',
+    'admin.role_applications.kyc.none': 'Non commencé',
+    'admin.role_applications.kyc.draft': 'Commencé, non envoyé',
+    'admin.role_applications.kyc.submitted': 'Envoyé, en attente d’approbation',
+    'admin.role_applications.kyc.approved': 'Approuvé',
+    'admin.role_applications.kyc.rejected': 'Rejeté',
+    'admin.role_applications.open_kyc': 'Ouvrir dans Utilisateurs →',
+    'admin.role_applications.two_factor_on':
+        'L’authentification à deux facteurs est activée.',
+    'admin.role_applications.two_factor_off':
+        'L’authentification à deux facteurs est désactivée.',
+    'admin.role_applications.representative':
+        '{name} postule comme {title} ({phone}).',
+    'admin.role_applications.before_approval': 'Avant de pouvoir approuver',
+    'admin.role_applications.incomplete': 'Manquant ou invalide : {fields}',
+    'admin.role_applications.decision': 'Décision',
+    'admin.role_applications.note': 'Note au demandeur',
+    'admin.role_applications.note_hint':
+        'Une note est requise pour renvoyer ou rejeter. Approuver change le rôle du demandeur, qui cesse d’être Investisseur.',
+    'admin.role_applications.reject': 'Rejeter',
+    'admin.role_applications.more': 'Demander plus',
+    'admin.role_applications.approving': 'Approbation…',
+    'admin.role_applications.history': 'Historique',
+    'suite.app.business.switch':
+        'Levez des fonds pour votre entreprise. Ajoutez les informations et documents de l’entreprise (KYB) pour passer en Entreprise.',
+    'suite.app.auditor.switch':
+        'Auditez les entreprises cotées. Ajoutez votre licence ICPAR et vos zones pour passer en Auditeur.',
+    'suite.app.switch.one_role':
+        'Un compte n’a qu’un rôle à la fois. Votre autre demande est chez la Conformité.',
+    'suite.app.switch.under_review_summary':
+        'Votre demande est chez notre équipe Conformité. Nous vous dirons quand elle aura été examinée.',
+    'suite.app.switch.asked_summary':
+        'La Conformité demande quelques modifications. Ouvrez votre demande pour voir quoi corriger.',
+    'suite.app.switch.start': 'Passer à ce rôle →',
+    'suite.app.switch.continue': 'Continuer votre demande →',
+    'suite.app.switch.fix': 'Corriger et renvoyer →',
+    'suite.app.switch.under_review': 'En cours d’examen',
+    'role.choice.title': 'Choisissez votre rôle',
+    'role.choice.kicker': 'Votre rôle',
+    'role.choice.subtitle':
+        'Tout le monde commence comme Investisseur. Vous pouvez passer à un autre rôle. Un compte n’a qu’un rôle à la fois.',
+    'role.choice.current': 'Actuel',
+    'role.choice.investor_approved':
+        'Votre vérification d’identité est approuvée.',
+    'role.choice.investor_pending':
+        'Votre vérification d’identité est envoyée et en cours d’examen.',
+    'role.choice.business.title': 'Représentant d’entreprise',
+    'role.choice.business.body':
+        'Levez des fonds pour une entreprise que vous représentez. Vous ajoutez l’immatriculation, les personnes et les documents de l’entreprise (KYB).',
+    'role.choice.business.start': 'Postuler comme entreprise',
+    'role.choice.auditor.title': 'Auditeur',
+    'role.choice.auditor.body':
+        'Auditez chaque mois les entreprises cotées. Vous ajoutez votre certificat d’exercice ICPAR et les districts couverts.',
+    'role.choice.auditor.start': 'Postuler comme auditeur',
+    'role.choice.kyc_note':
+        'Vous pouvez envoyer votre demande maintenant. La Conformité l’approuve une fois votre vérification d’identité approuvée.',
+    'role.choice.kyc_link': 'Voir votre vérification d’identité',
+    'role.apply.kicker_business': 'Demande entreprise',
+    'role.apply.kicker_auditor': 'Demande auditeur',
+    'role.apply.progress': 'Progression de la demande',
+    'role.apply.step.company.title': 'Votre entreprise',
+    'role.apply.step.company.subtitle':
+        'Tel qu’enregistré au RDB. Nous vérifions ces informations dans le registre RDB.',
+    'role.apply.step.people.title': 'Personnes',
+    'role.apply.step.people.subtitle':
+        'Vous, les administrateurs et toute personne détenant 25 % ou plus.',
+    'role.apply.step.documents.title': 'Documents',
+    'role.apply.step.documents.subtitle':
+        'Des copies lisibles des documents de l’entreprise et de la pièce d’identité de chaque personne.',
+    'role.apply.step.licence.title': 'Licence ICPAR',
+    'role.apply.step.licence.subtitle':
+        'Votre adhésion ICPAR et votre certificat d’exercice en cours.',
+    'role.apply.step.coverage.title': 'Zones et conflits',
+    'role.apply.step.coverage.subtitle':
+        'Où vous pouvez auditer, et votre indépendance.',
+    'role.apply.step.review.title': 'Vérifier et envoyer',
+    'role.apply.step.review.subtitle':
+        'Vérifiez vos réponses puis envoyez-les à notre équipe Conformité.',
+    'role.apply.company.rdb_code': 'Code entreprise RDB',
+    'role.apply.company.rdb_code_hint': '9 chiffres, sur votre certificat RDB',
+    'role.apply.company.legal_name': 'Nom enregistré',
+    'role.apply.company.tin': 'NIF (TIN)',
+    'role.apply.company.tin_hint': '9 chiffres, de la RRA',
+    'role.apply.company.company_type': 'Type d’entreprise',
+    'role.apply.company_type.private_limited': 'SARL',
+    'role.apply.company_type.public_limited': 'SA',
+    'role.apply.company_type.cooperative': 'Coopérative',
+    'role.apply.company_type.partnership': 'Société de personnes',
+    'role.apply.company_type.other': 'Autre',
+    'role.apply.company.incorporated': 'Date de constitution',
+    'role.apply.company.district': 'District',
+    'role.apply.company.sector': 'Secteur',
+    'role.apply.company.address': 'Adresse du siège',
+    'role.apply.company.phone': 'Téléphone de l’entreprise',
+    'role.apply.people.your_title': 'Votre fonction dans l’entreprise',
+    'role.apply.people.your_phone': 'Votre téléphone',
+    'role.apply.people.authorised':
+        'Je suis autorisé(e) à agir pour cette entreprise sur Rozine.',
+    'role.apply.people.directors': 'Administrateurs',
+    'role.apply.people.owners': 'Propriétaires de 25 % ou plus',
+    'role.apply.people.full_name': 'Nom complet',
+    'role.apply.people.national_id': 'Carte d’identité',
+    'role.apply.people.passport': 'Passeport',
+    'role.apply.people.id_number': 'Numéro de pièce',
+    'role.apply.people.nationality': 'Nationalité',
+    'role.apply.people.share': 'Part (%)',
+    'role.apply.people.pep':
+        'Occupe ou a occupé une fonction publique importante (PPE)',
+    'role.apply.people.remove': 'Retirer',
+    'role.apply.people.add_director': '+ Ajouter un administrateur',
+    'role.apply.people.add_owner': '+ Ajouter un propriétaire',
+    'role.apply.document.rdb_certificate': 'Certificat d’immatriculation RDB',
+    'role.apply.document.tin_certificate': 'Certificat NIF (RRA)',
+    'role.apply.document.articles': 'Statuts',
+    'role.apply.document.shareholder_register': 'Registre des actionnaires',
+    'role.apply.document.board_resolution':
+        'Résolution du conseil vous désignant',
+    'role.apply.document.practising_certificate': 'Certificat d’exercice ICPAR',
+    'role.apply.document.person_id': 'Pièce d’identité de {name}',
+    'role.apply.document.optional':
+        'Facultatif. Requis si vous n’êtes pas administrateur.',
+    'role.apply.document.staff_only': 'Seule notre équipe Conformité les voit.',
+    'role.apply.document.formats': 'PDF, JPG ou PNG, 10 Mo maximum chacun.',
+    'role.apply.document.replace': 'Remplacer',
+    'role.apply.document.tap': 'Touchez pour téléverser',
+    'role.apply.document.view': 'Voir',
+    'role.apply.licence.membership': 'Numéro de membre ICPAR',
+    'role.apply.licence.certificate': 'Numéro du certificat d’exercice',
+    'role.apply.licence.valid_until': 'Valable jusqu’au',
+    'role.apply.licence.firm': 'Cabinet d’audit (facultatif)',
+    'role.apply.coverage.districts': 'Districts que vous couvrez',
+    'role.apply.coverage.conflicts': 'Indépendance',
+    'role.apply.coverage.no_conflicts':
+        'Je n’ai aucun intérêt financier ou familial dans une entreprise cotée sur Rozine.',
+    'role.apply.coverage.will_declare':
+        'Je déclarerai tout conflit avant d’accepter un audit.',
+    'role.apply.coverage.ethics':
+        'Je respecte le code de déontologie de l’ICPAR.',
+    'role.apply.review.kyc_pending_title':
+        'Votre vérification d’identité est encore en examen',
+    'role.apply.review.kyc_pending_body':
+        'Vous pouvez l’envoyer maintenant. La Conformité l’approuve une fois votre identité approuvée.',
+    'role.apply.review.uploaded': 'Téléversés',
+    'role.apply.review.declare_business':
+        'Je confirme que ces informations sont exactes et complètes, et que je peux agir pour cette entreprise.',
+    'role.apply.review.declare_auditor':
+        'Je confirme que ces informations sont exactes et que ma licence est en cours de validité.',
+    'role.apply.blockers.title': 'Avant que la Conformité change votre rôle',
+    'role.apply.blocker.INVESTOR_WALLET_BALANCE':
+        'Retirez l’argent de votre portefeuille Investisseur.',
+    'role.apply.blocker.INVESTOR_MONEY_MOVING':
+        'Attendez la fin de vos dépôts et retraits.',
+    'role.apply.blocker.INVESTOR_COMMITMENTS':
+        'Vos investissements en cours doivent d’abord se clôturer.',
+    'role.apply.blocker.INVESTOR_HOLDINGS':
+        'Vous détenez encore des investissements. Ils doivent d’abord être remboursés ou vendus.',
+    'role.apply.blocker.INVESTOR_MARKET_ORDERS':
+        'Annulez vos ordres de marché ouverts.',
+    'role.apply.two_factor.title': 'Activez l’authentification à deux facteurs',
+    'role.apply.two_factor.body':
+        'Les auditeurs doivent protéger leur compte par l’authentification à deux facteurs avant d’envoyer leur demande.',
+    'role.apply.two_factor.action': 'Ouvrir les paramètres de sécurité',
+    'role.apply.asked_for_more': 'La Conformité demande des modifications',
+    'role.apply.rejected': 'Votre dernière demande n’a pas été approuvée',
+    'role.apply.send': 'Envoyer à la Conformité',
+    'role.apply.sending': 'Envoi…',
+    'role.apply.continue': 'Enregistrer et continuer',
+    'role.apply.saving': 'Enregistrement…',
+    'role.apply.waiting_uploads': 'En attente de la fin des téléversements…',
+    'role.apply.choose': 'Choisir…',
+    'role.apply.edit': 'Modifier',
+    'role.apply.back_home': 'Retour à l’accueil',
+    'role.apply.review_state.title': 'Demande envoyée',
+    'role.apply.review_state.business':
+        'Notre équipe Conformité vérifie votre entreprise. Vous restez Investisseur jusqu’à l’approbation.',
+    'role.apply.review_state.auditor':
+        'Notre équipe Conformité vérifie votre licence. Vous restez Investisseur jusqu’à l’approbation.',
+    'role.apply.review_state.sent': 'Demande envoyée',
+    'role.apply.review_state.kyc': 'Vérification d’identité approuvée',
+    'role.apply.review_state.compliance': 'Décision de la Conformité',
+    'suite.request_access.business.title': 'Demander l’accès Entreprise',
+    'suite.request_access.business.body':
+        'Indiquez l’entreprise pour laquelle vous souhaitez lever des fonds. L’équipe Rozine vérifie l’entreprise et vous, en tant que représentant, avant d’ouvrir l’accès Entreprise.',
+    'suite.request_access.business.organization': 'Nom de l’entreprise',
+    'suite.request_access.business.reference':
+        'Code RDB de l’entreprise (facultatif)',
+    'suite.request_access.auditor.title': 'Demander l’accès Auditeur',
+    'suite.request_access.auditor.body':
+        'Les partenaires d’audit sont des comptables agréés. L’équipe Rozine vérifie votre licence ICPAR avant d’ouvrir l’accès Auditeur. Un compte Auditeur ne peut ni investir ni lever des fonds.',
+    'suite.request_access.auditor.organization': 'Cabinet d’audit (facultatif)',
+    'suite.request_access.auditor.reference': 'Numéro de licence ICPAR',
+    'suite.request_access.phone': 'Numéro de téléphone (facultatif)',
+    'suite.request_access.note':
+        'Informations utiles pour l’équipe (facultatif)',
+    'suite.request_access.submit': 'Envoyer la demande',
+    'suite.request_access.sending': 'Envoi…',
+    'suite.request_access.cancel': 'Annuler',
     'suite.app.investor.add':
         "Ajoutez l'accès Investisseur à votre identité vérifiée. Aucune nouvelle vérification d'identité.",
     'suite.add_investor.title': "Ajouter l'accès Investisseur",
     'suite.add_investor.body':
         'Votre identité est déjà vérifiée pour votre compte Entreprise : elle ne vous sera pas redemandée. Lisez et acceptez les conditions Investisseur pour commencer à investir.',
     'suite.add_investor.accept':
-        "J'ai lu et j'accepte ces conditions Investisseur.",
+        'Continuer vaut acceptation de ces conditions Investisseur.',
     'suite.add_investor.confirm': "Ajouter l'accès Investisseur",
     'suite.add_investor.cancel': 'Annuler',
     'suite.add_investor.network_error':
@@ -293,8 +555,239 @@ const fr: Catalog = {
         "Vous êtes hors ligne. Ce qui s'affiche peut ne plus être à jour, et rien ne peut être envoyé avant le retour de la connexion.",
     'business.nav.home': 'Accueil',
     'business.nav.reports': 'Rapports',
+    'business.nav.readiness': 'Préparation',
     'business.nav.market': 'Marché',
     'business.nav.profile': 'Profil',
+    'business.readiness.title': 'Préparation',
+    'business.readiness.subtitle':
+        'Comment votre entreprise progresse vers le marché des capitaux, au rythme de sa taille. Vous seul voyez cette page.',
+    'business.readiness.stage.0': 'Avant Fondation',
+    'business.readiness.stage.1': 'Étape 1 · Fondation',
+    'business.readiness.stage.2': 'Étape 2 · Croissance',
+    'business.readiness.stage.3': 'Étape 3 · Expansion',
+    'business.readiness.stage.4': 'Étape 4 · Marché',
+    'business.readiness.stage_pending': 'Étape pas encore fixée',
+    'business.readiness.status.building': 'En construction',
+    'business.readiness.status.ready': 'Prête',
+    'business.readiness.vmr': 'Revenu mensuel vérifié',
+    'business.readiness.vmr_basis':
+        'La moyenne de vos 3 derniers rapports mensuels publiés.',
+    'business.readiness.reports_needed': {
+        one: 'Votre étape est fixée dès que 3 rapports mensuels sont publiés. Encore {count}.',
+        other: 'Votre étape est fixée dès que 3 rapports mensuels sont publiés. Encore {count}.',
+    },
+    'business.readiness.pending.up': {
+        one: '{count} mesure indique déjà {stage}. L’étape monte après {needed} mesures d’affilée, avec 2 des 3 derniers mois au même niveau.',
+        other: 'Vos {count} dernières mesures indiquent {stage}. L’étape monte après {needed} mesures d’affilée, avec 2 des 3 derniers mois au même niveau.',
+    },
+    'business.readiness.pending.down': {
+        one: '{count} mesure indique déjà {stage}. L’étape ne descend qu’après {needed} mesures d’affilée, avec 2 des 3 derniers mois au même niveau.',
+        other: 'Vos {count} dernières mesures indiquent {stage}. L’étape ne descend qu’après {needed} mesures d’affilée, avec 2 des 3 derniers mois au même niveau.',
+    },
+    'business.readiness.next':
+        '{stage} commence à {threshold} par mois : encore {gap}.',
+    'business.readiness.next_reached':
+        '{stage} commence à {threshold} par mois. Votre moyenne y est : maintenez-la {needed} mesures d’affilée.',
+    'business.readiness.top': 'Vous êtes à l’étape la plus haute.',
+    'business.readiness.ready_rule':
+        'Vous êtes prête quand chaque exigence due est remplie, que vos trois indicateurs restent dans la cible 3 rapports d’affilée et que vous réussissez les modules essentiels de l’Académie pour votre étape.',
+    'business.readiness.guidance.title': 'Conseils du mois',
+    'business.readiness.guidance.rule':
+        'Après chaque rapport publié, chaque indicateur est comparé à l’objectif de votre étape, avec une action.',
+    'business.readiness.guidance.empty':
+        'Vos conseils commencent dès qu’un mois pour lequel vous avez envoyé vos chiffres est vérifié dans un rapport publié.',
+    'business.readiness.guidance.record_gap': 'Écart de tenue',
+    'business.readiness.guidance.forecast_error': 'Erreur de prévision',
+    'business.readiness.guidance.on_target': 'Dans l’objectif',
+    'business.readiness.guidance.off_target': 'Hors objectif',
+    'business.readiness.guidance.value': {
+        one: '{value} % sur le {count} dernier mois. Objectif : {target} % au plus.',
+        other: '{value} % sur les {count} derniers mois. Objectif : {target} % au plus.',
+    },
+    'business.readiness.guidance.bias.over':
+        'Vos prévisions ont dépassé l’argent réellement reçu.',
+    'business.readiness.guidance.bias.under':
+        'Vos prévisions sont restées sous l’argent réellement reçu.',
+    'business.readiness.guidance.record_gap.keep':
+        'Continuez à noter chaque vente et chaque paiement dans vos livres le jour même.',
+    'business.readiness.guidance.record_gap.fix':
+        'Notez chaque vente en espèces et chaque paiement dans vos livres le jour même, et gardez chaque reçu.',
+    'business.readiness.guidance.forecast_error.keep':
+        'Continuez à partir de votre moyenne vérifiée et des commandes que vous détenez par écrit.',
+    'business.readiness.guidance.forecast_error.fix':
+        'Partez de votre moyenne vérifiée pour la prévision du mois prochain, et n’ajoutez que les commandes que vous détenez par écrit.',
+    'business.academy.title': 'Académie',
+    'business.academy.intro':
+        'Des leçons courtes pour votre étape. Chaque module est une série de cartes, puis un test de {questions} questions. {pass} bonnes réponses suffisent.',
+    'business.academy.core_title': 'Modules de base pour {stage}',
+    'business.academy.preview_title': 'Aperçu de {stage}',
+    'business.academy.preview_body':
+        'Cartes seulement. Le test s’ouvre quand vous atteignez cette étape.',
+    'business.academy.cards': {
+        one: '{count} carte',
+        other: '{count} cartes',
+    },
+    'business.academy.state.open': 'Test ouvert',
+    'business.academy.state.passed': 'Réussi',
+    'business.academy.state.waiting': 'Nouvel essai dès le {date}',
+    'business.academy.state.preview': 'Aperçu',
+    'business.academy.best': 'Meilleur score : {score} sur {total}',
+    'business.academy.syllabus':
+        'Académie : {passed} modules de base réussis sur {total} pour votre étape.',
+    'business.academy.open': 'Ouvrir l’Académie',
+    'business.academy.back': 'Retour',
+    'business.academy.flashcards': 'Cartes',
+    'business.academy.card_progress': 'Carte {current} sur {total}',
+    'business.academy.show_back': 'Voir la réponse',
+    'business.academy.previous': 'Précédente',
+    'business.academy.start_test': 'Commencer le test',
+    'business.academy.stars': {
+        one: '{count} étoile',
+        other: '{count} étoiles',
+    },
+    'business.academy.progress': 'Progression',
+    'business.academy.term': 'Carte',
+    'business.academy.flip_hint': 'Touchez la carte pour la retourner.',
+    'business.academy.still_learning': 'À revoir',
+    'business.academy.got_it': 'Je sais',
+    'business.academy.feedback.known': 'Bravo ! +1 étoile',
+    'business.academy.feedback.learning':
+        'Pas de souci. Cette carte reviendra à la fin.',
+    'business.academy.practice_round': {
+        one: 'Révision : encore {count} carte',
+        other: 'Révision : encore {count} cartes',
+    },
+    'business.academy.skip_to_test': 'Passer au test',
+    'business.academy.deck_done_title': 'Paquet terminé !',
+    'business.academy.deck_done_body':
+        'Vous connaissiez {known} cartes sur {total} du premier coup.',
+    'business.academy.deck_done_ready':
+        'Vous êtes prêt pour le test : {count} questions, {pass} bonnes réponses suffisent.',
+    'business.academy.deck_done_revise':
+        'Revenez à ces cartes quand vous voulez réviser.',
+    'business.academy.restart_cards': 'Revoir les cartes',
+    'business.academy.back_to_academy': 'Retour à l’Académie',
+    'business.academy.back_to_cards': 'Retour aux cartes',
+    'business.academy.go_to_question': 'Aller à la question {current}',
+    'business.academy.next_question': 'Question suivante',
+    'business.academy.review_answers': 'Vérifier les réponses',
+    'business.academy.review_title': 'Vérifiez vos réponses',
+    'business.academy.unanswered': 'Pas encore répondu',
+    'business.academy.change': 'Modifier',
+    'business.academy.change_answer': 'Modifier la réponse {current}',
+    'business.academy.ready_to_send':
+        'Tout est répondu. Envoyez quand vous êtes prêt.',
+    'business.academy.test_title': 'Test',
+    'business.academy.test_intro':
+        'Répondez aux {count} questions. {pass} bonnes réponses suffisent.',
+    'business.academy.question': 'Question {current} sur {total}',
+    'business.academy.left': {
+        one: 'Il reste {count} question.',
+        other: 'Il reste {count} questions.',
+    },
+    'business.academy.send': 'Envoyer les réponses',
+    'business.academy.sending': 'Envoi…',
+    'business.academy.result.passed': 'Réussi avec {score} sur {total}.',
+    'business.academy.result.waiting':
+        'Non réussi : {score} sur {total}. Le test rouvre le {date} avec de nouvelles questions.',
+    'business.academy.result.open':
+        'Non réussi : {score} sur {total}. Votre prochain test est prêt ci-dessous.',
+    'business.academy.note.passed':
+        'Vous avez réussi ce module. Ses cartes restent ici pour réviser.',
+    'business.academy.note.preview':
+        'Ce module fait partie de l’étape suivante. Son test s’ouvre quand vous l’atteignez.',
+    'business.readiness.milestones.title': 'Étapes vers le marché des capitaux',
+    'business.readiness.milestones.rule':
+        'Chaque étape est franchie automatiquement dès que toutes ses conditions sont remplies. Les conditions que Rozine ne mesure pas encore sont indiquées en attente.',
+    'business.readiness.milestones.bond.title': 'Parcours obligataire',
+    'business.readiness.milestones.bond.summary':
+        'Remplissez toutes les conditions et Rozine prépare votre dossier de préparation obligataire.',
+    'business.readiness.milestones.bond.reached':
+        'Toutes les conditions sont remplies. Rozine prépare votre dossier de préparation obligataire.',
+    'business.readiness.milestones.clinic.title':
+        'Orientation vers l’Investment Clinic de la RSE',
+    'business.readiness.milestones.clinic.summary':
+        'Remplissez toutes les conditions et Rozine peut vous orienter vers l’Investment Clinic de la Bourse du Rwanda, avec votre accord. Les orientations commencent une fois l’accord entre Rozine et la RSE signé.',
+    'business.readiness.milestones.clinic.reached':
+        'Toutes les conditions sont remplies. Rozine vous oriente, avec votre accord, une fois son accord avec la RSE signé.',
+    'business.readiness.milestones.condition.stage': 'Étape 3 ou 4',
+    'business.readiness.milestones.condition.ready_6_months':
+        'Prête pendant 6 mois consécutifs',
+    'business.readiness.milestones.condition.ready_12_months':
+        'Prête pendant 12 mois consécutifs',
+    'business.readiness.milestones.condition.notes_on_time':
+        '3 billets Rozine ou plus, chaque échéance encaissée à sa date',
+    'business.readiness.milestones.condition.audited_statements':
+        'États financiers annuels audités déposés',
+    'business.readiness.milestones.condition.limited_company':
+        'Une société à responsabilité limitée',
+    'business.readiness.milestones.condition.trading_3_years':
+        '3 ans d’activité ou plus',
+    'business.readiness.milestones.condition.no_proceedings':
+        'Aucune procédure judiciaire majeure',
+    'business.readiness.milestones.state.met': 'Remplie',
+    'business.readiness.milestones.state.not_met': 'Non remplie',
+    'business.readiness.milestones.state.pending': 'En attente',
+    'business.readiness.stages': 'Les quatre étapes',
+    'business.readiness.stage_from': 'À partir de {amount} par mois',
+    'business.readiness.current': 'Actuelle',
+    'business.readiness.months': 'Mois pris en compte',
+    'business.readiness.months_empty':
+        'Aucun rapport mensuel publié pour l’instant.',
+    'business.readiness.requirements': 'Exigences',
+    'business.readiness.requirements_rule':
+        'Votre taille fixe ces exigences. Votre CPA confirme chacune lors de la visite mensuelle.',
+    'business.readiness.requirement.status.not_triggered': 'Pas encore',
+    'business.readiness.requirement.status.due': 'Due',
+    'business.readiness.requirement.status.overdue': 'En retard',
+    'business.readiness.requirement.status.met': 'Remplie',
+    'business.readiness.requirement.status.lapsed': 'Expirée',
+    'business.readiness.requirement.due_by': {
+        one: 'À remplir d’ici le {date} · {count} jour restant',
+        other: 'À remplir d’ici le {date} · {count} jours restants',
+    },
+    'business.readiness.requirement.lapsed_by': {
+        one: 'À remplir de nouveau d’ici le {date} · {count} jour restant',
+        other: 'À remplir de nouveau d’ici le {date} · {count} jours restants',
+    },
+    'business.readiness.requirement.overdue_line':
+        'En retard depuis le {date}. Votre prochaine levée attend qu’elle soit remplie.',
+    'business.readiness.requirement.met_on': 'Confirmée le {date}',
+    'business.readiness.requirement.met_entry':
+        'Vérifiée à votre arrivée sur Rozine',
+    'business.readiness.requirement.applies_entry':
+        'S’applique dès la publication de votre audit d’entrée',
+    'business.readiness.requirement.applies_stage': 'S’applique dès {stage}',
+    'business.readiness.requirement.applies_headcount':
+        'S’applique dès {count} employés',
+    'business.readiness.requirement.C1.title': 'Impôts et RSSB à jour',
+    'business.readiness.requirement.C1.detail':
+        'Attestation fiscale et cotisations RSSB à jour.',
+    'business.readiness.requirement.F1.title':
+        'Argent de l’entreprise sur ses comptes',
+    'business.readiness.requirement.F1.detail':
+        'Tout l’argent de l’entreprise passe par des comptes à son nom, et au moins 90 % du revenu vérifié y est traçable.',
+    'business.readiness.requirement.F2.title': 'Comptable qualifié',
+    'business.readiness.requirement.F2.detail':
+        'Un comptable qualifié, salarié ou sous contrat, et un logiciel comptable utilisé.',
+    'business.readiness.requirement.F3.title': 'Responsable financier',
+    'business.readiness.requirement.F3.detail':
+        'Un responsable financier qualifié à temps plein (CPA, ACCA ou équivalent, au moins 3 ans) et des comptes de gestion mensuels.',
+    'business.readiness.requirement.F4.title': 'Audit externe',
+    'business.readiness.requirement.F4.detail':
+        'Un audit annuel selon l’IFRS pour les PME par un auditeur ICPAR autre que votre CPA Rozine, et des paiements préparés et approuvés par des personnes différentes.',
+    'business.readiness.requirement.P1.title': 'Contrat pour chaque employé',
+    'business.readiness.requirement.P1.detail':
+        'Un contrat écrit et une immatriculation RSSB pour chaque employé.',
+    'business.readiness.requirement.P2.title': 'Responsable RH et politique',
+    'business.readiness.requirement.P2.detail':
+        'Un responsable RH désigné ou un prestataire RH sous contrat, et une politique RH écrite.',
+    'business.readiness.requirement.G1.title': 'Conseil d’administration',
+    'business.readiness.requirement.G1.detail':
+        'Un conseil d’au moins 2 administrateurs se réunissant chaque trimestre avec procès-verbal, et une délégation de paiement écrite.',
+    'business.readiness.requirement.G2.title': 'Administrateur indépendant',
+    'business.readiness.requirement.G2.detail':
+        'Au moins un administrateur indépendant, un code de gouvernance et un registre des parties liées.',
     'business.market.title': 'Aperçu du marché',
     'business.market.subtitle':
         'Comment vos notes se comportent sur le marché secondaire.',
@@ -325,6 +818,9 @@ const fr: Catalog = {
     'business.home.company_code': 'RDB {code}',
     'business.home.rozine_rating': 'Notation Rozine',
     'business.rating.pending': 'Audit en attente',
+    'business.rating.pending_hint': 'Noté après votre premier mois audité',
+    'business.rating.pending_next':
+        "Votre note apparaît dès que votre premier rapport mensuel est audité. Nous vous prévenons à l'ouverture de votre audit, pour que vous prépariez les pièces du mois.",
     'business.rating.band.strong': 'Solide',
     'business.rating.band.stable': 'Stable',
     'business.rating.band.weak': 'Faible',
@@ -344,10 +840,13 @@ const fr: Catalog = {
     'business.today.approved.cta_free': 'Publier',
     'business.today.cosign.kicker': 'Rapport d’audit prêt',
     'business.today.cosign.sub':
+        "Votre expert-comptable l'a scellé. Lisez les constats. Il n'y a rien à signer.",
+    'business.today.cosign.cta': 'Examiner le rapport',
+    'business.today.cosign.sign_sub':
         "Votre expert-comptable l'a scellé. Lisez les constats avant de cosigner.",
-    'business.today.cosign.cta': 'Examiner et cosigner',
+    'business.today.cosign.sign_cta': 'Examiner et cosigner',
     'business.today.cosign.due':
-        'Cosignez ou contestez avant le {date} · {hours} h restantes',
+        'Contestez avant le {date} · {hours} h restantes',
     'business.today.signature.kicker': 'Signature requise',
     'business.today.signature.sub':
         'Votre signature est requise avant que cette demande puisse être soumise.',
@@ -370,7 +869,11 @@ const fr: Catalog = {
     'business.today.audit.cta': 'Se préparer',
     'business.today.repayment.kicker': 'Prochain remboursement',
     'business.today.repayment.sub': '{note} · Échéance le {date}',
-    'business.today.repayment.cta': 'Payer maintenant',
+    'business.today.repayment.cta': 'Ouvrir les remboursements',
+    'business.today.visit_ready.kicker': 'Préparez la visite de ce mois',
+    'business.today.visit_ready.sub':
+        'Votre CPA passe entre le {from} et le {by}.',
+    'business.today.visit_ready.cta': 'Ouvrir la liste',
     'business.today.blocked.kicker': 'Demande en attente',
     'business.today.blocked.untitled': 'Votre demande',
     'business.today.blocked.sub.UNDERWRITING_EVIDENCE_REQUIRED':
@@ -391,6 +894,9 @@ const fr: Catalog = {
     'business.capital.subtitle':
         'Votre historique complet, sur toutes vos notes.',
     'business.capital.active_notes': '{count} active(s)',
+    'business.capital.active_and_repaying':
+        '{active} active(s) · {repaying} en remboursement',
+    'business.capital.repaying_notes': '{count} en remboursement',
     'business.capital.about': 'À propos de {label}',
     'business.capital.close': 'Fermer',
     'business.capital.raised.label': 'Levé',
@@ -401,7 +907,7 @@ const fr: Catalog = {
         'Investisseurs distincts qui soutiennent vos notes. Quiconque a investi dans plusieurs de vos notes est compté une fois.',
     'business.capital.repaid.label': 'Remboursé',
     'business.capital.repaid.about':
-        'Total des rendements versés aux investisseurs sur toutes vos notes à ce jour.',
+        'Capital et rendements remboursés aux investisseurs sur toutes vos notes à ce jour.',
     'business.capital.on_time.label': 'À temps',
     'business.capital.on_time.about':
         "Part de vos remboursements prévus effectués à ou avant l'échéance, depuis le début.",
@@ -416,7 +922,7 @@ const fr: Catalog = {
     'business.note.status.active': 'Active',
     'business.note.status.funded': 'Financée',
     'business.note.status.repaying': 'En remboursement',
-    'business.note.status.completed': 'Terminée',
+    'business.note.status.completed': 'Remboursée',
     'business.note.status.failed': 'Échouée',
     'business.note.funded': 'financé',
     'business.note.investors': '{count} investisseurs',
@@ -580,6 +1086,31 @@ const fr: Catalog = {
     'business.apply.submitted.funded_title': 'Une fois entièrement financée',
     'business.apply.submitted.funded_body':
         "Les fonds arrivent sur le compte bancaire lié de l'entreprise dans les 24 heures suivant la clôture. Ce jour devient votre date d'échéance mensuelle, chaque mois jusqu'au remboursement total.",
+    'business.apply.offer.title': 'Votre offre',
+    'business.apply.offer.principal': 'Capital',
+    'business.apply.offer.instalment': 'Mensualité',
+    'business.apply.offer.instalment_value': '{amount} × {count} mois',
+    'business.apply.offer.return': 'Rendement des investisseurs',
+    'business.apply.offer.return_value': '{amount} ({rate} % fixe)',
+    'business.apply.offer.total': 'Total à rembourser',
+    'business.apply.offer.sized.requested':
+        'Vous levez la totalité des {requested} demandés : ils respectent votre trésorerie, 35 % de votre chiffre d’affaires annuel moins ce que vous devez déjà, et le maximum de 100 M RWF.',
+    'business.apply.offer.sized.requested_repeat':
+        'Vous levez la totalité des {requested} demandés : ils respectent votre trésorerie, 35 % de votre chiffre d’affaires annuel moins ce que vous devez déjà, {limit} (1,5 fois la dernière note remboursée en totalité), et le maximum de 100 M RWF.',
+    'business.apply.offer.sized.capacity':
+        'Calibré selon ce que votre entreprise peut supporter (vous avez demandé {requested}).',
+    'business.apply.offer.sized.chosen':
+        'Vous avez choisi de lever moins que le montant offert.',
+    'business.apply.offer.sized.EXPOSURE_CAPPED':
+        'Plafonné à 35 % de votre chiffre d’affaires annuel moins le capital Rozine encore dû (vous avez demandé {requested}).',
+    'business.apply.offer.sized.DSCR_SCALED':
+        'Calibré pour que votre trésorerie couvre chaque remboursement 1,5 fois (vous avez demandé {requested}).',
+    'business.apply.offer.sized.REPEAT_MONTHLY_DSCR_SCALED':
+        'Calibré pour que la trésorerie de chaque mois couvre ses remboursements (vous avez demandé {requested}).',
+    'business.apply.offer.sized.REPEAT_GROWTH_CAPPED':
+        'Plafonné à 1,5 fois la dernière note remboursée en totalité (vous avez demandé {requested}).',
+    'business.apply.offer.sized.PRINCIPAL_MAX_CAPPED':
+        'Plafonné au maximum de 100 M RWF par note (vous avez demandé {requested}).',
     'business.apply.submitted.timeline': 'Avancement de la demande',
     'business.apply.submitted.stage.submitted': 'Soumise',
     'business.apply.submitted.stage.under_review': 'En examen',
@@ -766,7 +1297,7 @@ const fr: Catalog = {
     'business.reports.guide.flash.title':
         'Un audit Flash, à la demande de Rozine',
     'business.reports.guide.flash.body':
-        "Avant une levée de fonds, ou chaque fois que Rozine a besoin d'une vérification récente, un Audit Partner passe sans prévenir et scelle un rapport Flash dans les 24 heures. Vous le cosignez comme un rapport mensuel.",
+        "Avant une levée, ou dès que Rozine a besoin d'une vérification récente, un Audit Partner passe sans prévenir et scelle un rapport Flash sous 24 heures. Vous l'examinez comme un rapport mensuel.",
     'business.reports.guide.opens.title':
         'Chaque mois, rassemblez vos documents',
     'business.reports.guide.opens.body':
@@ -775,22 +1306,22 @@ const fr: Catalog = {
     'business.reports.guide.visit.body_before':
         "L'expert-comptable qui vous est attribué se rend dans vos locaux pour examiner vos documents et rapprocher vos flux de trésorerie, puis scelle le rapport avant le",
     'business.reports.guide.visit.body_after': '.',
-    'business.reports.guide.cosign.title': 'Cosignez ou contestez',
+    'business.reports.guide.cosign.title': 'Examiner, ou contester',
     'business.reports.guide.cosign.body':
-        "Une fois l'audit scellé, vous avez 24 heures pour l'examiner et le cosigner, ou le contester avec une contre-preuve. Sans réponse de votre part dans les 24 heures, le rapport est considéré comme approuvé. Comme vous ne touchez jamais aux chiffres, le rapport est indépendant — c'est exactement ce que paient les investisseurs.",
+        "Une fois l'audit scellé, vous avez 24 heures pour l'examiner et, si quelque chose est inexact, déposer une contestation avec des contre-preuves. Vous ne le signez pas : sans contestation, le rapport est maintenu. Comme vous ne touchez jamais aux chiffres, le rapport est indépendant — c'est précisément ce que paient les investisseurs.",
     'business.reports.guide.visit.body_undated':
         "L'expert-comptable qui vous est attribué se rend dans vos locaux pour examiner vos documents et rapprocher vos flux de trésorerie, puis scelle le rapport.",
     'business.reports.tabs': 'Statut des rapports',
     'business.reports.tab.verified': 'Publiés',
     'business.reports.tab.in_audit': 'En audit',
     'business.reports.tab.in_audit_cosign': {
-        one: 'En audit · {count} à cosigner',
-        other: 'En audit · {count} à cosigner',
+        one: 'En audit · {count} à examiner',
+        other: 'En audit · {count} à examiner',
     },
     'business.reports.tab.archived': 'Archivés',
     'business.reports.status.verified': 'Vérifié',
     'business.reports.status.in_audit': 'En audit',
-    'business.reports.status.awaiting': 'À cosigner',
+    'business.reports.status.awaiting': 'Examiner maintenant',
     'business.reports.status.archived': 'Archivé',
     'business.reports.health.healthy': 'Sain',
     'business.reports.health.watch': 'À surveiller',
@@ -798,12 +1329,12 @@ const fr: Catalog = {
     'business.reports.row.filed':
         'Entrées {inflow} · {health} · audité par {auditor}',
     'business.reports.row.in_audit': 'Chez {auditor} · scellé avant le {date}',
-    'business.reports.row.awaiting': 'Votre cosignature est requise',
+    'business.reports.row.awaiting': 'Prêt pour votre examen',
     'business.reports.row.hours_left': {
         one: '{date} · {count} heure restante',
         other: '{date} · {count} heures restantes',
     },
-    'business.reports.row.awaiting_by': 'Cosignez ou contestez avant le {date}',
+    'business.reports.row.awaiting_by': 'Contestez avant le {date}',
     'business.reports.row.annual': "Synthèse de l'année",
     'business.reports.annual': 'Annuel {year}',
     'business.reports.empty': "Aucun rapport pour l'instant.",
@@ -842,6 +1373,7 @@ const fr: Catalog = {
     'business.profile.section.linked': 'Comptes liés',
     'business.profile.section.terms': 'Conditions générales',
     'business.profile.section.privacy': 'Note de confidentialité',
+    'business.profile.section.disclaimers': 'Avertissements',
     'business.profile.section.security': 'Centre de sécurité',
     'business.profile.section.permissions': 'Autorisations et rôles',
     'business.profile.section.support': "Centre d'assistance",
@@ -967,7 +1499,9 @@ const fr: Catalog = {
     'business.profile.company.name': "Nom de l'entreprise",
     'business.profile.company.email': 'E-mail professionnel',
     'business.profile.company.phone': 'Téléphone professionnel',
-    'business.profile.company.phone_placeholder': '0788 123 456',
+    'business.profile.company.phone_placeholder': '07XX XXX XXX',
+    'business.profile.company.email_hint':
+        "L'adresse où Rozine envoie les reçus, avis et relevés de l'entreprise.",
     'business.profile.company.address': 'Adresse du siège',
     'business.profile.company.province': 'Province',
     'business.profile.company.district': 'District',
@@ -1011,23 +1545,14 @@ const fr: Catalog = {
     'business.profile.linked.add': '+ Lier un compte de versement',
     'business.profile.linked.none':
         'Aucun compte lié. Liez-en un pour déposer et retirer.',
-    'business.profile.linked.empty':
-        "Aucun compte lié. L'ajout d'un compte s'ouvre dès que ce compte est autorisé à faire des mouvements d'argent. Vos versements arrivent sur le compte vérifié que vous liez ici.",
+    'business.profile.linked.closed':
+        'Aucun compte lié pour l’instant. Rozine n’a pas encore ouvert les comptes de versement aux entreprises : vous n’avez rien à faire pour le moment. Votre solde reste en sécurité dans votre portefeuille, et vous pourrez lier ici un compte au nom de l’entreprise dès l’ouverture des versements.',
+    'business.profile.linked.not_permitted':
+        'Aucun compte lié pour l’instant. Seul un signataire autorisé à retirer pour cette entreprise peut lier un compte de versement. Demandez-lui de le lier ici.',
+    'business.profile.linked.ask_support':
+        'Des questions ? Contactez le support Rozine.',
     'business.profile.linked.footnote':
         "Seul un compte au nom enregistré de l'entreprise peut être lié. Les retraits ne vont que vers un compte lié.",
-    'business.profile.legal.updated':
-        'Dernière mise à jour le {date} · Version {version}',
-    'business.profile.legal.terms_intro':
-        "Veuillez lire attentivement ces Conditions. En enregistrant votre entreprise, en lançant une levée ou en utilisant Rozine de toute autre manière, vous acceptez d'être lié par l'intégralité de ces Conditions. Si vous ne les acceptez pas, vous ne devez pas utiliser la plateforme.",
-    'business.profile.legal.privacy_intro':
-        "Cette Note de confidentialité explique quelles informations Rozine collecte sur votre entreprise, comment nous les utilisons et quels choix s'offrent à vous. En utilisant Rozine, vous consentez aux pratiques décrites ici.",
-    'business.profile.legal.terms_footer':
-        'Ces Conditions sont régies par les lois de la République du Rwanda. Pour toute question, contactez',
-    'business.profile.legal.terms_contact': 'legal@rozine.rw',
-    'business.profile.legal.privacy_footer':
-        'Pour exercer un droit sur vos données ou joindre notre délégué à la protection des données, contactez',
-    'business.profile.legal.privacy_contact': 'privacy@rozine.rw',
-    'business.profile.legal.footer_end': '.',
 
     'admin.auth.head_title': 'Connexion',
     'admin.auth.title': 'Connexion',
@@ -1434,6 +1959,12 @@ const fr: Catalog = {
         'La conformité approuve une vérification d’identité',
     'admin.messaging.trigger.verification.rejected':
         'La conformité renvoie une vérification d’identité',
+    'admin.messaging.trigger.market.units_bought':
+        'Un achat sur le marché secondaire est réglé',
+    'admin.messaging.trigger.market.units_sold':
+        "Les parts mises en vente d'un détenteur sont vendues",
+    'admin.messaging.trigger.wallet.payout_received':
+        'Le service verse à un détenteur sa part d’un remboursement',
     'admin.messaging.trigger.wallet.deposit_received':
         'Le prestataire confirme un dépôt',
     'admin.messaging.trigger.wallet.withdrawal_sent': 'Un retrait est versé',
@@ -1467,6 +1998,8 @@ const fr: Catalog = {
         'Une levée atteint son objectif',
     'admin.messaging.trigger.business.disbursement_sent':
         'Les fonds sont versés sur le portefeuille de l’entreprise',
+    'admin.messaging.trigger.business.repayment_received':
+        'Une entreprise paie un remboursement depuis son portefeuille',
     'admin.messaging.trigger.business.withdrawal_sent':
         'Un retrait de l’entreprise est versé',
     'admin.messaging.trigger.business.withdrawal_returned':
@@ -1474,9 +2007,21 @@ const fr: Catalog = {
     'admin.messaging.trigger.business.report_sealed':
         'Le partenaire d’audit scelle le rapport mensuel',
     'admin.messaging.trigger.business.report_review_closing':
-        'Le délai pour cosigner ou contester un rapport se termine',
+        'La fenêtre pour contester un rapport se ferme',
     'admin.messaging.trigger.business.reporting_window_open':
         'Un audit mensuel s’ouvre pour une entreprise ayant une note active',
+    'admin.messaging.trigger.business.readiness_stage_changed':
+        'Une entreprise change d’étape de préparation',
+    'admin.messaging.trigger.business.readiness_requirement_due':
+        'Une exigence de préparation devient due',
+    'admin.messaging.trigger.business.readiness_requirement_closing':
+        'Il reste 14 jours pour une exigence de préparation',
+    'admin.messaging.trigger.business.readiness_requirement_overdue':
+        'Une exigence de préparation passe en retard',
+    'admin.messaging.trigger.business.visit_ready_open':
+        'La liste de préparation de la visite s’ouvre 14 jours avant une échéance',
+    'admin.messaging.trigger.business.visit_ready_reminder':
+        'Des éléments de la liste ne sont pas cochés 11 jours avant une échéance',
     'admin.messaging.trigger.auditor.accreditation_approved':
         'L’accréditation est approuvée',
     'admin.messaging.trigger.auditor.accreditation_rejected':
@@ -1702,11 +2247,70 @@ const fr: Catalog = {
     'admin.section.events.subtitle':
         'Registre immuable de chaque action — filtrer par auteur, action ou objet',
     'admin.section.events.search': 'Rechercher dans le journal…',
-    'admin.search.label': 'Rechercher sur cette page',
-    'admin.search.empty_title': 'Aucun résultat sur cette page',
+    'admin.search.label': 'Rechercher dans cette section',
+    'admin.search.empty_title': 'Aucun résultat',
     'admin.search.empty_body':
-        'Rien dans {section} ne correspond à « {term} ». Cette recherche ne porte que sur la page actuelle.',
+        'Rien dans {section} ne correspond à « {term} ». Essayez un terme plus court ou différent.',
     'admin.account.open': 'Compte, {name}',
+    'settings.back_to_console': 'Retour à la console d’administration',
+    'settings.close.title': 'Supprimer le compte',
+    'settings.close.description': 'Fermer définitivement votre compte Rozine',
+    'settings.close.danger_zone': 'Zone sensible',
+    'settings.close.ready_hint':
+        'La fermeture de votre compte ne peut pas être annulée depuis l’application.',
+    'settings.close.blocked_hint':
+        'Certains éléments sont encore ouverts. Réglez-les avant de fermer votre compte.',
+    'settings.close.blocked_title': 'Avant de pouvoir supprimer votre compte',
+    'settings.close.blocked_description':
+        'Votre compte reste ouvert jusqu’à ce que chacun de ces éléments soit réglé.',
+    'settings.close.settle': 'Y aller',
+    'settings.close.keep': 'Garder mon compte',
+    'settings.close.confirm_title': 'Supprimer votre compte ?',
+    'settings.close.confirm_description':
+        'Cela ferme votre compte Rozine pour tous les rôles qu’il détient.',
+    'settings.close.consequence.sign_in':
+        'Vous ne pourrez plus vous connecter et vos comptes de versement liés ne pourront plus être utilisés.',
+    'settings.close.consequence.records':
+        'Rozine conserve vos dossiers pendant la durée exigée par le droit financier et fiscal rwandais, puis les supprime.',
+    'settings.close.consequence.reopen':
+        'Pour le rouvrir plus tard, écrivez à info@rozine.rw.',
+    'settings.close.warning':
+        'La suppression n’annule aucun montant qui vous est dû ou que vous devez. Rozine peut conserver les dossiers requis à des fins juridiques, fiscales et de lutte contre le blanchiment, conformément à nos Conditions.',
+    'settings.close.reason': 'Pourquoi partez-vous ? (facultatif)',
+    'settings.close.password': 'Mot de passe',
+    'settings.close.type_delete': 'Tapez DELETE pour confirmer',
+    'settings.close.submit': 'Supprimer définitivement le compte',
+    'settings.close.processing': 'Suppression…',
+    'settings.close.role.investor': 'Investisseur',
+    'settings.close.role.business': 'Entreprise',
+    'settings.close.role.auditor': 'Auditeur partenaire',
+    'settings.close.role.staff': 'Personnel',
+    'settings.close.blocker.STAFF_ACCOUNT':
+        'Les comptes du personnel sont fermés par un administrateur, pas depuis les paramètres.',
+    'settings.close.blocker.INVESTOR_WALLET_BALANCE':
+        'Votre portefeuille contient encore de l’argent. Retirez-le d’abord vers votre propre compte.',
+    'settings.close.blocker.INVESTOR_MONEY_MOVING':
+        'Un dépôt est encore en cours. Attendez qu’il arrive, puis retirez-le.',
+    'settings.close.blocker.INVESTOR_COMMITMENTS':
+        'Vous avez de l’argent engagé dans une levée qui n’est pas encore clôturée.',
+    'settings.close.blocker.INVESTOR_HOLDINGS':
+        'Vous détenez encore des titres en cours de remboursement. Vendez-les sur le marché ou attendez leur remboursement.',
+    'settings.close.blocker.INVESTOR_MARKET_ORDERS':
+        'Vous avez une annonce ou un achat ouvert sur le marché. Annulez-le ou terminez-le d’abord.',
+    'settings.close.blocker.BUSINESS_LIVE_RAISE':
+        'Votre entreprise a une levée en cours ou pas encore décaissée.',
+    'settings.close.blocker.BUSINESS_APPLICATION_IN_REVIEW':
+        'Votre entreprise a une demande en cours d’examen.',
+    'settings.close.blocker.BUSINESS_REPAYMENTS_OWED':
+        'Votre entreprise doit encore des remboursements aux investisseurs.',
+    'settings.close.blocker.BUSINESS_WALLET_BALANCE':
+        'Le portefeuille de votre entreprise contient encore de l’argent. Retirez-le d’abord.',
+    'settings.close.blocker.BUSINESS_MONEY_MOVING':
+        'Un dépôt vers le portefeuille de votre entreprise est encore en cours.',
+    'settings.close.blocker.AUDITOR_OPEN_AUDITS':
+        'Vous avez un audit proposé ou en cours. Terminez-le ou refusez-le d’abord.',
+    'settings.close.blocker.AUDITOR_REPORTS_PENDING':
+        'Vous avez un rapport qui n’est pas encore final. Terminez-le d’abord.',
     'admin.account.close': 'Fermer le menu du compte',
     'admin.account.sign_out': 'Se déconnecter',
     'admin.role.analyst': 'Analyste',
@@ -1758,6 +2362,14 @@ const fr: Catalog = {
     'admin.kyc.status.draft': 'Rouverte',
     'admin.kyc.status.submitted': 'En attente',
     'admin.kyc.status.approved': 'Approuvée',
+    'admin.kyc.licence.title': 'Licence ICPAR',
+    'admin.kyc.licence.number': 'Licence {number}',
+    'admin.kyc.licence.expires': 'Expire le {date}',
+    'admin.kyc.slot.certificate': 'Certificat ICPAR',
+    'admin.kyc.purpose.business':
+        "Pour l'accès Entreprise · aucun accès Investisseur à l'approbation",
+    'admin.kyc.purpose.auditor':
+        "Pour l'accès Auditeur · l'approbation vérifie aussi la licence ICPAR et en fait un Auditeur",
     'admin.kyc.status.rejected': 'Rejetée',
     'admin.kyc.empty.submitted': "Aucune demande n'attend d'examen.",
     'admin.kyc.empty.decided': 'Aucune décision pour le moment.',
@@ -1773,12 +2385,14 @@ const fr: Catalog = {
     'admin.kyc.slot.back': "Verso de la pièce d'identité",
     'admin.kyc.slot.selfie': 'Selfie',
     'admin.kyc.slot.passport': 'Page photo du passeport',
-    'admin.kyc.document.replaced': 'Remplacé',
+    'admin.kyc.document.replaced': 'Envoi remplacé',
     'admin.kyc.document.meta': '{name} · {size} Ko',
     'admin.kyc.document.open': 'Télécharger {name}',
     'admin.kyc.document.download': 'Télécharger',
     'admin.kyc.document.current': 'Documents actuels',
     'admin.kyc.document.earlier': 'Envois précédents',
+    'admin.kyc.document.earlier_hint':
+        "Fichiers que la personne a remplacés par un envoi plus récent. Ils sont conservés pour l'historique et ne portent pas de type de document, car leur contenu n'est pas vérifié.",
     'admin.kyc.document.view': 'Voir {slot}',
     'admin.kyc.document.show': 'Voir',
     'admin.kyc.document.view_file': 'Voir {name}',
@@ -1848,7 +2462,7 @@ const fr: Catalog = {
     'admin.stage.logged_as':
         "Consigné dans la piste d'audit au nom de {name} · {role}",
     'admin.stage.cancel': 'Annuler',
-    'admin.rating.pending': 'Audit en attente',
+    'admin.rating.pending': 'Pas encore noté',
     'admin.rating.of_five': '{band} {score} / 5',
     'admin.rating.band.strong': 'Solide',
     'admin.rating.band.stable': 'Stable',
@@ -2309,6 +2923,7 @@ const fr: Catalog = {
     'admin.review.yield_value': '{rate} % fixe',
     'admin.review.capacity_title': 'Capacité utilisée par cette levée',
     'admin.review.capacity_approved': 'Capacité approuvée {amount}',
+    'admin.review.capacity_other': '{amount} d’autres prêts',
     'admin.review.capacity_existing':
         '{count} titres actifs · {amount} en cours',
     'admin.review.factors_title': 'Détail de la notation',
@@ -2363,12 +2978,13 @@ const fr: Catalog = {
         'ex. Je le prends pour la séance de crédit du jour.',
     'admin.maker_checker.by': '{actor} · {at}',
     'admin.disbursements.policy_title': 'Règles de versement en vigueur',
-    'admin.disbursements.title': 'Décaissements en attente',
-    'admin.disbursements.table': 'Décaissements en attente',
+    'admin.disbursements.title': 'Décaissements',
+    'admin.disbursements.table': 'Décaissements',
     'admin.disbursements.col.reference': 'Réf. versement',
     'admin.disbursements.col.note': 'Titre',
     'admin.disbursements.col.recipient': 'Bénéficiaire',
     'admin.disbursements.col.amount': 'Montant',
+    'admin.disbursements.net': '{amount} versés à l’entreprise',
     'admin.disbursements.col.due': 'Échéance',
     'admin.disbursements.col.actions': 'État · Actions',
     'admin.disbursements.state.ready': 'En attente du paiement automatique',
@@ -2426,7 +3042,7 @@ const fr: Catalog = {
     'admin.parties.filter': 'Filtrer par statut',
     'admin.audit_reports.title': "Suivi des rapports d'audit",
     'admin.audit_reports.caption':
-        "Chaque audit avec l'état de son rapport. Les audits mensuels sont vérifiés sur place avant le 7 ; l'entreprise dispose ensuite de 24 heures pour cosigner ou contester.",
+        "Chaque audit avec l'état de son rapport. Les audits mensuels sont vérifiés sur place avant le 7 ; l'entreprise dispose ensuite de 24 heures pour contester.",
     'admin.audit_reports.field.title':
         "Opérations d'audit flash sur le terrain",
     'admin.audit_reports.field.caption':
@@ -2449,23 +3065,23 @@ const fr: Catalog = {
     'admin.audit_reports.due': 'Échéance {date}',
     'admin.audit_reports.sealed_on': 'Scellé le {date}',
     'admin.audit_reports.period_flash': 'Sur demande',
-    'admin.audit_reports.cosign_by': 'À cosigner avant {date}',
+    'admin.audit_reports.cosign_by': 'Fenêtre de contestation jusqu’au {date}',
     'admin.audit_reports.remind': 'Relancer',
     'admin.audit_reports.remind_auditor':
         "Relancer le partenaire d'audit pour {business}",
     'admin.audit_reports.remind_business':
-        'Relancer {business} pour cosigner ou contester',
+        'Rappeler à {business} d’examiner le rapport',
     'admin.audit_reports.reminded': 'Relancé le {date}',
     'admin.audit_reports.pdf': 'Générer le PDF',
     'admin.audit_reports.pdf_named':
         'Télécharger le rapport scellé de {business} (PDF)',
     'admin.audit_reports.stats.published': 'Audités et publiés',
-    'admin.audit_reports.stats.awaiting_cosign': 'En attente de validation',
+    'admin.audit_reports.stats.awaiting_cosign': 'Fenêtre de contestation',
     'admin.audit_reports.stats.overdue': 'Rapports en retard',
     'admin.audit_reports.stats.on_time': "Taux d'audits à temps",
     'admin.audit_reports.chip.all': 'Tous',
     'admin.audit_reports.chip.owed': 'Dus par un partenaire',
-    'admin.audit_reports.chip.awaiting_cosign': 'En attente de validation',
+    'admin.audit_reports.chip.awaiting_cosign': 'Fenêtre de contestation',
     'admin.audit_reports.chip.published': 'Publiés',
     'admin.audit_reports.chip.disputed': 'Contestés',
     'admin.audit_reports.col.business': 'Entreprise',
@@ -2479,7 +3095,7 @@ const fr: Catalog = {
     'admin.audit_reports.status.overdue': 'En retard',
     'admin.audit_reports.status.returned': 'Renvoyé',
     'admin.audit_reports.status.sealed': 'Scellé',
-    'admin.audit_reports.status.awaiting_cosign': 'En attente de validation',
+    'admin.audit_reports.status.awaiting_cosign': 'Fenêtre de contestation',
     'admin.audit_reports.status.published': 'Publié',
     'admin.audit_reports.status.disputed': 'Contesté',
     'admin.audit_reports.status.escalated': 'Transmis',
@@ -2564,7 +3180,7 @@ const fr: Catalog = {
     'admin.parties.col.rating': 'Notation',
     'admin.parties.name_pending': 'Nom en attente',
     'admin.parties.col.active_notes': 'Titres actifs',
-    'admin.parties.col.investors': 'Financeurs',
+    'admin.parties.col.investors': 'Financeurs initiaux',
     'admin.parties.col.raised': 'Financé',
     'admin.parties.col.capacity': 'Capacité utilisée',
     'admin.parties.col.status': 'Statut',
@@ -2592,6 +3208,12 @@ const fr: Catalog = {
     'admin.parties.health.licence_pending': 'Licence en attente',
     'admin.parties.health.frozen': 'Gelé',
     'admin.parties.health.not_tracked': 'Non suivi',
+    'admin.parties.health.kyb_pending': 'Vérification en cours',
+    'admin.parties.health.not_applied': 'Pas encore de demande',
+    'admin.parties.health.applying': 'Demande en cours',
+    'admin.parties.health.applied': 'Demande soumise',
+    'admin.parties.health.auditing': 'Audit en cours',
+    'admin.parties.health.listed': 'Cotée',
     'admin.parties.kyc.verified': 'Vérifié',
     'admin.parties.kyc.pending': 'En attente',
     'admin.parties.kyc.overdue': 'En retard',
@@ -2706,6 +3328,10 @@ const fr: Catalog = {
     'admin.businesses.onboard.title': 'Intégrer une entreprise',
     'admin.businesses.onboard.body':
         'Enregistrez une société à partir de son code RDB, ou un entrepreneur individuel, avec son représentant officiel. Le représentant doit déjà avoir un compte Rozine avec une identité vérifiée. Il reçoit tous les rôles et toutes les autorisations du premier mandat. La modification est enregistrée avec votre nom et votre motif.',
+    'admin.businesses.onboard.prefilled':
+        'Rempli à partir d’une demande d’accès. Vérifiez chaque champ et complétez le reste avant d’intégrer.',
+    'admin.businesses.onboard.request_closed':
+        'Cette demande d’accès est déjà traitée ou n’est plus ouverte : rien n’a été pré-rempli.',
     'admin.businesses.onboard.field.kind': 'Type d’entreprise',
     'admin.businesses.onboard.kind.organization': 'Société',
     'admin.businesses.onboard.kind.person': 'Entrepreneur individuel',
@@ -2781,6 +3407,13 @@ const fr: Catalog = {
         'Relancer les libérations de panier bloquées',
     'admin.permission_detail.cart.releases.resolve':
         "Libérer une réservation de panier dont l'expiration a échoué, toutes les lignes ensemble.",
+    'admin.permission.secondary.halt': 'Suspendre le marché secondaire',
+    'admin.permission_detail.secondary.halt':
+        'Suspendre ou rouvrir le marché secondaire ou une note, avec un motif enregistré.',
+    'admin.permission.secondary.listings.cancel':
+        'Annuler des annonces de revente',
+    'admin.permission_detail.secondary.listings.cancel':
+        'Annuler une annonce de revente, avec un motif montré au vendeur.',
     'admin.parties.you': 'Vous',
     'admin.parties.drawer_label': '{name}, fiche de la partie',
     'admin.parties.type.business': 'Entreprise',
@@ -2800,7 +3433,7 @@ const fr: Catalog = {
     'admin.parties.kyc_overdue_note':
         'Revérification KYC en retard depuis le {date}.',
     'admin.parties.stat.active_notes': 'Titres actifs',
-    'admin.parties.stat.investors': 'Financeurs',
+    'admin.parties.stat.investors': 'Financeurs initiaux',
     'admin.parties.stat.raised': 'Financé',
     'admin.parties.stat.rating': 'Notation Rozine',
     'admin.parties.stat.capacity': 'Capacité',
@@ -3038,6 +3671,10 @@ const fr: Catalog = {
         'Une retenue légale maintient ce compte gelé. Seuls la conformité ou le juridique peuvent le lever.',
     'admin.parties.freeze': 'Geler le compte',
     'admin.parties.release': 'Réactiver le compte',
+    'admin.parties.freeze_unavailable':
+        "Le gel de ce compte n'est pas encore disponible dans la console : il n'y a donc pas de bouton Geler ici.",
+    'admin.table.scroll_hint':
+        'Faites défiler sur le côté pour voir toutes les colonnes.',
     'admin.parties.freeze_caption':
         "Le gel retire immédiatement l'accès du compte à l'application {app}. Réversible à tout moment ; le gel et la levée portent un motif et un nom.",
     'admin.parties.restrictions': 'Historique des gels',
@@ -3094,8 +3731,9 @@ const fr: Catalog = {
     'admin.ledger.col.debit': 'Débit',
     'admin.ledger.col.credit': 'Crédit',
     'admin.ledger.open_named': "Ouvrir l'écriture {id}",
-    'admin.ledger.see_all': 'Voir les {count} écritures',
-    'admin.ledger.older': 'Écritures plus anciennes',
+    'admin.ledger.see_all': 'Afficher plus sur cette page ({count} au total)',
+    'admin.ledger.older': 'Page suivante : écritures plus anciennes',
+    'admin.ledger.newer': 'Page précédente : écritures plus récentes',
     'admin.ledger.newest': 'Revenir aux plus récentes',
     'admin.ledger.empty': 'Aucune écriture sur cette période.',
     'admin.ledger.drawer_label': 'Écriture {id}',
@@ -3179,8 +3817,7 @@ const fr: Catalog = {
     'business.wallet.export.label': 'Télécharger le relevé',
     'business.wallet.export.pdf': 'Télécharger le PDF',
     'business.wallet.export.csv': 'Télécharger le CSV',
-    'business.wallet.caption':
-        'Frais, versements et décaissements sont réglés ici',
+    'business.wallet.caption': 'Dépôts et remboursements sont réglés ici',
     'business.wallet.deposit.button': 'Déposer',
     'business.wallet.withdraw.button': 'Retirer',
     'business.wallet.processing': 'Traitement…',
@@ -3190,17 +3827,22 @@ const fr: Catalog = {
     'business.wallet.detail.done': 'Terminé',
 
     'business.servicing.wallet.status.active': 'Actif',
+    'business.servicing.wallet.status.not_open': 'Pas encore ouvert',
     'business.servicing.wallet.status.restricted': 'Restreint',
     'business.servicing.wallet.restricted':
         'Restreint depuis le {date}. Les dépôts et les remboursements restent possibles.',
     'business.servicing.wallet.pending': '{amount} en attente de confirmation',
     'business.servicing.wallet.to_repayments': 'Aller aux remboursements',
     'business.servicing.wallet.movement': 'Type de mouvement',
+    'business.servicing.wallet.filter.all': 'Tout',
     'business.servicing.wallet.filter.external': 'Dépôts',
     'business.servicing.wallet.filter.internal': 'Remboursements',
     'business.servicing.wallet.entry.deposit': 'Dépôt · {counterparty}',
     'business.servicing.wallet.entry.repayment': 'Remboursement · {note}',
-    'business.servicing.wallet.instalments': 'Échéances {list}',
+    'business.servicing.wallet.instalments': {
+        one: 'Échéance {list}',
+        other: 'Échéances {list}',
+    },
     'business.servicing.wallet.empty': 'Rien pour le moment.',
     'business.servicing.wallet.older': 'Afficher plus',
     'business.servicing.wallet.receipt.label': 'Reçu de la transaction',
@@ -3247,7 +3889,7 @@ const fr: Catalog = {
     'auditor.home.in_progress': 'En cours',
     'auditor.job.step_of': 'Étape {step} sur {steps}',
     'auditor.job.status.overdue': 'En retard',
-    'auditor.job.status.awaiting_cosign': 'En attente de cosignature',
+    'auditor.job.status.awaiting_cosign': 'Fenêtre de contestation',
     'auditor.job.reassigned': 'Vous a été réattribué',
     'auditor.standing.title': 'Votre situation',
     'auditor.standing.on_time': 'Clôture à temps',
@@ -3310,7 +3952,7 @@ const fr: Catalog = {
         "Aucune mission ouverte dans votre zone. Nous vous préviendrons dès qu'un dossier de niveau 2 nécessitera un contrôle sur site dans un rayon de {radius} km.",
     'auditor.monthly.title': 'Rapports mensuels',
     'auditor.monthly.lead':
-        "Vous ouvrez chaque mois le dossier d'audit des entreprises que vous suivez. Auditez sur site et scellez avant le 7 — l'entreprise cosigne ensuite.",
+        "Vous ouvrez chaque mois le dossier d'audit des entreprises que vous suivez. Auditez sur place et scellez avant le 7 — l'entreprise dispose ensuite de 24 heures pour contester.",
     'auditor.monthly.to_open': 'Audits à ouvrir',
     'auditor.monthly.waiting': '{count} en attente',
     'auditor.monthly.not_opened': "{month} · dossier d'audit pas encore ouvert",
@@ -3335,7 +3977,7 @@ const fr: Catalog = {
     'auditor.monthly.status.in_progress': 'En cours',
     'auditor.monthly.status.overdue': 'En retard',
     'auditor.monthly.status.changes_requested': 'Renvoyé',
-    'auditor.monthly.status.awaiting_cosign': 'Attente de cosignature',
+    'auditor.monthly.status.awaiting_cosign': 'Fenêtre de contestation',
     'auditor.monthly.inflow': 'Entrées',
     'auditor.monthly.outflow': 'Sorties',
     'auditor.monthly.cover': 'Couverture',
@@ -3373,9 +4015,9 @@ const fr: Catalog = {
         "{business} est retourné à l'affectation et votre motif est consigné.",
     'auditor.outcome.sealed.title': 'Audit scellé et déposé',
     'auditor.outcome.sealed.flash':
-        "Le rapport de terrain de {business} est scellé. {business} cosigne d'ici le {date} ; le moteur note l'entreprise à partir de vos constats.",
+        "Le rapport de terrain de {business} est scellé. {business} peut le contester jusqu'au {date} ; le moteur note l'entreprise à partir de vos constats.",
     'auditor.outcome.sealed.monthly':
-        'Le rapport de {month} pour {business} — ses relevés téléversés et vos constats factuels — est scellé. {business} contresigne avant le {date}.',
+        "Le rapport de {month} de {business} — ses relevés téléversés et vos constats factuels — est scellé. {business} peut le contester jusqu'au {date}.",
     'auditor.outcome.suggested.title': 'Modifications demandées',
     'auditor.outcome.suggested.body':
         "L'entreprise a reçu votre motif et votre explication, et peut soumettre à nouveau le dépôt pour votre audit.",
@@ -3478,10 +4120,27 @@ const fr: Catalog = {
     'auditor.audit.step.seal': 'Sceau',
     'auditor.audit.step.statements': 'Relevés',
     'auditor.audit.step.count': 'Comptage',
+    'auditor.audit.step.cash_sales': 'Ventes en espèces',
+    'auditor.audit.step.costs': 'Charges',
+    'auditor.audit.step.history': 'Historique',
+    'auditor.audit.step.premises': 'Locaux',
+    'auditor.audit.step.people': 'Personnes',
+    'auditor.audit.step.registration': 'Immatriculation',
+    'auditor.audit.step.trading': 'Début d’activité',
+    'auditor.audit.step.available': 'Fonds disponibles',
+    'auditor.audit.step.reason': 'Motif',
+    'auditor.audit.step.drawings': 'Prélèvements',
+    'auditor.audit.step.loans': 'Autres prêts',
+    'auditor.audit.step.differences': 'Écarts',
+    'auditor.audit.step.staff': 'Personnel',
+    'auditor.audit.step.expiries': 'Échéances',
+    'auditor.audit.step.loan_use': 'Fonds du prêt',
+    'auditor.audit.step.changes': 'Changements',
     'auditor.audit.continue': 'Continuer',
     'auditor.audit.to_seal': 'Examiner et sceller',
     'auditor.audit.start_count': 'Commencer le comptage',
     'auditor.audit.to_photos': 'Continuer vers les photos',
+    'auditor.audit.explain_differences': 'Expliquer l’écart',
     'auditor.audit.back': 'Retour',
     'auditor.audit.back_to_jobs': 'Retour aux missions',
     'auditor.audit.offline':
@@ -3595,7 +4254,7 @@ const fr: Catalog = {
     'auditor.count.status.restricted': 'Restreint',
     'auditor.seal.title': 'Valider et sceller',
     'auditor.seal.lead':
-        "Vos constats sont attribués à votre licence ICPAR et publiés aux porteurs après la validation de l'entreprise.",
+        "Vos constats sont attribués à votre licence ICPAR et publiés aux porteurs à la fin du délai de contestation de 24 heures de l'entreprise.",
     'auditor.seal.note': "Note d'évaluation",
     'auditor.seal.note_optional': 'Facultatif',
     'auditor.seal.note_required': 'Obligatoire',
@@ -3623,7 +4282,7 @@ const fr: Catalog = {
     'auditor.seal.submit': 'Apposer le sceau de licence ICPAR',
     'auditor.sealed.title': 'Scellé et déposé',
     'auditor.sealed.body':
-        "Le rapport est scellé et ne peut plus être modifié. {party} cosigne d'ici le {date} ; il est ensuite publié aux porteurs.",
+        "Le rapport est scellé et ne peut plus être modifié. {party} peut le contester jusqu'au {date} ; il est ensuite publié aux détenteurs.",
     'auditor.sealed.timeline': 'Avancement du dépôt',
     'auditor.sealed.stage.sealed': 'Scellé par vous',
     'auditor.sealed.stage.cosigned': "Cosignature de l'entreprise",
@@ -3733,7 +4392,7 @@ const fr: Catalog = {
     'auditor.conflicts.empty': "Vous n'avez déclaré aucun conflit.",
     'auditor.conflicts.page_empty':
         'Rien à afficher sur cette page. Des déclarations plus anciennes peuvent suivre.',
-    'auditor.reports.status.awaiting_cosign': 'Attente de cosignature',
+    'auditor.reports.status.awaiting_cosign': 'Fenêtre de contestation',
     'auditor.reports.status.published': 'Publié',
     'auditor.reports.status.late': 'En retard',
     'auditor.reports.status.rejected': 'Rejeté',
@@ -3791,6 +4450,7 @@ const fr: Catalog = {
     'auditor.profile.security.password': 'Changer le mot de passe',
     'auditor.profile.legal.title': 'Conditions et mentions légales',
     'auditor.profile.legal.engagement': "Conditions d'engagement",
+    'auditor.profile.legal.platform': 'Conditions et politiques de Rozine',
     'auditor.profile.legal.current':
         'Acceptées · le contrat-cadre et les procédures convenues',
     'auditor.profile.legal.required': 'Votre acceptation est requise',
@@ -3898,8 +4558,15 @@ const fr: Catalog = {
     'business.rating.limit.exposure': 'Limite d’exposition',
     'business.rating.limit.exposure_detail':
         '{limit} (35 % du chiffre d’affaires annuel) moins {committed} déjà dus',
+    'business.rating.limit.exposure_detail_other':
+        '{limit} (35 % du chiffre d’affaires annuel) moins {committed} déjà dus, dont {other} d’autres prêts sur vos relevés vérifiés',
     'business.rating.limit.exposure_lift':
         'Augmentez votre chiffre d’affaires, ou remboursez ce que vous devez',
+    'business.rating.limit.repeat_growth': 'Croissance sur votre dernière note',
+    'business.rating.limit.repeat_growth_detail':
+        '1,5 × la note de {last} remboursée en dernier en totalité',
+    'business.rating.limit.repeat_growth_lift':
+        'Remboursez cette levée en totalité pour faire grandir la suivante',
     'business.rating.limit.policy_max': 'Plafond réglementaire',
     'business.rating.limit.policy_max_detail':
         'Plafond absolu pour toute levée',
@@ -3930,6 +4597,83 @@ const fr: Catalog = {
     'business.repayments.issued.principal': 'Capital',
     'business.repayments.issued.return': 'Rendement',
     'business.repayments.issued.total': 'Total à rembourser',
+    'business.visit_ready.title': 'Préparez la visite de ce mois',
+    'business.visit_ready.lede':
+        'Votre prochain remboursement est dû le {due}. Votre expert-comptable passe entre le {from} et le {by} et vous demandera les éléments ci-dessous. Cochez chacun quand il est prêt.',
+    'business.visit_ready.progress': '{done} sur {total} prêts',
+    'business.visit_ready.shows': 'Doit montrer : {text}',
+    'business.visit_ready.where': 'Où l’obtenir : {text}',
+    'business.visit_ready.failed':
+        'Nous n’avons pas pu enregistrer cette coche. Vérifiez votre connexion et réessayez.',
+    'business.visit_ready.footer':
+        'L’expert-comptable les consulte pendant la visite ; les investisseurs ne voient que le rapport scellé. Les 10 transactions à vérifier s’affichent ici 3 jours avant la visite. Le téléversement anticipé est facultatif.',
+    'business.visit_ready.item.bank_statements.title':
+        'Relevés bancaires et mobile money',
+    'business.visit_ready.item.bank_statements.shows':
+        'les entrées et sorties de chaque compte le mois dernier',
+    'business.visit_ready.item.bank_statements.where':
+        'votre banque ou votre application mobile money (relevé mensuel)',
+    'business.visit_ready.item.cash_and_stock.title':
+        'Espèces et stock prêts à compter',
+    'business.visit_ready.item.cash_and_stock.shows':
+        'les espèces en caisse et le stock sur place le jour même',
+    'business.visit_ready.item.cash_and_stock.where':
+        'votre caisse, coffre et réserve',
+    'business.visit_ready.item.sales_records.title':
+        'Registre des ventes en espèces non déposées',
+    'business.visit_ready.item.sales_records.shows':
+        'les ventes en espèces gardées ou dépensées avant la banque',
+    'business.visit_ready.item.sales_records.where':
+        'votre livre des ventes ou carnet de reçus',
+    'business.visit_ready.item.cost_receipts.title':
+        'Reçus et factures des charges',
+    'business.visit_ready.item.cost_receipts.shows':
+        'vos dépenses en stock, personnel, locaux, transport, impôts et autres',
+    'business.visit_ready.item.cost_receipts.where':
+        'vos fournisseurs, votre bailleur et les reçus RRA',
+    'business.visit_ready.item.owner_payments.title':
+        'Registre des sommes versées aux propriétaires',
+    'business.visit_ready.item.owner_payments.shows':
+        'ce que les propriétaires ont retiré le mois dernier',
+    'business.visit_ready.item.owner_payments.where':
+        'votre livre de caisse ou relevé bancaire',
+    'business.visit_ready.item.loan_papers.title': 'Documents des autres prêts',
+    'business.visit_ready.item.loan_papers.shows':
+        'chaque autre prêteur, le restant dû et la mensualité',
+    'business.visit_ready.item.loan_papers.where':
+        'vos contrats de prêt ou relevés du prêteur',
+    'business.visit_ready.item.rssb_total.title': 'Page récapitulative RSSB',
+    'business.visit_ready.item.rssb_total.shows':
+        'le nombre d’employés déclarés, noms masqués',
+    'business.visit_ready.item.rssb_total.where':
+        'votre déclaration RSSB (page récapitulative seulement)',
+    'business.visit_ready.item.tax_clearance.title':
+        'Attestation de régularité fiscale',
+    'business.visit_ready.item.tax_clearance.shows': 'sa date d’expiration',
+    'business.visit_ready.item.tax_clearance.where':
+        'la RRA, ou votre copie de l’attestation',
+    'business.visit_ready.item.rssb_clearance.title':
+        'Attestation de régularité RSSB',
+    'business.visit_ready.item.rssb_clearance.shows': 'sa date d’expiration',
+    'business.visit_ready.item.rssb_clearance.where':
+        'la RSSB, ou votre copie de l’attestation',
+    'business.visit_ready.item.loan_use_proof.title':
+        'Preuve de l’utilisation du prêt',
+    'business.visit_ready.item.loan_use_proof.shows':
+        'ce que l’argent de Rozine a payé',
+    'business.visit_ready.item.loan_use_proof.where':
+        'les factures ou reçus de vos achats',
+    'business.visit_ready.item.change_papers.title':
+        'Documents de tout changement',
+    'business.visit_ready.item.change_papers.shows':
+        'toute nouvelle dette, tout changement de dirigeant ou d’actionnaire, ou tout litige depuis la dernière visite',
+    'business.visit_ready.item.change_papers.where':
+        'contrats, procès-verbaux ou pièces judiciaires',
+    'business.visit_ready.item.premises_access.title': 'Accès pour les photos',
+    'business.visit_ready.item.premises_access.shows':
+        'les locaux et le stock, pour les photos prises dans l’application',
+    'business.visit_ready.item.premises_access.where':
+        'une personne sur place pour ouvrir le jour même',
     'business.repayments.issued.split':
         'Capital {principal} · rendement {return}',
     'business.repayments.issued.note':
@@ -3980,6 +4724,13 @@ const fr: Catalog = {
         "Règle l'échéance {list} en avance, au montant prévu. Aucune remise pour un paiement anticipé.",
     'business.servicing.repay.wallet_has':
         'Votre portefeuille dispose de {amount}.',
+    'business.servicing.repay.confirm_title': 'Confirmer ce paiement',
+    'business.servicing.repay.confirm_body.due_now':
+        "{amount} quitte votre portefeuille pour l'échéance {list}, avec les éventuels frais de retard. Le montant va à vos investisseurs et ne peut pas être annulé.",
+    'business.servicing.repay.confirm_body.next_instalment':
+        "{amount} quitte votre portefeuille pour régler l'échéance {list} en avance. Aucune remise pour un paiement anticipé, et ce paiement ne peut pas être annulé.",
+    'business.servicing.repay.confirm_cancel': 'Annuler',
+    'business.servicing.repay.confirm_cta': 'Confirmer {amount}',
     'business.servicing.repay.pay_cta': 'Payer {amount}',
     'business.servicing.repay.short':
         'Votre portefeuille ne suffit pas pour ce paiement.',
@@ -3996,7 +4747,9 @@ const fr: Catalog = {
     'business.servicing.repay.receipt_done': 'Terminé',
     'business.servicing.repay.recent': 'Remboursements récents',
     'business.servicing.repay.row.due': 'n° {index} · échéance le {date}',
-    'business.servicing.repay.row.paid': 'n° {index} · payé le {date}',
+    'business.servicing.repay.row.paid_due':
+        'n° {index} · échéance le {due} · payé le {date}',
+    'business.servicing.repay.early': 'En avance',
     'business.servicing.repay.status.paid': 'Payé',
     'business.servicing.repay.status.processing': 'En traitement',
     'business.servicing.repay.status.due': 'Dû',
@@ -4019,6 +4772,64 @@ const fr: Catalog = {
     'business.servicing.repay.ladder_version':
         'Politique de frais de retard {version}.',
     'business.audit_prep.title': 'Préparez votre audit',
+    'business.monthly_figures.title': 'Chiffres du mois',
+    'business.monthly_figures.intro':
+        'Envoyez ce qui est entré et sorti en {month}. Votre partenaire d’audit vérifie ces chiffres lors de la visite, avant le {date}.',
+    'business.monthly_figures.step': 'Étape {current} sur {total}',
+    'business.monthly_figures.money_in.title': 'Entrées de {month}',
+    'business.monthly_figures.money_in.body':
+        'Tout l’argent reçu par l’entreprise pendant le mois, sur chaque compte et en espèces, en francs rwandais.',
+    'business.monthly_figures.money_in.label': 'Entrées',
+    'business.monthly_figures.costs.title': 'Dépenses de {month}',
+    'business.monthly_figures.costs.body':
+        'Ce que l’entreprise a dépensé pendant le mois, dans chacune des six catégories. Saisissez 0 s’il n’y en a pas eu.',
+    'business.monthly_figures.costs.stock': 'Stock et matières',
+    'business.monthly_figures.costs.staff': 'Salaires',
+    'business.monthly_figures.costs.premises': 'Loyer et charges',
+    'business.monthly_figures.costs.transport': 'Transport',
+    'business.monthly_figures.costs.taxes': 'Impôts et frais',
+    'business.monthly_figures.costs.other': 'Autres dépenses',
+    'business.monthly_figures.costs.total': 'Total des dépenses',
+    'business.monthly_figures.costs.total_line':
+        'Total des dépenses : {amount}',
+    'business.monthly_figures.paid.title': 'Versé aux propriétaires en {month}',
+    'business.monthly_figures.paid.body':
+        'L’argent que les propriétaires ont retiré de l’entreprise pour eux-mêmes. Saisissez 0 s’il n’y en a pas eu.',
+    'business.monthly_figures.paid.label': 'Versé aux propriétaires',
+    'business.monthly_figures.forecast.title': 'Prévision pour {forecast}',
+    'business.monthly_figures.forecast.basis':
+        'Prérempli avec votre moyenne vérifiée des trois derniers mois : {amount}.',
+    'business.monthly_figures.forecast.no_basis':
+        'Saisissez les entrées que vous attendez. Il n’y a pas encore de moyenne vérifiée.',
+    'business.monthly_figures.forecast.label': 'Entrées attendues en {month}',
+    'business.monthly_figures.forecast.order': 'Commande signée',
+    'business.monthly_figures.forecast.order_hint':
+        'Cette prévision s’écarte de plus de 25 % de votre moyenne vérifiée. Indiquez la commande signée qui la justifie, par exemple « Commande 114 de Simba Supermarket ». Votre partenaire d’audit la voit lors de la visite.',
+    'business.monthly_figures.changes.title': 'Changements en {month}',
+    'business.monthly_figures.changes.owners':
+        'Les propriétaires ou les administrateurs ont changé',
+    'business.monthly_figures.changes.premises':
+        'Déménagement, ou ouverture ou fermeture d’un site',
+    'business.monthly_figures.changes.borrowing': 'Nouveau prêt ou crédit',
+    'business.monthly_figures.changes.customers':
+        'Perte d’un client ou d’un fournisseur principal',
+    'business.monthly_figures.changes.yes': 'Oui',
+    'business.monthly_figures.changes.no': 'Non',
+    'business.monthly_figures.summary.title': 'Vérifier et envoyer',
+    'business.monthly_figures.summary.line':
+        '{month} : entrées {money_in}, dépenses {costs}, versé aux propriétaires {paid}. Prévision pour {forecast_month} : {forecast}.',
+    'business.monthly_figures.summary.final':
+        'Une fois envoyés, ces chiffres sont définitifs pour le mois.',
+    'business.monthly_figures.sent.title': 'Chiffres de {month}',
+    'business.monthly_figures.sent.body':
+        'Envoyés le {date}. Votre partenaire d’audit les vérifie lors de la visite.',
+    'business.monthly_figures.back': 'Retour',
+    'business.monthly_figures.next': 'Suivant',
+    'business.monthly_figures.send': 'Envoyer les chiffres',
+    'business.monthly_figures.sending': 'Envoi…',
+    'business.audit_prep.figures.title': 'Envoyez vos chiffres du mois',
+    'business.audit_prep.figures.body':
+        'Six écrans courts, environ 3 minutes. Votre partenaire d’audit les vérifie lors de la visite.',
     'business.audit_prep.window_open': "Fenêtre d'audit ouverte",
     'business.audit_prep.next': 'Prochain audit',
     'business.audit_prep.first': 'Votre premier audit',
@@ -4058,16 +4869,36 @@ const fr: Catalog = {
     'business.audit_prep.flow.sealed.title': 'Scellé',
     'business.audit_prep.flow.sealed.body':
         'Les constats factuels et les écarts sont scellés sous sa licence ICPAR.',
-    'business.audit_prep.flow.cosign.title': 'Vous cosignez',
+    'business.audit_prep.flow.cosign.title': 'Vous examinez',
     'business.audit_prep.flow.cosign.body':
-        'Vous ajoutez un résumé et cosignez avant le {date}, ou vous contestez avec une contre-preuve.',
+        'Vous lisez les constats et, si quelque chose est inexact, vous contestez avec des contre-preuves avant le {date}.',
     'business.audit_prep.closing':
-        "Vous ne déposez jamais le rapport mensuel vous-même. Votre expert-comptable se déplace, examine vos documents sur place et scelle le rapport — votre rôle est d'être prêt, puis de cosigner ou contester ses constats.",
+        "Vous ne déposez jamais vous-même le rapport mensuel. Votre expert-comptable passe, examine vos registres sur place et scelle le rapport — votre rôle est d'être prêt, puis d'examiner ses constats et de les contester en cas d'erreur.",
 
     'investor.nav.deals': 'Offres',
     'investor.nav.portfolio': 'Portefeuille',
     'investor.nav.profile': 'Profil',
     'investor.market.order_detail.title': "Détail de l'ordre",
+    'investor.market.order_detail.status': 'Statut',
+    'investor.market.order_detail.status_open': 'Ouvert',
+    'investor.market.order_detail.status_withdrawn': 'Retirée',
+    'investor.market.order_detail.status_cancelled': 'Annulée par Rozine',
+    'investor.market.order_detail.status_expired': 'Expirée',
+    'investor.market.order_detail.listed': 'Parts proposées',
+    'investor.market.order_detail.ended': 'Terminée',
+    'investor.market.order_detail.status_reserved': 'Réservé par un acheteur',
+    'investor.market.order_detail.status_reserved_for_you': 'Réservé pour vous',
+    'investor.market.order_detail.filled': 'Exécuté',
+    'investor.market.order_detail.side': 'Sens',
+    'investor.market.order_detail.side_buy': 'Achat',
+    'investor.market.order_detail.side_sell': 'Vente',
+    'investor.market.order_detail.remaining': 'Unités',
+    'investor.market.order_detail.price': 'Prix par unité',
+    'investor.market.order_detail.amount_buy': 'Vous avez payé',
+    'investor.market.order_detail.amount_sell': 'Vous avez reçu',
+    'investor.market.order_detail.fee': 'Frais',
+    'investor.market.order_detail.settled': 'Réglé',
+    'investor.market.order_detail.expires': "Ouvert jusqu'au",
     'investor.market.order_detail.empty_title': 'Aucun ordre sélectionné',
     'investor.market.order_detail.empty_body':
         'Choisissez un ordre à gauche pour voir pourquoi il a été exécuté ou non.',
@@ -4103,11 +4934,107 @@ const fr: Catalog = {
     'investor.market.orders.sell': 'Ordres de vente',
     'investor.market.orders.completed': 'Exécutés',
     'investor.market.orders.cancelled': 'Annulés',
+    'investor.market.orders.filled': 'Ordres exécutés',
     'investor.market.orders.empty': 'Aucun ordre dans cet onglet.',
+    'investor.market.browse_none.empty_title':
+        "Aucun titre n'est encore en vente",
+    'investor.market.browse_none.empty_body':
+        'Les titres apparaissent ici quand des investisseurs les mettent en revente.',
     'investor.market.browse.empty_title':
         'Aucune note ne correspond à ces filtres',
     'investor.market.browse.empty_body':
         'Essayez de modifier les filtres ci-dessus.',
+    'investor.market.resale.listings': 'Annonces de revente',
+    'investor.market.resale.sell': 'Vendre des parts',
+    'investor.market.resale.sell_title': 'Vendre des parts sur le marché',
+    'investor.market.resale.buy': 'Acheter',
+    'investor.market.resale.buy_title': 'Acheter des parts de {name}',
+    'investor.market.resale.units_at': {
+        one: '{units} part à {price}',
+        other: '{units} parts à {price} chacune',
+    },
+    'investor.market.resale.yours': 'Votre annonce',
+    'investor.market.resale.reserved': 'Réservée',
+    'investor.market.resale.total': 'Total',
+    'investor.market.resale.expires': 'Annoncée jusqu’au {when}',
+    'investor.market.resale.withdraw': 'Retirer',
+    'investor.market.resale.withdraw_confirm': {
+        one: 'Retirer cette annonce ? Sa {units} part retourne dans votre détention.',
+        other: 'Retirer cette annonce ? Ses {units} parts retournent dans votre détention.',
+    },
+    'investor.market.resale.withdraw_yes': 'Oui, retirer',
+    'investor.market.resale.withdraw_keep': 'Garder l’annonce',
+    'investor.market.resale.units_reserved':
+        '{available} disponibles · {reserved} réservées par un acheteur',
+    'investor.market.resale.free_only': {
+        one: 'Vous avez {count} part libre à proposer.',
+        other: 'Vous avez {count} parts libres à proposer.',
+    },
+    'investor.market.resale.reserved_for_you': {
+        one: '{units} part réservée pour vous jusqu’au {when}. Confirmez pour payer {amount} depuis votre portefeuille.',
+        other: '{units} parts réservées pour vous jusqu’au {when}. Confirmez pour payer {amount} depuis votre portefeuille.',
+    },
+    'investor.market.resale.confirm': 'Confirmer l’achat',
+    'investor.market.resale.working': 'En cours…',
+    'investor.market.resale.units': 'Parts',
+    'investor.market.resale.you_pay': 'Vous payez {amount}',
+    'investor.market.resale.reserve_note':
+        'La réservation bloque ce montant dans votre portefeuille pendant que vous confirmez.',
+    'investor.market.resale.reserve': 'Réserver les parts',
+    'investor.market.resale.holding': 'Placement',
+    'investor.market.resale.lot_option': {
+        one: '{name} · {units} part libre',
+        other: '{name} · {units} parts libres',
+    },
+    'investor.market.resale.price': 'Prix par part (RWF)',
+    'investor.market.resale.cap': 'Au plus {cap} par part',
+    'investor.market.resale.listing_total': 'Total de l’annonce {amount}',
+    'investor.market.resale.list': 'Mettre en vente',
+    'investor.market.resale.trade_buy': 'Acheté · {name}',
+    'investor.market.resale.too_many_free': {
+        one: 'Seulement {count} part est libre, un autre acheteur réserve le reste.',
+        other: 'Seulement {count} parts sont libres, un autre acheteur réserve le reste.',
+    },
+    'investor.market.resale.too_many': {
+        one: 'Seulement {count} part est proposée.',
+        other: 'Seulement {count} parts sont proposées.',
+    },
+    'investor.market.resale.bought': {
+        one: 'Vous avez acheté {count} unité de {name} pour {amount}.',
+        other: 'Vous avez acheté {count} unités de {name} pour {amount}.',
+    },
+    'investor.market.resale.see_portfolio': 'Voir dans le portefeuille',
+    'investor.market.resale.dismiss': 'Fermer',
+    'investor.market.resale.withdrawn': {
+        one: 'Annonce retirée. {count} part de {name} est revenue dans votre détention.',
+        other: 'Annonce retirée. {count} parts de {name} sont revenues dans votre détention.',
+    },
+    'investor.market.resale.closed_title': 'Annonce · {name}',
+    'investor.market.resale.see_cancelled': 'Voir dans Annulées',
+    'investor.market.resale.trade_sell': 'Vendu · {name}',
+    'investor.market.resale.refusal.holding_limit': {
+        one: 'Un investisseur peut détenir au plus la moitié d’une levée. Vous pouvez encore acheter jusqu’à {count} part de cette note.',
+        other: 'Un investisseur peut détenir au plus la moitié d’une levée. Vous pouvez encore acheter jusqu’à {count} parts de cette note.',
+    },
+    'investor.market.resale.refusal.holding_full':
+        'Un investisseur peut détenir au plus la moitié d’une levée, et vous avez déjà atteint cette limite pour cette note.',
+    'investor.market.resale.refusal.price_cap':
+        'Le prix dépasse le plafond de {cap} par part.',
+    'investor.market.resale.refusal.not_held':
+        'Vous n’avez pas autant de parts libres à mettre en vente.',
+    'investor.market.resale.refusal.not_listed':
+        'Il n’y a plus autant de parts en vente. Choisissez moins de parts.',
+    'investor.market.resale.refusal.own_listing':
+        'Vous ne pouvez pas acheter votre propre annonce.',
+    'investor.market.resale.refusal.reserved':
+        'Un autre acheteur réserve ces parts en ce moment. Réessayez dans un instant.',
+    'investor.market.resale.refusal.closed': 'Cette annonce est fermée.',
+    'investor.market.resale.refusal.reservation_ended':
+        'Votre réservation a pris fin. Réservez à nouveau les parts pour les acheter.',
+    'investor.market.resale.refusal.paused':
+        'Les échanges sur cette note sont suspendus pour le moment. Réessayez plus tard.',
+    'investor.market.resale.refused':
+        'Cela n’a pas abouti ({code}). Vérifiez et réessayez.',
     'investor.market.saved.empty_title':
         'Aucune note enregistrée pour le moment',
     'investor.market.saved.empty_body':
@@ -4143,6 +5070,11 @@ const fr: Catalog = {
     'investor.cart.whole.band_basis':
         'Votre palier compte les titres que vous détenez plus ce panier, jamais le solde du portefeuille.',
     'investor.cart.whole.quoting': 'Calcul du prix de votre panier…',
+    'investor.cart.whole.holding': 'Réservation de vos titres…',
+    'investor.cart.whole.confirming': 'Confirmation…',
+    'investor.cart.whole.releasing': 'Libération…',
+    'investor.cart.whole.settling_wait':
+        'Cela prend généralement quelques minutes. Cette page se met à jour toute seule, puis vous pourrez payer à nouveau.',
     'investor.cart.whole.checkout': 'Tout payer · {amount}',
     'investor.cart.whole.fine_print':
         'Réserve chaque titre du panier pendant 5 minutes, le temps de confirmer. Rien n’est engagé avant votre confirmation.',
@@ -4157,7 +5089,7 @@ const fr: Catalog = {
         other: 'Ajuster à {count} titres',
     },
     'investor.cart.whole.risks_first':
-        'Confirmez d’abord les déclarations de risque dans le paiement d’une offre, puis payez tout le panier.',
+        'Confirmez d’abord les déclarations de risque, puis payez tout le panier.',
     'investor.cart.whole.open_checkout': 'Ouvrir le paiement',
     'investor.cart.whole.held_title': 'Confirmez votre panier',
     'investor.cart.whole.held_lead':
@@ -4169,8 +5101,8 @@ const fr: Catalog = {
     'investor.cart.whole.line_return': 'Rendement {return} · frais {fee}',
     'investor.cart.whole.net_return': 'Rendement attendu après frais',
     'investor.cart.whole.acknowledge':
-        'J’ai lu ces conditions et je confirme chaque titre de ce panier.',
-    'investor.cart.whole.confirm': 'Tout confirmer · {amount}',
+        'Payer confirme que vous avez lu le prospectus de chaque titre.',
+    'investor.cart.whole.confirm': 'Payer {amount}',
     'investor.cart.whole.release': 'Libérer tous les titres',
     'investor.cart.whole.requoted':
         'Les conditions ont changé avant votre confirmation. Vérifiez le nouveau total et le palier, puis confirmez à nouveau.',
@@ -4268,6 +5200,50 @@ const fr: Catalog = {
     'investor.deal.notes_of': '{sold} sur {total} titres',
     'investor.deal.details': 'DÉTAILS',
     'investor.deal.photos': 'Photos',
+    'investor.deal.prospectus.title': 'Prospectus · version {version}',
+    'investor.deal.prospectus.signed': 'Signé',
+    'investor.deal.prospectus.signed_by': 'Signé par {name} le {date}',
+    'investor.deal.prospectus.fingerprint': 'Empreinte {fingerprint}…',
+    'investor.deal.prospectus.read': 'Lire',
+    'investor.prospectus.title': 'Prospectus de {name}',
+    'investor.prospectus.back': 'Retour à l’offre',
+    'investor.prospectus.download': 'Télécharger le PDF',
+    'investor.prospectus.signed':
+        'Version {version}, signée par {name} le {date}',
+    'investor.prospectus.fingerprint': 'Empreinte {fingerprint}',
+    'investor.prospectus.purpose': 'Objet',
+    'investor.prospectus.terms': 'Conditions et frais',
+    'investor.prospectus.principal': 'Montant levé',
+    'investor.prospectus.fee': 'Frais de plateforme Rozine (3 %)',
+    'investor.prospectus.net': 'Montant restant à dépenser par l’entreprise',
+    'investor.prospectus.term': 'Durée',
+    'investor.prospectus.instalment': 'Mensualité',
+    'investor.prospectus.funds': 'Utilisation des fonds',
+    'investor.prospectus.quoted': 'Devis au dossier',
+    'investor.prospectus.financials':
+        'Données financières vérifiées par l’expert-comptable et prévisions',
+    'investor.prospectus.verified_revenue': 'Revenu mensuel moyen vérifié',
+    'investor.prospectus.sealed':
+        'Dernier rapport scellé de l’expert-comptable',
+    'investor.prospectus.forecast': 'Prévisions de l’entreprise',
+    'investor.prospectus.month': 'Mois',
+    'investor.prospectus.revenue': 'Revenu',
+    'investor.prospectus.costs': 'Charges',
+    'investor.prospectus.contracted': 'Contrat signé au dossier',
+    'investor.prospectus.assumptions': 'Hypothèses',
+    'investor.prospectus.downside': 'Si les ventes baissent',
+    'investor.prospectus.management': 'Direction',
+    'investor.prospectus.role.representative': 'Représentant officiel',
+    'investor.prospectus.role.director': 'Administrateur',
+    'investor.prospectus.role.owner': 'Propriétaire',
+    'investor.prospectus.risks': 'Risques',
+    'investor.prospectus.largest_customer':
+        'Le plus gros client représente {percent} % du revenu.',
+    'investor.prospectus.concentration': 'Concentration de clientèle',
+    'investor.prospectus.months': {
+        one: '{count} mois',
+        other: '{count} mois',
+    },
     'investor.deal.reported_by_business': "Déclaré par l'entreprise",
     'investor.deal.use_of_funds': 'Utilisation des fonds',
     'investor.deal.use.inventory': 'Stock',
@@ -4322,6 +5298,8 @@ const fr: Catalog = {
     'investor.deal.unit_times_one': '{price} × {count} titre',
     'investor.deal.unit_times_other': '{price} × {count} titres',
     'investor.deal.expected_return': 'Rendement attendu',
+    'investor.deal.fee_at_checkout': 'Indiqués au paiement',
+    'investor.deal.get_back_before_fee': 'Montant récupéré, avant les frais',
     'investor.deal.total_at_maturity': "Total remboursé à l'échéance",
     'investor.deal.fewer_notes': 'Un titre de moins',
     'investor.deal.more_notes': 'Un titre de plus',
@@ -4346,7 +5324,6 @@ const fr: Catalog = {
     'investor.plus.tier.diamond': 'Diamant',
     'investor.checkout.maturity_value': "Valeur à l'échéance · {date}",
     'investor.checkout.wallet': 'Portefeuille',
-    'investor.checkout.funding_source': 'Source de financement',
     'investor.checkout.wallet_available': 'Disponible : {amount}',
     'investor.checkout.pay_with': 'Payer avec',
     'investor.checkout.wallet_line': '{wallet} · {amount} disponibles',
@@ -4355,7 +5332,7 @@ const fr: Catalog = {
     'investor.checkout.deposit': 'Déposer',
     'investor.checkout.disclosure': 'COÛTS ET RISQUES',
     'investor.checkout.acknowledge':
-        "J'ai lu l'information sur les coûts et les risques ({version}).",
+        'Payer confirme que vous avez lu le prospectus de ce titre ({version}).',
     'investor.checkout.refusal.TRADE_BELOW_MINIMUM':
         'Investissez au moins un titre.',
     'investor.checkout.refusal.INSUFFICIENT_AVAILABLE_FUNDS':
@@ -4371,7 +5348,7 @@ const fr: Catalog = {
     'investor.checkout.refusal.VERSION_CONFLICT':
         'Les conditions ont changé pendant votre lecture. Relisez-les et confirmez à nouveau.',
     'investor.checkout.processing': 'Confirmation…',
-    'investor.checkout.confirm': 'Confirmer l’investissement · {amount}',
+    'investor.checkout.confirm': 'Payer {amount}',
     'investor.checkout.fine_print':
         'Fonds engagés immédiatement · Rendements projetés, non garantis',
     'investor.checkout.confirmed': 'Investissement confirmé',
@@ -4586,14 +5563,17 @@ const fr: Catalog = {
         '✓ OTP envoyé · saisissez le code à 6 chiffres',
     'investor.signup.agree.head_title': 'Vérifier et accepter',
     'investor.signup.agree.title': 'Vérifier et accepter',
-    'investor.signup.agree.terms_before': "J'accepte les",
+    'investor.signup.agree.terms_before': 'En continuant, vous acceptez les',
     'investor.signup.agree.terms': 'Conditions générales de Rozine',
-    'investor.signup.agree.terms_after': '.',
-    'investor.signup.agree.privacy_before': "J'ai lu la",
+    'investor.signup.agree.privacy_before': 'et la',
     'investor.signup.agree.privacy': 'Note de confidentialité',
     'investor.signup.agree.privacy_after': '.',
     'investor.kyc.progress': 'Progression de la vérification',
     'investor.kyc.kicker_identity': "VÉRIFICATION D'IDENTITÉ",
+    'investor.kyc.kicker_business':
+        "VÉRIFICATION D'IDENTITÉ POUR L'ACCÈS ENTREPRISE",
+    'investor.kyc.kicker_auditor':
+        "VÉRIFICATION D'IDENTITÉ POUR L'ACCÈS AUDITEUR",
     'investor.kyc.kicker_entity': "VÉRIFICATION DE L'ENTITÉ",
     'investor.kyc.personal.title': 'Informations personnelles',
     'investor.kyc.personal.subtitle':
@@ -4630,6 +5610,15 @@ const fr: Catalog = {
     'investor.kyc.selfie_done': 'Selfie enregistré',
     'investor.kyc.upload_passport': 'Envoyer la page photo du passeport',
     'investor.kyc.uploaded_passport': 'Page photo du passeport envoyée',
+    'investor.kyc.licence.title': 'Votre licence ICPAR',
+    'investor.kyc.licence.subtitle':
+        "Rozine examine votre licence avec votre pièce d'identité : une seule approbation fait de vous un Partenaire d'audit.",
+    'investor.kyc.licence.number': 'Numéro de licence',
+    'investor.kyc.licence.number_placeholder': 'ICPAR-2024-0000',
+    'investor.kyc.licence.expires_on': "Date d'expiration de la licence",
+    'investor.kyc.licence.upload': 'Téléversez votre certificat ICPAR',
+    'investor.kyc.licence.uploaded': 'Certificat téléversé',
+    'investor.kyc.licence.certificate': 'Certificat ICPAR',
     'investor.kyc.replace': 'Touchez pour remplacer',
     'investor.kyc.view_upload': 'Voir {slot}',
     'investor.kyc.selfie_slot': 'votre selfie',
@@ -4714,6 +5703,27 @@ const fr: Catalog = {
     'investor.portfolio.matures_line':
         'Échéance {date} · {made}/{total} versements',
     'investor.portfolio.details': 'Détails',
+    'investor.lot.price_paid': 'PRIX PAYÉ',
+    'investor.lot.per_unit': '{price} par part',
+    'investor.lot.units_held': 'PARTS DÉTENUES',
+    'investor.lot.bought_on': 'Acheté le {date}',
+    'investor.lot.received': 'REÇU À CE JOUR',
+    'investor.lot.payments': '{made}/{total} paiements',
+    'investor.lot.next_payment': 'PROCHAIN PAIEMENT',
+    'investor.lot.no_next': 'Aucun paiement à venir',
+    'investor.lot.matures': 'Échéance le {date}',
+    'investor.lot.repaid': 'Remboursé en totalité',
+    'investor.lot.schedule': 'Échéancier',
+    'investor.lot.instalment': 'Paiement {index}',
+    'investor.lot.status.paid': 'Payé le {date}',
+    'investor.lot.status.before_purchase': 'Versé au vendeur',
+    'investor.lot.status.upcoming': 'Dû le {date}',
+    'investor.lot.resell': 'Revendre sur le marché',
+    'investor.portfolio.bought.title': 'Achetées sur le marché',
+    'investor.portfolio.bought.line': {
+        one: '{count} unité à {price} · achetée le {date}',
+        other: '{count} unités à {price} chacune · achetées le {date}',
+    },
     'investor.portfolio.see_all': 'Voir les {count} autres ›',
     'investor.portfolio.empty.active.title': "Aucun avoir pour l'instant",
     'investor.portfolio.empty.active.body':
@@ -4858,6 +5868,7 @@ const fr: Catalog = {
     'investor.wallet.done.withdraw.failed':
         "Le retrait de {amount} vers {method} n'a pas abouti. L'argent est de retour dans votre portefeuille.",
     'investor.wallet.c3.credited': 'Crédité',
+    'investor.wallet.c3.debited': 'Payé',
     'investor.wallet.processing': 'Envoi…',
     'investor.wallet.refusal.TRADE_BELOW_MINIMUM':
         'Saisissez au moins le montant minimum',
@@ -4951,6 +5962,7 @@ const fr: Catalog = {
     'investor.profile.item.verification': "Vérification d'identité",
     'investor.profile.item.terms': 'Conditions générales',
     'investor.profile.item.privacy': 'Note de confidentialité',
+    'investor.profile.item.disclaimers': 'Avertissements',
     'investor.profile.item.personal': 'Informations personnelles',
     'investor.profile.item.plan': 'Rozine Plus · comment le débloquer',
     'investor.profile.item.security': 'Centre de sécurité',
@@ -5294,7 +6306,7 @@ const fr: Catalog = {
         'Une fois confirmé, le retrait est envoyé vers votre compte par le prestataire de paiement. Une demande inhabituelle peut être retenue pour examen jusqu’à 24 heures.\n\nVous pouvez suivre chaque retrait dans l’historique de votre portefeuille. L’argent engagé dans une levée ouverte ne peut pas être retiré.',
     'investor.help.safety.held.q': 'Où mon argent est-il conservé ?',
     'investor.help.safety.held.a':
-        'Tout l’argent des clients est conservé sur un compte client cantonné dans une banque rwandaise agréée, séparé des fonds propres de Rozine. Le total de tous les portefeuilles est rapproché de ce compte chaque jour.\n\nSeuls les frais gagnés et communiqués peuvent être transférés sur le compte de Rozine.',
+        'L’argent des clients sera conservé sur un compte client cantonné dans une banque commerciale rwandaise agréée, séparé des fonds propres de Rozine. Nous sommes en discussion avec GT Bank pour ce compte. Aucun accord n’est encore signé, et Rozine n’acceptera pas d’argent réel de clients avant l’ouverture du compte.\n\nUne fois le compte ouvert, le total de tous les portefeuilles est rapproché de ce compte chaque jour, et seuls les frais gagnés et communiqués peuvent être transférés sur le compte de Rozine.',
     'investor.help.safety.stop.q':
         'Que se passe-t-il si Rozine doit cesser son activité ?',
     'investor.help.safety.stop.a':
@@ -5638,6 +6650,363 @@ const fr: Catalog = {
     'auditor.audit.amends':
         'Ceci est une modification liée du rapport {report}. Ce rapport reste inchangé.',
     'auditor.audit.open_original': "Ouvrir l'original",
+    'auditor.audit.guide.label': 'Comment faire cette étape',
+    'auditor.audit.guide.how_to': 'Comment faire',
+    'auditor.audit.guide.part.do': 'À faire',
+    'auditor.audit.guide.part.enter': 'À saisir',
+    'auditor.audit.guide.part.upload': 'À joindre',
+    'auditor.audit.guide.part.done': 'Terminé quand',
+    'auditor.audit.guide.uploads_rule':
+        'Ne recueillez que ce qui prouve un montant : relevés, factures, reçus, contrats, contrats de prêt, certificats, procès-verbaux, rapports d’audit, et photos des locaux et des actifs. Ne recueillez jamais les noms ou données personnelles du personnel (seule la page de total RSSB, noms masqués), ni mots de passe ou codes PIN, ni dossiers médicaux, ni rien sur vos autres clients. Les fichiers sont chiffrés et visibles uniquement par vous, l’entreprise et Rozine.',
+    'auditor.audit.guide.review.do':
+        'Lisez le dossier de l’entreprise avant d’aller sur place.',
+    'auditor.audit.guide.review.done':
+        'Vous avez lu le dossier. Passez à l’enregistrement sur place.',
+    'auditor.audit.guide.review.how':
+        'Ouvrez chaque document du dossier et notez ce que vous devez voir sur place. Rien n’est enregistré à cette étape.',
+    'auditor.audit.guide.check_in.do':
+        'Enregistrez votre arrivée dans les locaux avec l’application de capture.',
+    'auditor.audit.guide.check_in.enter':
+        'Rien à saisir. Votre position et l’heure viennent de votre téléphone.',
+    'auditor.audit.guide.check_in.done':
+        'Votre arrivée est reçue et s’affiche ici.',
+    'auditor.audit.guide.check_in.how':
+        'Placez-vous dans les locaux, ouvrez l’application de capture, autorisez la localisation et enregistrez-vous. Une arrivée loin des locaux enregistrés, ou avec une localisation faible, part en revue ; continuez.',
+    'auditor.audit.guide.photos.do':
+        'Prenez chaque photo requise en direct dans l’application de capture.',
+    'auditor.audit.guide.photos.upload':
+        'Photos en direct uniquement. Les imports depuis la galerie sont refusés.',
+    'auditor.audit.guide.photos.done':
+        'Chaque photo requise est reçue et porte un titre.',
+    'auditor.audit.guide.photos.how':
+        'Photographiez les locaux et le stock comme la liste le demande. Chaque photo porte sa propre heure et son lieu. N’ajoutez des photos que si elles prouvent un montant.',
+    'auditor.audit.guide.ledger.do':
+        'Comptez le stock et saisissez la valeur d’inventaire comptée.',
+    'auditor.audit.guide.ledger.enter':
+        'Valeur d’inventaire en francs entiers, par exemple 1250000.',
+    'auditor.audit.guide.ledger.upload':
+        'Le registre original en PDF ou CSV, jusqu’à 10 Mo.',
+    'auditor.audit.guide.ledger.done':
+        'Le registre est joint et l’écart avec le montant déclaré s’affiche.',
+    'auditor.audit.guide.ledger.how':
+        'Comptez ce qui est en rayon, calculez sa valeur et saisissez le total. Joignez ensuite le registre tenu par l’entreprise. Un scan sans texte est marqué pour revue manuelle.',
+    'auditor.audit.guide.statements.do':
+        'Lisez ce que les relevés bancaires, MoMo et TPE au dossier indiquent pour le mois.',
+    'auditor.audit.guide.statements.done':
+        'Vous avez lu les entrées, les sorties et le net du mois.',
+    'auditor.audit.guide.statements.how':
+        'Ouvrez chaque relevé pour voir d’où vient un montant. Rien n’est saisi ici ; les montants viennent des relevés.',
+    'auditor.audit.guide.count.do':
+        'Cochez les preuves que vous avez vues, puis saisissez ce que vous avez constaté.',
+    'auditor.audit.guide.count.enter':
+        'Espèces en caisse en francs entiers et unités de stock comptées. Par exemple 450000 et 120.',
+    'auditor.audit.guide.count.done':
+        'Chaque montant est saisi et chaque preuve listée est cochée.',
+    'auditor.audit.guide.count.how':
+        'Comptez vous-même les espèces et le stock. Chaque montant est comparé aux relevés au dossier ; rien ici ne vient de l’entreprise.',
+    'auditor.audit.guide.cash_sales.do':
+        'Notez les ventes en espèces du mois qui n’ont jamais été versées sur un compte bancaire ou mobile money.',
+    'auditor.audit.guide.cash_sales.enter':
+        'Un montant en francs entiers. Par exemple 15000. Saisissez 0 si toutes les ventes ont été versées.',
+    'auditor.audit.guide.cash_sales.done':
+        'Un montant est saisi, même s’il vaut 0.',
+    'auditor.audit.guide.cash_sales.how':
+        'Comparez le cahier des ventes et les reçus aux dépôts sur les relevés. Les espèces gardées pour la monnaie ou dépensées avant le dépôt comptent comme non versées.',
+    'auditor.audit.guide.costs.do':
+        'Classez les charges du mois dans les six catégories.',
+    'auditor.audit.guide.costs.enter':
+        'Un montant en francs entiers pour chaque catégorie : stock, personnel, locaux, transport, impôts et autres. Par exemple stock 400000. Saisissez 0 s’il n’y a pas eu de charge.',
+    'auditor.audit.guide.costs.done':
+        'Chaque catégorie a un montant, même s’il vaut 0.',
+    'auditor.audit.guide.costs.how':
+        'Utilisez les factures, les reçus et les paiements des relevés du mois. Placez chaque charge dans une seule catégorie ; ce qui n’entre dans aucune va dans Autres.',
+    'auditor.audit.guide.history.do':
+        'Comparez chaque mois de l’historique vérifié aux relevés de l’entreprise.',
+    'auditor.audit.guide.history.done':
+        'Vous avez coché que chaque mois correspond aux relevés.',
+    'auditor.audit.guide.history.how':
+        'Ouvrez les relevés d’un mois, vérifiez les entrées et sorties par rapport à la ligne, puis passez au suivant. Signalez tout écart à l’entreprise avant de cocher.',
+    'auditor.audit.guide.premises.do':
+        'Indiquez qui détient les locaux et listez les principaux actifs de l’entreprise.',
+    'auditor.audit.guide.premises.enter':
+        'Propriété, location ou partage, puis chaque actif principal avec une valeur estimée en francs entiers. Par exemple Moto de livraison, 1800000.',
+    'auditor.audit.guide.premises.done':
+        'Le statut des locaux est choisi. Les actifs sont facultatifs ; 10 au maximum.',
+    'auditor.audit.guide.premises.how':
+        'Demandez le titre de propriété ou le bail. Parcourez les locaux et ne listez que ce qui sert à l’activité, comme les véhicules, les machines et les chambres froides.',
+    'auditor.audit.guide.people.do':
+        'Vérifiez l’identité de chaque administrateur et propriétaire, et confirmez les profils de la direction.',
+    'auditor.audit.guide.people.done': 'Les deux vérifications sont cochées.',
+    'auditor.audit.guide.people.how':
+        'Comparez la pièce d’identité de chaque personne à l’extrait du registre RDB. Confirmez que les profils de direction fournis correspondent aux personnes rencontrées.',
+    'auditor.audit.guide.registration.do':
+        'Vérifiez le certificat d’immatriculation et notez la date d’expiration de l’attestation fiscale.',
+    'auditor.audit.guide.registration.enter':
+        'La date d’expiration de l’attestation fiscale telle qu’écrite sur le certificat. Par exemple 31 mars 2027.',
+    'auditor.audit.guide.registration.done':
+        'Le certificat est coché comme vérifié et une date est saisie.',
+    'auditor.audit.guide.registration.how':
+        'Le nom et le code de la société sur le certificat RDB doivent correspondre au dossier. Lisez l’expiration sur l’attestation fiscale de la RRA.',
+    'auditor.audit.guide.trading.do':
+        'Notez le mois où l’entreprise a commencé son activité.',
+    'auditor.audit.guide.trading.enter':
+        'Un mois et une année. Par exemple juin 2021.',
+    'auditor.audit.guide.trading.done': 'Un mois est saisi.',
+    'auditor.audit.guide.trading.how':
+        'Utilisez la facture, le relevé ou la licence commerciale la plus ancienne que vous voyez, pas la date d’immatriculation si l’activité a commencé plus tard.',
+    'auditor.audit.guide.available.do':
+        'Demandez à voir chaque caisse et chaque solde bancaire ou mobile money avec lesquels l’entreprise pourrait payer aujourd’hui.',
+    'auditor.audit.guide.available.enter':
+        'Le total disponible maintenant, en francs entiers.',
+    'auditor.audit.guide.available.done':
+        'Chaque justificatif vu est coché et le total est saisi.',
+    'auditor.audit.guide.available.how':
+        'Comptez l’espèce vous-même et lisez les soldes dans l’application ou sur un relevé du jour, pas sur une impression antérieure.',
+    'auditor.audit.guide.reason.do':
+        'Demandez pourquoi le remboursement est en retard et choisissez le motif qui convient le mieux.',
+    'auditor.audit.guide.reason.enter':
+        'Un motif de la liste, et une courte note s’il s’agit de Autre.',
+    'auditor.audit.guide.reason.done': 'Un motif est choisi.',
+    'auditor.audit.guide.reason.how':
+        'Notez ce qu’on vous a dit et ce que vous avez vu. N’acceptez ni plan, ni nouvelle date, ni remise : rien ne se négocie lors de cette visite.',
+    'auditor.audit.guide.drawings.do':
+        'Notez ce que les propriétaires ont retiré de l’entreprise ce mois-ci.',
+    'auditor.audit.guide.drawings.enter':
+        'Un montant en francs entiers. Par exemple 150000. Saisissez 0 si rien n’a été retiré.',
+    'auditor.audit.guide.drawings.done':
+        'Un montant est saisi, même s’il vaut 0.',
+    'auditor.audit.guide.drawings.how':
+        'Cherchez les virements et les espèces pris par les propriétaires dans les relevés et le livre de caisse. Comptez les salaires des propriétaires seulement s’ils ne sont pas sur la paie.',
+    'auditor.audit.guide.loans.do':
+        'Listez chaque prêt que l’entreprise doit à quelqu’un d’autre que Rozine.',
+    'auditor.audit.guide.loans.enter':
+        'Pour chaque prêt : le prêteur, le montant restant dû et la mensualité, en francs entiers. Par exemple Bank of Kigali, 2400000 et 200000.',
+    'auditor.audit.guide.loans.done':
+        'Chaque prêt a un prêteur et un montant restant dû. Une entreprise sans autre prêt continue avec une liste vide.',
+    'auditor.audit.guide.loans.how':
+        'Interrogez le propriétaire et cherchez des remboursements réguliers dans les relevés. Lisez les montants dans le contrat de prêt ou le dernier relevé du prêteur.',
+    'auditor.audit.guide.differences.do':
+        'Attribuez un montant à chaque cause de l’écart d’espèces jusqu’à ce qu’il ne reste rien à expliquer.',
+    'auditor.audit.guide.differences.enter':
+        'Des francs entiers par cause. Par exemple 20000 pour des dépenses personnelles et 6000 pour une erreur de saisie.',
+    'auditor.audit.guide.differences.done':
+        'Les montants égalent l’écart entier, au franc près. Un mois sans écart n’a rien à expliquer.',
+    'auditor.audit.guide.differences.how':
+        'Interrogez le propriétaire sur chaque écart et vérifiez-le dans le registre ou les reçus. Utilisez seulement les causes listées ; les montants sont scellés avec le constat sur les espèces.',
+    'auditor.differences.title': 'Expliquer l’écart',
+    'auditor.differences.lead':
+        'Répartissez l’écart entre les espèces comptées et les relevés selon ses causes, au franc près.',
+    'auditor.differences.lead_none':
+        'Les espèces comptées correspondent aux relevés : il n’y a rien à expliquer.',
+    'auditor.differences.reported': 'Relevés',
+    'auditor.differences.observed': 'Compté',
+    'auditor.differences.difference': 'Écart',
+    'auditor.differences.unavailable': 'Indisponible',
+    'auditor.differences.lead_declared':
+        'Répartissez les écarts de trésorerie, de charges et de prélèvements entre leurs causes, au franc près.',
+    'auditor.differences.lead_none_declared':
+        'La trésorerie, les charges et les prélèvements concordent : il n’y a rien à expliquer.',
+    'auditor.differences.parts': 'À expliquer aussi',
+    'auditor.differences.part.costs':
+        'Charges : déclaré {declared}, vérifié {verified}',
+    'auditor.differences.part.drawings':
+        'Prélèvements des propriétaires : déclaré {declared}, vérifié {verified}',
+    'auditor.differences.not_recorded': 'non saisi',
+    'auditor.differences.total': 'Total à expliquer',
+    'auditor.differences.causes': 'Causes',
+    'auditor.differences.amount': 'Montant pour {cause}',
+    'auditor.differences.balanced': 'L’écart entier est expliqué.',
+    'auditor.differences.left': 'Reste {amount} à expliquer.',
+    'auditor.differences.over':
+        '{amount} de plus que l’écart. Réduisez un montant.',
+    'auditor.differences.cause.unrecorded_sales': 'Ventes non enregistrées',
+    'auditor.differences.cause.unproven_expense': 'Dépense sans justificatif',
+    'auditor.differences.cause.personal_spending':
+        'Dépenses personnelles sur l’entreprise',
+    'auditor.differences.cause.wrong_month': 'Enregistré dans le mauvais mois',
+    'auditor.differences.cause.entry_error': 'Erreur de saisie',
+    'auditor.differences.cause.counted_twice': 'Compté deux fois',
+    'auditor.cash_sales.title': 'Ventes en espèces non versées',
+    'auditor.cash_sales.lead':
+        'Les espèces encaissées ce mois-ci qui n’ont jamais atteint un compte bancaire ou mobile money, d’après le cahier des ventes et les reçus.',
+    'auditor.cash_sales.amount': 'Non versé ce mois-ci',
+    'auditor.cash_sales.hint':
+        'Saisissez 0 si toutes les ventes en espèces ont été versées.',
+    'auditor.costs.title': 'Charges',
+    'auditor.costs.lead':
+        'Les charges du mois dans les six catégories que l’entreprise utilise aussi pour ses chiffres mensuels.',
+    'auditor.costs.category.stock': 'Stock et fournitures',
+    'auditor.costs.category.staff': 'Personnel',
+    'auditor.costs.category.premises': 'Locaux',
+    'auditor.costs.category.transport': 'Transport',
+    'auditor.costs.category.taxes': 'Impôts et frais',
+    'auditor.costs.category.other': 'Autres',
+    'auditor.costs.declared': 'Déclaré {amount}',
+    'auditor.costs.declared_total': 'Déclaré par l’entreprise',
+    'auditor.costs.verified_gap': 'Écart avec la déclaration',
+    'auditor.costs.use_declared': 'Partir des chiffres déclarés',
+    'auditor.costs.declared_hint':
+        'L’entreprise a déclaré ces chiffres pour le mois. Vérifiez chacun avec les relevés et les reçus et corrigez-le ; tout écart s’explique à l’étape 9.',
+    'auditor.costs.not_declared':
+        'L’entreprise n’a pas envoyé ses chiffres pour ce mois, il n’y a donc rien à comparer.',
+    'auditor.costs.total': 'Total des charges',
+    'auditor.costs.hint':
+        'Saisissez 0 pour une catégorie sans charge ce mois-ci.',
+    'auditor.history.title': 'Historique d’activité',
+    'auditor.history.lead':
+        'Les entrées et sorties vérifiées des {count} derniers mois, du plus récent au plus ancien.',
+    'auditor.history.none': 'Aucun historique vérifié n’est encore au dossier.',
+    'auditor.history.month': 'Mois',
+    'auditor.history.in': 'Entrées (RWF)',
+    'auditor.history.out': 'Sorties (RWF)',
+    'auditor.history.checked':
+        'J’ai comparé chaque mois aux relevés et ils correspondent.',
+    'auditor.premises.title': 'Locaux et actifs',
+    'auditor.premises.lead':
+        'Qui détient les locaux, et les principaux actifs utilisés pour l’activité.',
+    'auditor.premises.tenure': 'Les locaux sont',
+    'auditor.premises.tenure.owned': 'Propriété de l’entreprise',
+    'auditor.premises.tenure.rented': 'Loués',
+    'auditor.premises.tenure.shared': 'Partagés avec une autre entreprise',
+    'auditor.premises.assets': 'Principaux actifs',
+    'auditor.premises.none':
+        'Aucun actif listé. Continuez si l’entreprise n’en utilise aucun.',
+    'auditor.premises.item': 'Actif {number}',
+    'auditor.premises.asset': 'Description',
+    'auditor.premises.value': 'Valeur estimée (RWF)',
+    'auditor.premises.remove': 'Retirer l’actif {number}',
+    'auditor.premises.add': 'Ajouter un actif',
+    'auditor.people.title': 'Administrateurs, propriétaires et direction',
+    'auditor.people.lead':
+        'Vérifiez qui possède et dirige l’entreprise avant sa première mise en ligne.',
+    'auditor.people.owners_confirmed':
+        'J’ai vérifié la pièce d’identité de chaque administrateur et propriétaire auprès du registre RDB.',
+    'auditor.people.management_confirmed':
+        'Les profils de direction correspondent aux personnes rencontrées.',
+    'auditor.registration.title': 'Immatriculation et fiscalité',
+    'auditor.registration.lead':
+        'Le certificat RDB et l’attestation fiscale de la RRA, tels que vous les avez vus.',
+    'auditor.registration.confirmed':
+        'Le certificat RDB correspond au nom et au code de l’entreprise.',
+    'auditor.registration.no_tax':
+        'L’entreprise n’a pas d’attestation de régularité fiscale',
+    'auditor.registration.tax': 'Expiration de l’attestation fiscale',
+    'auditor.trading.title': 'Date de début d’activité',
+    'auditor.trading.lead':
+        'Le mois où l’entreprise a commencé son activité, d’après ses plus anciens documents.',
+    'auditor.trading.since': 'En activité depuis',
+    'auditor.available.title': 'Fonds disponibles maintenant',
+    'auditor.available.lead':
+        'Le remboursement a 7 jours de retard. Notez ce avec quoi l’entreprise pourrait payer aujourd’hui.',
+    'auditor.available.proofs': 'Justificatifs vus',
+    'auditor.available.amount': 'Disponible maintenant',
+    'auditor.available.hint':
+        'Espèces en caisse plus soldes bancaires et mobile money. Saisissez 0 s’il n’y en a pas.',
+    'auditor.late_reason.title': 'Motif du retard',
+    'auditor.late_reason.lead':
+        'Choisissez le motif qui convient le mieux. Rien ne se négocie lors de cette visite.',
+    'auditor.late_reason.option.sales_fell': 'Baisse des ventes',
+    'auditor.late_reason.option.customers_owe': 'Des clients n’ont pas payé',
+    'auditor.late_reason.option.unexpected_cost': 'Une dépense imprévue',
+    'auditor.late_reason.option.stock_bought': 'Argent utilisé pour le stock',
+    'auditor.late_reason.option.owner_away': 'Propriétaire absent ou malade',
+    'auditor.late_reason.option.trading_stopped': 'L’activité s’est arrêtée',
+    'auditor.late_reason.option.other': 'Autre',
+    'auditor.late_reason.note': 'Note (facultative)',
+    'auditor.late_reason.note_required': 'Dites ce qui s’est passé',
+    'auditor.drawings.title': 'Prélèvements des propriétaires',
+    'auditor.drawings.lead':
+        'Ce que les propriétaires ont retiré de l’entreprise ce mois-ci, d’après les relevés et le livre de caisse.',
+    'auditor.drawings.amount': 'Retiré par les propriétaires ce mois-ci',
+    'auditor.drawings.declared':
+        'L’entreprise a déclaré {amount} versés aux propriétaires.',
+    'auditor.drawings.use_declared': 'Partir du chiffre déclaré',
+    'auditor.drawings.declared_hint':
+        'Vérifiez-le avec les relevés et le livre de caisse et corrigez-le ; tout écart s’explique à l’étape 9.',
+    'auditor.drawings.not_declared':
+        'L’entreprise n’a pas envoyé ses chiffres pour ce mois, il n’y a donc rien à comparer.',
+    'auditor.drawings.hint':
+        'Saisissez 0 si les propriétaires n’ont rien retiré.',
+    'auditor.loans.title': 'Autres prêts',
+    'auditor.loans.lead':
+        'Chaque prêt que l’entreprise doit à quelqu’un d’autre que Rozine, d’après le contrat ou le relevé du prêteur.',
+    'auditor.loans.none':
+        'Aucun autre prêt noté. Continuez si l’entreprise ne doit rien à personne d’autre.',
+    'auditor.loans.item': 'Prêt {number}',
+    'auditor.loans.lender': 'Prêteur',
+    'auditor.loans.outstanding': 'Restant dû (RWF)',
+    'auditor.loans.monthly_payment': 'Mensualité (RWF)',
+    'auditor.loans.remove': 'Retirer le prêt {number}',
+    'auditor.loans.add': 'Ajouter un prêt',
+    'auditor.audit.guide.staff.do':
+        'Notez combien de personnes l’entreprise emploie, d’après la déclaration RSSB.',
+    'auditor.audit.guide.staff.enter':
+        'Un nombre entier. Par exemple 6. Saisissez 0 si personne n’est employé.',
+    'auditor.audit.guide.staff.done':
+        'Un nombre est saisi et la page de totaux RSSB est vérifiée.',
+    'auditor.audit.guide.staff.how':
+        'Demandez la dernière déclaration RSSB et lisez le total sur sa page récapitulative. Demandez au propriétaire de masquer les noms ; Rozine ne collecte jamais de données sur les employés.',
+    'auditor.audit.guide.expiries.do':
+        'Notez quand expirent les attestations de quitus fiscal et RSSB.',
+    'auditor.audit.guide.expiries.enter':
+        'Deux dates, telles qu’imprimées sur chaque attestation. Par exemple 31/03/2027.',
+    'auditor.audit.guide.expiries.done':
+        'Les deux dates sont saisies, même si l’une est déjà passée.',
+    'auditor.audit.guide.expiries.how':
+        'Lisez chaque date sur l’attestation elle-même, pas d’après le propriétaire. Une attestation expirée est notée telle que vous l’avez vue.',
+    'auditor.audit.guide.loan_use.do':
+        'Indiquez comment les fonds du prêt Rozine ont été utilisés ce mois-ci.',
+    'auditor.audit.guide.loan_use.enter':
+        'Choisissez comme prévu, en partie ou pas comme prévu. Sauf « comme prévu », ajoutez une ligne, par exemple : une partie a payé le loyer d’octobre.',
+    'auditor.audit.guide.loan_use.done':
+        'Une réponse est choisie, avec une ligne indiquant où sont allés les fonds s’ils n’ont pas servi comme prévu.',
+    'auditor.audit.guide.loan_use.how':
+        'Comparez ce que les fonds ont payé avec l’usage annoncé dans le prospectus. Vérifiez les reçus ou relevés des paiements les plus importants.',
+    'auditor.audit.guide.changes.do':
+        'Posez quatre questions sur les changements depuis la dernière visite.',
+    'auditor.audit.guide.changes.enter':
+        'Oui ou non pour chacun : un nouveau prêt, un changement de dirigeant, un changement de propriétaires, une action en justice.',
+    'auditor.audit.guide.changes.done': 'Chaque question a un oui ou un non.',
+    'auditor.audit.guide.changes.how':
+        'Posez simplement chaque question au propriétaire et vérifiez l’extrait du registre ou les contrats de prêt quand c’est possible. Un oui est scellé avec le rapport.',
+    'auditor.staff.title': 'Effectif',
+    'auditor.staff.lead':
+        'Combien de personnes l’entreprise emploie, d’après la page de totaux RSSB.',
+    'auditor.staff.count': 'Personnes employées',
+    'auditor.staff.rssb_checked':
+        'J’ai vérifié ce nombre sur la page de totaux RSSB, noms masqués.',
+    'auditor.expiries.title': 'Échéances fiscales et RSSB',
+    'auditor.expiries.lead':
+        'La date d’expiration imprimée sur chaque attestation.',
+    'auditor.expiries.tax': 'Quitus fiscal expire le',
+    'auditor.expiries.rssb': 'Attestation RSSB expire le',
+    'auditor.loan_use.title': 'Usage des fonds du prêt',
+    'auditor.loan_use.lead':
+        'Les fonds du prêt Rozine ont-ils servi à ce que prévoyait le prospectus ?',
+    'auditor.loan_use.option.as_planned': 'Comme prévu',
+    'auditor.loan_use.option.partly': 'En partie comme prévu',
+    'auditor.loan_use.option.not_as_planned': 'Pas comme prévu',
+    'auditor.loan_use.note': 'Note (facultative)',
+    'auditor.loan_use.note_required': 'Où sont allés les fonds ?',
+    'auditor.changes.title': 'Changements',
+    'auditor.changes.lead':
+        'L’un de ces points a-t-il changé depuis la dernière visite ?',
+    'auditor.changes.kind.new_debt': 'Un nouveau prêt ou une nouvelle dette',
+    'auditor.changes.kind.director_change': 'Un changement de dirigeant',
+    'auditor.changes.kind.ownership_change':
+        'Un changement de propriétaires ou d’actionnaires',
+    'auditor.changes.kind.legal_claim':
+        'Une action en justice contre l’entreprise',
+    'auditor.changes.yes': 'Oui',
+    'auditor.changes.no': 'Non',
+    'auditor.audit.guide.seal.do':
+        'Vérifiez le résultat, puis scellez avec votre code d’authentification.',
+    'auditor.audit.guide.seal.enter':
+        'Le code à six chiffres de votre application d’authentification.',
+    'auditor.audit.guide.seal.done':
+        'Toutes les étapes précédentes sont terminées. Le scellement reste désactivé jusque-là.',
+    'auditor.audit.guide.seal.how':
+        'Relisez les constats. Une fois scellé, le rapport est figé sous votre licence et l’entreprise a 24 heures pour le contester.',
     'auditor.receipt.title': 'Conflit enregistré',
     'auditor.receipt.body.reassignment_pending':
         "Votre conflit a été enregistré. Le travail sur cette mission est arrêté pendant que les Opérations d'audit organisent la réattribution.",
@@ -5942,6 +7311,8 @@ const fr: Catalog = {
         "Des investisseurs se sont déjà engagés dans cette levée : elle ne peut donc pas être annulée ici. Leurs engagements doivent d'abord être réglés.",
     'settlement.refusal.CAMPAIGN_FUNDED':
         'Cette levée est financée et en attente de décaissement : elle ne peut pas être annulée.',
+    'settlement.refusal.COMMITMENT_WITHDRAWN':
+        'Vous avez déjà retiré cet engagement. Son montant est de nouveau disponible.',
     'settlement.refusal.NOTE_INELIGIBLE':
         "Ce titre n'est pas éligible pour le moment.",
     'settlement.refusal.DISCLOSURE_STALE':
@@ -6049,11 +7420,8 @@ const fr: Catalog = {
     'investor.wallet.c3.no_policy':
         "Les dépôts ne sont pas encore disponibles : aucune règle de dépôt n'a été définie.",
     'investor.wallet.c3.credited_on_success': 'Crédité une fois confirmé',
-    'investor.wallet.c3.policy_synthetic':
-        "Règle de dépôt fictive {version} — chiffres d'aperçu, pas une règle en vigueur.",
-    'investor.wallet.c3.policy': 'Règle de dépôt {version}.',
-    'investor.wallet.c3.policy_minimum': 'Minimum {amount}.',
-    'investor.wallet.c3.policy_maximum': 'Maximum {amount}.',
+    'investor.wallet.c3.policy_minimum': 'Minimum {amount}',
+    'investor.wallet.c3.policy_maximum': 'Maximum {amount}',
     'investor.wallet.c3.deposit_between':
         'Saisissez un montant entre {minimum} et {maximum}.',
     'investor.wallet.c3.deposit_at_least': 'Saisissez au moins {amount}.',
@@ -6108,8 +7476,19 @@ const fr: Catalog = {
         "Le paiement a été confirmé comme non effectué. Rien n'a été crédité.",
     'investor.wallet.c3.credit_receipt': 'Reçu de crédit',
     'investor.wallet.c3.funding': 'Mouvements de fonds',
-    'investor.wallet.c3.withdraw_unavailable':
-        "Les retraits ne sont pas encore ouverts sur ce compte. Ils demandent un compte de versement vérifié dans Profil → Comptes liés, et s'ouvrent dès que le compte est autorisé à faire des mouvements d'argent.",
+    'investor.wallet.c3.withdraw_needs_account':
+        "Les retraits ne sont pas encore ouverts : ce compte n'a pas de compte de versement vérifié. Liez-en un à votre nom ; Rozine ouvre ensuite les retraits dès que le compte est autorisé à faire des mouvements d'argent.",
+    'investor.wallet.c3.withdraw_not_cleared':
+        "Votre compte de versement est vérifié. Les retraits s'ouvrent dès que Rozine autorise ce compte à faire des mouvements d'argent ; vous n'avez rien d'autre à faire.",
+    'investor.wallet.c3.withdraw_linking_closed':
+        'Les retraits ne sont pas encore ouverts. Rozine n’a pas encore ouvert les comptes de versement pour ce portefeuille : il n’y a rien à lier ni à faire pour le moment. Votre solde reste ici en sécurité d’ici là.',
+    'investor.wallet.c3.withdraw_not_allowed':
+        "Votre compte de versement est vérifié, mais les retraits depuis ce portefeuille ne vous sont pas ouverts pour le moment. Contactez le support Rozine si vous devez retirer de l'argent.",
+    'investor.wallet.c3.withdraw_link_account': 'Aller aux comptes liés',
+    'investor.wallet.c3.withdraw_at_least': 'Minimum {amount}.',
+    'investor.wallet.c3.withdraw_at_most': 'Maximum {amount} par retrait.',
+    'investor.wallet.c3.withdraw_over_available':
+        'Plus que votre disponible de {amount}.',
     'investor.wallet.c3.withdraw_available': 'Disponible au retrait : {amount}',
     'investor.wallet.c3.provider_charge': 'Frais du prestataire',
     'investor.wallet.c3.withdraw_terms':
@@ -6131,6 +7510,11 @@ const fr: Catalog = {
         'Reçu de remboursement',
     'investor.wallet.c3.entry.withdrawal_in': 'Retour de {counterparty}',
     'investor.wallet.c3.entry.withdrawal_out': 'Retrait · {counterparty}',
+    'investor.wallet.c3.entry.resale_out':
+        'Achat sur le marché · {counterparty}',
+    'investor.wallet.c3.entry.resale_in':
+        'Vente sur le marché · {counterparty}',
+    'investor.wallet.c3.entry.repayment_in': 'Remboursement · {counterparty}',
     'business.publish.intro':
         "{title} sera visible des investisseurs dès que chaque étape ci-dessous sera remplie. La publication reprend les signatures données à la revue : il n'y a rien de plus à signer ici.",
     'business.publish.release.awaiting':
@@ -6223,6 +7607,7 @@ const fr: Catalog = {
         'Entièrement engagée',
     'business.campaign.state.inventory_unavailable': 'Aucune note disponible',
     'business.campaign.state.closing_pending_settlement': 'Clôture en cours',
+    'business.campaign.state.repaid': 'Entièrement remboursé',
     'business.campaign.state.unavailable': 'Statut indisponible',
     'business.campaign.lifecycle.live': 'Levée · en cours',
     'business.campaign.lifecycle.fully_reserved':
@@ -6278,6 +7663,8 @@ const fr: Catalog = {
         "Le résultat du paiement n'est pas encore confirmé. Rien n'est définitif avant cela ; il s'affichera ici une fois confirmé.",
     'business.campaign.disbursed':
         '{amount} ont été décaissés vers {destination}.',
+    'business.campaign.raised_gross': 'Levé',
+    'business.campaign.platform_fee': 'Frais de plateforme (3 %)',
     'business.campaign.disbursed_amount': 'Décaissé',
     'business.campaign.destination': 'Vers',
     'business.campaign.effective_at': 'Effectif',
@@ -6440,6 +7827,37 @@ const fr: Catalog = {
         "Cette vérification n'a pas pu être effectuée.",
     'admin.applications.release.cause.other':
         "Cette vérification n'a pas réussi.",
+    'admin.applications.release.gate_state.waiting': 'Non vérifié',
+    'admin.applications.release.cause.waiting':
+        "Non vérifié tant que le contrôle « {check} » n'a pas réussi.",
+    'admin.applications.release.blocked_next':
+        "L'entreprise voit le même motif sur sa page Publier. Une fois corrigé, les contrôles sont relancés et Libérer apparaît ici.",
+    'admin.applications.release.next.ENGINE_GATE_FAILED':
+        "Les derniers chiffres de l'entreprise ne justifient plus ce billet. L'entreprise obtient un nouveau devis et signe à nouveau.",
+    'admin.applications.release.next.AUTHORITY_CHANGED':
+        "L'entreprise signe à nouveau selon son mandat de signature actuel.",
+    'admin.applications.release.next.MANDATE_UNVERIFIED':
+        "Le mandat de signature de l'entreprise doit être vérifié. Consultez le profil de l'entreprise.",
+    'admin.applications.release.next.REPORT_NOT_CURRENT':
+        'Un nouvel audit de mise en vente doit être scellé avant la libération.',
+    'admin.applications.release.next.EXPOSURE_RESERVATION_REQUIRED':
+        "L'entreprise soumet à nouveau la demande, ce qui réserve son emprunt.",
+    'admin.applications.release.next.SIGNATURES_REQUIRED':
+        "Les signataires restants signent à l'étape Révision sur le compte de l'entreprise.",
+    'admin.applications.release.next.STAFF_RELEASE_REQUIRED':
+        "L'entreprise a signé à nouveau après la libération. Vérifiez les nouvelles conditions, puis libérez à nouveau.",
+    'admin.applications.release.next.TERMS_CHANGED':
+        "L'entreprise accepte les conditions actuelles et signe à nouveau.",
+    'admin.applications.release.next.FEE_DISCLOSURE_CHANGED':
+        "L'entreprise lit l'information actuelle sur les frais et signe à nouveau.",
+    'admin.applications.release.next.QUOTE_STALE':
+        "L'entreprise actualise son devis et signe à nouveau.",
+    'admin.applications.release.next.RESTRICTION_ACTIVE':
+        "Examinez la restriction sur le profil de l'entreprise. La libération attend sa levée.",
+    'admin.applications.release.next.RELEASE_CHECK_NOT_COMPLETED':
+        "Le contrôle s'est arrêté avant la fin. Rouvrez la demande pour le relancer et prévenez l'équipe technique s'il s'arrête encore.",
+    'admin.applications.release.next.other':
+        "Ouvrez le profil de l'entreprise pour voir ce qui a changé. Le code au survol aide l'équipe technique.",
     'admin.applications.release.blocked':
         'Un contrôle a échoué : cette demande ne peut pas être libérée. La libération ne passe jamais outre un contrôle en échec.',
     'admin.applications.release.receipt': 'Reçu de libération',
@@ -6539,7 +7957,7 @@ const fr: Catalog = {
     'investor.checkout.c3.held_amount': 'Réservé sur le disponible',
     'investor.checkout.c3.release': 'Libérer ces titres',
     'investor.checkout.c3.confirm_fine_print':
-        "Confirmer engage le montant réservé. Un engagement confirmé est définitif et ne peut pas être annulé. Si la levée n'est pas complète, votre argent revient dans votre portefeuille.",
+        "Payer engage le montant réservé. Vous pouvez vous retirer, avec un remboursement complet, tant que la levée n'a pas atteint 100 %. Si la levée n'est pas complète, votre argent revient dans votre portefeuille.",
     'investor.checkout.c3.at_maturity': {
         one: 'Retour sur {count} mois',
         other: 'Retour sur {count} mois',
@@ -6568,6 +7986,9 @@ const fr: Catalog = {
     'investor.notices.business.application_approved.title': 'Demande approuvée',
     'investor.notices.business.application_approved.body':
         '{title} est approuvée pour {amount} sur {months} mois. Relisez et signez pour publier la levée.',
+    'investor.notices.business.repayment_received.title': 'Remboursement reçu',
+    'investor.notices.business.repayment_received.body':
+        '{amount} a été payé depuis votre portefeuille pour {title}, échéance {instalments}.',
     'investor.notices.business.withdrawal_sent.title': 'Retrait envoyé',
     'investor.notices.business.withdrawal_sent.body':
         '{amount} a été envoyé vers {account}.',
@@ -6624,24 +8045,75 @@ const fr: Catalog = {
         'Audit flash chez {business}, {location}. Acceptez avant {time}.',
     'investor.notices.auditor.job_offered.body_routine':
         'Audit de routine chez {business}, {location}. Acceptez avant {time}.',
+    'investor.notices.auditor.job_offered.body_statement_review':
+        'Revue des relevés pour {business}, {location}. Acceptez avant {time}.',
+    'investor.notices.auditor.job_offered.type.flash': 'Audit flash',
+    'investor.notices.auditor.job_offered.type.routine': 'Audit de routine',
+    'investor.notices.auditor.job_offered.type.statement_review':
+        'Revue des relevés',
+    'investor.notices.auditor.job_offered.accepted':
+        '{job} chez {business}, {location}. Vous l’avez acceptée.',
+    'investor.notices.auditor.job_offered.declined':
+        '{job} chez {business}, {location}. Vous l’avez refusée.',
+    'investor.notices.auditor.job_offered.expired':
+        '{job} chez {business}, {location}. L’offre a expiré.',
+    'investor.notices.auditor.job_offered.withdrawn':
+        '{job} chez {business}, {location}. L’offre a été retirée.',
     'investor.notices.business.report_sealed.title':
-        "Rapport d'audit prêt pour votre approbation",
+        "Rapport d'audit prêt à examiner",
     'investor.notices.business.report_sealed.body':
-        "{auditor} a scellé votre rapport d'audit. Consultez-le, puis cosignez-le ou contestez-le.",
+        "{auditor} a scellé votre rapport d'audit. Examinez-le et contestez-le en cas d'erreur.",
     'investor.notices.business.report_sealed.body_due':
-        "{auditor} a scellé votre rapport d'audit. Cosignez-le ou contestez-le avant {time}.",
+        "{auditor} a scellé votre rapport d'audit. Contestez-le avant {time} en cas d'erreur.",
     'investor.notices.business.report_review_closing.title':
         'Fin du délai de revue',
     'investor.notices.business.report_review_closing.body':
-        "Votre délai pour cosigner ou contester le rapport d'audit se termine à {time}. Sans action de votre part, il est publié tel que scellé.",
+        "Votre fenêtre pour contester le rapport d'audit se ferme à {time}. Sans action de votre part, il est publié tel que scellé.",
     'investor.notices.business.reporting_window_open.title':
         'Audit mensuel ouvert',
     'investor.notices.business.reporting_window_open.body':
-        "Votre audit de {month} a commencé. Préparez les relevés et registres du mois pour que votre partenaire d'audit les vérifie et scelle le rapport d'ici le {date}. Vous le cosignez ensuite ou le contestez.",
+        "Votre audit de {month} a commencé. Préparez les relevés et registres du mois pour que votre Audit Partner les vérifie et scelle le rapport d'audit avant le {date}. Vous l'examinez ensuite et pouvez le contester.",
+    'investor.notices.business.readiness_stage_changed.title':
+        'Étape de préparation modifiée',
+    'investor.notices.business.readiness_stage_changed.body':
+        'Votre rapport de {month} vous fait passer de {previous} à {stage}.',
+    'investor.notices.business.readiness_requirement_due.title':
+        'Nouvelle exigence',
+    'investor.notices.business.readiness_requirement_due.body':
+        '{requirement} s’applique désormais à votre entreprise. À remplir d’ici le {date}.',
+    'investor.notices.business.readiness_requirement_closing.title':
+        'Exigence bientôt due',
+    'investor.notices.business.readiness_requirement_closing.body':
+        '{requirement} est à remplir d’ici le {date}. Votre CPA la confirme lors de la prochaine visite.',
+    'investor.notices.business.readiness_requirement_overdue.title':
+        'Exigence en retard',
+    'investor.notices.business.readiness_requirement_overdue.body':
+        '{requirement} était due le {date}. Votre prochaine levée attend qu’elle soit remplie.',
+    'investor.notices.business.visit_ready_open.title':
+        'Préparez la visite de ce mois',
+    'investor.notices.business.visit_ready_open.body':
+        'Votre remboursement est dû le {date}. Votre Audit Partner demandera {items} éléments lors de la visite de ce mois ; la liste sur votre page Remboursements indique ce qu’est chacun et où l’obtenir.',
+    'investor.notices.business.visit_ready_reminder.title':
+        'Liste de visite incomplète',
+    'investor.notices.business.visit_ready_reminder.body':
+        '{open} éléments sur {items} ne sont pas encore cochés pour le remboursement dû le {date}. Cochez chacun dès qu’il est prêt pour la visite de votre Audit Partner.',
     'investor.notices.business.raise_expired.title':
         'Levée clôturée sans financement complet',
     'investor.notices.business.raise_expired.body':
         "{title} s'est clôturée à son échéance avec {committed} engagés sur {target}. Les investisseurs ont été remboursés et aucun frais n'a été prélevé.",
+    'investor.notices.market.units_bought.title': 'Parts achetées',
+    'investor.notices.market.units_bought.body': {
+        one: 'Vous avez acheté {count} part de {title} sur le marché pour {amount}.',
+        other: 'Vous avez acheté {count} parts de {title} sur le marché pour {amount}.',
+    },
+    'investor.notices.market.units_sold.title': 'Parts vendues',
+    'investor.notices.market.units_sold.body': {
+        one: 'Votre {count} part de {title} est vendue. {amount} a été crédité sur votre portefeuille après {fee} de frais de revente.',
+        other: 'Vos {count} parts de {title} sont vendues. {amount} a été crédité sur votre portefeuille après {fee} de frais de revente.',
+    },
+    'investor.notices.wallet.payout_received.title': 'Paiement reçu',
+    'investor.notices.wallet.payout_received.body':
+        '{net} est arrivé dans votre portefeuille de {title}, échéance {instalments} : {gross} moins {fee} de frais sur les gains.',
     'investor.notices.wallet.deposit_received.title': 'Dépôt reçu',
     'investor.notices.wallet.deposit_received.body':
         '{amount} est maintenant dans votre portefeuille.',
@@ -6655,14 +8127,20 @@ const fr: Catalog = {
     'investor.notices.primary.refunded.body':
         "La levée de {business} s'est terminée sans atteindre son objectif. {amount} est de retour dans votre portefeuille, sans frais.",
     'investor.notices.primary.raise_funded.title': 'Levée financée',
-    'investor.notices.primary.raise_funded.body':
-        "La levée de {business} est entièrement financée. Vos {amount} pour {units} titres sont réservés jusqu'à l'envoi des fonds.",
+    'investor.notices.primary.raise_funded.body': {
+        one: "La levée de {business} est entièrement financée. Vos {amount} pour {count} titre sont réservés jusqu'à l'envoi des fonds.",
+        other: "La levée de {business} est entièrement financée. Vos {amount} pour {count} titres sont réservés jusqu'à l'envoi des fonds.",
+    },
     'investor.notices.primary.commitment_confirmed.title': 'Achat confirmé',
-    'investor.notices.primary.commitment_confirmed.body':
-        'Vous avez engagé {amount} dans {business} pour {units} titres, avec des frais sur gains de {rate} %. Référence {reference}.',
+    'investor.notices.primary.commitment_confirmed.body': {
+        one: 'Vous avez engagé {amount} dans {business} pour {count} titre, avec des frais sur gains de {rate} %. Référence {reference}.',
+        other: 'Vous avez engagé {amount} dans {business} pour {count} titres, avec des frais sur gains de {rate} %. Référence {reference}.',
+    },
     'investor.notices.primary.holding_issued.title': 'Investissement confirmé',
-    'investor.notices.primary.holding_issued.body':
-        "Vos {units} titres de {business} sont émis : {amount} investis, {maturity} attendus à l'échéance le {date}.",
+    'investor.notices.primary.holding_issued.body': {
+        one: "Votre {count} titre de {business} est émis : {amount} investis, {maturity} attendus à l'échéance le {date}.",
+        other: "Vos {count} titres de {business} sont émis : {amount} investis, {maturity} attendus à l'échéance le {date}.",
+    },
     'investor.notices.business.raise_funded.title':
         'Levée entièrement financée',
     'investor.notices.business.raise_funded.body':
@@ -6694,18 +8172,31 @@ const fr: Catalog = {
     'investor.notices.verification.approved.title': 'Vous êtes vérifié',
     'investor.notices.verification.approved.body':
         'Votre identité est vérifiée et votre portefeuille est prêt pour investir.',
+    'investor.notices.verification.approved.body_business':
+        'Votre identité est vérifiée. Vous pouvez maintenant demander une levée.',
+    'investor.notices.verification.approved.body_auditor':
+        "Votre identité est vérifiée. Vous pouvez maintenant accepter des missions d'audit.",
     'investor.notices.verification.rejected.title':
         "Vos informations d'identité doivent être revues",
     'investor.notices.verification.rejected.body':
         "La conformité n'a pas pu vérifier vos informations : {reason}",
-    'investor.checkout.risks.title': 'Avant votre premier investissement',
+    'investor.checkout.risks.title': 'Avant d’investir',
     'investor.checkout.risks.lead':
-        'Cochez chaque déclaration pour confirmer que vous la comprenez.',
-    'investor.checkout.risks.accept': 'Je comprends ces risques',
+        'Lisez ces cinq déclarations. Vous les confirmez une seule fois ; le paiement ne vous demandera rien de plus.',
+    'investor.checkout.risks.understood': 'Je comprends tout ce qui précède',
+    'investor.checkout.risks.accept': 'Continuer',
     'investor.checkout.risks.failed':
         "Nous n'avons pas pu enregistrer votre réponse. Réessayez.",
+    'investor.risk_gate.later': 'Plus tard',
+    'investor.risk_gate.later_wallet': 'Pas maintenant, retour au portefeuille',
+    'investor.risk_gate.later_portfolio':
+        'Plus tard, voir mes placements (Portefeuille)',
+    'investor.risk_gate.deposit':
+        "L'ajout d'argent à votre portefeuille s'ouvre une fois ces déclarations confirmées.",
+    'investor.risk_gate.money_page':
+        "L'ajout d'argent, votre panier et le paiement s'ouvrent une fois ces déclarations confirmées.",
     'investor.checkout.c3.reserve_after_risks':
-        'Confirmez les déclarations de risque ci-dessus pour réserver.',
+        'Confirmez d’abord les déclarations de risque pour réserver.',
     'investor.checkout.c3.reserve_unavailable':
         "La réservation n'est pas disponible pour le moment.",
     'investor.checkout.c3.reserve_fine_print':
@@ -6722,7 +8213,7 @@ const fr: Catalog = {
     'investor.primary.status.expired': 'Non rempli — remboursé',
     'investor.primary.status.failed_closing': 'Clôturé — remboursé',
     'investor.primary.status_body.confirmed':
-        "La levée est encore ouverte. Votre engagement est définitif ; si la levée n'est pas complète, votre argent revient dans votre portefeuille.",
+        'La levée est toujours ouverte. Vous pouvez retirer cet engagement avec un remboursement intégral tant que la levée n’a pas atteint 100 %. Si la levée n’aboutit pas, votre argent revient dans votre portefeuille.',
     'investor.primary.status_body.awaiting_disbursement':
         "La levée est entièrement financée : l'annulation est verrouillée. Les titres sont émis une fois le versement confirmé.",
     'investor.primary.status_body.in_flight_pending':
@@ -6758,7 +8249,8 @@ const fr: Catalog = {
     'investor.primary.terms': 'Conditions',
     'investor.primary.maturity': "Date d'échéance",
     'investor.primary.maturity_at_issue': "Fixée à l'émission des titres",
-    'investor.primary.versions': 'Règle · information',
+    'investor.primary.disclosure': 'Document d’information',
+    'investor.primary.disclosure_value': 'Version du {date}',
     'investor.primary.view_holding': 'Voir la détention',
     'investor.primary.awaiting_issue': "En attente d'émission",
     'investor.primary.awaiting_issue_note':
@@ -6773,16 +8265,27 @@ const fr: Catalog = {
         "Les échéances sont fixées à l'émission : la première tombe un mois après la date d'effet du versement.",
     'investor.primary.commitment_title': 'Engagement',
     'investor.primary.back_to_portfolio': 'Retour au portefeuille',
-    'investor.primary.cancel': "Annuler l'engagement",
-    'investor.primary.cancel_title': 'Annuler cet engagement ?',
+    'investor.checkout.fee_about': 'environ {amount}',
+    'investor.checkout.fee_estimate_note':
+        'Le montant exact des frais est calculé à chaque remboursement une fois vos titres réservés ; il peut différer de quelques francs.',
+    'investor.primary.cancel': "Retirer l'engagement",
+    'investor.primary.cancel_title': 'Retirer cet engagement ?',
     'investor.primary.cancel_body':
-        'Votre capital revient intégralement sur le disponible, sans frais. Vous ne détiendrez plus ces titres.',
-    'investor.primary.cancel_confirm': 'Oui, annuler et rembourser',
+        "Votre montant revient intégralement sur le disponible, tout de suite et sans frais. Vous pouvez vous retirer tant que la levée n'a pas atteint 100 %.",
+    'investor.primary.cancel_confirm': 'Oui, retirer et rembourser',
     'investor.primary.cancel_keep': 'Le conserver',
     'investor.holding.issue.title': "Relevé d'émission",
     'investor.holding.issue.issued_at': 'Émis le',
     'investor.holding.issue.effective_at': 'Versement effectif',
+    'investor.holding.issue.resold': 'Vendues sur le marché',
+    'investor.holding.issue.resold_value': {
+        one: '{count} note · {held} encore détenues',
+        other: '{count} notes · {held} encore détenues',
+    },
     'investor.holding.issue.effective_date': "Date d'effet (Kigali)",
+    'investor.holding.issue.paid_on': 'Payé le {date}',
+    'investor.holding.issue.paid_early': 'Payé en avance le {date}',
+    'investor.holding.issue.paid_net': '{amount} net',
     'investor.holding.issue.schedule': 'Échéancier',
     'investor.holding.issue.due': 'Échéance',
     'auth.two_factor.recovery_codes_remaining': {
@@ -6790,10 +8293,14 @@ const fr: Catalog = {
         other: '{count} codes de récupération restants',
     },
     'business.audit_cosign.head_title': "Cosigner le rapport d'audit",
+    'business.audit_cosign.head_title_review': "Examiner le rapport d'audit",
     'business.audit_cosign.title': "Cosigner le rapport d'audit",
+    'business.audit_cosign.title_review': "Examiner le rapport d'audit",
     'business.audit_cosign.back': 'Retour',
     'business.audit_cosign.lead':
         "Votre expert-comptable a scellé ce rapport après l'audit sur place. Lisez les constats factuels avant de cosigner.",
+    'business.audit_cosign.lead_review':
+        "Votre expert-comptable a scellé ce rapport après l'audit sur place. Lisez les constats factuels. Vous n'avez pas à le signer.",
     'business.audit_cosign.kind.monthly': "Rapport d'audit mensuel",
     'business.audit_cosign.kind.flash': "Rapport d'audit flash",
     'business.audit_cosign.period': 'Période',
@@ -6818,6 +8325,7 @@ const fr: Catalog = {
     'business.audit_cosign.sealed_note':
         'Ce rapport est scellé. Rien sur cette page ne le modifie.',
     'business.audit_cosign.status.title': 'Cosignatures',
+    'business.audit_cosign.status.title_review': 'Examen',
     'business.audit_cosign.status.count':
         '{signed} signature(s) sur {required}',
     'business.audit_cosign.status.signers': 'Signataires',
@@ -6831,6 +8339,7 @@ const fr: Catalog = {
         'En retard — la cosignature était due avant le {date}',
     'business.audit_cosign.published': 'Publié le {date}',
     'business.audit_cosign.yours.title': 'Votre cosignature',
+    'business.audit_cosign.yours.title_review': 'Votre réponse',
     'business.audit_cosign.yours.accept':
         "J'ai examiné les constats d'audit et je cosigne ce rapport.",
     'business.audit_cosign.yours.note': 'Votre résumé (facultatif)',
@@ -6852,6 +8361,8 @@ const fr: Catalog = {
         "Ce rapport n'est pas ouvert à la cosignature pour le moment.",
     'business.audit_cosign.yours.cannot':
         'Vous ne pouvez pas cosigner ce rapport.',
+    'business.audit_cosign.yours.not_needed':
+        "Rien à signer. Si vous êtes d'accord, vous n'avez rien à faire : le rapport est publié à la fin de la fenêtre de 24 heures. Si quelque chose est inexact, contestez-le avant.",
     'business.audit_cosign.refused.with_code': '{reason} ({code})',
     'business.audit_cosign.refused.VERSION_CONFLICT':
         'Les signatures de ce rapport ont changé pendant que vous y travailliez. Nous avons chargé la dernière version — vérifiez-la et réessayez.',
@@ -6911,21 +8422,20 @@ const fr: Catalog = {
     'business.audit_cosign.published_staff':
         'Publié par le personnel Rozine le {date}',
     'business.audit_cosign.yours.published_auto':
-        "Publié automatiquement après la fenêtre de 24 heures : personne ne l'a approuvé ni contesté à temps. Aucune signature n'a été enregistrée.",
+        "Publié à la fin de la fenêtre de 24 heures, sans contestation. Aucune signature n'est nécessaire.",
     'business.audit_cosign.yours.published_staff':
         "Le personnel Rozine a tranché la contestation et publié le rapport. Aucune signature n'a été enregistrée.",
     'business.audit_cosign.window.title': "Fenêtre d'examen de 24 heures",
     'business.audit_cosign.window.left': '{time} restantes',
     'business.audit_cosign.window.body':
-        "Une fois le rapport d'audit scellé dans votre application, vous avez 24 heures pour l'approuver ou soumettre une contestation avec des justificatifs.",
+        'Votre expert-comptable a scellé ce rapport. Vous ne le signez pas. Si quelque chose est inexact, contestez-le avec des justificatifs dans les 24 heures.',
     'business.audit_cosign.window.delivered':
         'Reçu dans votre application le {date}',
-    'business.audit_cosign.window.due':
-        'Approuvez ou contestez avant le {date}',
+    'business.audit_cosign.window.due': 'Contestez avant le {date}',
     'business.audit_cosign.window.ended':
         'La fenêtre de 24 heures est terminée.',
     'business.audit_cosign.window.auto':
-        'Les rapports non signés sont approuvés automatiquement à la fin de la fenêtre.',
+        'Sans contestation, le rapport est maintenu et publié à la fin de la fenêtre.',
     'business.audit_cosign.dispute.intro':
         "Indiquez ce que vous contestez dans les constats et vos justificatifs. Votre contestation ne modifie pas le rapport scellé et suspend la fenêtre de 24 heures pendant l'examen par le CPA.",
     'business.audit_cosign.dispute.proof_rule':
@@ -7003,9 +8513,9 @@ const fr: Catalog = {
     'business.audit_cosign.refused.REPORT_REVIEW_CLOSED':
         "Ce rapport est déjà contesté, examiné par le personnel Rozine ou publié : il ne peut plus être approuvé ni contesté. Nous l'avons rechargé tel qu'il est maintenant.",
     'auditor.sealed.body_published_auto':
-        "Publié automatiquement après la fenêtre de 24 heures, le {date}. L'entreprise ne l'a pas cosigné.",
+        'Publié après la fenêtre de 24 heures, sans contestation, le {date}.',
     'auditor.sealed.body_published_staff':
-        "Publié par le personnel Rozine le {date}. L'entreprise ne l'a pas cosigné.",
+        'Publié par l’équipe Rozine le {date}.',
     'auditor.sealed.cosign.not_signed': 'Non cosigné',
     'business.audit_cosign.head_title_read': "Rapport d'audit",
     'business.audit_cosign.lead_read':
@@ -7371,7 +8881,18 @@ const fr: Catalog = {
     'admin.notes.state.funded': 'Financée',
     'admin.notes.state.repaying': 'En remboursement',
     'admin.notes.state.failed': 'Échouée',
+    'admin.notes.state.matured': 'Échue',
     'admin.notes.more': 'Plus de notes',
+    'admin.notes.open_named': 'Ouvrir {business}',
+    'admin.notes.drawer_label': 'Détenteurs de la note {business}',
+    'admin.notes.holders': 'Détenteurs actuels',
+    'admin.notes.holders_none': 'Aucune unité émise pour le moment.',
+    'admin.notes.holder_issued': 'Détention émise',
+    'admin.notes.holder_bought': 'Achetée sur le marché',
+    'admin.notes.holder_units': {
+        one: '{count} note',
+        other: '{count} notes',
+    },
     'admin.primary.title': 'Levées en cours',
     'admin.primary.caption':
         'Chaque levée encore ouverte, la plus récente d’abord. Une levée se remplit ou échoue selon son propre délai, il n’y a donc pas de modération ici.',
@@ -7433,6 +8954,146 @@ const fr: Catalog = {
         'Une levée apparaît ici dès que sa publication est notée et ouverte.',
     'admin.nav.reconciliation': 'Rapprochement',
     'admin.nav.coverage': 'Couverture des partenaires',
+    'admin.nav.users': 'Utilisateurs',
+    'admin.section.users.title': 'Utilisateurs',
+    'admin.section.users.subtitle':
+        'Tous les comptes Rozine, avec leurs rôles et leur KYC',
+    'admin.section.users.search': 'Rechercher par nom ou e-mail…',
+    'admin.users.stats.total_users': 'Utilisateurs',
+    'admin.users.stats.new_this_week': 'Inscrits cette semaine',
+    'admin.users.stats.kyc_verified': 'KYC vérifié',
+    'admin.users.stats.awaiting_kyc': 'KYC en attente d’examen',
+    'admin.users.filter': 'Filtrer les utilisateurs par rôle',
+    'admin.users.tabs': 'Statut du compte',
+    'admin.users.tab.active': 'Comptes actifs',
+    'admin.users.tab.deleted': 'Comptes supprimés',
+    'admin.users.col.closed': 'Fermé',
+    'admin.users.closed_on': 'Fermé le {date}',
+    'admin.users.closed_reason': 'Raison donnée : {reason}',
+    'admin.users.closed_no_reason': 'Aucune raison donnée.',
+    'admin.users.empty_deleted':
+        'Aucun compte supprimé ne correspond à ces filtres',
+    'admin.users.action.account.close': 'A fermé son compte',
+    'admin.users.chip.all': 'Tous',
+    'admin.users.chip.investor': 'Investisseurs',
+    'admin.users.chip.business': 'Entreprises',
+    'admin.users.chip.auditor': 'Auditeurs',
+    'admin.users.chip.staff': 'Personnel',
+    'admin.users.chip.no_role': 'Sans rôle',
+    'admin.users.select.kyc': 'Filtrer par KYC',
+    'admin.users.select.sort': 'Trier les utilisateurs',
+    'admin.users.kyc_filter.any': 'KYC : Tous',
+    'admin.users.kyc_filter.verified': 'KYC : Vérifié',
+    'admin.users.kyc_filter.in_review': 'KYC : En examen',
+    'admin.users.kyc_filter.in_progress': 'KYC : En cours',
+    'admin.users.kyc_filter.rejected': 'KYC : Refusé',
+    'admin.users.kyc_filter.not_started': 'KYC : Non commencé',
+    'admin.users.sort.newest': 'Tri : Plus récents',
+    'admin.users.sort.oldest': 'Tri : Plus anciens',
+    'admin.users.sort.name': 'Tri : Nom (A–Z)',
+    'admin.users.showing': '{shown} sur {total} utilisateurs',
+    'admin.users.count': '{count} utilisateurs',
+    'admin.users.table': 'Utilisateurs',
+    'admin.users.empty': 'Aucun utilisateur ne correspond à ces filtres',
+    'admin.users.col.user': 'Utilisateur',
+    'admin.users.col.roles': 'Rôles',
+    'admin.users.col.kyc': 'KYC',
+    'admin.users.col.signed_up': 'Inscription',
+    'admin.users.col.last_seen': 'Dernière activité',
+    'admin.users.role.investor': 'Investisseur',
+    'admin.users.role.business': 'Entreprise',
+    'admin.users.role.auditor': 'Auditeur',
+    'admin.users.role.staff': 'Personnel',
+    'admin.users.role_with_status': '{role} · {status}',
+    'admin.users.membership.pending': 'En attente',
+    'admin.users.membership.active': 'Actif',
+    'admin.users.membership.suspended': 'Suspendu',
+    'admin.users.membership.revoked': 'Révoqué',
+    'admin.users.staff_roles': 'Personnel : {roles}',
+    'admin.users.requested': '{role} demandé',
+    'admin.users.no_role': 'Aucun rôle pour l’instant',
+    'admin.users.kyc.verified': 'Vérifié',
+    'admin.users.kyc.in_review': 'En examen',
+    'admin.users.kyc.in_progress': 'En cours',
+    'admin.users.kyc.rejected': 'Refusé',
+    'admin.users.kyc.not_started': 'Non commencé',
+    'admin.users.badge.restricted': 'Restreint',
+    'admin.users.email_unverified': 'E-mail non vérifié',
+    'admin.users.email_verified_on': 'Vérifié le {date}',
+    'admin.users.never': 'Jamais',
+    'admin.users.drawer_label': '{name}, compte utilisateur',
+    'admin.users.roles_title': 'Rôles',
+    'admin.users.since': 'Depuis le {date}',
+    'admin.users.staff_disabled': 'Ce compte du personnel est désactivé.',
+    'admin.users.account_title': 'Compte',
+    'admin.users.fact.kyc': 'KYC',
+    'admin.users.fact.signed_up': 'Inscription',
+    'admin.users.fact.last_seen': 'Dernière activité',
+    'admin.users.fact.email': 'E-mail',
+    'admin.users.fact.two_factor': 'Connexion à deux facteurs',
+    'admin.users.fact.passkeys': 'Clés d’accès',
+    'admin.users.fact.kyc_submitted': 'KYC soumis',
+    'admin.users.fact.user_id': 'ID utilisateur',
+    'admin.users.on': 'Activée',
+    'admin.users.off': 'Désactivée',
+    'admin.users.requests_title': 'Accès demandés',
+    'admin.users.open_title': 'Ouvrir dans',
+    'admin.users.open.investor': 'Annuaire des investisseurs →',
+    'admin.users.open.business': 'Annuaire des entreprises →',
+    'admin.users.open.auditor': 'Réseau d’auditeurs →',
+    'admin.users.open.staff': 'Personnel et rôles →',
+    'admin.users.open.access_requests': 'Demandes d’accès →',
+    'admin.users.history_title': 'Historique d’identité',
+    'admin.users.actor_system': 'Système',
+    'admin.users.action.investor.self_grant': 'A pris le rôle d’investisseur',
+    'admin.users.action.membership.mandate_grant': 'Rôle attribué',
+    'admin.users.action.membership.change': 'Statut d’un rôle modifié',
+    'admin.users.action.role.select': 'A changé d’application',
+    'admin.users.action.staff.configure': 'Accès du personnel modifié',
+    'admin.users.action.staff.superadmin.request': 'Accès super-admin demandé',
+    'admin.users.action.staff.person.record':
+        'Identité du personnel enregistrée',
+    'admin.users.action.operator.configure': 'Accès opérateur configuré',
+    'admin.users.action.organization.resolve': 'Organisation vérifiée',
+    'admin.users.action.signed_up': 'Inscription',
+    'admin.nav.access_requests': 'Demandes d’accès',
+    'admin.section.access_requests.title': 'Demandes d’accès',
+    'admin.section.access_requests.subtitle':
+        'Accès Entreprise et Auditeur demandés depuis le lanceur',
+    'admin.section.access_requests.search': 'Rechercher…',
+    'admin.access_requests.title': 'Demandes d’accès',
+    'admin.access_requests.caption':
+        'Personnes ayant demandé l’accès Entreprise ou Auditeur, les plus récentes d’abord. Accordez le rôle via l’intégration d’entreprise ou dans le Réseau des auditeurs.',
+    'admin.access_requests.table': 'Demandes d’accès',
+    'admin.access_requests.empty_title': 'Aucune demande d’accès ouverte',
+    'admin.access_requests.empty_body':
+        'Les demandes envoyées depuis le lanceur apparaissent ici jusqu’à ce que la personne détienne le rôle.',
+    'admin.access_requests.col.person': 'Personne',
+    'admin.access_requests.col.role': 'Accès',
+    'admin.access_requests.col.details': 'Détails',
+    'admin.access_requests.col.sent': 'Envoyée',
+    'admin.access_requests.col.action': 'Accorder',
+    'admin.access_requests.col.outcome': 'Adhésion',
+    'admin.access_requests.handled_title': 'Traitées',
+    'admin.access_requests.handled_caption':
+        'Demandes dont la personne détient désormais une adhésion à ce rôle, avec son statut.',
+    'admin.access_requests.handled_table': 'Demandes d’accès traitées',
+    'admin.access_requests.outcome.pending': 'En attente',
+    'admin.access_requests.outcome.active': 'Active',
+    'admin.access_requests.outcome.suspended': 'Suspendue',
+    'admin.access_requests.outcome.revoked': 'Révoquée',
+    'admin.access_requests.reference.business': 'Code RDB {reference}',
+    'admin.access_requests.reference.auditor': 'Licence ICPAR {reference}',
+    'admin.access_requests.grant.business': 'Intégrer cette entreprise →',
+    'admin.access_requests.grant.auditor': "Accorder l'accès Auditeur",
+    'admin.access_requests.identity.verified': 'Identité vérifiée',
+    'admin.access_requests.identity.unverified': 'Identité non vérifiée',
+    'admin.access_requests.time': '{time} CAT',
+    'admin.access_requests.handled_at': 'Rôle mis à jour le {time} CAT',
+    'admin.access_requests.handled_empty_title':
+        'Rien de traité pour l’instant',
+    'admin.access_requests.handled_empty_body':
+        'Dès que la personne détient le rôle demandé, sa demande passe ici avec le statut de cette adhésion.',
     'admin.nav.reports': 'Rapports',
     'admin.section.reconciliation.title': 'Rapprochement',
     'admin.section.reconciliation.subtitle':
@@ -8015,6 +9676,85 @@ const fr: Catalog = {
         "Les chiffres de l'entreprise ne concordent plus avec ses relevés. L'entreprise doit les enregistrer de nouveau.",
     'auditor.verify.refused.STATEMENT_TRANSCRIPTION_STALE':
         "L'entreprise a enregistré de nouveaux chiffres depuis l'ouverture du dossier. Rechargez-le et examinez-les.",
+    'business.prospectus.title': 'Créateur d’annonce',
+    'business.prospectus.back': 'Retour à l’accueil',
+    'business.prospectus.draft': 'Brouillon · version {version}',
+    'business.prospectus.signed': 'Signé · version {version}',
+    'business.prospectus.locked':
+        'Signé le {date} et verrouillé. Empreinte {fingerprint}…',
+    'business.prospectus.unavailable':
+        'Nous ne pouvons pas vérifier votre prospectus par rapport à vos conditions approuvées pour le moment ({code}). Vos brouillons restent enregistrés.',
+    'business.prospectus.facts.title': 'Vos conditions approuvées',
+    'business.prospectus.facts.note':
+        'Elles proviennent de votre offre acceptée et de vos relevés vérifiés. Vous ne pouvez pas les modifier ici.',
+    'business.prospectus.facts.principal': 'Montant levé',
+    'business.prospectus.facts.fee': 'Frais de plateforme (3 %)',
+    'business.prospectus.facts.net': 'À dépenser pour votre projet',
+    'business.prospectus.facts.term': 'Durée',
+    'business.prospectus.facts.instalment': 'Mensualité',
+    'business.prospectus.facts.revenue': 'Revenu mensuel moyen vérifié',
+    'business.prospectus.checks.title':
+        'Contrôles · {passed} sur {total} réussis',
+    'business.prospectus.checks.passed': 'Réussi',
+    'business.prospectus.purpose.title': 'Objet et utilisation des fonds',
+    'business.prospectus.purpose.label': 'À quoi servira l’argent',
+    'business.prospectus.funds.title': 'Utilisation des fonds',
+    'business.prospectus.funds.label': 'Poste',
+    'business.prospectus.funds.amount': 'Montant (RWF)',
+    'business.prospectus.funds.quote': 'Devis ou facture (RWF)',
+    'business.prospectus.funds.add': 'Ajouter une ligne',
+    'business.prospectus.remove': 'Retirer',
+    'business.prospectus.funds.quote_document': 'Document du devis',
+    'business.prospectus.evidence.title': 'Devis et contrats',
+    'business.prospectus.evidence.note':
+        'Téléversez le devis ou la facture du fournisseur pour chaque ligne de 20 % ou plus du principal, et le contrat signé pour tout mois à plus de 25 % de votre revenu vérifié. Choisissez ensuite chaque document à côté de sa ligne ou de son mois. PDF, PNG ou JPEG, 10 Mio au plus. Un document téléversé ne peut pas être modifié.',
+    'business.prospectus.evidence.empty':
+        'Aucun document téléversé pour l’instant.',
+    'business.prospectus.evidence.none': 'Aucun document',
+    'business.prospectus.evidence.kind': 'Type de document',
+    'business.prospectus.evidence.kind_quote': 'Devis ou facture',
+    'business.prospectus.evidence.kind_contract': 'Contrat signé',
+    'business.prospectus.evidence.file': 'Fichier',
+    'business.prospectus.evidence.upload': 'Téléverser',
+    'business.prospectus.evidence.uploading': 'Téléversement…',
+    'business.prospectus.forecast.title': 'Prévisions',
+    'business.prospectus.forecast.revenue': 'Revenu en {month} (RWF)',
+    'business.prospectus.forecast.costs': 'Charges en {month} (RWF)',
+    'business.prospectus.forecast.contract': 'Contrat signé pour {month}',
+    'business.prospectus.forecast.assumptions': 'Hypothèses',
+    'business.prospectus.forecast.downside': 'Si les ventes baissent',
+    'business.prospectus.management.title': 'Direction',
+    'business.prospectus.management.name': 'Nom tel qu’enregistré',
+    'business.prospectus.management.role': 'Rôle',
+    'business.prospectus.management.text': 'À propos de {name}',
+    'business.prospectus.management.add': 'Ajouter une personne',
+    'business.prospectus.management.roles.representative':
+        'Représentant officiel',
+    'business.prospectus.management.roles.director': 'Administrateur',
+    'business.prospectus.management.roles.owner': 'Propriétaire (10 % ou plus)',
+    'business.prospectus.risks.title': 'Facteurs de risque',
+    'business.prospectus.risks.share':
+        'Part du plus gros client dans le revenu (%)',
+    'business.prospectus.risks.text': 'Risque {number}',
+    'business.prospectus.risks.concentration': 'Concentration client',
+    'business.prospectus.risks.add': 'Ajouter un risque',
+    'business.prospectus.save': 'Enregistrer le brouillon',
+    'business.prospectus.saving': 'Enregistrement…',
+    'business.prospectus.declaration.title': 'Déclaration',
+    'business.prospectus.declaration.text':
+        'Je confirme que ce prospectus est exact et complet, et que les investisseurs peuvent s’y fier. Une fois signé, il est verrouillé et publié tel quel.',
+    'business.prospectus.declaration.ready':
+        'Tous les contrôles sont réussis. Le représentant officiel peut signer.',
+    'business.prospectus.declaration.save_first':
+        'Enregistrez vos modifications avant de signer.',
+    'business.prospectus.declaration.waiting':
+        'La signature s’ouvre au représentant officiel une fois tous les contrôles réussis.',
+    'business.prospectus.sign': 'Signer et verrouiller',
+    'business.prospectus.signing': 'Signature…',
+    'business.prospectus.facts.months': {
+        one: '{count} mois',
+        other: '{count} mois',
+    },
 };
 
 export default fr;

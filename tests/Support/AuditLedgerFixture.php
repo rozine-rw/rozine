@@ -25,7 +25,7 @@ final class AuditLedgerFixture
         $started = app(StartAuditReport::class)->handle($user->id, 1, $fixture['assignment']->id, $fixture['assignment']->refresh()->revision,
             $fixture['application']->id, $fixture['application']->refresh()->revision, (string) Str::uuid());
         $report = AuditReport::query()->whereKey($started['data']['audit_id'])->firstOrFail();
-        foreach (['review' => [], 'check_in' => [], 'photos' => ['titles' => ['extra-1' => 'Stock room']]] as $step => $fields) {
+        foreach (['review' => [], 'check_in' => [], ...AuditSealingFixture::baseline($report), 'photos' => ['titles' => ['extra-1' => 'Stock room']]] as $step => $fields) {
             $saved = app(SaveAuditReportStep::class)->handle($user->id, 1, $report->id, $report->refresh()->revision, $step, $fields, (string) Str::uuid());
             if ($saved['code'] !== 'AUDIT_STEP_SAVED') {
                 throw new RuntimeException('Synthetic ledger procedure did not advance: '.$saved['code']);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Operations;
 
 use App\Application\Business\Contracts\InvestorDealCatalogue;
+use App\Application\Business\Contracts\ServicingRecord;
 use App\Application\Business\Contracts\StaffApplicationQueue;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\InvestorDirectoryStore;
@@ -33,7 +34,7 @@ use Carbon\CarbonImmutable;
  *
  * @phpstan-type RiskSector array{sector: string, principal: string, notes: int, campaigns: list<string>, at_risk: bool}
  * @phpstan-type Dashboard array{
- *     figures: Figures, verified_investors: int, kyc_awaiting: int, applications_pending: int|null, frozen_accounts: int,
+ *     figures: Figures, matured: int|null, verified_investors: int, kyc_awaiting: int, applications_pending: int|null, frozen_accounts: int,
  *     pending: list<array<string, mixed>>, sectors: list<RiskSector>,
  *     health: array{total: int, healthy: int, watch: int, distressed: null},
  *     capital: array{from: string|null, to: string|null, grain: 'year'|'month'|'day'|'hour', bars: list<Bar>}
@@ -49,7 +50,7 @@ final class BrowseOperationsDashboard
 
     public function __construct(private OperationsDashboardStore $store, private InvestorDirectoryStore $investors,
         private StaffApplicationQueue $applications, private AuthorizeStaffPermission $staff, private InvestorDealCatalogue $deals,
-        private StaffDirectoryStore $operators) {}
+        private StaffDirectoryStore $operators, private ServicingRecord $servicing) {}
 
     /**
      * @param  string|null  $from  a Kigali local `Y-m-d\TH:i`, or null for no lower bound
@@ -65,7 +66,11 @@ final class BrowseOperationsDashboard
         /** @var list<array<string, mixed>> $pending */
         $pending = $queue === null ? [] : $queue['entries'];
 
-        return ['figures' => $this->store->figures(), 'verified_investors' => $investors['counts']['verified'], 'kyc_awaiting' => $investors['awaiting_review'],
+        $figures = $this->store->figures();
+        $matured = $this->matured();
+        $figures['notes']['repaying'] -= $matured;
+
+        return ['figures' => $figures, 'matured' => $matured === 0 ? null : $matured, 'verified_investors' => $investors['counts']['verified'], 'kyc_awaiting' => $investors['awaiting_review'],
             'applications_pending' => $queue === null ? null : (int) $queue['counts']['pending'], 'pending' => $pending,
             'frozen_accounts' => $this->operators->directory('all', '')['counts']['frozen'],
             ...$this->health(), 'capital' => $this->capitalChart($from, $to)];
@@ -98,7 +103,9 @@ final class BrowseOperationsDashboard
      */
     private function health(): array
     {
-        $issued = array_column(array_filter($this->store->noteStates(), fn (array $note): bool => $note['state'] === 'repaying'), 'business_id', 'campaign_id');
+        $repaid = $this->repaid();
+        $issued = array_column(array_filter($this->store->noteStates(), fn (array $note): bool => $note['state'] === 'repaying'
+            && ! in_array($note['campaign_id'], $repaid, true)), 'business_id', 'campaign_id');
         // Reports belong to the Business, so each Business's newest report is read once, whatever number of notes it issued.
         $watched = array_filter(array_flip($issued), fn (string $campaign): bool => ($this->deals->updates($campaign)[0]['status'] ?? null) === 'watch');
         $watch = array_keys(array_filter($issued, fn (string $business): bool => array_key_exists($business, $watched)));
@@ -127,5 +134,27 @@ final class BrowseOperationsDashboard
             $hours <= 24 * 731 => 'month',
             default => 'year',
         };
+    }
+
+    /** How many repaying notes are repaid in full: matured, as the Notes register files them. */
+    private function matured(): int
+    {
+        return count($this->repaid());
+    }
+
+    /**
+     * The repaying notes whose servicing record shows them repaid in full.
+     *
+     * @return list<string>
+     */
+    private function repaid(): array
+    {
+        $repaid = [];
+        $businesses = array_unique(array_column(array_filter($this->store->noteStates(), fn (array $note): bool => $note['state'] === 'repaying'), 'business_id'));
+        foreach ($businesses as $businessId) {
+            $repaid = [...$repaid, ...array_column($this->servicing->forBusiness($businessId)['repaid'], 'campaign_id')];
+        }
+
+        return $repaid;
     }
 }

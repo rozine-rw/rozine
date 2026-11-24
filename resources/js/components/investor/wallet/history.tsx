@@ -52,6 +52,16 @@ const ENTRY_ICON: Record<
         tint: 'bg-rz-accent-soft',
         tone: 'blue',
     },
+    repayment: {
+        icon: 'trend-up',
+        tint: 'bg-[rgba(29,158,117,.10)]',
+        tone: 'green',
+    },
+    resale: {
+        icon: 'handshake',
+        tint: 'bg-rz-accent-soft',
+        tone: 'blue',
+    },
 };
 
 function EntryTile({
@@ -284,6 +294,19 @@ function entryLabel(
     t: ReturnType<typeof useTranslation>['t'],
     entry: WalletEntry,
 ): string {
+    if (entry.movement === 'external' && entry.kind === 'resale') {
+        return t(`investor.wallet.c3.entry.resale_${entry.direction}`, {
+            counterparty: entry.counterparty,
+            count: Number(entry.units),
+        });
+    }
+
+    if (entry.movement === 'external' && entry.kind === 'repayment') {
+        return t('investor.wallet.c3.entry.repayment_in', {
+            counterparty: entry.counterparty,
+        });
+    }
+
     if (entry.movement === 'external') {
         return t(`investor.wallet.c3.entry.${entry.kind}_${entry.direction}`, {
             counterparty: entry.counterparty,
@@ -311,13 +334,13 @@ function StatementExport({
             key: 'pdf',
             link: exports.pdf,
             label: t('investor.wallet.tx.pdf'),
-            tint: 'bg-[rgba(229,72,77,.10)] text-[#b3383c]',
+            tint: 'bg-[rgba(229,72,77,.10)] text-[#b3383c] dark:text-rz-danger-text',
         },
         {
             key: 'csv',
             link: exports.csv,
             label: t('investor.wallet.tx.csv'),
-            tint: 'bg-[rgba(29,158,117,.10)] text-[#157357]',
+            tint: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
         },
     ];
 
@@ -498,9 +521,12 @@ export function WalletHistory({
                                                 )}
                                             >
                                                 {t(
-                                                    entry.kind === 'deposit'
-                                                        ? 'investor.wallet.c3.credited'
-                                                        : 'investor.wallet.c3.withdrawal.succeeded',
+                                                    entry.kind === 'withdrawal'
+                                                        ? 'investor.wallet.c3.withdrawal.succeeded'
+                                                        : entry.direction ===
+                                                            'out'
+                                                          ? 'investor.wallet.c3.debited'
+                                                          : 'investor.wallet.c3.credited',
                                                 )}
                                             </span>
                                         </>
@@ -517,6 +543,12 @@ export function WalletHistory({
                                 </span>
                             </span>
                             <span className="text-[12.5px] font-semibold whitespace-nowrap text-rz-slate">
+                                {entry.movement === 'external' &&
+                                entry.kind === 'resale'
+                                    ? entry.direction === 'out'
+                                        ? '−'
+                                        : '+'
+                                    : ''}
                                 {formatRwf(entry.amount)}
                             </span>
                         </Link>

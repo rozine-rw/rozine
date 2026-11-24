@@ -26,22 +26,22 @@ use App\Domain\Wallet\PayoutAccount;
 final class GetBusinessProfile
 {
     /** The design's Profile sections (Business.dc.html L5022–5028), in its menu order. */
-    public const array SECTIONS = ['company', 'security', 'permissions', 'linked', 'support', 'terms', 'privacy'];
+    public const array SECTIONS = ['company', 'security', 'permissions', 'linked', 'support', 'terms', 'privacy', 'disclaimers'];
 
     public function __construct(private WithBusinessAuthority $authority, private BusinessCampaignStore $campaigns, private GetBusinessWallet $wallet, private BusinessContacts $contacts,
         private BusinessPayoutAccounts $accounts) {}
 
     /**
-     * @return array{identity_context_revision: int, business: array{id: string, entity_kind: string, profile: Profile, mandate: Terms}, contact: Contact|null, can_update_contact: bool, can_link: bool, banks: list<array{code: string, name: string}>, rating: array{band: string, score: string}|null, methods: list<array{id: string, kind: string, label: string, masked: string}>}
+     * @return array{identity_context_revision: int, business: array{id: string, entity_kind: string, profile: Profile, mandate: Terms}, contact: Contact|null, can_update_contact: bool, can_link: bool, linking_open: bool, banks: list<array{code: string, name: string}>, rating: array{band: string, score: string}|null, methods: list<array{id: string, kind: string, label: string, masked: string}>}
      */
     public function handle(int $userId, int $contextRevision, string $businessId): array
     {
         [$business, $contact, $canUpdate, $canLink] = $this->authority->handle($userId, $contextRevision, $businessId, 'business.view', null,
             fn (array $business, array $identity): array => [['id' => $business['id'], 'entity_kind' => $business['entity_kind'], 'profile' => $business['profile'], 'mandate' => $business['mandate']],
                 $this->contacts->current($business['id']), $this->holds($business['mandate']['people'], (string) ($identity['party']['id'] ?? ''), 'business.profile.update'),
-                $this->holds($business['mandate']['people'], (string) ($identity['party']['id'] ?? ''), 'business.wallet.withdraw') && $this->accounts->linkable()]);
+                $this->holds($business['mandate']['people'], (string) ($identity['party']['id'] ?? ''), 'business.wallet.withdraw') && $this->accounts->linkable($business['id'])]);
 
-        return ['identity_context_revision' => $contextRevision, 'business' => $business, 'contact' => $contact, 'can_update_contact' => $canUpdate, 'can_link' => $canLink,
+        return ['identity_context_revision' => $contextRevision, 'business' => $business, 'contact' => $contact, 'can_update_contact' => $canUpdate, 'can_link' => $canLink, 'linking_open' => $this->accounts->linkable($business['id']),
             'banks' => $canLink ? array_map(fn (string $code, string $name): array => ['code' => $code, 'name' => $name], array_keys(PayoutAccount::BANKS), PayoutAccount::BANKS) : [], 'rating' => $this->campaigns->home($userId, $contextRevision, $businessId)['rating'],
             'methods' => $this->wallet->methods($userId, $contextRevision, $businessId)];
     }

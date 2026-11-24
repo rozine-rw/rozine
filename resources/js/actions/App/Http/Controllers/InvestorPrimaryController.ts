@@ -472,7 +472,7 @@ export const release = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:73
+* @see app/Http/Controllers/InvestorPrimaryController.php:74
 * @route '/api/v1/investor/commitments/{commitment}'
 */
 const commitment863bb59b225460d3979143a9ba64ce62 = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -487,7 +487,7 @@ commitment863bb59b225460d3979143a9ba64ce62.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:73
+* @see app/Http/Controllers/InvestorPrimaryController.php:74
 * @route '/api/v1/investor/commitments/{commitment}'
 */
 commitment863bb59b225460d3979143a9ba64ce62.url = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -514,7 +514,7 @@ commitment863bb59b225460d3979143a9ba64ce62.url = (args: { commitment: string | n
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:73
+* @see app/Http/Controllers/InvestorPrimaryController.php:74
 * @route '/api/v1/investor/commitments/{commitment}'
 */
 commitment863bb59b225460d3979143a9ba64ce62.get = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -524,7 +524,7 @@ commitment863bb59b225460d3979143a9ba64ce62.get = (args: { commitment: string | n
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:73
+* @see app/Http/Controllers/InvestorPrimaryController.php:74
 * @route '/api/v1/investor/commitments/{commitment}'
 */
 commitment863bb59b225460d3979143a9ba64ce62.head = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -534,7 +534,7 @@ commitment863bb59b225460d3979143a9ba64ce62.head = (args: { commitment: string | 
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:73
+* @see app/Http/Controllers/InvestorPrimaryController.php:74
 * @route '/api/v1/investor/commitments/{commitment}'
 */
 const commitment863bb59b225460d3979143a9ba64ce62Form = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -544,7 +544,7 @@ const commitment863bb59b225460d3979143a9ba64ce62Form = (args: { commitment: stri
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:73
+* @see app/Http/Controllers/InvestorPrimaryController.php:74
 * @route '/api/v1/investor/commitments/{commitment}'
 */
 commitment863bb59b225460d3979143a9ba64ce62Form.get = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -554,7 +554,7 @@ commitment863bb59b225460d3979143a9ba64ce62Form.get = (args: { commitment: string
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:73
+* @see app/Http/Controllers/InvestorPrimaryController.php:74
 * @route '/api/v1/investor/commitments/{commitment}'
 */
 commitment863bb59b225460d3979143a9ba64ce62Form.head = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -570,7 +570,7 @@ commitment863bb59b225460d3979143a9ba64ce62Form.head = (args: { commitment: strin
 commitment863bb59b225460d3979143a9ba64ce62.form = commitment863bb59b225460d3979143a9ba64ce62Form
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:73
+* @see app/Http/Controllers/InvestorPrimaryController.php:74
 * @route '/investor/commitments/{commitment}'
 */
 const commitment14cf5dc7eed53f902216996a710f089e = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -585,7 +585,7 @@ commitment14cf5dc7eed53f902216996a710f089e.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:73
+* @see app/Http/Controllers/InvestorPrimaryController.php:74
 * @route '/investor/commitments/{commitment}'
 */
 commitment14cf5dc7eed53f902216996a710f089e.url = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -612,7 +612,7 @@ commitment14cf5dc7eed53f902216996a710f089e.url = (args: { commitment: string | n
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:73
+* @see app/Http/Controllers/InvestorPrimaryController.php:74
 * @route '/investor/commitments/{commitment}'
 */
 commitment14cf5dc7eed53f902216996a710f089e.get = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -622,7 +622,7 @@ commitment14cf5dc7eed53f902216996a710f089e.get = (args: { commitment: string | n
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:73
+* @see app/Http/Controllers/InvestorPrimaryController.php:74
 * @route '/investor/commitments/{commitment}'
 */
 commitment14cf5dc7eed53f902216996a710f089e.head = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -632,7 +632,7 @@ commitment14cf5dc7eed53f902216996a710f089e.head = (args: { commitment: string | 
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:73
+* @see app/Http/Controllers/InvestorPrimaryController.php:74
 * @route '/investor/commitments/{commitment}'
 */
 const commitment14cf5dc7eed53f902216996a710f089eForm = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -642,7 +642,7 @@ const commitment14cf5dc7eed53f902216996a710f089eForm = (args: { commitment: stri
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:73
+* @see app/Http/Controllers/InvestorPrimaryController.php:74
 * @route '/investor/commitments/{commitment}'
 */
 commitment14cf5dc7eed53f902216996a710f089eForm.get = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -652,7 +652,7 @@ commitment14cf5dc7eed53f902216996a710f089eForm.get = (args: { commitment: string
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::commitment
-* @see app/Http/Controllers/InvestorPrimaryController.php:73
+* @see app/Http/Controllers/InvestorPrimaryController.php:74
 * @route '/investor/commitments/{commitment}'
 */
 commitment14cf5dc7eed53f902216996a710f089eForm.head = (args: { commitment: string | number } | [commitment: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -836,7 +836,7 @@ export const cancel = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:61
+* @see app/Http/Controllers/InvestorPrimaryController.php:62
 * @route '/api/v1/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 const operation3ff2f17357c5339b36a3556bb0d1d97f = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -851,7 +851,7 @@ operation3ff2f17357c5339b36a3556bb0d1d97f.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:61
+* @see app/Http/Controllers/InvestorPrimaryController.php:62
 * @route '/api/v1/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 operation3ff2f17357c5339b36a3556bb0d1d97f.url = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions) => {
@@ -877,7 +877,7 @@ operation3ff2f17357c5339b36a3556bb0d1d97f.url = (args: { campaign: string | numb
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:61
+* @see app/Http/Controllers/InvestorPrimaryController.php:62
 * @route '/api/v1/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 operation3ff2f17357c5339b36a3556bb0d1d97f.get = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -887,7 +887,7 @@ operation3ff2f17357c5339b36a3556bb0d1d97f.get = (args: { campaign: string | numb
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:61
+* @see app/Http/Controllers/InvestorPrimaryController.php:62
 * @route '/api/v1/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 operation3ff2f17357c5339b36a3556bb0d1d97f.head = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -897,7 +897,7 @@ operation3ff2f17357c5339b36a3556bb0d1d97f.head = (args: { campaign: string | num
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:61
+* @see app/Http/Controllers/InvestorPrimaryController.php:62
 * @route '/api/v1/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 const operation3ff2f17357c5339b36a3556bb0d1d97fForm = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -907,7 +907,7 @@ const operation3ff2f17357c5339b36a3556bb0d1d97fForm = (args: { campaign: string 
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:61
+* @see app/Http/Controllers/InvestorPrimaryController.php:62
 * @route '/api/v1/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 operation3ff2f17357c5339b36a3556bb0d1d97fForm.get = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -917,7 +917,7 @@ operation3ff2f17357c5339b36a3556bb0d1d97fForm.get = (args: { campaign: string | 
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:61
+* @see app/Http/Controllers/InvestorPrimaryController.php:62
 * @route '/api/v1/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 operation3ff2f17357c5339b36a3556bb0d1d97fForm.head = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -933,7 +933,7 @@ operation3ff2f17357c5339b36a3556bb0d1d97fForm.head = (args: { campaign: string |
 operation3ff2f17357c5339b36a3556bb0d1d97f.form = operation3ff2f17357c5339b36a3556bb0d1d97fForm
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:61
+* @see app/Http/Controllers/InvestorPrimaryController.php:62
 * @route '/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 const operation697b591f09ca55c1ba911f7007f55f79 = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -948,7 +948,7 @@ operation697b591f09ca55c1ba911f7007f55f79.definition = {
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:61
+* @see app/Http/Controllers/InvestorPrimaryController.php:62
 * @route '/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 operation697b591f09ca55c1ba911f7007f55f79.url = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions) => {
@@ -974,7 +974,7 @@ operation697b591f09ca55c1ba911f7007f55f79.url = (args: { campaign: string | numb
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:61
+* @see app/Http/Controllers/InvestorPrimaryController.php:62
 * @route '/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 operation697b591f09ca55c1ba911f7007f55f79.get = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -984,7 +984,7 @@ operation697b591f09ca55c1ba911f7007f55f79.get = (args: { campaign: string | numb
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:61
+* @see app/Http/Controllers/InvestorPrimaryController.php:62
 * @route '/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 operation697b591f09ca55c1ba911f7007f55f79.head = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -994,7 +994,7 @@ operation697b591f09ca55c1ba911f7007f55f79.head = (args: { campaign: string | num
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:61
+* @see app/Http/Controllers/InvestorPrimaryController.php:62
 * @route '/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 const operation697b591f09ca55c1ba911f7007f55f79Form = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -1004,7 +1004,7 @@ const operation697b591f09ca55c1ba911f7007f55f79Form = (args: { campaign: string 
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:61
+* @see app/Http/Controllers/InvestorPrimaryController.php:62
 * @route '/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 operation697b591f09ca55c1ba911f7007f55f79Form.get = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -1014,7 +1014,7 @@ operation697b591f09ca55c1ba911f7007f55f79Form.get = (args: { campaign: string | 
 
 /**
 * @see \App\Http\Controllers\InvestorPrimaryController::operation
-* @see app/Http/Controllers/InvestorPrimaryController.php:61
+* @see app/Http/Controllers/InvestorPrimaryController.php:62
 * @route '/investor/deals/{campaign}/primary-operations/{request_id}'
 */
 operation697b591f09ca55c1ba911f7007f55f79Form.head = (args: { campaign: string | number, request_id: string | number } | [campaign: string | number, request_id: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

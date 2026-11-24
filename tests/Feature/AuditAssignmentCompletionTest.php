@@ -14,6 +14,7 @@ use App\Models\AuditAssignment;
 use App\Models\AuditAssignmentVersion;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\Support\AuditAssignmentFixture;
 use Tests\Support\AuditorFixture;
 use Tests\Support\AuditSealingFixture as Fixture;
@@ -26,7 +27,7 @@ beforeEach(function (): void {
 it('completes a published engagement on the next request so the business can be audited again', function (): void {
     $fixture = Fixture::ready();
     expect(Fixture::seal($fixture)['code'])->toBe('AUDIT_SEALED')
-        ->and(Fixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
+        ->and(Fixture::publish($fixture)['code'])->toBe('REPORT_PUBLISHED');
     $flash = $fixture['assignment']->refresh();
     $accepted = $flash->revision;
 
@@ -46,6 +47,17 @@ it('completes a published engagement on the next request so the business can be 
         ->and(fn () => app(StartAuditReport::class)->handle($user->id, 1, $flash->id, $flash->revision,
             $fixture['application']->id, $fixture['application']->refresh()->revision, (string) Str::uuid()))
         ->toThrow(CommandRejection::class, 'ASSIGNMENT_NOT_FOUND');
+});
+
+it('still opens a sealed report from the partner portfolio after its engagement completed (QA #674)', function (): void {
+    $fixture = Fixture::ready();
+    Fixture::seal($fixture);
+    Fixture::publish($fixture);
+    AuditAssignmentFixture::request($fixture['audit'], 'routine');
+    expect($fixture['assignment']->refresh()->status)->toBe('completed');
+
+    $this->actingAs($fixture['user'])->get(route('auditor.reports.show', ['report' => $fixture['report']->id]))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('audit.deadline', null)->etc());
 });
 
 it('resumes an engagement whose sealed report is not yet published', function (): void {
@@ -107,7 +119,7 @@ it('uses post-completion rotation facts when the published engagement is the thi
             'party_id' => $partyId, 'state' => $state, 'status' => 'completed', 'completed_at' => $at, 'created_at' => $at]);
     }
     expect(Fixture::seal($fixture)['code'])->toBe('AUDIT_SEALED')
-        ->and(Fixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
+        ->and(Fixture::publish($fixture)['code'])->toBe('REPORT_PUBLISHED');
 
     $next = requestAfterPublishedCompletion($this, $fixture, $monthly);
 
@@ -122,7 +134,7 @@ it('uses post-completion capacity facts when the published engagement frees the 
     AuditAssignmentFixture::engagement($partyId);
     AuditAssignmentFixture::engagement($partyId);
     expect(Fixture::seal($fixture)['code'])->toBe('AUDIT_SEALED')
-        ->and(Fixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
+        ->and(Fixture::publish($fixture)['code'])->toBe('REPORT_PUBLISHED');
 
     $next = requestAfterPublishedCompletion($this, $fixture, $monthly);
 

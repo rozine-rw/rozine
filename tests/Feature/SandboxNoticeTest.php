@@ -18,13 +18,13 @@ beforeEach(function (): void {
 });
 
 /**
- * @param  array<string, string|null>  $overrides
- * @return array<string, string|null>
+ * @param  array<string, string|array<string, string>|null>  $overrides
+ * @return array<string, string|array<string, string>|null>
  */
 function sandboxNoticeSignUp(array $overrides = []): array
 {
     return [...['name' => 'Aline Uwase', 'email' => 'aline@example.test', 'password' => 'password', 'password_confirmation' => 'password',
-        'sandbox_notice_version' => SandboxNotice::VERSION, 'sandbox_notice_sha256' => SandboxNotice::sha256()], ...$overrides];
+        'sandbox_notice_version' => SandboxNotice::VERSION, 'sandbox_notice_sha256' => SandboxNotice::sha256(), ...legalConsentFields()], ...$overrides];
 }
 
 it('gives the sign-up page the CMA sandbox notice word for word, with its version and digest (BRS KYC-R01)', function (): void {
@@ -71,7 +71,7 @@ it('refuses a sign-up that did not acknowledge the current notice, and creates n
 ]);
 
 it('refuses to register anyone who did not acknowledge exactly the current notice', function (string $version, string $digest): void {
-    expect(fn () => app(RegisterIdentity::class)->handle('Aline Uwase', 'aline@example.test', 'password', $version, $digest))
+    expect(fn () => app(RegisterIdentity::class)->handle('Aline Uwase', 'aline@example.test', 'password', $version, $digest, legalDigests()))
         ->toThrow(IdentityViolation::class, 'SANDBOX_NOTICE_REQUIRED');
 
     $this->assertDatabaseCount('users', 0);

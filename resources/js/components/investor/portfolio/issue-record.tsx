@@ -1,9 +1,10 @@
+import { disclosureRow } from '@/components/investor/primary/commitment';
 import { earningsFeeRate } from '@/components/investor/primary/earnings-fee';
 import { formatOrdinals } from '@/components/investor/primary/rights';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDate, formatDateTime, formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
-import type { IssuedHolding } from '@/types/investor';
+import type { HoldingScheduleRow, IssuedHolding } from '@/types/investor';
 
 const HEADING = 'text-sm font-semibold text-rz-ink';
 
@@ -11,10 +12,26 @@ const HEADING = 'text-sm font-semibold text-rz-ink';
  * How a Holding was issued (C3 v2 §2d): the HOLDING_ISSUED receipt, the exact units, the local issue
  * time kept apart from the disbursement's authenticated effective instant and its Kigali effective
  * date, the purchased terms, and the schedule — the rights bound at confirmation, with the dates
- * attached at issue (H3, H17).
+ * attached at issue (H3, H17). Units since sold on the market are shown apart, with those still held.
  */
-export function IssueRecord({ issue }: { issue: IssuedHolding }) {
+export function IssueRecord({
+    issue,
+    resold = '0',
+    schedule,
+}: {
+    issue: IssuedHolding;
+    /** Units of the Holding sold on the market since issue. */
+    resold?: string;
+    /**
+     * The schedule as it stands now: paid instalments with what was paid and when, the rest for
+     * the units still held. Without it the table shows the schedule as issued.
+     */
+    schedule?: HoldingScheduleRow[];
+}) {
     const { t, locale } = useTranslation();
+    const rowsNow: HoldingScheduleRow[] =
+        schedule ??
+        issue.schedule.map((row) => ({ ...row, paid_on: null, net: null }));
     const rows: [string, string][] = [
         [
             t('investor.primary.units'),
@@ -23,6 +40,17 @@ export function IssueRecord({ issue }: { issue: IssuedHolding }) {
                 ordinals: formatOrdinals(issue.ordinals),
             }),
         ],
+        ...(resold === '0'
+            ? []
+            : ([
+                  [
+                      t('investor.holding.issue.resold'),
+                      t('investor.holding.issue.resold_value', {
+                          count: Number(resold),
+                          held: Number(issue.units) - Number(resold),
+                      }),
+                  ],
+              ] as [string, string][])),
         [t('investor.primary.principal'), formatRwf(issue.principal)],
         [
             t('investor.holding.issue.issued_at'),
@@ -48,10 +76,7 @@ export function IssueRecord({ issue }: { issue: IssuedHolding }) {
             formatRwf(issue.terms.total_return),
         ],
         [t('investor.plus.fee'), earningsFeeRate(t, issue.terms.earnings_fee)],
-        [
-            t('investor.primary.versions'),
-            `${issue.terms.policy_version} · ${issue.terms.disclosure_version}`,
-        ],
+        ...disclosureRow(t, locale, issue.terms.disclosure_version),
         [
             t('investor.primary.receipt.reference'),
             issue.issue_receipt.reference,
@@ -104,13 +129,30 @@ export function IssueRecord({ issue }: { issue: IssuedHolding }) {
                     </tr>
                 </thead>
                 <tbody>
-                    {issue.schedule.map((row) => (
+                    {rowsNow.map((row) => (
                         <tr
                             key={row.index}
                             className="border-t border-[#eef2f9] dark:border-rz-divider"
                         >
                             <td className="px-3.5 py-2 text-rz-slate">
                                 {formatDate(row.due_on, locale)}
+                                {row.paid_on !== null && (
+                                    <span className="block text-[10.5px] font-semibold text-[#157357] dark:text-[#3fcda0]">
+                                        {t(
+                                            row.paid_on < row.due_on
+                                                ? 'investor.holding.issue.paid_early'
+                                                : 'investor.holding.issue.paid_on',
+                                            {
+                                                date: formatDate(
+                                                    row.paid_on,
+                                                    locale,
+                                                ),
+                                            },
+                                        )}
+                                        {row.net !== null &&
+                                            ` · ${t('investor.holding.issue.paid_net', { amount: formatRwf(row.net) })}`}
+                                    </span>
+                                )}
                             </td>
                             <td className="px-3.5 py-2 text-right font-semibold text-rz-ink tabular-nums">
                                 {formatRwf(row.principal)}

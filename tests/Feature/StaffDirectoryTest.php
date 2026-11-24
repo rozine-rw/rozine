@@ -127,7 +127,7 @@ test('the permission matrix lists what each role may do from the role definition
         ->assertInertia(fn (Assert $page) => $page->where('permission_matrix', function (Collection $matrix): bool {
             $roles = $matrix->pluck('roles', 'key');
 
-            return $matrix->count() === 29 && $matrix->pluck('key')->unique()->count() === 29
+            return $matrix->count() === 31 && $matrix->pluck('key')->unique()->count() === 31
                 && $matrix->whereNotNull('withheld')->pluck('withheld', 'key')->all() === ['accounts.freeze' => 'not_built',
                     'capacity.adjust' => 'not_built', 'records.edit' => 'not_built', 'ledger.correct' => 'not_built', 'policies.change' => 'not_built',
                     'records.delete' => 'by_rule']
@@ -138,6 +138,7 @@ test('the permission matrix lists what each role may do from the role definition
                 && $roles['disbursements.hold'] === ['compliance', 'approver', 'treasury']
                 && $roles['disbursements.requery'] === ['treasury']
                 && $roles['cart.releases.resolve'] === ['superadmin', 'compliance', 'treasury']
+                && $roles['secondary.halt'] === ['compliance'] && $roles['secondary.listings.cancel'] === ['compliance']
                 && $roles['staging.mail.testers.manage'] === ['superadmin'] && $roles['staff.manage'] === ['superadmin']
                 && $matrix->filter(fn (array $row): bool => in_array('analyst', $row['roles'], true))->pluck('key')->all()
                     === ['admin.open', 'businesses.view', 'audit.reports.view', 'primary.view'];
@@ -207,8 +208,8 @@ test('a superadmin adds an operator by email with one role and a reason, and the
     $this->actingAs($superadmin)->get(route('staff.staff.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('grant', ['url' => '/admin/staff', 'method' => 'post']));
     $this->actingAs($analyst)->get(route('staff.staff.index'))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('grant', null)->where('access', ['granted' => 4, 'total' => 23]));
-    $this->actingAs($superadmin)->get(route('staff.staff.index'))->assertInertia(fn (Assert $page) => $page->where('access', ['granted' => 21, 'total' => 23]));
+        ->assertInertia(fn (Assert $page) => $page->where('grant', null)->where('access', ['granted' => 4, 'total' => 25]));
+    $this->actingAs($superadmin)->get(route('staff.staff.index'))->assertInertia(fn (Assert $page) => $page->where('access', ['granted' => 21, 'total' => 25]));
     $this->actingAs($superadmin)->getJson(route('api.v1.staff.staff.index'))->assertOk()->assertJsonPath('data.grant', null);
 
     $this->actingAs($superadmin)->post(route('staff.staff.grant'), ['request_id' => (string) Str::uuid(), 'email' => 'nope', 'role' => 'owner', 'reason' => ''])

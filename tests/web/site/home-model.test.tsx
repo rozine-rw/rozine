@@ -1,278 +1,118 @@
-import { render } from '@testing-library/react';
-import { createRef } from 'react';
+import { describe, expect, it } from 'vite-plus/test';
 import {
-    afterEach,
-    beforeEach,
-    describe,
-    expect,
-    it,
-    vi,
-} from 'vite-plus/test';
-import Home from '@/pages/home';
+    BIZ_FAQS,
+    BIZ_STEPS,
+    HELP_TABS,
+    JOURNEY,
+    LANDING_PAGES,
+    businessEstimate,
+    contactProblem,
+    formatPosition,
+    investorExample,
+    pageFromHash,
+    rateFor,
+    rwf,
+} from '@/lib/landing';
 
-const mocks = vi.hoisted(() => ({ post: vi.fn() }));
-
-vi.mock('@inertiajs/react', () => ({
-    Head: () => null,
-    router: { post: mocks.post },
-}));
-
-/** A site instance that was never rendered, so DOM queries see only the fixture. */
-const detachedSite = () => new Home({} as never);
-
-/** Render the site and hand back the component instance for direct assertions. */
-const mountSite = () => {
-    const ref = createRef<Home>();
-
-    render(<Home ref={ref} />);
-
-    const instance = ref.current;
-
-    if (!instance) {
-        throw new Error('The site did not mount.');
-    }
-
-    return instance;
-};
-
-beforeEach(() => {
-    document.body.innerHTML = '';
-    mocks.post.mockReset();
-    window.scrollTo = vi.fn() as unknown as typeof window.scrollTo;
-});
-
-afterEach(() => {
-    vi.useRealTimers();
-});
-
-describe('money and phone formatting', () => {
-    it('writes amounts in Rwandan francs with thousands separators', () => {
-        const site = mountSite();
-
-        expect(site.rwf(1_500_000)).toBe('RWF 1,500,000');
-        expect(site.rwf(0)).toBe('RWF 0');
-        expect(site.rwf(null as unknown as number)).toBe('RWF 0');
+describe('the landing page arithmetic', () => {
+    it('adds half a point to the band rate for every three extra months', () => {
+        expect(rateFor('Strong', 3)).toBe(12.5);
+        expect(rateFor('Stable', 5)).toBe(13.8);
+        expect(rateFor('Distressed', 6)).toBe(15);
     });
 
-    it('keeps only the digits a person typed', () => {
-        const site = mountSite();
-
-        expect(site.digits('078 123-456')).toBe('078123456');
-        expect(site.digits(null)).toBe('');
-    });
-
-    it('reduces a contact to the form the waitlist stores', () => {
-        const site = mountSite();
-
-        expect(site.siteContact('email', '+250', ' Person@Example.COM ')).toBe(
-            'person@example.com',
-        );
-        expect(site.siteContact('phone', '+250', '0788 123 456')).toBe(
-            '250788123456',
-        );
-        expect(site.siteContact('phone', '+250', '788123456')).toBe(
-            '250788123456',
-        );
-        expect(site.siteContact('phone', '+250', '250788123456')).toBe(
-            '250788123456',
-        );
-        expect(site.siteContact('phone', '', '0788123456')).toBe(
-            '250788123456',
-        );
-    });
-});
-
-describe('what an investor is charged and offered', () => {
-    it('charges less as the amount lent grows', () => {
-        const site = mountSite();
-
-        expect(site.chargeFor(200_000_000)).toBe(4.5);
-        expect(site.chargeFor(100_000_000)).toBe(5);
-        expect(site.chargeFor(50_000_000)).toBe(6);
-        expect(site.chargeFor(10_000_000)).toBe(7);
-        expect(site.chargeFor(2_000_000)).toBe(8);
-        expect(site.chargeFor(500_000)).toBe(10);
-    });
-
-    it('rounds the slider to a step that suits the amount', () => {
-        const site = mountSite();
-
-        expect(site.depFor(0)).toBe(5_000);
-        expect(site.depFor(40)).toBe(50_000_000);
-        expect(site.depFor(-5)).toBe(5_000);
-        expect(site.depFor(99)).toBe(50_000_000);
-        expect(site.depFor(null)).toBe(5_000);
-        [8, 16, 24, 32].forEach((index) => {
-            expect(site.depFor(index) % 5_000).toBe(0);
+    it('shows the design example for RWF 100,000 over 5 months in a Stable business', () => {
+        expect(investorExample(100000, 5, 'Stable')).toEqual({
+            amount: 'RWF 100,000',
+            rate: '13.8%',
+            earn: '+RWF 11,730',
+            back: 'RWF 111,730',
+            month: 'RWF 22,346',
         });
     });
 
-    it('prices a business between the floor and ceiling of the band', () => {
-        const site = mountSite();
-
-        expect(site.bChargeFor(92, 6)).toBe(15);
-        expect(site.bChargeFor(40, 3)).toBe(14);
-        expect(site.bChargeFor(200, 99)).toBe(15);
-        expect(site.bChargeFor(-50, -5)).toBe(14);
-    });
-
-    it('never quotes a total return outside the BRS 10%–15% band, for any term or band', () => {
-        const site = mountSite();
-        const flats = [3, 4, 5, 6].flatMap((term) =>
-            [0, 1, 2].map((band) => site.flatFor(term, band)),
+    it('caps a raise at 35% of yearly revenue and RWF 100M', () => {
+        expect(businessEstimate(120000000)).toEqual({
+            revenue: 'RWF 120M',
+            max: 'RWF 42M',
+            cap: '35% of your yearly revenue',
+        });
+        expect(businessEstimate(305000000).max).toBe('RWF 100M');
+        expect(businessEstimate(305000000).cap).toBe(
+            'The RWF 100M maximum per raise',
         );
+        expect(businessEstimate(35000000).max).toBe('RWF 12.2M');
+    });
 
-        expect(Math.min(...flats)).toBeGreaterThanOrEqual(0.1);
-        expect(Math.max(...flats)).toBeLessThanOrEqual(0.15);
-        /* A stronger band never pays more, and a longer term never less. */
-        expect(site.flatFor(3, 0)).toBe(0.108);
-        expect(site.flatFor(6, 1)).toBe(0.129);
-        expect(site.flatFor(6, 2)).toBe(0.15);
+    it('writes francs and queue places with thousands separators', () => {
+        expect(rwf(1234567.4)).toBe('RWF 1,234,567');
+        expect(formatPosition(1204)).toBe('1,204');
     });
 });
 
-describe('the glass layer that inverts over the blue bands', () => {
-    it('does nothing when the layer is absent', () => {
-        const site = detachedSite();
-
-        expect(() => site._rzMask()).not.toThrow();
+describe('the landing page addresses', () => {
+    it('gives each view its own fragment and keeps Invest at the bare address', () => {
+        expect(pageFromHash('')).toBe('home');
+        expect(pageFromHash('#')).toBe('home');
+        expect(pageFromHash('#businesses')).toBe('biz');
+        expect(pageFromHash('#how-it-works')).toBe('how');
+        expect(pageFromHash('#help')).toBe('help');
     });
 
-    it('clears the mask when no blue band is on the page', () => {
-        const site = detachedSite();
-        const host = document.createElement('div');
-        const layer = document.createElement('div');
+    it("still honours the earlier site's investor address", () => {
+        expect(pageFromHash('#investors')).toBe('home');
+    });
 
-        layer.setAttribute('data-rz-glass', '');
-        host.appendChild(layer);
-        document.body.appendChild(host);
-        vi.spyOn(host, 'scrollHeight', 'get').mockReturnValue(1000);
+    it('leaves the view alone for a fragment that names none, such as the waitlist', () => {
+        expect(pageFromHash('#join')).toBeNull();
+    });
 
-        site._rzMask();
+    it('lists the four tabs in the order of the design', () => {
+        expect(LANDING_PAGES.map(([, label]) => label)).toEqual([
+            'Invest',
+            'Businesses',
+            'How it works',
+            'Help',
+        ]);
+    });
+});
 
-        expect(layer.style.maskImage.replace(/\s/g, '')).toBe(
-            'linear-gradient(rgba(0,0,0,0),rgba(0,0,0,0))',
+describe('the waitlist checks before sending', () => {
+    it('asks each audience for its own kind of name', () => {
+        expect(contactProblem('investor', ' ', '0788123456')).toBe(
+            'Add your name.',
+        );
+        expect(contactProblem('business', 'K', '0788123456')).toBe(
+            'Add your business name.',
         );
     });
 
-    it('cuts the mask to the bands it finds', () => {
-        const site = detachedSite();
-        const host = document.createElement('div');
-        const layer = document.createElement('div');
-        const band = document.createElement('div');
-
-        layer.setAttribute('data-rz-glass', '');
-        band.setAttribute('data-rz-blue', '');
-        host.append(layer, band);
-        document.body.appendChild(host);
-        vi.spyOn(host, 'scrollHeight', 'get').mockReturnValue(1000);
-        vi.spyOn(band, 'getBoundingClientRect').mockReturnValue({
-            top: 200,
-            height: 300,
-        } as DOMRect);
-
-        site._rzMask();
-
-        // the band sits from 200px to 500px of a 1000px host, so 20% to 50%
-        expect(layer.style.maskImage).toContain('transparent 0.000% 20.000%');
-        expect(layer.style.maskImage).toContain('20.000% 50.000%');
-        expect(layer.style.maskImage).toContain('transparent 50.000% 100%');
+    it('accepts a phone number as people type it, or an email', () => {
+        expect(contactProblem('investor', 'Di', '+250 788 123 456')).toBe('');
+        expect(contactProblem('investor', 'Di', 'di@example.rw')).toBe('');
     });
 
-    it('gives up when the host has no height to measure against', () => {
-        const site = detachedSite();
-        const host = document.createElement('div');
-        const layer = document.createElement('div');
-
-        layer.setAttribute('data-rz-glass', '');
-        host.appendChild(layer);
-        document.body.appendChild(host);
-        vi.spyOn(host, 'scrollHeight', 'get').mockReturnValue(0);
-
-        site._rzMask();
-
-        expect(layer).toHaveStyle({ maskImage: '' });
-    });
-
-    it('re-measures when the page resizes', () => {
-        const observe = vi.fn();
-
-        window.ResizeObserver = class {
-            observe = observe;
-
-            unobserve = vi.fn();
-
-            disconnect = vi.fn();
-        } as unknown as typeof ResizeObserver;
-
-        const site = detachedSite();
-
-        site._rzWatch();
-
-        expect(observe).toHaveBeenCalled();
-
-        site.componentWillUnmount();
-        delete (window as { ResizeObserver?: unknown }).ResizeObserver;
+    it('turns away anything else', () => {
+        for (const contact of ['', '12345', 'di@', 'di example.rw']) {
+            expect(contactProblem('investor', 'Di', contact)).toBe(
+                'Add a valid phone number or email.',
+            );
+        }
     });
 });
 
-describe('the site leaves nothing running once it unmounts', () => {
-    it('cancels the glass mask follow-ups, its observer and its resize listener', () => {
-        vi.useFakeTimers();
-        const disconnect = vi.fn();
-
-        window.ResizeObserver = class {
-            observe = vi.fn();
-
-            unobserve = vi.fn();
-
-            disconnect = disconnect;
-        } as unknown as typeof ResizeObserver;
-
-        const added = vi.spyOn(window, 'addEventListener');
-        const removed = vi.spyOn(window, 'removeEventListener');
-        const remeasure = vi.spyOn(Home.prototype, '_rzMask');
-        const { unmount } = render(<Home />);
-        const resize = added.mock.calls.find(
-            ([type]) => type === 'resize',
-        )?.[1];
-
-        remeasure.mockClear();
-        unmount();
-        /* Past the 400 ms and 1200 ms follow-ups and the animation frame. */
-        vi.advanceTimersByTime(2_000);
-
-        expect(remeasure).not.toHaveBeenCalled();
-        expect(disconnect).toHaveBeenCalled();
-        expect(resize).toBeDefined();
-        expect(removed).toHaveBeenCalledWith('resize', resize);
-
-        remeasure.mockRestore();
-        added.mockRestore();
-        removed.mockRestore();
-        vi.useRealTimers();
-        delete (window as { ResizeObserver?: unknown }).ResizeObserver;
-    });
-});
-
-describe('the counter that animates towards a new figure', () => {
-    it('stops animating once the figures stop moving', () => {
-        const site = mountSite();
-
-        site._sync();
-        const first = site.state.disp;
-
-        site._sync();
-
-        expect(site.state.disp).toBe(first);
-    });
-
-    it('cancels its frame when the page goes away', () => {
-        const cancel = vi.spyOn(window, 'cancelAnimationFrame');
-        const site = mountSite();
-
-        site.componentWillUnmount();
-
-        expect(cancel).toHaveBeenCalled();
+describe('the landing page content', () => {
+    it('carries the design copy for every list', () => {
+        expect(BIZ_STEPS).toHaveLength(7);
+        expect(JOURNEY).toHaveLength(6);
+        expect(BIZ_FAQS).toHaveLength(6);
+        expect(
+            HELP_TABS.map(([, label, faqs]) => [label, faqs.length]),
+        ).toEqual([
+            ['Investing', 5],
+            ['Your money', 5],
+            ['For businesses', 6],
+            ['Account', 4],
+        ]);
     });
 });

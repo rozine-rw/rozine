@@ -4,6 +4,7 @@ import { AboutCard, EbitdaValue } from '@/components/investor/deals/deal-facts';
 import {
     FundingProgress,
     PhotosRow,
+    ProspectusCard,
     Section,
     SourceBadge,
     UseOfFundsChips,
@@ -11,6 +12,7 @@ import {
 import { DealStatusNotice } from '@/components/investor/deals/deal-status';
 import { CartToggle } from '@/components/investor/deals/invest-bar';
 import type { CartToggleState } from '@/components/investor/deals/invest-bar';
+import { RiskWarning } from '@/components/investor/deals/risk-warning';
 import { UpdateList, UpdateSheet } from '@/components/investor/monthly-updates';
 import { POSITIVE_TEXT, RATING_STYLE } from '@/components/investor/tokens';
 import { useTranslation } from '@/hooks/use-translation';
@@ -109,10 +111,13 @@ export function DealPanel({
                         </div>
                     )}
 
+                    <RiskWarning className="mt-3.5" />
+
                     <p className="mt-4 text-[11px] font-bold tracking-[.08em] text-rz-slate uppercase">
                         {t('investor.deal.details')}
                     </p>
 
+                    <ProspectusCard deal={deal} variant="desk" />
                     <PhotosRow deal={deal} variant="desk" />
                     <UseOfFundsChips deal={deal} variant="desk" />
 
@@ -224,7 +229,7 @@ export function DealPanel({
                             </SourceBadge>
                         }
                     >
-                        <AboutCard about={deal.about} />
+                        <AboutCard about={deal.about} story={deal.story} />
                     </Section>
 
                     {deal.audit !== null && (
@@ -237,9 +242,12 @@ export function DealPanel({
                         title={t('investor.deal.monthly_updates')}
                         variant="desk"
                         badge={
-                            <SourceBadge kind="verified" variant="desk">
-                                {t('investor.deal.audited')}
-                            </SourceBadge>
+                            /* No "Audited" claim on a section with no report yet (#594). */
+                            deal.updates.length > 0 ? (
+                                <SourceBadge kind="verified" variant="desk">
+                                    {t('investor.deal.audited')}
+                                </SourceBadge>
+                            ) : undefined
                         }
                     >
                         <UpdateList

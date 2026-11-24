@@ -1,6 +1,7 @@
 import { Head, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { FloatingHold } from '@/components/investor/floating-hold';
+import { RiskGate } from '@/components/investor/risk-gate';
 import { AppFrame } from '@/components/rozine/app-frame';
 import { useChangeBeacon } from '@/hooks/use-change-beacon';
 import type { ChangeBeacon } from '@/hooks/use-change-beacon';
@@ -55,8 +56,8 @@ const GLYPHS: Record<InvestorTab, ReactNode> = {
 
 type InvestorShellProps = {
     title: string;
-    /** The tab to mark current; Wallet has no tab of its own, as in the design. */
-    tab: InvestorTab | null;
+    /** The tab to mark current. Wallet has no tab of its own, so it marks Deals, whose top bar opens it (#597). */
+    tab: InvestorTab;
     /** Phase 1B links, or a C3 page's narrowed links: a null destination is hidden, never faked. */
     links: C3InvestorShellLinks;
     showTabBar?: boolean;
@@ -106,13 +107,14 @@ export function InvestorShell({
         <AppFrame
             audience="investor"
             nav={nav}
-            active={tab ?? ''}
+            active={tab}
             launcher={links.launcher}
             showTabBar={showTabBar}
         >
             <Head title={title} />
             {children}
             <FloatingHold wallet={links.wallet} raised={showTabBar ?? true} />
+            <RiskGate />
         </AppFrame>
     );
 }

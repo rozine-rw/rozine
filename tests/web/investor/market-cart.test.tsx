@@ -5,7 +5,7 @@ import InvestorCart from '@/pages/investor/cart';
 import InvestorMarket from '@/pages/investor/market';
 import type {
     C3InvestorCartProps,
-    InvestorShellPageProps,
+    InvestorMarketProps,
 } from '@/types/investor';
 import emptyCartFixture from '../../../resources/fixtures/ui/investor-cart-empty.json';
 import cartFixture from '../../../resources/fixtures/ui/investor-cart.json';
@@ -17,7 +17,7 @@ vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 vi.setConfig({ testTimeout: 30_000 });
 
 const props = (fixture: { props: unknown }) =>
-    structuredClone(fixture.props) as InvestorShellPageProps;
+    structuredClone(fixture.props) as InvestorMarketProps;
 const cart = (fixture: { props: unknown } = cartFixture) =>
     structuredClone(fixture.props) as C3InvestorCartProps;
 
@@ -114,11 +114,16 @@ describe('Market', () => {
         }
 
         expect(
-            screen.getByText('No notes match these filters'),
+            screen.getByText('No notes are for sale yet'),
         ).toBeInTheDocument();
         expect(
-            screen.getByText('Try adjusting the filters above.'),
+            screen.getByText(
+                'Notes appear here when investors list them for resale.',
+            ),
         ).toBeInTheDocument();
+        expect(
+            screen.queryByText('No notes match these filters'),
+        ).not.toBeInTheDocument();
         expect(screen.getByText('🗂')).toBeInTheDocument();
     });
 
@@ -172,12 +177,12 @@ describe('Market', () => {
         expect(screen.queryByText('Performance')).not.toBeInTheDocument();
         expect(screen.getByText('No orders in this tab.')).toBeInTheDocument();
 
-        await user.click(screen.getByRole('button', { name: /Buy Orders/ }));
-        await user.click(screen.getByRole('option', { name: 'Cancelled' }));
+        await user.click(screen.getByRole('tab', { name: 'Cancelled' }));
 
-        expect(
-            screen.getByRole('button', { name: /Cancelled/ }),
-        ).toBeInTheDocument();
+        expect(screen.getByRole('tab', { name: 'Cancelled' })).toHaveAttribute(
+            'aria-selected',
+            'true',
+        );
         expect(screen.getByText('No orders in this tab.')).toBeInTheDocument();
     });
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Business;
 
+use App\Application\Disbursement\Contracts\DisbursedCampaigns;
+use App\Application\Primary\Contracts\CampaignDisbursementProgress;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\CampaignReservationSummary;
 use Brick\Math\BigDecimal;
@@ -14,13 +16,17 @@ use RuntimeException;
 /** A live publication's progress, shared by the Business campaign page and the Investor Deals. */
 final class CampaignProgress
 {
-    public function __construct(private CampaignReservationSummary $reservations, private CampaignFundingEvidence $fundings) {}
+    public function __construct(private CampaignReservationSummary $reservations, private CampaignFundingEvidence $fundings,
+        private CampaignDisbursementProgress $payouts, private DisbursedCampaigns $disbursed) {}
 
     /**
      * Retained raise or funding-lock progress; this never dispatches or certifies payment.
      * Returned and overdue claims remain unavailable until ordinal recycling exists.
      *
      * The funding lock read here comes back with a funded raise, so its holders need no second read.
+     * A funded raise moves on with its payout: `disbursing` while the payout is in flight, and
+     * `disbursed` (lifecycle `issued`) once its closing issued the notes, with what reached the
+     * Business's account and the closing's receipt.
      *
      * @param  array<string, mixed>  $payload
      * @return array{progress: array<string, mixed>, has_unreturned_holds: bool, funding?: array<string, mixed>}
@@ -39,10 +45,18 @@ final class CampaignProgress
         $hasUnreturnedHolds = $summary['held_principal'] !== '0' || $summary['expired_hold_principal'] !== '0';
         $funding = $this->fundings->find($campaignId);
         if ($funding !== null) {
-            return ['has_unreturned_holds' => $hasUnreturnedHolds, 'funding' => $funding, 'progress' => ['phase' => 'funded', 'lifecycle' => 'funded_pending_disbursement', 'restriction' => null,
-                'committed' => ['currency' => 'RWF', 'amount' => $funding['principal']],
-                'investors' => count(array_unique(array_column($funding['commitments'], 'party_id'))),
-                'funded_at' => $funding['recorded_at'], 'closing' => ['stage' => 'awaiting_disbursement']]];
+            $funded = ['committed' => ['currency' => 'RWF', 'amount' => $funding['principal']],
+                'investors' => count(array_unique(array_column($funding['commitments'], 'party_id'))), 'funded_at' => $funding['recorded_at']];
+            $disbursed = $this->disbursed->find($campaignId);
+            if ($disbursed !== null) {
+                return ['has_unreturned_holds' => $hasUnreturnedHolds, 'funding' => $funding, 'progress' => ['phase' => 'disbursed', 'lifecycle' => 'issued',
+                    ...$funded, ...$disbursed]];
+            }
+            $inFlight = $this->payouts->inFlight($campaignId);
+
+            return ['has_unreturned_holds' => $hasUnreturnedHolds, 'funding' => $funding, 'progress' => ['phase' => 'funded',
+                'lifecycle' => $inFlight === null ? 'funded_pending_disbursement' : 'disbursing', 'restriction' => null, ...$funded,
+                'closing' => $inFlight === null ? ['stage' => 'awaiting_disbursement'] : ['stage' => 'in_flight', 'provider' => $inFlight]]];
         }
         $lifecycle = match (true) {
             $at->gte($payload['expires_at']) => 'closing_pending_settlement',

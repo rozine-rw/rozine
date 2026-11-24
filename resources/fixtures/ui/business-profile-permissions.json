@@ -188,6 +188,10 @@
                 "url": "/preview/business-reports",
                 "method": "get"
             },
+            "readiness": {
+                "url": "/preview/business-readiness",
+                "method": "get"
+            },
             "market": {
                 "url": "/preview/business-market",
                 "method": "get"
@@ -231,6 +235,10 @@
                 },
                 "privacy": {
                     "url": "/preview/business-profile-privacy",
+                    "method": "get"
+                },
+                "disclaimers": {
+                    "url": "/preview/business-profile-disclaimers",
                     "method": "get"
                 }
             },

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Auditor;
 
 use App\Application\Auditor\Contracts\AuditReportRegisterStore;
+use App\Domain\Auditor\AuditEngagementState;
 use App\Domain\Auditor\AuditReportWindow;
 use App\Domain\Auditor\AuditVariance;
 use App\Domain\Auditor\MonthlyReportReview;
@@ -106,8 +107,7 @@ final class EloquentAuditReportRegisterStore implements AuditReportRegisterStore
         $rows = [];
         foreach ($assignments as $assignment) {
             $state = $assignment->state;
-            $period = $state['kind'] === 'routine'
-                ? CarbonImmutable::parse($state['original_dispatch_at'])->setTimezone('Africa/Kigali')->startOfMonth()->subMonth()->format('Y-m') : null;
+            $period = $state['kind'] === 'routine' ? AuditEngagementState::period($state) : null;
             $due = $period === null ? $state['complete_by'] : $this->window->dueAt($period);
             $report = $reports->get($assignment->id);
             $seal = $report === null ? null : $seals->get($report->id);

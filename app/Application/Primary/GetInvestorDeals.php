@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Primary;
 
+use App\Application\Business\Contracts\BusinessProspectuses;
 use App\Application\Business\Contracts\InvestorDealCatalogue;
 use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Primary\Contracts\InvestorCart;
@@ -28,7 +29,7 @@ final class GetInvestorDeals
     public const array SORTS = ['all', 'top_interest', 'top_rated', 'top_picks', 'in_cart'];
 
     public function __construct(private GetInvestorViewer $viewer, private InvestorDealCatalogue $catalogue, private PartyNotices $notices,
-        private InvestorCart $cart) {}
+        private InvestorCart $cart, private BusinessProspectuses $prospectuses) {}
 
     /**
      * @param  array{sort?: string|null, industry?: string|null, deal?: string|null}  $query
@@ -52,7 +53,19 @@ final class GetInvestorDeals
             'industries' => [['industry' => null, 'count' => count($all)],
                 ...array_map(fn (string $name): array => ['industry' => $name,
                     'count' => count(array_filter($all, fn (array $deal): bool => $deal['industry'] === $name))], $names)],
-            'deals' => $deals, 'focus' => $focusId === null ? null : $this->catalogue->deal($focusId)];
+            'deals' => $deals, 'focus' => $focusId === null ? null : $this->focus($focusId)];
+    }
+
+    /**
+     * The focused deal with the summary of its signed prospectus (PRO-R04), null when there is none.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function focus(string $campaignId): ?array
+    {
+        $deal = $this->catalogue->deal($campaignId);
+
+        return $deal === null ? null : [...$deal, 'prospectus' => $this->prospectuses->published($campaignId)['summary'] ?? null];
     }
 
     /**

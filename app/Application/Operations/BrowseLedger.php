@@ -33,7 +33,7 @@ final readonly class BrowseLedger
 
     public function __construct(private LedgerJournal $journal, private AuthorizeStaffPermission $staff, private OperationRecords $operations) {}
 
-    /** @return array{entries: list<Entry>, total: int, next_before: string|null, entry: OpenedEntry|null} */
+    /** @return array{entries: list<Entry>, total: int, next_before: string|null, newer_before: string|null, entry: OpenedEntry|null} */
     public function handle(int $actorId, ?string $search, int $limit, ?string $entryId, ?string $before = null): array
     {
         $this->staff->check($actorId, 'ledger.view');
@@ -48,22 +48,24 @@ final readonly class BrowseLedger
 
     /**
      * The fee revenue the ledger holds, for the Finance section: Rozine's share of platform fees,
-     * the Audit Partners' share still payable and the deposit fees, each in whole RWF. Given Kigali
+     * the Audit Partners' share still payable, the deposit fees, the fee on investors' earnings taken
+     * from servicing payouts and the sellers' resale fees, each in whole RWF. Given Kigali
      * dates, only what was posted from the first day through the last counts.
      *
      * @param  string|null  $from  the first Kigali date `Y-m-d`, or null for the ledger's start
      * @param  string|null  $to  the last Kigali date `Y-m-d`, or null for now
-     * @return array{platform_fee: string, audit_partner_share: string, deposit_fees: string}
+     * @return array{platform_fee: string, audit_partner_share: string, deposit_fees: string, earnings_fee: string, resale_fee: string}
      */
     public function revenue(int $actorId, ?string $from = null, ?string $to = null): array
     {
         $this->staff->check($actorId, 'ledger.view');
         $day = fn (string $date): CarbonImmutable => CarbonImmutable::parse($date, self::ZONE)->startOfDay();
-        $credits = $this->journal->credits(['platform_fee_revenue', 'audit_partner_fee_payable', 'deposit_fee_revenue'],
+        $credits = $this->journal->credits(['platform_fee_revenue', 'audit_partner_fee_payable', 'deposit_fee_revenue', 'earnings_fee_revenue', 'secondary_fee_revenue'],
             $from === null ? null : $day($from)->utc()->toIso8601String(), $to === null ? null : $day($to)->addDay()->utc()->toIso8601String());
 
         return ['platform_fee' => $credits['platform_fee_revenue'] ?? '0', 'audit_partner_share' => $credits['audit_partner_fee_payable'] ?? '0',
-            'deposit_fees' => $credits['deposit_fee_revenue'] ?? '0'];
+            'deposit_fees' => $credits['deposit_fee_revenue'] ?? '0', 'earnings_fee' => $credits['earnings_fee_revenue'] ?? '0',
+            'resale_fee' => $credits['secondary_fee_revenue'] ?? '0'];
     }
 
     /**

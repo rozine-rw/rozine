@@ -29,6 +29,9 @@ final class EloquentInvestorVerificationStore implements InvestorVerificationSto
     /** The KYC rules each recorded step, upload and submission ran under; receipts report the same version. */
     private const string POLICY_VERSION = 'engineering-2026-10-06.1';
 
+    /** The apps an identity check can be made for (#622 follow-up): only an Investor case grants Investor access. */
+    private const array PURPOSES = ['investor', 'business', 'auditor'];
+
     public function __construct(
         private OperationJournal $journal,
         private InvestorVerificationCase $cases,
@@ -39,7 +42,7 @@ final class EloquentInvestorVerificationStore implements InvestorVerificationSto
     public function get(int $userId): array
     {
         return $this->own($userId, null, fn (User $user, Party $party, ?InvestorVerification $record, bool $verified): array => [
-            'revision' => $record->revision ?? 0, 'status' => $record->status ?? 'draft', 'state' => $record->state ?? $this->cases->empty(),
+            'revision' => $record->revision ?? 0, 'status' => $record->status ?? 'draft', 'purpose' => $record->purpose ?? 'investor', 'state' => $record->state ?? $this->cases->empty(),
             'verified' => $verified, 'identity_context_revision' => $user->context_revision,
         ]);
     }
@@ -50,10 +53,13 @@ final class EloquentInvestorVerificationStore implements InvestorVerificationSto
      */
     public function save(int $userId, int $contextRevision, int $expectedRevision, string $step, array $input, string $requestId): array
     {
-        $answers = ['date_of_birth' => $input['date_of_birth'] ?? null, 'id_type' => $input['id_type'] ?? null, 'id_number' => $input['id_number'] ?? null];
+        $answers = ['date_of_birth' => $input['date_of_birth'] ?? null, 'id_type' => $input['id_type'] ?? null, 'id_number' => $input['id_number'] ?? null,
+            ...array_filter(['licence_number' => $input['licence_number'] ?? null, 'licence_expires_on' => $input['licence_expires_on'] ?? null], fn (mixed $value): bool => $value !== null)];
+        $purpose = in_array($input['purpose'] ?? null, self::PURPOSES, true) ? (string) $input['purpose'] : null;
 
-        return $this->execute($userId, $contextRevision, $expectedRevision, 'verification.save', $requestId, ['step' => $step, ...$answers],
-            fn (array $state, string $status): array => $this->cases->save($state, $status, $step, $answers, now()->toDateTimeImmutable()));
+        return $this->execute($userId, $contextRevision, $expectedRevision, 'verification.save', $requestId,
+            ['step' => $step, ...$answers, ...($purpose === null ? [] : ['purpose' => $purpose])],
+            fn (array $state, string $status, string $purpose): array => $this->cases->save($state, $status, $step, $answers, now()->toDateTimeImmutable(), $purpose), purpose: $purpose);
     }
 
     /** @return array<string, mixed> */
@@ -76,7 +82,7 @@ final class EloquentInvestorVerificationStore implements InvestorVerificationSto
             });
     }
 
-    /** @return array<'front'|'back'|'selfie', array{filename: string, media_type: string}> */
+    /** @return array<'front'|'back'|'selfie'|'certificate', array{filename: string, media_type: string}> */
     public function uploads(int $userId): array
     {
         return $this->own($userId, null, function (User $user, Party $party, ?InvestorVerification $record): array {
@@ -91,7 +97,7 @@ final class EloquentInvestorVerificationStore implements InvestorVerificationSto
                 }
             }
 
-            /** @var array<'front'|'back'|'selfie', array{filename: string, media_type: string}> $uploads */
+            /** @var array<'front'|'back'|'selfie'|'certificate', array{filename: string, media_type: string}> $uploads */
             return $uploads;
         });
     }
@@ -118,19 +124,19 @@ final class EloquentInvestorVerificationStore implements InvestorVerificationSto
     public function submit(int $userId, int $contextRevision, int $expectedRevision, string $requestId): array
     {
         return $this->execute($userId, $contextRevision, $expectedRevision, 'verification.submit', $requestId, [],
-            fn (array $state, string $status): array => $this->cases->submit($state, $status, now()->toDateTimeImmutable()), submitted: true);
+            fn (array $state, string $status, string $purpose): array => $this->cases->submit($state, $status, now()->toDateTimeImmutable(), $purpose), submitted: true);
     }
 
     /**
      * @param  array<string, mixed>  $input
-     * @param  Closure(State, string): State  $change
+     * @param  Closure(State, string, string): State  $change
      * @param  Closure(InvestorVerification): void|null  $afterSave
      * @return array<string, mixed>
      */
-    private function execute(int $userId, int $contextRevision, int $expectedRevision, string $command, string $requestId, array $input, Closure $change, ?Closure $afterSave = null, bool $submitted = false): array
+    private function execute(int $userId, int $contextRevision, int $expectedRevision, string $command, string $requestId, array $input, Closure $change, ?Closure $afterSave = null, bool $submitted = false, ?string $purpose = null): array
     {
         try {
-            return $this->journal($userId, $contextRevision, $expectedRevision, $command, $requestId, $input, $change, $afterSave, $submitted);
+            return $this->journal($userId, $contextRevision, $expectedRevision, $command, $requestId, $input, $change, $afterSave, $submitted, $purpose);
         } catch (CommandRejection $exception) {
             // Refused before it was recorded (a reused request_id): answered like a recorded refusal.
             return ['status' => 'rejected', 'code' => $exception->reason, 'field_errors' => $exception->fieldErrors, 'http_status' => $exception->status];
@@ -139,28 +145,30 @@ final class EloquentInvestorVerificationStore implements InvestorVerificationSto
 
     /**
      * @param  array<string, mixed>  $input
-     * @param  Closure(State, string): State  $change
+     * @param  Closure(State, string, string): State  $change
      * @param  Closure(InvestorVerification): void|null  $afterSave
      * @return array<string, mixed>
      */
-    private function journal(int $userId, int $contextRevision, int $expectedRevision, string $command, string $requestId, array $input, Closure $change, ?Closure $afterSave, bool $submitted): array
+    private function journal(int $userId, int $contextRevision, int $expectedRevision, string $command, string $requestId, array $input, Closure $change, ?Closure $afterSave, bool $submitted, ?string $purpose): array
     {
         return $this->own($userId, $contextRevision, fn (User $user, Party $party, ?InvestorVerification $record, bool $verified): array => $this->journal->execute(
             'party:'.$party->id, $userId, $command, $requestId, 'investor.verification', $party->id,
             ['identity_context_revision' => $contextRevision, 'expected_revision' => $expectedRevision, ...$input],
             // The account and Party are already locked and checked above, for a first run and a replay alike.
             static function (): void {},
-            self::underKycPolicy(function () use ($party, $record, $verified, $userId, $expectedRevision, $command, $change, $afterSave, $submitted): OperationResult {
+            self::underKycPolicy(function () use ($party, $record, $verified, $userId, $expectedRevision, $command, $change, $afterSave, $submitted, $purpose): OperationResult {
                 if ($verified) {
                     throw new CommandRejection('VERIFICATION_NOT_REQUIRED');
                 }
                 if (($record->revision ?? 0) !== $expectedRevision) {
                     throw new CommandRejection('VERSION_CONFLICT', 409, $record->revision ?? 0);
                 }
-                $state = $change($record->state ?? $this->cases->empty(), $record->status ?? 'draft');
+                // The step's own purpose, else the one recorded: a check made for Auditor access also takes the licence.
+                $state = $change($record->state ?? $this->cases->empty(), $record->status ?? 'draft', $purpose ?? $record->purpose ?? 'investor');
                 $record ??= new InvestorVerification;
                 $record->forceFill(['party_id' => $party->id, 'revision' => $expectedRevision + 1, 'state' => $state,
-                    'status' => $submitted ? 'submitted' : 'draft', 'submitted_at' => $submitted ? now() : null])->save();
+                    'status' => $submitted ? 'submitted' : 'draft', 'submitted_at' => $submitted ? now() : null,
+                    ...($purpose === null ? [] : ['purpose' => $purpose])])->save();
                 if ($afterSave !== null) {
                     $afterSave($record);
                 }

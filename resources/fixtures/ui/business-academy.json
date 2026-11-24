@@ -1,0 +1,97 @@
+{
+    "component": "business/academy",
+    "props": {
+        "stage": null,
+        "level": 1,
+        "pass_mark": 8,
+        "questions": 10,
+        "core": [
+            {
+                "key": "bookkeeping",
+                "title": "Keeping your books",
+                "summary": "Record every sale and every payment on the day it happens.",
+                "cards": 9,
+                "status": {
+                    "state": "passed",
+                    "attempts": 1,
+                    "best": 9,
+                    "retake_at": null
+                },
+                "link": {
+                    "url": "/preview/business-academy-module",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "business_money",
+                "title": "Business money, tax and RSSB",
+                "summary": "Run money through business accounts and keep tax and RSSB current.",
+                "cards": 8,
+                "status": {
+                    "state": "waiting",
+                    "attempts": 1,
+                    "best": 6,
+                    "retake_at": "2026-11-11T08:00:00Z"
+                },
+                "link": {
+                    "url": "/preview/business-academy-module",
+                    "method": "get"
+                }
+            }
+        ],
+        "preview": [
+            {
+                "key": "management_accounts",
+                "title": "Accountant and management accounts",
+                "summary": "Work with a qualified accountant and use accounting software.",
+                "cards": 8,
+                "status": null,
+                "link": {
+                    "url": "/preview/business-academy-module",
+                    "method": "get"
+                }
+            },
+            {
+                "key": "forecasting",
+                "title": "Forecasting money in",
+                "summary": "Forecast next month from your verified average and signed orders.",
+                "cards": 8,
+                "status": null,
+                "link": {
+                    "url": "/preview/business-academy-module",
+                    "method": "get"
+                }
+            }
+        ],
+        "links": {
+            "close": {
+                "url": "/preview/business-readiness",
+                "method": "get"
+            },
+            "home": {
+                "url": "/preview/business-home",
+                "method": "get"
+            },
+            "reports": {
+                "url": "/preview/business-reports",
+                "method": "get"
+            },
+            "readiness": {
+                "url": "/preview/business-readiness",
+                "method": "get"
+            },
+            "market": {
+                "url": "/preview/business-market",
+                "method": "get"
+            },
+            "profile": {
+                "url": "/preview/business-profile",
+                "method": "get"
+            },
+            "launcher": {
+                "url": "/preview/launcher-ready",
+                "method": "get"
+            }
+        }
+    }
+}

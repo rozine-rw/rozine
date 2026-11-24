@@ -186,6 +186,10 @@
                     "url": "/preview/business-reports",
                     "method": "get"
                 },
+                "readiness": {
+                    "url": "/preview/business-readiness",
+                    "method": "get"
+                },
                 "market": {
                     "url": "/preview/business-market",
                     "method": "get"
@@ -240,6 +244,10 @@
         "links": {
             "close": {
                 "url": "/preview/business-home",
+                "method": "get"
+            },
+            "figures": {
+                "url": "/preview/business-monthly-figures",
                 "method": "get"
             }
         }

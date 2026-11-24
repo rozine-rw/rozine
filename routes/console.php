@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Environment\UatMoneySimulation;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -18,6 +19,9 @@ Schedule::command('audits:request-flash')->hourly()->withoutOverlapping(30);
 
 Schedule::command('auditors:remind-renewals')->hourly()->withoutOverlapping(30);
 
+Schedule::command('readiness:evaluate')->hourly()->withoutOverlapping(30);
+Schedule::command('business:remind-visit-ready')->hourly()->withoutOverlapping(30);
+
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
@@ -28,6 +32,13 @@ Schedule::command('primary:expire-reservations')->everyMinute()->withoutOverlapp
 
 Schedule::command('cart:expire-checkouts')->everyMinute()->withoutOverlapping(5);
 
+Schedule::command('secondary:expire')->everyMinute()->withoutOverlapping(5);
+
 Schedule::command('disbursements:reconcile')->everyMinute()->withoutOverlapping(5);
+
+Schedule::command('staging:record-audit-sources')->everyMinute()->withoutOverlapping(5);
+
+Schedule::command('staging:open-monthly-audit')->everyFiveMinutes()->withoutOverlapping(10)
+    ->when(fn (): bool => app(UatMoneySimulation::class)->active());
 
 Schedule::command('changes:prune')->daily()->withoutOverlapping(60);

@@ -36,12 +36,15 @@ use Laravel\Sanctum\HasApiTokens;
  * @property int|null $active_membership_revision
  * @property int $context_revision
  * @property bool $login_alerts
+ * @property Carbon|null $closed_at
+ * @property string|null $closure_reason
+ * @property string|null $closed_email
  * @property-read Party|null $party
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token', 'party_id', 'party', 'active_membership_id', 'active_membership_revision', 'context_revision', 'login_alerts'])]
+#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token', 'party_id', 'party', 'active_membership_id', 'active_membership_revision', 'context_revision', 'login_alerts', 'closure_reason', 'closed_email'])]
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
@@ -54,6 +57,12 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     public function party(): BelongsTo
     {
         return $this->belongsTo(Party::class);
+    }
+
+    /** Whether the holder closed the account; a closed account keeps its records but cannot sign in. */
+    public function isClosed(): bool
+    {
+        return $this->closed_at !== null;
     }
 
     /**
@@ -140,6 +149,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'active_membership_revision' => 'integer',
             'context_revision' => 'integer',
             'login_alerts' => 'boolean',
+            'closed_at' => 'datetime',
         ];
     }
 }

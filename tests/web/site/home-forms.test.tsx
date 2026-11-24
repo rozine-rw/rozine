@@ -1,5 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
-import { createRef } from 'react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import {
     afterEach,
     beforeEach,
@@ -9,515 +8,314 @@ import {
     vi,
 } from 'vite-plus/test';
 import Home from '@/pages/home';
+import { landing } from './landing-inertia';
+import type { Controls, PostOptions } from './landing-inertia';
 
-const mocks = vi.hoisted(() => ({
-    post: vi.fn(),
-    download: vi.fn(),
-}));
+vi.mock('@inertiajs/react', () => import('./landing-inertia'));
 
-vi.mock('@inertiajs/react', () => ({
-    Head: () => null,
-    router: { post: mocks.post },
-}));
-
-vi.mock('@/lib/pass-card-image', () => ({
-    downloadPassCard: mocks.download,
-}));
-
-const renderSite = () => {
-    const ref = createRef<Home>();
-    const { unmount } = render(<Home ref={ref} />);
-    const instance = ref.current;
-
-    if (!instance) {
-        throw new Error('The site did not mount.');
-    }
-
-    return { site: instance, leavePage: unmount };
+const JOINED = {
+    queue_number: '#1204',
+    position: 1204,
+    referral_link: 'https://rozine.rw/join?ref=diane1204',
 };
 
-const mountSite = () => renderSite().site;
-
-/** The options object the component hands to the Inertia router. */
-const lastPostOptions = () =>
-    mocks.post.mock.calls.at(-1)?.[2] as {
-        onSuccess: () => void;
-        onError: (errors: Record<string, string>) => void;
-    };
-
-const readyInvestor = (site: Home) => {
-    act(() => {
-        site.setState({
-            name: 'Diane Uwase',
-            contact: '0788123456',
-            country: 'Rwanda',
-            mode: 'phone',
-            sheetOpen: true,
-        });
+const formElement = () =>
+    screen.getByRole('form', { name: 'Join the waitlist' });
+const form = () => within(formElement());
+const fill = (name: string, contact: string) => {
+    fireEvent.change(form().getByRole('textbox', { name: /name/i }), {
+        target: { value: name },
     });
+    fireEvent.change(
+        form().getByRole('textbox', { name: 'Phone number or email' }),
+        {
+            target: { value: contact },
+        },
+    );
 };
+const send = () =>
+    fireEvent.click(
+        form().getByRole('button', {
+            name: /Join the (investor|business) waitlist/,
+        }),
+    );
 
-const readyBusiness = (site: Home) => {
-    act(() => {
-        site.setState({ page: 'biz' });
-        site.bSet({
-            biz: 'Kigali Coffee Roasters',
-            contact: '0788123456',
-            mode: 'phone',
-            prov: 'Kigali City',
-            dist: 'Gasabo',
-            sheetOpen: true,
-        });
-    });
-};
+/** Answer the next post with `run`, which may resolve, reject or report errors. */
+const answerWith = (
+    run: (options: PostOptions, controls: Controls) => Promise<unknown>,
+) => landing.answer.mockImplementationOnce(run);
 
 beforeEach(() => {
-    document.body.innerHTML = '';
-    mocks.post.mockReset();
-    mocks.download.mockReset().mockResolvedValue(undefined);
-    window.scrollTo = vi.fn() as unknown as typeof window.scrollTo;
+    landing.posts = [];
+    landing.answer.mockReset();
+    landing.answer.mockImplementation(() => new Promise(() => undefined));
+    window.history.replaceState(null, '', '/');
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
 });
 
 afterEach(() => {
-    vi.useRealTimers();
+    vi.restoreAllMocks();
 });
 
-describe('an investor leaving their details', () => {
-    it('holds the details back until they are complete', () => {
-        const site = mountSite();
+describe('the waitlist form', () => {
+    it('checks the name and contact before sending anything', () => {
+        render(<Home />);
 
-        act(() => {
-            site.invVals().submit();
-        });
+        send();
+        expect(screen.getByRole('alert')).toHaveTextContent('Add your name.');
 
-        expect(mocks.post).not.toHaveBeenCalled();
-    });
-
-    it('sends the pledge with the contact reduced to one form', () => {
-        const site = mountSite();
-
-        readyInvestor(site);
-        act(() => {
-            site.invVals().submit();
-        });
-
-        const [url, payload] = mocks.post.mock.calls[0];
-
-        expect(url).toContain('investor');
-        expect(payload).toMatchObject({
-            name: 'Diane Uwase',
-            contact_method: 'phone',
-            contact: '250788123456',
-            country: 'Rwanda',
-        });
-        expect(payload.pledge_amount).toBeGreaterThan(0);
-    });
-
-    it('shows the card once the details are recorded', () => {
-        const site = mountSite();
-
-        readyInvestor(site);
-        act(() => {
-            site.invVals().submit();
-        });
-        act(() => {
-            lastPostOptions().onSuccess();
-        });
-
-        expect(site.state.sent).toBe(true);
-        expect(site.state.submitting).toBe(false);
-    });
-
-    it('repeats what the server objected to', () => {
-        const site = mountSite();
-
-        readyInvestor(site);
-        act(() => {
-            site.invVals().submit();
-        });
-        act(() => {
-            lastPostOptions().onError({
-                contact: 'This phone number is already in the waitlist.',
-            });
-        });
-
-        expect(site.state.sent).toBeFalsy();
-        expect(site.invVals().submitErr).toBe(
-            'This phone number is already in the waitlist.',
+        fill('Diane Uwase', '12345');
+        send();
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Add a valid phone number or email.',
         );
-        expect(screen.getByText(/already in the waitlist/)).toBeInTheDocument();
+        expect(landing.posts).toHaveLength(0);
+
+        fireEvent.change(
+            form().getByRole('textbox', { name: 'Phone number or email' }),
+            {
+                target: { value: '0788 123 456' },
+            },
+        );
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
 
-    it('falls back to a plain apology when the server says nothing useful', () => {
-        const site = mountSite();
+    it('sends an investor signup, shows a loader, then the place in the queue and the link', async () => {
+        let resolve: (value: unknown) => void = () => undefined;
+        answerWith(
+            (_options, controls) =>
+                new Promise((done) => {
+                    resolve = (value) => {
+                        controls.finish();
+                        done(value);
+                    };
+                }),
+        );
+        render(<Home />);
 
-        readyInvestor(site);
-        act(() => {
-            site.invVals().submit();
-        });
-        act(() => {
-            lastPostOptions().onError({});
-        });
+        fill('Diane Uwase', '+250 788 123 456');
+        send();
 
-        expect(site.invVals().submitErr).toMatch(/Something went wrong/);
-    });
-
-    it('will not send the same details twice at once', () => {
-        const site = mountSite();
-
-        readyInvestor(site);
-        act(() => {
-            site.invVals().submit();
-        });
-        act(() => {
-            site.invVals().submit();
-        });
-
-        expect(mocks.post).toHaveBeenCalledTimes(1);
-    });
-
-    it('reaches an investor by email when they ask for that', () => {
-        const site = mountSite();
-
-        act(() => {
-            site.setState({
-                name: 'Diane Uwase',
-                contact: 'Diane@Example.COM',
-                country: 'Rwanda',
-                mode: 'email',
-            });
-        });
-        act(() => {
-            site.invVals().submit();
-        });
-
-        expect(mocks.post.mock.calls[0][1]).toMatchObject({
-            contact_method: 'email',
-            contact: 'diane@example.com',
-        });
-    });
-});
-
-describe('a business asking to borrow', () => {
-    it('holds the request back until the details are complete', () => {
-        const site = mountSite();
-
-        act(() => {
-            site.setState({ page: 'biz' });
-        });
-        act(() => {
-            site.bizVals().submit();
-        });
-
-        expect(mocks.post).not.toHaveBeenCalled();
-    });
-
-    it('sends the figures the owner reported', () => {
-        const site = mountSite();
-
-        readyBusiness(site);
-        act(() => {
-            site.bizVals().submit();
-        });
-
-        const [url, payload] = mocks.post.mock.calls[0];
-
-        expect(url).toContain('business');
-        expect(payload).toMatchObject({
-            name: 'Kigali Coffee Roasters',
-            contact_method: 'phone',
-            contact: '250788123456',
-            province: 'Kigali City',
-            district: 'Gasabo',
-            annual_revenue: 80_000_000,
-            annual_costs: 62_000_000,
-            term_months: 6,
-        });
-    });
-
-    it('shows the card once the request is recorded', () => {
-        const site = mountSite();
-
-        readyBusiness(site);
-        act(() => {
-            site.bizVals().submit();
-        });
-        act(() => {
-            lastPostOptions().onSuccess();
-        });
-
-        expect(site.state.B.sent).toBe(true);
-        expect(site.state.B.submitting).toBe(false);
-    });
-
-    it('repeats what the server objected to', () => {
-        const site = mountSite();
-
-        readyBusiness(site);
-        act(() => {
-            site.bizVals().submit();
-        });
-        act(() => {
-            lastPostOptions().onError({ contact: 'Already on the waitlist.' });
-        });
-
-        expect(site.bizVals().submitErr).toBe('Already on the waitlist.');
-    });
-
-    it('falls back to a plain apology when the server says nothing useful', () => {
-        const site = mountSite();
-
-        readyBusiness(site);
-        act(() => {
-            site.bizVals().submit();
-        });
-        act(() => {
-            lastPostOptions().onError({});
-        });
-
-        expect(site.bizVals().submitErr).toMatch(/Something went wrong/);
-    });
-
-    it('will not send the same request twice at once', () => {
-        const site = mountSite();
-
-        readyBusiness(site);
-        act(() => {
-            site.bizVals().submit();
-        });
-        act(() => {
-            site.bizVals().submit();
-        });
-
-        expect(mocks.post).toHaveBeenCalledTimes(1);
-    });
-});
-
-describe('the card a signup can keep', () => {
-    // The saved/failed note clears itself after 2.2s of real time; hold the clock so a slow run
-    // cannot let it expire before the assertion reads it.
-    beforeEach(() => {
-        vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
-    });
-
-    it('hands the investor the card they are looking at', async () => {
-        const site = mountSite();
-
-        act(() => {
-            site.setState({
-                sent: true,
-                name: 'Diane Uwase',
-                country: 'Rwanda',
-                depIdx: 25,
-                term: 6,
-            });
-        });
-        await act(async () => {
-            await site.invVals().shareBtns[0].on();
-        });
-
-        expect(mocks.download).toHaveBeenCalledOnce();
-
-        const spec = mocks.download.mock.calls[0][0];
-
-        expect(spec).toMatchObject({
-            surface: 'site',
-            tone: 'investor',
-            tag: 'INVESTOR NOTE',
-            caption: 'PUTTING TO WORK',
-            holder: 'DIANE UWASE \u00b7 Rwanda',
-        });
-        expect(spec.amount).toMatch(/^RWF /);
-        expect(spec.stats.map((s: { label: string }) => s.label)).toEqual([
-            'YOU GET BACK',
-            'TERM',
+        expect(landing.posts).toEqual([
+            {
+                url: '/waitlist',
+                data: {
+                    role: 'investor',
+                    name: 'Diane Uwase',
+                    contact: '+250 788 123 456',
+                    ref: '',
+                },
+            },
         ]);
-        expect(site.state.shareMsg).toBe('Card saved to your device');
+        const busy = form().getByRole('button', { name: 'Joining…' });
+        expect(busy).toBeDisabled();
+
+        fireEvent.submit(formElement());
+        expect(landing.posts).toHaveLength(1);
+
+        await act(async () => resolve(JOINED));
+
+        const done = screen.getByRole('status');
+        expect(done).toHaveTextContent("YOU'RE IN");
+        expect(done).toHaveTextContent('#1,204');
+        expect(done).toHaveTextContent(
+            'Every person who joins through it moves you up the list.',
+        );
+        expect(done).toHaveTextContent('rozine.rw/join?ref=diane1204');
     });
 
-    it('hands the business the card they are looking at', async () => {
-        const site = mountSite();
+    it('copies the share link', async () => {
+        const writeText = vi.fn(() => Promise.resolve());
+        Object.assign(navigator, { clipboard: { writeText } });
+        answerWith(() => Promise.resolve(JOINED));
+        render(<Home />);
 
-        act(() => {
-            site.setState({ page: 'biz' });
-            site.bSet({ sent: true, biz: 'Kigali Coffee', dist: 'Gasabo' });
-        });
-        await act(async () => {
-            await site.bizVals().shareBtns[0].on();
-        });
+        fill('Diane Uwase', 'diane@example.com');
+        await act(async () => send());
+        fireEvent.click(screen.getByRole('button', { name: 'Copy' }));
 
-        const spec = mocks.download.mock.calls[0][0];
-
-        expect(spec).toMatchObject({
-            surface: 'site',
-            tone: 'business',
-            tag: 'BORROWING REQUEST',
-            caption: 'ASKING TO BORROW',
-            holder: 'KIGALI COFFEE \u00b7 Gasabo',
-        });
-        expect(spec.stats.map((s: { label: string }) => s.label)).toEqual([
-            'TERM',
-            'FLAT CHARGE',
-        ]);
-        expect(site.state.B.shareMsg).toBe('Card saved to your device');
+        expect(writeText).toHaveBeenCalledWith(
+            'https://rozine.rw/join?ref=diane1204',
+        );
+        expect(
+            screen.getByRole('button', { name: 'Copied' }),
+        ).toBeInTheDocument();
     });
 
-    it('clears the note a moment after the card is saved', async () => {
-        vi.useFakeTimers();
-
-        const site = mountSite();
-
-        act(() => {
-            site.setState({ sent: true, name: 'Diane', country: 'Rwanda' });
+    it('still says copied when the browser will not copy, leaving the link on screen', async () => {
+        Object.assign(navigator, {
+            clipboard: {
+                writeText: () => {
+                    throw new Error('blocked');
+                },
+            },
         });
-        await act(async () => {
-            await site.invVals().shareBtns[0].on();
-        });
+        answerWith(() => Promise.resolve(JOINED));
+        render(<Home />);
 
-        expect(site.state.shareMsg).toBe('Card saved to your device');
+        fill('Diane Uwase', 'diane@example.com');
+        await act(async () => send());
+        fireEvent.click(screen.getByRole('button', { name: 'Copy' }));
 
-        act(() => {
-            vi.advanceTimersByTime(2400);
-        });
-
-        expect(site.state.shareMsg).toBe('');
+        expect(
+            screen.getByRole('button', { name: 'Copied' }),
+        ).toBeInTheDocument();
     });
 
-    it('says so when the card cannot be drawn', async () => {
-        mocks.download.mockRejectedValue(new Error('no canvas here'));
+    it('keeps the link on screen when the browser has no clipboard', async () => {
+        Object.assign(navigator, { clipboard: undefined });
+        answerWith(() => Promise.resolve(JOINED));
+        render(<Home />);
 
-        const site = mountSite();
+        fill('Diane Uwase', 'diane@example.com');
+        await act(async () => send());
+        fireEvent.click(screen.getByRole('button', { name: 'Copy' }));
 
-        act(() => {
-            site.setState({ sent: true, name: 'Diane', country: 'Rwanda' });
-        });
-        await act(async () => {
-            await site.invVals().shareBtns[0].on();
-        });
-
-        expect(site.state.shareMsg).toBe('The card could not be saved');
-    });
-
-    it('says so when a business card cannot be drawn', async () => {
-        mocks.download.mockRejectedValue(new Error('no canvas here'));
-
-        const site = mountSite();
-
-        act(() => {
-            site.setState({ page: 'biz' });
-            site.bSet({ sent: true, biz: 'Kigali Coffee' });
-        });
-        await act(async () => {
-            await site.bizVals().shareBtns[0].on();
-        });
-
-        expect(site.state.B.shareMsg).toBe('The card could not be saved');
-    });
-
-    it('clears a business note a moment later too', async () => {
-        vi.useFakeTimers();
-
-        const site = mountSite();
-
-        act(() => {
-            site.setState({ page: 'biz' });
-            site.bSet({ sent: true, biz: 'Kigali Coffee' });
-        });
-        await act(async () => {
-            await site.bizVals().shareBtns[0].on();
-        });
-
-        expect(site.state.B.shareMsg).toBe('Card saved to your device');
-
-        act(() => {
-            vi.advanceTimersByTime(2400);
-        });
-
-        expect(site.state.B.shareMsg).toBe('');
-    });
-
-    it('drops the waiting note when the visitor leaves before it clears', async () => {
-        vi.useFakeTimers();
-
-        const { site, leavePage } = renderSite();
-
-        act(() => {
-            site.setState({ sent: true, name: 'Diane', country: 'Rwanda' });
-        });
-        await act(async () => {
-            await site.invVals().shareBtns[0].on();
-        });
-
-        expect(site.state.shareMsg).toBe('Card saved to your device');
-
-        leavePage();
-
-        const touchesState = vi.spyOn(site, 'setState');
-
-        act(() => {
-            vi.advanceTimersByTime(2400);
-        });
-
-        expect(touchesState).not.toHaveBeenCalled();
-    });
-});
-
-describe('keeping the glass layer in step with the page', () => {
-    it('orders the bands it masks from the top down', () => {
-        const site = new Home({} as never);
-        const host = document.createElement('div');
-        const layer = document.createElement('div');
-        const lower = document.createElement('div');
-        const upper = document.createElement('div');
-
-        layer.setAttribute('data-rz-glass', '');
-        lower.setAttribute('data-rz-blue', '');
-        upper.setAttribute('data-rz-blue', '');
-        host.append(layer, lower, upper);
-        document.body.appendChild(host);
-        vi.spyOn(host, 'scrollHeight', 'get').mockReturnValue(1000);
-        vi.spyOn(lower, 'getBoundingClientRect').mockReturnValue({
-            top: 600,
-            height: 100,
-        } as DOMRect);
-        vi.spyOn(upper, 'getBoundingClientRect').mockReturnValue({
-            top: 100,
-            height: 100,
-        } as DOMRect);
-
-        site._rzMask();
-
-        expect(layer.style.maskImage.indexOf('10.000%')).toBeLessThan(
-            layer.style.maskImage.indexOf('60.000%'),
+        expect(
+            screen.getByRole('button', { name: 'Copied' }),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'rozine.rw/join?ref=diane1204',
         );
     });
 
-    it('re-measures when the page is resized or reflows', () => {
-        const site = new Home({} as never);
-        const remeasure = vi.spyOn(site, '_rzMask');
-        let observed: (() => void) | undefined;
+    it('signs a business up from the Businesses view, in its own words', async () => {
+        answerWith(() => Promise.resolve({ ...JOINED, position: 7 }));
+        render(<Home />);
+        fireEvent.click(
+            within(screen.getByRole('banner')).getByRole('button', {
+                name: 'Businesses',
+            }),
+        );
 
-        window.ResizeObserver = class {
-            constructor(callback: () => void) {
-                observed = callback;
-            }
+        expect(
+            form().getByRole('button', { name: 'I want to borrow' }),
+        ).toHaveAttribute('aria-pressed', 'true');
+        send();
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'Add your business name.',
+        );
 
-            observe = vi.fn();
+        fill('Kigali Coffee Roasters', 'owner@kcr.rw');
+        await act(async () => send());
 
-            unobserve = vi.fn();
+        expect(landing.posts[0].data.role).toBe('business');
+        expect(screen.getByRole('status')).toHaveTextContent('#7');
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'confirm your business qualifies',
+        );
+    });
 
-            disconnect = vi.fn();
-        } as unknown as typeof ResizeObserver;
+    it('lets the visitor switch who they are joining as', () => {
+        render(<Home />);
 
-        site._rzWatch();
-        remeasure.mockClear();
+        fireEvent.click(
+            form().getByRole('button', { name: 'I want to borrow' }),
+        );
+        expect(
+            form().getByRole('textbox', { name: 'Business name' }),
+        ).toBeInTheDocument();
+        expect(
+            form().getByRole('button', { name: 'Join the business waitlist' }),
+        ).toBeInTheDocument();
 
-        observed?.();
-        window.dispatchEvent(new Event('resize'));
+        fireEvent.click(
+            form().getByRole('button', { name: 'I want to invest' }),
+        );
+        expect(
+            form().getByRole('textbox', { name: 'Your name' }),
+        ).toBeInTheDocument();
+    });
 
-        expect(remeasure).toHaveBeenCalledTimes(2);
+    it('carries the code from a shared link', () => {
+        window.history.replaceState(null, '', '/?ref=diane1204<x>');
+        render(<Home />);
 
-        site.componentWillUnmount();
-        delete (window as { ResizeObserver?: unknown }).ResizeObserver;
+        fill('Eric', 'eric@example.com');
+        send();
+
+        expect(landing.posts[0].data.ref).toBe('diane1204x');
+    });
+
+    it('shows what the server refused', async () => {
+        answerWith((_options, controls) => {
+            controls.setErrors({
+                contact: 'This phone number is already on the waitlist.',
+            });
+            controls.finish();
+
+            return Promise.reject(new Error('422'));
+        });
+        render(<Home />);
+
+        fill('Diane', '0788123456');
+        await act(async () => send());
+
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'This phone number is already on the waitlist.',
+        );
+        expect(
+            form().getByRole('textbox', { name: 'Phone number or email' }),
+        ).toHaveAttribute('aria-invalid', 'true');
+
+        fireEvent.change(form().getByRole('textbox', { name: 'Your name' }), {
+            target: { value: 'Diane U' },
+        });
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+
+    it.each([
+        [429, 'Too many tries. Wait a minute and try again.'],
+        [500, 'Something went wrong on our side. Please try again.'],
+    ])('explains a %s answer', async (status, message) => {
+        answerWith((options, controls) => {
+            options.onHttpException?.({ status });
+            controls.finish();
+
+            return Promise.reject(new Error(String(status)));
+        });
+        render(<Home />);
+
+        fill('Diane', '0788123456');
+        await act(async () => send());
+
+        expect(screen.getByRole('alert')).toHaveTextContent(message);
+    });
+
+    it('leaves field errors to the form on a 422', async () => {
+        answerWith((options, controls) => {
+            options.onHttpException?.({ status: 422 });
+            controls.setErrors({ name: 'Add your name.' });
+            controls.finish();
+
+            return Promise.resolve(undefined);
+        });
+        render(<Home />);
+
+        fill('Diane', '0788123456');
+        await act(async () => send());
+
+        expect(screen.getByRole('alert')).toHaveTextContent('Add your name.');
+        expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    });
+
+    it('says when Rozine could not be reached', async () => {
+        answerWith((options, controls) => {
+            options.onNetworkError?.();
+            controls.finish();
+
+            return Promise.reject(new Error('offline'));
+        });
+        render(<Home />);
+
+        fill('Diane', '0788123456');
+        await act(async () => send());
+
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'We could not reach Rozine.',
+        );
+        expect(
+            form().getByRole('button', { name: 'Join the investor waitlist' }),
+        ).toBeEnabled();
     });
 });

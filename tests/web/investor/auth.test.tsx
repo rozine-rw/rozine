@@ -406,7 +406,7 @@ describe('Sign-up', () => {
         expect(screen.getByLabelText('One-time code')).toHaveValue('123456');
     });
 
-    it('agrees to the terms and creates the account', async () => {
+    it('agrees to the terms by continuing, with no tick box, and creates the account', async () => {
         const user = userEvent.setup();
 
         inertia.errors = {
@@ -420,21 +420,19 @@ describe('Sign-up', () => {
         expect(
             screen.getByRole('link', { name: 'Terms & Conditions' }),
         ).toHaveAttribute('href', '/preview/investor-profile');
-        await user.click(
-            screen.getByRole('checkbox', { name: /Terms & Conditions/u }),
-        );
-        await user.click(
-            screen.getByRole('checkbox', { name: /Privacy Note/u }),
-        );
-        await user.click(
-            screen.getByRole('checkbox', { name: /Privacy Note/u }),
-        );
+        expect(
+            screen.getByRole('link', { name: 'Privacy Note' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(/Continuing means you agree to the/u),
+        ).toBeInTheDocument();
+        expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
         await user.click(
             screen.getByRole('button', { name: 'Create account' }),
         );
         expect(inertia.posts[0]).toMatchObject({
             url: '/preview/investor-verification',
-            data: { step: 'agree', terms: true, privacy: false },
+            data: { step: 'agree', terms: true, privacy: true },
         });
     });
 
@@ -449,6 +447,29 @@ describe('Sign-up', () => {
 });
 
 describe('Verification', () => {
+    it('names an Auditor check and sends its purpose with the first step', async () => {
+        const user = userEvent.setup();
+        render(
+            <InvestorVerification
+                {...({
+                    ...clone<InvestorVerificationProps>(personalFixture),
+                    purpose: 'auditor',
+                } as InvestorVerificationProps)}
+            />,
+        );
+
+        expect(
+            screen.getByText('IDENTITY CHECK FOR AUDITOR ACCESS'),
+        ).toBeInTheDocument();
+        fireEvent.change(screen.getByLabelText('DATE OF BIRTH'), {
+            target: { value: '1990-02-01' },
+        });
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+        expect(inertia.posts.at(-1)).toMatchObject({
+            data: { step: 'personal', purpose: 'auditor' },
+        });
+    });
+
     it('verifies an individual: date of birth, document photos, then a selfie', async () => {
         const user = userEvent.setup();
         const { unmount: unmountFirst } = render(

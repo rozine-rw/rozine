@@ -15,6 +15,8 @@ class AuditorProcedureResource extends JsonResource
     {
         /** @var array<string, mixed> $page */
         $page = $this->resource;
+        /** @var array{difference: string|null, parts: array{cash: string|null, costs?: string|null, drawings?: string|null}, verified_costs: string|null, causes: list<string>, loans_max: int, cost_categories: list<string>, loan_uses: list<string>, change_kinds: list<string>, premises_tenures: list<string>, assets_max: int, late_reasons: list<string>} $options */
+        $options = [...$page['monthly'], ...$page['baseline'], ...$page['late']];
         $report = $page['report'];
         // The review step lists the statements on file, as the job file does once the work is the partner's.
         $file = (new AuditorFileResource(['record' => $page['file'], 'jobs' => $page['jobs'], 'documents' => $page['sources']['documents'] ?? null]))->resolve($request);
@@ -56,8 +58,10 @@ class AuditorProcedureResource extends JsonResource
                 'revision' => $report['revision'], 'reassigned_from' => null, 'amends' => $report['amends_id'] === null ? null
                     : ['report_id' => $report['amends_id'], 'link' => AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['amends_id']])]],
             'assignment' => ['id' => $report['assignment_id'], 'revision' => $job['revision']],
-            'steps' => $page['steps'], 'stage' => $page['sealed'] === null || $report['step'] !== 'seal'
-                ? $this->stage($report, $page['sources'], $file['file'], $prefix, $page['variance'], $page['seal'], $reasonOptions, $upload, $page['mfa_confirmed'])
+            // A done step opens read-only from the bar, as Back does (QA #685).
+            'steps' => array_map(fn (array $step): array => [...$step, 'link' => $report['status'] === 'draft' && $step['state'] === 'done'
+                ? AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['id'], 'step' => $step['key']]) : null], $page['steps']), 'stage' => $page['sealed'] === null || $report['step'] !== 'seal'
+                ? $this->stage($report, $page['sources'], $file['file'], $prefix, $page['variance'], $options, $page['seal'], $reasonOptions, $upload, $page['mfa_confirmed'])
                 : [...array_diff_key($page['sealed'], ['sources' => true]), 'step' => 'sealed', 'verification' => AuditorJobsResource::link($request->routeIs('api.*') ? 'api.v1.audit.seals.verify' : 'audit.seals.verify', ['report' => $report['id']]), 'amended_by' => $report['amendment_id'] === null ? null
                     : ['report_id' => $report['amendment_id'], 'link' => AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['amendment_id']])]],
             'can_continue' => $page['can_continue'], 'hint' => $report['status'] === 'draft' ? $this->hint($page['unavailable']) : null,
@@ -81,12 +85,13 @@ class AuditorProcedureResource extends JsonResource
      * @param  array<string, mixed>  $sources
      * @param  array<string, mixed>  $file
      * @param  array<string, mixed>  $variance
+     * @param  array{difference: string|null, parts: array{cash: string|null, costs?: string|null, drawings?: string|null}, verified_costs: string|null, causes: list<string>, loans_max: int, cost_categories: list<string>, loan_uses: list<string>, change_kinds: list<string>, premises_tenures: list<string>, assets_max: int, late_reasons: list<string>}  $monthly
      * @param  array<string, mixed>|null  $seal
      * @param  array<string, mixed>|null  $reasonOptions
      * @param  array{url: string, method: string}|null  $upload
      * @return array<string, mixed>
      */
-    private function stage(array $report, array $sources, array $file, string $prefix, array $variance, ?array $seal, ?array $reasonOptions, ?array $upload, bool $mfaConfirmed): array
+    private function stage(array $report, array $sources, array $file, string $prefix, array $variance, array $monthly, ?array $seal, ?array $reasonOptions, ?array $upload, bool $mfaConfirmed): array
     {
         if (in_array($report['status'], ['changes_requested', 'rejected'], true)) {
             $decision = $report['draft']['decision'];
@@ -118,9 +123,69 @@ class AuditorProcedureResource extends JsonResource
                 'sector' => ['label' => $sources['source_facts']['declared_sector_label'] ?? __('Unavailable'),
                     'definition' => $sources['source_facts']['declared_unit_label'] ?? __('A declared inventory unit definition is required.')],
                 'operational_status' => $fields['operational_status'] ?? null],
+            'history' => ['step' => 'history', 'months' => array_map(fn (array $month): array => ['month' => $month['month'],
+                'inflow' => AuditorJobsResource::money($month['inflow']), 'outflow' => AuditorJobsResource::money($month['outflow'])], $sources['history'] ?? []),
+                'history_checked' => $fields['history_checked'] ?? false],
+            'premises' => ['step' => 'premises', 'tenures' => $monthly['premises_tenures'], 'premises_tenure' => $fields['premises_tenure'] ?? null,
+                'max' => $monthly['assets_max'], 'assets' => array_map(fn (array $asset): array => ['item' => $asset['item'],
+                    'value' => AuditorJobsResource::money($asset['value'])], $fields['assets'] ?? [])],
+            'people' => ['step' => 'people', 'owners_confirmed' => $fields['owners_confirmed'] ?? false, 'management_confirmed' => $fields['management_confirmed'] ?? false],
+            'registration' => ['step' => 'registration', 'registration_confirmed' => $fields['registration_confirmed'] ?? false,
+                'tax_clearance_expires_on' => $fields['tax_clearance_expires_on'] ?? null],
+            'trading' => ['step' => 'trading', 'trading_since' => $fields['trading_since'] ?? null],
+            'available' => ['step' => 'available', 'cash_available' => AuditorJobsResource::money($fields['cash_available'] ?? null),
+                'financial_proofs' => $this->proofs($sources['financial_proofs'], $fields['financial_proofs'] ?? [])],
+            'reason' => ['step' => 'reason', 'reasons' => $monthly['late_reasons'], 'late_reason' => $fields['late_reason'] ?? null,
+                'late_reason_note' => $fields['late_reason_note'] ?? ''],
+            'cash_sales' => ['step' => 'cash_sales', 'undeposited_cash_sales' => AuditorJobsResource::money($fields['undeposited_cash_sales'] ?? null)],
+            'costs' => ['step' => 'costs', 'categories' => array_map(fn (string $category): array => ['key' => $category,
+                'amount' => AuditorJobsResource::money(is_array($fields['costs'] ?? null) ? $fields['costs'][$category] ?? null : null),
+                'declared' => AuditorJobsResource::money($sources['declared']['costs'][$category] ?? null)], $monthly['cost_categories']),
+                'declared_total' => AuditorJobsResource::money($sources['declared']['costs_total'] ?? null)],
+            'drawings' => ['step' => 'drawings', 'owner_drawings' => AuditorJobsResource::money($fields['owner_drawings'] ?? null),
+                'declared' => AuditorJobsResource::money($sources['declared']['drawings'] ?? null)],
+            'loans' => ['step' => 'loans', 'max' => $monthly['loans_max'], 'loans' => array_map(fn (array $loan): array => ['lender' => $loan['lender'],
+                'outstanding' => AuditorJobsResource::money($loan['outstanding']), 'monthly_payment' => AuditorJobsResource::money($loan['monthly_payment'])], $fields['loans'] ?? [])],
+            'staff' => ['step' => 'staff', 'staff_count' => $fields['staff_count'] ?? null, 'rssb_checked' => $fields['rssb_checked'] ?? false],
+            'expiries' => ['step' => 'expiries', 'tax_clearance_expires_on' => $fields['tax_clearance_expires_on'] ?? null,
+                'rssb_clearance_expires_on' => $fields['rssb_clearance_expires_on'] ?? null],
+            'loan_use' => ['step' => 'loan_use', 'options' => $monthly['loan_uses'], 'loan_use' => $fields['loan_use'] ?? null, 'note' => $fields['loan_use_note'] ?? ''],
+            'changes' => ['step' => 'changes', 'kinds' => $monthly['change_kinds'], 'changes' => $fields['changes'] ?? null],
+            'differences' => ['step' => 'differences', 'reported' => AuditorJobsResource::money($sources['reported_cash']),
+                'observed' => AuditorJobsResource::money($report['draft']['fields']['count']['cash'] ?? null),
+                'cash_difference' => AuditorJobsResource::money($monthly['parts']['cash']),
+                'declared' => $this->declaredParts($report['draft']['fields'], $sources, $monthly['parts'], $monthly['verified_costs']),
+                'difference' => AuditorJobsResource::money($monthly['difference']),
+                'causes' => $monthly['causes'], 'explanations' => array_map(fn (array $explanation): array => [
+                    'cause' => $explanation['cause'], 'amount' => $explanation['amount']], $fields['explanations'] ?? [])],
             'seal' => $this->seal($report, $sources, $seal ?? throw new \LogicException('A persisted report preview is required.'), $reasonOptions, $mfaConfirmed),
             default => ['step' => 'statements', 'statements' => $this->statements($report, $sources, $prefix)],
         };
+    }
+
+    /**
+     * The costs and owner drawings the CPA verified against what the Business declared for the month
+     * (BRS v3 VIS-R04), each with its difference for step 9; empty when nothing was declared.
+     *
+     * @param  array<string, mixed>  $fields
+     * @param  array<string, mixed>  $sources
+     * @param  array<string, string|null>  $parts
+     * @param  string|null  $verifiedCosts  the CPA's six cost categories, summed
+     * @return list<array{key: string, declared: array<string, string>|null, verified: array<string, string>|null, difference: array<string, string>|null}>
+     */
+    private function declaredParts(array $fields, array $sources, array $parts, ?string $verifiedCosts): array
+    {
+        $declared = $sources['declared'] ?? null;
+        if (! is_array($declared)) {
+            return [];
+        }
+
+        return [['key' => 'costs', 'declared' => AuditorJobsResource::money($declared['costs_total']),
+            'verified' => AuditorJobsResource::money($verifiedCosts),
+            'difference' => AuditorJobsResource::money($parts['costs'] ?? null)],
+            ['key' => 'drawings', 'declared' => AuditorJobsResource::money($declared['drawings']),
+                'verified' => AuditorJobsResource::money($fields['drawings']['owner_drawings'] ?? null),
+                'difference' => AuditorJobsResource::money($parts['drawings'] ?? null)]];
     }
 
     /**
@@ -207,17 +272,31 @@ class AuditorProcedureResource extends JsonResource
     private function seal(array $report, array $sources, array $seal, ?array $reasonOptions, bool $mfaConfirmed): array
     {
         $findings = [];
+        $summary = [];
+        $causes = [];
         foreach ($seal['findings'] as $index => $finding) {
             $values = AuditorJobsResource::figures(array_intersect_key($finding, array_flip(['reported', 'observed', 'difference'])));
-            $findings[] = ['code' => $finding['code'], 'no' => (string) ($index + 1),
-                'title' => match ($finding['measure']) {
-                    'stock_value' => __('Stock value'), 'cash' => __('Cash balance'), 'stock_units' => __('Inventory units'), default => __('Operating status'),
-                }, 'body' => isset($finding['reported'])
-                    ? __('Reported: :reported. Observed: :observed. Difference: :difference.', $values)
-                    : __('Observed status: :observed.', $values), 'evidence_ids' => $finding['evidence_ids']];
+            $title = match ($finding['measure']) {
+                'stock_value' => __('Stock value'), 'cash' => __('Cash balance'), 'stock_units' => __('Inventory units'), 'costs' => __('Costs'), 'owner_drawings' => __('Owner drawings'), default => __('Operating status'),
+            };
+            $findings[] = ['code' => $finding['code'], 'no' => (string) ($index + 1), 'title' => $title, 'body' => isset($finding['reported'])
+                ? __('Reported: :reported. Observed: :observed. Difference: :difference.', $values)
+                : __('Observed status: :observed.', $values), 'evidence_ids' => $finding['evidence_ids']];
+            // What the auditor is about to sign, at a glance on the step itself (QA #674).
+            $money = in_array($finding['measure'], ['stock_value', 'cash', 'costs', 'owner_drawings'], true) ? 'RWF ' : '';
+            $summary[] = ! isset($finding['reported']) ? ['label' => $title, 'value' => (string) $values['observed'], 'tone' => 'neutral']
+                : ($finding['difference'] === '0' ? ['label' => $title, 'value' => __('Matches: :value', ['value' => $money.$values['observed']]), 'tone' => 'ok']
+                    : ['label' => $title, 'value' => __('Declared :reported, verified :observed', ['reported' => $money.$values['reported'], 'observed' => $money.$values['observed']]), 'tone' => 'flag']);
+            foreach ($finding['explained_by'] ?? [] as $part) {
+                $causes[] = self::causeLabel($part['cause']).' RWF '.AuditorJobsResource::figures(['amount' => $part['amount']])['amount'];
+            }
+        }
+        // Step 9 explains the whole difference at once, not each gap, so its causes are listed once (QA #685).
+        if ($causes !== []) {
+            $summary[] = ['label' => __('Explained in step 9'), 'value' => implode(' · ', $causes), 'tone' => 'neutral'];
         }
 
-        return ['step' => 'seal', 'summary' => [], 'note' => ['required' => $seal['note_required'],
+        return ['step' => 'seal', 'summary' => $summary, 'note' => ['required' => $seal['note_required'],
             'why' => $seal['note_required'] ? __('Explain the observed differences or operating status.') : __('Add any factual explanation for the report.'),
             'value' => $report['draft']['note'], 'min' => $seal['note_required'] ? 1 : 0, 'max' => 100],
             'findings' => $findings, 'evidence' => $this->evidence($sources), 'procedure_version' => $seal['payload']['procedure_version'],
@@ -236,6 +315,19 @@ class AuditorProcedureResource extends JsonResource
             'label' => $this->reasonLabel($code), 'requires_explanation' => true], $codes));
 
         return ['request_changes' => $map($options['request_changes']), 'reject' => $map($options['reject'])];
+    }
+
+    private static function causeLabel(string $cause): string
+    {
+        return match ($cause) {
+            'unrecorded_sales' => __('Sales not recorded'),
+            'unproven_expense' => __('Expense without proof'),
+            'personal_spending' => __('Personal spending from the business'),
+            'wrong_month' => __('Recorded in the wrong month'),
+            'entry_error' => __('Entry error'),
+            'counted_twice' => __('Counted twice'),
+            default => $cause,
+        };
     }
 
     private function reasonLabel(string $code): string

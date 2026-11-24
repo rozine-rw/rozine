@@ -23,10 +23,13 @@ const STATUS_TONE: Record<HealthStatus, Tone> = {
 
 /** The design's card fill and edge: tinted for critical and watch, plain otherwise. */
 const CARD: Record<HealthStatus, string> = {
-    critical: 'border-[#f6dcdd] bg-[#fffafa] dark:border-[rgba(229,72,77,.35)]',
-    watch: 'border-[#f4e6c9] bg-[#fffdf7] dark:border-[rgba(194,102,31,.35)]',
-    healthy: 'border-[#e7ecf4] bg-white dark:border-rz-divider',
-    untracked: 'border-[#e7ecf4] bg-white dark:border-rz-divider',
+    critical:
+        'border-[#f6dcdd] bg-[#fffafa] dark:border-[rgba(229,72,77,.35)] dark:bg-rz-surface',
+    watch: 'border-[#f4e6c9] bg-[#fffdf7] dark:border-[rgba(194,102,31,.35)] dark:bg-rz-surface',
+    healthy:
+        'border-[#e7ecf4] bg-white dark:border-rz-divider dark:bg-rz-surface',
+    untracked:
+        'border-[#e7ecf4] bg-white dark:border-rz-divider dark:bg-rz-surface',
 };
 
 const RAIL: Record<HealthStatus, string> = {
@@ -204,11 +207,11 @@ export default function AdminSystemHealth(props: AdminSystemHealthProps) {
                 className={cn(
                     'mb-[18px] flex items-center gap-3 rounded-[14px] border px-[18px] py-3.5',
                     state === 'critical' &&
-                        'border-[#f6d5d5] bg-[rgba(229,72,77,.06)]',
+                        'border-[#f6d5d5] bg-[rgba(229,72,77,.06)] dark:border-[rgba(229,72,77,.35)] dark:bg-rz-danger-tint',
                     state === 'watch' &&
-                        'border-[#f6e7c8] bg-[rgba(194,102,31,.06)]',
+                        'border-[#f6e7c8] bg-[rgba(194,102,31,.06)] dark:border-[rgba(194,102,31,.35)] dark:bg-rz-warning-tint',
                     state === 'healthy' &&
-                        'border-[#cdeddb] bg-[rgba(29,158,117,.06)]',
+                        'border-[#cdeddb] bg-[rgba(29,158,117,.06)] dark:border-rz-positive-tint dark:bg-rz-positive-tint',
                 )}
             >
                 <span

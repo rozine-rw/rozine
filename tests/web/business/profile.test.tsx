@@ -10,6 +10,7 @@ import type {
 } from '@/types/business';
 import expiredFixture from '../../../resources/fixtures/ui/business-profile-company-expired.json';
 import companyFixture from '../../../resources/fixtures/ui/business-profile-company.json';
+import disclaimersFixture from '../../../resources/fixtures/ui/business-profile-disclaimers.json';
 import linkedFixture from '../../../resources/fixtures/ui/business-profile-linked.json';
 import recordCompanyFixture from '../../../resources/fixtures/ui/business-profile-on-record-company.json';
 import recordFixture from '../../../resources/fixtures/ui/business-profile-on-record.json';
@@ -122,7 +123,7 @@ vi.mock('@inertiajs/react', async () => {
     };
 });
 
-/** The design's seven Profile rows (Business.dc.html L5022–5028), in its order. */
+/** The design's seven Profile rows (Business.dc.html L5022–5028), in its order, then the Disclaimers. */
 const MENU = [
     'Company information›',
     'Security center›',
@@ -131,6 +132,7 @@ const MENU = [
     'Support center›',
     'Terms & Conditions›',
     'Privacy Note›',
+    'Disclaimers›',
 ];
 
 const props = (fixture: { props: unknown }) =>
@@ -196,6 +198,13 @@ describe('Company information', () => {
         ).toBeDisabled();
 
         const phone = screen.getByRole('textbox', { name: 'Business phone' });
+
+        expect(phone).toHaveAttribute('placeholder', '07XX XXX XXX');
+        expect(
+            screen.getByRole('textbox', { name: 'Business email' }),
+        ).toHaveAccessibleDescription(
+            "Where Rozine sends the business's receipts, notices and statements.",
+        );
 
         await user.clear(phone);
         await user.type(phone, '0788-555 111');
@@ -414,7 +423,29 @@ describe('Linked accounts', () => {
         ).toBeInTheDocument();
     });
 
-    it('says so when no account is linked and none can be', () => {
+    it('says linking is not open yet, that nothing is needed, and where to ask, rather than leaving a dead end (#592)', () => {
+        const page = props(linkedFixture);
+
+        page.linked = { accounts: [], add: null, banks: [], open: false };
+        page.links.sections.support = {
+            url: '/business/profile/support',
+            method: 'get',
+        };
+        render(<BusinessProfile {...page} />);
+
+        expect(
+            screen.getByText(
+                /Rozine hasn't opened payout accounts for businesses yet, so there is nothing for you to do now\./u,
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', {
+                name: 'Questions? Ask Rozine support.',
+            }),
+        ).toHaveAttribute('href', '/business/profile/support');
+    });
+
+    it('tells a holder who cannot withdraw that a signatory links the account', () => {
         const page = props(linkedFixture);
 
         page.linked = { accounts: [], add: null, banks: [] };
@@ -422,9 +453,14 @@ describe('Linked accounts', () => {
 
         expect(
             screen.getByText(
-                'No account linked yet. Linking opens once this account is cleared for money movement. Your payouts go to the verified account you link here.',
+                'No account linked yet. Only a signatory who can withdraw for this business can link a payout account. Ask one of them to link it here.',
             ),
         ).toBeInTheDocument();
+        expect(
+            screen.queryByRole('link', {
+                name: 'Questions? Ask Rozine support.',
+            }),
+        ).not.toBeInTheDocument();
     });
 
     it('shows nothing until the accounts arrive', () => {
@@ -438,32 +474,55 @@ describe('Linked accounts', () => {
 });
 
 describe('Legal documents', () => {
-    it('shows the Terms version the business accepted', () => {
+    it.each([
+        [
+            termsFixture,
+            'Terms & Conditions',
+            'Terms and Conditions',
+            '1. About Rozine',
+        ],
+        [
+            privacyFixture,
+            'Privacy Note',
+            'Privacy Notice',
+            '1. Who we are and the law we follow',
+        ],
+        [
+            disclaimersFixture,
+            'Disclaimers',
+            'Disclaimers',
+            '1. The CMA sandbox notice',
+        ],
+    ])(
+        'shows %#: the full current document in place, with its version and fingerprint',
+        (fixture, heading, title, section) => {
+            const page = props(fixture);
+
+            render(<BusinessProfile {...page} />);
+
+            expect(
+                screen.getByRole('heading', { name: heading }),
+            ).toBeInTheDocument();
+            const article = screen.getByRole('article', { name: title });
+            expect(
+                within(article).getByRole('heading', { name: section }),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    `Version ${page.legal?.version} · Fingerprint (SHA-256) ${page.legal?.sha256}`,
+                ),
+            ).toBeInTheDocument();
+        },
+    );
+
+    it('keeps a link to another legal document inside the profile', () => {
         render(<BusinessProfile {...props(termsFixture)} />);
 
         expect(
-            screen.getByText('Last updated 4 August 2026 · Version 2.5'),
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText(/Please read these Terms carefully/),
-        ).toBeInTheDocument();
-        expect(
-            screen.getByRole('heading', {
-                name: '1. Acceptance of these Terms',
-            }),
-        ).toBeInTheDocument();
-        expect(screen.getByText('legal@rozine.rw')).toBeInTheDocument();
-    });
-
-    it('shows the Privacy Note', () => {
-        render(<BusinessProfile {...props(privacyFixture)} />);
-
-        expect(
-            screen.getByText(
-                /This Privacy Note explains what information Rozine collects/,
-            ),
-        ).toBeInTheDocument();
-        expect(screen.getByText('privacy@rozine.rw')).toBeInTheDocument();
+            within(
+                screen.getByRole('article', { name: 'Terms and Conditions' }),
+            ).getAllByRole('link', { name: 'Privacy Notice' })[0],
+        ).toHaveAttribute('href', '/preview/business-profile-privacy');
     });
 
     it('shows nothing until the document arrives', () => {
@@ -472,7 +531,7 @@ describe('Legal documents', () => {
         page.legal = null;
         render(<BusinessProfile {...page} />);
 
-        expect(screen.queryByText(/Last updated/)).not.toBeInTheDocument();
+        expect(screen.queryByRole('article')).not.toBeInTheDocument();
     });
 });
 
@@ -595,7 +654,9 @@ describe('Business account sections', () => {
         expect(
             screen.getByRole('link', { name: /Change password/u }),
         ).toHaveAttribute('href', '/preview/business-profile-security');
-        expect(screen.queryByText(/Delete account/u)).not.toBeInTheDocument();
+        expect(
+            screen.getByRole('link', { name: /Delete account/u }),
+        ).toHaveAttribute('href', '/settings/profile#close-account');
         unmount();
 
         const off = props(securityFixture);
@@ -669,8 +730,6 @@ describe('Business account sections', () => {
 
     it.each([
         [linkedFixture, 'Linked accounts', 'No payout account yet', 'linked'],
-        [termsFixture, 'Terms & Conditions', 'Coming to the app soon', 'legal'],
-        [privacyFixture, 'Privacy Note', 'Coming to the app soon', 'legal'],
     ] as const)(
         'shows %#: the design section, empty until there is something to read',
         (fixture, heading, title, empty) => {
@@ -678,10 +737,6 @@ describe('Business account sections', () => {
 
             if (empty === 'linked') {
                 page.linked = null;
-            }
-
-            if (empty === 'legal') {
-                page.legal = null;
             }
 
             render(<BusinessProfile {...page} />);
@@ -732,6 +787,9 @@ describe('Business account sections', () => {
             screen.getByRole('button', { name: /CMP-00000003/u }),
         ).toHaveTextContent('Awaiting reply');
 
+        expect(screen.getByTestId('support-chat-clearance')).toHaveClass(
+            'h-20',
+        );
         await user.click(
             screen.getByRole('button', { name: 'Contact Rozine Support' }),
         );

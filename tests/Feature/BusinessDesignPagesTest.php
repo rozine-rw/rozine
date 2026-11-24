@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Application\Auditor\Contracts\AuditReportPublicationStore;
+use App\Application\Identity\LegalDocuments;
 use App\Domain\Auditor\AuditEngagementState;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Underwriting\EngineScorecard;
@@ -37,7 +38,7 @@ beforeEach(function (): void {
         $props = $this->actingAs($user)->get(route($route, $parameters))->assertOk()
             ->assertInertia(fn (Assert $page): Assert => $page->component($component))->viewData('page')['props'];
 
-        return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count', 'checkout_holds']));
+        return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count', 'checkout_holds', 'risk_acknowledgement', 'staff_console']));
     };
     $this->business = function (string $kind = 'organization', int $people = 2, string $code = 'COMPANY-001'): array {
         $authority = AuthorityFixture::make($kind, $people, $code, 1);
@@ -49,6 +50,7 @@ beforeEach(function (): void {
 
 dataset('business pages', [
     'reports' => ['business.reports', 'business/reports'],
+    'readiness' => ['business.readiness', 'business/readiness'],
     'market' => ['business.market', 'business/market'],
     'profile' => ['business.profile', 'business/profile'],
     'rating' => ['business.rating', 'business/rating'],
@@ -77,7 +79,7 @@ it('opens Profile on the verified registration and mandate, with every design se
     $banks = array_map(fn (string $code, string $name): array => ['code' => $code, 'name' => $name], array_keys(PayoutAccount::BANKS), PayoutAccount::BANKS);
 
     expect($props)->toMatchArray(['business' => ['name' => 'Synthetic business', 'address_line' => 'Kigali City, Gasabo', 'verified' => true, 'rating' => null],
-        'section' => 'company', 'landing' => true, 'linked' => ['add' => ['url' => "/business/{$business}/profile/linked-accounts", 'method' => 'post'], 'banks' => $banks, 'accounts' => []], 'legal' => null,
+        'section' => 'company', 'landing' => true, 'linked' => ['add' => ['url' => "/business/{$business}/profile/linked-accounts", 'method' => 'post'], 'banks' => $banks, 'open' => true, 'accounts' => []], 'legal' => null,
         'company' => ['name' => 'Synthetic business', 'email' => '', 'phone' => '', 'address' => ['province' => 'Kigali City', 'district' => 'Gasabo', 'sector' => '', 'cell' => '', 'street' => ''],
             'certificate' => null, 'signatories' => [], 'signatories_required' => 1],
         'actions' => ['save_company' => ($this->link)("/business/{$business}/profile/company", 'put')],
@@ -95,14 +97,15 @@ it('opens Profile on the verified registration and mandate, with every design se
             ['name' => 'Verified person 1', 'roles' => ['controller', 'owner', 'signatory'], 'permissions' => $props['team'][1]['permissions'], 'signatory' => false]])
         ->and(array_merge(...array_column($props['team'], 'permissions')))->toContain('business.view')
         ->and($props['links'])->toBe(['home' => ($this->link)("/business/{$business}"), 'reports' => ($this->link)("/business/{$business}/reports"),
-            'market' => ($this->link)("/business/{$business}/market"), 'profile' => $profile, 'launcher' => ($this->link)('/dashboard'), 'back' => $profile,
+            'readiness' => ($this->link)("/business/{$business}/readiness"), 'market' => ($this->link)("/business/{$business}/market"), 'profile' => $profile, 'launcher' => ($this->link)('/dashboard'), 'back' => $profile,
             'sections' => ['company' => $section('company'), 'security' => $section('security'), 'permissions' => $section('permissions'),
-                'linked' => $section('linked'), 'support' => $section('support'), 'terms' => $section('terms'), 'privacy' => $section('privacy')],
+                'linked' => $section('linked'), 'support' => $section('support'), 'terms' => $section('terms'), 'privacy' => $section('privacy'),
+                'disclaimers' => $section('disclaimers')],
             'security_settings' => ($this->link)('/settings/security'), 'sign_out' => ($this->link)('/logout', 'post')]);
 
-    foreach (['company', 'security', 'permissions', 'linked', 'support', 'terms', 'privacy'] as $key) {
+    foreach (['company', 'security', 'permissions', 'linked', 'support', 'terms', 'privacy', 'disclaimers'] as $key) {
         expect(($this->props)($user, 'business.profile', ['business' => $business, 'section' => $key], 'business/profile'))
-            ->toMatchArray(['section' => $key, 'landing' => false]);
+            ->toMatchArray(['section' => $key, 'landing' => false, 'legal' => app(LegalDocuments::class)->pageFor($key)]);
     }
     $this->actingAs($user)->get("/business/{$business}/profile/billing")->assertNotFound();
 
@@ -112,7 +115,7 @@ it('opens Profile on the verified registration and mandate, with every design se
     BusinessFundingMethod::factory()->unverified()->create(['business_id' => $business]);
     BusinessFundingMethod::factory()->create();
     expect(($this->props)($user, 'business.profile', ['business' => $business, 'section' => 'linked'], 'business/profile')['linked'])
-        ->toBe(['add' => ['url' => "/business/{$business}/profile/linked-accounts", 'method' => 'post'], 'banks' => $banks, 'accounts' => collect([
+        ->toBe(['add' => ['url' => "/business/{$business}/profile/linked-accounts", 'method' => 'post'], 'banks' => $banks, 'open' => true, 'accounts' => collect([
             ['id' => $momo->id, 'kind' => 'mobile_money', 'name' => 'MTN MoMo', 'detail' => '+250 788 ···· 456',
                 'unlink' => ['url' => "/business/{$business}/profile/linked-accounts/{$momo->id}/unlink", 'method' => 'post']],
             ['id' => $bank->id, 'kind' => 'bank', 'name' => 'Bank of Kigali', 'detail' => 'Account ····2231',
@@ -129,7 +132,7 @@ it('opens Market with its shell links only, as no secondary-market read exists',
 
     expect(($this->props)($authority['users'][0], 'business.market', ['business' => $business], 'business/market'))
         ->toBe(['links' => ['home' => ($this->link)("/business/{$business}"), 'reports' => ($this->link)("/business/{$business}/reports"),
-            'market' => ($this->link)("/business/{$business}/market"), 'profile' => ($this->link)("/business/{$business}/profile"),
+            'readiness' => ($this->link)("/business/{$business}/readiness"), 'market' => ($this->link)("/business/{$business}/market"), 'profile' => ($this->link)("/business/{$business}/profile"),
             'launcher' => ($this->link)('/dashboard')]]);
 });
 
@@ -213,7 +216,7 @@ it('opens Repayments on its empty state over the real Home while no note is serv
         ->and((array) $props['bases'])->toBe([])
         ->and($props['server_time'])->toBe(now()->toIso8601String())
         ->and($props['shell_links'])->toBe(['home' => ($this->link)("/business/{$business}"), 'launcher' => ($this->link)('/dashboard'),
-            'reports' => ($this->link)("/business/{$business}/reports"), 'market' => ($this->link)("/business/{$business}/market"), 'profile' => ($this->link)("/business/{$business}/profile")])
+            'reports' => ($this->link)("/business/{$business}/reports"), 'readiness' => ($this->link)("/business/{$business}/readiness"), 'market' => ($this->link)("/business/{$business}/market"), 'profile' => ($this->link)("/business/{$business}/profile")])
         ->and($props['links'])->toBe(['close' => ($this->link)("/business/{$business}"), 'top_up' => ($this->link)("/business/{$business}/wallet?kind=deposit"),
             'operation' => ($this->link)("/business/{$business}/repayment-operations/{request_id}?command=repayment.pay&identity_context_revision=1")]);
 });
@@ -224,7 +227,7 @@ it('lists no report before the first sealed monthly report, and names no audit-c
 
     expect(($this->props)($authority['users'][0], 'business.reports', ['business' => $business], 'business/reports'))
         ->toBe(['reports' => ['verified' => [], 'in_audit' => [], 'archived' => []], 'report' => null, 'policy' => null,
-            'links' => ['home' => ($this->link)("/business/{$business}"), 'reports' => $reports, 'market' => ($this->link)("/business/{$business}/market"), 'profile' => ($this->link)("/business/{$business}/profile"),
+            'links' => ['home' => ($this->link)("/business/{$business}"), 'reports' => $reports, 'readiness' => ($this->link)("/business/{$business}/readiness"), 'market' => ($this->link)("/business/{$business}/market"), 'profile' => ($this->link)("/business/{$business}/profile"),
                 'launcher' => ($this->link)('/dashboard'), 'close' => $reports]]);
 });
 
@@ -243,7 +246,7 @@ it('lists the pre-listing flash report awaiting signature in audit, then under P
         ->and(($this->props)($user, 'business.reports', ['business' => $business], 'business/reports')['reports'])
         ->toBe(['verified' => [], 'in_audit' => [$row], 'archived' => []]);
 
-    expect(AuditSealingFixture::cosign($fixture)['status'])->toBe('completed');
+    expect(AuditSealingFixture::publish($fixture)['status'])->toBe('completed');
 
     expect(($this->props)($user, 'business.reports', ['business' => $business], 'business/reports')['reports'])
         ->toBe(['verified' => [[...$row, 'status' => 'verified', 'awaiting_signature' => false, 'cosign_by' => null]], 'in_audit' => [], 'archived' => []]);
@@ -266,7 +269,7 @@ it('lists the latest sealed monthly report in audit until it is published, openi
         ->and(($this->props)($user, 'business.reports', ['business' => $business], 'business/reports')['reports'])
         ->toBe(['verified' => [], 'in_audit' => [$row], 'archived' => []]);
 
-    expect(AuditSealingFixture::cosign($fixture)['status'])->toBe('completed');
+    expect(AuditSealingFixture::publish($fixture)['status'])->toBe('completed');
 
     expect(($this->props)($user, 'business.reports', ['business' => $business], 'business/reports')['reports'])
         ->toBe(['verified' => [[...$row, 'status' => 'verified', 'awaiting_signature' => false, 'cosign_by' => null]], 'in_audit' => [], 'archived' => []]);
@@ -287,7 +290,7 @@ it('sends the Reports and Profile tabs from every live Business page', function 
     $campaign = PrimaryReservationFixture::campaign();
     $user = User::query()->findOrFail($campaign->actor_user_id);
     $business = $campaign->business_id;
-    $tabs = ['reports' => ($this->link)("/business/{$business}/reports"), 'market' => ($this->link)("/business/{$business}/market"), 'profile' => ($this->link)("/business/{$business}/profile")];
+    $tabs = ['reports' => ($this->link)("/business/{$business}/reports"), 'readiness' => ($this->link)("/business/{$business}/readiness"), 'market' => ($this->link)("/business/{$business}/market"), 'profile' => ($this->link)("/business/{$business}/profile")];
 
     expect(($this->props)($user, 'business.campaigns.show', ['business' => $business, 'campaign' => $campaign->id], 'business/campaign')['shell_links'])
         ->toMatchArray($tabs)
@@ -308,7 +311,8 @@ it('opens Get ready for your audit for the open monthly audit until its report i
     expect($home['today'][0])->toBe(['kind' => 'audit_window', 'month' => '2026-09-01', 'window_open' => true, 'days_left' => 5,
         'sealed_by' => '2026-10-07T21:59:59Z', 'link' => $prep])
         ->and(($this->props)($user, 'business.audit-prep', ['business' => $business], 'business/audit-prep'))
-        ->toBe(['home' => $home, 'audit' => $audit, 'links' => ['close' => ($this->link)("/business/{$business}")]]);
+        ->toBe(['home' => $home, 'audit' => $audit, 'links' => ['close' => ($this->link)("/business/{$business}"),
+            'figures' => ($this->link)("/business/{$business}/monthly-figures")]]);
     $this->actingAs($user)->getJson(route('api.v1.business.show', ['business' => $business]))->assertOk()
         ->assertJsonMissing(['kind' => 'audit_window']);
 

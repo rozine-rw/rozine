@@ -16,12 +16,37 @@ import Register from '@/pages/auth/register';
 import ResetPassword from '@/pages/auth/reset-password';
 import TwoFactorChallenge from '@/pages/auth/two-factor-challenge';
 import VerifyEmail from '@/pages/auth/verify-email';
+import type { LegalDocumentLink } from '@/types/legal';
 
 const sandboxNotice = {
     version: 'brs-2.0-kyc-r01',
     text: "Rozine is testing this service in the Capital Market Authority's Fintech Regulatory Sandbox, under limits set by the CMA. Admission to the sandbox is not a licence or an endorsement.",
     sha256: 'a'.repeat(64),
 };
+
+const legalDocuments: LegalDocumentLink[] = [
+    {
+        key: 'terms',
+        title: 'Terms and Conditions',
+        version: 'terms-2026-11-23',
+        sha256: 'c'.repeat(64),
+        url: '/terms',
+    },
+    {
+        key: 'privacy',
+        title: 'Privacy Notice',
+        version: 'privacy-2026-11-23',
+        sha256: 'd'.repeat(64),
+        url: '/privacy',
+    },
+    {
+        key: 'disclaimers',
+        title: 'Disclaimers',
+        version: 'disclaimers-2026-11-23',
+        sha256: 'e'.repeat(64),
+        url: '/disclaimers',
+    },
+];
 
 /** Acknowledges the sandbox notice, which opens the sign-up form. */
 function openRegisterForm() {
@@ -46,6 +71,7 @@ type FormProps = {
 
 const inertia = vi.hoisted(() => ({
     forms: [] as FormProps[],
+    staffConsole: null as { url: string; method: 'get' } | null,
     layoutProps: vi.fn(),
     state: {
         processing: false,
@@ -65,6 +91,18 @@ vi.mock('@inertiajs/react', () => ({
         <div data-testid="head">{title}</div>
     ),
     setLayoutProps: inertia.layoutProps,
+    Link: ({
+        children,
+        href,
+        ...props
+    }: Omit<ComponentProps<'a'>, 'href'> & {
+        href: string | { url: string };
+    }) => (
+        <a href={typeof href === 'string' ? href : href.url} {...props}>
+            {children}
+        </a>
+    ),
+    usePage: () => ({ props: { staff_console: inertia.staffConsole } }),
 }));
 
 vi.mock('@/components/input-error', () => ({
@@ -177,6 +215,24 @@ describe('authentication pages', () => {
         expect(screen.getByTestId('spinner')).toBeInTheDocument();
     });
 
+    it('gives a way back from the password check: settings, or the console for staff (#623)', () => {
+        const { unmount } = render(<ConfirmPassword />);
+
+        expect(
+            screen.getByRole('link', {
+                name: 'Cancel and go back to settings',
+            }),
+        ).toHaveAttribute('href', '/settings/profile');
+        unmount();
+
+        inertia.staffConsole = { url: '/admin/dashboard', method: 'get' };
+        render(<ConfirmPassword />);
+        inertia.staffConsole = null;
+        expect(
+            screen.getByRole('link', { name: 'Back to the Admin console' }),
+        ).toHaveAttribute('href', '/admin/dashboard');
+    });
+
     it('renders forgot-password status, errors, processing, and login link', () => {
         inertia.state.processing = true;
         inertia.state.errors = { email: 'Email is invalid.' };
@@ -236,6 +292,7 @@ describe('authentication pages', () => {
     it('shows the sandbox notice before the sign-up form and sends the version it showed', () => {
         render(
             <Register
+                legalDocuments={legalDocuments}
                 sandboxNotice={sandboxNotice}
                 passwordRules="minlength:12"
             />,
@@ -261,9 +318,55 @@ describe('authentication pages', () => {
         );
     });
 
+    it('requires a tick for the Terms, Privacy Notice and Disclaimers, each sending the digest of the linked wording', () => {
+        inertia.state.errors = {
+            'legal_agreements.terms':
+                'Tick the box to agree to the Terms and Conditions.',
+            'legal_documents.privacy':
+                'There is a newer version of the Privacy Notice. Read it before you continue.',
+        };
+        render(
+            <Register
+                legalDocuments={legalDocuments}
+                sandboxNotice={sandboxNotice}
+                passwordRules="minlength:12"
+            />,
+        );
+        openRegisterForm();
+
+        for (const document of legalDocuments) {
+            const box = screen.getByRole('checkbox', {
+                name: new RegExp(document.title),
+            });
+            expect(box).toBeRequired();
+            expect(
+                screen.getByRole('link', { name: document.title }),
+            ).toHaveAttribute('href', document.url);
+            expect(screen.getByDisplayValue(document.sha256)).toHaveAttribute(
+                'name',
+                `legal_documents[${document.key}]`,
+            );
+        }
+
+        expect(
+            screen.getByRole('checkbox', { name: /Terms and Conditions/ }),
+        ).toHaveAttribute('aria-invalid', 'true');
+        expect(
+            screen.getByText(
+                'Tick the box to agree to the Terms and Conditions.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'There is a newer version of the Privacy Notice. Read it before you continue.',
+            ),
+        ).toBeInTheDocument();
+    });
+
     it('shows a newer sandbox notice again before the form, and binds the new version', () => {
         const { rerender } = render(
             <Register
+                legalDocuments={legalDocuments}
                 sandboxNotice={sandboxNotice}
                 passwordRules="minlength:12"
             />,
@@ -279,7 +382,11 @@ describe('authentication pages', () => {
         };
 
         rerender(
-            <Register sandboxNotice={newer} passwordRules="minlength:12" />,
+            <Register
+                legalDocuments={legalDocuments}
+                sandboxNotice={newer}
+                passwordRules="minlength:12"
+            />,
         );
         expect(screen.getByText(newer.text)).toBeInTheDocument();
         expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
@@ -302,6 +409,7 @@ describe('authentication pages', () => {
         };
         render(
             <Register
+                legalDocuments={legalDocuments}
                 sandboxNotice={sandboxNotice}
                 passwordRules="minlength:12"
             />,
@@ -325,6 +433,7 @@ describe('authentication pages', () => {
         };
         const { rerender } = render(
             <Register
+                legalDocuments={legalDocuments}
                 sandboxNotice={sandboxNotice}
                 passwordRules="minlength:12"
             />,
@@ -346,6 +455,7 @@ describe('authentication pages', () => {
         inertia.state.errors = {};
         rerender(
             <Register
+                legalDocuments={legalDocuments}
                 sandboxNotice={sandboxNotice}
                 key="idle"
                 passwordRules="minlength:12"
@@ -398,6 +508,7 @@ describe('authentication pages', () => {
 
         render(
             <Register
+                legalDocuments={legalDocuments}
                 sandboxNotice={sandboxNotice}
                 passwordRules="minlength:12"
                 audience="business"
@@ -419,6 +530,7 @@ describe('authentication pages', () => {
 
         render(
             <Register
+                legalDocuments={legalDocuments}
                 sandboxNotice={sandboxNotice}
                 passwordRules="minlength:12"
                 audience="investor"
@@ -434,6 +546,7 @@ describe('authentication pages', () => {
 
         render(
             <Register
+                legalDocuments={legalDocuments}
                 sandboxNotice={sandboxNotice}
                 passwordRules="minlength:12"
                 audience="auditor"
@@ -448,6 +561,7 @@ describe('authentication pages', () => {
 
         render(
             <Register
+                legalDocuments={legalDocuments}
                 sandboxNotice={sandboxNotice}
                 passwordRules="minlength:12"
             />,

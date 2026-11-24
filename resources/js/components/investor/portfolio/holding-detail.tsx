@@ -528,7 +528,7 @@ export function HoldingFigures({
                                                 'flex size-5 items-center justify-center rounded-full border-2 text-[10px] font-bold',
                                                 step.state === 'done'
                                                     ? cn(
-                                                          'border-[#cfe9d8] bg-[rgba(29,158,117,.10)]',
+                                                          'border-[#cfe9d8] bg-[rgba(29,158,117,.10)] dark:border-rz-positive-tint',
                                                           POSITIVE_TEXT,
                                                       )
                                                     : step.state === 'current'
@@ -693,7 +693,11 @@ export function HoldingSchedule({
             {update !== null && (
                 <UpdateSheet update={update} onClose={() => setUpdate(null)} />
             )}
-            <IssueRecord issue={holding.issue} />
+            <IssueRecord
+                issue={holding.issue}
+                resold={holding.resold_units}
+                schedule={holding.schedule}
+            />
         </>
     );
 }

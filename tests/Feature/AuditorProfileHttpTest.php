@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Application\Identity\LegalDocuments;
 use App\Application\Identity\SelectActiveRole;
 use App\Domain\Auditor\AccreditationProfile;
 use App\Domain\Auditor\AuditorStanding;
@@ -90,7 +91,7 @@ function profileHttpProps(User $user): array
             return $page->component('auditor/profile');
         });
 
-    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count', 'checkout_holds']));
+    return array_diff_key($props, array_flip(['auth', 'name', 'locale', 'errors', 'sidebarOpen', 'nonLiveEnvironment', 'head', 'cart_count', 'checkout_holds', 'risk_acknowledgement', 'staff_console']));
 }
 
 /** @return array{user: User, party: Party, staff: User, submission: string} */
@@ -111,6 +112,7 @@ it('renders a first-time Auditor profile from the protected facts with the contr
     expect($props)->toMatchArray([
         'contract_version' => 'auditor-filing-v1', 'identity_context_revision' => 1, 'server_time' => now()->toIso8601String(),
         'allowed_actions' => ['accreditation.submit'], 'section' => 'accreditation',
+        'legal_documents' => app(LegalDocuments::class)->pages(),
         'auditor' => ['name' => 'Synthetic Partner', 'firm' => null, 'accreditation' => null, 'avatar_url' => null, 'since_year' => null],
         'quality_score' => null, 'on_time_pct' => null, 'jobs_done' => 0, 'open_jobs' => 0,
         'contact' => ['email' => $fixture['user']->email, 'phone' => null, 'address' => null], 'security' => ['two_factor' => true],

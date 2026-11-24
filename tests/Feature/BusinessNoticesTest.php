@@ -63,7 +63,7 @@ it('lists the Business notices to everyone who may view it, and marks one, then 
     $business = $this->business->id;
 
     $this->actingAs($this->viewer)->getJson(route('business.notices.index', $business))->assertOk()
-        ->assertJsonPath('data.unread', 2)->assertJsonCount(2, 'data.notices')
+        ->assertJsonPath('data.unread', 2)->assertJsonPath('data.server_time', now()->toIso8601String())->assertJsonCount(2, 'data.notices')
         ->assertJsonPath('data.notices.0.id', $newest)->assertJsonPath('data.notices.0.kind', 'business.deposit_received')
         ->assertJsonPath('data.notices.0.facts.amount', '20000')->assertJsonPath('data.notices.0.read', false)
         ->assertJsonPath('data.notices.0.link', ['url' => "/business/{$business}/wallet", 'method' => 'get'])

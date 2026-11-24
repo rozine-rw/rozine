@@ -30,6 +30,8 @@ use App\Http\Controllers\InvestorHoldingController;
 use App\Http\Controllers\InvestorMarketController;
 use App\Http\Controllers\InvestorNoticesController;
 use App\Http\Controllers\InvestorPrimaryController;
+use App\Http\Controllers\InvestorProspectusController;
+use App\Http\Controllers\InvestorProspectusPdfController;
 use App\Http\Controllers\InvestorRiskAcknowledgementController;
 use App\Http\Controllers\InvestorVerificationController;
 use App\Http\Controllers\InvestorWalletController;
@@ -223,6 +225,8 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
     Route::get('deals', [InvestorDealsController::class, 'index'])->name('deals');
     Route::get('deals/{campaign}', [InvestorDealsController::class, 'show'])->whereUlid('campaign')->name('deals.show');
     Route::get('deals/{campaign}/checkout', [InvestorDealsController::class, 'checkout'])->whereUlid('campaign')->name('checkout');
+    Route::get('deals/{campaign}/prospectus', InvestorProspectusController::class)->whereUlid('campaign')->name('deals.prospectus');
+    Route::get('deals/{campaign}/prospectus.pdf', InvestorProspectusPdfController::class)->whereUlid('campaign')->name('deals.prospectus_pdf');
     Route::post('deals/{campaign}/cart', [InvestorMarketController::class, 'addToCart'])->whereUlid('campaign')->name('cart_add');
     Route::post('cart/{campaign}/units', [InvestorMarketController::class, 'changeCartUnits'])->whereUlid('campaign')->name('cart_units');
     Route::post('cart/{campaign}/remove', [InvestorMarketController::class, 'removeFromCart'])->whereUlid('campaign')->name('cart_remove');
@@ -256,7 +260,7 @@ Route::middleware(['auth:sanctum', 'verified', 'throttle:60,1', 'cache.headers:p
     Route::get('verification', [InvestorVerificationController::class, 'show'])->name('verification');
     Route::post('verification/steps', [InvestorVerificationController::class, 'save'])->name('verification.save');
     Route::post('verification/documents', [InvestorVerificationController::class, 'upload'])->name('verification.upload');
-    Route::get('verification/documents/{side}', [InvestorVerificationController::class, 'document'])->whereIn('side', ['front', 'back', 'selfie'])
+    Route::get('verification/documents/{side}', [InvestorVerificationController::class, 'document'])->whereIn('side', ['front', 'back', 'selfie', 'certificate'])
         ->name('verification.document');
     Route::post('verification/submit', [InvestorVerificationController::class, 'submit'])->name('verification.submit');
 });

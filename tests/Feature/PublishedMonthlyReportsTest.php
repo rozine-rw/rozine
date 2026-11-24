@@ -24,17 +24,17 @@ beforeEach(function (): void {
     $this->freezeSecond();
 });
 
-it('reads a published monthly report with its reconciled figures, the Audit Partner and the business note', function (): void {
+it('reads a published monthly report with its reconciled figures and the Audit Partner', function (): void {
     $fixture = Fixture::ready(kind: 'monthly');
     Fixture::seal($fixture);
     $reports = app(PublishedMonthlyReports::class);
     expect($reports->forBusiness($fixture['audit']['business']))->toBe([]);
 
-    expect(Fixture::cosign($fixture, overrides: ['note' => 'Sales held steady.'])['code'])->toBe('REPORT_PUBLISHED');
+    expect(Fixture::publish($fixture)['code'])->toBe('REPORT_PUBLISHED');
     [$report] = $reports->forBusiness($fixture['audit']['business']);
 
     expect($report)->toMatchArray(['report_id' => $fixture['report']->id, 'operational_status' => 'active', 'differences' => false,
-        'auditor_note' => '', 'business_note' => 'Sales held steady.'])
+        'auditor_note' => '', 'business_note' => ''])
         ->and($report['period'])->toMatch('/^\d{4}-\d{2}$/')
         ->and($report['net'])->toBe((string) ((int) $report['inflow'] - (int) $report['outflow']))
         ->and($report['auditor']['licence'])->not->toBe('')
@@ -44,7 +44,7 @@ it('reads a published monthly report with its reconciled figures, the Audit Part
 it('marks a counted difference and keeps the Audit Partner\'s note', function (): void {
     $fixture = Fixture::ready(kind: 'monthly', findings: true);
     Fixture::seal($fixture);
-    Fixture::cosign($fixture);
+    Fixture::publish($fixture);
 
     expect(app(PublishedMonthlyReports::class)->forBusiness($fixture['audit']['business'])[0])
         ->toMatchArray(['differences' => true, 'auditor_note' => 'Observed difference retained for review.', 'business_note' => '']);
@@ -53,7 +53,7 @@ it('marks a counted difference and keeps the Audit Partner\'s note', function ()
 it('never reads a Flash audit or a report whose publication is not published', function (): void {
     $flash = Fixture::ready();
     Fixture::seal($flash);
-    Fixture::cosign($flash);
+    Fixture::publish($flash);
     expect(AuditReportPublication::query()->sole()->status)->toBe('published')
         ->and(app(PublishedMonthlyReports::class)->forBusiness($flash['audit']['business']))->toBe([]);
 });
@@ -74,7 +74,7 @@ it('tells each holder of the business, once, when its monthly report publishes',
     Fixture::seal($fixture);
     expect(PartyNotice::query()->where('kind', 'primary.report_published')->exists())->toBeFalse();
 
-    Fixture::cosign($fixture);
+    Fixture::publish($fixture);
     $notice = PartyNotice::query()->where('kind', 'primary.report_published')->sole();
     expect($notice->party_id)->toBe($holder['party']->id)
         ->and($notice->event_key)->toBe('report-published:'.$fixture['report']->id.':'.$holder['party']->id)

@@ -121,6 +121,11 @@ beforeEach(function (): void {
             {
                 return $this->live->presentation($campaignId);
             }
+
+            public function raise(string $campaignId): array
+            {
+                return $this->live->raise($campaignId);
+            }
         });
 });
 

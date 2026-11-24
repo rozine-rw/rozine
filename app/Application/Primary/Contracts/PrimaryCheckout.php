@@ -84,6 +84,16 @@ interface PrimaryCheckout
      */
     public function refund(int $userId, int $contextRevision, string $campaignId, string $reservationId, int $expectedRevision, string $requestId): array;
 
+    /**
+     * The Investor's withdrawal of their commitment before the raise reaches 100% (BRS v3.0 INV-R03):
+     * the same fee-free refund and receipt as refund(), journaled as `primary.refund`, but refused
+     * `COMMITMENT_LOCKED` once the raise is fully committed and `CAMPAIGN_CLOSED` once it closed, and
+     * freeing the withdrawn units for other Investors.
+     *
+     * @return array<string, mixed>
+     */
+    public function withdraw(int $userId, int $contextRevision, string $campaignId, string $reservationId, int $expectedRevision, string $requestId): array;
+
     /** @return array<string, mixed> */
     public function findRefund(int $userId, int $contextRevision, string $campaignId, string $reservationId, string $requestId): array;
 }

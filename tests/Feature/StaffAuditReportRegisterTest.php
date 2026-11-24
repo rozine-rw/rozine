@@ -252,7 +252,7 @@ it('refuses a Business reminder once its pending review window has closed', func
 it('retains the original published report when the next audit completes its assignment', function (bool $monthly): void {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
-    expect(AuditSealingFixture::cosign($fixture)['code'])->toBe('REPORT_PUBLISHED');
+    expect(AuditSealingFixture::publish($fixture)['code'])->toBe('REPORT_PUBLISHED');
     $report = $fixture['report'];
     $staff = $fixture['audit']['staff'];
     $seal = AuditReportSeal::query()->where('audit_report_id', $report->id)->sole();

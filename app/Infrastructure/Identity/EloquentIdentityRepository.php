@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Identity;
 
 use App\Application\Identity\Contracts\IdentityRepository;
+use App\Application\Identity\Contracts\LegalConsents;
 use App\Domain\Identity\SandboxNotice;
 use App\Models\Party;
 use App\Models\RoleMembership;
@@ -14,22 +15,29 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Features;
 
-/** @phpstan-import-type AccessSnapshot from \App\Domain\Identity\ActiveRolePolicy */
+/**
+ * @phpstan-import-type AccessSnapshot from \App\Domain\Identity\ActiveRolePolicy
+ * @phpstan-import-type AgreedDocument from LegalConsents
+ */
 final class EloquentIdentityRepository implements IdentityRepository
 {
+    public function __construct(private LegalConsents $legalConsents) {}
+
     public function accountName(int $userId): string
     {
         return User::query()->findOrFail($userId)->name;
     }
 
-    public function register(string $name, string $email, string $password): int
+    /** @param list<AgreedDocument> $legalDocuments */
+    public function register(string $name, string $email, string $password, array $legalDocuments): int
     {
-        return DB::transaction(function () use ($name, $email, $password): int {
+        return DB::transaction(function () use ($name, $email, $password, $legalDocuments): int {
             $party = Party::query()->create(['kind' => 'person']);
             $user = new User(['name' => $name, 'email' => $email, 'password' => $password]);
             $user->party()->associate($party);
             $user->save();
             $this->acknowledgeSandboxNotice($party->id);
+            $this->legalConsents->record($party->id, $legalDocuments, 'sign_up');
 
             return $user->id;
         });

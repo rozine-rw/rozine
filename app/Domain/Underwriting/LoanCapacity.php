@@ -29,8 +29,12 @@ final class LoanCapacity
     /** Offers are whole issuance units of this many RWF (one note). */
     public const int ISSUANCE_UNIT = 5000;
 
+    /** A repeat raise grows to at most this multiple of the last note repaid in full (BRS v3 REP-R05). */
+    public const string REPEAT_GROWTH = '3/2';
+
     /**
      * @param  list<BigRational>  $repeatMonthlyCfads  The authorized corresponding-month projection, or [] for first-time.
+     * @param  string|null  $lastRepaidPrincipal  The principal of the Business's last note repaid in full, or null when none is.
      * @return array<string, mixed>
      */
     public function evaluate(
@@ -41,6 +45,7 @@ final class LoanCapacity
         BigRational $remainingRoom,
         array $repeatMonthlyCfads = [],
         ?string $acceptedPrincipal = null,
+        ?string $lastRepaidPrincipal = null,
     ): array {
         $original = LoanSchedule::build($requestedPrincipal, $tenor, $rate);
         if ($repeatMonthlyCfads !== [] && count($repeatMonthlyCfads) !== $tenor) {
@@ -77,9 +82,11 @@ final class LoanCapacity
             return $result;
         }
 
+        $growthCap = $lastRepaidPrincipal === null ? null
+            : ExactFinancialValue::floor(ExactFinancialValue::amount($lastRepaidPrincipal)->toBigRational()->multipliedBy(self::REPEAT_GROWTH));
         $candidate = BigInteger::min(
             ExactFinancialValue::halfUp($rawCapacity), $requestedPrincipal, self::MAXIMUM_PRINCIPAL,
-            ExactFinancialValue::floor($remainingRoom),
+            ExactFinancialValue::floor($remainingRoom), ...($growthCap === null ? [] : [$growthCap]),
         );
         $result['rounded_candidate'] = ExactFinancialValue::money($candidate);
         $schedule = LoanSchedule::build((string) $candidate, $tenor, $rate);
@@ -99,6 +106,9 @@ final class LoanCapacity
         }
         if ($original->principal->isGreaterThan(self::MAXIMUM_PRINCIPAL)) {
             $reasons[] = 'PRINCIPAL_MAX_CAPPED';
+        }
+        if ($growthCap !== null && $growthCap->toBigRational()->isLessThan(BigRational::min($rawCapacity, $requestedPrincipal, self::MAXIMUM_PRINCIPAL, $remainingRoom))) {
+            $reasons[] = 'REPEAT_GROWTH_CAPPED';
         }
         if (! $guard->isZero()) {
             $reasons[] = 'ROUNDING_GUARD';

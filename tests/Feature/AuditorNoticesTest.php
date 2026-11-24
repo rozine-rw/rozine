@@ -132,7 +132,7 @@ it('lists the partner\'s notices behind the Auditor bell and marks them read', f
 
 it('reads Auditor notices over API v1 with auditor:read and marks them read only with auditor:command', function (): void {
     $fixture = AuditAssignmentFixture::make(1);
-    AuditAssignmentFixture::request($fixture, 'routine');
+    $assignment = AuditAssignmentFixture::request($fixture, 'routine');
     $partner = $fixture['partners'][0]['user'];
     $offer = PartyNotice::query()->where('kind', 'auditor.job_offered')->sole();
 
@@ -141,7 +141,7 @@ it('reads Auditor notices over API v1 with auditor:read and marks them read only
     Sanctum::actingAs($partner, ['auditor:read']);
     $this->getJson(route('api.v1.auditor.notices'))->assertOk()->assertJsonPath('data.unread', 2)
         ->assertJsonPath('data.notices.0.id', $offer->id)->assertJsonPath('data.notices.0.facts.type', 'routine')
-        ->assertJsonPath('data.notices.0.link.url', '/api/v1/auditor/jobs')
+        ->assertJsonPath('data.notices.0.facts.outcome', 'open')->assertJsonPath('data.notices.0.link.url', '/api/v1/auditor/jobs/'.$assignment->id)
         ->assertJsonPath('data.notices.0.read_action.url', "/api/v1/auditor/notices/{$offer->id}/read");
     $this->postJson(route('api.v1.auditor.notices.read', $offer->id))->assertForbidden();
     Sanctum::actingAs($partner, ['auditor:read', 'auditor:command']);
@@ -155,4 +155,32 @@ it('opens a security notice on the partner\'s own profile, never the Investor ap
 
     $this->actingAs($fixture['user'])->getJson(route('auditor.notices'))->assertOk()
         ->assertJsonPath('data.notices.0.kind', 'security.new_device')->assertJsonPath('data.notices.0.link', ['url' => '/auditor/profile', 'method' => 'get']);
+});
+
+it('keeps each job notice current: it opens the job while the partner holds it and says how the offer turned out (#587)', function (): void {
+    $fixture = AuditAssignmentFixture::make();
+    $assignment = AuditAssignmentFixture::request($fixture);
+    $first = AuditAssignmentFixture::recipient($fixture, $assignment);
+    $notice = fn (User $user): array => $this->actingAs($user)->getJson(route('auditor.notices'))->assertOk()->json('data.notices.0');
+
+    expect($notice($first['user']))->toMatchArray(['kind' => 'auditor.job_offered', 'link' => ['url' => '/auditor/jobs/'.$assignment->id, 'method' => 'get']])
+        ->and($notice($first['user'])['facts'])->toMatchArray(['type' => 'flash', 'outcome' => 'open', 'held' => true]);
+
+    AuditAssignmentFixture::respond($first['user'], $assignment, 'decline', 'Synthetic decline.');
+    $second = AuditAssignmentFixture::recipient($fixture, $assignment->refresh());
+    expect($notice($first['user'])['facts'])->toMatchArray(['outcome' => 'declined', 'held' => false])
+        ->and($notice($first['user'])['link'])->toBe(['url' => '/auditor/jobs', 'method' => 'get']);
+
+    // An offer past its time reads as expired before the sweep has moved it on.
+    $this->travelTo(CarbonImmutable::parse($assignment->state['accept_by'])->addMinute());
+    expect($notice($second['user']))->toMatchArray(['link' => ['url' => '/auditor/jobs', 'method' => 'get']])
+        ->and($notice($second['user'])['facts'])->toMatchArray(['outcome' => 'expired', 'held' => true]);
+    $this->travelBack();
+
+    AuditAssignmentFixture::respond($second['user'], $assignment);
+    expect($notice($second['user'])['facts'])->toMatchArray(['outcome' => 'accepted', 'held' => true]);
+
+    // A statement review is named as one, not as a routine audit.
+    $assignment->refresh()->forceFill(['state' => [...$assignment->state, 'purpose' => 'statement_review']])->save();
+    expect($notice($second['user'])['facts']['type'])->toBe('statement_review');
 });

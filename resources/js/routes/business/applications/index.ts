@@ -1,5 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 import operations from './operations'
+import prospectus from './prospectus'
 /**
 * @see \App\Http\Controllers\BusinessApplicationController::create
 * @see app/Http/Controllers/BusinessApplicationController.php:67
@@ -471,6 +472,7 @@ const applications = {
     save: Object.assign(save, save),
     evaluate: Object.assign(evaluate, evaluate),
     submit: Object.assign(submit, submit),
+    prospectus: Object.assign(prospectus, prospectus),
     publish: Object.assign(publish, publish),
 }
 

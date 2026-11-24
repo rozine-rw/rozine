@@ -16,7 +16,10 @@ use stdClass;
  * is the Investor wallet's Party (named by its first account) or the Business wallet's profile. The
  * reference comes from the entry's source record: the deposit intent's or withdrawal's provider
  * reference (sealed at rest, so it is opened here and searched only by its exact SHA-256), or the
- * Business behind a primary reservation, commitment or repayment.
+ * Business behind a primary reservation, commitment, repayment, disbursement closing, servicing
+ * payout or resale reservation. A disbursement closing is also found by its payout's bank reference,
+ * masked bank destination or its disbursement's `DSB-` reference, and any entry by an amount one of
+ * its lines moved.
  *
  * @phpstan-import-type Entry from LedgerJournal
  * @phpstan-import-type Line from LedgerJournal
@@ -45,6 +48,32 @@ final readonly class EloquentLedgerJournal implements LedgerJournal
                 JOIN business_profiles ON business_profiles.id = business_campaigns.business_id WHERE primary_commitments.id = ledger_entries.source_id)
             WHEN 'business_repayment' THEN (SELECT business_profiles.profile->>'name' FROM business_repayments
                 JOIN business_profiles ON business_profiles.id = business_repayments.business_id WHERE business_repayments.id = ledger_entries.source_id)
+            WHEN 'disbursement_closing' THEN (SELECT business_profiles.profile->>'name' FROM disbursement_closings
+                JOIN disbursements ON disbursements.id = disbursement_closings.disbursement_id
+                JOIN business_campaigns ON business_campaigns.id = disbursements.business_campaign_id
+                JOIN business_profiles ON business_profiles.id = business_campaigns.business_id WHERE disbursement_closings.id = ledger_entries.source_id)
+            WHEN 'servicing_payout' THEN (SELECT business_profiles.profile->>'name' FROM servicing_payouts
+                JOIN business_repayments ON business_repayments.id = servicing_payouts.repayment_id
+                JOIN business_profiles ON business_profiles.id = business_repayments.business_id WHERE servicing_payouts.id = ledger_entries.source_id)
+            WHEN 'secondary_reservation' THEN (SELECT business_profiles.profile->>'name' FROM secondary_reservations
+                JOIN secondary_listings ON secondary_listings.id = secondary_reservations.listing_id
+                JOIN business_campaigns ON business_campaigns.id = secondary_listings.business_campaign_id
+                JOIN business_profiles ON business_profiles.id = business_campaigns.business_id WHERE secondary_reservations.id = ledger_entries.source_id)
+        END
+        SQL;
+
+    /**
+     * The SQL reading one column (`%1$s`) of a disbursement closing's payout: its intent (the bank
+     * reference, sealed at rest so searched by SHA-256) or the bank account it paid
+     * (`business_funding_methods`, e.g. "Bank of Kigali" and "Account ····7890"), so staff can find
+     * the outbound leg by either (QA #663).
+     */
+    private const string PAYOUT = <<<'SQL'
+        CASE ledger_entries.source_type
+            WHEN 'disbursement_closing' THEN (SELECT %1$s FROM disbursement_closings
+                JOIN disbursement_intents ON disbursement_intents.disbursement_id = disbursement_closings.disbursement_id
+                LEFT JOIN business_funding_methods ON business_funding_methods.id = disbursement_intents.destination_id
+                WHERE disbursement_closings.id = ledger_entries.source_id)
         END
         SQL;
 
@@ -57,22 +86,54 @@ final readonly class EloquentLedgerJournal implements LedgerJournal
                 JOIN business_profiles ON business_profiles.id = business_wallets.business_id WHERE business_wallets.id = %1$s))
         SQL;
 
+    /**
+     * The words staff read in the ledger's Type column (and the market's own word for a trade), by
+     * the entry kinds they name, so a search for "Investor payout" or "resale" finds those entries.
+     */
+    private const array TYPE_WORDS = [
+        'wallet deposit' => ['deposit_credit', 'business_deposit_credit'],
+        'withdrawal' => ['withdrawal_hold', 'withdrawal_payout', 'withdrawal_return', 'business_withdrawal_hold', 'business_withdrawal_payout', 'business_withdrawal_return'],
+        'investment' => ['primary_hold', 'primary_commit', 'primary_release', 'primary_refund'],
+        'disbursement' => ['primary_issue', 'disbursement_payout'],
+        'platform fee' => ['disbursement_platform_fee'],
+        'repayment' => ['business_repayment_debit'],
+        'investor payout' => ['servicing_payout'],
+        'secondary trade' => ['secondary_hold', 'secondary_release', 'secondary_purchase', 'secondary_sale'],
+        'resale' => ['secondary_hold', 'secondary_release', 'secondary_purchase', 'secondary_sale'],
+    ];
+
     public function entries(?string $search, int $limit, ?string $before = null): array
     {
         $matching = DB::table('ledger_entries')->when($search !== null, function (Builder $query) use ($search): void {
+            $term = mb_strtolower(trim((string) $search));
             $like = '%'.addcslashes(mb_strtolower((string) $search), '%_\\').'%';
-            $query->where(fn (Builder $match) => $match->whereRaw('lower(ledger_entries.id) like ?', [$like])
+            $kinds = array_values(array_unique(array_merge([], ...array_values(array_filter(self::TYPE_WORDS,
+                fn (string $words): bool => $term !== '' && str_contains($words, $term), ARRAY_FILTER_USE_KEY)))));
+            $query->where(fn (Builder $match) => $match->whereIn('ledger_entries.kind', $kinds)->orWhereRaw('lower(ledger_entries.id) like ?', [$like])
                 ->orWhereRaw('lower(ledger_entries.kind) like ?', [$like])
                 ->orWhereRaw('lower(('.self::BUSINESS.')) like ?', [$like])
+                ->orWhereRaw('lower(('.sprintf(self::PAYOUT, "business_funding_methods.label || ' ' || business_funding_methods.masked").')) like ?', [$like])
+                ->orWhereRaw('('.sprintf(self::PAYOUT, 'disbursement_intents.provider_reference_sha256').') = ?', [hash('sha256', trim((string) $search))])
                 ->orWhereRaw('('.sprintf(self::SEALED, 'provider_reference_sha256').') = ?', [hash('sha256', trim((string) $search))])
-                ->orWhereRaw('lower(('.sprintf(self::OWNER, 'ledger_entries.wallet_id').')) like ?', [$like]));
+                ->orWhereRaw('lower(('.sprintf(self::OWNER, 'ledger_entries.wallet_id').')) like ?', [$like])
+                // The disbursement's own reference as staff read it on Disbursements, e.g. "DSB-B5JG30PJ" (QA #663).
+                ->orWhereRaw("('dsb-' || lower(right((".sprintf(self::PAYOUT, 'disbursement_closings.disbursement_id').'), 8))) = ?', [$term])
+                // An amount, as staff type it ("5,820,000", "RWF 5820000"), finds every entry with a line of exactly that.
+                ->when(preg_match('/^(rwf\s*)?\d[\d,\s]*$/', $term) === 1, fn (Builder $amount) => $amount->orWhereExists(fn (Builder $line) => $line
+                    ->selectRaw('1')->from('ledger_lines')->whereColumn('ledger_lines.entry_id', 'ledger_entries.id')
+                    ->where('ledger_lines.amount', (string) preg_replace('/\D/', '', $term)))));
         });
         $limit = max(1, $limit);
         $rows = $this->select(clone $matching)->when($before !== null, fn (Builder $query) => $query->where('ledger_entries.id', '<', $before))
             ->orderByDesc('ledger_entries.id')->limit($limit + 1)->get()->all();
         $nextBefore = count($rows) > $limit ? (string) $rows[$limit - 1]->id : null;
+        // The newer page ends at `before` itself: it starts after the entry `limit` places above it, or
+        // is the newest page when there are not that many.
+        $newerBefore = $before === null ? null : (clone $matching)->where('ledger_entries.id', '>=', $before)
+            ->orderBy('ledger_entries.id')->offset($limit)->limit(1)->value('ledger_entries.id');
 
-        return ['entries' => $this->shape(array_slice($rows, 0, $limit)), 'total' => $matching->count(), 'next_before' => $nextBefore];
+        return ['entries' => $this->shape(array_slice($rows, 0, $limit)), 'total' => $matching->count(), 'next_before' => $nextBefore,
+            'newer_before' => $newerBefore === null ? null : (string) $newerBefore];
     }
 
     public function latest(int $limit): array

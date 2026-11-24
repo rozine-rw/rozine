@@ -55,21 +55,28 @@ final class BusinessScoreView
      * left under the exposure limit, and the policy maximum; the smallest binds. Capacity is the
      * engine's offer at that amount. The quote already counted the commitments accepted before it
      * in its committed exposure, so headroom deducts only those accepted since: its own raise and
-     * any later one. A quoted commitment released since is not given back, so headroom never
-     * overstates what a new quote would offer.
+     * any later one. A quoted commitment released since, such as a note repaid in full, is no longer
+     * owed, so it leaves the committed exposure and its room comes back, as a new quote would count it.
      *
      * @param  array{cfads: Ratio, exposure_limit: Ratio, committed_exposure: Ratio, remaining_room: Ratio, repeat_projections: list<array{cfads: Ratio}>}  $cashFlow
      * @param  array{percent: string, fraction: Ratio}  $pricing
      * @param  Ratio  $rawCapacity
      * @param  list<Commitment>  $quoted  the commitments the quote counted
      * @param  list<Commitment>  $current  the Business's commitments now
+     * @param  string|null  $lastRepaidPrincipal  the last note the Business repaid in full: a repeat raise grows to at most 1.5 times it (REP-R05)
      * @return array<string, mixed>
      */
-    public function sizing(array $cashFlow, array $pricing, array $rawCapacity, int $termMonths, array $quoted, array $current): array
+    public function sizing(array $cashFlow, array $pricing, array $rawCapacity, int $termMonths, array $quoted, array $current, ?string $lastRepaidPrincipal = null): array
     {
         $cfads = self::rational($cashFlow['cfads']);
-        $room = self::rational($cashFlow['remaining_room']);
+        $currentIds = array_column($current, 'id');
+        $released = BigInteger::sum(0, ...array_column(array_filter($quoted, fn (array $commitment): bool => ! in_array($commitment['id'], $currentIds, true)), 'principal'));
+        $committed = BigRational::max(self::rational($cashFlow['committed_exposure'])->minus($released), 0);
+        // What the Business owes beyond its Rozine notes: the other loans its verified evidence lists (#672).
+        $otherDebts = BigRational::max(self::rational($cashFlow['committed_exposure'])->minus(BigInteger::sum(0, ...array_column($quoted, 'principal'))), 0);
+        $room = self::rational($cashFlow['remaining_room'])->plus($released);
         $limits = ['cash_flow' => BigInteger::max(0, ExactFinancialValue::halfUp(self::rational($rawCapacity))), 'exposure' => BigInteger::max(0, ExactFinancialValue::floor($room)),
+            ...($lastRepaidPrincipal === null ? [] : ['repeat_growth' => ExactFinancialValue::floor(ExactFinancialValue::amount($lastRepaidPrincipal)->toBigRational()->multipliedBy(LoanCapacity::REPEAT_GROWTH))]),
             'policy_max' => BigInteger::of(LoanCapacity::MAXIMUM_PRINCIPAL)];
         $ceiling = BigInteger::min(...array_values($limits));
         $binding = array_find_key($limits, fn (BigInteger $limit): bool => $limit->isEqualTo($ceiling));
@@ -89,7 +96,10 @@ final class BusinessScoreView
                 ['key' => 'cash_flow', 'value' => ExactFinancialValue::money($limits['cash_flow']), 'binding' => $binding === 'cash_flow'],
                 ['key' => 'exposure', 'value' => ExactFinancialValue::money($limits['exposure']), 'binding' => $binding === 'exposure',
                     'limit' => ExactFinancialValue::money(ExactFinancialValue::floor(self::rational($cashFlow['exposure_limit']))),
-                    'committed' => ExactFinancialValue::money(ExactFinancialValue::halfUp(self::rational($cashFlow['committed_exposure'])))],
+                    'committed' => ExactFinancialValue::money(ExactFinancialValue::halfUp($committed)),
+                    'other_debts' => ExactFinancialValue::money(ExactFinancialValue::halfUp($otherDebts))],
+                ...($lastRepaidPrincipal === null ? [] : [['key' => 'repeat_growth', 'value' => ExactFinancialValue::money($limits['repeat_growth']),
+                    'binding' => $binding === 'repeat_growth', 'last' => ExactFinancialValue::money(ExactFinancialValue::amount($lastRepaidPrincipal))]]),
                 ['key' => 'policy_max', 'value' => ExactFinancialValue::money($limits['policy_max']), 'binding' => $binding === 'policy_max'],
             ],
             'approved' => ExactFinancialValue::money($approved), 'headroom' => ExactFinancialValue::money($headroom)];

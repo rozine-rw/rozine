@@ -6,6 +6,7 @@ namespace App\Infrastructure\Business;
 
 use App\Application\Business\Contracts\BusinessExposureStore;
 use App\Application\Business\Contracts\CampaignClosureEvidence;
+use App\Application\Business\Contracts\ServicingRecord;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Underwriting\ExactFinancialValue;
@@ -21,11 +22,12 @@ use RuntimeException;
 /** @phpstan-import-type Commitment from \App\Domain\Underwriting\AcceptedExposure */
 final class EloquentBusinessExposureReservations implements BusinessExposureStore
 {
-    public function __construct(private CanonicalJson $json, private CampaignClosureEvidence $closures) {}
+    public function __construct(private CanonicalJson $json, private CampaignClosureEvidence $closures, private ServicingRecord $servicing) {}
 
     /**
      * Internal source read; the enclosing application command retains the Business lock
-     * through quote calculation or the final signature. Never use a client total.
+     * through quote calculation or the final signature. Never use a client total. A note repaid in
+     * full no longer holds its exposure: its principal is no longer owed (BRS v3 REP-R05).
      *
      * @return list<Commitment>
      */
@@ -35,9 +37,10 @@ final class EloquentBusinessExposureReservations implements BusinessExposureStor
             BusinessProfile::query()->lockForUpdate()->findOrFail($businessId);
 
             $released = $this->closures->released($businessId);
+            $repaid = array_column($this->servicing->forBusiness($businessId)['repaid'], 'exposure_reservation_id');
 
             return array_values(BusinessExposureReservation::query()->where('business_id', $businessId)->orderBy('id')->get()
-                ->map(function (BusinessExposureReservation $record) use ($released): ?array {
+                ->map(function (BusinessExposureReservation $record) use ($released, $repaid): ?array {
                     $payload = $record->payload;
                     if (! hash_equals($record->sha256, hash('sha256', $this->json->encode($payload)))
                         || $payload['reservation_id'] !== $record->id || $payload['business_id'] !== $record->business_id
@@ -56,7 +59,7 @@ final class EloquentBusinessExposureReservations implements BusinessExposureStor
                         return null;
                     }
 
-                    return ['id' => $record->id, 'principal' => $record->principal];
+                    return in_array($record->id, $repaid, true) ? null : ['id' => $record->id, 'principal' => $record->principal];
                 })->filter()->all());
         });
     }

@@ -90,7 +90,9 @@ describe('Party directories', () => {
         /* Raised and investors count funded raises only, so they say so: a live raise is not funded. */
         expect(screen.getByText('Capital Funded')).toBeInTheDocument();
         expect(screen.getAllByText('Funded').length).toBeGreaterThan(0);
-        expect(screen.getAllByText('Funders').length).toBeGreaterThan(0);
+        expect(screen.getAllByText('Original funders').length).toBeGreaterThan(
+            0,
+        );
 
         fireEvent.change(screen.getByRole('combobox', { name: 'Sector' }), {
             target: { value: 'agriculture' },
@@ -388,6 +390,42 @@ describe('Party directories', () => {
         ).not.toBeInTheDocument();
     });
 
+    it.each([
+        ['kyb_pending', 'Verifying business'],
+        ['not_applied', 'Not applied yet'],
+        ['applying', 'Application in progress'],
+        ['applied', 'Application submitted'],
+        ['auditing', 'Audit in progress'],
+        ['listed', 'Listed'],
+    ] as const)(
+        'shows a Business at the %s stage as "%s", not as a pending audit',
+        (stage, label) => {
+            const businesses = props(businessesFixture);
+
+            if (businesses.directory.kind === 'business') {
+                businesses.directory.rows = [
+                    {
+                        ...businesses.directory.rows[0],
+                        rating: null,
+                        health: stage,
+                    },
+                ];
+            }
+
+            render(<AdminParties {...businesses} />);
+            const row = screen.getAllByRole('row')[1];
+
+            expect(within(row).getByText(label)).toBeInTheDocument();
+            expect(within(row).getByText('Not rated yet')).toBeInTheDocument();
+            expect(
+                within(row).queryByText('Pending audit'),
+            ).not.toBeInTheDocument();
+            expect(
+                within(row).queryByText('Not tracked'),
+            ).not.toBeInTheDocument();
+        },
+    );
+
     it('says a live Business health is not tracked, in the row and its 360, with no frozen badge', () => {
         const businesses = props(businessesFixture);
 
@@ -602,7 +640,77 @@ describe('Party directories', () => {
         sectors: ['Agriculture', 'Retail & trade', 'Services'],
         districts: { 'Kigali City': ['Gasabo'], Southern: ['Huye'] },
         latest_year: 2026,
+        prefill: null,
+        request_closed: false,
     };
+
+    it('says when the access request it was opened from is already handled', () => {
+        render(
+            <AdminParties
+                {...{
+                    ...props(businessesFixture),
+                    onboard: { ...ONBOARD, request_closed: true },
+                }}
+            />,
+        );
+
+        expect(screen.getByRole('status')).toHaveTextContent(
+            'That access request is already handled or no longer open, so nothing was filled in.',
+        );
+        expect(
+            screen.getByRole('button', { name: '+ Onboard a business' }),
+        ).toBeInTheDocument();
+    });
+
+    it('opens the onboard form filled from an access request, and blanks it on cancel', () => {
+        render(
+            <AdminParties
+                {...{
+                    ...props(businessesFixture),
+                    onboard: {
+                        ...ONBOARD,
+                        prefill: {
+                            name: 'QA Access Request Ltd',
+                            rdb_code: '123456789',
+                            representative_email: 'kyc2@example.test',
+                        },
+                    },
+                }}
+            />,
+        );
+
+        const form = screen.getByRole('form', { name: 'Onboard a business' });
+
+        expect(
+            within(form).getByText(
+                'Filled from an access request. Check each field and add the rest before you onboard.',
+            ),
+        ).toBeInTheDocument();
+        expect(within(form).getByLabelText('Business name')).toHaveValue(
+            'QA Access Request Ltd',
+        );
+        expect(within(form).getByLabelText('RDB company code')).toHaveValue(
+            '123456789',
+        );
+        expect(
+            within(form).getByLabelText("Representative's account email"),
+        ).toHaveValue('kyc2@example.test');
+
+        fireEvent.click(within(form).getByRole('button', { name: 'Cancel' }));
+        fireEvent.click(
+            screen.getByRole('button', { name: '+ Onboard a business' }),
+        );
+        expect(
+            within(
+                screen.getByRole('form', { name: 'Onboard a business' }),
+            ).getByLabelText('Business name'),
+        ).toHaveValue('');
+        expect(
+            screen.queryByText(
+                'Filled from an access request. Check each field and add the rest before you onboard.',
+            ),
+        ).not.toBeInTheDocument();
+    });
 
     it('lets a verifier onboard a company with its representative and evidence', () => {
         inertia.succeed = true;
@@ -971,7 +1079,7 @@ describe('Party directories', () => {
             screen.getByText('No businesses match these filters.'),
         ).toBeInTheDocument();
         expect(screen.getByText('0 businesses')).toBeInTheDocument();
-        expect(screen.getByText('No matches on this page')).toBeInTheDocument();
+        expect(screen.getByText('No matches')).toBeInTheDocument();
     });
 });
 
@@ -1037,6 +1145,30 @@ describe('Party 360', () => {
         expect(within(drawer).getByText('Freeze history')).toBeInTheDocument();
     });
 
+    it('says Freeze is unavailable instead of describing a button that is not there', async () => {
+        const fixture = props(overdueFixture);
+
+        if (fixture.party == null) {
+            throw new Error('the fixture opens an investor');
+        }
+
+        const { freeze: _freeze, ...actions } = fixture.party.actions;
+
+        fixture.party = { ...fixture.party, actions };
+        const { user } = renderWithUser(<AdminParties {...fixture} />);
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        expect(
+            screen.queryByRole('button', { name: 'Freeze account' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByText(/Freezing isn't available for this account/),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText(/Reversible at any time/),
+        ).not.toBeInTheDocument();
+    });
+
     it('shows a KYC-overdue investor and verifies, rejects or freezes with a reason', async () => {
         const { user } = renderWithUser(
             <AdminParties {...props(overdueFixture)} />,
@@ -1087,6 +1219,7 @@ describe('Party 360', () => {
                 id: 'case-a',
                 revision: 6,
                 status: 'submitted',
+                purpose: 'investor',
                 submitted_at: '2026-10-06T08:00:00+00:00',
                 account: { name: 'Marie Mugisha', email: 'marie@example.rw' },
                 date_of_birth: '01 / 05 / 1990',
@@ -2562,7 +2695,7 @@ describe('Party 360', () => {
         };
         const { user, unmount } = renderWithUser(<AdminParties {...fixture} />);
 
-        expect(screen.getByText('Pending audit')).toBeInTheDocument();
+        expect(screen.getByText('Not rated yet')).toBeInTheDocument();
 
         await user.click(screen.getByRole('tab', { name: 'Activity' }));
         expect(
@@ -2577,6 +2710,9 @@ describe('Party 360', () => {
         expect(screen.getByText('Verified')).toBeInTheDocument();
         expect(
             screen.queryByRole('button', { name: 'Reactivate account' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByText(/Reversible at any time/),
         ).not.toBeInTheDocument();
         unmount();
 
@@ -2605,7 +2741,11 @@ describe('Party 360', () => {
         await view.user.click(screen.getByRole('tab', { name: 'Controls' }));
         expect(screen.getByText('Expired')).toBeInTheDocument();
         expect(screen.getByText('Rejected')).toBeInTheDocument();
-        expect(screen.getByText(/in the Admin app/)).toBeInTheDocument();
+        // Nothing offered: say so rather than describe a Freeze button that isn't there.
+        expect(screen.queryByText(/in the Admin app/)).not.toBeInTheDocument();
+        expect(
+            screen.getByText(/Freezing isn't available/),
+        ).toBeInTheDocument();
     });
 
     it('reads a frozen operator once, with who disabled them and their access history', async () => {

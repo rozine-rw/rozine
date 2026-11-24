@@ -70,4 +70,12 @@ interface PrimaryCampaignSource
      * @return array{title: string, business: string, closed: bool, closure: 'cancelled'|'expired'|'failed_closing'|null}
      */
     public function presentation(string $campaignId): array;
+
+    /**
+     * The campaign's raise target and deadline, for deciding whether a raise is still open below
+     * 100%. Takes no lock and grants nothing.
+     *
+     * @return array{principal: string, expires_at: DateTimeImmutable}
+     */
+    public function raise(string $campaignId): array;
 }

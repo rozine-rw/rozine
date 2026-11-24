@@ -198,7 +198,7 @@ function StatementDownload({
             key: 'pdf',
             link: exports.pdf,
             label: t('business.wallet.export.pdf'),
-            tint: 'bg-[rgba(229,72,77,.10)] text-[#b3383c]',
+            tint: 'bg-[rgba(229,72,77,.10)] text-[#b3383c] dark:text-rz-danger-text',
         },
         {
             key: 'csv',
@@ -329,13 +329,13 @@ export function WalletHistory({
                         >
                             <DirectionTile direction={entry.direction} />
                             <span className="min-w-0 flex-1">
-                                <span className="block truncate text-[12.5px] font-semibold text-rz-ink">
+                                <span className="block text-[12.5px] font-semibold break-words text-rz-ink">
                                     {label(entry)}
                                 </span>
                                 <span className="mt-px block text-[11px] text-rz-secondary">
                                     {formatDate(entry.occurred_at, locale)}
                                     {entry.movement === 'internal' &&
-                                        ` · ${t('business.servicing.wallet.instalments', { list: entry.instalment_indexes.join(', ') })}`}
+                                        ` · ${t('business.servicing.wallet.instalments', { count: entry.instalment_indexes.length, list: entry.instalment_indexes.map((index) => `#${index}`).join(', ') })}`}
                                 </span>
                             </span>
                             <span className="text-[12.5px] font-semibold whitespace-nowrap text-rz-slate">

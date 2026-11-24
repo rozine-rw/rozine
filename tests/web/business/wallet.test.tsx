@@ -39,7 +39,10 @@ vi.mock('@inertiajs/react', () => import('../auditor/inertia'));
 
 vi.mock('@inertiajs/core', async (importOriginal) => ({
     ...(await importOriginal<typeof InertiaCore>()),
-    http: { onResponse: () => () => undefined },
+    http: {
+        onResponse: () => () => undefined,
+        onError: () => () => undefined,
+    },
 }));
 
 const wallet = (fixture: { props: unknown } = walletFixture) =>
@@ -63,9 +66,7 @@ describe('Business wallet (business-servicing-v1)', () => {
 
         expect(balance).toHaveTextContent('RWF 4,200,000');
         expect(balance).toHaveTextContent('Active');
-        expect(balance).toHaveTextContent(
-            'Fees, payouts & disbursements settle here',
-        );
+        expect(balance).toHaveTextContent('Deposits & repayments settle here');
         expect(
             within(balance).getByRole('link', { name: 'RWF 4,200,000' }),
         ).toHaveAttribute('href', '/preview/business-wallet-internal');
@@ -274,7 +275,7 @@ describe('Business wallet (business-servicing-v1)', () => {
             within(history).getByRole('link', { name: 'Repayments' }),
         ).toHaveAttribute('aria-current', 'true');
         expect(history).toHaveTextContent('Repayment · Fleet Expansion');
-        expect(history).toHaveTextContent('Instalments 2');
+        expect(history).toHaveTextContent('Instalment #2');
         expect(
             within(history).getByRole('link', { name: 'Show more' }),
         ).toHaveAttribute('href', '/preview/business-wallet-internal');

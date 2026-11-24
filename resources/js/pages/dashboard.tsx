@@ -11,6 +11,7 @@ import {
     deals as investorDeals,
     verification as investorVerification,
 } from '@/routes/investor';
+import { show as roleApplication } from '@/routes/role-application';
 import { edit as security } from '@/routes/security';
 import { dashboard as staffDashboard } from '@/routes/staff';
 import { notice as verificationNotice } from '@/routes/verification';
@@ -19,7 +20,10 @@ import type {
     IdentityCode,
     IdentityContext,
     InvestorAccessOffer,
+    RequestableRole,
+    RoleAccessOffer,
     RoleApp,
+    RoleApplicationOffer,
     RouteLink,
     SelectActiveRoleInput,
     StaffAccess,
@@ -35,6 +39,16 @@ type LauncherProps = {
     verification?: 'pending' | 'required' | null;
     /** Sent while a verified Business member may add Investor access to their own Party (#380). */
     investor_access?: InvestorAccessOffer | null;
+    /**
+     * Business and Auditor access asked for on the card itself (#616): which roles may be asked
+     * for and which were already sent. Absent in previews, where those cards explain only.
+     */
+    access_requests?: RoleAccessOffer;
+    /**
+     * Where the person's own KYC and their application to switch to Business or Auditor stand
+     * (23 Nov 2026): everyone starts as an Investor and may apply once their KYC is sent.
+     */
+    role_application?: RoleApplicationOffer | null;
     /** Supplied only by local/testing synthetic fixture previews. */
     preview_links?: Partial<Record<RoleApp, RouteLink>>;
 };
@@ -49,7 +63,8 @@ type Blocker = Exclude<IdentityCode, Listed>;
 /**
  * A person sees every app while ready, while their identity is verified or before any role is
  * granted: an app opens when its role is available, the Investor deals open read-only while the
- * identity is verified, and any other app asks Rozine for access. Other codes need their fix first.
+ * identity is verified, and Business or Auditor access is asked for on its card. Other codes need
+ * their fix first.
  */
 const listsApps = (code: IdentityCode): code is Listed =>
     code === 'IDENTITY_READY' ||
@@ -70,6 +85,8 @@ export default function Launcher({
     staff_access,
     verification,
     investor_access,
+    access_requests,
+    role_application,
     preview_links,
 }: LauncherProps) {
     const { t } = useTranslation();
@@ -92,6 +109,7 @@ export default function Launcher({
         preview_links === undefined
             ? (investor_access ?? null)
             : null;
+    const accessOffer = access_requests ?? null;
     const mfaRequired =
         identity.available_roles.includes('auditor') && !canSelect;
 
@@ -238,8 +256,12 @@ export default function Launcher({
                                 </button>
                             )}
                             {failure === 'MFA_REQUIRED' && (
-                                <Link href={security()}>
-                                    {t('suite.mfa_setup')}
+                                <Link
+                                    href={security()}
+                                    className="font-semibold text-rz-accent-text"
+                                >
+                                    {t('suite.mfa_setup')}{' '}
+                                    <span aria-hidden="true">→</span>
                                 </Link>
                             )}
                             <Link href={dashboard()} preserveState={false}>
@@ -322,17 +344,25 @@ export default function Launcher({
                                                             action="suite.app.browse"
                                                         />
                                                     </Link>
+                                                ) : role !== 'investor' &&
+                                                  role_application ? (
+                                                    <RoleSwitchCard
+                                                        role={role}
+                                                        application={
+                                                            role_application
+                                                        }
+                                                    />
                                                 ) : (
-                                                    <a
-                                                        href={SUPPORT}
-                                                        className={CARD}
-                                                    >
+                                                    <div className={CARD}>
                                                         <AppCardBody
                                                             role={role}
-                                                            summary={`suite.app.${role}.description`}
-                                                            action="suite.app.request_access"
+                                                            summary={unavailableSummary(
+                                                                role,
+                                                                accessOffer,
+                                                            )}
+                                                            action="suite.app.unavailable"
                                                         />
-                                                    </a>
+                                                    </div>
                                                 )}
                                             </li>
                                         ))}
@@ -406,9 +436,15 @@ export default function Launcher({
                                     role="status"
                                     className="mt-4 flex flex-col gap-3 text-sm"
                                 >
-                                    <p>{t('suite.mfa_required')}</p>
-                                    <Link href={security()}>
-                                        {t('suite.mfa_setup')}
+                                    <p className="text-rz-body">
+                                        {t('suite.mfa_required')}
+                                    </p>
+                                    <Link
+                                        href={security()}
+                                        className="inline-flex w-fit items-center rounded-xl bg-rz-accent px-4 py-2.5 font-semibold text-white"
+                                    >
+                                        {t('suite.mfa_setup')}{' '}
+                                        <span aria-hidden="true">→</span>
                                     </Link>
                                 </div>
                             )}
@@ -436,6 +472,121 @@ export default function Launcher({
     );
 }
 
+const UNAVAILABLE_REASON = {
+    business: {
+        ROLE_ON_RECORD: 'suite.app.unavailable_reason.business_on_record',
+        AUDITOR_ACCOUNT: 'suite.app.unavailable_reason.auditor_account',
+    },
+    auditor: {
+        ROLE_ON_RECORD: 'suite.app.unavailable_reason.auditor_on_record',
+        AUDITOR_ONLY_ROLE: 'suite.app.unavailable_reason.auditor_only_role',
+    },
+} as const;
+
+type UnavailableSummary = {
+    [
+        Role in RequestableRole
+    ]: (typeof UNAVAILABLE_REASON)[Role][keyof (typeof UNAVAILABLE_REASON)[Role]];
+}[RequestableRole];
+
+/**
+ * What a card the person cannot open or ask for says (#622): why, when the launcher knows (an
+ * Auditor keeps no other role, or the role is already on record with staff), else what it does.
+ */
+function unavailableSummary(
+    role: RoleApp,
+    offer: RoleAccessOffer | null,
+): `suite.app.${RoleApp}.description` | UnavailableSummary {
+    if (role === 'investor') {
+        return 'suite.app.investor.description';
+    }
+
+    const reasons: Partial<Record<string, UnavailableSummary>> =
+        UNAVAILABLE_REASON[role];
+    const reason = offer?.unavailable[role];
+
+    return (
+        (reason === undefined ? undefined : reasons[reason]) ??
+        `suite.app.${role}.description`
+    );
+}
+
+/**
+ * The Business or Auditor card for a person who does not hold that role (role switch, 23 Nov 2026):
+ * verify first while their own KYC is not sent; then apply, continue, fix what Compliance asked for,
+ * or wait while the application is under review. A pending application for the other role leaves
+ * this card explaining only, since an account holds one role at a time.
+ */
+function RoleSwitchCard({
+    role,
+    application,
+}: {
+    role: Exclude<RoleApp, 'investor'>;
+    application: RoleApplicationOffer;
+}) {
+    const mine = application.role === role;
+    const busyElsewhere =
+        application.role !== null &&
+        application.role !== role &&
+        ['submitted', 'approved'].includes(application.status);
+
+    if (!['submitted', 'approved'].includes(application.kyc)) {
+        return (
+            <a href={investorVerification().url} className={CARD}>
+                <AppCardBody
+                    role={role}
+                    summary={`suite.app.${role}.description`}
+                    action="suite.app.verify_first"
+                />
+            </a>
+        );
+    }
+
+    if (busyElsewhere || (mine && application.status === 'approved')) {
+        return (
+            <div className={CARD}>
+                <AppCardBody
+                    role={role}
+                    summary="suite.app.switch.one_role"
+                    action="suite.app.unavailable"
+                />
+            </div>
+        );
+    }
+
+    if (mine && application.status === 'submitted') {
+        return (
+            <div role="status" className={CARD}>
+                <AppCardBody
+                    role={role}
+                    summary="suite.app.switch.under_review_summary"
+                    action="suite.app.switch.under_review"
+                />
+            </div>
+        );
+    }
+
+    return (
+        <Link href={roleApplication({ query: { for: role } })} className={CARD}>
+            <AppCardBody
+                role={role}
+                summary={
+                    mine && application.status === 'changes_requested'
+                        ? 'suite.app.switch.asked_summary'
+                        : `suite.app.${role}.switch`
+                }
+                action={
+                    mine && application.status === 'changes_requested'
+                        ? 'suite.app.switch.fix'
+                        : mine && application.status !== 'none'
+                          ? 'suite.app.switch.continue'
+                          : 'suite.app.switch.start'
+                }
+            />
+        </Link>
+    );
+}
+
 function AppCardBody({
     role,
     summary,
@@ -444,13 +595,26 @@ function AppCardBody({
     role: RoleApp;
     summary:
         | `suite.app.${RoleApp}.description`
+        | UnavailableSummary
         | 'suite.app.investor.preview'
-        | 'suite.app.investor.add';
+        | 'suite.app.investor.add'
+        | 'suite.app.request_sent_summary'
+        | `suite.app.${'business' | 'auditor'}.switch`
+        | 'suite.app.switch.one_role'
+        | 'suite.app.switch.under_review_summary'
+        | 'suite.app.switch.asked_summary';
     action:
         | 'suite.app.open'
         | 'suite.app.browse'
         | 'suite.app.request_access'
-        | 'suite.app.add_access';
+        | 'suite.app.request_sent'
+        | 'suite.app.verify_first'
+        | 'suite.app.unavailable'
+        | 'suite.app.add_access'
+        | 'suite.app.switch.start'
+        | 'suite.app.switch.continue'
+        | 'suite.app.switch.fix'
+        | 'suite.app.switch.under_review';
 }) {
     const { t } = useTranslation();
 
@@ -496,7 +660,6 @@ function AddInvestorAccess({
         { data: IdentityContext }
     >();
     const [requestId] = useState(() => crypto.randomUUID());
-    const [accepted, setAccepted] = useState(false);
     const [failure, setFailure] = useState<string | null>(null);
 
     async function add() {
@@ -506,7 +669,7 @@ function AddInvestorAccess({
             expected_revision: expectedRevision,
             terms_version: offer.terms.version,
             terms_sha256: offer.terms.sha256,
-            accepted,
+            accepted: true,
             request_id: requestId,
         }));
 
@@ -558,15 +721,9 @@ function AddInvestorAccess({
             <p className="rounded-xl bg-rz-accent-tint p-3 text-[13px] leading-normal text-rz-ink">
                 {offer.terms.text}
             </p>
-            <label className="flex items-start gap-2.5 text-sm text-rz-ink">
-                <input
-                    type="checkbox"
-                    checked={accepted}
-                    onChange={(event) => setAccepted(event.target.checked)}
-                    className="mt-0.5 size-4 shrink-0"
-                />
+            <p className="text-[12.5px] leading-normal text-rz-body">
                 {t('suite.add_investor.accept')}
-            </label>
+            </p>
             {failure && (
                 <p role="alert" className="text-sm text-rz-danger-text">
                     {t(
@@ -588,7 +745,7 @@ function AddInvestorAccess({
                 </button>
                 <button
                     type="button"
-                    disabled={!accepted || command.processing}
+                    disabled={command.processing}
                     aria-busy={command.processing || undefined}
                     onClick={() => void add()}
                     className="h-10 flex-1 rounded-[11px] bg-rz-accent px-4 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"

@@ -16,6 +16,7 @@ use App\Application\Auditor\SetAuditorAvailability;
 use App\Application\Auditor\SubmitAuditorAccreditation;
 use App\Application\Auditor\WithdrawAuditorAccreditation;
 use App\Application\Identity\AuthorizeActiveRole;
+use App\Application\Identity\LegalDocuments;
 use App\Http\Requests\Auditor\AuditorCommandRequest;
 use App\Http\Requests\Auditor\ShowAuditorOperationRequest;
 use App\Http\Requests\Auditor\SubmitAccreditationRequest;
@@ -40,7 +41,7 @@ class AuditorProfileController extends Controller
     public function __construct(private AuthorizeActiveRole $identity, private GetAuditorAccreditation $accreditation, private GetAuditEngagementSummary $engagements) {}
 
     public function show(Request $request, GetAuditorProfile $profile, ListAuditJobs $jobs, ListAuditorFiledReports $reports,
-        GetAuditorEarnings $earnings): Response|AuditorProfileResource
+        GetAuditorEarnings $earnings, LegalDocuments $legal): Response|AuditorProfileResource
     {
         $this->requireToken($request, 'auditor:read');
         $userId = $this->userId($request);
@@ -59,11 +60,12 @@ class AuditorProfileController extends Controller
             'engagement' => $this->engagements->handle($userId, $revision),
             'jobs' => $jobs->handle($userId, $revision),
             'filed' => $reports->handle($userId, $revision, limit: 0)['counts']['all'],
-            'on_time_pct' => $reports->trackRecord($userId, $revision)['on_time_pct'],
+            'track_record' => $reports->trackRecord($userId, $revision),
             'earnings' => $earnings->handle($userId, $revision),
         ]);
 
-        return $request->routeIs('api.*') ? $resource : Inertia::render('auditor/profile', $resource->resolve($request));
+        return $request->routeIs('api.*') ? $resource : Inertia::render('auditor/profile',
+            [...$resource->resolve($request), 'legal_documents' => $legal->pages()]);
     }
 
     public function submit(SubmitAccreditationRequest $request, SubmitAuditorAccreditation $action): OperationResource

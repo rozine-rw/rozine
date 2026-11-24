@@ -13,10 +13,11 @@ final class VerifyInvestorIdentity
 
     /**
      * @param  Closure(string): array<string, mixed>  $approve
+     * @param  'investor'|'auditor'|null  $grantedRole
      * @return array<string, mixed>
      */
-    public function handle(int $actorId, int $userId, string $identityReference, string $evidenceReference, string $reason, string $requestId, Closure $approve): array
+    public function handle(int $actorId, int $userId, string $identityReference, string $evidenceReference, string $reason, string $requestId, Closure $approve, ?string $grantedRole = 'investor'): array
     {
-        return $this->access->verifyInvestor($actorId, $userId, $identityReference, $evidenceReference, $reason, $requestId, $approve);
+        return $this->access->verifyInvestor($actorId, $userId, $identityReference, $evidenceReference, $reason, $requestId, $approve, $grantedRole);
     }
 }

@@ -9,9 +9,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * `C3InvestorCommitmentProps` (investor-primary-v1) for both transports. It shapes already
- * authorized facts and adds real routes only. No cancel action is offered yet: the server cannot
- * yet tell a raising campaign from a funded one here, so the cancel command alone decides. The
- * Investor's own refund links to its cancel request; a closure's refund opens its wallet receipt.
+ * authorized facts and adds real routes only. While the raise is below 100% the commitment lists
+ * `primary.cancel` and its cancel (withdraw) action (INV-R03); the command decides again under its
+ * locks. The Investor's own refund links to its cancel request; a closure's refund opens its wallet receipt.
  * `links.changes` is the change beacon for the Investor's purchases, from the cursor taken before
  * the facts were read.
  * A destination with no live route yet is null; Portfolio and Profile are web pages only, so the
@@ -30,7 +30,7 @@ class InvestorCommitmentResource extends JsonResource
         $page = fn (string $name): ?array => $request->routeIs('api.*') ? null : self::link($request, $name);
 
         return ['contract_version' => 'investor-primary-v1', 'identity_context_revision' => $context, 'server_time' => now()->toIso8601String(),
-            'allowed_actions' => [], 'commitment' => $commitment === null ? null : self::commitment($request, $context, $commitment),
+            'allowed_actions' => $commitment['allowed_actions'] ?? [], 'commitment' => $commitment === null ? null : self::commitment($request, $context, $commitment),
             'refusal' => $data['refusal'],
             'links' => ['deals' => self::link($request, 'investor.deals'), 'portfolio' => $page('investor.portfolio'), 'market' => $page('investor.market'), 'cart' => $page('investor.cart'), 'profile' => $page('investor.profile'),
                 'wallet' => $wallet, 'notifications' => null,
@@ -60,7 +60,9 @@ class InvestorCommitmentResource extends JsonResource
                 ? self::lookup($request, $context, $commitment, (string) $refund['request_id'])
                 : self::link($request, 'investor.wallet', ['receipt' => (string) $refund['receipt_id']])],
             'holding' => $holding === null ? null : ['id' => $holding['id'], 'link' => self::link($request, 'investor.holdings.show', ['holding' => $holding['id']])],
-            'actions' => ['cancel' => null], 'link' => $link];
+            'actions' => ['cancel' => in_array('primary.cancel', (array) $commitment['allowed_actions'], true)
+                ? ['url' => route(self::prefix($request).'investor.primary.cancel', ['commitment' => (string) $commitment['id']], false), 'method' => 'post']
+                : null], 'link' => $link];
     }
 
     /**

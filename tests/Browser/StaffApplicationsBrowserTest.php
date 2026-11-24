@@ -25,7 +25,7 @@ const SA_SECRET = 'JBSWY3DPEHPK3PXP';
 it('lists, opens and searches the live staff applications queue in a real browser', function (): void {
     $fixture = AuditSealingFixture::ready();
     AuditSealingFixture::seal($fixture);
-    AuditSealingFixture::cosign($fixture);
+    AuditSealingFixture::publish($fixture);
     $staff = $fixture['audit']['staff'];
     $staff->forceFill(['email' => 'sa-staff@example.test', 'password' => SA_PASSWORD,
         'two_factor_secret' => encrypt(SA_SECRET), 'two_factor_confirmed_at' => now()->subMinute()])->save();

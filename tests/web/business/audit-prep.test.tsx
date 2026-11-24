@@ -46,7 +46,7 @@ describe('Get ready for your audit', () => {
         expect(sheet.queryByRole('status')).not.toBeInTheDocument();
         expect(
             sheet.getByText(
-                'You add a recap and co-sign by 7 Oct, or dispute with counter-proof.',
+                'You read the findings and, if something is wrong, dispute with counter-proof by 7 Oct.',
             ),
         ).toBeInTheDocument();
         expect(sheet.getByRole('link', { name: 'Back' })).toHaveAttribute(

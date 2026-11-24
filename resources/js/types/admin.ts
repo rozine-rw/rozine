@@ -63,6 +63,8 @@ export type AdminOptionalSection =
     | 'complaints'
     | 'reports'
     | 'mail_testers'
+    | 'access_requests'
+    | 'users'
     | AdminPendingSection;
 
 /**
@@ -590,7 +592,10 @@ export type ApplicationReview = {
         used_pct: number | null;
         approved: Money;
         active_notes: number | null;
+        /** The notes' outstanding principal. */
         outstanding: Money | null;
+        /** What the Business owes beyond its notes: other loans its verified evidence lists. */
+        other_debts: Money | null;
     };
     /** The engine's evidence, each on 0–100. Read-only. */
     factors: { key: EvidenceFactorKey; value: number }[];
@@ -687,6 +692,15 @@ export type PartyKind = 'business' | 'investor' | 'auditor' | 'staff';
 
 export type KycState = 'verified' | 'pending' | 'overdue' | 'rejected';
 
+/** How far a Business has come towards its first listing: KYB, its application, the CPA baseline audit, then a note on the market. */
+export type BusinessStage =
+    | 'kyb_pending'
+    | 'not_applied'
+    | 'applying'
+    | 'applied'
+    | 'auditing'
+    | 'listed';
+
 export type BusinessPartyRow = {
     id: string;
     name: string;
@@ -697,8 +711,8 @@ export type BusinessPartyRow = {
     raised: Money;
     /** Null until the platform reads a Business's capacity; the cell shows a dash. */
     capacity_used_pct: number | null;
-    /** `not_tracked` until the platform reads arrears and freezes; the cell says so. */
-    health: 'healthy' | 'watch' | 'distressed' | 'not_tracked';
+    /** Until the platform reads arrears, a Business's onboarding stage (BusinessStage). */
+    health: 'healthy' | 'watch' | 'distressed' | 'not_tracked' | BusinessStage;
     /** Null while no freeze read exists. */
     frozen: boolean | null;
     kyc: KycState;
@@ -773,6 +787,8 @@ export type StaffPermissionKey =
     | 'complaints.answer'
     | 'health.view'
     | 'cart.releases.resolve'
+    | 'secondary.halt'
+    | 'secondary.listings.cancel'
     | 'staff.manage'
     | 'accounts.freeze'
     | 'capacity.adjust'
@@ -944,7 +960,8 @@ export type PartyDetail = {
         | 'kyc_pending'
         | 'licence_pending'
         | 'frozen'
-        | 'not_tracked';
+        | 'not_tracked'
+        | BusinessStage;
     stats: { key: PartyStatKey; value: StatValue }[];
     list: {
         key: 'active_notes' | 'holdings' | 'engagements';
@@ -1044,6 +1061,14 @@ export type OnboardBusinessAction = RouteAction & {
     sectors: string[];
     districts: Record<string, string[]>;
     latest_year: number;
+    /** True when the link named an access request that is handled or no longer exists. */
+    request_closed: boolean;
+    /** Filled from an access request when staff open the form from one (#627). */
+    prefill: {
+        name: string;
+        rdb_code: string;
+        representative_email: string;
+    } | null;
 };
 
 export type AdminPartiesProps = AdminFrameShellProps & {
@@ -1145,7 +1170,9 @@ export type AdminLedgerProps = AdminShellProps & {
     more: RouteLink | null;
     /** The next older page, after the last row shown; null on the last page. */
     older: RouteLink | null;
-    /** Back to the newest page; null while on it. */
+    /** One page toward the newest (#623); null on the newest page. */
+    newer: RouteLink | null;
+    /** Back to the newest page, when that is more than one page away; null otherwise. */
     newest: RouteLink | null;
     entry: LedgerEntryDetail | null;
 };
@@ -1696,7 +1723,7 @@ export type NotesSort =
  * before its payout closes, `repaying` once its notes issued, `failed` when it closed unfunded or
  * its payout failed. `matured` is a tab only: servicing records no final repayment yet.
  */
-export type NoteState = 'live' | 'funded' | 'repaying' | 'failed';
+export type NoteState = 'live' | 'funded' | 'repaying' | 'matured' | 'failed';
 
 export type NotesTabKey = 'all' | 'live' | 'repaying' | 'matured' | 'failed';
 
@@ -1713,6 +1740,19 @@ export type NoteRegisterRow = {
     target: Money;
     investors: number;
     listed_at: string;
+    /** Opens this note's holders drawer. */
+    link?: RouteLink;
+};
+
+/** Who holds a note's units now: issued Holdings and lots bought on the market. */
+export type NoteHoldersDrawer = {
+    id: string;
+    reference: string;
+    business: string;
+    state: NoteState;
+    investors: number;
+    holders: { name: string; units: string; bought: boolean }[];
+    close: RouteLink;
 };
 
 export type AdminNotesProps = AdminFrameShellProps &
@@ -1727,6 +1767,7 @@ export type AdminNotesProps = AdminFrameShellProps &
         notes: NoteRegisterRow[];
         pagination: Pagination;
         sort: NotesSort;
+        drawer?: NoteHoldersDrawer | null;
     };
 
 export type AdminPrimaryMarketProps = AdminFrameShellProps &
@@ -1991,6 +2032,9 @@ export type KycIdType = 'national_id' | 'passport' | 'drivers_license';
 
 export type KycCaseStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 
+/** The app a person verified their identity for: only an Investor check grants Investor access. */
+export type KycPurpose = 'investor' | 'business' | 'auditor';
+
 export type InvestorVerificationEntry = {
     id: string;
     revision: number;
@@ -2000,6 +2044,7 @@ export type InvestorVerificationEntry = {
     name: string;
     email: string;
     id_type: KycIdType;
+    purpose: KycPurpose;
     /** The automated checks the case passed before it could be submitted. */
     checks: KycCheck[];
     selected: boolean;
@@ -2011,7 +2056,7 @@ export type KycCheck = 'age' | 'id_number' | 'documents' | 'selfie';
 /** A private upload: read only through its link, never inlined in the props. */
 export type InvestorVerificationDocument = {
     id: string;
-    slot: 'front' | 'back' | 'selfie';
+    slot: 'front' | 'back' | 'selfie' | 'certificate';
     filename: string;
     media_type: string;
     size_bytes: number;
@@ -2029,6 +2074,9 @@ export type InvestorVerificationReview = {
     id: string;
     revision: number;
     status: KycCaseStatus;
+    purpose: KycPurpose;
+    /** The ICPAR licence an Auditor check carries, reviewed with the identity; null otherwise. */
+    licence?: { number: string; expires_on: string } | null;
     submitted_at: string | null;
     account: { name: string; email: string };
     date_of_birth: string;
@@ -2252,3 +2300,150 @@ export type AdminSystemHealthProps = AdminFrameShellProps &
         /** Worst first: critical, watch, healthy, then the untracked signals. */
         signals: HealthSignal[];
     };
+
+/* ------------------------------------------------------------------------------------------ */
+/* Business and Auditor access requests from the launcher (#616)                               */
+/* ------------------------------------------------------------------------------------------ */
+
+export type AccessRequestRole = 'business' | 'auditor';
+
+/** One request as a person sent it from the launcher, with who sent it. */
+export type AccessRequestRow = {
+    id: string;
+    role: AccessRequestRole;
+    name: string;
+    email: string;
+    /** The business name; an Auditor may leave the firm blank. */
+    organization: string;
+    /** The RDB code a Business may give, or the ICPAR licence an Auditor must. */
+    reference: string | null;
+    phone: string | null;
+    note: string | null;
+    sent_at: string;
+    /**
+     * Null while the request is open. Once staff create the membership it asked for, that
+     * membership's status: the request is handled and leaves the open queue.
+     */
+    outcome: 'pending' | 'active' | 'suspended' | 'revoked' | null;
+    /** When that membership last changed (not when it was first granted); null while the request is open. */
+    handled_at: string | null;
+    /** Whether the requester's identity is verified, which granting the role needs. */
+    identity_verified: boolean;
+    /** Where staff grant this request: Onboard a business filled from it, or Auditor access granted in place. */
+    grant: RouteLink | RouteAction;
+};
+
+export type AdminAccessRequestsProps = AdminFrameShellProps & {
+    /** The kinds of request this viewer may act on. */
+    roles: AccessRequestRole[];
+    requests: AccessRequestRow[];
+    /** Where staff grant each kind: Onboard business, or the Auditor Network. */
+    links: Record<AccessRequestRole, RouteLink>;
+};
+
+/** An account's identity (KYC) state on the Users page. */
+export type UserKyc =
+    | 'verified'
+    | 'in_review'
+    | 'in_progress'
+    | 'rejected'
+    | 'not_started';
+
+export type UserMembership = {
+    role: 'investor' | 'business' | 'auditor';
+    status: 'pending' | 'active' | 'suspended' | 'revoked';
+    since: string;
+};
+
+/** One sign-in account on the Users page, with every role it holds. */
+export type UserRow = {
+    id: string;
+    name: string;
+    email: string;
+    email_verified: boolean;
+    signed_up_at: string;
+    last_seen_at: string | null;
+    memberships: UserMembership[];
+    staff: { roles: string[]; enabled: boolean } | null;
+    /** Roles asked for from the launcher and not held yet. */
+    requested: ('business' | 'auditor')[];
+    kyc: UserKyc;
+    restricted: boolean;
+    /** When the holder closed the account (soft delete); null while it is open. */
+    closed_at: string | null;
+    /** The holder's own words on closing, when they gave any. */
+    closure_reason: string | null;
+    link: RouteLink;
+};
+
+/** The Users drawer: the row, sign-in security, access requests and identity history. */
+export type UserDetail = Omit<UserRow, 'link'> & {
+    email_verified_at: string | null;
+    two_factor: boolean;
+    passkeys: number;
+    submitted_at: string | null;
+    requests: {
+        role: 'business' | 'auditor';
+        organization: string;
+        reference: string | null;
+        sent_at: string;
+    }[];
+    history: {
+        id: string;
+        at: string;
+        actor: string;
+        action: string;
+        reason: string;
+    }[];
+    links: {
+        close: RouteLink;
+        investor: RouteLink | null;
+        business: RouteLink | null;
+        auditor: RouteLink | null;
+        staff: RouteLink | null;
+        access_requests: RouteLink | null;
+    };
+};
+
+export type UserRoleChip =
+    | 'all'
+    | 'investor'
+    | 'business'
+    | 'auditor'
+    | 'staff'
+    | 'no_role';
+
+/** Users (Accounts): every account on the platform, filtered and searched on the server. */
+export type AdminUsersProps = AdminFrameShellProps & {
+    /** Open accounts, and the accounts their holders closed. */
+    tabs: {
+        key: 'active' | 'deleted';
+        count: number;
+        link: RouteLink;
+        active: boolean;
+    }[];
+    stats: {
+        key: 'total_users' | 'new_this_week' | 'kyc_verified' | 'awaiting_kyc';
+        value: StatValue;
+    }[];
+    chips: {
+        key: UserRoleChip;
+        count: number;
+        link: RouteLink;
+        active: boolean;
+    }[];
+    filters: (
+        | { key: 'kyc'; value: 'any' | UserKyc; options: ('any' | UserKyc)[] }
+        | {
+              key: 'sort';
+              value: 'newest' | 'oldest' | 'name';
+              options: ('newest' | 'oldest' | 'name')[];
+          }
+    )[];
+    shown: number;
+    total: number;
+    rows: UserRow[];
+    user: UserDetail | null;
+    /** The open account's own KYC, for a viewer who approves identity checks. */
+    kyc_review?: InvestorVerificationReview | null;
+};

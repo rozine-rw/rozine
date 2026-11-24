@@ -184,13 +184,13 @@ PHP;
         'sha' => $environment['GITHUB_SHA'], 'run_id' => '123', 'run_attempt' => '2',
         'php' => PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION,
         'config_hash' => hash_file('sha256', $temporary.'/phpunit.xml'),
-        'source_hashes' => ['ShardSubject.php' => hash('sha256', $source)], 'total' => 4,
+        'source_hashes' => ['ShardSubject.php' => hash('sha256', $source)], 'total' => 8,
     ];
     $driver = new Process(['php', '-d', 'pcov.enabled=1', '-r',
         'require "vendor/autoload.php"; exit(\\Pest\\Support\\Coverage::isAvailable() ? 0 : 1);'], $root);
     $driver->run();
     try {
-        foreach (range(1, 4) as $index) {
+        foreach (range(1, 8) as $index) {
             file_put_contents($temporary.'/tests/Shard'.$index.'Test.php', '<?php
 require_once __DIR__."/../app/ShardSubject.php";
 class Shard'.$index.'Test extends PHPUnit\\Framework\\TestCase {
@@ -227,7 +227,7 @@ class Shard'.$index.'Test extends PHPUnit\\Framework\\TestCase {
             return;
         }
         $green = $merge();
-        expect($green->getOutput().$green->getErrorOutput())->toContain('All 4 tests accounted for exactly once')
+        expect($green->getOutput().$green->getErrorOutput())->toContain('All 8 tests accounted for exactly once')
             ->and($green->getExitCode())->toBe(0)
             ->and(file_get_contents($temporary.'/evidence/tested-sha.txt'))->toBe(str_repeat('a', 40)."\n");
 
@@ -245,8 +245,8 @@ class Shard'.$index.'Test extends PHPUnit\\Framework\\TestCase {
             'uncovered line', 'missing source file', 'empty catalog', 'extra shard'] as $scenario) {
             $files->deleteDirectory($temporary.'/evidence');
             $files->copyDirectory($baseline, $temporary.'/evidence');
-            $shard = $temporary.'/evidence/shard-4';
-            $metadata = [...$identity, 'shard' => 4];
+            $shard = $temporary.'/evidence/shard-8';
+            $metadata = [...$identity, 'shard' => 8];
             if ($scenario === 'missing shard') {
                 $files->deleteDirectory($shard);
             } elseif (in_array($scenario, ['stale run', 'wrong revision', 'wrong source', 'wrong shard'], true)) {
@@ -272,9 +272,9 @@ class Shard'.$index.'Test extends PHPUnit\\Framework\\TestCase {
             } elseif ($scenario === 'empty catalog') {
                 file_put_contents($temporary.'/all.json', '[]');
             } elseif ($scenario === 'extra shard') {
-                $files->copyDirectory($shard, $temporary.'/evidence/shard-5');
+                $files->copyDirectory($shard, $temporary.'/evidence/shard-9');
             } else {
-                foreach (range(1, 4) as $index) {
+                foreach (range(1, 8) as $index) {
                     $coverageFile = $temporary.'/evidence/shard-'.$index.'/coverage.php';
                     $coverage = (new Unserializer)->unserialize($coverageFile);
                     $lines = $coverage['codeCoverage']->lineCoverage();
@@ -307,10 +307,11 @@ class Shard'.$index.'Test extends PHPUnit\\Framework\\TestCase {
     }
 });
 
-it('retains the stable required gate and waits for all four isolated jobs', function (): void {
+it('retains the stable required gate and waits for all eight isolated jobs', function (): void {
     $root = dirname(__DIR__, 2);
     $jobs = Yaml::parseFile($root.'/.github/workflows/tests.yml')['jobs'];
-    expect($jobs['php-shards']['strategy']['matrix']['shard'])->toBe([1, 2, 3, 4])
+    expect($jobs['php-shards']['strategy']['matrix']['shard'])->toBe([1, 2, 3, 4, 5, 6, 7, 8])
+        ->and($jobs['php-shards']['timeout-minutes'])->toBe(45)
         ->and($jobs['php-shards']['strategy']['fail-fast'])->toBeFalse()
         ->and($jobs['ci']['name'])->toBe('PHP ${{ matrix.php-version }} quality gate')
         ->and($jobs['ci']['strategy']['matrix']['php-version'])->toBe(['8.5'])
@@ -319,20 +320,20 @@ it('retains the stable required gate and waits for all four isolated jobs', func
         ->and($jobs['ci']['steps'][0]['env']['SHARD_RESULT'])->toBe('${{ needs.php-shards.result }}');
     $steps = array_column($jobs['ci']['steps'], null, 'name');
     expect($steps['Run authoritative PHP static gates']['run'])->toBe('composer ci:check:php:static')
-        ->and($steps['Download this run\'s four shard artifacts']['with']['pattern'])->toBe('php-shard-*-${{ github.run_id }}-${{ github.run_attempt }}')
+        ->and($steps['Download this run\'s shard artifacts']['with']['pattern'])->toBe('php-shard-*-${{ github.run_id }}-${{ github.run_attempt }}')
         ->and($steps['Require complete test execution and 100% combined coverage']['env']['SHARD_RESULT'])->toBe('${{ needs.php-shards.result }}')
         ->and($steps['Require complete test execution and 100% combined coverage']['run'])->toBe('php scripts/quality/php-shard-evidence.php merge "$PWD" coverage/php coverage/php/expected-tests.json "$SHARD_RESULT"')
         ->and($steps['Enumerate the complete non-TIA test catalog']['env']['PHP_SHARD_CATALOG'])->toBe('coverage/php/expected-tests.json')
         ->and($steps['Enumerate the complete non-TIA test catalog']['run'])->toContain('--bootstrap=scripts/quality/php-shard-bootstrap.php --ci --no-tia --list-tests')
-        ->and($steps["Download this run's four shard artifacts"]['uses'])->toStartWith('actions/download-artifact@')
-        ->and($steps["Download this run's four shard artifacts"]['with']['path'])->toBe('coverage/shards')
-        ->and($steps['Collect shard directories']['run'])->toContain('for shard in 1 2 3 4;', 'mv "coverage/shards/php-shard-$shard-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" "coverage/php/shard-$shard"');
+        ->and($steps["Download this run's shard artifacts"]['uses'])->toStartWith('actions/download-artifact@')
+        ->and($steps["Download this run's shard artifacts"]['with']['path'])->toBe('coverage/shards')
+        ->and($steps['Collect shard directories']['run'])->toContain('for shard in 1 2 3 4 5 6 7 8;', 'mv "coverage/shards/php-shard-$shard-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" "coverage/php/shard-$shard"');
     $order = array_flip(array_keys($steps));
-    expect($order["Download this run's four shard artifacts"])->toBeLessThan($order['Collect shard directories'])
+    expect($order["Download this run's shard artifacts"])->toBeLessThan($order['Collect shard directories'])
         ->and($order['Collect shard directories'])->toBeLessThan($order['Require complete test execution and 100% combined coverage']);
     $controls = array_column($jobs['negative-control-groups']['steps'], null, 'name');
     expect($controls['Prove the sharded coverage gate fails closed']['if'])->toBe("\${{ matrix.group == 'coverage' }}")
         ->and($controls['Prove the sharded coverage gate fails closed']['run'])->toBe('php vendor/bin/pest --ci --no-tia tests/Unit/PhpShardGateTest.php --compact');
     $command = file_get_contents($root.'/scripts/quality/run-php-shard.sh');
-    expect($command)->toContain('--no-tia', '--shard="$1/4"', '--coverage-php=', '--fail-on-empty-test-suite', '--fail-on-skipped', '--fail-on-incomplete', '--fail-on-risky');
+    expect($command)->toContain('--no-tia', '--shard="$1/8"', '--coverage-php=', '--fail-on-empty-test-suite', '--fail-on-skipped', '--fail-on-incomplete', '--fail-on-risky');
 });

@@ -12,8 +12,10 @@ import { AwaitingIssue } from '@/components/investor/primary/commitment';
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
 import { useWide } from '@/lib/investor/use-wide';
+import { formatDate, formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type {
+    BoughtLot,
     C3InvestorPortfolioProps,
     C4InvestorPortfolioProps,
 } from '@/types/investor';
@@ -30,7 +32,38 @@ const BEACON_RELOADS = [
     'concentration',
     'idle',
     'commitments',
+    'bought',
 ];
+
+/** Units bought on the market and still held: the deal, units at the price paid, and when. */
+function BoughtCard({ lot }: { lot: BoughtLot }) {
+    const { t, locale } = useTranslation();
+
+    return (
+        <Link
+            href={lot.link}
+            className="block rounded-2xl border border-rz-hairline bg-rz-surface p-3.5 shadow-[0_10px_30px_-24px_rgba(20,45,95,.28)]"
+        >
+            <span className="flex items-start justify-between gap-3">
+                <span className="min-w-0">
+                    <span className="block truncate text-[14px] font-semibold text-rz-ink">
+                        {lot.name}
+                    </span>
+                    <span className="mt-0.5 block text-[12px] text-rz-secondary">
+                        {t('investor.portfolio.bought.line', {
+                            count: Number(lot.units),
+                            price: formatRwf(lot.price),
+                            date: formatDate(lot.bought_at, locale),
+                        })}
+                    </span>
+                </span>
+                <span className="shrink-0 text-[14px] font-bold text-rz-ink">
+                    {formatRwf(lot.paid)}
+                </span>
+            </span>
+        </Link>
+    );
+}
 
 /** The design lists three holdings on a phone and four on a wide screen before "See all". */
 const FIRST = { phone: 3, desk: 4 } as const;
@@ -40,8 +73,8 @@ const FIRST = { phone: 3, desk: 4 } as const;
  * scheduled payouts, and concentration by business, industry and rating. Commitments still awaiting
  * issue are listed apart, above the holdings, and never counted among them (C3 v2 §2d); while they
  * are the only thing on the Active tab, a short note replaces the "Nothing held yet" state. All four
- * of the design's tabs are offered; Secondary (resale) and Saved (the watchlist) have no read yet
- * and show the design's empty states. Saved leaves out the design's "tap the heart" hint, since no
+ * of the design's tabs are offered; Secondary lists the units bought on the market, and Saved (the
+ * watchlist) has no read yet. Each shows the design's empty state when it has nothing. Saved leaves out the design's "tap the heart" hint, since no
  * deal can be saved yet. The Rozine Plus charge card waits on approved Plus terms. An `investor-servicing-v1` page (C4 v1 §4c) shows realised and projected
  * earnings apart in place of the Phase 1B value and gain.
  */
@@ -55,6 +88,7 @@ export default function InvestorPortfolio(
     const shown = all ? props.holdings : props.holdings.slice(0, first);
     const more = props.holdings.length - first;
     const awaiting = props.tab === 'active' && props.commitments.length > 0;
+    const bought = props.bought ?? [];
     const total =
         props.contract_version === 'investor-servicing-v1' ? (
             <EarningsCard earnings={props.earnings} bases={props.bases} />
@@ -109,9 +143,27 @@ export default function InvestorPortfolio(
                 {props.tab === 'active' && (
                     <AwaitingIssue commitments={props.commitments} />
                 )}
+                {/* The note belongs to the awaiting group, so it sits right under it (QA #656). */}
+                {props.holdings.length === 0 && awaiting && (
+                    <p className="px-1 pt-1 text-center text-[12.5px] leading-normal text-rz-secondary">
+                        {t('investor.portfolio.empty.active.awaiting')}
+                    </p>
+                )}
                 {shown.map((holding) => (
                     <HoldingCard key={holding.id} holding={holding} />
                 ))}
+                {bought.length > 0 && (
+                    <section aria-label={t('investor.portfolio.bought.title')}>
+                        <h2 className="px-1 pb-2 text-[10px] font-bold tracking-[.05em] text-rz-body uppercase">
+                            {t('investor.portfolio.bought.title')}
+                        </h2>
+                        <div className="flex flex-col gap-2.5">
+                            {bought.map((lot) => (
+                                <BoughtCard key={lot.lot_id} lot={lot} />
+                            ))}
+                        </div>
+                    </section>
+                )}
                 {more > 0 && !all && (
                     <div className="flex justify-end">
                         <button
@@ -123,36 +175,36 @@ export default function InvestorPortfolio(
                         </button>
                     </div>
                 )}
-                {props.holdings.length === 0 && awaiting && (
-                    <p className="px-1 pt-1 text-center text-[12.5px] leading-normal text-rz-secondary">
-                        {t('investor.portfolio.empty.active.awaiting')}
-                    </p>
-                )}
-                {props.holdings.length === 0 && !awaiting && (
-                    <div className="px-5 py-[46px] text-center">
-                        <span className="text-[31px]">
-                            <Icon name="inbox-empty" />
-                        </span>
-                        <p className="mt-3 text-[15px] font-semibold text-rz-ink">
-                            {t(`investor.portfolio.empty.${props.tab}.title`)}
-                        </p>
-                        {props.tab !== 'saved' && (
-                            <p className="mt-1.5 text-[13px] leading-normal text-rz-secondary">
+                {props.holdings.length === 0 &&
+                    !awaiting &&
+                    bought.length === 0 && (
+                        <div className="px-5 py-[46px] text-center">
+                            <span className="text-[31px]">
+                                <Icon name="inbox-empty" />
+                            </span>
+                            <p className="mt-3 text-[15px] font-semibold text-rz-ink">
                                 {t(
-                                    `investor.portfolio.empty.${props.tab}.body`,
+                                    `investor.portfolio.empty.${props.tab}.title`,
                                 )}
                             </p>
-                        )}
-                        {(props.tab === 'active' || props.tab === 'saved') && (
-                            <Link
-                                href={props.links.deals}
-                                className="mt-4 inline-block rounded-xl bg-rz-accent-fill px-5 py-[11px] text-[13.5px] font-semibold text-white"
-                            >
-                                {t('investor.portfolio.browse_deals')}
-                            </Link>
-                        )}
-                    </div>
-                )}
+                            {props.tab !== 'saved' && (
+                                <p className="mt-1.5 text-[13px] leading-normal text-rz-secondary">
+                                    {t(
+                                        `investor.portfolio.empty.${props.tab}.body`,
+                                    )}
+                                </p>
+                            )}
+                            {(props.tab === 'active' ||
+                                props.tab === 'saved') && (
+                                <Link
+                                    href={props.links.deals}
+                                    className="mt-4 inline-block rounded-xl bg-rz-accent-fill px-5 py-[11px] text-[13.5px] font-semibold text-white"
+                                >
+                                    {t('investor.portfolio.browse_deals')}
+                                </Link>
+                            )}
+                        </div>
+                    )}
             </div>
         </>
     );

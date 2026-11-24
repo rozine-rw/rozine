@@ -9,12 +9,15 @@ use App\Application\Auditor\Contracts\AuditReportCryptography;
 use App\Application\Auditor\Contracts\AuditReportPublicationStore;
 use App\Application\Auditor\CosignAuditReport;
 use App\Application\Auditor\GetAuditProcedure;
+use App\Application\Auditor\ReviewAuditPublication;
 use App\Application\Auditor\SaveAuditReportStep;
 use App\Application\Auditor\SealAuditReport;
 use App\Application\Auditor\StartAuditReport;
 use App\Models\AuditReport;
+use App\Models\AuditReportPublication;
 use App\Models\AuditReportSeal;
 use App\Models\AuditSigningKey;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Mockery;
@@ -27,7 +30,9 @@ final class AuditSealingFixture
     /** @return array<string, mixed> */
     public static function ready(int $signatories = 1, string $kind = 'flash', bool $findings = false, ?int $requiredSignatories = null, bool $recordConsent = true): array
     {
-        $fixture = BusinessQuoteFixture::ready($signatories, $kind === 'flash' ? 'flash' : 'routine', $requiredSignatories, $recordConsent);
+        $fixture = BusinessQuoteFixture::ready($signatories, match ($kind) {
+            'flash' => 'flash', 'late' => 'arrears', default => 'routine',
+        }, $requiredSignatories, $recordConsent);
         $acceptance = BusinessQuoteFixture::acceptance($fixture);
         for ($index = 0; $index < ($requiredSignatories ?? $signatories); $index++) {
             BusinessQuoteFixture::submit($fixture, $acceptance, $index);
@@ -40,12 +45,20 @@ final class AuditSealingFixture
         $started = app(StartAuditReport::class)->handle($user->id, 1, $fixture['assignment']->id, $fixture['assignment']->refresh()->revision,
             $fixture['application']->id, $fixture['application']->refresh()->revision, (string) Str::uuid());
         $report = AuditReport::query()->whereKey($started['data']['audit_id'])->firstOrFail();
-        $steps = $kind === 'flash'
-            ? ['review' => [], 'check_in' => [], 'photos' => ['titles' => ['extra-1' => 'Stock room']],
-                'ledger' => ['observed_stock' => $findings ? '37000000' : '38000000', 'reconciled' => true]]
-            : ['statements' => [], 'count' => ['cash' => $findings ? '108000001' : '108000000', 'stock_units' => '190',
+        $steps = match ($kind) {
+            'late' => ['review' => [], 'check_in' => [], 'available' => ['cash_available' => $findings ? '0' : '450000', 'financial_proofs' => ['bank', 'momo']],
+                'reason' => ['late_reason' => 'customers_owe', 'late_reason_note' => '']],
+            'flash' => ['review' => [], 'check_in' => [], ...self::baseline($report), 'photos' => ['titles' => ['extra-1' => 'Stock room']],
+                'ledger' => ['observed_stock' => $findings ? '37000000' : '38000000', 'reconciled' => true]],
+            default => ['statements' => [], 'count' => ['cash' => $findings ? '108000001' : '108000000', 'stock_units' => '190',
                 'operational_status' => 'active', 'financial_proofs' => ['bank', 'momo'], 'inventory_proofs' => ['photo']],
-                'photos' => ['titles' => ['extra-1' => 'Stock room']]];
+                'cash_sales' => ['undeposited_cash_sales' => '15000'], 'costs' => ['costs' => ['stock' => '400000', 'staff' => '250000', 'premises' => '80000', 'transport' => '30000', 'taxes' => '20000', 'other' => '0']],
+                'drawings' => ['owner_drawings' => '0'], 'loans' => ['loans' => []],
+                'differences' => ['explanations' => $findings ? [['cause' => 'entry_error', 'amount' => '1']] : []],
+                'staff' => ['staff_count' => '6', 'rssb_checked' => true], 'expiries' => ['tax_clearance_expires_on' => '2027-03-31', 'rssb_clearance_expires_on' => '2027-06-30'],
+                'loan_use' => ['loan_use' => 'as_planned', 'loan_use_note' => ''], 'changes' => ['changes' => ['new_debt' => false, 'director_change' => false, 'ownership_change' => false, 'legal_claim' => false]],
+                'photos' => ['titles' => ['extra-1' => 'Stock room']]],
+        };
         if ($findings) {
             $steps['seal'] = ['note' => 'Observed difference retained for review.'];
         }
@@ -57,6 +70,23 @@ final class AuditSealingFixture
         }
 
         return self::prepare([...$fixture, 'user' => $user, 'report' => $report]);
+    }
+
+    /**
+     * The steps a business's first Flash visit adds as its baseline (BRS v3 VIS-R02); none for a
+     * Flash report that is not the baseline.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public static function baseline(AuditReport $report): array
+    {
+        return ($report->binding['baseline'] ?? false) !== true ? [] : [
+            'history' => ['history_checked' => true],
+            'premises' => ['premises_tenure' => 'rented', 'assets' => [['item' => 'Delivery motorbike', 'value' => '1800000']]],
+            'people' => ['owners_confirmed' => true, 'management_confirmed' => true],
+            'registration' => ['registration_confirmed' => true, 'tax_clearance_expires_on' => '2027-03-31'],
+            'trading' => ['trading_since' => '2021-06'],
+        ];
     }
 
     /** @param array<string, mixed> $fixture
@@ -145,5 +175,30 @@ final class AuditSealingFixture
             'accepted' => true, 'note' => '', 'requestId' => (string) Str::uuid()], ...$overrides];
 
         return app(CosignAuditReport::class)->handle(...$values);
+    }
+
+    /**
+     * Publishes a sealed report the way BRS v3.0 AUD-R04 does: the Business does not co-sign, so
+     * the report stands once its 24-hour dispute window ends. The clock moves to the window's end
+     * only for the auto-approval and then returns, so the caller's own clock is unchanged.
+     *
+     * @param  array<string, mixed>  $fixture
+     * @return array{status: string, code: string, published_at: string}
+     */
+    public static function publish(array $fixture): array
+    {
+        $publication = AuditReportPublication::query()->where('audit_report_id', $fixture['report']->id)->firstOrFail();
+        $now = Date::hasTestNow() ? Date::now() : null;
+        Date::setTestNow($publication->due_at);
+        try {
+            $result = app(ReviewAuditPublication::class)->advanceDue(100);
+        } finally {
+            Date::setTestNow($now);
+        }
+        if ($result['published'] < 1 || $publication->refresh()->status !== 'published') {
+            throw new RuntimeException('Synthetic publication did not publish: '.json_encode($result['blocked']));
+        }
+
+        return ['status' => 'completed', 'code' => 'REPORT_PUBLISHED', 'published_at' => $publication->published_at->toIso8601String()];
     }
 }

@@ -241,6 +241,7 @@
                 }
             ],
             "reason_codes": ["PRINCIPAL_CAPPED_AT_CAPACITY"],
+            "repeat_growth_limit": null,
             "rate_basis": {
                 "band": "strong",
                 "floor_pct": "10.0",
@@ -290,6 +291,7 @@
                 "method": "get"
             },
             "reports": null,
+            "readiness": null,
             "market": null,
             "profile": null
         },

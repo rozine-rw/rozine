@@ -21,6 +21,7 @@ use App\Domain\Wallet\WalletMoney;
 use App\Infrastructure\Business\RetainedFundedCampaignFacts;
 use App\Models\PrimaryCampaignIssuance;
 use App\Models\PrimaryHolding;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -65,9 +66,12 @@ final readonly class RetainedPrimaryIssuance
 
                 return;
             }
+            // A commitment withdrawn before 100% was refunded and left out of the funding (INV-R03); only a funded one may not be.
+            $funded = array_column($funding['commitments'], 'reservation_id');
             if (PrimaryHolding::query()->where('business_campaign_id', $campaign->campaignId)->exists()
                 || DB::table('ledger_entries')->where('source_type', 'primary_reservation')->whereIn('source_id', $roots->pluck('id'))
-                    ->whereIn('kind', ['primary_issue', 'primary_refund'])->exists()
+                    ->where(fn (Builder $query) => $query->where('kind', 'primary_issue')->orWhere(fn (Builder $refunds) => $refunds->where('kind', 'primary_refund')->whereIn('source_id', $funded)))
+                    ->exists()
                 || DB::table('business_campaign_closures')->where('business_campaign_id', $campaign->campaignId)->exists()) {
                 throw new RuntimeException('PRIMARY_ISSUANCE_INTEGRITY_FAILED');
             }

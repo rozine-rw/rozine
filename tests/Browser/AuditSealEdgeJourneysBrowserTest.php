@@ -47,7 +47,7 @@ function udSignIn(User $user, string $email): User
  */
 function udReReview(array $fixture): void
 {
-    $steps = ['review' => [], 'check_in' => [], 'photos' => ['titles' => ['extra-1' => 'Stock room']],
+    $steps = ['review' => [], 'check_in' => [], ...AuditSealingFixture::baseline($fixture['report']->refresh()), 'photos' => ['titles' => ['extra-1' => 'Stock room']],
         'ledger' => ['observed_stock' => '37000000', 'reconciled' => true], 'seal' => ['note' => 'Observed difference retained for review.']];
     foreach ($steps as $step => $fields) {
         $report = $fixture['report']->refresh();

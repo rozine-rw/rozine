@@ -10,7 +10,7 @@ import {
 import { POSITIVE_TEXT } from '@/components/investor/tokens';
 import { Icon } from '@/components/rozine/icon';
 import { useTranslation } from '@/hooks/use-translation';
-import { formatDateTime, formatRwf } from '@/lib/rozine/format';
+import { formatDate, formatDateTime, formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { Commitment, CommitmentSummary } from '@/types/investor';
 import type { Receipt } from '@/types/settlement';
@@ -126,12 +126,35 @@ function ReceiptRows({ title, receipt }: { title: string; receipt: Receipt }) {
 }
 
 /**
+ * The disclosure an investor acknowledged, named by its date ("Version of 13 Oct 2026"). Investors
+ * never see the engineering policy and disclosure ids (#593); a version with no date is left out.
+ */
+export function disclosureRow(
+    t: ReturnType<typeof useTranslation>['t'],
+    locale: string,
+    version: string,
+): [string, string][] {
+    const date = /(\d{4}-\d{2}-\d{2})$/u.exec(version)?.[1];
+
+    return date === undefined
+        ? []
+        : [
+              [
+                  t('investor.primary.disclosure'),
+                  t('investor.primary.disclosure_value', {
+                      date: formatDate(date, locale),
+                  }),
+              ],
+          ];
+}
+
+/**
  * One commitment in full (C3 v2 §2c): what was committed, the exact units and their undated rights,
  * the purchased terms and the immutable confirmation receipt, with the refund receipt once there is
  * one. A commitment is never a Holding: it links to its Holding only once one is issued.
  */
 export function CommitmentCard({ commitment }: { commitment: Commitment }) {
-    const { t } = useTranslation();
+    const { t, locale } = useTranslation();
     const rows: [string, string][] = [
         [
             t('investor.primary.units'),
@@ -156,10 +179,7 @@ export function CommitmentCard({ commitment }: { commitment: Commitment }) {
             t('investor.primary.maturity'),
             t('investor.primary.maturity_at_issue'),
         ],
-        [
-            t('investor.primary.versions'),
-            `${commitment.terms.policy_version} · ${commitment.terms.disclosure_version}`,
-        ],
+        ...disclosureRow(t, locale, commitment.terms.disclosure_version),
     ];
 
     return (

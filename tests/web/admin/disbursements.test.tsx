@@ -101,6 +101,32 @@ afterEach(() => {
 });
 
 describe('Disbursements queue', () => {
+    it('wraps a long payout destination instead of cutting it off (QA #663 item 7)', () => {
+        const page = props(queueFixture);
+        page.disbursements[0].destination = 'Bank of Kigali Account ····7890';
+        render(<AdminDisbursements {...page} />);
+
+        const cell = screen.getByText('Bank of Kigali Account ····7890');
+        expect(cell).not.toHaveClass('truncate');
+        expect(cell).toHaveClass('[overflow-wrap:anywhere]');
+    });
+
+    it('shows under the amount what the Business receives net of the platform fee (QA #646)', () => {
+        const page = props(queueFixture);
+        page.disbursements[0].platform_fee = {
+            fee: { currency: 'RWF', amount: '540000' },
+            audit_partner_share: { currency: 'RWF', amount: '216000' },
+            rozine_share: { currency: 'RWF', amount: '324000' },
+            payout: { currency: 'RWF', amount: '17460000' },
+            version: 'brs-2.0-fee-r01',
+        };
+        render(<AdminDisbursements {...page} />);
+
+        expect(
+            screen.getByText(/^RWF 17[.,]?\d*M to the business$/u),
+        ).toBeInTheDocument();
+    });
+
     it('lists each disbursement with its state and provider outcome, with no deadline', () => {
         render(<AdminDisbursements {...props(queueFixture)} />);
 
@@ -208,7 +234,7 @@ describe('Disbursements queue', () => {
                 'All disbursements released',
             ),
         ).not.toBeInTheDocument();
-        expect(screen.getByText('No matches on this page')).toBeInTheDocument();
+        expect(screen.getByText('No matches')).toBeInTheDocument();
         expect(
             screen.getByRole('link', { name: 'Older disbursements' }),
         ).toHaveAttribute('href', '/preview/admin-disbursements');
@@ -246,6 +272,7 @@ describe('Disbursement drawer', () => {
         };
         render(<AdminDisbursements {...page} />);
 
+        expect(screen.queryByText(/to the business$/u)).not.toBeInTheDocument();
         expect(
             within(drawer()).getByText(
                 '3% platform fee RWF 540,000, of which RWF 216,000 to the Audit Partner. The Business receives RWF 17,460,000.',

@@ -114,12 +114,22 @@ class InvestorDealsResource extends JsonResource
     }
 
     /**
+     * A deck card links to its deal; the focused deal also links to its signed prospectus, or
+     * carries null there until one is signed.
+     *
      * @param  array<string, mixed>  $deal
      * @return array<string, mixed>
      */
     private static function withLink(Request $request, array $deal): array
     {
-        return [...$deal, 'links' => ['detail' => self::link($request, 'investor.deals.show', ['campaign' => (string) $deal['campaign_id']])]];
+        $campaign = ['campaign' => (string) $deal['campaign_id']];
+
+        $links = ['detail' => self::link($request, 'investor.deals.show', $campaign)];
+        if (array_key_exists('prospectus', $deal)) {
+            $links['prospectus'] = $deal['prospectus'] === null ? null : self::link($request, 'investor.deals.prospectus', $campaign);
+        }
+
+        return [...$deal, 'links' => $links];
     }
 
     /**

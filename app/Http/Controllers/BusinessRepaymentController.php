@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Application\Business\GetBusinessRepayments;
+use App\Application\Business\TickVisitReadyItem;
 use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Wallet\FindBusinessRepaymentOperation;
 use App\Application\Wallet\PayBusinessRepayment;
 use App\Http\Requests\Business\PayRepaymentRequest;
 use App\Http\Requests\Business\ShowBusinessHomeRequest;
 use App\Http\Requests\Business\ShowBusinessWalletOperationRequest;
+use App\Http\Requests\Business\TickVisitReadyItemRequest;
 use App\Http\Resources\BusinessRepaymentsResource;
 use App\Http\Resources\OperationResource;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -30,6 +34,26 @@ class BusinessRepaymentController extends Controller
         $revision = $request->validated('identity_context_revision') ?? $identity->context($userId, 'business')['context_revision'];
 
         return Inertia::render('business/repayments', (new BusinessRepaymentsResource($repayments->handle($userId, (int) $revision, (string) $request->route('business'))))->resolve($request));
+    }
+
+    /**
+     * Ticks or unticks one visit-ready checklist item (BRS v3 VIS-R03) and returns to the sheet; a
+     * refusal comes back as an error on the item.
+     */
+    public function tick(TickVisitReadyItemRequest $request, AuthorizeActiveRole $identity, TickVisitReadyItem $action): RedirectResponse
+    {
+        $userId = (int) $request->user()?->getAuthIdentifier();
+        $business = (string) $request->route('business');
+        $revision = (int) ($request->validated('identity_context_revision') ?? $identity->context($userId, 'business')['context_revision']);
+        $result = $action->handle($userId, $revision, $business, (string) $request->validated('request_id'), (string) $request->validated('due_on'),
+            (string) $request->validated('item'), (bool) $request->validated('ticked'));
+        if ($result['status'] !== 'completed') {
+            /** @var array<string, list<string>> $fields */
+            $fields = $result['field_errors'];
+            throw ValidationException::withMessages($fields === [] ? ['item' => ['We could not save this tick. Try again.']] : $fields);
+        }
+
+        return redirect()->route('business.repayments.show', ['business' => $business]);
     }
 
     public function pay(PayRepaymentRequest $request, PayBusinessRepayment $action): OperationResource

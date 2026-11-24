@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { DeleteAccountRow } from '@/components/delete-user';
 import { InvestorShell } from '@/components/investor/investor-shell';
 import {
     Academy,
@@ -22,6 +23,7 @@ import {
     SubHeading,
     SupportCard,
 } from '@/components/investor/profile/profile-parts';
+import { LegalDocumentBody } from '@/components/legal/legal-document-body';
 import { HelpCenter } from '@/components/rozine/help-center';
 import { SupportChat } from '@/components/rozine/support-chat';
 import { useTranslation } from '@/hooks/use-translation';
@@ -31,7 +33,7 @@ import type { InvestorProfileProps } from '@/types/investor';
 /**
  * Profile (MVP-INVESTOR-SCR-11, design L2726–2834) with the design's sub-pages (L3884–4140):
  * personal information, Rozine Plus, security center, linked accounts (wallet readiness),
- * statements (MVP-INVESTOR-SCR-10), help center (answers and the support chat), terms and privacy note. A phone shows the menu and
+ * statements (MVP-INVESTOR-SCR-10), help center (answers and the support chat), and the Terms, Privacy Notice and Disclaimers, read in place. A phone shows the menu and
  * opens each sub-page full screen; a wide screen keeps the menu beside the open sub-page, with
  * personal information as the resting one, as the design does. Auto-Deploy (MVP-INVESTOR-SCR-09)
  * stays a gated explainer sub-page; the design has no menu row for it outside Rozine Plus. The
@@ -96,13 +98,25 @@ export default function InvestorProfile(props: InvestorProfileProps) {
                     />
                 )}
                 {sub === 'security' && (
-                    <SecurityCenter
-                        security={props.security}
-                        settings={props.links.security_settings}
-                    />
+                    <>
+                        <SecurityCenter
+                            security={props.security}
+                            settings={props.links.security_settings}
+                        />
+                        <DeleteAccountRow />
+                    </>
                 )}
-                {(sub === 'plan' || sub === 'terms' || sub === 'privacy') && (
-                    <PendingContent kind={sub} />
+                {sub === 'plan' && <PendingContent kind={sub} />}
+                {props.legal_document !== null && (
+                    <LegalDocumentBody
+                        document={props.legal_document}
+                        className="mt-2 rounded-2xl border border-rz-border bg-rz-surface p-5 [&_h1]:sr-only"
+                        targets={{
+                            terms: props.links.terms.url,
+                            privacy: props.links.privacy.url,
+                            disclaimers: props.links.disclaimers.url,
+                        }}
+                    />
                 )}
                 {sub === 'help' && (
                     <>

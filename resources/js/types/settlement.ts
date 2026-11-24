@@ -123,7 +123,9 @@ export type RaisingLifecycle =
 export type BusinessCampaignLifecycle =
     | CampaignLifecycle
     | RaisingLifecycle
-    | 'funded_pending_disbursement';
+    | 'funded_pending_disbursement'
+    /** The note is repaid in full (QA #642). */
+    | 'repaid';
 
 export type CampaignLifecycle =
     | 'live'

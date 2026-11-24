@@ -129,11 +129,15 @@ class CheckpointTwoSeeder extends Seeder
                 $facts['photos']['required'][1]['position'] = $facts['check_in']['position'];
                 AuditSourceFactsFixture::record($fixture['audit']['staff'], $fixture['assignment']->refresh(), facts: $facts);
             }
-            foreach ([$cosign, $published] as $fixture) {
+            // The published report's dispute window is closed before the review case is sealed, so
+            // the review case stays pending its own 24-hour window (BRS v3 AUD-R04).
+            foreach (['published' => $published, 'cosign' => $cosign] as $name => $fixture) {
                 $fixture['code'] = (new Google2FA)->getCurrentOtp(decrypt($fixture['user']->refresh()->two_factor_secret));
                 $this->requireCode(AuditSealingFixture::seal($fixture), 'AUDIT_SEALED');
+                if ($name === 'published') {
+                    $this->requireCode(AuditSealingFixture::publish($published), 'REPORT_PUBLISHED');
+                }
             }
-            $this->requireCode(AuditSealingFixture::cosign($published), 'REPORT_PUBLISHED');
             $pack = ['version' => 1, 'created_at' => now('UTC')->toIso8601String(), 'accounts' => $accounts, 'scenarios' => $scenarios];
             DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
             $this->writeFiles($pack);

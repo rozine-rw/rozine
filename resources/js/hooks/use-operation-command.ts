@@ -1,4 +1,3 @@
-import { http as transport } from '@inertiajs/core';
 import { router, useHttp } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 import {
@@ -8,6 +7,7 @@ import {
     readErrorCode,
     readErrorData,
 } from '@/lib/rozine/operation';
+import { readValidationBodies } from '@/lib/rozine/validation-body';
 import type { RouteAction, RouteLink } from '@/types';
 import type { OperationCommand, OperationResource } from '@/types/operation';
 
@@ -168,20 +168,13 @@ export function useOperationCommand<
         let fieldErrors: Record<string, unknown> = {};
         let validationCode: string | null = null;
         let validationData: unknown = null;
-        /*
-         * useHttp hands a 422 over as field errors only, so the recorded code is read from the
-         * response itself while this command's request is out.
-         */
+        /* The recorded code of a 422 is read from the response itself while this command is out. */
         const stopReading =
             refusals422 === undefined
                 ? null
-                : transport.onResponse((response) => {
-                      if (response.status === 422) {
-                          validationCode = readErrorCode(response.data);
-                          validationData = readErrorData(response.data);
-                      }
-
-                      return response;
+                : readValidationBodies((data) => {
+                      validationCode = readErrorCode(data);
+                      validationData = readErrorData(data);
                   });
 
         setCarriesFile(Object.values(body).some(isFileValue));

@@ -48,8 +48,11 @@ const blank = (effectiveAt: string) => ({
  */
 export function OnboardBusiness({ action }: { action: OnboardBusinessAction }) {
     const { t } = useTranslation();
-    const [open, setOpen] = useState(false);
-    const form = useForm(blank(action.effective_at));
+    const prefill = action.prefill ?? null;
+    // A link from an access request (#627) opens the form already filled from the request.
+    const [open, setOpen] = useState(prefill !== null);
+    const [fromRequest, setFromRequest] = useState(prefill !== null);
+    const form = useForm({ ...blank(action.effective_at), ...prefill });
     const company = form.data.kind === 'organization';
     const required: (TextField | ChoiceField)[] = [
         ...(company ? (['rdb_code'] as const) : []),
@@ -85,10 +88,9 @@ export function OnboardBusiness({ action }: { action: OnboardBusinessAction }) {
         form.data.attested;
 
     const close = () => {
-        form.reset();
-        form.setData('request_id', crypto.randomUUID());
-        form.setData('mandate_request_id', crypto.randomUUID());
-        form.setData('effective_at', action.effective_at);
+        // Back to a blank form, never to the request it was filled from.
+        form.setData(() => blank(action.effective_at));
+        setFromRequest(false);
         setOpen(false);
     };
 
@@ -187,7 +189,7 @@ export function OnboardBusiness({ action }: { action: OnboardBusinessAction }) {
     );
 
     if (!open) {
-        return (
+        const button = (
             <button
                 type="button"
                 onClick={() => setOpen(true)}
@@ -195,6 +197,21 @@ export function OnboardBusiness({ action }: { action: OnboardBusinessAction }) {
             >
                 {t('admin.businesses.onboard.open')}
             </button>
+        );
+
+        // A link from a request that is handled or gone says so, instead of opening the plain directory silently.
+        return action.request_closed ? (
+            <div className="flex flex-wrap items-center justify-end gap-2">
+                <p
+                    role="status"
+                    className="text-[12px] font-medium text-rz-muted"
+                >
+                    {t('admin.businesses.onboard.request_closed')}
+                </p>
+                {button}
+            </div>
+        ) : (
+            button
         );
     }
 
@@ -210,6 +227,14 @@ export function OnboardBusiness({ action }: { action: OnboardBusinessAction }) {
             <p className={cn('mt-[5px] text-[12.5px] leading-[1.55]', EXPLAIN)}>
                 {t('admin.businesses.onboard.body')}
             </p>
+            {fromRequest && (
+                <p
+                    role="status"
+                    className="mt-2 rounded-[10px] border border-[#c9d6ff] bg-[#f5f7ff] px-3 py-2 text-[12px] font-medium text-rz-ink dark:border-rz-border dark:bg-rz-field"
+                >
+                    {t('admin.businesses.onboard.prefilled')}
+                </p>
+            )}
             <fieldset className="mt-3" aria-describedby="onboard-kind-error">
                 <legend className="text-[11.5px] font-semibold text-rz-muted">
                     {t('admin.businesses.onboard.field.kind')}
@@ -221,7 +246,7 @@ export function OnboardBusiness({ action }: { action: OnboardBusinessAction }) {
                             className={cn(
                                 'cursor-pointer rounded-[10px] border px-3.5 py-2 text-[12.5px] font-semibold',
                                 form.data.kind === kind
-                                    ? 'border-[#1e3aff] text-[#1e3aff]'
+                                    ? 'border-[#1e3aff] text-[#1e3aff] dark:text-rz-investor-text'
                                     : 'border-rz-hairline text-rz-body',
                             )}
                         >
@@ -343,8 +368,8 @@ export function OnboardedNotice({
             className={cn(
                 'mb-4 rounded-[13px] border px-4 py-3 text-[12.5px] leading-[1.55]',
                 onboarded.business_access
-                    ? 'border-[#bfe6d6] bg-[#effaf5] text-[#0f5c45]'
-                    : 'border-[#f5d9a8] bg-[#fff8eb] text-[#7a4b00]',
+                    ? 'border-[#bfe6d6] bg-[#effaf5] text-[#0f5c45] dark:border-rz-border dark:bg-rz-positive-tint dark:text-rz-positive'
+                    : 'border-[#f5d9a8] bg-[#fff8eb] text-[#7a4b00] dark:border-rz-border dark:bg-rz-warning-tint dark:text-rz-warning-text',
             )}
         >
             <p className="font-bold">{t('admin.businesses.onboarded.title')}</p>

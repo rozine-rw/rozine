@@ -70,6 +70,7 @@ const queue = (
             name: 'Aline Uwase',
             email: 'aline@example.rw',
             id_type: 'national_id',
+            purpose: 'investor',
             checks: ['age', 'id_number', 'documents', 'selfie'],
             selected: true,
             link: link('/admin/investor-verifications?verification=a'),
@@ -83,6 +84,7 @@ const queue = (
             name: 'Jean Habimana',
             email: 'jean@example.rw',
             id_type: 'passport',
+            purpose: 'auditor',
             checks: ['age', 'id_number', 'documents', 'selfie'],
             selected: false,
             link: link('/admin/investor-verifications?verification=b'),
@@ -111,6 +113,7 @@ const review = (
     id: '01j9aline0000000000000000a',
     revision: 6,
     status: 'submitted',
+    purpose: 'investor',
     submitted_at: '2026-10-06T08:00:00+00:00',
     account: { name: 'Aline Uwase', email: 'aline@example.rw' },
     date_of_birth: '01 / 05 / 1990',
@@ -267,6 +270,14 @@ describe('Compliance identity queue', () => {
         expect(within(aline).getAllByText('Waiting')).toHaveLength(1);
         expect(within(jean).getByText('Passport')).toBeInTheDocument();
         expect(within(jean).getByText('jean@example.rw')).toBeInTheDocument();
+        expect(
+            within(jean).getByText(
+                'For Auditor access · approval also verifies the ICPAR licence and makes them an Auditor',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(aline).queryByText(/For Auditor access/u),
+        ).not.toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Show more' })).toHaveAttribute(
             'href',
             '/admin/investor-verifications?tab=submitted&before=b',
@@ -313,6 +324,23 @@ describe('Compliance identity queue', () => {
 });
 
 describe('Compliance review drawer', () => {
+    it('names the app a Business or Auditor check is for in the drawer', () => {
+        renderWithUser(
+            <AdminInvestorVerifications
+                {...queue({ review: review({ purpose: 'business' }) })}
+            />,
+        );
+        const drawer = screen.getByRole('dialog', {
+            name: 'Identity submission',
+        });
+
+        expect(
+            within(drawer).getByText(
+                'For Business access · no Investor access on approval',
+            ),
+        ).toBeInTheDocument();
+    });
+
     it('shows the submitted answers, private document links and history', () => {
         renderWithUser(
             <AdminInvestorVerifications {...queue({ review: review() })} />,
@@ -363,7 +391,15 @@ describe('Compliance review drawer', () => {
         const [replaced] = within(documents)
             .getAllByRole('listitem')
             .filter((item) => !current.contains(item));
-        expect(within(replaced).getByText('Replaced')).toBeInTheDocument();
+        expect(
+            within(replaced).getByText('Replaced upload'),
+        ).toBeInTheDocument();
+        expect(replaced).not.toHaveTextContent('ID front');
+        expect(
+            screen.getByText(
+                'Files the person replaced with a newer upload. They are kept for the record and are not named for a document type, because what each one shows is not checked.',
+            ),
+        ).toBeInTheDocument();
         expect(
             within(replaced).getByText('blurred.png · 2 KB'),
         ).toBeInTheDocument();
@@ -606,7 +642,9 @@ describe('Compliance document viewer', () => {
         await user.click(
             within(viewer).getByRole('button', { name: 'Next document' }),
         );
-        viewer = screen.getByRole('dialog', { name: 'ID front Replaced' });
+        viewer = screen.getByRole('dialog', {
+            name: 'Replaced upload',
+        });
         expect(within(viewer).getByText('2 of 2')).toBeInTheDocument();
         expect(
             within(viewer).getByText('blurred.png · 2 KB'),
@@ -618,7 +656,9 @@ describe('Compliance document viewer', () => {
         ).toBeInTheDocument();
         await user.keyboard('{ArrowLeft}');
         expect(
-            screen.getByRole('dialog', { name: 'ID front Replaced' }),
+            screen.getByRole('dialog', {
+                name: 'Replaced upload',
+            }),
         ).toBeInTheDocument();
         await user.click(
             screen.getByRole('button', { name: 'Previous document' }),
@@ -646,7 +686,7 @@ describe('Compliance document viewer', () => {
             screen.getByRole('button', { name: 'View blurred.png' }),
         );
         const viewer = screen.getByRole('dialog', {
-            name: 'ID front Replaced',
+            name: 'Replaced upload',
         });
         expect(within(viewer).getByText('2 of 2')).toBeInTheDocument();
 
@@ -654,7 +694,9 @@ describe('Compliance document viewer', () => {
             within(viewer).getByRole('button', { name: 'Close viewer' }),
         );
         expect(
-            screen.queryByRole('dialog', { name: 'ID front Replaced' }),
+            screen.queryByRole('dialog', {
+                name: 'Replaced upload',
+            }),
         ).not.toBeInTheDocument();
     });
 

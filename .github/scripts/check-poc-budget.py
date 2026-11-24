@@ -10,6 +10,11 @@ import time
 from poc_validation import (POC_JOBS, STATIC_JOB, CATALOG_JOB, IDENTITY_JOB, POC_STEPS,
                             static_evidence, catalog_evidence)
 
+# With a warm PHPStan cache the static job can finish minutes before the PHP
+# safety catalog, so wait for peers well inside the nine-minute job limit.
+PEER_WAIT_SECONDS = 300
+PEER_POLL_SECONDS = 10
+
 
 def stamp(value):
     return datetime.datetime.fromisoformat(value.replace("Z", "+00:00"))
@@ -53,7 +58,7 @@ def main():
     run = json.loads(subprocess.check_output(["gh", "api", f"repos/{env['GITHUB_REPOSITORY']}/actions/runs/{env['GITHUB_RUN_ID']}"], text=True, timeout=30))
     if str(run.get("id")) != env["GITHUB_RUN_ID"] or str(run.get("run_attempt")) != env["GITHUB_RUN_ATTEMPT"]:
         raise ValueError("budget run or attempt differs")
-    deadline = time.monotonic() + 90
+    deadline = time.monotonic() + PEER_WAIT_SECONDS
     while True:
         pages = json.loads(subprocess.check_output(["gh", "api", "--paginate", "--slurp", endpoint], text=True, timeout=30))
         jobs = [job for page in pages for job in page["jobs"]]
@@ -68,7 +73,7 @@ def main():
             break
         if time.monotonic() >= deadline:
             raise ValueError("peer POC checks remain queued/running; no successful proof")
-        time.sleep(5)
+        time.sleep(PEER_POLL_SECONDS)
     run = json.loads(subprocess.check_output(["gh", "api", f"repos/{env['GITHUB_REPOSITORY']}/actions/runs/{env['GITHUB_RUN_ID']}"], text=True, timeout=30))
     if str(run.get("id")) != env["GITHUB_RUN_ID"] or str(run.get("run_attempt")) != env["GITHUB_RUN_ATTEMPT"]:
         raise ValueError("budget run or attempt changed during publication")

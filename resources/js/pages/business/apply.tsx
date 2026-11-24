@@ -610,7 +610,11 @@ export default function BusinessApply(props: BusinessApplyProps) {
                 )}
             </form>
             {step === 'submitted' && submission !== null && (
-                <Submitted submission={submission} home={links.close} />
+                <Submitted
+                    submission={submission}
+                    quote={readyQuote}
+                    home={links.close}
+                />
             )}
         </WizardFrame>
     );

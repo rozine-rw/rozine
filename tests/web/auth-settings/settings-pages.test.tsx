@@ -15,6 +15,8 @@ import Appearance from '@/pages/settings/appearance';
 import Profile from '@/pages/settings/profile';
 import Security from '@/pages/settings/security';
 
+const NO_CLOSURE_BLOCKERS = { roles: [], blockers: [] };
+
 type FormState = {
     processing: boolean;
     errors: Record<string, string>;
@@ -37,6 +39,7 @@ const doubles = vi.hoisted(() => ({
             updated_at: '2026-01-01',
         },
     },
+    staffConsole: null as { url: string; method: 'get' } | null,
     forms: [] as FormProps[],
     state: {
         processing: false,
@@ -69,7 +72,9 @@ vi.mock('@inertiajs/react', () => ({
             {children}
         </a>
     ),
-    usePage: () => ({ props: { auth: doubles.auth } }),
+    usePage: () => ({
+        props: { auth: doubles.auth, staff_console: doubles.staffConsole },
+    }),
 }));
 
 vi.mock('@/components/appearance-tabs', () => ({
@@ -199,7 +204,11 @@ describe('settings pages and layout', () => {
             email: 'Email is invalid.',
         };
         const { rerender } = render(
-            <Profile mustVerifyEmail status="verification-link-sent" />,
+            <Profile
+                mustVerifyEmail
+                status="verification-link-sent"
+                closure={NO_CLOSURE_BLOCKERS}
+            />,
         );
 
         expect(screen.getByDisplayValue('Ada Lovelace')).toBeInTheDocument();
@@ -219,7 +228,14 @@ describe('settings pages and layout', () => {
         doubles.auth.user.email_verified_at = '2026-08-24T00:00:00Z';
         doubles.state.processing = false;
         doubles.state.errors = {};
-        rerender(<Profile key="verified" mustVerifyEmail status="unrelated" />);
+        rerender(
+            <Profile
+                key="verified"
+                mustVerifyEmail
+                status="unrelated"
+                closure={NO_CLOSURE_BLOCKERS}
+            />,
+        );
         expect(
             screen.queryByRole('link', {
                 name: /Click here to re-send/,
@@ -229,7 +245,11 @@ describe('settings pages and layout', () => {
 
         doubles.auth.user.email_verified_at = null;
         rerender(
-            <Profile key="verification-disabled" mustVerifyEmail={false} />,
+            <Profile
+                key="verification-disabled"
+                mustVerifyEmail={false}
+                closure={NO_CLOSURE_BLOCKERS}
+            />,
         );
         expect(
             screen.queryByText(/Your email address is unverified/),
@@ -325,5 +345,22 @@ describe('settings pages and layout', () => {
         expect(
             screen.getByRole('button', { name: 'Security' }),
         ).not.toHaveClass('bg-muted');
+        expect(
+            screen.queryByRole('link', { name: /Admin console/u }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('gives staff their way back to the Admin console (#618)', () => {
+        doubles.staffConsole = { url: '/admin/dashboard', method: 'get' };
+        render(
+            <SettingsLayout>
+                <p>Settings content</p>
+            </SettingsLayout>,
+        );
+        doubles.staffConsole = null;
+
+        expect(
+            screen.getByRole('link', { name: 'Back to the Admin console' }),
+        ).toHaveAttribute('href', '/admin/dashboard');
     });
 });

@@ -6,6 +6,7 @@ namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
+use App\Application\Identity\LegalDocuments;
 use App\Domain\Identity\SandboxNotice;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
@@ -13,10 +14,12 @@ use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
@@ -49,6 +52,30 @@ class FortifyServiceProvider extends ServiceProvider
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
+        Fortify::authenticateUsing(self::authenticate(...));
+    }
+
+    /**
+     * Fortify's own credential check, except that the right password for a closed account is
+     * told the account is closed, rather than that the details are wrong (the users provider
+     * never finds a closed account, so its sessions and password resets already stop).
+     */
+    private static function authenticate(Request $request): ?User
+    {
+        $email = (string) $request->input(Fortify::username());
+        $password = (string) $request->input('password');
+        $user = User::query()->where(Fortify::username(), $email)->whereNull('closed_at')->first();
+        if ($user !== null) {
+            return Hash::check($password, $user->password) ? $user : null;
+        }
+
+        // A closed account gave its address back, so it is found by the address it closed with.
+        $closed = User::query()->where('closed_email', $email)->whereNotNull('closed_at')->latest('closed_at')->first();
+        if ($closed !== null && Hash::check($password, $closed->password)) {
+            throw ValidationException::withMessages([Fortify::username() => __('This account has been closed. Contact info@rozine.rw if you need it reopened.')]);
+        }
+
+        return null;
     }
 
     /**
@@ -79,12 +106,25 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::registerView(fn (Request $request) => Inertia::render('auth/register', [
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
             'sandboxNotice' => SandboxNotice::toArray(),
+            'legalDocuments' => self::legalDocuments(),
             'audience' => self::audience($request),
         ]));
 
         Fortify::twoFactorChallengeView(fn () => Inertia::render('auth/two-factor-challenge'));
 
         Fortify::confirmPasswordView(fn () => Inertia::render('auth/confirm-password'));
+    }
+
+    /**
+     * The Terms, Privacy Notice and Disclaimers the sign-up form asks the person to tick, each with
+     * the digest of the wording behind its link.
+     *
+     * @return list<array{key: string, title: string, version: string, sha256: string, url: string}>
+     */
+    private static function legalDocuments(): array
+    {
+        return array_map(fn (array $document): array => [...$document, 'url' => route('legal.'.$document['key'], absolute: false)],
+            app(LegalDocuments::class)->current());
     }
 
     /**

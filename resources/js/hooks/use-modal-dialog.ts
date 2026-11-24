@@ -13,15 +13,37 @@ const FOCUSABLE = [
 /** Open modal dialogs in the order they opened. */
 const openDialogs: HTMLElement[] = [];
 
+/** Open dialogs that must be answered before anything else on the page (a required gate). */
+const blockingDialogs = new Set<HTMLElement>();
+
+/**
+ * The dialogs that may own the keyboard: while a blocking dialog is open, only it and dialogs
+ * inside it; otherwise every open dialog.
+ */
+function candidates(): HTMLElement[] {
+    const blocking = openDialogs.filter((dialog) =>
+        blockingDialogs.has(dialog),
+    );
+
+    return blocking.length === 0
+        ? openDialogs
+        : openDialogs.filter((dialog) =>
+              blocking.some((gate) => gate.contains(dialog)),
+          );
+}
+
 /**
  * The dialog that owns the keyboard: the latest to open among those holding no other open dialog.
- * A sheet nested inside another opens first (child effects run first) yet still wins.
+ * A sheet nested inside another opens first (child effects run first) yet still wins. A blocking
+ * dialog keeps the keyboard however many ordinary dialogs open after it.
  */
 function innermost(): HTMLElement | undefined {
-    return openDialogs
+    const open = candidates();
+
+    return open
         .filter(
             (dialog) =>
-                !openDialogs.some(
+                !open.some(
                     (other) => other !== dialog && dialog.contains(other),
                 ),
         )
@@ -34,11 +56,13 @@ function innermost(): HTMLElement | undefined {
  * calls `onEscape` when the dialog can be dismissed; and on closing, focus returns to whatever
  * opened it. Put the returned ref on the element with `role="dialog"`, and give that element
  * `tabIndex={-1}` so it can hold focus itself. `active` is for a dialog rendered conditionally
- * inside its opener's component.
+ * inside its opener's component. `blocking` marks a required gate: it owns the keyboard while
+ * open, and an ordinary dialog opened over it never takes focus from it.
  */
 export function useModalDialog<T extends HTMLElement>(
     onEscape?: () => void,
     active = true,
+    blocking = false,
 ): RefObject<T | null> {
     const ref = useRef<T>(null);
     const escape = useRef(onEscape);
@@ -57,7 +81,11 @@ export function useModalDialog<T extends HTMLElement>(
         const opener = document.activeElement;
         openDialogs.push(dialog);
 
-        if (!dialog.contains(opener)) {
+        if (blocking) {
+            blockingDialogs.add(dialog);
+        }
+
+        if (innermost() === dialog && !dialog.contains(opener)) {
             dialog.focus({ preventScroll: true });
         }
 
@@ -109,12 +137,13 @@ export function useModalDialog<T extends HTMLElement>(
         return () => {
             window.removeEventListener('keydown', onKey);
             openDialogs.splice(openDialogs.indexOf(dialog), 1);
+            blockingDialogs.delete(dialog);
 
             if (opener instanceof HTMLElement && opener.isConnected) {
                 opener.focus({ preventScroll: true });
             }
         };
-    }, [active]);
+    }, [active, blocking]);
 
     return ref;
 }

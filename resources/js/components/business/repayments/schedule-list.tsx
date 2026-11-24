@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import { useTranslation } from '@/hooks/use-translation';
 import { formatDate, formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
@@ -12,6 +13,33 @@ const PILL: Record<InstalmentStatus, string> = {
     overdue: 'bg-[rgba(229,72,77,.10)] text-rz-danger-text',
     upcoming: 'bg-[rgba(105,116,138,.10)] text-rz-secondary',
 };
+
+/** Paid before its due date (Kigali dates compare as text). */
+const isEarly = (row: BusinessInstalment): boolean =>
+    row.paid_on !== null && row.paid_on.slice(0, 10) < row.due_on.slice(0, 10);
+
+/** The instalment's state, with an "Early" tag beside a payment made before it fell due (QA #642). */
+function StatusPills({ row }: { row: BusinessInstalment }) {
+    const { t } = useTranslation();
+
+    return (
+        <span className="flex shrink-0 items-center gap-1.5">
+            {isEarly(row) && (
+                <span className="rounded-[10px] bg-[rgba(30,58,255,.08)] px-[9px] py-1 text-[11px] font-semibold whitespace-nowrap text-[#1e3aff] dark:text-[#99a3ff]">
+                    {t('business.servicing.repay.early')}
+                </span>
+            )}
+            <span
+                className={cn(
+                    'rounded-[10px] px-[9px] py-1 text-[11px] font-semibold whitespace-nowrap',
+                    PILL[row.status],
+                )}
+            >
+                {t(`business.servicing.repay.status.${row.status}`)}
+            </span>
+        </span>
+    );
+}
 
 /**
  * "Repayment schedule" (design L1190–1199), as the server keeps it: each instalment's scheduled
@@ -41,50 +69,91 @@ export function ScheduleList({ schedule }: { schedule: BusinessInstalment[] }) {
                             key={row.index}
                             className="border-b border-[#eef2f9] px-[15px] py-[13px] last:border-b-0 dark:border-rz-divider"
                         >
-                            <div className="flex items-center justify-between gap-3">
-                                <div>
-                                    <p className="text-[13.5px] font-semibold text-rz-ink">
-                                        {formatRwf(
-                                            owing
-                                                ? row.outstanding.total
-                                                : row.scheduled.total,
-                                        )}
-                                    </p>
-                                    <p className="text-[11.5px] text-rz-secondary">
-                                        {row.paid_on === null
-                                            ? t(
-                                                  'business.servicing.repay.row.due',
-                                                  {
-                                                      index: row.index,
-                                                      date: formatDate(
-                                                          row.due_on,
-                                                          locale,
-                                                      ),
-                                                  },
-                                              )
-                                            : t(
-                                                  'business.servicing.repay.row.paid',
-                                                  {
-                                                      index: row.index,
-                                                      date: formatDate(
-                                                          row.paid_on,
-                                                          locale,
-                                                      ),
-                                                  },
-                                              )}
-                                    </p>
-                                </div>
-                                <span
-                                    className={cn(
-                                        'rounded-[10px] px-[9px] py-1 text-[11px] font-semibold whitespace-nowrap',
-                                        PILL[row.status],
-                                    )}
+                            {row.receipt ? (
+                                <Link
+                                    href={row.receipt}
+                                    preserveScroll
+                                    className="flex items-center justify-between gap-3"
                                 >
-                                    {t(
-                                        `business.servicing.repay.status.${row.status}`,
-                                    )}
-                                </span>
-                            </div>
+                                    <div>
+                                        <p className="text-[13.5px] font-semibold text-rz-ink">
+                                            {formatRwf(
+                                                owing
+                                                    ? row.outstanding.total
+                                                    : row.scheduled.total,
+                                            )}
+                                        </p>
+                                        <p className="text-[11.5px] text-rz-secondary">
+                                            {row.paid_on === null
+                                                ? t(
+                                                      'business.servicing.repay.row.due',
+                                                      {
+                                                          index: row.index,
+                                                          date: formatDate(
+                                                              row.due_on,
+                                                              locale,
+                                                          ),
+                                                      },
+                                                  )
+                                                : t(
+                                                      'business.servicing.repay.row.paid_due',
+                                                      {
+                                                          index: row.index,
+                                                          due: formatDate(
+                                                              row.due_on,
+                                                              locale,
+                                                          ),
+                                                          date: formatDate(
+                                                              row.paid_on,
+                                                              locale,
+                                                          ),
+                                                      },
+                                                  )}
+                                        </p>
+                                    </div>
+                                    <StatusPills row={row} />
+                                </Link>
+                            ) : (
+                                <div className="flex items-center justify-between gap-3">
+                                    <div>
+                                        <p className="text-[13.5px] font-semibold text-rz-ink">
+                                            {formatRwf(
+                                                owing
+                                                    ? row.outstanding.total
+                                                    : row.scheduled.total,
+                                            )}
+                                        </p>
+                                        <p className="text-[11.5px] text-rz-secondary">
+                                            {row.paid_on === null
+                                                ? t(
+                                                      'business.servicing.repay.row.due',
+                                                      {
+                                                          index: row.index,
+                                                          date: formatDate(
+                                                              row.due_on,
+                                                              locale,
+                                                          ),
+                                                      },
+                                                  )
+                                                : t(
+                                                      'business.servicing.repay.row.paid_due',
+                                                      {
+                                                          index: row.index,
+                                                          due: formatDate(
+                                                              row.due_on,
+                                                              locale,
+                                                          ),
+                                                          date: formatDate(
+                                                              row.paid_on,
+                                                              locale,
+                                                          ),
+                                                      },
+                                                  )}
+                                        </p>
+                                    </div>
+                                    <StatusPills row={row} />
+                                </div>
+                            )}
                             {row.late_fees.length > 0 && (
                                 <ul
                                     aria-label={t(

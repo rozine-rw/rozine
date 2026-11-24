@@ -27,6 +27,7 @@
             },
             "gain_pct": "0.0",
             "repaid_pct": 0,
+            "resold_units": "0",
             "matures_on": "2027-03-21T00:00:00+02:00",
             "payments_made": 0,
             "payments_total": 6,
@@ -278,7 +279,93 @@
                     "commitment_id": "cmt0_01k4a1",
                     "disbursement_operation_id": "op_dsb_01k4a2"
                 }
-            }
+            },
+            "schedule": [
+                {
+                    "index": 1,
+                    "due_on": "2026-10-21",
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "5000"
+                    },
+                    "return": {
+                        "currency": "RWF",
+                        "amount": "675"
+                    },
+                    "paid_on": null,
+                    "net": null
+                },
+                {
+                    "index": 2,
+                    "due_on": "2026-11-21",
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "5000"
+                    },
+                    "return": {
+                        "currency": "RWF",
+                        "amount": "675"
+                    },
+                    "paid_on": null,
+                    "net": null
+                },
+                {
+                    "index": 3,
+                    "due_on": "2026-12-21",
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "5000"
+                    },
+                    "return": {
+                        "currency": "RWF",
+                        "amount": "675"
+                    },
+                    "paid_on": null,
+                    "net": null
+                },
+                {
+                    "index": 4,
+                    "due_on": "2027-01-21",
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "5000"
+                    },
+                    "return": {
+                        "currency": "RWF",
+                        "amount": "675"
+                    },
+                    "paid_on": null,
+                    "net": null
+                },
+                {
+                    "index": 5,
+                    "due_on": "2027-02-21",
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "5000"
+                    },
+                    "return": {
+                        "currency": "RWF",
+                        "amount": "675"
+                    },
+                    "paid_on": null,
+                    "net": null
+                },
+                {
+                    "index": 6,
+                    "due_on": "2027-03-21",
+                    "principal": {
+                        "currency": "RWF",
+                        "amount": "5000"
+                    },
+                    "return": {
+                        "currency": "RWF",
+                        "amount": "675"
+                    },
+                    "paid_on": null,
+                    "net": null
+                }
+            ]
         },
         "links": {
             "deals": {

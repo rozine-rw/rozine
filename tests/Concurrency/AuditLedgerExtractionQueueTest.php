@@ -20,7 +20,7 @@ it('extracts committed report originals without changing a receipt or Business v
     ['user' => $user, 'report' => $report] = AuditLedgerFixture::ready();
     $request = (string) Str::uuid();
     $content = "date,amount\n2026-08-01,38000000\n";
-    $upload = fn (): array => app(IngestAuditLedger::class)->handle($user->id, 1, $report->id, 4, 'ledger.csv', $content, null, $request);
+    $upload = fn (): array => app(IngestAuditLedger::class)->handle($user->id, 1, $report->id, 9, 'ledger.csv', $content, null, $request);
     $receipt = $upload();
     $verification = app(GetAuditStatementVerification::class)->handle($user->id, 1, $report->assignment_id);
     expect(Artisan::call('statements:extract', ['--limit' => '1']))->toBe(0)
@@ -37,7 +37,7 @@ it('extracts committed report originals without changing a receipt or Business v
 it('retains a hostile PDF while bounding extraction outside report and journal locks', function (): void {
     ['user' => $user, 'report' => $report] = AuditLedgerFixture::ready();
     $content = StatementFixture::expandingPdf();
-    app(IngestAuditLedger::class)->handle($user->id, 1, $report->id, 4, 'ledger.pdf', $content, null, (string) Str::uuid());
+    app(IngestAuditLedger::class)->handle($user->id, 1, $report->id, 9, 'ledger.pdf', $content, null, (string) Str::uuid());
     expect(app(AuditLedgerExtractionQueue::class)->processPending(1))->toBe(1)
         ->and(AuditLedgerExtraction::query()->where('revision', 2)->firstOrFail()->status)->toBe('needs_review')
         ->and(AuditLedgerOriginal::query()->firstOrFail()->content)->toBe($content);
@@ -66,7 +66,7 @@ it('records parser failures and corrupt originals without exposing private excep
 
 it('does not append a second extraction when another worker finishes during parsing', function (): void {
     ['user' => $user, 'report' => $report] = AuditLedgerFixture::ready();
-    $receipt = app(IngestAuditLedger::class)->handle($user->id, 1, $report->id, 4, 'ledger.csv', "amount\n50\n", null, (string) Str::uuid());
+    $receipt = app(IngestAuditLedger::class)->handle($user->id, 1, $report->id, 9, 'ledger.csv', "amount\n50\n", null, (string) Str::uuid());
     $extractor = $this->createMock(StatementTextExtractor::class);
     $extractor->method('extract')->willReturnCallback(function () use ($receipt): array {
         expect(DB::transactionLevel())->toBe(0);

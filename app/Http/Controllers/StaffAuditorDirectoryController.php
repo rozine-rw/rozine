@@ -9,6 +9,7 @@ use App\Application\Auditor\GetAuditLocation;
 use App\Application\Auditor\RecordAuditorStanding;
 use App\Application\Auditor\VerifyAuditLocation;
 use App\Application\Identity\GetStaffAccess;
+use App\Application\Identity\ReviewRoleApplications;
 use App\Http\Requests\Staff\DecideAuditorLicenceRequest;
 use App\Http\Requests\Staff\ListAuditorDirectoryRequest;
 use App\Http\Requests\Staff\VerifyAuditLocationRequest;
@@ -53,7 +54,7 @@ class StaffAuditorDirectoryController extends Controller
 
     public function __construct(private BrowseAuditorDirectory $directory) {}
 
-    public function index(ListAuditorDirectoryRequest $request, GetStaffAccess $access, GetAuditLocation $location): Response|StaffAuditorDirectoryResource
+    public function index(ListAuditorDirectoryRequest $request, GetStaffAccess $access, GetAuditLocation $location, ReviewRoleApplications $applications): Response|StaffAuditorDirectoryResource
     {
         $actorId = (int) $request->user()?->getAuthIdentifier();
         /** @var 'all'|'active'|'pending'|'licence_expired' $chip */
@@ -69,7 +70,15 @@ class StaffAuditorDirectoryController extends Controller
             'decide' => $request->validated('decide'),
             'roles' => $staff['roles'], 'permissions' => $staff['allowed_actions']]);
 
-        return $request->routeIs('api.*') ? $resource : Inertia::render('admin/parties', $resource->resolve($request));
+        if ($request->routeIs('api.*')) {
+            return $resource;
+        }
+        $tab = (string) $request->query('kyb', 'submitted');
+        $selectedApplication = $request->query('application');
+
+        return Inertia::render('admin/parties', [...$resource->resolve($request), ...$applications->page($actorId, 'auditor',
+            in_array('audit.partners.verify', $staff['allowed_actions'], true), $tab, is_string($selectedApplication) ? $selectedApplication : null),
+            'applications_close' => route('staff.auditors.index', ['kyb' => $tab])]);
     }
 
     /**

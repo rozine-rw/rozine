@@ -10,7 +10,8 @@ namespace App\Domain\Identity;
  * screen that already holds the record. A verification result, a refunded raise, a sent withdrawal,
  * a confirmed purchase, an issued Holding, a Business's approved application, its expired raise and its monthly reporting window, and an Audit
  * Partner's accreditation decision and job offers are also e-mailed. Rozine's answer to a complaint and its
- * resolution are in-app only. A Business's notices belong to its entity Party.
+ * resolution are in-app only, as are a Business's visit-ready checklist notices (D−14, and D−11 for the
+ * items still open). A Business's notices belong to its entity Party.
  */
 enum PartyNoticeKind: string
 {
@@ -18,6 +19,9 @@ enum PartyNoticeKind: string
     case VerificationRejected = 'verification.rejected';
     case DepositReceived = 'wallet.deposit_received';
     case WithdrawalSent = 'wallet.withdrawal_sent';
+    case PayoutReceived = 'wallet.payout_received';
+    case UnitsBought = 'market.units_bought';
+    case UnitsSold = 'market.units_sold';
     case WithdrawalReturned = 'wallet.withdrawal_returned';
     case RaiseRefunded = 'primary.refunded';
     case ReportPublished = 'primary.report_published';
@@ -33,11 +37,18 @@ enum PartyNoticeKind: string
     case BusinessRaiseExpired = 'business.raise_expired';
     case BusinessRaiseFunded = 'business.raise_funded';
     case BusinessDisbursementSent = 'business.disbursement_sent';
+    case BusinessRepaymentReceived = 'business.repayment_received';
     case BusinessWithdrawalSent = 'business.withdrawal_sent';
     case BusinessWithdrawalReturned = 'business.withdrawal_returned';
     case BusinessReportSealed = 'business.report_sealed';
     case BusinessReportReviewClosing = 'business.report_review_closing';
     case BusinessReportingWindowOpen = 'business.reporting_window_open';
+    case BusinessReadinessStageChanged = 'business.readiness_stage_changed';
+    case BusinessReadinessRequirementDue = 'business.readiness_requirement_due';
+    case BusinessReadinessRequirementClosing = 'business.readiness_requirement_closing';
+    case BusinessReadinessRequirementOverdue = 'business.readiness_requirement_overdue';
+    case BusinessVisitReadyOpen = 'business.visit_ready_open';
+    case BusinessVisitReadyReminder = 'business.visit_ready_reminder';
     case AuditorAccreditationApproved = 'auditor.accreditation_approved';
     case AuditorAccreditationRejected = 'auditor.accreditation_rejected';
     case AuditorJobOffered = 'auditor.job_offered';
@@ -81,14 +92,16 @@ enum PartyNoticeKind: string
     {
         return match ($this) {
             self::VerificationApproved, self::VerificationRejected => 'onboarding',
-            self::DepositReceived, self::WithdrawalSent, self::WithdrawalReturned, self::BusinessDepositReceived, self::BusinessWithdrawalSent,
+            self::DepositReceived, self::WithdrawalSent, self::WithdrawalReturned, self::PayoutReceived, self::BusinessDepositReceived, self::BusinessWithdrawalSent,
             self::BusinessWithdrawalReturned => 'wallet',
             self::RaiseRefunded, self::RaiseFunded, self::BusinessRaiseExpired, self::BusinessRaiseFunded => 'fundraising',
-            self::CommitmentConfirmed, self::HoldingIssued => 'portfolio',
-            self::ReportPublished, self::BusinessReportSealed, self::BusinessReportReviewClosing, self::BusinessReportingWindowOpen => 'reporting',
+            self::CommitmentConfirmed, self::HoldingIssued, self::UnitsBought, self::UnitsSold => 'portfolio',
+            self::ReportPublished, self::BusinessReportSealed, self::BusinessReportReviewClosing, self::BusinessReportingWindowOpen,
+            self::BusinessReadinessStageChanged, self::BusinessReadinessRequirementDue, self::BusinessReadinessRequirementClosing, self::BusinessReadinessRequirementOverdue => 'reporting',
+            self::BusinessVisitReadyOpen, self::BusinessVisitReadyReminder => 'reporting',
             self::PasswordChanged, self::PayoutAccountLinked, self::PayoutAccountUnlinked, self::NewDevice => 'security',
             self::BusinessApplicationApproved => 'underwriting',
-            self::BusinessDisbursementSent => 'payments',
+            self::BusinessDisbursementSent, self::BusinessRepaymentReceived => 'payments',
             self::AuditorAccreditationApproved, self::AuditorAccreditationRejected, self::AuditorJobOffered,
             self::AuditorAccreditationRenewalDue, self::AuditorReportReminder => 'audits',
             self::ComplaintAnswered, self::ComplaintResolved => 'support',

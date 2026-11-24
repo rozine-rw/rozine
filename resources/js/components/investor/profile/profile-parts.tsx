@@ -123,10 +123,12 @@ const MENU: { key: MenuKey; icon: IconName }[] = [
     { key: 'help', icon: 'question' },
     { key: 'terms', icon: 'document' },
     { key: 'privacy', icon: 'lock-key' },
+    { key: 'disclaimers', icon: 'shield' },
 ];
 
 /**
- * The profile menu (design L2800–2809, rows L9933–9941): the design's eight rows in its order. A
+ * The profile menu (design L2800–2809, rows L9933–9941): the design's eight rows in its order, then
+ * the Disclaimers. A
  * person not yet verified also gets a row back to their verification, which the design (drawn for
  * a verified investor) has no place for.
  */
@@ -350,8 +352,8 @@ function Field({
 /**
  * Security center (design L3934–3975): whether two-factor sign-in is on, the login alerts switch,
  * and the way to change the password. Two-factor and the password are managed on the account's
- * security settings, so those rows open them. The design's account deletion has no command for an
- * Investor, so it is left out.
+ * security settings, so those rows open them. The design's Danger zone row (account deletion) is
+ * `DeleteAccountRow`, which the profile page places after this section.
  */
 export function SecurityCenter({
     security,
