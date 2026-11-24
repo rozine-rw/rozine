@@ -19,7 +19,8 @@ class DecideInvestorVerificationRequest extends FormRequest
     public function rules(): array
     {
         return ['request_id' => ['required', 'uuid'], 'expected_revision' => ['required', 'integer', 'min:1'],
-            'reason' => ['required', 'string', 'max:1000'], 'return_to' => ['sometimes', 'string', 'in:directory,users'], 'return_user' => ['sometimes', 'integer', 'min:1']];
+            'reason' => ['required', 'string', 'max:1000'], 'items' => ['nullable', 'array', 'list', 'max:40'], 'items.*.key' => ['required', 'string', 'max:40'],
+            'items.*.note' => ['nullable', 'string', 'max:300'], 'return_to' => ['sometimes', 'string', 'in:directory,users'], 'return_user' => ['sometimes', 'integer', 'min:1']];
     }
 
     /** @return array<string, string> */

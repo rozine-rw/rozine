@@ -22,7 +22,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *         step: string, date_of_birth: string, id_type: string, id_number: string,
  *         uploads: array{front: string|null, back: string|null, selfie: string|null, certificate?: string|null},
  *         licence_number?: string, licence_expires_on?: string,
- *         decision: array{reason: string}|null
+ *         decision: array{reason: string}|null,
+ *         revision?: array{reason: string, items: list<array{key: string, label: string, note: string}>, requested_at: string}
  *     },
  *     documents?: array<string, array{filename: string, media_type: string}>
  * }
@@ -50,6 +51,11 @@ class InvestorVerificationResource extends JsonResource
 
         return ['investor_type' => 'individual', 'verified' => $data['verified'], 'identity_context_revision' => $data['identity_context_revision'], 'revision' => $data['revision'],
             'status' => $data['status'], 'purpose' => $data['purpose'], 'decision_reason' => $data['status'] === 'rejected' ? $state['decision']['reason'] ?? null : null,
+            // What Compliance asked to change when it sent the check back, kept while the person edits it (24 Nov 2026).
+            'requested_changes' => in_array($data['status'], ['draft', 'rejected'], true) && isset($state['revision'])
+                ? ['reason' => $state['revision']['reason'], 'requested_at' => $state['revision']['requested_at'],
+                    'items' => array_map(fn (array $item): array => ['key' => $item['key'], 'label' => $item['label'], 'note' => $item['note']], $state['revision']['items'])]
+                : null,
             'step' => $state['step'], 'country' => 'Rwanda', 'date_of_birth' => $state['date_of_birth'],
             'id_type' => $state['id_type'], 'id_number' => $state['id_number'],
             'uploads' => ['front' => $upload('front'), 'back' => $upload('back'), 'selfie' => $upload('selfie'), 'certificate' => $upload('certificate')],

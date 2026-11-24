@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "8d0ca7283b19767a05873e75cb51f0c7b8252616021bb4a69fb2648ec3a607b7",
-    "coverageSetSha256": "b0b6747f5b6a18bc3b680d98feef93067a7d6e04a891b9e5067874ae2f102834",
+    "sourceManifestSha256": "28da73897bf12c955088f95a5b4974e6e9036fdf7348d661ba6281d7f6a9532d",
+    "coverageSetSha256": "3bb27ab4f3404bfc88702df6b846f75045acf3d6c792383639d9b498f90f9dd9",
     "thresholds": {
         "critical": {
             "global": {
@@ -81,6 +81,7 @@
         "resources/js/components/admin/reason-stage.tsx",
         "resources/js/components/admin/repayments/panels.tsx",
         "resources/js/components/admin/repayments/repayment-drawer.tsx",
+        "resources/js/components/admin/revision-picker.tsx",
         "resources/js/components/admin/search-empty.tsx",
         "resources/js/components/admin/section-designs.ts",
         "resources/js/components/admin/today/today-panels.tsx",
@@ -319,6 +320,7 @@
         "resources/js/components/rozine/c3-notice.tsx",
         "resources/js/components/rozine/column-sheet.tsx",
         "resources/js/components/rozine/connectivity-notice.tsx",
+        "resources/js/components/rozine/dashboard-hub.tsx",
         "resources/js/components/rozine/form.tsx",
         "resources/js/components/rozine/help-center.tsx",
         "resources/js/components/rozine/icon-shapes.ts",

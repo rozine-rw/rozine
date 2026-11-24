@@ -10,12 +10,16 @@ use App\Models\BusinessProfile;
 use App\Models\IdentityAuditEvent;
 use App\Models\InvestorVerification;
 use App\Models\Party;
+use App\Models\PartyNotice;
 use App\Models\RoleApplication;
 use App\Models\RoleApplicationDocument;
 use App\Models\RoleMembership;
 use App\Models\User;
+use App\Notifications\Account\OnboardingUpdate;
+use App\Notifications\Investor\VerificationDecided;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -112,11 +116,14 @@ function businessSent(TestCase $test, User $user): RoleApplication
     return RoleApplication::query()->where('party_id', $user->party_id)->sole();
 }
 
-/** @return TestResponse<Response> */
-function decideApplication(TestCase $test, User $officer, RoleApplication $application, string $decision, string $note = ''): TestResponse
+/**
+ * @param  list<array{key: string, note?: string}>  $items
+ * @return TestResponse<Response>
+ */
+function decideApplication(TestCase $test, User $officer, RoleApplication $application, string $decision, string $note = '', array $items = []): TestResponse
 {
     return $test->actingAs($officer)->post(route('staff.role-applications.decide', $application->id), ['request_id' => (string) Str::uuid(),
-        'expected_revision' => $application->refresh()->revision, 'decision' => $decision, 'note' => $note]);
+        'expected_revision' => $application->refresh()->revision, 'decision' => $decision, 'note' => $note, 'items' => $items]);
 }
 
 test('the role page waits for the person\'s own KYC to be sent, then offers both roles', function (): void {
@@ -201,17 +208,33 @@ test('compliance reviews business KYB on the Businesses page and approves it onl
     expect(BusinessProfile::query()->count())->toBe(1);
 });
 
-test('compliance can send an application back with a note, and the applicant fixes and resends it', function (): void {
+test('compliance sends an application back naming the items to change, and the applicant fixes and resends it', function (): void {
+    Notification::fake();
     kycSent($this->person);
     $application = businessSent($this, $this->person);
 
-    decideApplication($this, $this->officer, $application, 'more')->assertSessionHasErrors('note');
-    decideApplication($this, $this->officer, $application, 'more', 'The articles are unsigned. Upload the signed copy.')->assertSessionHasNoErrors();
-    expect($application->refresh()->status)->toBe('changes_requested')->and($application->state['note'])->toBe('The articles are unsigned. Upload the signed copy.');
+    // Compliance ticks the answers and documents to change (24 Nov 2026); only the case's own items may be named.
+    decideApplication($this, $this->officer, $application, 'more', 'Please fix these.')->assertSessionHasErrors('items');
+    decideApplication($this, $this->officer, $application, 'more', '', [['key' => 'licence.licence_number']])->assertSessionHasErrors('items');
+    decideApplication($this, $this->officer, $application, 'more', '', [['key' => 'documents.articles', 'note' => str_repeat('x', 301)]])->assertSessionHasErrors('items.0.note');
+    decideApplication($this, $this->officer, $application, 'more', 'The articles are unsigned. Upload the signed copy.',
+        [['key' => 'documents.articles', 'note' => 'Signed copy, please.'], ['key' => 'company.tin']])->assertSessionHasNoErrors();
+    expect($application->refresh()->status)->toBe('changes_requested')->and($application->state['note'])->toBe('The articles are unsigned. Upload the signed copy.')
+        ->and($application->state['revision']['items'] ?? null)->toBe([
+            ['key' => 'documents.articles', 'label' => 'Articles of Association', 'note' => 'Signed copy, please.'],
+            ['key' => 'company.tin', 'label' => 'TIN', 'note' => ''],
+        ]);
+    Notification::assertSentTo($this->person, OnboardingUpdate::class, fn (OnboardingUpdate $mail): bool => $mail->event === 'role_returned'
+        && $mail->items === [['label' => 'Articles of Association', 'note' => 'Signed copy, please.'], ['label' => 'TIN', 'note' => '']]);
+    $notice = PartyNotice::query()->where('kind', 'role.application_returned')->sole();
+    expect($notice->facts['items'])->toEqual([['label' => 'Articles of Association', 'note' => 'Signed copy, please.'], ['label' => 'TIN', 'note' => '']]);
 
     $this->actingAs($this->person)->get(route('role-application.show'))->assertInertia(fn (Assert $page): Assert => $page
-        ->where('application.status', 'changes_requested')->where('application.note', 'The articles are unsigned. Upload the signed copy.'));
-    $this->get(route('dashboard'))->assertInertia(fn (Assert $page): Assert => $page->where('role_application.status', 'changes_requested'));
+        ->where('application.status', 'changes_requested')->where('application.note', 'The articles are unsigned. Upload the signed copy.')
+        ->where('application.requested_changes.items.0.key', 'documents.articles')->where('application.requested_changes.items.1.label', 'TIN'));
+    $this->get(route('dashboard'))->assertInertia(fn (Assert $page): Assert => $page->where('role_application.status', 'changes_requested')
+        ->where('hub.actions.0.kind', 'role_changes')->where('hub.actions.0.urgent', true)->where('hub.actions.0.items.0.label', 'Articles of Association')
+        ->where('hub.steps.3.state', 'attention')->where('hub.recent.0.kind', 'role.application_returned'));
     $this->post(route('role-application.upload'), [...roleEnvelope($this->person), 'slot' => 'articles', 'file' => rolePdf('articles-signed.pdf')])->assertSessionHasNoErrors();
     $this->post(route('role-application.submit'), [...roleEnvelope($this->person), 'declared' => false])->assertSessionHasErrors('declared');
     $this->post(route('role-application.submit'), [...roleEnvelope($this->person), 'declared' => true])->assertSessionHasNoErrors();
@@ -286,4 +309,92 @@ test('everyone\'s own KYC is reviewed and approved from the account\'s drawer on
         'reason' => 'Passport and selfie match.', 'return_to' => 'users', 'return_user' => $this->person->id])
         ->assertSessionHasNoErrors()->assertRedirect(route('staff.users.index', ['user' => $this->person->id]));
     expect($case->refresh()->status)->toBe('approved');
+});
+
+test('the dashboard hub follows the person through their KYC and application, and its pulse moves with every change', function (): void {
+    Notification::fake();
+    $pulse = fn (): string => $this->actingAs($this->person)->getJson(route('dashboard.version'))->assertOk()
+        ->assertHeader('Cache-Control', 'no-store, private')->json('version');
+    $hub = fn (): array => $this->actingAs($this->person)->get(route('dashboard'))->assertOk()->viewData('page')['props']['hub'];
+
+    $start = $pulse();
+    expect($pulse())->toBe($start);
+    $before = $hub();
+    expect($before['name'])->toBe('Aline')
+        ->and(array_column($before['steps'], 'state', 'key'))->toBe(['account' => 'done', 'email' => 'done', 'kyc' => 'current', 'open' => 'upcoming'])
+        ->and(array_column($before['actions'], 'kind'))->toBe(['kyc_start'])->and($before['next'])->toBe(['kyc_send'])
+        ->and(array_column($before['done'], 'key'))->toBe(['account', 'email', 'two_factor'])->and($before['recent'])->toBe([]);
+
+    // Sending the KYC is emailed and moves the pulse.
+    $kyc = kycSent($this->person);
+    Notification::assertSentTo($this->person, OnboardingUpdate::class, fn (OnboardingUpdate $mail): bool => $mail->event === 'kyc_received');
+    $sent = $pulse();
+    expect($sent)->not->toBe($start);
+    $hub = $hub();
+    expect($hub['steps'][2]['state'])->toBe('review')->and($hub['next'])->toBe(['kyc_review'])->and($hub['actions'])->toBe([])
+        ->and($hub['recent'][0]['kind'])->toBe('verification.submitted');
+
+    // Compliance sends it back naming the items; the hub raises an urgent action with them.
+    $this->actingAs($this->officer)->post(route('staff.investor-verifications.reject', $kyc), ['request_id' => (string) Str::uuid(),
+        'expected_revision' => $kyc->refresh()->revision, 'reason' => 'The selfie is too dark.', 'items' => [['key' => 'selfie', 'note' => 'Use daylight.'], ['key' => 'id_back']]])
+        ->assertSessionHasErrors(['form' => 'One of the ticked items is not on this case. Review it again.']);
+    $this->post(route('staff.investor-verifications.reject', $kyc), ['request_id' => (string) Str::uuid(),
+        'expected_revision' => $kyc->refresh()->revision, 'reason' => 'The selfie is too dark.', 'items' => [['key' => 'selfie', 'note' => 'Use daylight.']]])
+        ->assertSessionHasNoErrors();
+    Notification::assertSentTo($this->person, VerificationDecided::class, fn (VerificationDecided $mail): bool => $mail->items === [['label' => 'Selfie', 'note' => 'Use daylight.']]);
+    expect($pulse())->not->toBe($sent);
+    $returned = $this->actingAs($this->person)->get(route('dashboard'))->viewData('page')['props']['hub'];
+    expect($returned['actions'][0])->toMatchArray(['kind' => 'kyc_changes', 'urgent' => true, 'note' => 'The selfie is too dark.',
+        'items' => [['key' => 'selfie', 'label' => 'Selfie', 'note' => 'Use daylight.']]])
+        ->and($returned['steps'][2]['state'])->toBe('attention')->and($returned['next'])->toBe(['kyc_resend']);
+    $this->get(route('investor.verification'))->assertInertia(fn (Assert $page): Assert => $page
+        ->where('requested_changes.items.0.key', 'selfie')->where('requested_changes.reason', 'The selfie is too dark.'));
+
+    // Editing it makes it a draft again, but the hub keeps the request until it is sent.
+    $png = "\x89PNG\r\n\x1a\nbrighter selfie";
+    expect(app(UploadInvestorVerificationDocument::class)->handle($this->person->id, $this->person->context_revision, $kyc->refresh()->revision, 'selfie', 'selfie.png', $png,
+        (string) Str::uuid())['status'])->toBe('completed');
+    expect($kyc->refresh()->status)->toBe('draft');
+    $draft = $this->actingAs($this->person)->get(route('dashboard'))->viewData('page')['props']['hub'];
+    expect($draft['actions'][0]['kind'])->toBe('kyc_changes');
+    expect(app(SubmitInvestorVerification::class)->handle($this->person->id, $this->person->context_revision, $kyc->refresh()->revision, (string) Str::uuid())['status'])
+        ->toBe('completed');
+
+    // The business application is sent, then approved after the KYC; the hub says the account is ready.
+    $application = businessSent($this, $this->person);
+    $pending = $this->actingAs($this->person)->get(route('dashboard'))->viewData('page')['props']['hub'];
+    expect($pending['steps'][3])->toMatchArray(['key' => 'role', 'state' => 'review', 'role' => 'business'])
+        ->and($pending['next'])->toBe(['kyc_review', 'role_review', 'role_switch'])->and($pending['company'])->toBe('Kivu Harvest Ltd');
+    approveKyc($this, $this->officer, $kyc->refresh());
+    decideApplication($this, $this->officer, $application, 'approve')->assertSessionHasNoErrors();
+    Notification::assertSentTo($this->person, OnboardingUpdate::class, fn (OnboardingUpdate $mail): bool => $mail->event === 'role_approved' && $mail->company === 'Kivu Harvest Ltd');
+    $ready = $this->actingAs($this->person)->get(route('dashboard'))->viewData('page')['props']['hub'];
+    expect(array_column($ready['steps'], 'state'))->toBe(['done', 'done', 'done', 'done', 'done'])
+        ->and($ready['next'])->toBe(['business_ready'])
+        ->and(array_column($ready['done'], 'key'))->toBe(['account', 'email', 'two_factor', 'kyc_sent', 'kyc_approved', 'role_sent', 'role_approved']);
+});
+
+test('a rejected application and an unsent draft each get their own next step on the hub', function (): void {
+    Notification::fake();
+    $kyc = kycSent($this->person);
+    $application = businessSent($this, $this->person);
+    decideApplication($this, $this->officer, $application, 'reject', 'This company is already represented on Rozine.')->assertSessionHasNoErrors();
+    Notification::assertSentTo($this->person, OnboardingUpdate::class, fn (OnboardingUpdate $mail): bool => $mail->event === 'role_rejected');
+    $hub = $this->actingAs($this->person)->get(route('dashboard'))->viewData('page')['props']['hub'];
+    expect($hub['actions'][0])->toMatchArray(['kind' => 'role_rejected', 'urgent' => false, 'note' => 'This company is already represented on Rozine.'])
+        ->and($hub['steps'][3]['state'])->toBe('rejected')->and($hub['next'])->toBe(['kyc_review', 'role_reapply', 'role_switch']);
+
+    // Starting again leaves a draft to finish.
+    $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'business', 'step' => 'company', 'answers' => companyAnswers()])->assertSessionHasNoErrors();
+    expect($application->refresh()->status)->toBe('rejected');
+    approveKyc($this, $this->officer, $kyc);
+    $after = $this->actingAs($this->person)->get(route('dashboard'))->viewData('page')['props']['hub'];
+    expect($after['steps'][2]['state'])->toBe('done');
+});
+
+test('the pulse needs a signed-in, verified account and says nothing about an account without a Party', function (): void {
+    $this->getJson(route('dashboard.version'))->assertUnauthorized();
+    $staff = User::factory()->create(['party_id' => null]);
+    $this->actingAs($staff)->getJson(route('dashboard.version'))->assertOk()->assertJsonStructure(['version']);
+    $this->get(route('dashboard'))->assertOk()->assertInertia(fn (Assert $page): Assert => $page->where('hub', null));
 });

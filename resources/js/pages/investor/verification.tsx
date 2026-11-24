@@ -691,6 +691,39 @@ function VerificationForm({
                 <p className="mt-1.5 text-[13.5px] text-rz-secondary">
                     {t(`${heading}.subtitle`)}
                 </p>
+                {submission.requested_changes &&
+                    submission.requested_changes.items.length > 0 &&
+                    submission.status !== 'submitted' && (
+                        <section
+                            aria-label={t('investor.kyc.requested.title')}
+                            className="mt-4 rounded-2xl border border-[#f1d9bd] bg-[#fff8ef] px-4 py-3 dark:border-[rgba(255,180,100,.3)] dark:bg-[rgba(194,102,31,.12)]"
+                        >
+                            <p className="text-[11px] font-bold tracking-[.05em] text-[#8a4b0f] uppercase dark:text-[#f0b37a]">
+                                {t('investor.kyc.requested.title')}
+                            </p>
+                            {submission.requested_changes.reason !== '' && (
+                                <p className="mt-1.5 text-[13px] text-rz-body">
+                                    “{submission.requested_changes.reason}”
+                                </p>
+                            )}
+                            <ul className="mt-1.5 list-disc space-y-0.5 pl-5 text-[13px] text-rz-body">
+                                {submission.requested_changes.items.map(
+                                    (item) => (
+                                        <li key={item.key}>
+                                            <span className="font-semibold text-rz-ink">
+                                                {item.label}
+                                            </span>
+                                            {item.note !== '' &&
+                                                `: ${item.note}`}
+                                        </li>
+                                    ),
+                                )}
+                            </ul>
+                            <p className="mt-2 text-[12px] text-rz-secondary">
+                                {t('investor.kyc.requested.still_editable')}
+                            </p>
+                        </section>
+                    )}
 
                 {props.investor_type === 'individual' &&
                     step === 'personal' && (

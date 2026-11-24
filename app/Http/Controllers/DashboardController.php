@@ -8,6 +8,7 @@ use App\Application\Identity\AddInvestorAccess;
 use App\Application\Identity\ApplyForRole;
 use App\Application\Identity\GetIdentityContext;
 use App\Application\Identity\GetInvestorVerification;
+use App\Application\Identity\GetOnboardingHub;
 use App\Application\Identity\GetStaffAccess;
 use App\Application\Identity\RequestRoleAccess;
 use App\Http\Resources\IdentityContextResource;
@@ -25,7 +26,7 @@ class DashboardController extends Controller
      * Auditor access is applied for from the card once the person's KYC is sent (role switch, 23 Nov
      * 2026), so the launcher says where that application stands.
      */
-    public function __invoke(Request $request, GetIdentityContext $identity, GetStaffAccess $staff, GetInvestorVerification $verification, AddInvestorAccess $investor, RequestRoleAccess $access, ApplyForRole $applications): Response
+    public function __invoke(Request $request, GetIdentityContext $identity, GetStaffAccess $staff, GetInvestorVerification $verification, AddInvestorAccess $investor, RequestRoleAccess $access, ApplyForRole $applications, GetOnboardingHub $hub): Response
     {
         $userId = (int) $request->user()?->getAuthIdentifier();
         $context = $identity->handle($userId);
@@ -39,6 +40,8 @@ class DashboardController extends Controller
                 'link' => ['url' => route('identity.investor-access.store', absolute: false), 'method' => 'post']] : null,
             // Everyone starts as an Investor; once their KYC is sent they may apply for one other role (23 Nov 2026).
             'role_application' => $standing === null ? null : ['kyc' => $standing['kyc'], 'status' => $standing['status'], 'role' => $standing['role']],
+            // The progress hub (24 Nov 2026): setup steps, what needs the person now, what is next and what is done.
+            'hub' => $standing === null ? null : $hub->handle($userId),
             'access_requests' => [...$access->offer($userId), 'link' => ['url' => route('identity.access-requests.store', absolute: false), 'method' => 'post']],
         ]);
     }

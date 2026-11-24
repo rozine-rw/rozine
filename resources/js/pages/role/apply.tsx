@@ -1,6 +1,6 @@
 import type { FormDataConvertible } from '@inertiajs/core';
 import { Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { createContext, use, useState } from 'react';
 import type { ReactNode } from 'react';
 import { InvestorAuthFrame } from '@/components/investor/auth/auth-frame';
 import { ErrorBanner } from '@/components/rozine/form';
@@ -29,6 +29,48 @@ const LABEL = 'mb-1.5 block text-xs font-semibold text-rz-label uppercase';
 const FIELD =
     'w-full rounded-xl border border-rz-border bg-rz-field px-3.5 py-[13px] text-sm text-rz-ink outline-none placeholder:text-rz-placeholder focus:border-rz-focus-border';
 const CARD = 'rounded-2xl border border-rz-border bg-rz-surface px-4 py-3.5';
+/** Each form field's answer, as Compliance names it when it asks for changes (24 Nov 2026). */
+const FLAG_KEYS: Record<string, string> = {
+    rdb_code: 'company.rdb_code',
+    legal_name: 'company.legal_name',
+    tin: 'company.tin',
+    incorporation_date: 'company.incorporation_date',
+    district: 'company.district',
+    industry: 'company.industry',
+    registered_address: 'company.registered_address',
+    company_phone: 'company.phone',
+    rep_title: 'representative',
+    rep_phone: 'representative',
+    membership_number: 'licence.membership_number',
+    licence_number: 'licence.licence_number',
+    expires_on: 'licence.expires_on',
+    firm: 'licence.firm',
+};
+/** The items Compliance flagged, by key, with their note; empty when nothing was sent back. */
+const Flags = createContext<Record<string, string>>({});
+
+/** Compliance's word under a flagged answer or document. */
+function Flag({ id }: { id: string }) {
+    const { t } = useTranslation();
+    const flags = use(Flags);
+    const key = FLAG_KEYS[id] ?? id;
+
+    if (!(key in flags)) {
+        return null;
+    }
+
+    return (
+        <p className="mt-1.5 flex items-start gap-1.5 text-[12px] font-semibold text-rz-warning-text">
+            <span aria-hidden="true">!</span>
+            {flags[key] === ''
+                ? t('role.apply.flag.change')
+                : t('role.apply.flag.note', { note: flags[key] })}
+        </p>
+    );
+}
+
+const flagged = (flags: Record<string, string>, id: string): boolean =>
+    (FLAG_KEYS[id] ?? id) in flags;
 
 const STEPS: Record<SwitchRole, string[]> = {
     business: ['company', 'people', 'documents', 'review'],
@@ -209,726 +251,807 @@ export default function RoleApply(props: RoleApplicationProps) {
         />
     );
 
+    const requested =
+        application.status === 'changes_requested'
+            ? (application.requested_changes ?? null)
+            : null;
+    const flags: Record<string, string> = Object.fromEntries(
+        (requested?.items ?? []).map((item) => [item.key, item.note]),
+    );
+
     return (
-        <InvestorAuthFrame
-            title={t(`role.apply.step.${step}.title` as MessageCode)}
-            layout="column"
-        >
-            <div
-                data-audience={role}
-                className="px-5 pt-[calc(env(safe-area-inset-top)+14px)] pb-10 lg:pt-14"
+        <Flags value={flags}>
+            <InvestorAuthFrame
+                title={t(`role.apply.step.${step}.title` as MessageCode)}
+                layout="column"
             >
-                <Header
-                    back={
-                        index > 0 && editable
-                            ? () => setStep(steps[index - 1])
-                            : show().url
-                    }
-                    percent={application.status === 'submitted' ? 100 : percent}
-                    accent={ACCENT[role]}
-                />
-                <p
-                    className="mt-2 text-[12.5px] font-semibold tracking-[.05em] uppercase"
-                    style={{ color: ACCENT[role] }}
+                <div
+                    data-audience={role}
+                    className="px-5 pt-[calc(env(safe-area-inset-top)+14px)] pb-10 lg:pt-14"
                 >
-                    {t(kicker)}
-                </p>
+                    <Header
+                        back={
+                            index > 0 && editable
+                                ? () => setStep(steps[index - 1])
+                                : show().url
+                        }
+                        percent={
+                            application.status === 'submitted' ? 100 : percent
+                        }
+                        accent={ACCENT[role]}
+                    />
+                    <p
+                        className="mt-2 text-[12.5px] font-semibold tracking-[.05em] uppercase"
+                        style={{ color: ACCENT[role] }}
+                    >
+                        {t(kicker)}
+                    </p>
 
-                {application.status === 'submitted' ? (
-                    <UnderReview role={role} kyc={props.kyc} />
-                ) : (
-                    <>
-                        <h1 className="mt-1.5 text-[22px] font-semibold text-rz-ink">
-                            {t(`role.apply.step.${step}.title` as MessageCode)}
-                        </h1>
-                        <p className="mt-1.5 text-[13.5px] text-rz-secondary">
-                            {t(
-                                `role.apply.step.${step}.subtitle` as MessageCode,
-                            )}
-                        </p>
-                        {application.note !== null &&
-                            ['changes_requested', 'rejected'].includes(
-                                application.status,
-                            ) && (
-                                <div className="mt-4 rounded-2xl border border-[#f1d9bd] bg-[#fff8ef] px-4 py-3 dark:border-[rgba(255,180,100,.3)] dark:bg-[rgba(194,102,31,.12)]">
-                                    <p className="text-[11px] font-bold tracking-[.05em] text-[#8a4b0f] uppercase dark:text-[#f0b37a]">
-                                        {t(
-                                            application.status === 'rejected'
-                                                ? 'role.apply.rejected'
-                                                : 'role.apply.asked_for_more',
-                                        )}
-                                    </p>
-                                    <p className="mt-1.5 text-[13px] text-rz-body">
-                                        “{application.note}”
-                                    </p>
-                                </div>
-                            )}
-                        {error('form') && (
-                            <div className="mt-4">
-                                <ErrorBanner>{error('form')}</ErrorBanner>
-                            </div>
-                        )}
-                        {uploadError && (
-                            <div className="mt-4">
-                                <ErrorBanner>{uploadError}</ErrorBanner>
-                            </div>
-                        )}
-                        {role === 'auditor' && !props.two_factor && (
-                            <div className="mt-4 rounded-2xl border border-[#f1d9bd] bg-[#fff8ef] px-4 py-3 dark:border-[rgba(255,180,100,.3)] dark:bg-[rgba(194,102,31,.12)]">
-                                <p className="text-[13px] font-semibold text-rz-ink">
-                                    {t('role.apply.two_factor.title')}
-                                </p>
-                                <p className="mt-1 text-[12.5px] text-rz-body">
-                                    {t('role.apply.two_factor.body')}
-                                </p>
-                                <Link
-                                    href={security()}
-                                    className="mt-2 inline-block text-[13px] font-semibold text-rz-accent-text"
-                                >
-                                    {t('role.apply.two_factor.action')}
-                                </Link>
-                            </div>
-                        )}
-
-                        {step === 'company' && (
-                            <div className="mt-5 flex flex-col gap-[13px]">
-                                <Field
-                                    id="rdb_code"
-                                    label={t('role.apply.company.rdb_code')}
-                                    hint={t('role.apply.company.rdb_code_hint')}
-                                    value={company.rdb_code}
-                                    inputMode="numeric"
-                                    error={error('company.rdb_code')}
-                                    onChange={(value) =>
-                                        setAnswers({
-                                            ...answers,
-                                            company: {
-                                                ...company,
-                                                rdb_code: value,
-                                            },
-                                        })
-                                    }
-                                />
-                                <Field
-                                    id="legal_name"
-                                    label={t('role.apply.company.legal_name')}
-                                    value={company.legal_name}
-                                    error={error('company.legal_name')}
-                                    onChange={(value) =>
-                                        setAnswers({
-                                            ...answers,
-                                            company: {
-                                                ...company,
-                                                legal_name: value,
-                                            },
-                                        })
-                                    }
-                                />
-                                <Field
-                                    id="tin"
-                                    label={t('role.apply.company.tin')}
-                                    hint={t('role.apply.company.tin_hint')}
-                                    value={company.tin}
-                                    inputMode="numeric"
-                                    error={error('company.tin')}
-                                    onChange={(value) =>
-                                        setAnswers({
-                                            ...answers,
-                                            company: { ...company, tin: value },
-                                        })
-                                    }
-                                />
-                                <div>
-                                    <p className={LABEL}>
-                                        {t('role.apply.company.company_type')}
-                                    </p>
-                                    <div className="flex flex-wrap gap-2">
-                                        {COMPANY_TYPES.map((type) => (
-                                            <Chip
-                                                key={type}
-                                                accent={ACCENT[role]}
-                                                active={
-                                                    company.company_type ===
-                                                    type
-                                                }
-                                                onClick={() =>
-                                                    setAnswers({
-                                                        ...answers,
-                                                        company: {
-                                                            ...company,
-                                                            company_type: type,
-                                                        },
-                                                    })
-                                                }
-                                            >
-                                                {t(
-                                                    `role.apply.company_type.${type}`,
-                                                )}
-                                            </Chip>
-                                        ))}
+                    {application.status === 'submitted' ? (
+                        <UnderReview role={role} kyc={props.kyc} />
+                    ) : (
+                        <>
+                            <h1 className="mt-1.5 text-[22px] font-semibold text-rz-ink">
+                                {t(
+                                    `role.apply.step.${step}.title` as MessageCode,
+                                )}
+                            </h1>
+                            <p className="mt-1.5 text-[13.5px] text-rz-secondary">
+                                {t(
+                                    `role.apply.step.${step}.subtitle` as MessageCode,
+                                )}
+                            </p>
+                            {application.note !== null &&
+                                ['changes_requested', 'rejected'].includes(
+                                    application.status,
+                                ) && (
+                                    <div className="mt-4 rounded-2xl border border-[#f1d9bd] bg-[#fff8ef] px-4 py-3 dark:border-[rgba(255,180,100,.3)] dark:bg-[rgba(194,102,31,.12)]">
+                                        <p className="text-[11px] font-bold tracking-[.05em] text-[#8a4b0f] uppercase dark:text-[#f0b37a]">
+                                            {t(
+                                                application.status ===
+                                                    'rejected'
+                                                    ? 'role.apply.rejected'
+                                                    : 'role.apply.asked_for_more',
+                                            )}
+                                        </p>
+                                        <p className="mt-1.5 text-[13px] text-rz-body">
+                                            “{application.note}”
+                                        </p>
+                                        {requested &&
+                                            requested.items.length > 0 && (
+                                                <RequestedItems
+                                                    items={requested.items}
+                                                />
+                                            )}
                                     </div>
-                                    <FieldError
-                                        message={error('company.company_type')}
-                                    />
+                                )}
+                            {application.note === null &&
+                                requested &&
+                                requested.items.length > 0 && (
+                                    <div className="mt-4 rounded-2xl border border-[#f1d9bd] bg-[#fff8ef] px-4 py-3 dark:border-[rgba(255,180,100,.3)] dark:bg-[rgba(194,102,31,.12)]">
+                                        <p className="text-[11px] font-bold tracking-[.05em] text-[#8a4b0f] uppercase dark:text-[#f0b37a]">
+                                            {t('role.apply.asked_for_more')}
+                                        </p>
+                                        <RequestedItems
+                                            items={requested.items}
+                                        />
+                                    </div>
+                                )}
+                            {error('form') && (
+                                <div className="mt-4">
+                                    <ErrorBanner>{error('form')}</ErrorBanner>
                                 </div>
-                                <div className="grid grid-cols-2 gap-2.5">
-                                    <Field
-                                        id="incorporation_date"
-                                        type="date"
-                                        label={t(
-                                            'role.apply.company.incorporated',
-                                        )}
-                                        value={company.incorporation_date}
-                                        error={error(
-                                            'company.incorporation_date',
-                                        )}
-                                        onChange={(value) =>
-                                            setAnswers({
-                                                ...answers,
-                                                company: {
-                                                    ...company,
-                                                    incorporation_date: value,
-                                                },
-                                            })
-                                        }
-                                    />
-                                    <Select
-                                        id="district"
-                                        label={t('role.apply.company.district')}
-                                        value={company.district}
-                                        options={props.catalog.districts}
-                                        error={error('company.district')}
-                                        onChange={(value) =>
-                                            setAnswers({
-                                                ...answers,
-                                                company: {
-                                                    ...company,
-                                                    district: value,
-                                                },
-                                            })
-                                        }
-                                    />
+                            )}
+                            {uploadError && (
+                                <div className="mt-4">
+                                    <ErrorBanner>{uploadError}</ErrorBanner>
                                 </div>
-                                <Select
-                                    id="industry"
-                                    label={t('role.apply.company.sector')}
-                                    value={company.industry}
-                                    options={props.catalog.industries}
-                                    error={error('company.industry')}
-                                    onChange={(value) =>
-                                        setAnswers({
-                                            ...answers,
-                                            company: {
-                                                ...company,
-                                                industry: value,
-                                            },
-                                        })
-                                    }
-                                />
-                                <Field
-                                    id="registered_address"
-                                    label={t('role.apply.company.address')}
-                                    value={company.registered_address}
-                                    error={error('company.registered_address')}
-                                    onChange={(value) =>
-                                        setAnswers({
-                                            ...answers,
-                                            company: {
-                                                ...company,
-                                                registered_address: value,
-                                            },
-                                        })
-                                    }
-                                />
-                                <Field
-                                    id="company_phone"
-                                    type="tel"
-                                    label={t('role.apply.company.phone')}
-                                    value={company.phone}
-                                    error={error('company.phone')}
-                                    onChange={(value) =>
-                                        setAnswers({
-                                            ...answers,
-                                            company: {
-                                                ...company,
-                                                phone: value,
-                                            },
-                                        })
-                                    }
-                                />
-                            </div>
-                        )}
+                            )}
+                            {role === 'auditor' && !props.two_factor && (
+                                <div className="mt-4 rounded-2xl border border-[#f1d9bd] bg-[#fff8ef] px-4 py-3 dark:border-[rgba(255,180,100,.3)] dark:bg-[rgba(194,102,31,.12)]">
+                                    <p className="text-[13px] font-semibold text-rz-ink">
+                                        {t('role.apply.two_factor.title')}
+                                    </p>
+                                    <p className="mt-1 text-[12.5px] text-rz-body">
+                                        {t('role.apply.two_factor.body')}
+                                    </p>
+                                    <Link
+                                        href={security()}
+                                        className="mt-2 inline-block text-[13px] font-semibold text-rz-accent-text"
+                                    >
+                                        {t('role.apply.two_factor.action')}
+                                    </Link>
+                                </div>
+                            )}
 
-                        {step === 'people' && (
-                            <div className="mt-5 flex flex-col gap-[13px]">
-                                <div className="grid grid-cols-2 gap-2.5">
+                            {step === 'company' && (
+                                <div className="mt-5 flex flex-col gap-[13px]">
                                     <Field
-                                        id="rep_title"
-                                        label={t(
-                                            'role.apply.people.your_title',
+                                        id="rdb_code"
+                                        label={t('role.apply.company.rdb_code')}
+                                        hint={t(
+                                            'role.apply.company.rdb_code_hint',
                                         )}
-                                        value={representative.title}
-                                        error={error('representative.title')}
+                                        value={company.rdb_code}
+                                        inputMode="numeric"
+                                        error={error('company.rdb_code')}
                                         onChange={(value) =>
                                             setAnswers({
                                                 ...answers,
-                                                representative: {
-                                                    ...representative,
-                                                    title: value,
+                                                company: {
+                                                    ...company,
+                                                    rdb_code: value,
                                                 },
                                             })
                                         }
                                     />
                                     <Field
-                                        id="rep_phone"
-                                        type="tel"
+                                        id="legal_name"
                                         label={t(
-                                            'role.apply.people.your_phone',
+                                            'role.apply.company.legal_name',
                                         )}
-                                        value={representative.phone}
-                                        error={error('representative.phone')}
+                                        value={company.legal_name}
+                                        error={error('company.legal_name')}
                                         onChange={(value) =>
                                             setAnswers({
                                                 ...answers,
-                                                representative: {
-                                                    ...representative,
+                                                company: {
+                                                    ...company,
+                                                    legal_name: value,
+                                                },
+                                            })
+                                        }
+                                    />
+                                    <Field
+                                        id="tin"
+                                        label={t('role.apply.company.tin')}
+                                        hint={t('role.apply.company.tin_hint')}
+                                        value={company.tin}
+                                        inputMode="numeric"
+                                        error={error('company.tin')}
+                                        onChange={(value) =>
+                                            setAnswers({
+                                                ...answers,
+                                                company: {
+                                                    ...company,
+                                                    tin: value,
+                                                },
+                                            })
+                                        }
+                                    />
+                                    <div>
+                                        <p className={LABEL}>
+                                            {t(
+                                                'role.apply.company.company_type',
+                                            )}
+                                        </p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {COMPANY_TYPES.map((type) => (
+                                                <Chip
+                                                    key={type}
+                                                    accent={ACCENT[role]}
+                                                    active={
+                                                        company.company_type ===
+                                                        type
+                                                    }
+                                                    onClick={() =>
+                                                        setAnswers({
+                                                            ...answers,
+                                                            company: {
+                                                                ...company,
+                                                                company_type:
+                                                                    type,
+                                                            },
+                                                        })
+                                                    }
+                                                >
+                                                    {t(
+                                                        `role.apply.company_type.${type}`,
+                                                    )}
+                                                </Chip>
+                                            ))}
+                                        </div>
+                                        <FieldError
+                                            message={error(
+                                                'company.company_type',
+                                            )}
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2.5">
+                                        <Field
+                                            id="incorporation_date"
+                                            type="date"
+                                            label={t(
+                                                'role.apply.company.incorporated',
+                                            )}
+                                            value={company.incorporation_date}
+                                            error={error(
+                                                'company.incorporation_date',
+                                            )}
+                                            onChange={(value) =>
+                                                setAnswers({
+                                                    ...answers,
+                                                    company: {
+                                                        ...company,
+                                                        incorporation_date:
+                                                            value,
+                                                    },
+                                                })
+                                            }
+                                        />
+                                        <Select
+                                            id="district"
+                                            label={t(
+                                                'role.apply.company.district',
+                                            )}
+                                            value={company.district}
+                                            options={props.catalog.districts}
+                                            error={error('company.district')}
+                                            onChange={(value) =>
+                                                setAnswers({
+                                                    ...answers,
+                                                    company: {
+                                                        ...company,
+                                                        district: value,
+                                                    },
+                                                })
+                                            }
+                                        />
+                                    </div>
+                                    <Select
+                                        id="industry"
+                                        label={t('role.apply.company.sector')}
+                                        value={company.industry}
+                                        options={props.catalog.industries}
+                                        error={error('company.industry')}
+                                        onChange={(value) =>
+                                            setAnswers({
+                                                ...answers,
+                                                company: {
+                                                    ...company,
+                                                    industry: value,
+                                                },
+                                            })
+                                        }
+                                    />
+                                    <Field
+                                        id="registered_address"
+                                        label={t('role.apply.company.address')}
+                                        value={company.registered_address}
+                                        error={error(
+                                            'company.registered_address',
+                                        )}
+                                        onChange={(value) =>
+                                            setAnswers({
+                                                ...answers,
+                                                company: {
+                                                    ...company,
+                                                    registered_address: value,
+                                                },
+                                            })
+                                        }
+                                    />
+                                    <Field
+                                        id="company_phone"
+                                        type="tel"
+                                        label={t('role.apply.company.phone')}
+                                        value={company.phone}
+                                        error={error('company.phone')}
+                                        onChange={(value) =>
+                                            setAnswers({
+                                                ...answers,
+                                                company: {
+                                                    ...company,
                                                     phone: value,
                                                 },
                                             })
                                         }
                                     />
                                 </div>
-                                <Check
-                                    accent={ACCENT[role]}
-                                    checked={representative.authorised}
-                                    error={error('representative.authorised')}
-                                    onChange={(checked) =>
-                                        setAnswers({
-                                            ...answers,
-                                            representative: {
-                                                ...representative,
-                                                authorised: checked,
-                                            },
-                                        })
-                                    }
-                                >
-                                    {t('role.apply.people.authorised')}
-                                </Check>
-                                <PeopleList
-                                    title={t('role.apply.people.directors')}
-                                    people={directors}
-                                    owners={false}
-                                    accent={ACCENT[role]}
-                                    errors={errors}
-                                    field="directors"
-                                    onChange={(list) =>
-                                        setAnswers({
-                                            ...answers,
-                                            directors: list,
-                                        })
-                                    }
-                                />
-                                <PeopleList
-                                    title={t('role.apply.people.owners')}
-                                    people={owners}
-                                    owners
-                                    accent={ACCENT[role]}
-                                    errors={errors}
-                                    field="owners"
-                                    onChange={(list) =>
-                                        setAnswers({ ...answers, owners: list })
-                                    }
-                                />
-                            </div>
-                        )}
+                            )}
 
-                        {step === 'documents' && (
-                            <div className="mt-5 flex flex-col gap-2.5">
-                                {BUSINESS_DOCUMENTS.map((slot) =>
-                                    tile(
-                                        slot,
-                                        t(`role.apply.document.${slot}`),
-                                        slot === 'tin_certificate'
-                                            ? t(
-                                                  'role.apply.document.staff_only',
-                                              )
-                                            : slot === 'board_resolution'
-                                              ? t(
-                                                    'role.apply.document.optional',
-                                                )
-                                              : undefined,
-                                    ),
-                                )}
-                                {people.map((person) =>
-                                    tile(
-                                        `id:${person.id_number}`,
-                                        t('role.apply.document.person_id', {
-                                            name: person.full_name,
-                                        }),
-                                    ),
-                                )}
-                                <p className="text-[11.5px] text-rz-secondary">
-                                    {t('role.apply.document.formats')}
-                                </p>
-                            </div>
-                        )}
-
-                        {step === 'licence' && (
-                            <div className="mt-5 flex flex-col gap-[13px]">
-                                <Field
-                                    id="membership_number"
-                                    label={t('role.apply.licence.membership')}
-                                    value={licence.membership_number}
-                                    error={error('licence.membership_number')}
-                                    onChange={(value) =>
-                                        setAnswers({
-                                            ...answers,
-                                            licence: {
-                                                ...licence,
-                                                membership_number: value,
-                                            },
-                                        })
-                                    }
-                                />
-                                <div className="grid grid-cols-2 gap-2.5">
-                                    <Field
-                                        id="licence_number"
-                                        label={t(
-                                            'role.apply.licence.certificate',
-                                        )}
-                                        value={licence.licence_number}
-                                        error={error('licence.licence_number')}
-                                        onChange={(value) =>
-                                            setAnswers({
-                                                ...answers,
-                                                licence: {
-                                                    ...licence,
-                                                    licence_number: value,
-                                                },
-                                            })
-                                        }
-                                    />
-                                    <Field
-                                        id="expires_on"
-                                        type="date"
-                                        label={t(
-                                            'role.apply.licence.valid_until',
-                                        )}
-                                        value={licence.expires_on}
-                                        error={error('licence.expires_on')}
-                                        onChange={(value) =>
-                                            setAnswers({
-                                                ...answers,
-                                                licence: {
-                                                    ...licence,
-                                                    expires_on: value,
-                                                },
-                                            })
-                                        }
-                                    />
-                                </div>
-                                <Field
-                                    id="firm"
-                                    label={t('role.apply.licence.firm')}
-                                    value={licence.firm}
-                                    error={error('licence.firm')}
-                                    onChange={(value) =>
-                                        setAnswers({
-                                            ...answers,
-                                            licence: {
-                                                ...licence,
-                                                firm: value,
-                                            },
-                                        })
-                                    }
-                                />
-                                {tile(
-                                    'practising_certificate',
-                                    t(
-                                        'role.apply.document.practising_certificate',
-                                    ),
-                                )}
-                            </div>
-                        )}
-
-                        {step === 'coverage' && (
-                            <div className="mt-5 flex flex-col gap-[13px]">
-                                <div>
-                                    <p className={LABEL}>
-                                        {t('role.apply.coverage.districts')}
-                                    </p>
-                                    <div className="flex flex-wrap gap-2">
-                                        {props.catalog.districts.map(
-                                            (district) => {
-                                                const on =
-                                                    coverage.districts.includes(
-                                                        district,
-                                                    );
-
-                                                return (
-                                                    <Chip
-                                                        key={district}
-                                                        accent={ACCENT[role]}
-                                                        active={on}
-                                                        onClick={() =>
-                                                            setAnswers({
-                                                                ...answers,
-                                                                coverage: {
-                                                                    ...coverage,
-                                                                    districts:
-                                                                        on
-                                                                            ? coverage.districts.filter(
-                                                                                  (
-                                                                                      item,
-                                                                                  ) =>
-                                                                                      item !==
-                                                                                      district,
-                                                                              )
-                                                                            : [
-                                                                                  ...coverage.districts,
-                                                                                  district,
-                                                                              ],
-                                                                },
-                                                            })
-                                                        }
-                                                    >
-                                                        {district}
-                                                    </Chip>
-                                                );
-                                            },
-                                        )}
+                            {step === 'people' && (
+                                <div className="mt-5 flex flex-col gap-[13px]">
+                                    <div className="grid grid-cols-2 gap-2.5">
+                                        <Field
+                                            id="rep_title"
+                                            label={t(
+                                                'role.apply.people.your_title',
+                                            )}
+                                            value={representative.title}
+                                            error={error(
+                                                'representative.title',
+                                            )}
+                                            onChange={(value) =>
+                                                setAnswers({
+                                                    ...answers,
+                                                    representative: {
+                                                        ...representative,
+                                                        title: value,
+                                                    },
+                                                })
+                                            }
+                                        />
+                                        <Field
+                                            id="rep_phone"
+                                            type="tel"
+                                            label={t(
+                                                'role.apply.people.your_phone',
+                                            )}
+                                            value={representative.phone}
+                                            error={error(
+                                                'representative.phone',
+                                            )}
+                                            onChange={(value) =>
+                                                setAnswers({
+                                                    ...answers,
+                                                    representative: {
+                                                        ...representative,
+                                                        phone: value,
+                                                    },
+                                                })
+                                            }
+                                        />
                                     </div>
-                                    <FieldError
-                                        message={error('coverage.districts')}
-                                    />
-                                </div>
-                                <p className={LABEL}>
-                                    {t('role.apply.coverage.conflicts')}
-                                </p>
-                                {(
-                                    [
-                                        'no_conflicts',
-                                        'will_declare',
-                                        'ethics',
-                                    ] as const
-                                ).map((key) => (
                                     <Check
-                                        key={key}
                                         accent={ACCENT[role]}
-                                        checked={coverage[key]}
-                                        error={error(`coverage.${key}`)}
+                                        checked={representative.authorised}
+                                        error={error(
+                                            'representative.authorised',
+                                        )}
                                         onChange={(checked) =>
                                             setAnswers({
                                                 ...answers,
-                                                coverage: {
-                                                    ...coverage,
-                                                    [key]: checked,
+                                                representative: {
+                                                    ...representative,
+                                                    authorised: checked,
                                                 },
                                             })
                                         }
                                     >
-                                        {t(`role.apply.coverage.${key}`)}
+                                        {t('role.apply.people.authorised')}
                                     </Check>
-                                ))}
-                            </div>
-                        )}
-
-                        {step === 'review' && (
-                            <div className="mt-5 flex flex-col gap-2.5">
-                                {props.kyc !== 'approved' && (
-                                    <div className="rounded-2xl border border-[#f1d9bd] bg-[#fff8ef] px-4 py-3 dark:border-[rgba(255,180,100,.3)] dark:bg-[rgba(194,102,31,.12)]">
-                                        <p className="text-[11px] font-bold tracking-[.05em] text-[#8a4b0f] uppercase dark:text-[#f0b37a]">
-                                            {t(
-                                                'role.apply.review.kyc_pending_title',
-                                            )}
-                                        </p>
-                                        <p className="mt-1 text-[12.5px] text-rz-body">
-                                            {t(
-                                                'role.apply.review.kyc_pending_body',
-                                            )}
-                                        </p>
-                                    </div>
-                                )}
-                                {props.blockers.length > 0 && (
-                                    <div className="rounded-2xl border border-[#f1d9bd] bg-[#fff8ef] px-4 py-3 dark:border-[rgba(255,180,100,.3)] dark:bg-[rgba(194,102,31,.12)]">
-                                        <p className="text-[11px] font-bold tracking-[.05em] text-[#8a4b0f] uppercase dark:text-[#f0b37a]">
-                                            {t('role.apply.blockers.title')}
-                                        </p>
-                                        <ul className="mt-1 list-disc pl-4 text-[12.5px] text-rz-body">
-                                            {props.blockers.map((code) => (
-                                                <li key={code}>
-                                                    {t(
-                                                        `role.apply.blocker.${code}` as MessageCode,
-                                                    )}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
-                                {role === 'business' ? (
-                                    <>
-                                        <Summary
-                                            title={t(
-                                                'role.apply.step.company.title',
-                                            )}
-                                            onEdit={() => setStep('company')}
-                                            rows={[
-                                                [
-                                                    company.legal_name,
-                                                    `RDB ${company.rdb_code}`,
-                                                ],
-                                                [
-                                                    company.industry,
-                                                    company.district,
-                                                ],
-                                            ]}
-                                        />
-                                        <Summary
-                                            title={t(
-                                                'role.apply.step.people.title',
-                                            )}
-                                            onEdit={() => setStep('people')}
-                                            rows={[
-                                                [
-                                                    t(
-                                                        'role.apply.people.directors',
-                                                    ),
-                                                    String(directors.length),
-                                                ],
-                                                [
-                                                    t(
-                                                        'role.apply.people.owners',
-                                                    ),
-                                                    String(owners.length),
-                                                ],
-                                            ]}
-                                        />
-                                        <Summary
-                                            title={t(
-                                                'role.apply.step.documents.title',
-                                            )}
-                                            onEdit={() => setStep('documents')}
-                                            rows={[
-                                                [
-                                                    t(
-                                                        'role.apply.review.uploaded',
-                                                    ),
-                                                    String(
-                                                        Object.keys(
-                                                            application.uploads,
-                                                        ).length,
-                                                    ),
-                                                ],
-                                            ]}
-                                        />
-                                    </>
-                                ) : (
-                                    <>
-                                        <Summary
-                                            title={t(
-                                                'role.apply.step.licence.title',
-                                            )}
-                                            onEdit={() => setStep('licence')}
-                                            rows={[
-                                                [
-                                                    t(
-                                                        'role.apply.licence.certificate',
-                                                    ),
-                                                    licence.licence_number,
-                                                ],
-                                                [
-                                                    t(
-                                                        'role.apply.licence.valid_until',
-                                                    ),
-                                                    licence.expires_on,
-                                                ],
-                                            ]}
-                                        />
-                                        <Summary
-                                            title={t(
-                                                'role.apply.step.coverage.title',
-                                            )}
-                                            onEdit={() => setStep('coverage')}
-                                            rows={[
-                                                [
-                                                    t(
-                                                        'role.apply.coverage.districts',
-                                                    ),
-                                                    coverage.districts.join(
-                                                        ', ',
-                                                    ),
-                                                ],
-                                            ]}
-                                        />
-                                    </>
-                                )}
-                                <Check
-                                    accent={ACCENT[role]}
-                                    checked={declared}
-                                    error={error('declared')}
-                                    onChange={setDeclared}
-                                >
-                                    {t(
-                                        role === 'business'
-                                            ? 'role.apply.review.declare_business'
-                                            : 'role.apply.review.declare_auditor',
-                                    )}
-                                </Check>
-                                <ProblemList errors={errors} />
-                            </div>
-                        )}
-
-                        <div className="mt-8">
-                            {step === 'review' ? (
-                                <PrimaryButton
-                                    accent={ACCENT[role]}
-                                    disabled={busy || !editable}
-                                    onClick={send}
-                                >
-                                    {t(
-                                        busy
-                                            ? 'role.apply.sending'
-                                            : 'role.apply.send',
-                                    )}
-                                </PrimaryButton>
-                            ) : (
-                                <PrimaryButton
-                                    accent={ACCENT[role]}
-                                    disabled={
-                                        busy || sending !== null || !editable
-                                    }
-                                    onClick={() =>
-                                        saveStep(
-                                            step === 'company'
-                                                ? company
-                                                : step === 'people'
-                                                  ? {
-                                                        representative,
-                                                        directors,
-                                                        owners,
-                                                    }
-                                                  : step === 'licence'
-                                                    ? licence
-                                                    : step === 'coverage'
-                                                      ? coverage
-                                                      : {},
-                                        )
-                                    }
-                                >
-                                    {t(
-                                        sending !== null
-                                            ? 'role.apply.waiting_uploads'
-                                            : busy
-                                              ? 'role.apply.saving'
-                                              : 'role.apply.continue',
-                                    )}
-                                </PrimaryButton>
+                                    <PeopleList
+                                        title={t('role.apply.people.directors')}
+                                        people={directors}
+                                        owners={false}
+                                        accent={ACCENT[role]}
+                                        errors={errors}
+                                        field="directors"
+                                        onChange={(list) =>
+                                            setAnswers({
+                                                ...answers,
+                                                directors: list,
+                                            })
+                                        }
+                                    />
+                                    <PeopleList
+                                        title={t('role.apply.people.owners')}
+                                        people={owners}
+                                        owners
+                                        accent={ACCENT[role]}
+                                        errors={errors}
+                                        field="owners"
+                                        onChange={(list) =>
+                                            setAnswers({
+                                                ...answers,
+                                                owners: list,
+                                            })
+                                        }
+                                    />
+                                </div>
                             )}
-                        </div>
-                    </>
-                )}
-            </div>
-        </InvestorAuthFrame>
+
+                            {step === 'documents' && (
+                                <div className="mt-5 flex flex-col gap-2.5">
+                                    {BUSINESS_DOCUMENTS.map((slot) =>
+                                        tile(
+                                            slot,
+                                            t(`role.apply.document.${slot}`),
+                                            slot === 'tin_certificate'
+                                                ? t(
+                                                      'role.apply.document.staff_only',
+                                                  )
+                                                : slot === 'board_resolution'
+                                                  ? t(
+                                                        'role.apply.document.optional',
+                                                    )
+                                                  : undefined,
+                                        ),
+                                    )}
+                                    {people.map((person) =>
+                                        tile(
+                                            `id:${person.id_number}`,
+                                            t('role.apply.document.person_id', {
+                                                name: person.full_name,
+                                            }),
+                                        ),
+                                    )}
+                                    <p className="text-[11.5px] text-rz-secondary">
+                                        {t('role.apply.document.formats')}
+                                    </p>
+                                </div>
+                            )}
+
+                            {step === 'licence' && (
+                                <div className="mt-5 flex flex-col gap-[13px]">
+                                    <Field
+                                        id="membership_number"
+                                        label={t(
+                                            'role.apply.licence.membership',
+                                        )}
+                                        value={licence.membership_number}
+                                        error={error(
+                                            'licence.membership_number',
+                                        )}
+                                        onChange={(value) =>
+                                            setAnswers({
+                                                ...answers,
+                                                licence: {
+                                                    ...licence,
+                                                    membership_number: value,
+                                                },
+                                            })
+                                        }
+                                    />
+                                    <div className="grid grid-cols-2 gap-2.5">
+                                        <Field
+                                            id="licence_number"
+                                            label={t(
+                                                'role.apply.licence.certificate',
+                                            )}
+                                            value={licence.licence_number}
+                                            error={error(
+                                                'licence.licence_number',
+                                            )}
+                                            onChange={(value) =>
+                                                setAnswers({
+                                                    ...answers,
+                                                    licence: {
+                                                        ...licence,
+                                                        licence_number: value,
+                                                    },
+                                                })
+                                            }
+                                        />
+                                        <Field
+                                            id="expires_on"
+                                            type="date"
+                                            label={t(
+                                                'role.apply.licence.valid_until',
+                                            )}
+                                            value={licence.expires_on}
+                                            error={error('licence.expires_on')}
+                                            onChange={(value) =>
+                                                setAnswers({
+                                                    ...answers,
+                                                    licence: {
+                                                        ...licence,
+                                                        expires_on: value,
+                                                    },
+                                                })
+                                            }
+                                        />
+                                    </div>
+                                    <Field
+                                        id="firm"
+                                        label={t('role.apply.licence.firm')}
+                                        value={licence.firm}
+                                        error={error('licence.firm')}
+                                        onChange={(value) =>
+                                            setAnswers({
+                                                ...answers,
+                                                licence: {
+                                                    ...licence,
+                                                    firm: value,
+                                                },
+                                            })
+                                        }
+                                    />
+                                    {tile(
+                                        'practising_certificate',
+                                        t(
+                                            'role.apply.document.practising_certificate',
+                                        ),
+                                    )}
+                                </div>
+                            )}
+
+                            {step === 'coverage' && (
+                                <div className="mt-5 flex flex-col gap-[13px]">
+                                    <div>
+                                        <p className={LABEL}>
+                                            {t('role.apply.coverage.districts')}
+                                        </p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {props.catalog.districts.map(
+                                                (district) => {
+                                                    const on =
+                                                        coverage.districts.includes(
+                                                            district,
+                                                        );
+
+                                                    return (
+                                                        <Chip
+                                                            key={district}
+                                                            accent={
+                                                                ACCENT[role]
+                                                            }
+                                                            active={on}
+                                                            onClick={() =>
+                                                                setAnswers({
+                                                                    ...answers,
+                                                                    coverage: {
+                                                                        ...coverage,
+                                                                        districts:
+                                                                            on
+                                                                                ? coverage.districts.filter(
+                                                                                      (
+                                                                                          item,
+                                                                                      ) =>
+                                                                                          item !==
+                                                                                          district,
+                                                                                  )
+                                                                                : [
+                                                                                      ...coverage.districts,
+                                                                                      district,
+                                                                                  ],
+                                                                    },
+                                                                })
+                                                            }
+                                                        >
+                                                            {district}
+                                                        </Chip>
+                                                    );
+                                                },
+                                            )}
+                                        </div>
+                                        <FieldError
+                                            message={error(
+                                                'coverage.districts',
+                                            )}
+                                        />
+                                    </div>
+                                    <p className={LABEL}>
+                                        {t('role.apply.coverage.conflicts')}
+                                    </p>
+                                    {(
+                                        [
+                                            'no_conflicts',
+                                            'will_declare',
+                                            'ethics',
+                                        ] as const
+                                    ).map((key) => (
+                                        <Check
+                                            key={key}
+                                            accent={ACCENT[role]}
+                                            checked={coverage[key]}
+                                            error={error(`coverage.${key}`)}
+                                            onChange={(checked) =>
+                                                setAnswers({
+                                                    ...answers,
+                                                    coverage: {
+                                                        ...coverage,
+                                                        [key]: checked,
+                                                    },
+                                                })
+                                            }
+                                        >
+                                            {t(`role.apply.coverage.${key}`)}
+                                        </Check>
+                                    ))}
+                                </div>
+                            )}
+
+                            {step === 'review' && (
+                                <div className="mt-5 flex flex-col gap-2.5">
+                                    {props.kyc !== 'approved' && (
+                                        <div className="rounded-2xl border border-[#f1d9bd] bg-[#fff8ef] px-4 py-3 dark:border-[rgba(255,180,100,.3)] dark:bg-[rgba(194,102,31,.12)]">
+                                            <p className="text-[11px] font-bold tracking-[.05em] text-[#8a4b0f] uppercase dark:text-[#f0b37a]">
+                                                {t(
+                                                    'role.apply.review.kyc_pending_title',
+                                                )}
+                                            </p>
+                                            <p className="mt-1 text-[12.5px] text-rz-body">
+                                                {t(
+                                                    'role.apply.review.kyc_pending_body',
+                                                )}
+                                            </p>
+                                        </div>
+                                    )}
+                                    {props.blockers.length > 0 && (
+                                        <div className="rounded-2xl border border-[#f1d9bd] bg-[#fff8ef] px-4 py-3 dark:border-[rgba(255,180,100,.3)] dark:bg-[rgba(194,102,31,.12)]">
+                                            <p className="text-[11px] font-bold tracking-[.05em] text-[#8a4b0f] uppercase dark:text-[#f0b37a]">
+                                                {t('role.apply.blockers.title')}
+                                            </p>
+                                            <ul className="mt-1 list-disc pl-4 text-[12.5px] text-rz-body">
+                                                {props.blockers.map((code) => (
+                                                    <li key={code}>
+                                                        {t(
+                                                            `role.apply.blocker.${code}` as MessageCode,
+                                                        )}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                    {role === 'business' ? (
+                                        <>
+                                            <Summary
+                                                title={t(
+                                                    'role.apply.step.company.title',
+                                                )}
+                                                onEdit={() =>
+                                                    setStep('company')
+                                                }
+                                                rows={[
+                                                    [
+                                                        company.legal_name,
+                                                        `RDB ${company.rdb_code}`,
+                                                    ],
+                                                    [
+                                                        company.industry,
+                                                        company.district,
+                                                    ],
+                                                ]}
+                                            />
+                                            <Summary
+                                                title={t(
+                                                    'role.apply.step.people.title',
+                                                )}
+                                                onEdit={() => setStep('people')}
+                                                rows={[
+                                                    [
+                                                        t(
+                                                            'role.apply.people.directors',
+                                                        ),
+                                                        String(
+                                                            directors.length,
+                                                        ),
+                                                    ],
+                                                    [
+                                                        t(
+                                                            'role.apply.people.owners',
+                                                        ),
+                                                        String(owners.length),
+                                                    ],
+                                                ]}
+                                            />
+                                            <Summary
+                                                title={t(
+                                                    'role.apply.step.documents.title',
+                                                )}
+                                                onEdit={() =>
+                                                    setStep('documents')
+                                                }
+                                                rows={[
+                                                    [
+                                                        t(
+                                                            'role.apply.review.uploaded',
+                                                        ),
+                                                        String(
+                                                            Object.keys(
+                                                                application.uploads,
+                                                            ).length,
+                                                        ),
+                                                    ],
+                                                ]}
+                                            />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Summary
+                                                title={t(
+                                                    'role.apply.step.licence.title',
+                                                )}
+                                                onEdit={() =>
+                                                    setStep('licence')
+                                                }
+                                                rows={[
+                                                    [
+                                                        t(
+                                                            'role.apply.licence.certificate',
+                                                        ),
+                                                        licence.licence_number,
+                                                    ],
+                                                    [
+                                                        t(
+                                                            'role.apply.licence.valid_until',
+                                                        ),
+                                                        licence.expires_on,
+                                                    ],
+                                                ]}
+                                            />
+                                            <Summary
+                                                title={t(
+                                                    'role.apply.step.coverage.title',
+                                                )}
+                                                onEdit={() =>
+                                                    setStep('coverage')
+                                                }
+                                                rows={[
+                                                    [
+                                                        t(
+                                                            'role.apply.coverage.districts',
+                                                        ),
+                                                        coverage.districts.join(
+                                                            ', ',
+                                                        ),
+                                                    ],
+                                                ]}
+                                            />
+                                        </>
+                                    )}
+                                    <Check
+                                        accent={ACCENT[role]}
+                                        checked={declared}
+                                        error={error('declared')}
+                                        onChange={setDeclared}
+                                    >
+                                        {t(
+                                            role === 'business'
+                                                ? 'role.apply.review.declare_business'
+                                                : 'role.apply.review.declare_auditor',
+                                        )}
+                                    </Check>
+                                    <ProblemList errors={errors} />
+                                </div>
+                            )}
+
+                            <div className="mt-8">
+                                {step === 'review' ? (
+                                    <PrimaryButton
+                                        accent={ACCENT[role]}
+                                        disabled={busy || !editable}
+                                        onClick={send}
+                                    >
+                                        {t(
+                                            busy
+                                                ? 'role.apply.sending'
+                                                : 'role.apply.send',
+                                        )}
+                                    </PrimaryButton>
+                                ) : (
+                                    <PrimaryButton
+                                        accent={ACCENT[role]}
+                                        disabled={
+                                            busy ||
+                                            sending !== null ||
+                                            !editable
+                                        }
+                                        onClick={() =>
+                                            saveStep(
+                                                step === 'company'
+                                                    ? company
+                                                    : step === 'people'
+                                                      ? {
+                                                            representative,
+                                                            directors,
+                                                            owners,
+                                                        }
+                                                      : step === 'licence'
+                                                        ? licence
+                                                        : step === 'coverage'
+                                                          ? coverage
+                                                          : {},
+                                            )
+                                        }
+                                    >
+                                        {t(
+                                            sending !== null
+                                                ? 'role.apply.waiting_uploads'
+                                                : busy
+                                                  ? 'role.apply.saving'
+                                                  : 'role.apply.continue',
+                                        )}
+                                    </PrimaryButton>
+                                )}
+                            </div>
+                        </>
+                    )}
+                </div>
+            </InvestorAuthFrame>
+        </Flags>
     );
 }
 
@@ -1181,8 +1304,13 @@ function Field({
                 value={value}
                 aria-invalid={error !== undefined}
                 onChange={(event) => onChange(event.target.value)}
-                className={FIELD}
+                className={cn(
+                    FIELD,
+                    flagged(use(Flags), id) &&
+                        'border-rz-warning-text ring-2 ring-rz-warning-tint',
+                )}
             />
+            <Flag id={id} />
             {error ? (
                 <FieldError message={error} />
             ) : (
@@ -1223,7 +1351,11 @@ function Select({
                 value={value}
                 aria-invalid={error !== undefined}
                 onChange={(event) => onChange(event.target.value)}
-                className={FIELD}
+                className={cn(
+                    FIELD,
+                    flagged(use(Flags), id) &&
+                        'border-rz-warning-text ring-2 ring-rz-warning-tint',
+                )}
             >
                 <option value="">{t('role.apply.choose')}</option>
                 {options.map((option) => (
@@ -1232,6 +1364,7 @@ function Select({
                     </option>
                 ))}
             </select>
+            <Flag id={id} />
             <FieldError message={error} />
         </div>
     );
@@ -1338,6 +1471,7 @@ function PeopleList({
     return (
         <div>
             <p className={cn(LABEL, 'mt-2')}>{title}</p>
+            <Flag id={field} />
             <FieldError message={errors[field]} />
             <div className="flex flex-col gap-2.5">
                 {people.map((person, index) => (
@@ -1489,6 +1623,8 @@ function UploadTile({
                         ? 'border-solid border-rz-border'
                         : 'border-dashed border-rz-border',
                     error && 'border-solid border-[#e5484d]',
+                    flagged(use(Flags), `documents.${slot}`) &&
+                        'border-solid border-rz-warning-text ring-2 ring-rz-warning-tint',
                     sending === null && !disabled
                         ? 'cursor-pointer'
                         : 'cursor-wait',
@@ -1543,6 +1679,7 @@ function UploadTile({
                     {t('role.apply.document.view')}
                 </a>
             )}
+            <Flag id={`documents.${slot}`} />
             <FieldError message={error} />
         </div>
     );
@@ -1626,5 +1763,35 @@ function PrimaryButton({
         >
             {children}
         </button>
+    );
+}
+
+/** The answers and documents Compliance named, each with its word on what to fix. */
+function RequestedItems({
+    items,
+}: {
+    items: { key: string; label: string; note: string }[];
+}) {
+    const { t } = useTranslation();
+
+    return (
+        <>
+            <p className="mt-2 text-[12.5px] font-semibold text-rz-ink">
+                {t('role.apply.flag.list_title')}
+            </p>
+            <ul className="mt-1 list-disc space-y-0.5 pl-5 text-[13px] text-rz-body">
+                {items.map((item) => (
+                    <li key={item.key}>
+                        <span className="font-semibold text-rz-ink">
+                            {item.label}
+                        </span>
+                        {item.note !== '' && `: ${item.note}`}
+                    </li>
+                ))}
+            </ul>
+            <p className="mt-2 text-[12px] text-rz-secondary">
+                {t('role.apply.flag.still_editable')}
+            </p>
+        </>
     );
 }

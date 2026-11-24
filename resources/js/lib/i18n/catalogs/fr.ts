@@ -205,6 +205,160 @@ const fr: Catalog = {
         'La couche des marchés de capitaux de détail pour les économies émergentes',
     'suite.motto': 'Un seul cœur en direct · chaque surface',
     'suite.section.apps': 'Vos applications',
+    'suite.hub.live': 'En direct',
+    'suite.hub.greeting': 'Bonjour, {name}',
+    'suite.hub.greeting_plain': 'Bienvenue',
+    'suite.hub.summary':
+        'Vous avez terminé {done} étapes sur {total} pour configurer votre compte.',
+    'suite.hub.summary_complete': 'Votre compte est prêt.',
+    'suite.hub.needs_one': '1 action vous attend.',
+    'suite.hub.needs_many': '{count} actions vous attendent.',
+    'suite.hub.setup.title': 'Votre configuration',
+    'suite.hub.setup.percent': '{percent} % terminé',
+    'suite.hub.step.account': 'Compte créé',
+    'suite.hub.step.email': 'E-mail vérifié',
+    'suite.hub.step.kyc': 'Vérification d’identité',
+    'suite.hub.step.role_business': 'Vérification de l’entreprise',
+    'suite.hub.step.role_auditor': 'Vérification de la licence d’auditeur',
+    'suite.hub.step.open_investor': 'Commencer à investir',
+    'suite.hub.step.open_business': 'Ouvrir Entreprise',
+    'suite.hub.step.open_auditor': 'Ouvrir Auditeur',
+    'suite.hub.state.done': 'Terminé',
+    'suite.hub.state.attention': 'Modifications demandées',
+    'suite.hub.state.rejected': 'Non approuvé',
+    'suite.hub.state.review': 'Chez la Conformité',
+    'suite.hub.state.current': 'À faire',
+    'suite.hub.state.upcoming': 'Après approbation',
+    'suite.hub.needs.title': 'Ce qui vous attend',
+    'suite.hub.needs.empty':
+        'Rien ne vous attend pour l’instant. Nous vous préviendrons ici et par e-mail.',
+    'suite.hub.tag.urgent': 'Urgent · de la Conformité',
+    'suite.hub.tag.todo': 'À faire',
+    'suite.hub.tag.recommended': 'Recommandé',
+    'suite.hub.items_label': 'Éléments à modifier',
+    'suite.hub.action.kyc_changes.title':
+        'La Conformité demande des modifications à votre vérification d’identité',
+    'suite.hub.action.kyc_changes.body':
+        'Modifiez les éléments ci-dessous, puis renvoyez-la.',
+    'suite.hub.action.role_changes_business.title':
+        'La Conformité demande des modifications à votre demande d’entreprise',
+    'suite.hub.action.role_changes_auditor.title':
+        'La Conformité demande des modifications à votre demande d’auditeur',
+    'suite.hub.action.role_changes.body':
+        'Modifiez les éléments ci-dessous, puis renvoyez-la. Vous pouvez aussi changer toute autre réponse.',
+    'suite.hub.action.role_rejected_business.title':
+        'Votre demande d’entreprise n’a pas été approuvée',
+    'suite.hub.action.role_rejected_auditor.title':
+        'Votre demande d’auditeur n’a pas été approuvée',
+    'suite.hub.action.role_rejected.body':
+        'Votre compte Investisseur reste inchangé. Vous pouvez corriger vos informations et refaire une demande.',
+    'suite.hub.action.kyc_start.title': 'Vérifiez votre identité',
+    'suite.hub.action.kyc_start.body':
+        'Chaque compte commence ici. Comptez environ 5 minutes avec votre pièce d’identité et un selfie.',
+    'suite.hub.action.kyc_continue.title':
+        'Terminez votre vérification d’identité',
+    'suite.hub.action.kyc_continue.body':
+        'Vous l’avez commencée. Reprenez là où vous vous étiez arrêté.',
+    'suite.hub.action.role_continue_business.title':
+        'Terminez votre demande d’entreprise',
+    'suite.hub.action.role_continue_auditor.title':
+        'Terminez votre demande d’auditeur',
+    'suite.hub.action.role_continue.body':
+        'Envoyez-la à la Conformité une fois vos réponses et documents ajoutés.',
+    'suite.hub.action.two_factor.title': 'Activez la connexion à deux facteurs',
+    'suite.hub.action.two_factor.body':
+        'Protège votre compte et votre portefeuille. 2 minutes avec une application d’authentification.',
+    'suite.hub.action.two_factor.body_auditor':
+        'Les auditeurs en ont besoin pour ouvrir l’application Auditeur. 2 minutes suffisent.',
+    'suite.hub.button.fix': 'Corriger',
+    'suite.hub.button.reapply': 'Revoir et refaire la demande',
+    'suite.hub.button.start': 'Commencer',
+    'suite.hub.button.continue': 'Continuer',
+    'suite.hub.button.setup': 'Configurer',
+    'suite.hub.next.title': 'Et ensuite',
+    'suite.hub.your_business': 'Votre entreprise',
+    'suite.hub.next.kyc_send.title': 'Envoyez votre vérification d’identité',
+    'suite.hub.next.kyc_send.body':
+        'La Conformité l’examine, en général sous 1 jour ouvré.',
+    'suite.hub.next.kyc_resend.title': 'La Conformité revérifie votre identité',
+    'suite.hub.next.kyc_resend.body':
+        'En général sous 1 jour ouvré après l’envoi des corrections. Nous vous écrivons dans tous les cas.',
+    'suite.hub.next.kyc_review.title': 'La Conformité examine votre identité',
+    'suite.hub.next.kyc_review.body':
+        'En général sous 1 jour ouvré. Nous vous écrivons dès la décision.',
+    'suite.hub.next.role_send_business.title':
+        'Envoyez votre demande d’entreprise',
+    'suite.hub.next.role_send_auditor.title':
+        'Envoyez votre demande d’auditeur',
+    'suite.hub.next.role_send_business.body':
+        'La Conformité l’examine une fois votre identité approuvée.',
+    'suite.hub.next.role_send_auditor.body':
+        'La Conformité examine votre licence ICPAR une fois votre identité approuvée.',
+    'suite.hub.next.role_resend.title': 'Renvoyez votre demande',
+    'suite.hub.next.role_resend.body':
+        'Modifiez les éléments cités par la Conformité, puis renvoyez-la. Vous pouvez aussi changer toute autre réponse.',
+    'suite.hub.next.role_review_business.title': '{company} est examinée',
+    'suite.hub.next.role_review_auditor.title':
+        'Votre licence ICPAR est examinée',
+    'suite.hub.next.role_review_business.body':
+        'La Conformité l’examine une fois votre identité approuvée. Nous vous écrivons dès la décision.',
+    'suite.hub.next.role_review_auditor.body':
+        'La Conformité l’examine une fois votre identité approuvée. Nous vous écrivons dès la décision.',
+    'suite.hub.next.role_reapply.title':
+        'Refaites une demande quand vous êtes prêt',
+    'suite.hub.next.role_reapply.body':
+        'Corrigez vos informations et envoyez une nouvelle demande.',
+    'suite.hub.next.role_switch_business.title':
+        'Votre compte passe en Entreprise',
+    'suite.hub.next.role_switch_business.body':
+        'Vous pourrez alors demander un financement. Préparez 12 mois de relevés bancaires pour gagner du temps.',
+    'suite.hub.next.role_switch_auditor.title':
+        'Votre compte passe en Auditeur',
+    'suite.hub.next.role_switch_auditor.body':
+        'Vous pourrez alors recevoir des missions d’audit près de chez vous.',
+    'suite.hub.next.investor_ready.title': 'Parcourez les offres ouvertes',
+    'suite.hub.next.investor_ready.body':
+        'Votre compte est prêt. Ouvrez Investisseur pour voir les entreprises qui lèvent des fonds.',
+    'suite.hub.next.business_ready.title': 'Ouvrir Entreprise',
+    'suite.hub.next.business_ready.body':
+        'Votre entreprise est approuvée. Ouvrez Entreprise pour demander un financement.',
+    'suite.hub.next.auditor_ready.title': 'Ouvrir Auditeur',
+    'suite.hub.next.auditor_ready.body':
+        'Vous êtes Partenaire d’audit actif. Ouvrez Auditeur pour voir vos missions.',
+    'suite.hub.done.title': 'Terminé',
+    'suite.hub.done.account': 'Compte créé',
+    'suite.hub.done.email': 'E-mail vérifié',
+    'suite.hub.done.two_factor': 'Connexion à deux facteurs activée',
+    'suite.hub.done.kyc_sent': 'Vérification d’identité envoyée',
+    'suite.hub.done.kyc_approved': 'Identité vérifiée',
+    'suite.hub.done.role_sent_business': 'Demande d’entreprise envoyée',
+    'suite.hub.done.role_sent_auditor': 'Demande d’auditeur envoyée',
+    'suite.hub.done.role_approved_business': 'Entreprise approuvée',
+    'suite.hub.done.role_approved_auditor': 'Licence ICPAR vérifiée',
+    'suite.hub.recent.title': 'Mises à jour récentes',
+    'suite.hub.recent.empty':
+        'Les mises à jour de la Conformité s’affichent ici.',
+    'suite.hub.recent.emailed': 'Envoyé par e-mail',
+    'suite.hub.help.title': 'Besoin d’aide ?',
+    'suite.hub.help.body': 'Notre équipe répond sous 1 jour ouvré.',
+    'suite.hub.help.contact': 'Contacter le support',
+    'suite.hub.flash.label': 'Urgent',
+    'suite.hub.flash.source': 'Conformité · {time}',
+    'suite.hub.flash.position': '{index} sur {total}',
+    'suite.hub.flash.previous': 'Précédent',
+    'suite.hub.flash.next': 'Suivant',
+    'suite.hub.flash.later': 'Plus tard',
+    'suite.hub.flash.details': 'Voir le détail',
+    'suite.hub.flash.kyc_title':
+        'Votre vérification d’identité doit être modifiée',
+    'suite.hub.flash.role_title_business':
+        'Votre demande d’entreprise doit être modifiée',
+    'suite.hub.flash.role_title_auditor':
+        'Votre demande d’auditeur doit être modifiée',
+    'suite.hub.flash.body_items':
+        'La Conformité a signalé : {items}. Corrigez-les pour que l’examen se termine.',
+    'suite.hub.flash.body':
+        'La Conformité l’a renvoyée. Corrigez-la pour que l’examen se termine.',
     'suite.app.open': "Ouvrir l'application →",
     'suite.app.browse': 'Voir les offres →',
     'suite.app.request_access': "Demander l'accès →",
@@ -272,9 +426,23 @@ const fr: Catalog = {
     'admin.role_applications.decision': 'Décision',
     'admin.role_applications.note': 'Note au demandeur',
     'admin.role_applications.note_hint':
-        'Une note est requise pour renvoyer ou rejeter. Approuver change le rôle du demandeur, qui cesse d’être Investisseur.',
+        'Une note est requise pour refuser. Pour renvoyer, cochez les éléments à modifier ; la note est facultative. Approuver change le rôle du demandeur, qui cesse d’être Investisseur.',
     'admin.role_applications.reject': 'Rejeter',
     'admin.role_applications.more': 'Demander plus',
+    'admin.revision.legend': 'Que doit modifier le demandeur ?',
+    'admin.revision.group.details': 'Informations personnelles et photos',
+    'admin.revision.group.company': 'Entreprise',
+    'admin.revision.group.people': 'Personnes',
+    'admin.revision.group.licence': 'Licence ICPAR',
+    'admin.revision.group.coverage': 'Couverture',
+    'admin.revision.group.documents': 'Documents',
+    'admin.revision.note_label': 'Ce qu’il faut corriger dans {item}',
+    'admin.revision.note_placeholder': 'Ce qu’il faut corriger (facultatif)',
+    'admin.revision.ask_title': 'Demander des modifications',
+    'admin.revision.ask_body':
+        'Cochez chaque élément que le demandeur doit modifier. Il les voit signalés sur son formulaire et reçoit un e-mail et une notification.',
+    'admin.revision.send_one': 'Renvoyer avec 1 élément',
+    'admin.revision.send_many': 'Renvoyer avec {count} éléments',
     'admin.role_applications.approving': 'Approbation…',
     'admin.role_applications.history': 'Historique',
     'suite.app.business.switch':
@@ -417,6 +585,11 @@ const fr: Catalog = {
         'Les auditeurs doivent protéger leur compte par l’authentification à deux facteurs avant d’envoyer leur demande.',
     'role.apply.two_factor.action': 'Ouvrir les paramètres de sécurité',
     'role.apply.asked_for_more': 'La Conformité demande des modifications',
+    'role.apply.flag.change': 'La Conformité vous demande de modifier ceci.',
+    'role.apply.flag.note': 'Conformité : {note}',
+    'role.apply.flag.list_title': 'Modifiez ceci, puis renvoyez :',
+    'role.apply.flag.still_editable':
+        'Vous pouvez aussi changer toute autre réponse avant de renvoyer.',
     'role.apply.rejected': 'Votre dernière demande n’a pas été approuvée',
     'role.apply.send': 'Envoyer à la Conformité',
     'role.apply.sending': 'Envoi…',
@@ -1959,6 +2132,16 @@ const fr: Catalog = {
         'La conformité approuve une vérification d’identité',
     'admin.messaging.trigger.verification.rejected':
         'La conformité renvoie une vérification d’identité',
+    'admin.messaging.trigger.verification.submitted':
+        'Une personne envoie sa vérification d’identité',
+    'admin.messaging.trigger.role.application_submitted':
+        'Une personne envoie une demande Entreprise ou Auditeur',
+    'admin.messaging.trigger.role.application_returned':
+        'La Conformité renvoie une demande Entreprise ou Auditeur',
+    'admin.messaging.trigger.role.application_approved':
+        'La Conformité approuve une demande Entreprise ou Auditeur',
+    'admin.messaging.trigger.role.application_rejected':
+        'La Conformité refuse une demande Entreprise ou Auditeur',
     'admin.messaging.trigger.market.units_bought':
         'Un achat sur le marché secondaire est réglé',
     'admin.messaging.trigger.market.units_sold':
@@ -2052,6 +2235,8 @@ const fr: Catalog = {
     'admin.messaging.rule.raise_fully_funded': 'Levée entièrement financée',
     'admin.messaging.template.account.new_device_sign_in':
         'Connexion depuis un nouvel appareil',
+    'admin.messaging.template.account.onboarding_update':
+        'Mise à jour de l’inscription',
     'admin.messaging.template.account.one_time_code': 'Code à usage unique',
     'admin.messaging.template.account.reset_password':
         'Réinitialisation du mot de passe',
@@ -2410,17 +2595,18 @@ const fr: Catalog = {
     'admin.kyc.command.verification.approve': 'Approuvée par la conformité',
     'admin.kyc.command.verification.reject': 'Rejetée par la conformité',
     'admin.kyc.approve': 'Approuver',
-    'admin.kyc.reject': 'Rejeter',
+    'admin.kyc.reject': 'Renvoyer',
     'admin.kyc.stage.approve.title': 'Approuver cette identité',
     'admin.kyc.stage.approve.body':
         'Cela vérifie la personne et ouvre son accès Investisseur. Indiquez ce que vous avez vérifié.',
     'admin.kyc.stage.approve.cta': "Approuver l'identité",
     'admin.kyc.stage.approve.placeholder':
         'p. ex. La photo, le numéro et le selfie correspondent au titulaire du compte',
-    'admin.kyc.stage.reject.title': 'Rejeter cette demande',
+    'admin.kyc.stage.reject.title':
+        'Renvoyer cette vérification pour modifications',
     'admin.kyc.stage.reject.body':
-        'La personne voit votre motif et peut corriger ses informations.',
-    'admin.kyc.stage.reject.cta': 'Rejeter la demande',
+        'Cochez ce que la personne doit modifier et dites pourquoi. Elle reçoit un e-mail et voit chaque élément signalé sur son formulaire.',
+    'admin.kyc.stage.reject.cta': 'Renvoyer pour modifications',
     'admin.kyc.stage.reject.placeholder':
         'p. ex. La photo de la pièce est floue. Téléversez une photo plus nette.',
     'admin.nav.mail_testers': 'Testeurs e-mail de préproduction',
@@ -5676,6 +5862,9 @@ const fr: Catalog = {
     'investor.kyc.previous': 'Étape précédente',
     'investor.kyc.submitted_notice':
         "Vos informations sont entre les mains de notre équipe Conformité. Nous vous préviendrons une fois l'examen terminé.",
+    'investor.kyc.requested.title': 'La Conformité vous demande de modifier',
+    'investor.kyc.requested.still_editable':
+        'Modifiez ceci, puis renvoyez. Vous pouvez aussi changer toute autre réponse.',
     'investor.kyc.rejected_notice':
         "La Conformité n'a pas pu vérifier ces informations : {reason}. Corrigez-les et soumettez-les à nouveau.",
     'investor.kyc.verifying': 'Vérification de votre identité…',
@@ -8180,6 +8369,27 @@ const fr: Catalog = {
         "Vos informations d'identité doivent être revues",
     'investor.notices.verification.rejected.body':
         "La conformité n'a pas pu vérifier vos informations : {reason}",
+    'investor.notices.verification.submitted.title':
+        'Vérification d’identité reçue',
+    'investor.notices.verification.submitted.body':
+        'La Conformité a vos informations et décide en général sous 1 jour ouvré. Nous vous écrirons.',
+    'investor.notices.role.application_submitted.title': 'Demande reçue',
+    'investor.notices.role.application_submitted.body_business':
+        'La Conformité a la demande pour {company}. Elle sera décidée une fois votre identité approuvée.',
+    'investor.notices.role.application_submitted.body_auditor':
+        'La Conformité a votre demande d’Auditeur. Elle sera décidée une fois votre identité approuvée.',
+    'investor.notices.role.application_returned.title':
+        'La Conformité demande des modifications',
+    'investor.notices.role.application_returned.body':
+        'Modifiez {items}, puis renvoyez votre demande.',
+    'investor.notices.role.application_approved.title': 'Demande approuvée',
+    'investor.notices.role.application_approved.body_business':
+        '{company} est approuvée. Votre compte est désormais un compte Entreprise.',
+    'investor.notices.role.application_approved.body_auditor':
+        'Votre licence ICPAR est approuvée. Votre compte est désormais un compte Auditeur.',
+    'investor.notices.role.application_rejected.title': 'Demande non approuvée',
+    'investor.notices.role.application_rejected.body':
+        'La Conformité n’a pas pu l’approuver : {note}',
     'investor.checkout.risks.title': 'Avant d’investir',
     'investor.checkout.risks.lead':
         'Lisez ces cinq déclarations. Vous les confirmez une seule fois ; le paiement ne vous demandera rien de plus.',

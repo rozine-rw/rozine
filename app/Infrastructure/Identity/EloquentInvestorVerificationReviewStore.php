@@ -13,6 +13,7 @@ use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Identity\InvestorVerificationCase;
 use App\Domain\Identity\PartyNoticeKind;
+use App\Domain\Identity\RevisionItems;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
 use App\Models\InvestorVerification;
@@ -123,6 +124,7 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
                     'command' => (string) $version->getAttribute('command'), 'reason' => $version->getAttribute('reason'),
                     'at' => (string) $version->getAttribute('created_at')?->toIso8601String(),
                 ])->all()),
+            'revisable' => $this->cases->revisable($record->state, $record->purpose),
             'allowed_actions' => $record->status === 'submitted' ? ['approve', 'reject'] : []];
     }
 
@@ -166,13 +168,14 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
     }
 
     /** @return array<string, mixed> */
-    public function reject(int $actorId, string $verificationId, int $expectedRevision, string $reason, string $requestId): array
+    public function reject(int $actorId, string $verificationId, int $expectedRevision, string $reason, string $requestId, array $items = []): array
     {
-        return $this->command($actorId, $verificationId, $expectedRevision, $reason, $requestId, 'reject', function (?int $participant) use ($actorId, $verificationId, $expectedRevision, $reason): OperationResult {
+        return $this->command($actorId, $verificationId, $expectedRevision, $reason, $requestId, 'reject', function (?int $participant) use ($actorId, $verificationId, $expectedRevision, $reason, $items): OperationResult {
             $record = $this->decidable(InvestorVerification::query()->find($verificationId), $expectedRevision);
             $this->locked($record, $participant);
             Party::query()->lockForUpdate()->findOrFail($record->party_id);
-            $decision = $this->decide($verificationId, $expectedRevision, 'rejected', $reason, $actorId);
+            $decision = $this->decide($verificationId, $expectedRevision, 'rejected', $reason, $actorId,
+                RevisionItems::pick($items, $this->cases->revisable($record->state, $record->purpose)));
 
             return new OperationResult('VERIFICATION_REJECTED', ['verification_id' => $verificationId, 'status' => 'rejected'],
                 $decision['revision'], [], self::POLICY_VERSION);
@@ -262,9 +265,10 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
      * rechecks the whole submission and binds the hash-pinned uploads it verified.
      *
      * @param  'approved'|'rejected'  $outcome
+     * @param  list<array{key: string, label: string, note: string}>  $items
      * @return array{verification_id: string, revision: int, documents?: array<string, string>}
      */
-    private function decide(string $verificationId, int $expectedRevision, string $outcome, string $reason, int $actorId): array
+    private function decide(string $verificationId, int $expectedRevision, string $outcome, string $reason, int $actorId, array $items = []): array
     {
         $record = $this->decidable(InvestorVerification::query()->whereKey($verificationId)->lockForUpdate()->first(), $expectedRevision);
         $facts = ['verification_id' => $record->id];
@@ -294,14 +298,21 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
                     'investor-verification:'.$record->id.'@'.$record->revision, $reason);
             }
         }
-        $state = [...$record->state, 'decision' => ['outcome' => $outcome, 'reason' => $reason, 'decided_at' => now()->toIso8601String()]];
+        $state = [...$record->state, 'decision' => ['outcome' => $outcome, 'reason' => $reason, 'decided_at' => now()->toIso8601String(),
+            ...($items === [] ? [] : ['items' => $items])]];
+        // What a send-back asked for stays with the case while the person edits it, since each edit clears the decision.
+        if ($outcome === 'rejected') {
+            $state['revision'] = ['reason' => $reason, 'items' => $items, 'requested_at' => now()->toIso8601String()];
+        }
         $record->forceFill(['revision' => $expectedRevision + 1, 'status' => $outcome, 'state' => $state])->save();
         (new InvestorVerificationVersion)->forceFill(['investor_verification_id' => $record->id, 'revision' => $record->revision,
             'status' => $outcome, 'snapshot' => $state, 'actor_user_id' => $actorId, 'command' => 'verification.'.($outcome === 'approved' ? 'approve' : 'reject'),
             'reason' => $reason, 'policy_version' => self::POLICY_VERSION])->save();
         $this->notices->record($record->party_id, $outcome === 'approved' ? PartyNoticeKind::VerificationApproved : PartyNoticeKind::VerificationRejected,
-            $outcome === 'approved' ? ($record->purpose === 'investor' ? [] : ['purpose' => $record->purpose]) : ['reason' => $reason],
-            'investor-verification:'.$record->id.'@'.$record->revision);
+            $outcome === 'approved' ? ($record->purpose === 'investor' ? [] : ['purpose' => $record->purpose])
+                : ['reason' => $reason],
+            'investor-verification:'.$record->id.'@'.$record->revision, null,
+            array_map(fn (array $item): array => ['label' => $item['label'], 'note' => $item['note']], $items));
 
         return [...$facts, 'revision' => $record->revision];
     }

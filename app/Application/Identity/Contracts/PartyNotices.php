@@ -23,12 +23,14 @@ interface PartyNotices
     /**
      * Records one notice for an event inside the caller's transaction. Replaying an event key
      * records nothing new. An e-mailed kind goes to the named accounts, or, when none are named,
-     * to the Party's own accounts.
+     * to the Party's own accounts. `items` are the answers and documents Compliance asked to change,
+     * kept with the notice's facts and listed in its e-mail.
      *
      * @param  array<string, string>  $facts
      * @param  list<int>|null  $mailTo
+     * @param  list<array{label: string, note: string}>  $items
      */
-    public function record(string $partyId, PartyNoticeKind $kind, array $facts, string $eventKey, ?array $mailTo = null): void;
+    public function record(string $partyId, PartyNoticeKind $kind, array $facts, string $eventKey, ?array $mailTo = null, array $items = []): void;
 
     /**
      * Records one notice for an event on the account itself, for the account's Party; an account

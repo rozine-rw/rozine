@@ -898,6 +898,12 @@ export type KycSubmission = {
     revision: number;
     status: 'draft' | 'submitted' | 'approved' | 'rejected';
     decision_reason: string | null;
+    /** What Compliance asked to change, kept while the person edits the check (24 Nov 2026). */
+    requested_changes?: {
+        reason: string;
+        requested_at: string;
+        items: { key: string; label: string; note: string }[];
+    } | null;
 };
 
 export type InvestorVerificationProps =
@@ -1803,7 +1809,35 @@ export type InvestorNotice = {
               | 'security.payout_account_unlinked';
           facts: { account: string };
       }
-    | { kind: 'verification.rejected'; facts: { reason: string } }
+    | {
+          kind: 'verification.rejected';
+          facts: {
+              reason: string;
+              items?: { label: string; note: string }[];
+          };
+      }
+    | { kind: 'verification.submitted'; facts: never[] }
+    | {
+          kind: 'role.application_submitted' | 'role.application_approved';
+          facts: { role: 'business' | 'auditor'; company: string | null };
+      }
+    | {
+          kind: 'role.application_returned';
+          facts: {
+              role: 'business' | 'auditor';
+              company: string | null;
+              note: string;
+              items: { label: string; note: string }[];
+          };
+      }
+    | {
+          kind: 'role.application_rejected';
+          facts: {
+              role: 'business' | 'auditor';
+              company: string | null;
+              note: string;
+          };
+      }
     | { kind: 'business.deposit_received'; facts: Money }
     | {
           kind: 'business.application_approved';

@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Infrastructure\Identity;
 
 use App\Application\Identity\Contracts\InvestorVerificationStore;
+use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Identity\IdentityViolation;
 use App\Domain\Identity\InvestorVerificationCase;
+use App\Domain\Identity\PartyNoticeKind;
 use App\Domain\Identity\VerificationDocument;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Operations\OperationResult;
@@ -36,6 +38,7 @@ final class EloquentInvestorVerificationStore implements InvestorVerificationSto
         private OperationJournal $journal,
         private InvestorVerificationCase $cases,
         private VerificationDocument $documents,
+        private PartyNotices $notices,
     ) {}
 
     /** @return Submission */
@@ -124,7 +127,10 @@ final class EloquentInvestorVerificationStore implements InvestorVerificationSto
     public function submit(int $userId, int $contextRevision, int $expectedRevision, string $requestId): array
     {
         return $this->execute($userId, $contextRevision, $expectedRevision, 'verification.submit', $requestId, [],
-            fn (array $state, string $status, string $purpose): array => $this->cases->submit($state, $status, now()->toDateTimeImmutable(), $purpose), submitted: true);
+            fn (array $state, string $status, string $purpose): array => $this->cases->submit($state, $status, now()->toDateTimeImmutable(), $purpose),
+            // The person hears straight away that Compliance has it, in the app and by email (24 Nov 2026).
+            fn (InvestorVerification $record) => $this->notices->record($record->party_id, PartyNoticeKind::VerificationSubmitted, [],
+                'investor-verification:'.$record->id.'@'.$record->revision), submitted: true);
     }
 
     /**

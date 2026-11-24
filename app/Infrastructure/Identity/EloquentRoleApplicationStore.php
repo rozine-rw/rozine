@@ -7,9 +7,12 @@ namespace App\Infrastructure\Identity;
 use App\Application\Business\OnboardBusiness;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\AccountClosures;
+use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Identity\Contracts\RoleApplicationStore;
 use App\Application\Operations\Contracts\OperationJournal;
 use App\Domain\Identity\IdentityViolation;
+use App\Domain\Identity\PartyNoticeKind;
+use App\Domain\Identity\RevisionItems;
 use App\Domain\Identity\RoleApplicationCase;
 use App\Domain\Identity\VerificationDocument;
 use App\Domain\Operations\CommandRejection;
@@ -46,6 +49,7 @@ final class EloquentRoleApplicationStore implements RoleApplicationStore
         private VerificationDocument $documents,
         private AuthorizeStaffPermission $staff,
         private AccountClosures $closures,
+        private PartyNotices $notices,
     ) {}
 
     /** @return Standing */
@@ -195,7 +199,7 @@ final class EloquentRoleApplicationStore implements RoleApplicationStore
             'account' => ['name' => (string) $record->getAttribute('account_name'), 'email' => (string) $record->getAttribute('account_email'),
                 'two_factor' => $account?->hasEnabledTwoFactorAuthentication() === true],
             'kyc' => $this->kyc($party), 'kyc_verification_id' => InvestorVerification::query()->where('party_id', $party->id)->value('id'),
-            'state' => $record->state, 'people' => $this->cases->peopleById($record->state),
+            'state' => $record->state, 'people' => $this->cases->peopleById($record->state), 'revisable' => $this->cases->revisable($record->state),
             'documents' => array_values(RoleApplicationDocument::query()->where('role_application_id', $record->id)->orderBy('created_at')->orderBy('id')
                 ->get(['id', 'slot', 'filename', 'media_type', 'size_bytes', 'created_at'])->map(fn (RoleApplicationDocument $document): array => [
                     'id' => $document->id, 'slot' => $document->slot, 'filename' => $document->filename, 'media_type' => $document->media_type,
@@ -223,30 +227,33 @@ final class EloquentRoleApplicationStore implements RoleApplicationStore
     }
 
     /** @return array<string, mixed> */
-    public function decide(int $actorId, string $applicationId, int $expectedRevision, string $decision, string $note, string $requestId, Closure $switch): array
+    public function decide(int $actorId, string $applicationId, int $expectedRevision, string $decision, string $note, string $requestId, Closure $switch, array $items = []): array
     {
         if (! in_array($decision, ['approve', 'more', 'reject'], true)) {
             return ['status' => 'rejected', 'code' => 'DECISION_INVALID', 'field_errors' => [], 'http_status' => 422];
         }
         $note = trim($note);
-        if (($decision !== 'approve' && $note === '') || mb_strlen($note) > 1000) {
-            return ['status' => 'rejected', 'code' => 'DECISION_NOTE_REQUIRED', 'field_errors' => ['note' => ['Tell the applicant what to fix, in at most 1,000 characters.']], 'http_status' => 422];
+        if (($decision === 'reject' && $note === '') || mb_strlen($note) > 1000) {
+            return ['status' => 'rejected', 'code' => 'DECISION_NOTE_REQUIRED', 'field_errors' => ['note' => ['Tell the applicant why, in at most 1,000 characters.']], 'http_status' => 422];
+        }
+        if ($decision === 'more' && $items === []) {
+            return ['status' => 'rejected', 'code' => 'REVISION_ITEMS_REQUIRED', 'field_errors' => ['items' => ['Tick at least one answer or document the applicant must change.']], 'http_status' => 422];
         }
         $role = RoleApplication::query()->whereKey($applicationId)->value('role');
         if (! is_string($role)) {
             return ['status' => 'rejected', 'code' => 'APPLICATION_NOT_FOUND', 'field_errors' => [], 'http_status' => 404];
         }
-        $reason = $note !== '' ? $note : 'Approved after reviewing the application and its documents.';
+        $reason = $note !== '' ? $note : ($decision === 'approve' ? 'Approved after reviewing the application and its documents.' : '');
         try {
-            return DB::transaction(function () use ($actorId, $applicationId, $expectedRevision, $decision, $reason, $requestId, $switch, $role): array {
+            return DB::transaction(function () use ($actorId, $applicationId, $expectedRevision, $decision, $reason, $requestId, $switch, $role, $items): array {
                 $partyId = (string) RoleApplication::query()->whereKey($applicationId)->value('party_id');
                 $participant = $this->participant($partyId);
                 User::query()->whereKey(array_filter([$actorId, $participant]))->orderBy('id')->lockForUpdate()->get();
 
                 return $this->staff->handle($actorId, self::PERMISSIONS[$role], fn (): array => $this->journal->execute('staff:'.$actorId, $actorId,
                     'role.application.'.$decision, $requestId, 'role.application', $applicationId,
-                    ['expected_revision' => $expectedRevision, 'reason' => $reason], static function (): void {},
-                    fn (): OperationResult => $this->underPolicy(fn (): OperationResult => $this->decided($actorId, $applicationId, $expectedRevision, $decision, $reason, $requestId, $participant, $switch))));
+                    ['expected_revision' => $expectedRevision, 'reason' => $reason, 'items' => $items], static function (): void {},
+                    fn (): OperationResult => $this->underPolicy(fn (): OperationResult => $this->decided($actorId, $applicationId, $expectedRevision, $decision, $reason, $requestId, $participant, $switch, $items))));
             }, 3);
         } catch (CommandRejection $exception) {
             return ['status' => 'rejected', 'code' => $exception->reason, 'field_errors' => $exception->fieldErrors, 'http_status' => $exception->status];
@@ -255,8 +262,11 @@ final class EloquentRoleApplicationStore implements RoleApplicationStore
         }
     }
 
-    /** @param  Closure(Approval): (string|null)  $switch */
-    private function decided(int $actorId, string $applicationId, int $expectedRevision, string $decision, string $reason, string $requestId, ?int $participant, Closure $switch): OperationResult
+    /**
+     * @param  Closure(Approval): (string|null)  $switch
+     * @param  list<mixed>  $items
+     */
+    private function decided(int $actorId, string $applicationId, int $expectedRevision, string $decision, string $reason, string $requestId, ?int $participant, Closure $switch, array $items): OperationResult
     {
         $record = RoleApplication::query()->whereKey($applicationId)->lockForUpdate()->first() ?? throw new CommandRejection('APPLICATION_NOT_FOUND', 404);
         if ($record->revision !== $expectedRevision) {
@@ -293,7 +303,9 @@ final class EloquentRoleApplicationStore implements RoleApplicationStore
                 'state' => $state, 'reference' => 'role-application:'.$record->id.'@'.$record->revision, 'request_id' => $requestId,
                 'certificate' => $certificate === null ? null : ['filename' => $certificate->filename, 'content' => $certificate->content]]);
         } else {
-            $state = $this->cases->returned($state, $reason);
+            $picked = $decision === 'more' ? RevisionItems::pick($items, $this->cases->revisable($state)) : [];
+            $reason = $reason !== '' ? $reason : RevisionItems::summary($picked);
+            $state = $this->cases->returned($state, $reason, $picked, now()->toIso8601String());
         }
         $status = match ($decision) {
             'approve' => 'approved',
@@ -305,6 +317,13 @@ final class EloquentRoleApplicationStore implements RoleApplicationStore
         (new RoleApplicationVersion)->forceFill(['role_application_id' => $record->id, 'revision' => $record->revision, 'status' => $status,
             'snapshot' => $state, 'actor_user_id' => $actorId, 'command' => 'application.'.$decision, 'reason' => $reason,
             'policy_version' => self::POLICY_VERSION])->save();
+        $this->notices->record($party->id, match ($decision) {
+            'approve' => PartyNoticeKind::RoleApplicationApproved,
+            'more' => PartyNoticeKind::RoleApplicationReturned,
+            default => PartyNoticeKind::RoleApplicationRejected,
+        }, [...$this->noticeFacts($state), ...($decision === 'approve' ? [] : ['note' => $reason])],
+            'role-application:'.$record->id.'@'.$record->revision, null,
+            $decision === 'more' ? array_map(fn (array $item): array => ['label' => $item['label'], 'note' => $item['note']], $state['revision']['items'] ?? []) : []);
 
         return new OperationResult(match ($decision) {
             'approve' => 'APPLICATION_APPROVED',
@@ -350,6 +369,10 @@ final class EloquentRoleApplicationStore implements RoleApplicationStore
                     (new RoleApplicationVersion)->forceFill(['role_application_id' => $record->id, 'revision' => $record->revision,
                         'status' => $record->status, 'snapshot' => $state, 'actor_user_id' => $userId, 'command' => $command,
                         'policy_version' => self::POLICY_VERSION])->save();
+                    if ($submitted) {
+                        $this->notices->record($party->id, PartyNoticeKind::RoleApplicationSubmitted, $this->noticeFacts($state),
+                            'role-application:'.$record->id.'@'.$record->revision);
+                    }
 
                     return new OperationResult($submitted ? 'APPLICATION_SUBMITTED' : 'APPLICATION_SAVED',
                         ['application_id' => $record->id, 'role' => $record->role, 'status' => $record->status, 'step' => $state['step']], $record->revision, [], self::POLICY_VERSION);
@@ -371,6 +394,24 @@ final class EloquentRoleApplicationStore implements RoleApplicationStore
         } catch (IdentityViolation $violation) {
             throw (new CommandRejection($violation->reason, $violation->status))->underPolicy(self::POLICY_VERSION);
         }
+    }
+
+    /**
+     * What every notice about an application names: the role, and the company for a business.
+     *
+     * @param  State  $state
+     * @return array{role: 'business'|'auditor', company?: string}
+     */
+    private function noticeFacts(array $state): array
+    {
+        $company = $state['answers']['company']['legal_name'] ?? null;
+
+        $facts = ['role' => $state['role']];
+        if ($state['role'] === 'business' && is_string($company) && $company !== '') {
+            $facts['company'] = $company;
+        }
+
+        return $facts;
     }
 
     /** @return array{filename: string, media_type: string, content: string} */

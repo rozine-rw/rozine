@@ -222,7 +222,7 @@ test('rejection keeps the reason for the participant, whose next edit reopens th
         ->and(RoleMembership::query()->count())->toBe(0);
     $this->actingAs($this->officer)->get(route('staff.investor-verifications.index', ['tab' => 'decided', 'verification' => $case->id]))
         ->assertInertia(fn (Assert $page) => $page->hasFlash('toast', ['type' => 'success',
-            'message' => 'Identity rejected. Aline Uwase will see your reason and can correct their details.']));
+            'message' => 'Sent back to Aline Uwase. They have been emailed and see your reason and each item you ticked.']));
 
     $this->actingAs($this->person)->get(route('investor.verification'))
         ->assertInertia(fn (Assert $page) => $page->where('status', 'rejected')->where('decision_reason', 'The ID photo is blurred. Upload a sharper photo.'));
@@ -448,9 +448,10 @@ test('a decision leaves the person one notice and e-mails it once, with a receip
     $this->actingAs($this->officer)->post(route('staff.investor-verifications.'.$outcome, $case), $command)->assertSessionHasNoErrors();
     $this->post(route('staff.investor-verifications.'.$outcome, $case), $command)->assertSessionHasNoErrors();
 
-    $notice = PartyNotice::query()->sole();
+    // Sending the check left its own "received" notice first (24 Nov 2026); the decision adds exactly one more.
+    $notice = PartyNotice::query()->where('kind', '!=', 'verification.submitted')->sole();
     expect([$notice->party_id, $notice->kind, $notice->facts, $notice->read_at])->toBe([$this->person->party_id, $kind, $facts, null])
-        ->and(PartyNoticeDelivery::query()->orderBy('channel')->get(['channel', 'status', 'user_id'])->toArray())->toBe([
+        ->and(PartyNoticeDelivery::query()->where('party_notice_id', $notice->id)->orderBy('channel')->get(['channel', 'status', 'user_id'])->toArray())->toBe([
             ['channel' => 'in_app', 'status' => 'delivered', 'user_id' => null],
             ['channel' => 'mail', 'status' => 'sent', 'user_id' => $this->person->id],
         ]);
@@ -458,7 +459,7 @@ test('a decision leaves the person one notice and e-mails it once, with a receip
     Notification::assertSentTo($this->person, VerificationDecided::class,
         fn (VerificationDecided $mail): bool => $mail->rejectionReason === ($facts['reason'] ?? null));
 
-    $this->actingAs($this->person)->getJson(route('investor.notices'))->assertOk()->assertJsonPath('data.unread', 1)
+    $this->actingAs($this->person)->getJson(route('investor.notices'))->assertOk()->assertJsonPath('data.unread', 2)
         ->assertJsonPath('data.notices.0.kind', $kind)
         ->assertJsonPath('data.notices.0.link.url', $outcome === 'approve' ? '/investor/deals' : '/investor/verification');
 })->with([
@@ -467,18 +468,18 @@ test('a decision leaves the person one notice and e-mails it once, with a receip
 ]);
 
 test('a failed e-mail still leaves the notice, with a failed receipt', function (): void {
+    $case = reviewSubmitted($this->person);
     $sending = Notification::partialMock()->shouldReceive('sendNow');
     if (! $sending instanceof CompositeExpectation) {
         throw new LogicException('Expected a sending expectation.');
     }
     $sending->__call('andThrow', [new RuntimeException('Mail transport down.')]);
-    $case = reviewSubmitted($this->person);
 
     $this->actingAs($this->officer)->post(route('staff.investor-verifications.reject', $case), reviewDecision($case, 'The photo of your ID is blurred.'))
         ->assertSessionHasNoErrors();
 
-    expect(PartyNotice::query()->count())->toBe(1)
-        ->and(PartyNoticeDelivery::query()->where('channel', 'mail')->sole()->only(['status', 'detail']))
+    $notice = PartyNotice::query()->where('kind', 'verification.rejected')->sole();
+    expect(PartyNoticeDelivery::query()->where('party_notice_id', $notice->id)->where('channel', 'mail')->sole()->only(['status', 'detail']))
         ->toBe(['status' => 'failed', 'detail' => RuntimeException::class]);
 });
 

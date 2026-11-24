@@ -7,7 +7,8 @@ namespace App\Domain\Identity;
 /**
  * The in-app notices a Party receives (BRS v2.0 NTF-R01), each from one recorded event. A kind
  * names the facts it carries; the client words them from its catalogs, and the notice opens the
- * screen that already holds the record. A verification result, a refunded raise, a sent withdrawal,
+ * screen that already holds the record. A KYC received, a verification result, a role application received,
+ * sent back with the items to change, approved or rejected (24 Nov 2026), a refunded raise, a sent withdrawal,
  * a confirmed purchase, an issued Holding, a Business's approved application, its expired raise and its monthly reporting window, and an Audit
  * Partner's accreditation decision and job offers are also e-mailed. Rozine's answer to a complaint and its
  * resolution are in-app only, as are a Business's visit-ready checklist notices (D−14, and D−11 for the
@@ -17,6 +18,11 @@ enum PartyNoticeKind: string
 {
     case VerificationApproved = 'verification.approved';
     case VerificationRejected = 'verification.rejected';
+    case VerificationSubmitted = 'verification.submitted';
+    case RoleApplicationSubmitted = 'role.application_submitted';
+    case RoleApplicationReturned = 'role.application_returned';
+    case RoleApplicationApproved = 'role.application_approved';
+    case RoleApplicationRejected = 'role.application_rejected';
     case DepositReceived = 'wallet.deposit_received';
     case WithdrawalSent = 'wallet.withdrawal_sent';
     case PayoutReceived = 'wallet.payout_received';
@@ -59,7 +65,8 @@ enum PartyNoticeKind: string
 
     public function mailed(): bool
     {
-        return in_array($this, [self::VerificationApproved, self::VerificationRejected, self::RaiseRefunded, self::WithdrawalSent,
+        return in_array($this, [self::VerificationApproved, self::VerificationRejected, self::VerificationSubmitted, self::RoleApplicationSubmitted,
+            self::RoleApplicationReturned, self::RoleApplicationApproved, self::RoleApplicationRejected, self::RaiseRefunded, self::WithdrawalSent,
             self::BusinessApplicationApproved, self::BusinessRaiseExpired, self::AuditorAccreditationApproved, self::AuditorAccreditationRejected,
             self::AuditorJobOffered, self::NewDevice, self::ReportPublished, self::CommitmentConfirmed, self::HoldingIssued,
             self::BusinessReportingWindowOpen], true);
@@ -91,7 +98,8 @@ enum PartyNoticeKind: string
     public function category(): string
     {
         return match ($this) {
-            self::VerificationApproved, self::VerificationRejected => 'onboarding',
+            self::VerificationApproved, self::VerificationRejected, self::VerificationSubmitted, self::RoleApplicationSubmitted,
+            self::RoleApplicationReturned, self::RoleApplicationApproved, self::RoleApplicationRejected => 'onboarding',
             self::DepositReceived, self::WithdrawalSent, self::WithdrawalReturned, self::PayoutReceived, self::BusinessDepositReceived, self::BusinessWithdrawalSent,
             self::BusinessWithdrawalReturned => 'wallet',
             self::RaiseRefunded, self::RaiseFunded, self::BusinessRaiseExpired, self::BusinessRaiseFunded => 'fundraising',

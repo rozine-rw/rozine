@@ -97,3 +97,84 @@ it('keeps a held refresh to the named properties', () => {
         expect.objectContaining({ only: ['identity'] }),
     );
 });
+it('asks the pulse while visible and reloads only when the fingerprint changes', async () => {
+    vi.useFakeTimers();
+    const answers: unknown[] = [
+        { version: 'a' },
+        { version: 'a' },
+        { version: 'b' },
+        { nothing: true },
+    ];
+    const fetcher = vi.fn(async () => {
+        const body = answers.shift();
+
+        if (body === undefined) {
+            throw new TypeError('offline');
+        }
+
+        return { ok: true, json: async () => body } as Response;
+    });
+    vi.stubGlobal('fetch', fetcher);
+    const { unmount } = renderHook(() =>
+        useAccessRefresh(['identity', 'hub'], true, true, '/dashboard/version'),
+    );
+    await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(fetcher).toHaveBeenCalledWith(
+        '/dashboard/version',
+        expect.objectContaining({ credentials: 'same-origin' }),
+    );
+    expect(reload).not.toHaveBeenCalled();
+    await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000);
+    });
+    expect(reload).not.toHaveBeenCalled();
+    await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000);
+    });
+    expect(reload).toHaveBeenCalledOnce();
+    expect(reload).toHaveBeenCalledWith(
+        expect.objectContaining({ only: ['identity', 'hub'] }),
+    );
+    // A malformed answer and a network failure change nothing.
+    await act(async () => {
+        await vi.advanceTimersByTimeAsync(10000);
+    });
+    expect(reload).toHaveBeenCalledOnce();
+    // A hidden page does not ask at all.
+    vi.spyOn(document, 'hidden', 'get').mockReturnValue(true);
+    const calls = fetcher.mock.calls.length;
+    await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000);
+    });
+    expect(fetcher).toHaveBeenCalledTimes(calls);
+    unmount();
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+});
+it('ignores an error answer and a late answer after unmounting', async () => {
+    vi.useFakeTimers();
+    let release: (value: Response) => void = () => undefined;
+    const fetcher = vi
+        .fn()
+        .mockResolvedValueOnce({ ok: false } as Response)
+        .mockImplementationOnce(
+            () => new Promise<Response>((resolve) => (release = resolve)),
+        );
+    vi.stubGlobal('fetch', fetcher);
+    const { unmount } = renderHook(() =>
+        useAccessRefresh(null, true, true, '/dashboard/version'),
+    );
+    await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000);
+    });
+    unmount();
+    await act(async () => {
+        release({ ok: true, json: async () => ({ version: 'z' }) } as Response);
+        await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(reload).not.toHaveBeenCalled();
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+});

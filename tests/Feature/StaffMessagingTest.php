@@ -86,7 +86,7 @@ it('lists every automation with its audience and channels, and every email templ
         ->and($automations['security.password_changed']['audience'])->toBe('everyone')
         ->and($automations['support.complaint_resolved']['audience'])->toBe('everyone')
         ->and(array_column($props['templates'], 'audience', 'key'))->toBe([
-            'account.new_device_sign_in' => 'everyone', 'account.one_time_code' => 'everyone', 'account.reset_password' => 'everyone',
+            'account.new_device_sign_in' => 'everyone', 'account.onboarding_update' => 'everyone', 'account.one_time_code' => 'everyone', 'account.reset_password' => 'everyone',
             'account.verify_email' => 'everyone', 'auditor.accreditation_decided' => 'auditor', 'auditor.job_offered' => 'auditor',
             'business.application_decided' => 'business', 'business.disbursement_sent' => 'business', 'business.raise_expired' => 'business',
             'business.repayment_reminder' => 'business', 'business.reporting_window_open' => 'business',

@@ -167,6 +167,11 @@ const review = (
         },
     ],
     links: { close: link('/admin/investor-verifications?tab=submitted') },
+    revisable: {
+        date_of_birth: 'Date of birth',
+        id_front: 'ID front photo',
+        selfie: 'Selfie',
+    },
     actions: {
         approve: {
             url: '/admin/investor-verifications/a/approve',
@@ -483,26 +488,89 @@ describe('Compliance review drawer', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('rejects through the red stage, which can be cancelled', async () => {
+    it('sends a check back through the red stage, which can be cancelled', async () => {
         const { user } = renderWithUser(
             <AdminInvestorVerifications {...queue({ review: review() })} />,
         );
 
-        await user.click(screen.getByRole('button', { name: 'Reject' }));
+        await user.click(screen.getByRole('button', { name: 'Send back' }));
         const stage = screen.getByRole('form', {
-            name: 'Reject this submission',
+            name: 'Send this check back for changes',
         });
         expect(stage).toHaveClass('border-[#e5484d]');
         expect(
             within(stage).getByText(
-                'The person sees your reason and can correct their details.',
+                'Tick what the person must change and say why. They are emailed and see each item flagged on their form.',
             ),
         ).toBeInTheDocument();
         await user.click(within(stage).getByRole('button', { name: 'Cancel' }));
         expect(
-            screen.getByRole('button', { name: 'Reject' }),
+            screen.getByRole('button', { name: 'Send back' }),
         ).toBeInTheDocument();
         expect(inertia.posts).toEqual([]);
+    });
+
+    it('names each item to change, with an optional word on each, before sending the check back', async () => {
+        const { user } = renderWithUser(
+            <AdminInvestorVerifications {...queue({ review: review() })} />,
+        );
+
+        await user.click(screen.getByRole('button', { name: 'Send back' }));
+        const stage = screen.getByRole('form', {
+            name: 'Send this check back for changes',
+        });
+        const send = within(stage).getByRole('button', {
+            name: 'Send back for changes',
+        });
+        await user.type(
+            within(stage).getByLabelText('Reason for the record'),
+            'The selfie is too dark.',
+        );
+        expect(send).toBeDisabled();
+        expect(
+            within(stage).getByText('Personal details and photos'),
+        ).toBeInTheDocument();
+        await user.click(within(stage).getByLabelText('Selfie'));
+        await user.click(within(stage).getByLabelText('ID front photo'));
+        await user.type(
+            within(stage).getByLabelText('What to fix in Selfie'),
+            'Use daylight.',
+        );
+        await user.click(within(stage).getByLabelText('ID front photo'));
+        expect(send).toBeEnabled();
+        await user.click(send);
+        expect(inertia.posts[0]).toMatchObject({
+            url: '/admin/investor-verifications/a/reject',
+            data: {
+                reason: 'The selfie is too dark.',
+                items: [{ key: 'selfie', note: 'Use daylight.' }],
+            },
+        });
+    });
+
+    it('shows a refused item under the picker', async () => {
+        inertia.errors = {
+            'items.0.note': 'Keep each note to at most 300 characters.',
+        };
+        const { user } = renderWithUser(
+            <AdminInvestorVerifications {...queue({ review: review() })} />,
+        );
+
+        await user.click(screen.getByRole('button', { name: 'Send back' }));
+        expect(
+            screen.getByText('Keep each note to at most 300 characters.'),
+        ).toBeInTheDocument();
+        inertia.errors = {
+            items: 'Choose the items to change from this application.',
+        };
+        await user.click(screen.getByRole('button', { name: 'Cancel' }));
+        await user.click(screen.getByRole('button', { name: 'Send back' }));
+        expect(
+            screen.getByText(
+                'Choose the items to change from this application.',
+            ),
+        ).toBeInTheDocument();
+        inertia.errors = {};
     });
 
     it('shows the server refusal and only the actions the server sends', () => {
@@ -531,7 +599,7 @@ describe('Compliance review drawer', () => {
             screen.getByRole('button', { name: 'Approve' }),
         ).toBeInTheDocument();
         expect(
-            screen.queryByRole('button', { name: 'Reject' }),
+            screen.queryByRole('button', { name: 'Send back' }),
         ).not.toBeInTheDocument();
 
         inertia.errors = {};
@@ -594,7 +662,7 @@ describe('Compliance review drawer', () => {
         expect(within(drawer).getByText('Reopened')).toBeInTheDocument();
         expect(within(drawer).queryByText('Submitted')).not.toBeInTheDocument();
         expect(
-            screen.queryByRole('button', { name: 'Reject' }),
+            screen.queryByRole('button', { name: 'Send back' }),
         ).not.toBeInTheDocument();
     });
 });
