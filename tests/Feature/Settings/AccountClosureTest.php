@@ -325,3 +325,18 @@ test('an Audit Partner with an unfinished report cannot close', function () {
 
     expect(closureBlockers($user))->toContain('AUDITOR_REPORTS_PENDING');
 });
+
+test('closing an account ends its roles, so an auditor on a closed account is no longer active (#746)', function () {
+    $user = User::factory()->create(['party_id' => Party::factory()]);
+    DB::table('role_memberships')->insert([
+        ['id' => strtolower((string) Str::ulid()), 'party_id' => $user->party_id, 'role' => 'auditor', 'status' => 'active', 'revision' => 2, 'created_at' => now(), 'updated_at' => now()],
+        ['id' => strtolower((string) Str::ulid()), 'party_id' => $user->party_id, 'role' => 'investor', 'status' => 'revoked', 'revision' => 3, 'created_at' => now(), 'updated_at' => now()],
+    ]);
+
+    $this->actingAs($user)->post(route('account-closure.store'), ['password' => 'password', 'confirmation' => 'delete'])->assertSessionHasNoErrors();
+
+    expect(DB::table('role_memberships')->where('party_id', $user->party_id)->orderBy('role')->get(['role', 'status', 'revision'])
+        ->map(fn ($row): array => [(string) $row->role, (string) $row->status, (int) $row->revision])->all())
+        ->toBe([['auditor', 'revoked', 3], ['investor', 'revoked', 3]])
+        ->and(IdentityAuditEvent::query()->where('action', 'account.close')->sole()->after['roles_ended'])->toBe(['auditor']);
+});

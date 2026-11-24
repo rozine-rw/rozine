@@ -163,7 +163,7 @@ export function UserDrawer({
                 <section aria-label={t('admin.users.roles_title')}>
                     <h3 className={SECTION}>{t('admin.users.roles_title')}</h3>
                     <div className={cn(BOX, 'mt-2.5 px-4 py-3.5')}>
-                        <UserRoleChips row={user} />
+                        <UserRoleChips row={user} current />
                         {user.memberships.length > 0 && (
                             <ul className="mt-3 space-y-1.5">
                                 {user.memberships.map((membership) => (

@@ -306,7 +306,9 @@ test('everyone\'s own KYC is reviewed and approved from the account\'s drawer on
 
     $this->actingAs($this->officer)->get(route('staff.users.index', ['user' => $this->person->id]))->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->component('admin/users')->where('kyc_review.id', $case->id)
-            ->where('kyc_review.status', 'submitted')->has('kyc_review.actions.approve'));
+            ->where('kyc_review.status', 'submitted')->has('kyc_review.actions.approve')
+            // With no live session the account still shows when it last acted: here, sending its KYC.
+            ->where('user.last_seen_at', fn (?string $seen): bool => is_string($seen)));
 
     $this->post(route('staff.investor-verifications.approve', $case), ['request_id' => (string) Str::uuid(), 'expected_revision' => $case->revision,
         'reason' => 'Passport and selfie match.', 'return_to' => 'users', 'return_user' => $this->person->id])
