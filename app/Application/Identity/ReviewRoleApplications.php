@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Identity;
 
 use App\Application\Auditor\Contracts\AuditorProfileStore;
+use App\Application\Business\Contracts\BusinessContacts;
 use App\Application\Business\OnboardBusiness;
 use App\Application\Identity\Contracts\IdentityAccessStore;
 use App\Application\Identity\Contracts\RoleApplicationStore;
@@ -28,6 +29,7 @@ final class ReviewRoleApplications
         private OnboardBusiness $onboarding,
         private IdentityAccessStore $access,
         private AuditorProfileStore $auditors,
+        private BusinessContacts $contacts,
     ) {}
 
     /** @return Queue */
@@ -105,6 +107,9 @@ final class ReviewRoleApplications
         if ($result['status'] !== 'completed') {
             throw new CommandRejection($result['code'], 409);
         }
+        $this->contacts->adopt($result['business_id'], $approval['party_id'], ['email' => $approval['email'], 'phone' => $company['phone'],
+            'province' => $company['province'], 'district' => $company['district'], 'sector' => $company['sector'],
+            'cell' => $company['cell'], 'street' => $company['street']]);
         $this->access->switchRole($actorId, 'businesses.verify', $approval['party_id'], 'business', $reason, self::derived($approval['request_id'], 'switch'));
 
         return $result['business_id'];
@@ -118,7 +123,8 @@ final class ReviewRoleApplications
         $reason = 'Auditor licence approved after checking the ICPAR register.';
         $this->access->switchRole($actorId, 'audit.partners.verify', $approval['party_id'], 'auditor', $reason, self::derived($approval['request_id'], 'switch'));
         $this->auditors->accreditFromIdentityCheck($actorId, $approval['party_id'], $licence['licence_number'], $licence['expires_on'],
-            $certificate['filename'], $certificate['content'], $approval['reference'], $reason);
+            $certificate['filename'], $certificate['content'], $approval['reference'], $reason,
+            $approval['state']['answers']['coverage']['districts'] ?? [], $approval['state']['answers']['address'] ?? null);
 
         return null;
     }

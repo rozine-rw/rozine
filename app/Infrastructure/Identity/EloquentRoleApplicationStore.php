@@ -469,13 +469,13 @@ final class EloquentRoleApplicationStore implements RoleApplicationStore
         return OnboardBusiness::sectors();
     }
 
-    /** @return list<string> */
+    /** @return array<string, list<string>> the districts of each province */
     private function districts(): array
     {
-        /** @var list<string> $districts */
-        $districts = array_merge(...array_values((array) config('rwanda.districts', [])));
+        /** @var array<string, list<string>> $provinces */
+        $provinces = (array) config('rwanda.districts', []);
 
-        return $districts;
+        return $provinces;
     }
 
     /**

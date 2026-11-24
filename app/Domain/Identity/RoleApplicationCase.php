@@ -16,14 +16,17 @@ use App\Domain\Operations\CommandRejection;
  *
  * @phpstan-type Person array{full_name: string, id_type: 'national_id'|'passport', id_number: string, nationality: string}
  * @phpstan-type Owner array{full_name: string, id_type: 'national_id'|'passport', id_number: string, nationality: string, ownership_pct: string, pep: bool}
+ *
+ * @phpstan-import-type Address from RwandaAddress
+ *
  * @phpstan-type Company array{legal_name: string, rdb_code: string, tin: string, company_type: string, incorporation_date: string, industry: string,
- *     district: string, registered_address: string, phone: string}
+ *     province: string, district: string, sector: string, cell: string, street: string, phone: string}
  * @phpstan-type Representative array{title: string, phone: string, authorised: bool}
  * @phpstan-type Licence array{membership_number: string, licence_number: string, expires_on: string, firm: string}
  * @phpstan-type Coverage array{districts: list<string>, no_conflicts: bool, will_declare: bool, ethics: bool}
  * @phpstan-type Answers array{
  *     company?: Company, representative?: Representative, directors?: list<Person>, owners?: list<Owner>,
- *     licence?: Licence, coverage?: Coverage, declared: bool
+ *     licence?: Licence, address?: Address, coverage?: Coverage, declared: bool
  * }
  * @phpstan-type RevisionItem array{key: string, label: string, note: string}
  * @phpstan-type Revision array{note: string|null, items: list<RevisionItem>, requested_at: string, before?: array{answers: Answers, documents: array<string, string>}}
@@ -70,17 +73,17 @@ final class RoleApplicationCase
      * @param  State  $state
      * @param  array<string, mixed>  $input
      * @param  list<string>  $industries
-     * @param  list<string>  $districts
+     * @param  array<string, list<string>>  $provinces  the districts of each province
      * @return State
      */
-    public function save(array $state, string $status, string $step, array $input, string $today, array $industries, array $districts): array
+    public function save(array $state, string $status, string $step, array $input, string $today, array $industries, array $provinces): array
     {
         $this->editable($status);
         $this->reachable($state, $step);
         $errors = [];
         switch ($step) {
             case 'company':
-                [$state['answers']['company'], $errors] = $this->company($input, $today, $industries, $districts);
+                [$state['answers']['company'], $errors] = $this->company($input, $today, $industries, $provinces);
                 break;
             case 'people':
                 [$state['answers']['representative'], $representative] = $this->representative($input['representative'] ?? null);
@@ -96,7 +99,9 @@ final class RoleApplicationCase
                 $errors = [...$licence, ...$this->missingDocuments($state)];
                 break;
             case 'coverage':
-                [$state['answers']['coverage'], $errors] = $this->coverage($input, $districts);
+                [$state['answers']['address'], $address] = RwandaAddress::fromInput(is_array($input['address'] ?? null) ? $input['address'] : [], $provinces, 'address.');
+                [$state['answers']['coverage'], $coverage] = $this->coverage($input, $provinces);
+                $errors = [...$address, ...$coverage];
                 break;
             default:
                 throw new CommandRejection('APPLICATION_STEP_INVALID', 422, fieldErrors: ['step' => ['Send the application from the review step.']]);
@@ -137,13 +142,13 @@ final class RoleApplicationCase
      *
      * @param  State  $state
      * @param  list<string>  $industries
-     * @param  list<string>  $districts
+     * @param  array<string, list<string>>  $provinces  the districts of each province
      * @return State
      */
-    public function submit(array $state, string $status, bool $declared, string $today, array $industries, array $districts): array
+    public function submit(array $state, string $status, bool $declared, string $today, array $industries, array $provinces): array
     {
         $this->editable($status);
-        $errors = $this->problems($state, $today, $industries, $districts);
+        $errors = $this->problems($state, $today, $industries, $provinces);
         if (! $declared) {
             $errors['declared'] = ['Confirm that everything you have given is true and complete.'];
         }
@@ -162,21 +167,21 @@ final class RoleApplicationCase
      *
      * @param  State  $state
      * @param  list<string>  $industries
-     * @param  list<string>  $districts
+     * @param  array<string, list<string>>  $provinces  the districts of each province
      * @return array<string, list<string>>
      */
-    public function problems(array $state, string $today, array $industries, array $districts): array
+    public function problems(array $state, string $today, array $industries, array $provinces): array
     {
         $answers = $state['answers'];
         if ($state['role'] === 'business') {
-            return [...$this->company($answers['company'] ?? [], $today, $industries, $districts)[1],
+            return [...$this->company($answers['company'] ?? [], $today, $industries, $provinces)[1],
                 ...$this->representative($answers['representative'] ?? null)[1],
                 ...$this->people($answers['directors'] ?? null, 'directors', false)[1],
                 ...$this->people($answers['owners'] ?? null, 'owners', true)[1], ...$this->missingDocuments($state)];
         }
 
-        return [...$this->licence($answers['licence'] ?? [], $today)[1], ...$this->coverage($answers['coverage'] ?? [], $districts)[1],
-            ...$this->missingDocuments($state)];
+        return [...$this->licence($answers['licence'] ?? [], $today)[1], ...RwandaAddress::fromInput($answers['address'] ?? [], $provinces, 'address.')[1],
+            ...$this->coverage($answers['coverage'] ?? [], $provinces)[1], ...$this->missingDocuments($state)];
     }
 
     /**
@@ -271,12 +276,12 @@ final class RoleApplicationCase
     {
         if ($state['role'] === 'auditor') {
             return ['licence.membership_number' => 'ICPAR membership number', 'licence.licence_number' => 'Practising certificate number',
-                'licence.expires_on' => 'Licence valid until', 'licence.firm' => 'Audit firm', 'coverage.districts' => 'Districts you can cover',
+                'licence.expires_on' => 'Licence valid until', 'licence.firm' => 'Audit firm', 'address' => 'Registered address', 'coverage.districts' => 'Districts you accept',
                 'coverage.declarations' => 'Conflicts and ethics declarations', 'documents.practising_certificate' => 'ICPAR practising certificate'];
         }
         $items = ['company.legal_name' => 'Company legal name', 'company.rdb_code' => 'RDB company code', 'company.tin' => 'TIN',
             'company.company_type' => 'Company type', 'company.incorporation_date' => 'Date of incorporation', 'company.industry' => 'Sector',
-            'company.district' => 'District', 'company.registered_address' => 'Registered address', 'company.phone' => 'Company phone',
+            'company.address' => 'Registered address', 'company.phone' => 'Company phone',
             'representative' => 'Your title, phone and authority', 'directors' => 'Directors', 'owners' => 'Beneficial owners',
             'documents.rdb_certificate' => 'RDB registration certificate', 'documents.tin_certificate' => 'TIN certificate',
             'documents.articles' => 'Articles of Association', 'documents.shareholder_register' => 'Shareholder register',
@@ -318,17 +323,18 @@ final class RoleApplicationCase
     /**
      * @param  array<string, mixed>  $input
      * @param  list<string>  $industries
-     * @param  list<string>  $districts
+     * @param  array<string, list<string>>  $provinces  the districts of each province
      * @return array{0: Company, 1: array<string, list<string>>}
      */
-    private function company(array $input, string $today, array $industries, array $districts): array
+    private function company(array $input, string $today, array $industries, array $provinces): array
     {
         $text = fn (string $key, int $max = 180): string => mb_substr(trim($this->text($input[$key] ?? '')), 0, $max);
         $digits = fn (string $key): string => (string) preg_replace('/\s+/', '', $this->text($input[$key] ?? ''));
         $company = ['legal_name' => $text('legal_name'), 'rdb_code' => $digits('rdb_code'), 'tin' => $digits('tin'),
             'company_type' => $text('company_type', 40), 'incorporation_date' => $text('incorporation_date', 10), 'industry' => $text('industry', 60),
-            'district' => $text('district', 60), 'registered_address' => $text('registered_address', 255), 'phone' => $text('phone', 32)];
-        $errors = [];
+            'province' => '', 'district' => '', 'sector' => '', 'cell' => '', 'street' => '', 'phone' => $text('phone', 32)];
+        [$address, $errors] = RwandaAddress::fromInput($input, $provinces, 'company.');
+        $company = [...$company, ...$address];
         if ($company['legal_name'] === '') {
             $errors['company.legal_name'] = ['Enter the company’s registered name, as on the RDB certificate.'];
         }
@@ -346,12 +352,6 @@ final class RoleApplicationCase
         }
         if (! in_array($company['industry'], $industries, true)) {
             $errors['company.industry'] = ['Choose the sector.'];
-        }
-        if (! in_array($company['district'], $districts, true)) {
-            $errors['company.district'] = ['Choose the district of the registered office.'];
-        }
-        if ($company['registered_address'] === '') {
-            $errors['company.registered_address'] = ['Enter the registered office address.'];
         }
         if (! self::rwandanPhone($company['phone'])) {
             $errors['company.phone'] = ['Enter the company phone number, for example +250 788 000 000.'];
@@ -489,11 +489,12 @@ final class RoleApplicationCase
 
     /**
      * @param  array<string, mixed>  $input
-     * @param  list<string>  $districts
+     * @param  array<string, list<string>>  $provinces  the districts of each province
      * @return array{0: Coverage, 1: array<string, list<string>>}
      */
-    private function coverage(array $input, array $districts): array
+    private function coverage(array $input, array $provinces): array
     {
+        $districts = array_merge(...array_values($provinces));
         $chosen = is_array($input['districts'] ?? null) ? array_values(array_unique(array_filter($input['districts'], 'is_string'))) : [];
         $coverage = ['districts' => array_values(array_intersect($chosen, $districts)),
             'no_conflicts' => filter_var($input['no_conflicts'] ?? false, FILTER_VALIDATE_BOOLEAN),
@@ -501,7 +502,7 @@ final class RoleApplicationCase
             'ethics' => filter_var($input['ethics'] ?? false, FILTER_VALIDATE_BOOLEAN)];
         $errors = [];
         if ($coverage['districts'] === [] || count($coverage['districts']) !== count($chosen)) {
-            $errors['coverage.districts'] = ['Choose the districts you can cover.'];
+            $errors['coverage.districts'] = ['Choose the districts you accept audits in.'];
         }
         foreach (['no_conflicts' => 'Confirm you have no conflict with a business raising on Rozine.',
             'will_declare' => 'Confirm you will declare any new conflict before an audit.',

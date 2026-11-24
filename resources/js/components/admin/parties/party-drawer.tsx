@@ -8,7 +8,6 @@ import {
 import { KycReview } from '@/components/admin/kyc-review';
 import { BusinessAuditSection } from '@/components/admin/parties/business-audit';
 import { KYC_TONE } from '@/components/admin/parties/directory-table';
-import { DispatchLocationSection } from '@/components/admin/parties/dispatch-location';
 import { ReasonStage } from '@/components/admin/reason-stage';
 import type { StageTone } from '@/components/admin/reason-stage';
 import { TrailList } from '@/components/admin/trail-list';
@@ -74,6 +73,65 @@ const VERIFY =
     'h-[38px] flex-1 rounded-[10px] bg-[#157357] text-[12.5px] font-bold text-white';
 const REJECT =
     'h-[38px] flex-1 rounded-[10px] border border-[#fdeaea] bg-rz-surface text-[12.5px] font-bold text-[#b3352a] dark:border-[rgba(255,107,111,.3)] dark:text-[#ff6b6f]';
+
+/**
+ * What dispatch matches an Audit Partner on (Erastus, 24 Nov 2026): whether they accept audits, the
+ * districts they accept, their weekly limit and their registered address. Audits are offered when
+ * a Business's district is one of theirs; there is no office location to verify.
+ */
+function PartnerCoverage({
+    coverage,
+}: {
+    coverage: NonNullable<PartyDetail['coverage']>;
+}) {
+    const { t } = useTranslation();
+    const rows: [string, string][] = [
+        [
+            t('admin.parties.coverage.status'),
+            coverage.accepting
+                ? t('admin.parties.coverage.accepting')
+                : t('admin.parties.coverage.paused'),
+        ],
+        [
+            t('admin.parties.coverage.districts'),
+            coverage.districts.length === 0
+                ? t('admin.parties.coverage.none')
+                : coverage.districts.join(', '),
+        ],
+        [
+            t('admin.parties.coverage.weekly'),
+            String(coverage.max_jobs_per_week),
+        ],
+        [
+            t('admin.parties.coverage.address'),
+            coverage.address_line ?? t('admin.parties.coverage.no_address'),
+        ],
+    ];
+
+    return (
+        <section
+            aria-label={t('admin.parties.coverage.title')}
+            className="mb-5"
+        >
+            <h3 className={SECTION}>{t('admin.parties.coverage.title')}</h3>
+            <dl className={cn(BOX, 'mt-2.5 px-4 py-1')}>
+                {rows.map(([label, value]) => (
+                    <div
+                        key={label}
+                        className="flex items-start justify-between gap-4 border-b border-rz-hairline py-2.5 last:border-b-0"
+                    >
+                        <dt className="shrink-0 text-[13px] text-rz-slate">
+                            {label}
+                        </dt>
+                        <dd className="text-right text-[13px] font-semibold text-rz-ink">
+                            {value}
+                        </dd>
+                    </div>
+                ))}
+            </dl>
+        </section>
+    );
+}
 
 function ListDetail({ detail }: { detail: PartyListRow['detail'] }) {
     const { t } = useTranslation();
@@ -599,23 +657,8 @@ export function PartyDrawer({
                                 </div>
                             </section>
                         )}
-                        {party.office && (
-                            <DispatchLocationSection
-                                kind="office"
-                                location={party.office}
-                                viewer={viewer}
-                                section={SECTION}
-                                box={BOX}
-                            />
-                        )}
-                        {party.premises && (
-                            <DispatchLocationSection
-                                kind="premises"
-                                location={party.premises}
-                                viewer={viewer}
-                                section={SECTION}
-                                box={BOX}
-                            />
+                        {party.coverage && (
+                            <PartnerCoverage coverage={party.coverage} />
                         )}
                         {party.audit && (
                             <BusinessAuditSection

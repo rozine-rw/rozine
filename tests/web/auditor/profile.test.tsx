@@ -576,9 +576,25 @@ describe('Auditor Profile', () => {
                 'You appear in the dispatch pool and can be offered flash audits.',
             ),
         ).toBeInTheDocument();
-        expect(screen.getByText('Jobs at a time')).toBeInTheDocument();
-        expect(screen.getByText('3')).toBeInTheDocument();
-        expect(screen.getByText('30km')).toBeInTheDocument();
+        expect(screen.getByText('Max jobs per week')).toBeInTheDocument();
+        expect(screen.getByText('4')).toBeInTheDocument();
+        expect(screen.queryByText(/km/u)).not.toBeInTheDocument();
+
+        const chips = within(
+            screen.getByRole('group', { name: 'Districts you accept' }),
+        ).getAllByRole('button');
+
+        expect(chips).toHaveLength(30);
+        expect(
+            chips
+                .filter((chip) => chip.getAttribute('aria-pressed') === 'true')
+                .map((chip) => chip.textContent),
+        ).toEqual(['Gasabo', 'Kicukiro', 'Nyarugenge']);
+        expect(
+            screen.getByText(
+                '3 of 30 districts · Gasabo, Kicukiro, Nyarugenge',
+            ),
+        ).toBeInTheDocument();
 
         await user.click(
             screen.getByRole('switch', { name: 'Accepting audits' }),
@@ -587,6 +603,66 @@ describe('Auditor Profile', () => {
             url: '/preview/auditor-profile',
             body: { accepting: false, expected_revision: 5 },
         });
+    });
+
+    it('adds a district in Rwanda order and changes the weekly limit, each as one saved change', async () => {
+        const view = renderWithUser(
+            <AuditorProfile {...props(availabilityFixture)} />,
+        );
+
+        await view.user.click(screen.getByRole('button', { name: 'Huye' }));
+        expect(inertia.calls[0]).toMatchObject({
+            url: '/preview/auditor-profile',
+            body: {
+                accepting: true,
+                districts: ['Gasabo', 'Kicukiro', 'Nyarugenge', 'Huye'],
+                max_jobs_per_week: 4,
+                expected_revision: 5,
+            },
+        });
+        view.unmount();
+
+        const utils = renderWithUser(
+            <AuditorProfile {...props(availabilityFixture)} />,
+        );
+
+        await utils.user.click(
+            screen.getByRole('button', { name: 'One more job per week' }),
+        );
+        expect(inertia.calls.at(-1)).toMatchObject({
+            body: {
+                districts: ['Gasabo', 'Kicukiro', 'Nyarugenge'],
+                max_jobs_per_week: 5,
+            },
+        });
+    });
+
+    it('warns that no audits can be offered without a district and keeps the limit within 1 to 20', () => {
+        const base = props(availabilityFixture);
+
+        render(
+            <AuditorProfile
+                {...base}
+                availability={{
+                    ...base.availability,
+                    districts: [],
+                    max_jobs_per_week: 20,
+                }}
+            />,
+        );
+
+        expect(
+            screen.getByText(
+                'Choose at least one district. Until you do, no audits can be offered to you.',
+            ),
+        ).toBeInTheDocument();
+        expect(screen.getByText('0 of 30 districts')).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'One more job per week' }),
+        ).toBeDisabled();
+        expect(
+            screen.getByRole('button', { name: 'One fewer job per week' }),
+        ).toBeEnabled();
     });
 
     it('keeps the switch still, with a note, when the server does not offer the change', () => {
@@ -633,9 +709,57 @@ describe('Auditor Profile', () => {
             'Not provided',
             'diane.uwase@uwaseco.rw',
             'Not provided',
-            'Not provided',
+            'Gasabo, Kicukiro, Nyarugenge',
         ]);
         expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    });
+
+    it('records a registered address from province, a district of that province, sector, cell and street', async () => {
+        const { user } = renderWithUser(
+            <AuditorProfile {...props(contactFixture)} />,
+        );
+
+        await user.click(
+            screen.getByRole('button', { name: 'Add your registered address' }),
+        );
+        await user.selectOptions(screen.getByLabelText('Province'), 'Southern');
+
+        const district = screen.getByLabelText('District');
+
+        expect(
+            within(district)
+                .getAllByRole('option')
+                .map((option) => option.textContent),
+        ).toEqual([
+            'Select district',
+            'Gisagara',
+            'Huye',
+            'Kamonyi',
+            'Muhanga',
+            'Nyamagabe',
+            'Nyanza',
+            'Nyaruguru',
+            'Ruhango',
+        ]);
+        await user.selectOptions(district, 'Huye');
+        await user.type(screen.getByLabelText('Sector'), 'Ngoma');
+        await user.type(screen.getByLabelText('Cell'), 'Butare');
+        await user.type(screen.getByLabelText('Street'), 'KG 5 Ave');
+        await user.click(screen.getByRole('button', { name: 'Save address' }));
+
+        expect(inertia.calls[0]).toMatchObject({
+            url: '/auditor/address',
+            body: {
+                address: {
+                    province: 'Southern',
+                    district: 'Huye',
+                    sector: 'Ngoma',
+                    cell: 'Butare',
+                    street: 'KG 5 Ave',
+                },
+                expected_revision: 5,
+            },
+        });
     });
 
     it('measures on-time closing and the jobs done, and dashes what is not measured', () => {

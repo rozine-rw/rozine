@@ -357,11 +357,20 @@ export function RoleApplicationDrawer({
                             <Fact label={t('role.apply.company.sector')}>
                                 {answers.company.industry}
                             </Fact>
+                            <Fact label={t('role.apply.address.province')}>
+                                {answers.company.province}
+                            </Fact>
                             <Fact label={t('role.apply.company.district')}>
                                 {answers.company.district}
                             </Fact>
-                            <Fact label={t('role.apply.company.address')}>
-                                {answers.company.registered_address}
+                            <Fact label={t('role.apply.address.sector')}>
+                                {answers.company.sector}
+                            </Fact>
+                            <Fact label={t('role.apply.address.cell')}>
+                                {answers.company.cell}
+                            </Fact>
+                            <Fact label={t('role.apply.address.street')}>
+                                {answers.company.street}
                             </Fact>
                             <Fact label={t('role.apply.company.phone')}>
                                 {answers.company.phone}
@@ -426,6 +435,25 @@ export function RoleApplicationDrawer({
                                 {answers.licence.firm}
                             </Fact>
                         </dl>
+                        {answers.address && (
+                            <dl className="mt-2 grid grid-cols-2 gap-2">
+                                <Fact label={t('role.apply.address.province')}>
+                                    {answers.address.province}
+                                </Fact>
+                                <Fact label={t('role.apply.company.district')}>
+                                    {answers.address.district}
+                                </Fact>
+                                <Fact label={t('role.apply.address.sector')}>
+                                    {answers.address.sector}
+                                </Fact>
+                                <Fact label={t('role.apply.address.cell')}>
+                                    {answers.address.cell}
+                                </Fact>
+                                <Fact label={t('role.apply.address.street')}>
+                                    {answers.address.street}
+                                </Fact>
+                            </dl>
+                        )}
                         {answers.coverage && (
                             <p className="mt-2 text-[12.5px] text-rz-body">
                                 {t('role.apply.coverage.districts')}:{' '}

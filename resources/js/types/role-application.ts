@@ -31,9 +31,22 @@ export type RoleApplicationCompany = {
     company_type: string;
     incorporation_date: string;
     industry: string;
+    province: string;
     district: string;
-    registered_address: string;
+    sector: string;
+    cell: string;
+    /** Empty where the premises has no street name. */
+    street: string;
     phone: string;
+};
+
+/** A registered address in Rwanda, as the forms collect it (Erastus, 24 Nov 2026). */
+export type RoleApplicationAddress = {
+    province: string;
+    district: string;
+    sector: string;
+    cell: string;
+    street: string;
 };
 
 export type RoleApplicationAnswers = {
@@ -47,6 +60,7 @@ export type RoleApplicationAnswers = {
         expires_on: string;
         firm: string;
     };
+    address?: RoleApplicationAddress;
     coverage?: {
         districts: string[];
         no_conflicts: boolean;
@@ -82,7 +96,12 @@ export type RoleApplicationProps = {
     blockers: string[];
     two_factor: boolean;
     identity_context_revision: number;
-    catalog: { industries: string[]; districts: string[] };
+    catalog: {
+        industries: string[];
+        districts: string[];
+        /** Each province's districts, for the address's district list. */
+        provinces: Record<string, string[]>;
+    };
 };
 
 /** One application in the Businesses or Auditors page's review tab. */

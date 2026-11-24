@@ -54,7 +54,7 @@ class AuditorProcedureResource extends JsonResource
         return [...AuditorJobsResource::envelope($page['jobs']['identity_context_revision']), 'allowed_actions' => $allowed,
             'engagement' => $file['engagement'],
             'audit' => ['id' => $report['id'], 'kind' => $report['kind'], 'business' => $job['business'], 'district' => $job['district'],
-                'distance_km' => $job['distance_km'], 'month' => $report['period'], 'deadline' => $job['deadline'],
+                'month' => $report['period'], 'deadline' => $job['deadline'],
                 'revision' => $report['revision'], 'reassigned_from' => null, 'amends' => $report['amends_id'] === null ? null
                     : ['report_id' => $report['amends_id'], 'link' => AuditorJobsResource::link($prefix.'reports.show', ['report' => $report['amends_id']])]],
             'assignment' => ['id' => $report['assignment_id'], 'revision' => $job['revision']],

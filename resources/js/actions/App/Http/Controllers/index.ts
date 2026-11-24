@@ -52,6 +52,7 @@ import DashboardVersionController from './DashboardVersionController'
 import EnterAppController from './EnterAppController'
 import RoleHomeController from './RoleHomeController'
 import AuditorHomeController from './AuditorHomeController'
+import AuditorHomeVersionController from './AuditorHomeVersionController'
 import StaffHomeController from './StaffHomeController'
 import AuditorProfileController from './AuditorProfileController'
 import RoleApplicationController from './RoleApplicationController'
@@ -140,6 +141,7 @@ const Controllers = {
     EnterAppController: Object.assign(EnterAppController, EnterAppController),
     RoleHomeController: Object.assign(RoleHomeController, RoleHomeController),
     AuditorHomeController: Object.assign(AuditorHomeController, AuditorHomeController),
+    AuditorHomeVersionController: Object.assign(AuditorHomeVersionController, AuditorHomeVersionController),
     StaffHomeController: Object.assign(StaffHomeController, StaffHomeController),
     AuditorProfileController: Object.assign(AuditorProfileController, AuditorProfileController),
     RoleApplicationController: Object.assign(RoleApplicationController, RoleApplicationController),

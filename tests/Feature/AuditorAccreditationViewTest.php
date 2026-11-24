@@ -26,7 +26,7 @@ it('exposes unaccredited status and available commands without manufacturing a l
     expect($resource['standing'])->toBe(['current' => false, 'reason' => 'ACCREDITATION_REQUIRED'])
         ->and($resource['accreditation'])->toBe(['status' => 'none', 'revision' => 0, 'licence' => null, 'expires_on' => null,
             'days_left' => null, 'submission' => ['status' => 'none']])
-        ->and($resource['availability'])->toBe(['accepting' => false, 'radius_km' => 30, 'max_active' => 3, 'revision' => 0])
+        ->and($resource['availability'])->toBe(['accepting' => false, 'districts' => [], 'max_jobs_per_week' => 4, 'address' => null, 'max_active' => 3, 'revision' => 0])
         ->and($resource['allowed_actions'])->toBe(['accreditation.submit'])
         ->and($resource['identity_context_revision'])->toBe(1)->and($resource['contract_version'])->toBe('auditor-filing-v1')
         ->and($resource['server_time'])->toBe(now()->toIso8601String());

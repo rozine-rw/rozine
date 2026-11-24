@@ -11,7 +11,6 @@
             "revision": 2,
             "business": "Sebeya Logistics",
             "district": "Musanze",
-            "distance_km": "9.0",
             "state": "assigned",
             "deadline": {
                 "due_at": "2026-10-04T05:00:00Z"
@@ -130,7 +129,7 @@
                 "assignment.decline",
                 "conflict.declare"
             ],
-            "radius_km": 30,
+            "coverage": null,
             "flash_hours": 24,
             "eligible": [
                 {
@@ -142,7 +141,6 @@
                     "sector": "logistics",
                     "district": "Gasabo",
                     "offered_at": "2026-10-03T14:00:00Z",
-                    "distance_km": "11.2",
                     "requested": {
                         "currency": "RWF",
                         "amount": "51200000"
@@ -190,7 +188,6 @@
                     "kind": "flash",
                     "business": "Sebeya Logistics",
                     "district": "Musanze",
-                    "distance_km": "9.0",
                     "deadline": {
                         "due_at": "2026-10-03T15:00:00Z"
                     },
@@ -213,7 +210,6 @@
                     "kind": "flash",
                     "business": "Murakoze Tech",
                     "district": "Kicukiro",
-                    "distance_km": "7.7",
                     "deadline": {
                         "due_at": "2026-10-04T13:59:55Z"
                     },

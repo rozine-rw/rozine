@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Domain\Identity\RwandaAddress;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -63,7 +64,9 @@ class AuditorProfileResource extends JsonResource
             'on_time_pct' => $page['track_record']['on_time_pct'] ?? null,
             'jobs_done' => $page['filed'],
             'earnings' => AuditorPortfolioResource::earnings($page['earnings']),
-            'contact' => ['email' => $page['email'], 'phone' => null, 'address' => null],
+            'contact' => ['email' => $page['email'], 'phone' => null, 'address' => $address = $data['availability']['address'] ?? null,
+                'address_line' => is_array($address) ? RwandaAddress::line($address) : null, 'update' => self::action($prefix.'address.update')],
+            'provinces' => (array) config('rwanda.districts', []),
             'security' => ['two_factor' => $page['two_factor']],
             'accreditation' => $data['accreditation'],
             'standing' => $data['standing'],

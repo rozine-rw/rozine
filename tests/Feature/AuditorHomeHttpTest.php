@@ -87,8 +87,8 @@ it('renders a first-time Auditor Home in the live contract shape with its empty 
         'allowed_actions' => [], 'engagement' => ['status' => 'unavailable', 'link' => ['url' => '/auditor/engagement', 'method' => 'get']],
         'auditor' => ['name' => 'Synthetic Partner', 'firm' => null, 'accreditation' => null, 'avatar_url' => null, 'since_year' => null],
         'quality_score' => null, 'earned_this_month' => ['currency' => 'RWF', 'amount' => '0'], 'active_deals' => 0, 'licence_expires_on' => null,
-        'availability' => ['accepting' => false, 'radius_km' => 30, 'max_active' => 3, 'revision' => 0, 'update' => ['url' => '/auditor/availability', 'method' => 'post']],
-        'nearby' => ['count' => 0, 'closest_km' => null], 'in_progress' => [],
+        'availability' => ['accepting' => false, 'districts' => [], 'max_jobs_per_week' => 4, 'address' => null, 'max_active' => 3, 'revision' => 0, 'update' => ['url' => '/auditor/availability', 'method' => 'post']],
+        'nearby' => ['count' => 0, 'districts' => []], 'in_progress' => [],
         'standing' => ['current' => false, 'reason' => 'ACCREDITATION_REQUIRED', 'on_time_pct' => null, 'avg_variance_pct' => null,
             'variance_flagged' => false, 'jobs_done' => 0, 'clock_expiries' => 0],
         'activity' => [], 'wallet' => ['available' => ['currency' => 'RWF', 'amount' => '0']], 'unread_notifications' => 0,
@@ -107,14 +107,14 @@ it('renders a first-time Auditor Home in the live contract shape with its empty 
     }
 });
 
-it('shows open offers nearby on Home and as the Jobs badge on every tab that carries it', function (): void {
+it('shows open offers in the partner\'s districts on Home and as the Jobs badge on every tab that carries it', function (): void {
     $fixture = AuditAssignmentFixture::make(1);
     $offer = AuditAssignmentFixture::request($fixture);
     $partner = $fixture['partners'][0];
     $eligible = auditorHomeProps($partner['user'], '/auditor/jobs', 'auditor/jobs')['eligible'];
-    expect($eligible)->toHaveCount(1)->and($eligible[0]['id'])->toBe($offer->id)->and($eligible[0]['distance_km'])->toBeString();
+    expect($eligible)->toHaveCount(1)->and($eligible[0]['id'])->toBe($offer->id)->and($eligible[0]['district'])->toBe('Gasabo')->and($eligible[0])->not->toHaveKey('distance_km');
     $props = auditorHomeProps($partner['user']);
-    expect($props['nearby'])->toBe(['count' => 1, 'closest_km' => $eligible[0]['distance_km']])
+    expect($props['nearby'])->toBe(['count' => 1, 'districts' => ['Gasabo']])
         ->and($props['in_progress'])->toBe([])->and($props['allowed_actions'])->toBe(['availability.update'])
         ->and($props['standing'])->toMatchArray(['current' => true, 'reason' => null])
         ->and($props['licence_expires_on'])->toBe(now()->addYear()->format('Y-m-d'))
@@ -128,7 +128,7 @@ it('shows open offers nearby on Home and as the Jobs badge on every tab that car
         ->and(AuditorJobsResource::openJobs([...$work, 'next_cursor' => strtolower((string) Str::ulid())]))->toBe(0);
     AuditAssignmentFixture::respond($partner['user'], $offer->refresh());
     $accepted = auditorHomeProps($partner['user']);
-    expect($accepted['nearby'])->toBe(['count' => 0, 'closest_km' => null])
+    expect($accepted['nearby'])->toBe(['count' => 0, 'districts' => []])
         ->and($accepted['in_progress'])->toHaveCount(1)
         ->and($accepted['in_progress'][0])->toMatchArray(['id' => $offer->id, 'state' => 'assigned', 'business' => 'Synthetic business',
             'status' => 'in_progress', 'link' => ['url' => '/auditor/jobs/'.$offer->id, 'method' => 'get']]);
@@ -206,4 +206,22 @@ it('dates the Since tile from the partner\'s first accreditation, not the day th
     AuditorFixture::review($fixture['staff'], $fixture['party']->id, 2, 'recheck');
 
     expect($since())->toBe(2026);
+});
+
+it('changes the Home fingerprint when an audit in the partner\'s districts is offered, so the open page reloads without a refresh', function (): void {
+    $fixture = AuditAssignmentFixture::make(1);
+    $partner = $fixture['partners'][0];
+    $pulse = fn (): string => $this->actingAs($partner['user'])->getJson(route('auditor.home.version'))->assertOk()
+        ->assertHeader('Cache-Control', 'no-store, private')->json('version');
+    $before = $pulse();
+    $props = auditorHomeProps($partner['user']);
+    expect($props['pulse'])->toBe($before)->and($props['live'])->toBe(['url' => '/auditor/version', 'method' => 'get'])
+        ->and($pulse())->toBe($before);
+
+    AuditAssignmentFixture::request($fixture);
+    $after = $pulse();
+    expect($after)->not->toBe($before)->and(auditorHomeProps($partner['user'])['nearby'])->toBe(['count' => 1, 'districts' => ['Gasabo']]);
+
+    auth()->logout();
+    $this->getJson(route('auditor.home.version'))->assertUnauthorized();
 });

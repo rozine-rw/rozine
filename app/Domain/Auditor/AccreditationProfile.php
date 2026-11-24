@@ -12,7 +12,10 @@ use DateTimeZone;
  * @phpstan-import-type Standing from AuditorStanding
  *
  * @phpstan-type Submission array{status: 'none'}|array{status: 'pending', id: string, licence: string, expires_on: string, submitted_at: string}|array{status: 'rejected', id: string, reason: string}
- * @phpstan-type State array{accepting: bool, standing: Standing, certificate_id: string|null, submission: Submission}
+ *
+ * @phpstan-import-type Address from \App\Domain\Identity\RwandaAddress
+ *
+ * @phpstan-type State array{accepting: bool, standing: Standing, certificate_id: string|null, submission: Submission, districts: list<string>, max_jobs_per_week: int, address: Address|null}
  */
 final class AccreditationProfile
 {
@@ -40,7 +43,23 @@ final class AccreditationProfile
     public function empty(): array
     {
         return ['accepting' => false, 'standing' => ['status' => 'none', 'licence' => null, 'expires_on' => null,
-            'checked_at' => null, 'check_reference' => null], 'certificate_id' => null, 'submission' => ['status' => 'none']];
+            'checked_at' => null, 'check_reference' => null], 'certificate_id' => null, 'submission' => ['status' => 'none'],
+            'districts' => [], 'max_jobs_per_week' => AuditorDispatch::DEFAULT_MAX_JOBS_PER_WEEK, 'address' => null];
+    }
+
+    /**
+     * A stored profile with the coverage keys every profile now carries, for a row written before
+     * districts replaced the radius: no districts, the default weekly limit and no address.
+     *
+     * @param  array<string, mixed>  $state
+     * @return State
+     */
+    public function normalize(array $state): array
+    {
+        /** @var State $state */
+        $state = [...$this->empty(), ...$state];
+
+        return $state;
     }
 
     /**
@@ -97,6 +116,32 @@ final class AccreditationProfile
     }
 
     /**
+     * The partner's coverage: the districts they accept audits in, from Rwanda's thirty, and how
+     * many jobs a week dispatch may offer them. A partner with no district reaches no Business, which
+     * the profile and home say plainly.
+     *
+     * @param  State  $state
+     * @param  list<mixed>  $districts
+     * @param  list<string>  $allDistricts
+     * @return State
+     */
+    public function coverage(array $state, array $districts, int $maxJobsPerWeek, array $allDistricts): array
+    {
+        $chosen = array_values(array_unique(array_filter($districts, 'is_string')));
+        if (array_diff($chosen, $allDistricts) !== []) {
+            throw new CommandRejection('AUDITOR_DISTRICTS_INVALID', 422, fieldErrors: ['districts' => ['Choose districts of Rwanda.']]);
+        }
+        if ($maxJobsPerWeek < AuditorDispatch::MIN_JOBS_PER_WEEK || $maxJobsPerWeek > AuditorDispatch::MAX_JOBS_PER_WEEK) {
+            throw new CommandRejection('AUDITOR_WEEKLY_LIMIT_INVALID', 422, fieldErrors: ['max_jobs_per_week' => ['Choose between '.AuditorDispatch::MIN_JOBS_PER_WEEK.' and '.AuditorDispatch::MAX_JOBS_PER_WEEK.' jobs a week.']]);
+        }
+        // Kept in Rwanda's own order, so the profile and dispatch read them the same way every time.
+        $state['districts'] = array_values(array_intersect($allDistricts, $chosen));
+        $state['max_jobs_per_week'] = $maxJobsPerWeek;
+
+        return $state;
+    }
+
+    /**
      * Records independently reviewed facts. Uploaded claims remain separate until approval.
      *
      * @param  State  $state
@@ -122,10 +167,13 @@ final class AccreditationProfile
             if ($state['submission']['expires_on'] < $now->setTimezone(new DateTimeZone('Africa/Kigali'))->format('Y-m-d')) {
                 throw new CommandRejection('ACCREDITATION_SUBMISSION_EXPIRED', 422, fieldErrors: ['submission_id' => ['Request a current certificate before approving this submission.']]);
             }
+            // The first approval puts the partner in the dispatch pool at once (Erastus, 24 Nov 2026); a renewal keeps their own choice.
+            $first = $state['certificate_id'] === null;
             $state['standing'] = ['status' => 'active', 'licence' => $state['submission']['licence'], 'expires_on' => $state['submission']['expires_on'],
                 'checked_at' => $checkedAt, 'check_reference' => trim($reference)];
             $state['certificate_id'] = $state['submission']['id'];
             $state['submission'] = ['status' => 'none'];
+            $state['accepting'] = $state['accepting'] || $first;
         } else {
             if ($submissionId !== null || $state['certificate_id'] === null || ($decision === 'recheck' && $state['standing']['status'] !== 'active')) {
                 throw new CommandRejection('ACCREDITATION_REVIEW_INVALID', 422);
@@ -150,7 +198,7 @@ final class AccreditationProfile
     /**
      * @param  State  $state
      *
-     * @phpstan-assert array{accepting: bool, standing: Standing, certificate_id: string|null, submission: array{status: 'pending', id: string, licence: string, expires_on: string, submitted_at: string}} $state
+     * @phpstan-assert array{accepting: bool, standing: Standing, certificate_id: string|null, submission: array{status: 'pending', id: string, licence: string, expires_on: string, submitted_at: string}, districts: list<string>, max_jobs_per_week: int, address: array{province: string, district: string, sector: string, cell: string, street: string}|null} $state
      */
     private function pending(array $state, ?string $submissionId): void
     {

@@ -2,9 +2,9 @@ import { Link } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { AssignedJobCard } from '@/components/auditor/assigned-job-card';
 import { EngagementBanner } from '@/components/auditor/engagement/engagement-banner';
+import { DistrictCoverage } from '@/components/auditor/jobs/district-coverage';
 import { EligibleCard } from '@/components/auditor/jobs/eligible-card';
 import { MonthlySection } from '@/components/auditor/jobs/monthly-section';
-import { RadiusMap } from '@/components/auditor/jobs/radius-map';
 import { ColumnPad, TabColumns } from '@/components/auditor/tab-columns';
 import type { ColumnOverlay } from '@/components/auditor/tab-columns';
 import {
@@ -34,7 +34,7 @@ export const openOffers = (jobs: AuditorJobsProps): number =>
 
 /**
  * Jobs (MVP-AUDITOR-SCR-01, design L205–323): the Flash Audits dispatch offers this partner, with
- * the radius map, and any work already on the clock; beside them, the monthly reports for the notes
+ * the districts the partner accepts, and any work already on the clock; beside them, the monthly reports for the notes
  * they steward, with any disputed report under desk review above them. While the server sends no
  * monthly section, a wide screen puts the work on the clock in the right column instead, so neither
  * column stands empty; a phone keeps one flow, assigned above the offers. The offers end
@@ -110,7 +110,6 @@ export function JobsBody({
                     <ScreenTitle
                         title={t('auditor.jobs.title')}
                         lead={t('auditor.jobs.lead', {
-                            radius: props.radius_km,
                             hours: props.flash_hours,
                         })}
                     />
@@ -118,23 +117,14 @@ export function JobsBody({
                         engagement={props.engagement}
                         className="mt-3.5"
                     />
-                    {(props.office === 'missing' ||
-                        props.office === 'expired') && (
-                        <p
-                            role="status"
-                            className="mt-3.5 rounded-2xl border-[1.5px] border-[#f0d18f] bg-rz-surface p-[13px] text-[13px] leading-[1.45] text-rz-ink dark:border-[rgba(240,160,96,.45)]"
-                        >
-                            {t(`auditor.jobs.office.${props.office}`, {
-                                radius: props.radius_km,
-                            })}
-                        </p>
-                    )}
                     {notice}
-                    <RadiusMap
-                        radiusKm={props.radius_km}
-                        jobs={props.eligible}
-                        paged={props.pagination !== undefined}
-                    />
+                    {props.coverage && (
+                        <DistrictCoverage
+                            coverage={props.coverage}
+                            jobs={props.eligible}
+                            paged={props.pagination !== undefined}
+                        />
+                    )}
                     {!assignedBeside && assigned.length > 0 && (
                         <section>
                             <Eyebrow as="h2" className="mt-5">
@@ -155,11 +145,7 @@ export function JobsBody({
                             ))}
                         </div>
                     ) : next === null ? (
-                        <EmptyState>
-                            {t('auditor.jobs.empty', {
-                                radius: props.radius_km,
-                            })}
-                        </EmptyState>
+                        <EmptyState>{t('auditor.jobs.empty')}</EmptyState>
                     ) : (
                         (assignedBeside || assigned.length === 0) && (
                             <p className="mt-3.5 text-center text-[12px] text-rz-secondary">

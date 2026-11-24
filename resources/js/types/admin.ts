@@ -843,27 +843,6 @@ export type PartyListRow = {
 };
 
 /**
- * A dispatch location as staff last verified it, a partner's registered office or a Business's
- * premises; lapsed after 365 days.
- */
-export type DispatchLocation = {
-    state: 'verified' | 'expired' | 'missing';
-    latitude: string | null;
-    longitude: string | null;
-    /** How many metres the point may be off. */
-    uncertainty_m: number | null;
-    verified_at: string | null;
-    /** The evidence the verifier checked. */
-    reference: string | null;
-    revision: number;
-    /**
-     * Where the viewer records a newly verified location, with the time the server offered the
-     * form (the verification's time), or null when they may not.
-     */
-    verify: (RouteAction & { verified_at: string }) | null;
-};
-
-/**
  * The audit open on a Business, as staff who manage audit assignments see it (BR-48, #446), with
  * where they request a Flash audit when none is open and redispatch one that waits on Audit
  * Operations; each action is null when it is not available.
@@ -880,8 +859,8 @@ export type BusinessAudit = {
         /** Why no partner can take it now, while it waits on Audit Operations. */
         operations_reason:
             | 'AUDIT_PARTNER_AVAILABLE'
-            | 'AUDIT_PREMISES_UNVERIFIED'
-            | 'AUDIT_NO_PARTNER_IN_RANGE'
+            | 'AUDIT_DISTRICT_MISSING'
+            | 'AUDIT_NO_PARTNER_IN_DISTRICT'
             | 'AUDIT_INDEPENDENCE_REVIEW_REQUIRED'
             | 'AUDIT_NO_ELIGIBLE_PARTNER'
             | 'AUDIT_DISPATCH_EXHAUSTED'
@@ -898,9 +877,9 @@ export type BusinessAudit = {
     /** Ends this audit only (#489), unlike close: a new one can be requested afterwards. */
     withdraw: RouteAction | null;
     close: RouteAction | null;
-    /** Where to fix a missing partner within 30 km. */
+    /** Where to fix a district no partner accepts. */
     remedy: RouteLink | null;
-    /** Audit Partners with a verified office within 30 km, and whether each is reviewed as independent. */
+    /** Audit Partners who accept the Business's district, and whether each is reviewed as independent. */
     partners: {
         party_id: string;
         name: string;
@@ -989,10 +968,23 @@ export type PartyDetail = {
     verification?: InvestorVerificationReview | null;
     /** An Investor's cash committed to raises whose notes are not issued yet; absent for other parties. */
     committed?: Money | null;
-    /** An Audit Partner's registered office, which dispatch measures the 30 km from; absent for other parties. */
-    office?: DispatchLocation | null;
-    /** A Business's premises, which dispatch measures the 30 km to; sent only to viewers who verify Businesses. */
-    premises?: DispatchLocation | null;
+    /**
+     * An Audit Partner's dispatch coverage: the districts they accept, their weekly limit and their
+     * registered address; sent only to viewers who verify partners, absent for other parties.
+     */
+    coverage?: {
+        accepting: boolean;
+        districts: string[];
+        max_jobs_per_week: number;
+        address: {
+            province: string;
+            district: string;
+            sector: string;
+            cell: string;
+            street: string;
+        } | null;
+        address_line: string | null;
+    } | null;
     /** A Business's open audit; sent only to viewers who manage audit assignments. */
     audit?: BusinessAudit | null;
     links: { close: RouteLink };

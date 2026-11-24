@@ -7,9 +7,9 @@ namespace App\Http\Controllers;
 use App\Application\Auditor\FindAuditAssignmentOperation;
 use App\Application\Auditor\GetAssignmentAuditReport;
 use App\Application\Auditor\GetAuditEngagementSummary;
+use App\Application\Auditor\GetAuditorProfile;
 use App\Application\Auditor\GetAuditStatementReview;
 use App\Application\Auditor\GetOwnAuditConflict;
-use App\Application\Auditor\GetOwnAuditOffice;
 use App\Application\Auditor\ListAuditJobs;
 use App\Application\Auditor\ListOwnAuditConflicts;
 use App\Application\Auditor\ProjectAuditAssignmentOperation;
@@ -32,13 +32,13 @@ class AuditorJobsController extends Controller
 {
     public function __construct(private AuthorizeActiveRole $identity, private GetOwnAuditConflict $conflicts, private ProjectAuditAssignmentOperation $outcomes, private GetAuditEngagementSummary $engagements, private GetAuditStatementReview $statementReview) {}
 
-    public function index(ListAuditJobsRequest $request, ListAuditJobs $jobs, GetOwnAuditOffice $office): Response|AuditorJobsResource
+    public function index(ListAuditJobsRequest $request, ListAuditJobs $jobs, GetAuditorProfile $profile): Response|AuditorJobsResource
     {
         [$userId, $revision] = $this->reader($request);
         $limit = (int) $request->validated('limit', 25);
         $resource = new AuditorJobsResource([...$jobs->handle($userId, $revision, $request->validated('before'), $limit),
             'identity_context_revision' => $revision, 'limit' => $limit, 'engagement' => $this->engagements->handle($userId, $revision),
-            'office' => $office->handle($userId, $revision)]);
+            'coverage' => AuditorJobsResource::coverage($profile->handle($userId, $revision)['state'])]);
 
         return $request->routeIs('api.*') ? $resource : Inertia::render('auditor/jobs', $resource->resolve($request));
     }

@@ -2,11 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Domain\Auditor\AuditorDispatch;
-use App\Domain\Auditor\AuditorStanding;
 use App\Domain\Auditor\Wgs84Distance;
 use App\Domain\Operations\CommandRejection;
-use Tests\Support\AuditorFixture;
 
 /** Independent WGS84 reference distances: geographiclib/geographiclib-python, test/test_geodesic.py. */
 it('bounds independent inverse geodesic vectors in both directions', function (string $latitude, string $longitude, string $otherLatitude, string $otherLongitude, float $reference): void {
@@ -40,25 +37,14 @@ it('recognizes coincident coordinates and equivalent pole or antimeridian positi
     expect($geodesic->upperBound($geodesic->point($latitude, $longitude), $geodesic->point($latitude, $otherLongitude)))->toBe(0);
 })->with([['-1.9441', '30.0619', '30.0619'], ['0', '180', '-180'], ['90', '1', '-170'], ['-90', '-30', '125']]);
 
-it('leaves nonconvergent antipodal distance unknown and ineligible', function (): void {
+it('leaves nonconvergent antipodal distance unknown', function (): void {
     $geodesic = new Wgs84Distance;
-    $candidate = AuditorFixture::candidate();
-    $candidate['distance_upper_bound_m'] = $geodesic->upperBound($geodesic->point('0', '0'), $geodesic->point('0', '180'));
-    expect($candidate['distance_upper_bound_m'])->toBeNull()
-        ->and((new AuditorDispatch(new AuditorStanding))->reasons($candidate, new DateTimeImmutable('2026-09-24T08:00:00Z')))->toBe(['AUDITOR_OUTSIDE_RADIUS']);
+    expect($geodesic->upperBound($geodesic->point('0', '0'), $geodesic->point('0', '180')))->toBeNull();
 });
 
-it('adds both measured uncertainty radii to the computed distance at admission', function (): void {
+it('keeps the computed distance a conservative whole-metre upper bound', function (): void {
     $geodesic = new Wgs84Distance;
-    $candidate = AuditorFixture::candidate();
-    $candidate['distance_upper_bound_m'] = $geodesic->upperBound($geodesic->point('0', '0'), $geodesic->point('0', '0.26'));
-    $candidate['office']['uncertainty_m'] = 500;
-    $candidate['premises']['uncertainty_m'] = 556;
-    $policy = new AuditorDispatch(new AuditorStanding);
-    $now = new DateTimeImmutable('2026-09-24T08:00:00Z');
-    expect($candidate['distance_upper_bound_m'])->toBe(28944)->and($policy->reasons($candidate, $now))->toBe([]);
-    $candidate['premises']['uncertainty_m'] = 557;
-    expect($policy->reasons($candidate, $now))->toBe(['AUDITOR_OUTSIDE_RADIUS']);
+    expect($geodesic->upperBound($geodesic->point('0', '0'), $geodesic->point('0', '0.26')))->toBe(28944);
 });
 
 it('rejects malformed out of range or excessive precision coordinates instead of coercing them', function (string $latitude, string $longitude): void {

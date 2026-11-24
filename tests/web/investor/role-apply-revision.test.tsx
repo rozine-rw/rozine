@@ -29,8 +29,11 @@ const props = (
                 company_type: 'private_limited',
                 incorporation_date: '2019-04-02',
                 industry: 'Agriculture',
+                province: 'Western',
                 district: 'Rubavu',
-                registered_address: 'KN 4 Ave, Gisenyi',
+                sector: 'Gisenyi',
+                cell: 'Amahoro',
+                street: 'KN 4 Ave, Gisenyi',
                 phone: '+250 788 000 111',
             },
         },
@@ -43,7 +46,11 @@ const props = (
                     label: 'TIN',
                     note: 'Does not match the certificate.',
                 },
-                { key: 'company.district', label: 'District', note: '' },
+                {
+                    key: 'company.address',
+                    label: 'Registered address',
+                    note: '',
+                },
                 {
                     key: 'documents.articles',
                     label: 'Articles of Association',
@@ -59,7 +66,11 @@ const props = (
     blockers: [],
     two_factor: true,
     identity_context_revision: 3,
-    catalog: { industries: ['Agriculture'], districts: ['Rubavu'] },
+    catalog: {
+        industries: ['Agriculture'],
+        districts: ['Rubavu'],
+        provinces: { Western: ['Rubavu'] },
+    },
 });
 
 beforeEach(() => resetInertia());

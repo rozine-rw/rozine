@@ -19,6 +19,7 @@ import {
 } from '@/routes/role-application';
 import { edit as security } from '@/routes/security';
 import type {
+    RoleApplicationAddress,
     RoleApplicationAnswers,
     RoleApplicationPerson,
     RoleApplicationProps,
@@ -35,9 +36,17 @@ const FLAG_KEYS: Record<string, string> = {
     legal_name: 'company.legal_name',
     tin: 'company.tin',
     incorporation_date: 'company.incorporation_date',
-    district: 'company.district',
+    province: 'company.address',
+    district: 'company.address',
+    sector: 'company.address',
+    cell: 'company.address',
+    street: 'company.address',
     industry: 'company.industry',
-    registered_address: 'company.registered_address',
+    address_province: 'address',
+    address_district: 'address',
+    address_sector: 'address',
+    address_cell: 'address',
+    address_street: 'address',
     company_phone: 'company.phone',
     rep_title: 'representative',
     rep_phone: 'representative',
@@ -61,6 +70,7 @@ function stepForItem(key: string, role: 'business' | 'auditor'): string {
             directors: 'people',
             owners: 'people',
             licence: 'licence',
+            address: 'coverage',
             coverage: 'coverage',
         }[head] ?? 'review'
     );
@@ -266,9 +276,19 @@ export default function RoleApply(props: RoleApplicationProps) {
         company_type: '',
         incorporation_date: '',
         industry: '',
+        province: '',
         district: '',
-        registered_address: '',
+        sector: '',
+        cell: '',
+        street: '',
         phone: '',
+    };
+    const address = answers.address ?? {
+        province: '',
+        district: '',
+        sector: '',
+        cell: '',
+        street: '',
     };
     const representative = answers.representative ?? {
         title: '',
@@ -529,47 +549,26 @@ export default function RoleApply(props: RoleApplicationProps) {
                                             )}
                                         />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-2.5">
-                                        <Field
-                                            id="incorporation_date"
-                                            type="date"
-                                            label={t(
-                                                'role.apply.company.incorporated',
-                                            )}
-                                            value={company.incorporation_date}
-                                            error={error(
-                                                'company.incorporation_date',
-                                            )}
-                                            onChange={(value) =>
-                                                setAnswers({
-                                                    ...answers,
-                                                    company: {
-                                                        ...company,
-                                                        incorporation_date:
-                                                            value,
-                                                    },
-                                                })
-                                            }
-                                        />
-                                        <Select
-                                            id="district"
-                                            label={t(
-                                                'role.apply.company.district',
-                                            )}
-                                            value={company.district}
-                                            options={props.catalog.districts}
-                                            error={error('company.district')}
-                                            onChange={(value) =>
-                                                setAnswers({
-                                                    ...answers,
-                                                    company: {
-                                                        ...company,
-                                                        district: value,
-                                                    },
-                                                })
-                                            }
-                                        />
-                                    </div>
+                                    <Field
+                                        id="incorporation_date"
+                                        type="date"
+                                        label={t(
+                                            'role.apply.company.incorporated',
+                                        )}
+                                        value={company.incorporation_date}
+                                        error={error(
+                                            'company.incorporation_date',
+                                        )}
+                                        onChange={(value) =>
+                                            setAnswers({
+                                                ...answers,
+                                                company: {
+                                                    ...company,
+                                                    incorporation_date: value,
+                                                },
+                                            })
+                                        }
+                                    />
                                     <Select
                                         id="industry"
                                         label={t('role.apply.company.sector')}
@@ -586,19 +585,18 @@ export default function RoleApply(props: RoleApplicationProps) {
                                             })
                                         }
                                     />
-                                    <Field
-                                        id="registered_address"
-                                        label={t('role.apply.company.address')}
-                                        value={company.registered_address}
-                                        error={error(
-                                            'company.registered_address',
-                                        )}
+                                    <AddressFields
+                                        idPrefix=""
+                                        errorPrefix="company."
+                                        provinces={props.catalog.provinces}
+                                        value={company}
+                                        error={error}
                                         onChange={(value) =>
                                             setAnswers({
                                                 ...answers,
                                                 company: {
                                                     ...company,
-                                                    registered_address: value,
+                                                    ...value,
                                                 },
                                             })
                                         }
@@ -839,6 +837,22 @@ export default function RoleApply(props: RoleApplicationProps) {
 
                             {step === 'coverage' && (
                                 <div className="mt-5 flex flex-col gap-[13px]">
+                                    <AddressFields
+                                        idPrefix="address_"
+                                        errorPrefix="address."
+                                        provinces={props.catalog.provinces}
+                                        value={address}
+                                        error={error}
+                                        onChange={(value) =>
+                                            setAnswers({
+                                                ...answers,
+                                                address: {
+                                                    ...address,
+                                                    ...value,
+                                                },
+                                            })
+                                        }
+                                    />
                                     <div>
                                         <p className={LABEL}>
                                             {t('role.apply.coverage.districts')}
@@ -1009,7 +1023,7 @@ export default function RoleApply(props: RoleApplicationProps) {
                                                     ],
                                                     [
                                                         company.industry,
-                                                        company.district,
+                                                        addressLine(company),
                                                     ],
                                                 ]}
                                             />
@@ -1088,6 +1102,12 @@ export default function RoleApply(props: RoleApplicationProps) {
                                                     setStep('coverage')
                                                 }
                                                 rows={[
+                                                    [
+                                                        t(
+                                                            'role.apply.company.address',
+                                                        ),
+                                                        addressLine(address),
+                                                    ],
                                                     [
                                                         t(
                                                             'role.apply.coverage.districts',
@@ -1400,11 +1420,16 @@ function Field({
     error,
     type = 'text',
     inputMode,
+    placeholder,
+    grouped = false,
 }: {
     id: string;
     label: string;
     value: string;
     onChange: (value: string) => void;
+    placeholder?: string;
+    /** Part of a group that shows Compliance's word once, above its fields. */
+    grouped?: boolean;
     hint?: string;
     error?: string;
     type?: 'text' | 'date' | 'tel';
@@ -1419,6 +1444,7 @@ function Field({
                 id={id}
                 type={type}
                 inputMode={inputMode}
+                placeholder={placeholder}
                 value={value}
                 aria-invalid={error !== undefined}
                 onChange={(event) => onChange(event.target.value)}
@@ -1428,7 +1454,7 @@ function Field({
                         'border-rz-warning-text ring-2 ring-rz-warning-tint',
                 )}
             />
-            <Flag id={id} />
+            {!grouped && <Flag id={id} />}
             {error ? (
                 <FieldError message={error} />
             ) : (
@@ -1449,6 +1475,8 @@ function Select({
     options,
     onChange,
     error,
+    placeholder,
+    grouped = false,
 }: {
     id: string;
     label: string;
@@ -1456,6 +1484,9 @@ function Select({
     options: string[];
     onChange: (value: string) => void;
     error?: string;
+    placeholder?: string;
+    /** Part of a group that shows Compliance's word once, above its fields. */
+    grouped?: boolean;
 }) {
     const { t } = useTranslation();
 
@@ -1475,16 +1506,115 @@ function Select({
                         'border-rz-warning-text ring-2 ring-rz-warning-tint',
                 )}
             >
-                <option value="">{t('role.apply.choose')}</option>
+                <option value="">
+                    {placeholder ?? t('role.apply.choose')}
+                </option>
                 {options.map((option) => (
                     <option key={option} value={option}>
                         {option}
                     </option>
                 ))}
             </select>
-            <Flag id={id} />
+            {!grouped && <Flag id={id} />}
             <FieldError message={error} />
         </div>
+    );
+}
+
+/** One line for the review step: street, cell, sector, district. */
+function addressLine(address: RoleApplicationAddress): string {
+    return [address.street, address.cell, address.sector, address.district]
+        .map((part) => part.trim())
+        .filter((part) => part !== '')
+        .join(', ');
+}
+
+/**
+ * The registered address (Erastus, 24 Nov 2026): a province, a district of that province, and the
+ * sector, cell and street as typed. Changing the province clears a district outside it.
+ */
+function AddressFields({
+    idPrefix,
+    errorPrefix,
+    provinces,
+    value,
+    error,
+    onChange,
+}: {
+    idPrefix: string;
+    errorPrefix: string;
+    provinces: Record<string, string[]>;
+    value: RoleApplicationAddress;
+    error: (key: string) => string | undefined;
+    onChange: (value: Partial<RoleApplicationAddress>) => void;
+}) {
+    const { t } = useTranslation();
+
+    return (
+        <fieldset className="flex flex-col gap-[13px]">
+            <legend className={cn(LABEL, 'mb-2.5 tracking-[.06em]')}>
+                {t('role.apply.company.address')}
+            </legend>
+            <Flag id={`${idPrefix}street`} />
+            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                <Select
+                    id={`${idPrefix}province`}
+                    grouped
+                    label={t('role.apply.address.province')}
+                    value={value.province}
+                    options={Object.keys(provinces)}
+                    error={error(`${errorPrefix}province`)}
+                    onChange={(province) =>
+                        onChange({
+                            province,
+                            district: (provinces[province] ?? []).includes(
+                                value.district,
+                            )
+                                ? value.district
+                                : '',
+                        })
+                    }
+                />
+                <Select
+                    id={`${idPrefix}district`}
+                    grouped
+                    label={t('role.apply.company.district')}
+                    value={value.district}
+                    options={provinces[value.province] ?? []}
+                    placeholder={t('role.apply.address.select_district')}
+                    error={error(`${errorPrefix}district`)}
+                    onChange={(district) => onChange({ district })}
+                />
+                <Field
+                    id={`${idPrefix}sector`}
+                    grouped
+                    label={t('role.apply.address.sector')}
+                    placeholder={t('role.apply.address.sector_placeholder')}
+                    value={value.sector}
+                    error={error(`${errorPrefix}sector`)}
+                    onChange={(sector) => onChange({ sector })}
+                />
+                <Field
+                    id={`${idPrefix}cell`}
+                    grouped
+                    label={t('role.apply.address.cell')}
+                    placeholder={t('role.apply.address.cell_placeholder')}
+                    value={value.cell}
+                    error={error(`${errorPrefix}cell`)}
+                    onChange={(cell) => onChange({ cell })}
+                />
+            </div>
+            <Field
+                id={`${idPrefix}street`}
+                grouped
+                label={t('role.apply.address.street')}
+                placeholder={t('role.apply.address.street_placeholder')}
+                hint={t('role.apply.address.street_hint')}
+                value={value.street}
+                error={error(`${errorPrefix}street`)}
+                onChange={(street) => onChange({ street })}
+            />
+        </fieldset>
     );
 }
 

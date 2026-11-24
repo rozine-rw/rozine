@@ -12,6 +12,7 @@ use App\Application\Auditor\GetAuditorProfile;
 use App\Application\Auditor\ListAuditJobs;
 use App\Application\Auditor\ListAuditorFiledReports;
 use App\Application\Auditor\ReadAuditorCertificate;
+use App\Application\Auditor\SetAuditorAddress;
 use App\Application\Auditor\SetAuditorAvailability;
 use App\Application\Auditor\SubmitAuditorAccreditation;
 use App\Application\Auditor\WithdrawAuditorAccreditation;
@@ -20,6 +21,7 @@ use App\Application\Identity\LegalDocuments;
 use App\Http\Requests\Auditor\AuditorCommandRequest;
 use App\Http\Requests\Auditor\ShowAuditorOperationRequest;
 use App\Http\Requests\Auditor\SubmitAccreditationRequest;
+use App\Http\Requests\Auditor\UpdateAuditorAddressRequest;
 use App\Http\Requests\Auditor\UpdateAvailabilityRequest;
 use App\Http\Requests\Auditor\WithdrawAccreditationRequest;
 use App\Http\Resources\AuditorProfileResource;
@@ -90,8 +92,22 @@ class AuditorProfileController extends Controller
     {
         [$userId, $revision] = $this->envelope($request);
 
+        /** @var list<mixed>|null $districts */
+        $districts = $request->has('districts') ? (array) $request->validated('districts', []) : null;
+
         return $this->present($action->handle($userId, $revision, (int) $request->validated('expected_revision'),
-            $request->boolean('accepting'), (string) $request->validated('request_id')), $userId, $revision, 'availability');
+            $request->boolean('accepting'), (string) $request->validated('request_id'), $districts,
+            $request->has('max_jobs_per_week') ? (int) $request->validated('max_jobs_per_week') : null), $userId, $revision, 'availability');
+    }
+
+    public function address(UpdateAuditorAddressRequest $request, SetAuditorAddress $action): OperationResource
+    {
+        [$userId, $revision] = $this->envelope($request);
+        /** @var array<string, mixed> $address */
+        $address = (array) $request->validated('address');
+
+        return $this->present($action->handle($userId, $revision, (int) $request->validated('expected_revision'),
+            $address, (string) $request->validated('request_id')), $userId, $revision, 'contact');
     }
 
     /** Replays the recorded outcome of a command, under the current identity context. */
@@ -102,7 +118,11 @@ class AuditorProfileController extends Controller
         $command = (string) $request->validated('command');
 
         return $this->present($action->handle($userId, $revision, $command, (string) $request->route('request_id')),
-            $userId, $revision, $command === 'availability.update' ? 'availability' : 'accreditation');
+            $userId, $revision, match ($command) {
+                'availability.update' => 'availability',
+                'contact.update' => 'contact',
+                default => 'accreditation',
+            });
     }
 
     /** The Auditor's own certificate, private and never cached, under a neutral filename. */

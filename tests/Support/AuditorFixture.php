@@ -59,14 +59,12 @@ final class AuditorFixture
     /** @return Candidate */
     public static function candidate(string $id = 'partner-a'): array
     {
-        $location = ['verified_at' => '2026-09-24T08:00:00Z', 'moved_at' => null, 'uncertainty_m' => 50];
-
         return ['id' => $id, 'standing' => ['status' => 'active', 'licence' => 'SYNTHETIC-CPA', 'expires_on' => '2028-12-31',
             'checked_at' => '2026-09-24T08:00:00Z', 'check_reference' => 'synthetic-register-check'],
             'engagement' => ['id' => 'synthetic-acceptance', 'release_id' => 'synthetic-release', 'release_revision' => 1,
                 'release_sha256' => str_repeat('a', 64), 'accepted_at' => '2026-09-24T08:00:00Z', 'sha256' => str_repeat('b', 64)],
             'accepting' => true, 'active_count' => 0, 'consecutive_reports' => 0, 'last_assigned_at' => null,
-            'office' => $location, 'premises' => $location, 'distance_upper_bound_m' => 29900,
+            'districts' => ['Gasabo', 'Kicukiro'], 'business_district' => 'Gasabo', 'accepted_this_week' => 0, 'max_jobs_per_week' => 4,
             'financial_interest' => false, 'current_role_tie' => false, 'role_tie_ended_at' => null,
             'family_or_business_conflict' => false, 'unresolved_conflict' => false];
     }
