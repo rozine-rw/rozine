@@ -97,7 +97,7 @@ export default function BusinessAcademy({
             tab="readiness"
             links={links}
         >
-            <div className="mx-auto max-w-[620px] px-5 pt-[calc(env(safe-area-inset-top)+4px)] pb-[92px] lg:pt-6">
+            <div className="mx-auto max-w-[620px] px-5 pt-[calc(env(safe-area-inset-top)+4px)] pb-[92px] lg:max-w-[1100px] lg:px-8 lg:pt-6">
                 <div className="flex items-center gap-3">
                     <Link
                         href={links.close.url}
@@ -124,7 +124,10 @@ export default function BusinessAcademy({
                         stage: stageName(level),
                     })}
                 </h2>
-                <ul aria-labelledby="academy-core" className="mt-3 space-y-2">
+                <ul
+                    aria-labelledby="academy-core"
+                    className="mt-3 space-y-2 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0"
+                >
                     {core.map((module) => (
                         <ModuleCard
                             key={module.key}
@@ -148,7 +151,7 @@ export default function BusinessAcademy({
                         </p>
                         <ul
                             aria-labelledby="academy-preview"
-                            className="mt-3 space-y-2"
+                            className="mt-3 space-y-2 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0"
                         >
                             {preview.map((module) => (
                                 <ModuleCard

@@ -126,8 +126,9 @@ test('a selected case shows its answers, private document links and history', fu
             ->where('review.documents.0.view.url', '/admin/investor-verifications/'.$case->id.'/documents/'.$front->id.'?disposition=inline')
             ->has('review.history', 6)->where('review.history.5.status', 'submitted')->where('review.history.5.command', 'verification.submit')
             ->where('review.links.close.url', '/admin/investor-verifications?tab=submitted')
-            ->where('review.actions.approve.url', '/admin/investor-verifications/'.$case->id.'/approve')
-            ->where('review.actions.reject.url', '/admin/investor-verifications/'.$case->id.'/reject'));
+            // Decided in the Users drawer only (#743): this queue shows the case read-only with a link there.
+            ->where('review.actions', [])
+            ->where('review.decide.url', route('staff.users.index', ['q' => $this->person->email], false)));
 
     $this->actingAs($this->officer)->get(route('staff.investor-verifications.index', ['verification' => strtolower((string) Str::ulid())]))
         ->assertNotFound()->assertInertia(fn (Assert $page) => $page->where('code', 'VERIFICATION_NOT_FOUND'));

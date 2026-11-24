@@ -62,7 +62,7 @@ interface RoleApplicationStore
     /**
      * The person's current uploads by slot, to show back to them: never the bytes.
      *
-     * @return array<string, array{filename: string, media_type: string}>
+     * @return array<string, array{id: string, filename: string, media_type: string}>
      */
     public function uploads(int $userId): array;
 

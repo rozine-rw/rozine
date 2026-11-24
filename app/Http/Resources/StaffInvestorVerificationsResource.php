@@ -62,7 +62,21 @@ class StaffInvestorVerificationsResource extends JsonResource
                 'link' => $link([...$position, 'verification' => $entry['id']])], $page['entries']),
             'stats' => [...$page['stats'], 'aml_alerts' => null, 'sanctions_hits' => null],
             'pagination' => ['next' => $page['next_cursor'] === null ? null : $link([...$filters, 'before' => $page['next_cursor']])],
-            'review' => $page['review'] === null ? null : self::review($page['review'], $link($position), $prefix)];
+            'review' => $page['review'] === null ? null : self::queueReview(self::review($page['review'], $link($position), $prefix), $page['review'], $prefix)];
+    }
+
+    /**
+     * KYC is decided in the Users drawer only (Erastus, 23 Nov 2026; QA #743): on the web this older queue
+     * shows the case read-only with a link to decide it there. The API keeps its actions.
+     *
+     * @param  array<string, mixed>  $shown
+     * @param  Review  $review
+     * @return array<string, mixed>
+     */
+    private static function queueReview(array $shown, array $review, string $prefix): array
+    {
+        return $prefix !== '' ? $shown : [...$shown, 'actions' => (object) [],
+            'decide' => ['url' => route('staff.users.index', ['q' => $review['account']['email']], false), 'method' => 'get']];
     }
 
     /** The person's age today in Kigali from the stored "DD / MM / YYYY" date of birth, or null before one is given. */

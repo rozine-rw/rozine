@@ -22,7 +22,7 @@ final class ApplyForRole
         return $this->store->get($userId);
     }
 
-    /** @return array<string, array{filename: string, media_type: string}> */
+    /** @return array<string, array{id: string, filename: string, media_type: string}> */
     public function uploads(int $userId): array
     {
         return $this->store->uploads($userId);

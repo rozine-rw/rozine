@@ -333,6 +333,37 @@ describe('Users', () => {
         expect(history).toHaveTextContent('Signed up');
     });
 
+    it('shows a revoked role once, in the list with its date, and only current roles as chips', () => {
+        render(
+            <AdminUsers
+                {...page({
+                    user: detail({
+                        memberships: [
+                            {
+                                role: 'investor',
+                                status: 'revoked',
+                                since: '2027-01-20T08:00:00+02:00',
+                            },
+                            {
+                                role: 'business',
+                                status: 'active',
+                                since: '2027-01-22T08:00:00+02:00',
+                            },
+                        ],
+                    }),
+                })}
+            />,
+        );
+
+        const roles = within(
+            screen.getByRole('dialog', { name: 'Bosco Mixed, user account' }),
+        ).getByRole('region', { name: 'Roles' });
+        expect(within(roles).getAllByText(/Investor · Revoked/u)).toHaveLength(
+            1,
+        );
+        expect(roles).toHaveTextContent('Business');
+    });
+
     it('shows a staff account, a restricted person and an account with nothing to open', () => {
         const { link: _link, ...officer } = ROWS[4];
         render(
