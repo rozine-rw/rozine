@@ -619,7 +619,12 @@ function RoleSwitchCard({
             <div className={CARD}>
                 <AppCardBody
                     role={role}
-                    summary="suite.app.switch.one_role"
+                    summary={
+                        application.status === 'approved' &&
+                        application.role !== null
+                            ? `suite.app.switch.held_${application.role}`
+                            : 'suite.app.switch.one_role'
+                    }
                     action="suite.app.unavailable"
                 />
             </div>
@@ -673,6 +678,7 @@ function AppCardBody({
         | 'suite.app.request_sent_summary'
         | `suite.app.${'business' | 'auditor'}.switch`
         | 'suite.app.switch.one_role'
+        | `suite.app.switch.held_${'business' | 'auditor'}`
         | 'suite.app.switch.under_review_summary'
         | 'suite.app.switch.asked_summary';
     action:

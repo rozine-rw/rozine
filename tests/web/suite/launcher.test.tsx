@@ -852,6 +852,26 @@ describe('Asking for Business or Auditor access', () => {
         expect(within(auditor).queryByRole('link')).not.toBeInTheDocument();
     });
 
+    it('says which role the account already holds once an application is approved', () => {
+        render(
+            <Launcher
+                identity={investor}
+                role_application={{
+                    kyc: 'approved',
+                    status: 'approved',
+                    role: 'business',
+                }}
+            />,
+        );
+        const auditor = screen.getAllByRole('listitem')[2];
+
+        expect(auditor).toHaveTextContent(
+            'An account holds one role at a time, and yours is Business.',
+        );
+        expect(auditor).not.toHaveTextContent(/with Compliance/u);
+        expect(within(auditor).queryByRole('link')).not.toBeInTheDocument();
+    });
+
     it('sends the person back to fix an application Compliance returned, or to continue a draft', () => {
         const { rerender } = render(
             <Launcher

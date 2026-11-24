@@ -202,6 +202,61 @@ describe('Dashboard hub', () => {
         expect(next).toHaveTextContent('Your account switches to Business');
     });
 
+    it('words the business and Auditor reviews for after the identity check is approved', () => {
+        const { rerender } = render(
+            <HubWork
+                hub={hub({ actions: [], next: ['role_review', 'role_switch'] })}
+            />,
+        );
+        expect(
+            screen.getByText(
+                'Compliance is reviewing your business now. We email you as soon as it is decided.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText(/once your identity check is approved/u),
+        ).not.toBeInTheDocument();
+        rerender(
+            <HubWork
+                hub={hub({
+                    role: 'auditor',
+                    company: null,
+                    actions: [],
+                    next: ['role_send', 'role_review', 'role_switch'],
+                })}
+            />,
+        );
+        expect(
+            screen.getByText(
+                'Your identity is approved, so Compliance reviews your ICPAR licence as soon as you send it.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Compliance is reviewing your ICPAR licence now. We email you as soon as it is decided.',
+            ),
+        ).toBeInTheDocument();
+        rerender(
+            <HubWork
+                hub={hub({
+                    actions: [],
+                    next: ['kyc_review', 'role_send', 'role_switch'],
+                })}
+            />,
+        );
+        expect(
+            screen.getByText(
+                'Compliance reviews it once your identity check is approved.',
+            ),
+        ).toBeInTheDocument();
+        rerender(<HubWork hub={hub({ actions: [], next: ['role_send'] })} />);
+        expect(
+            screen.getByText(
+                'Your identity is approved, so Compliance reviews it as soon as you send it.',
+            ),
+        ).toBeInTheDocument();
+    });
+
     it('words every other action and an empty list', () => {
         const { rerender } = render(
             <HubWork

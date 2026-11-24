@@ -106,15 +106,17 @@ function stepLabel(step: HubStep): MessageCode {
 function nextCopy(
     key: HubNext,
     role: 'business' | 'auditor' | null,
+    identityApproved: boolean,
 ): { title: MessageCode; body: MessageCode } {
     const keyed =
         key === 'role_send' || key === 'role_review' || key === 'role_switch'
             ? roleKey(`suite.hub.next.${key}`, role)
             : `suite.hub.next.${key}`;
+    const waitsOnIdentity = key === 'role_send' || key === 'role_review';
 
     return {
         title: `${keyed}.title` as MessageCode,
-        body: `${keyed}.body` as MessageCode,
+        body: `${keyed}.${waitsOnIdentity && identityApproved ? 'body_approved' : 'body'}` as MessageCode,
     };
 }
 
@@ -379,7 +381,11 @@ export function HubWork({ hub }: { hub: OnboardingHub }) {
                 </h2>
                 <ol className="mt-3.5 flex flex-col gap-3.5">
                     {hub.next.map((key, index) => {
-                        const copy = nextCopy(key, hub.role);
+                        const copy = nextCopy(
+                            key,
+                            hub.role,
+                            !hub.next.some((next) => next.startsWith('kyc_')),
+                        );
 
                         return (
                             <li key={key} className="flex gap-3">
