@@ -231,7 +231,7 @@ describe('Users', () => {
         const unnamed = rowOf('Name pending');
         expect(unnamed).toHaveTextContent('Email not verified');
         expect(unnamed).toHaveTextContent('No role yet');
-        expect(unnamed).toHaveTextContent('Rejected');
+        expect(unnamed).toHaveTextContent('Sent back');
 
         expect(screen.getByText('Staff: Compliance, core')).toHaveClass(
             'line-through',

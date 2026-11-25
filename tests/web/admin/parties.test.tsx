@@ -2634,7 +2634,7 @@ describe('Party 360', () => {
         expect(screen.getByText('Sealed')).toBeInTheDocument();
         await view.user.click(screen.getByRole('tab', { name: 'Controls' }));
         expect(screen.getByText('Expired')).toBeInTheDocument();
-        expect(screen.getByText('Rejected')).toBeInTheDocument();
+        expect(screen.getByText('Sent back')).toBeInTheDocument();
         // Nothing offered: say so rather than describe a Freeze button that isn't there.
         expect(screen.queryByText(/in the Admin app/)).not.toBeInTheDocument();
         expect(

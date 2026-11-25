@@ -52,7 +52,7 @@ const en = {
     'identity.denied.role_not_available.title':
         "This app isn't on your account",
     'identity.denied.role_not_available.body':
-        "Your account doesn't have access to this app yet. Choose an app, or request access from your apps.",
+        "This app belongs to a role your account doesn't hold. An account holds one role at a time, so choose one of your own apps.",
     'identity.denied.staff_only.title': 'This page is for Rozine staff',
     'identity.denied.staff_only.body':
         'Only Rozine staff can open this page. Choose an app to go back to your own work.',
@@ -483,7 +483,7 @@ const en = {
     'admin.role_applications.kyc.draft': 'Started, not sent',
     'admin.role_applications.kyc.submitted': 'Sent, waiting for approval',
     'admin.role_applications.kyc.approved': 'Approved',
-    'admin.role_applications.kyc.rejected': 'Rejected',
+    'admin.role_applications.kyc.rejected': 'Sent back',
     'admin.role_applications.open_kyc': 'Open in Users →',
     'admin.role_applications.two_factor_on': 'Two-factor authentication is on.',
     'admin.role_applications.two_factor_off':
@@ -2517,7 +2517,7 @@ const en = {
         'For Business access · no Investor access on approval',
     'admin.kyc.purpose.auditor':
         'For Auditor access · approval also verifies the ICPAR licence and makes them an Auditor',
-    'admin.kyc.status.rejected': 'Rejected',
+    'admin.kyc.status.rejected': 'Sent back',
     'admin.kyc.empty.submitted': 'No submissions are waiting for review.',
     'admin.kyc.empty.decided': 'No decisions yet.',
     'admin.kyc.more': 'Show more',
@@ -3336,7 +3336,7 @@ const en = {
     'admin.parties.kyc.verified': 'Verified',
     'admin.parties.kyc.pending': 'Pending',
     'admin.parties.kyc.overdue': 'Overdue',
-    'admin.parties.kyc.rejected': 'Rejected',
+    'admin.parties.kyc.rejected': 'Sent back',
     'admin.parties.status.frozen': 'Frozen',
     'admin.parties.status.suspended': 'Suspended',
     'admin.parties.status.restricted': 'Restricted',
@@ -8877,7 +8877,7 @@ const en = {
     'admin.users.kyc_filter.verified': 'KYC: Verified',
     'admin.users.kyc_filter.in_review': 'KYC: In review',
     'admin.users.kyc_filter.in_progress': 'KYC: In progress',
-    'admin.users.kyc_filter.rejected': 'KYC: Rejected',
+    'admin.users.kyc_filter.rejected': 'KYC: Sent back',
     'admin.users.kyc_filter.not_started': 'KYC: Not started',
     'admin.users.sort.newest': 'Sort: Newest first',
     'admin.users.sort.oldest': 'Sort: Oldest first',
@@ -8906,7 +8906,7 @@ const en = {
     'admin.users.kyc.verified': 'Verified',
     'admin.users.kyc.in_review': 'In review',
     'admin.users.kyc.in_progress': 'In progress',
-    'admin.users.kyc.rejected': 'Rejected',
+    'admin.users.kyc.rejected': 'Sent back',
     'admin.users.kyc.not_started': 'Not started',
     'admin.users.badge.restricted': 'Restricted',
     'admin.users.email_unverified': 'Email not verified',

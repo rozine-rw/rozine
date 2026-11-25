@@ -54,7 +54,7 @@ const rw: Catalog = {
     'identity.denied.role_not_available.title':
         'Iyi porogaramu ntiri kuri konti yawe',
     'identity.denied.role_not_available.body':
-        'Konti yawe ntirabona uburenganzira kuri iyi porogaramu. Hitamo porogaramu, cyangwa usabe uburenganzira mu porogaramu zawe.',
+        'Iyi porogaramu ni iy’uruhare konti yawe idafite. Konti igira uruhare rumwe gusa icyarimwe, hitamo imwe mu porogaramu zawe.',
     'identity.denied.staff_only.title': 'Iyi paji ni iy’abakozi ba Rozine',
     'identity.denied.staff_only.body':
         'Abakozi ba Rozine ni bo bonyine bafungura iyi paji. Hitamo porogaramu kugira ngo usubire ku kazi kawe.',
@@ -492,7 +492,7 @@ const rw: Catalog = {
     'admin.role_applications.kyc.draft': 'Yatangiye, ntiyoherejwe',
     'admin.role_applications.kyc.submitted': 'Yoherejwe, itegereje kwemezwa',
     'admin.role_applications.kyc.approved': 'Yemejwe',
-    'admin.role_applications.kyc.rejected': 'Yanzwe',
+    'admin.role_applications.kyc.rejected': 'Yasubijwe',
     'admin.role_applications.open_kyc': 'Fungura muri Abakoresha →',
     'admin.role_applications.two_factor_on':
         'Kwemeza mu byiciro bibiri birakora.',
@@ -2633,7 +2633,7 @@ const rw: Catalog = {
         "Ku bwinjiriro bwa Ubucuruzi · nta bwinjiriro bw'Umushoramari nyuma yo kwemezwa",
     'admin.kyc.purpose.auditor':
         "Ku bwinjiriro bw'Umugenzuzi · kwemeza bigenzura n'uruhushya rwa ICPAR bikamugira Umugenzuzi",
-    'admin.kyc.status.rejected': 'Byanzwe',
+    'admin.kyc.status.rejected': 'Byasubijwe',
     'admin.kyc.empty.submitted': 'Nta bisabwa bitegereje gusuzumwa.',
     'admin.kyc.empty.decided': 'Nta cyemezo kirafatwa.',
     'admin.kyc.more': 'Erekana ibindi',
@@ -3489,7 +3489,7 @@ const rw: Catalog = {
     'admin.parties.kyc.verified': 'Byemejwe',
     'admin.parties.kyc.pending': 'Bitegereje',
     'admin.parties.kyc.overdue': 'Byarengeje igihe',
-    'admin.parties.kyc.rejected': 'Byanzwe',
+    'admin.parties.kyc.rejected': 'Byasubijwe',
     'admin.parties.status.frozen': 'Yahagaritswe',
     'admin.parties.status.suspended': 'Yahagaritswe',
     'admin.parties.status.restricted': 'Ifite imbogamizi',
@@ -9172,7 +9172,7 @@ const rw: Catalog = {
     'admin.users.kyc_filter.verified': 'KYC: Yemejwe',
     'admin.users.kyc_filter.in_review': 'KYC: Irasuzumwa',
     'admin.users.kyc_filter.in_progress': 'KYC: Irakomeje',
-    'admin.users.kyc_filter.rejected': 'KYC: Yanzwe',
+    'admin.users.kyc_filter.rejected': 'KYC: Yasubijwe',
     'admin.users.kyc_filter.not_started': 'KYC: Ntiratangira',
     'admin.users.sort.newest': 'Tondeka: Abashya mbere',
     'admin.users.sort.oldest': 'Tondeka: Aba kera mbere',
@@ -9201,7 +9201,7 @@ const rw: Catalog = {
     'admin.users.kyc.verified': 'Yemejwe',
     'admin.users.kyc.in_review': 'Irasuzumwa',
     'admin.users.kyc.in_progress': 'Irakomeje',
-    'admin.users.kyc.rejected': 'Yanzwe',
+    'admin.users.kyc.rejected': 'Yasubijwe',
     'admin.users.kyc.not_started': 'Ntiratangira',
     'admin.users.badge.restricted': 'Yabujijwe',
     'admin.users.email_unverified': 'Imeri ntiremezwa',
