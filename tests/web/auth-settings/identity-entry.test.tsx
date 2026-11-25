@@ -92,7 +92,7 @@ it.each([
     [
         'ROLE_NOT_AVAILABLE',
         "This app isn't on your account",
-        "Your account doesn't have access to this app yet.",
+        "This app belongs to a role your account doesn't hold.",
     ],
     [
         'STAFF_ACCESS_REQUIRED',
