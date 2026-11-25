@@ -526,6 +526,25 @@ describe('Verification', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('shows the staff note once on a sent-back check, not again above Continue', () => {
+        render(
+            <InvestorVerification
+                {...({
+                    ...clone<InvestorVerificationProps>(personalFixture),
+                    status: 'rejected',
+                    decision_reason: 'The selfie is too dark.',
+                    requested_changes: {
+                        reason: 'The selfie is too dark.',
+                        requested_at: '2026-11-24T08:27:00+02:00',
+                        items: [{ key: 'selfie', label: 'Selfie', note: '' }],
+                    },
+                } as InvestorVerificationProps)}
+            />,
+        );
+
+        expect(screen.getAllByText(/The selfie is too dark\./)).toHaveLength(1);
+    });
+
     it('opens a sent-back check on the earliest step holding a flagged item (#766)', () => {
         render(
             <InvestorVerification
