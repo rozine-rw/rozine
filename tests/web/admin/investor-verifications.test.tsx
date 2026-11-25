@@ -571,6 +571,56 @@ describe('Compliance review drawer', () => {
         inertia.errors = {};
     });
 
+    it('says up front when an ID is verified for someone else, and starts the send-back with the ID number ticked (#765)', async () => {
+        const { user } = renderWithUser(
+            <AdminInvestorVerifications
+                {...queue({
+                    review: review({
+                        blocked: 'IDENTITY_VERIFIED_FOR_ANOTHER_PERSON',
+                        revisable: {
+                            id_number: 'National ID number',
+                            selfie: 'Selfie',
+                        },
+                        actions: {
+                            reject: {
+                                url: '/admin/investor-verifications/a/reject',
+                                method: 'post',
+                            },
+                        },
+                    }),
+                })}
+            />,
+        );
+
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'This ID number is already verified for another person',
+        );
+        expect(
+            screen.queryByRole('button', { name: 'Approve' }),
+        ).not.toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: 'Send back' }));
+        const stage = screen.getByRole('form', {
+            name: 'Send this check back for changes',
+        });
+        expect(
+            within(stage).getByLabelText('Reason for the record'),
+        ).toHaveValue(
+            'The ID number you gave is already verified on another account. Please check it and send again.',
+        );
+        expect(
+            within(stage).getByLabelText('National ID number'),
+        ).toBeChecked();
+        await user.click(
+            within(stage).getByRole('button', {
+                name: 'Send back for changes',
+            }),
+        );
+        expect(inertia.posts[0]).toMatchObject({
+            url: '/admin/investor-verifications/a/reject',
+            data: { items: [{ key: 'id_number', note: '' }] },
+        });
+    });
+
     it('shows the server refusal and only the actions the server sends', () => {
         inertia.errors = {
             form: 'This case changed since you opened it. Review it again.',

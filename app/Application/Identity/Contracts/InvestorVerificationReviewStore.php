@@ -29,7 +29,7 @@ namespace App\Application\Identity\Contracts;
  *     licence: array{number: string, expires_on: string}|null, submitted_at: string|null,
  *     account: array{name: string, email: string}, state: State, documents: list<ReviewDocument>,
  *     history: list<array{revision: int, status: string, command: string, reason: string|null, at: string}>,
- *     revisable: array<string, string>, allowed_actions: list<'approve'|'reject'>
+ *     revisable: array<string, string>, blocked: 'IDENTITY_VERIFIED_FOR_ANOTHER_PERSON'|null, allowed_actions: list<'approve'|'reject'>
  * }
  */
 interface InvestorVerificationReviewStore

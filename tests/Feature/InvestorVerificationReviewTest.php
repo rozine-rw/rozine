@@ -254,6 +254,11 @@ test('an identity already verified for another person is never relinked by staff
     (new VerifiedPersonIdentity)->forceFill(['identity_digest' => hash('sha256', 'rw-nid:1199080012345678'), 'party_id' => $other->id,
         'evidence_reference' => 'operator:prior'])->save();
 
+    // The drawer says so before anyone tries, and offers only Send back (QA #765).
+    $this->actingAs($this->officer)->get(route('staff.users.index', ['user' => $this->person->id]))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('kyc_review.blocked', 'IDENTITY_VERIFIED_FOR_ANOTHER_PERSON')
+            ->has('kyc_review.actions.reject')->missing('kyc_review.actions.approve'));
+
     $this->actingAs($this->officer)->post(route('staff.investor-verifications.approve', $case), reviewDecision($case))
         ->assertSessionHasErrors(['form' => 'This ID number is already verified for another person, so it cannot be approved. Reject the case so the person can check the ID they gave.']);
     expect($this->person->refresh()->party_id)->not->toBe($other->id)
