@@ -42,7 +42,9 @@ final class RwandaAddress
             }
         }
         // Every address names its street (Erastus, 25 Nov 2026).
-        if ($address['street'] === '' || preg_match('/[\p{Cc}\p{Cf}]/u', $address['street']) === 1) {
+        if ($address['street'] === '') {
+            $errors[$prefix.'street'] = ['Enter the street, or the nearest road or landmark if it has no name.'];
+        } elseif (preg_match('/[\p{Cc}\p{Cf}]/u', $address['street']) === 1) {
             $errors[$prefix.'street'] = ['Enter the street as written, for example KG 5 Ave.'];
         }
 

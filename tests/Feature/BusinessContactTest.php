@@ -39,7 +39,7 @@ it('saves the company information as the next version and shows it on Profile', 
         ->assertRedirect(route('business.profile', ['business' => $business, 'section' => 'company']))->assertSessionHasNoErrors();
     // Every address names its street (Erastus, 25 Nov 2026).
     $this->put(route('business.profile.company', ['business' => $business]), ($this->contact)(['street' => '', 'phone' => '0722000111']))
-        ->assertSessionHasErrors(['street' => 'Enter the street, for example KG 5 Ave.']);
+        ->assertSessionHasErrors(['street' => 'Enter the street, or the nearest road or landmark if it has no name.']);
     $this->put(route('business.profile.company', ['business' => $business]), ($this->contact)(['street' => 'KN 6 Ave', 'phone' => '0722000111']))
         ->assertSessionHasNoErrors();
 

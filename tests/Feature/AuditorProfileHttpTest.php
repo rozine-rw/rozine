@@ -394,7 +394,7 @@ it('saves the partner\'s registered address and continues to Personal & contact'
     // Every address names its street (Erastus, 25 Nov 2026).
     profileHttpPost('auditor.address.update', ['address' => [...$address, 'street' => null], 'identity_context_revision' => 1, 'expected_revision' => 1,
         'request_id' => (string) Str::uuid()])->assertUnprocessable()
-        ->assertJsonPath('errors', ['address.street' => ['Enter the street as written, for example KG 5 Ave.']]);
+        ->assertJsonPath('errors', ['address.street' => ['Enter the street, or the nearest road or landmark if it has no name.']]);
     expect(AuditorProfile::query()->sole()->state['address']['street'])->toBe('KG 7 Ave');
 });
 

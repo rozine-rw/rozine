@@ -1671,6 +1671,7 @@ function AddressFields({
                 grouped
                 label={t('role.apply.address.street')}
                 placeholder={t('role.apply.address.street_placeholder')}
+                hint={t('role.apply.address.street_hint')}
                 value={value.street}
                 error={error(`${errorPrefix}street`)}
                 onChange={(street) => onChange({ street })}

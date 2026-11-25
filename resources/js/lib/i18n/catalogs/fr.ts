@@ -10006,6 +10006,8 @@ const fr: Catalog = {
     'role.apply.address.cell_placeholder': 'Nom de la cellule',
     'role.apply.address.street': 'Rue',
     'role.apply.address.street_placeholder': 'KG 5 Ave',
+    'role.apply.address.street_hint':
+        'Pas de nom de rue ? Indiquez la route la plus proche ou un point de repère.',
     'admin.parties.audit.reason.AUDIT_DISTRICT_MISSING':
         'Aucun district enregistré n’est connu pour cette entreprise : l’affectation ne peut pas la rapprocher d’un partenaire. Demandez à l’entreprise de compléter son adresse enregistrée. Tentatives d’affectation utilisées : {attempts} sur 3.',
     'admin.parties.audit.reason.AUDIT_NO_PARTNER_IN_DISTRICT':

@@ -9974,6 +9974,8 @@ const rw: Catalog = {
     'role.apply.address.cell_placeholder': "Izina ry'akagari",
     'role.apply.address.street': 'Umuhanda',
     'role.apply.address.street_placeholder': 'KG 5 Ave',
+    'role.apply.address.street_hint':
+        "Nta zina ry'umuhanda? Andika umuhanda uri hafi cyangwa ikimenyetso kizwi.",
     'admin.parties.audit.reason.AUDIT_DISTRICT_MISSING':
         'Ubu bucuruzi nta karere kanditse bufite, bityo ntibushobora guhuzwa n’umugenzuzi. Saba ubucuruzi kuzuza aderesi yabwo yanditse. Inshuro zo kohereza zakoreshejwe: {attempts} kuri 3.',
     'admin.parties.audit.reason.AUDIT_NO_PARTNER_IN_DISTRICT':
