@@ -386,6 +386,8 @@ const fr: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Les auditeurs partenaires ne peuvent pas avoir un autre rôle Rozine : ce compte ne peut donc pas demander l’accès Auditeur.',
     'suite.app.unavailable': 'Indisponible avec votre accès actuel',
+    'role.apply.people.share_number':
+        'Indiquez la part en chiffres, par exemple 25 ou 25,5.',
     'suite.app.switch.kyc_fix_summary':
         'Votre demande est chez Conformité. Elle pourra être approuvée dès que vous aurez corrigé ce qui a été demandé sur votre vérification d’identité.',
     'suite.app.switch.kyc_fix': 'Corriger votre vérification d’identité →',

@@ -133,20 +133,32 @@ describe('Owners on the People step (#761)', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('keeps a share to digits and one decimal point', () => {
+    it('reads a decimal comma as a point and refuses anything else with a word, never rewriting it', () => {
         render(
             <RoleApply
-                {...props([{ ...jane, ownership_pct: '', pep: false }])}
+                {...props([{ ...jane, ownership_pct: '30', pep: false }])}
             />,
         );
+        const share = () =>
+            screen.getByLabelText('Share (%)') as HTMLInputElement;
+        const type = (value: string) =>
+            fireEvent.change(share(), { target: { value } });
+        const hint = 'Enter the share as a number, like 25 or 25.5.';
 
-        fireEvent.change(screen.getByLabelText('Share (%)'), {
-            target: { value: '4a0.5.5%' },
-        });
+        type('25,5');
+        expect(share().value).toBe('25.5');
+        type('2,5');
+        expect(share().value).toBe('2.5');
 
-        expect(
-            (screen.getByLabelText('Share (%)') as HTMLInputElement).value,
-        ).toBe('40.55');
+        for (const refused of ['-25', '25.5.5', '25,5,5', '2a5']) {
+            type(refused);
+            expect(share().value).toBe('2.5');
+            expect(screen.getByText(hint)).toBeInTheDocument();
+        }
+
+        type('40');
+        expect(share().value).toBe('40');
+        expect(screen.queryByText(hint)).not.toBeInTheDocument();
     });
 
     it('corrects an owner picked from the directors when the director is corrected', () => {

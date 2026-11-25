@@ -1924,6 +1924,7 @@ function OwnersList({
     onChange: (owners: RoleApplicationPerson[]) => void;
 }) {
     const { t } = useTranslation();
+    const [unreadable, setUnreadable] = useState<Record<number, boolean>>({});
     const total = shareTotal(owners);
     const full = total >= 100;
     const remaining = Math.max(0, 100 - total);
@@ -1960,7 +1961,10 @@ function OwnersList({
                     const director = directors.some((candidate) =>
                         isSamePerson(owner, candidate),
                     );
-                    const shareError = errors[`owners.${index}.ownership_pct`];
+                    const shareError =
+                        unreadable[index] === true
+                            ? t('role.apply.people.share_number')
+                            : errors[`owners.${index}.ownership_pct`];
 
                     return (
                         <div
@@ -2068,14 +2072,22 @@ function OwnersList({
                                 value={owner.ownership_pct ?? ''}
                                 inputMode="numeric"
                                 error={shareError}
-                                onChange={(value) =>
-                                    update(index, {
-                                        // A share is a number: keep digits and one decimal point.
-                                        ownership_pct: value
-                                            .replace(/[^0-9.]/g, '')
-                                            .replace(/(\..*)\./g, '$1'),
-                                    })
-                                }
+                                onChange={(value) => {
+                                    // A share is a number. A decimal comma reads as a point; anything
+                                    // else (letters, a minus, a second separator) is refused with a
+                                    // word, never rewritten into another number.
+                                    const share = value.replace(',', '.');
+                                    const valid = /^\d*(\.\d*)?$/.test(share);
+
+                                    setUnreadable({
+                                        ...unreadable,
+                                        [index]: !valid,
+                                    });
+
+                                    if (valid) {
+                                        update(index, { ownership_pct: share });
+                                    }
+                                }}
                             />
                             <Check
                                 accent={accent}
