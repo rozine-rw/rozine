@@ -462,7 +462,9 @@ final class RoleApplicationCase
                 $share = trim($this->text($row['ownership_pct'] ?? ''));
                 $person['ownership_pct'] = mb_substr($share, 0, 8);
                 $person['pep'] = filter_var($row['pep'] ?? false, FILTER_VALIDATE_BOOLEAN);
-                if (! is_numeric($share) || (float) $share < 25 || (float) $share > 100) {
+                // Plain digits with an optional decimal part, the grammar the form accepts: is_numeric
+                // would also take 3e1 or +25, which the form flags (#775 review).
+                if (preg_match('/^\d+(\.\d+)?$/D', $share) !== 1 || (float) $share < 25 || (float) $share > 100) {
                     $errors[$at.'ownership_pct'] = ['List owners of 25% or more. Enter their share between 25 and 100.'];
                 } else {
                     $total += (float) $share;

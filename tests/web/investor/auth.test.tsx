@@ -526,6 +526,33 @@ describe('Verification', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('opens a sent-back check on the earliest step holding a flagged item (#766)', () => {
+        render(
+            <InvestorVerification
+                {...({
+                    ...clone<InvestorVerificationProps>(personalFixture),
+                    status: 'draft',
+                    step: 'liveness',
+                    requested_changes: {
+                        reason: '',
+                        requested_at: '2026-11-24T08:27:00+02:00',
+                        items: [
+                            {
+                                key: 'id_number',
+                                label: 'National ID number',
+                                note: '',
+                            },
+                        ],
+                    },
+                } as InvestorVerificationProps)}
+            />,
+        );
+
+        expect(
+            screen.getByRole('heading', { level: 1, name: 'Verify your ID' }),
+        ).toBeInTheDocument();
+    });
+
     it('verifies an individual: date of birth, document photos, then a selfie', async () => {
         const user = userEvent.setup();
         const { unmount: unmountFirst } = render(

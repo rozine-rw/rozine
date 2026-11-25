@@ -373,6 +373,11 @@ const en = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Audit Partners can’t hold another Rozine role, so this account can’t ask for Auditor access.',
     'suite.app.unavailable': 'Not available with your current access',
+    'role.apply.people.share_number':
+        'Enter the share as a number, like 25 or 25.5.',
+    'suite.app.switch.kyc_fix_summary':
+        'Your application is with Compliance. They can approve it once you fix what they asked on your identity check.',
+    'suite.app.switch.kyc_fix': 'Fix your identity check →',
     'admin.role_applications.status.resubmitted': 'Sent again for review',
     'role.apply.people.pick_director':
         'Is a director also an owner? Pick them:',
@@ -410,7 +415,9 @@ const en = {
     'admin.role_applications.auditor.confirm_body':
         'This accredits {name} as an Auditor, their only role, replacing Investor if they hold it. Record why in the note.',
     'admin.role_applications.confirm_unchanged':
-        '{count} item(s) you asked to change were not changed.',
+        '{count} items you asked to change were not changed.',
+    'admin.role_applications.confirm_unchanged_one':
+        '1 item you asked to change was not changed.',
     'admin.role_applications.confirm_note': 'Write a note above to approve.',
     'admin.role_applications.company': 'Company',
     'admin.role_applications.rep_name': 'Representative',

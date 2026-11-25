@@ -658,7 +658,9 @@ export function RoleApplicationDrawer({
                                 {unchangedCount > 0 && (
                                     <p className="mt-2 font-semibold text-[#a3480a] dark:text-[#f0a060]">
                                         {t(
-                                            'admin.role_applications.confirm_unchanged',
+                                            unchangedCount === 1
+                                                ? 'admin.role_applications.confirm_unchanged_one'
+                                                : 'admin.role_applications.confirm_unchanged',
                                             { count: String(unchangedCount) },
                                         )}
                                     </p>
