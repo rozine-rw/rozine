@@ -1890,10 +1890,13 @@ function isSamePerson(
     );
 }
 
-/** The sum of the shares typed so far, ignoring what isn't a number. */
+/** The sum of the shares typed so far, leaving out any share that isn't a plain number such as "3e1". */
 function shareTotal(owners: RoleApplicationPerson[]): number {
     return owners.reduce((total, owner) => {
-        const share = Number.parseFloat(owner.ownership_pct ?? '');
+        const typed = owner.ownership_pct ?? '';
+        const share = /^\d*(\.\d*)?$/.test(typed)
+            ? Number.parseFloat(typed)
+            : Number.NaN;
 
         return Number.isFinite(share) ? total + share : total;
     }, 0);
