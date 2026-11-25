@@ -109,10 +109,17 @@ describe('The Auditor application’s registered address', () => {
             'address.district': 'Choose a district in the selected province.',
             'address.sector': 'Enter the sector name.',
             'address.cell': 'Enter the cell name.',
+            'address.street':
+                'Enter the street as written, for example KG 5 Ave.',
         };
         render(<RoleApply {...props()} />);
 
         expect(screen.getByText('Enter the sector name.')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Enter the street as written, for example KG 5 Ave.',
+            ),
+        ).toBeInTheDocument();
 
         fill();
 
@@ -127,6 +134,11 @@ describe('The Auditor application’s registered address', () => {
         ).not.toBeInTheDocument();
         expect(
             screen.queryByText('Enter the cell name.'),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByText(
+                'Enter the street as written, for example KG 5 Ave.',
+            ),
         ).not.toBeInTheDocument();
     });
 });
