@@ -96,16 +96,35 @@ describe('The Auditor application’s registered address', () => {
         });
     });
 
+    it('asks for the street, or the nearest road or a landmark when it has no name', () => {
+        render(<RoleApply {...props()} />);
+
+        expect(screen.getByLabelText('Street')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'No street name? Enter the nearest road or a landmark.',
+            ),
+        ).toBeInTheDocument();
+        expect(screen.queryByText(/Leave it empty/u)).not.toBeInTheDocument();
+    });
+
     it('clears a field’s error once the field is filled in, until the next save', () => {
         inertia.errors = {
             'address.province': 'Choose the province.',
             'address.district': 'Choose a district in the selected province.',
             'address.sector': 'Enter the sector name.',
             'address.cell': 'Enter the cell name.',
+            'address.street':
+                'Enter the street, or the nearest road or landmark if it has no name.',
         };
         render(<RoleApply {...props()} />);
 
         expect(screen.getByText('Enter the sector name.')).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                'Enter the street, or the nearest road or landmark if it has no name.',
+            ),
+        ).toBeInTheDocument();
 
         fill();
 
@@ -120,6 +139,11 @@ describe('The Auditor application’s registered address', () => {
         ).not.toBeInTheDocument();
         expect(
             screen.queryByText('Enter the cell name.'),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByText(
+                'Enter the street, or the nearest road or landmark if it has no name.',
+            ),
         ).not.toBeInTheDocument();
     });
 });

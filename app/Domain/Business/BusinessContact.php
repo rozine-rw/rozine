@@ -46,7 +46,9 @@ final readonly class BusinessContact
                 $errors[$field] = ['Enter the '.$field.' name.'];
             }
         }
-        if (mb_strlen($values['street']) > 160) {
+        if ($values['street'] === '') {
+            $errors['street'] = ['Enter the street, or the nearest road or landmark if it has no name.'];
+        } elseif (mb_strlen($values['street']) > 160) {
             $errors['street'] = ['Keep the street to 160 characters.'];
         }
 

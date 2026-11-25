@@ -391,10 +391,11 @@ it('saves the partner\'s registered address and continues to Personal & contact'
     $this->get(route('auditor.profile', ['section' => 'contact']))->assertInertia(fn (Assert $page): Assert => $page
         ->where('contact.address', $address)->where('contact.address_line', 'KG 7 Ave, Kamatamu, Kacyiru, Gasabo')
         ->where('availability.address', $address)->where('allowed_actions', ['accreditation.submit']));
-    // A rural premises with no street name keeps the street empty.
+    // Every address names its street (Erastus, 25 Nov 2026).
     profileHttpPost('auditor.address.update', ['address' => [...$address, 'street' => null], 'identity_context_revision' => 1, 'expected_revision' => 1,
-        'request_id' => (string) Str::uuid()])->assertOk();
-    expect(AuditorProfile::query()->sole()->state['address']['street'])->toBe('');
+        'request_id' => (string) Str::uuid()])->assertUnprocessable()
+        ->assertJsonPath('errors', ['address.street' => ['Enter the street, or the nearest road or landmark if it has no name.']]);
+    expect(AuditorProfile::query()->sole()->state['address']['street'])->toBe('KG 7 Ave');
 });
 
 it('looks up only this Party recorded outcomes', function (): void {
