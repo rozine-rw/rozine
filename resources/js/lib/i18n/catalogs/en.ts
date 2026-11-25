@@ -3614,7 +3614,7 @@ const en = {
     'admin.parties.audit.redispatch.form_body':
         'The audit is offered to the next eligible Audit Partner it has not been offered to. Its original deadline does not move.',
     'admin.parties.audit.redispatch.placeholder':
-        'e.g. A new Audit Partner near this business was approved.',
+        'e.g. A new Audit Partner covering this business’s district was approved.',
     'admin.parties.audit.redispatch.cta': 'Redispatch',
     'admin.parties.audit.redispatch.done': 'Audit sent back to dispatch.',
     'admin.parties.audit.close.open': 'Close permanently',
@@ -9652,7 +9652,7 @@ const en = {
     'role.apply.address.street': 'Street',
     'role.apply.address.street_placeholder': 'KG 5 Ave',
     'role.apply.address.street_hint':
-        'Leave it empty if the premises has no street name.',
+        'No street name? Enter the nearest road or a landmark.',
     'admin.parties.audit.reason.AUDIT_DISTRICT_MISSING':
         'This business has no registered district on record, so dispatch can’t match it to a partner. Ask the business to complete its registered address. Dispatch attempts used: {attempts} of 3.',
     'admin.parties.audit.reason.AUDIT_NO_PARTNER_IN_DISTRICT':

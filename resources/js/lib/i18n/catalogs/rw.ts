@@ -3775,7 +3775,7 @@ const rw: Catalog = {
     'admin.parties.audit.redispatch.form_body':
         'Igenzura rihabwa umugenzuzi ukurikira wemerewe ritarahabwa. Igihe ntarengwa cyaryo ntigihinduka.',
     'admin.parties.audit.redispatch.placeholder':
-        'urugero: Umugenzuzi mushya uri hafi y’ubu bucuruzi yemejwe.',
+        'urugero: Umugenzuzi mushya ukorera mu karere k’ubu bucuruzi yemejwe.',
     'admin.parties.audit.redispatch.cta': 'Ohereza ukundi',
     'admin.parties.audit.redispatch.done': 'Igenzura ryasubijwe mu itangwa.',
     'admin.parties.audit.close.open': 'Funga burundu',
@@ -9982,7 +9982,7 @@ const rw: Catalog = {
     'role.apply.address.street': 'Umuhanda',
     'role.apply.address.street_placeholder': 'KG 5 Ave',
     'role.apply.address.street_hint':
-        "Bireke ubusa niba aho ukorera hadafite izina ry'umuhanda.",
+        "Nta zina ry'umuhanda? Andika umuhanda uri hafi cyangwa ikimenyetso kizwi.",
     'admin.parties.audit.reason.AUDIT_DISTRICT_MISSING':
         'Ubu bucuruzi nta karere kanditse bufite, bityo ntibushobora guhuzwa n’umugenzuzi. Saba ubucuruzi kuzuza aderesi yabwo yanditse. Inshuro zo kohereza zakoreshejwe: {attempts} kuri 3.',
     'admin.parties.audit.reason.AUDIT_NO_PARTNER_IN_DISTRICT':

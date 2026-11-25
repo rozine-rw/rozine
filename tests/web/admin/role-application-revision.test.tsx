@@ -310,6 +310,13 @@ describe('Reviewing an auditor application (#757)', () => {
                         expires_on: '2027-12-31',
                         firm: '',
                     },
+                    address: {
+                        province: 'Kigali City',
+                        district: 'Gasabo',
+                        sector: 'Kacyiru',
+                        cell: 'Kamatamu',
+                        street: 'KG 7 Ave',
+                    },
                     coverage: {
                         districts: ['Gasabo'],
                         no_conflicts: true,
@@ -321,6 +328,20 @@ describe('Reviewing an auditor application (#757)', () => {
                 note: null,
             },
         });
+
+    it('shows the registered address under its own heading, apart from the licence', () => {
+        renderWithUser(
+            <RoleApplicationDrawer
+                application={auditor('approved')}
+                close="/admin/auditors"
+            />,
+        );
+
+        expect(
+            screen.getByRole('heading', { name: 'Registered address' }),
+        ).toBeInTheDocument();
+        expect(screen.getByText('Kacyiru')).toBeInTheDocument();
+    });
 
     it('shows each conflicts and ethics declaration with its answer', () => {
         renderWithUser(
