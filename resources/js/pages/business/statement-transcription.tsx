@@ -174,7 +174,10 @@ export default function BusinessStatementTranscription({
 
     const footer =
         draft.save === null ? null : (
-            <div className="border-t border-rz-border bg-rz-surface px-5 py-3.5">
+            <div
+                data-testid="save-bar"
+                className="sticky bottom-0 z-10 border-t border-rz-border bg-rz-surface px-5 pt-3.5 pb-[calc(env(safe-area-inset-bottom)+14px)] shadow-[0_-10px_24px_-18px_rgba(20,45,95,.45)] lg:static lg:shrink-0 lg:rounded-b-[18px] lg:pb-3.5"
+            >
                 {error !== null && (
                     <p
                         role="alert"
@@ -232,6 +235,7 @@ export default function BusinessStatementTranscription({
             close={links.close}
             closeLabel={t('business.note.close')}
             dismissible={false}
+            fullHeight
             footer={footer}
         >
             <div className="px-5 pt-[calc(env(safe-area-inset-top)+2px)] pb-10 lg:pt-[18px]">
@@ -593,7 +597,9 @@ function AccountMonth({
     const current = sheetOf(form, month, account.key);
     const opening = openingOf(form, months, account, month);
     const computed = computedClosing(opening.value, current.rows);
-    const codes = sheetProblems(form, months, account, month);
+    /** A month shows what is wrong only once something has been entered in it, not on arrival. */
+    const started = sheetKey(month, account.key) in form.sheets;
+    const codes = started ? sheetProblems(form, months, account, month) : [];
     const id = `${month}-${account.key}`;
 
     return (
