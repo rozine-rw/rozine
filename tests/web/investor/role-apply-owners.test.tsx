@@ -1,3 +1,4 @@
+import { router } from '@inertiajs/react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import RoleApply from '@/pages/role/apply';
@@ -133,7 +134,7 @@ describe('Owners on the People step (#761)', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('reads a decimal comma as a point and refuses anything else with a word, never rewriting it', () => {
+    it('reads a decimal comma as a point and flags anything else as typed, never rewriting it', () => {
         render(
             <RoleApply
                 {...props([{ ...jane, ownership_pct: '30', pep: false }])}
@@ -150,11 +151,24 @@ describe('Owners on the People step (#761)', () => {
         type('2,5');
         expect(share().value).toBe('2.5');
 
-        for (const refused of ['-25', '25.5.5', '25,5,5', '2a5']) {
-            type(refused);
-            expect(share().value).toBe('2.5');
+        for (const [typed, shown] of [
+            ['-25', '-25'],
+            ['25.5.5', '25.5.5'],
+            ['25,5,5', '25.5,5'],
+            ['2a5', '2a5'],
+        ]) {
+            type(typed);
+            expect(share().value).toBe(shown);
             expect(screen.getByText(hint)).toBeInTheDocument();
         }
+
+        // Saving sends what the field shows, never an earlier valid share.
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Save and continue' }),
+        );
+        expect(vi.mocked(router.post).mock.calls.at(-1)?.[1]).toMatchObject({
+            answers: { owners: [{ ownership_pct: '2a5' }] },
+        });
 
         type('40');
         expect(share().value).toBe('40');

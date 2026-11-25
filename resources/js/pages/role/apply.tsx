@@ -1484,7 +1484,7 @@ function Field({
     hint?: string;
     error?: string;
     type?: 'text' | 'date' | 'tel';
-    inputMode?: 'numeric';
+    inputMode?: 'numeric' | 'decimal';
 }) {
     return (
         <div>
@@ -2070,23 +2070,20 @@ function OwnersList({
                                 id={`owners_${index}_share`}
                                 label={t('role.apply.people.share')}
                                 value={owner.ownership_pct ?? ''}
-                                inputMode="numeric"
+                                inputMode="decimal"
                                 error={shareError}
                                 onChange={(value) => {
                                     // A share is a number. A decimal comma reads as a point; anything
-                                    // else (letters, a minus, a second separator) is refused with a
-                                    // word, never rewritten into another number.
+                                    // else (letters, a minus, a second separator) stays exactly as typed
+                                    // and is flagged, never rewritten into another number, so a save
+                                    // sends what the field shows and the server refuses it too.
                                     const share = value.replace(',', '.');
-                                    const valid = /^\d*(\.\d*)?$/.test(share);
 
                                     setUnreadable({
                                         ...unreadable,
-                                        [index]: !valid,
+                                        [index]: !/^\d*(\.\d*)?$/.test(share),
                                     });
-
-                                    if (valid) {
-                                        update(index, { ownership_pct: share });
-                                    }
+                                    update(index, { ownership_pct: share });
                                 }}
                             />
                             <Check
