@@ -21,6 +21,7 @@ use App\Models\InvestorVerificationDocument;
 use App\Models\InvestorVerificationVersion;
 use App\Models\Party;
 use App\Models\User;
+use App\Models\VerifiedPersonIdentity;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -125,7 +126,25 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
                     'at' => (string) $version->getAttribute('created_at')?->toIso8601String(),
                 ])->all()),
             'revisable' => $this->cases->revisable($record->state, $record->purpose),
-            'allowed_actions' => $record->status === 'submitted' ? ['approve', 'reject'] : []];
+            'blocked' => $blocked = $this->approvalBlocked($record),
+            // An approval the writer would refuse is not offered (QA #765): only sending it back is.
+            'allowed_actions' => $record->status === 'submitted' ? ($blocked === null ? ['approve', 'reject'] : ['reject']) : []];
+    }
+
+    /**
+     * Why a waiting case cannot be approved, read before anyone tries: its ID number is already
+     * verified for another person. The writer still refuses it under its own lock.
+     *
+     * @return 'IDENTITY_VERIFIED_FOR_ANOTHER_PERSON'|null
+     */
+    private function approvalBlocked(InvestorVerification $record): ?string
+    {
+        if ($record->status !== 'submitted' || ($record->state['id_type'] ?? null) === null || ($record->state['id_number'] ?? '') === '') {
+            return null;
+        }
+        $identity = VerifiedPersonIdentity::query()->find(hash('sha256', $this->cases->identityReference($record->state)));
+
+        return $identity !== null && $identity->party_id !== $record->party_id ? 'IDENTITY_VERIFIED_FOR_ANOTHER_PERSON' : null;
     }
 
     /** @return array{filename: string, media_type: string, content: string} */

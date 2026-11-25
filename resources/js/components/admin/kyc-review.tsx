@@ -204,14 +204,23 @@ export function KycReview({
                     ))}
                 </ol>
             </section>
-            {errors.form && (
+            {review.blocked && review.status === 'submitted' && (
                 <p
                     role="alert"
                     className="mt-4 rounded-[11px] bg-[rgba(229,72,77,.1)] px-3.5 py-2.5 text-[12.5px] font-semibold text-[#c2292e] dark:text-rz-danger-text"
                 >
-                    {errors.form}
+                    {t(`admin.kyc.blocked.${review.blocked}`)}
                 </p>
             )}
+            {errors.form &&
+                !(review.blocked && review.status === 'submitted') && (
+                    <p
+                        role="alert"
+                        className="mt-4 rounded-[11px] bg-[rgba(229,72,77,.1)] px-3.5 py-2.5 text-[12.5px] font-semibold text-[#c2292e] dark:text-rz-danger-text"
+                    >
+                        {errors.form}
+                    </p>
+                )}
             {review.decide && review.status === 'submitted' && (
                 <div className="mt-5 flex flex-wrap items-center gap-3 rounded-[13px] border border-rz-hairline bg-rz-surface px-[15px] py-3 text-[12.5px] text-rz-body">
                     <span className="flex-1">
@@ -238,6 +247,15 @@ export function KycReview({
                     revisable={
                         stage.kind === 'reject' ? review.revisable : undefined
                     }
+                    {...(stage.kind === 'reject' &&
+                        review.blocked && {
+                            initialReason: t(
+                                `admin.kyc.blocked.${review.blocked}_reason`,
+                            ),
+                            initialItems: review.revisable?.id_number
+                                ? [{ key: 'id_number', note: '' }]
+                                : [],
+                        })}
                     payload={{
                         request_id: requestId,
                         expected_revision: review.revision,

@@ -379,6 +379,10 @@ const rw: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Abagenzuzi ntibashobora kugira urundi ruhare muri Rozine, bityo iyi konti ntishobora gusaba uburenganzira bw’Umugenzuzi.',
     'suite.app.unavailable': 'Ntibishoboka n’uburenganzira ufite ubu',
+    'admin.kyc.blocked.IDENTITY_VERIFIED_FOR_ANOTHER_PERSON':
+        'Iyi nomero y’indangamuntu yamaze kwemezwa ku wundi muntu, ntishobora kwemezwa. Subiza igenzura kugira ngo nyirayo agenzure indangamuntu yatanze.',
+    'admin.kyc.blocked.IDENTITY_VERIFIED_FOR_ANOTHER_PERSON_reason':
+        'Nomero y’indangamuntu watanze yamaze kwemezwa kuri konti indi. Yigenzure maze wongere wohereze.',
     'role.apply.people.share_number':
         'Andika umugabane mu mibare, nka 25 cyangwa 25.5.',
     'suite.app.switch.kyc_fix_summary':
