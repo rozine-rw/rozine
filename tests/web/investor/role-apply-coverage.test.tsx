@@ -96,6 +96,13 @@ describe('The Auditor application’s registered address', () => {
         });
     });
 
+    it('asks for the street as part of every address, with no hint to leave it empty', () => {
+        render(<RoleApply {...props()} />);
+
+        expect(screen.getByLabelText('Street')).toBeInTheDocument();
+        expect(screen.queryByText(/Leave it empty/u)).not.toBeInTheDocument();
+    });
+
     it('clears a field’s error once the field is filled in, until the next save', () => {
         inertia.errors = {
             'address.province': 'Choose the province.',

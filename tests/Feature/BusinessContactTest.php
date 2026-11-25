@@ -37,7 +37,10 @@ it('saves the company information as the next version and shows it on Profile', 
 
     $this->actingAs($user)->put(route('business.profile.company', ['business' => $business]), ($this->contact)())
         ->assertRedirect(route('business.profile', ['business' => $business, 'section' => 'company']))->assertSessionHasNoErrors();
+    // Every address names its street (Erastus, 25 Nov 2026).
     $this->put(route('business.profile.company', ['business' => $business]), ($this->contact)(['street' => '', 'phone' => '0722000111']))
+        ->assertSessionHasErrors(['street' => 'Enter the street, for example KG 5 Ave.']);
+    $this->put(route('business.profile.company', ['business' => $business]), ($this->contact)(['street' => 'KN 6 Ave', 'phone' => '0722000111']))
         ->assertSessionHasNoErrors();
 
     $versions = BusinessContactVersion::query()->where('business_id', $business)->orderBy('version')->get();
@@ -46,13 +49,13 @@ it('saves the company information as the next version and shows it on Profile', 
             'sector' => 'Muhoza', 'cell' => 'Mpenge', 'street' => 'KN 4 Ave'])
         ->and($versions[0]->actor_party_id)->toBe($authority['people'][0]->id)
         ->and($versions[0]->sha256)->toHaveLength(64)
-        ->and(CommandOperation::query()->where('command', 'business.profile.update')->count())->toBe(2)
+        ->and(CommandOperation::query()->where('command', 'business.profile.update')->count())->toBe(3)
         ->and(json_encode(CommandOperation::query()->where('command', 'business.profile.update')->first()?->getAttributes()))->not->toContain('0788123456');
 
     $this->get(route('business.profile', ['business' => $business]))->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->component('business/profile')
             ->where('company.email', 'hello@synthetic.rw')->where('company.phone', '0722000111')
-            ->where('company.address', ['province' => 'Northern', 'district' => 'Musanze', 'sector' => 'Muhoza', 'cell' => 'Mpenge', 'street' => ''])
+            ->where('company.address', ['province' => 'Northern', 'district' => 'Musanze', 'sector' => 'Muhoza', 'cell' => 'Mpenge', 'street' => 'KN 6 Ave'])
             ->where('company.certificate', null));
 
     expect(fn () => BusinessContactVersion::query()->whereKey($versions[0]->id)->update(['sha256' => str_repeat('0', 64)]))

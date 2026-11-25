@@ -9644,8 +9644,6 @@ const en = {
     'role.apply.address.cell_placeholder': 'Cell name',
     'role.apply.address.street': 'Street',
     'role.apply.address.street_placeholder': 'KG 5 Ave',
-    'role.apply.address.street_hint':
-        'Leave it empty if the premises has no street name.',
     'admin.parties.audit.reason.AUDIT_DISTRICT_MISSING':
         'This business has no registered district on record, so dispatch can’t match it to a partner. Ask the business to complete its registered address. Dispatch attempts used: {attempts} of 3.',
     'admin.parties.audit.reason.AUDIT_NO_PARTNER_IN_DISTRICT':
