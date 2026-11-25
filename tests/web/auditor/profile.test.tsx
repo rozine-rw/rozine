@@ -883,6 +883,42 @@ describe('Auditor Profile', () => {
         });
     });
 
+    it('suggests a landmark for a street with no name, and clears its error once the street is typed', async () => {
+        inertia.queue.push(
+            invalid({
+                'address.street':
+                    'Enter the street, or the nearest road or landmark if it has no name.',
+            }),
+        );
+        const { user } = renderWithUser(
+            <AuditorProfile {...props(contactFixture)} />,
+        );
+
+        await user.click(
+            screen.getByRole('button', { name: 'Add your registered address' }),
+        );
+        expect(screen.getByLabelText('Street')).toHaveAccessibleDescription(
+            'No street name? Enter the nearest road or a landmark.',
+        );
+        await user.click(screen.getByRole('button', { name: 'Save address' }));
+        expect(
+            await screen.findByText(
+                'Enter the street, or the nearest road or landmark if it has no name.',
+            ),
+        ).toBeInTheDocument();
+
+        await user.type(
+            screen.getByLabelText('Street'),
+            'Near Kimironko market',
+        );
+
+        expect(
+            screen.queryByText(
+                'Enter the street, or the nearest road or landmark if it has no name.',
+            ),
+        ).not.toBeInTheDocument();
+    });
+
     it('measures on-time closing and the jobs done, and dashes what is not measured', () => {
         const { unmount } = render(
             <AuditorProfile {...props(telemetryFixture)} />,

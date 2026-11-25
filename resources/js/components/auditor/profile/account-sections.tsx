@@ -58,10 +58,17 @@ function AddressForm({
     const [address, setAddress] = useState<RwandaAddress>(
         contact.address ?? EMPTY_ADDRESS,
     );
+    // A field the partner has changed since the last save hides its error until the next save.
+    const [edited, setEdited] = useState<(keyof RwandaAddress)[]>([]);
     const error = (field: keyof RwandaAddress) =>
-        center.errors[`address.${field}`];
-    const set = (value: Partial<RwandaAddress>) =>
+        edited.includes(field) ? undefined : center.errors[`address.${field}`];
+    const set = (value: Partial<RwandaAddress>) => {
+        setEdited((current) => [
+            ...current,
+            ...(Object.keys(value) as (keyof RwandaAddress)[]),
+        ]);
         setAddress((current) => ({ ...current, ...value }));
+    };
     const field = (key: 'sector' | 'cell' | 'street', placeholder: string) => (
         <div className={key === 'street' ? 'sm:col-span-2' : undefined}>
             <label htmlFor={`address-${key}`} className={LABEL}>
@@ -73,8 +80,19 @@ function AddressForm({
                 placeholder={placeholder}
                 aria-invalid={error(key) !== undefined}
                 onChange={(event) => set({ [key]: event.target.value })}
+                aria-describedby={
+                    key === 'street' ? 'address-street-hint' : undefined
+                }
                 className={FIELD}
             />
+            {key === 'street' && (
+                <p
+                    id="address-street-hint"
+                    className="mt-1.5 text-[11.5px] text-rz-secondary"
+                >
+                    {t('role.apply.address.street_hint')}
+                </p>
+            )}
             <FieldError message={error(key)} />
         </div>
     );
@@ -84,6 +102,7 @@ function AddressForm({
             className="grid grid-cols-1 gap-3 border-t border-rz-border p-[15px] sm:grid-cols-2"
             onSubmit={(event) => {
                 event.preventDefault();
+                setEdited([]);
                 center.send(
                     {
                         name: 'contact.update',
