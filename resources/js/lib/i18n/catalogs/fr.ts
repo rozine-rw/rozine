@@ -427,7 +427,9 @@ const fr: Catalog = {
     'admin.role_applications.auditor.confirm_body':
         "Cela accrédite {name} comme auditeur, son seul rôle, à la place d'investisseur s'il l'est. Indiquez pourquoi dans la note.",
     'admin.role_applications.confirm_unchanged':
-        '{count} élément(s) à modifier n’ont pas été modifiés.',
+        '{count} éléments que vous avez demandé de modifier n’ont pas été modifiés.',
+    'admin.role_applications.confirm_unchanged_one':
+        '1 élément que vous avez demandé de modifier n’a pas été modifié.',
     'admin.role_applications.confirm_note':
         'Écrivez une note ci-dessus pour approuver.',
     'admin.role_applications.company': 'Entreprise',

@@ -289,7 +289,7 @@ describe('Approving and reviewing a resubmission', () => {
             screen.getByRole('button', { name: 'Approve and onboard' }),
         );
         expect(
-            screen.getByText('1 item(s) you asked to change were not changed.'),
+            screen.getByText('1 item you asked to change was not changed.'),
         ).toBeInTheDocument();
     });
 });

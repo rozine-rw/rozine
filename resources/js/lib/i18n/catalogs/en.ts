@@ -413,7 +413,9 @@ const en = {
     'admin.role_applications.auditor.confirm_body':
         'This accredits {name} as an Auditor, their only role, replacing Investor if they hold it. Record why in the note.',
     'admin.role_applications.confirm_unchanged':
-        '{count} item(s) you asked to change were not changed.',
+        '{count} items you asked to change were not changed.',
+    'admin.role_applications.confirm_unchanged_one':
+        '1 item you asked to change was not changed.',
     'admin.role_applications.confirm_note': 'Write a note above to approve.',
     'admin.role_applications.company': 'Company',
     'admin.role_applications.rep_name': 'Representative',

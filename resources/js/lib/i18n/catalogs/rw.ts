@@ -422,6 +422,8 @@ const rw: Catalog = {
         'Ibi byemeza {name} nk’Umugenzuzi; ruba uruhare rwe rwonyine, rusimbura urw’Umushoramari niba arufite. Andika impamvu mu nyandiko.',
     'admin.role_applications.confirm_unchanged':
         'Ibintu {count} wasabye guhindura ntibyahinduwe.',
+    'admin.role_applications.confirm_unchanged_one':
+        'Ikintu 1 wasabye guhindura nticyahinduwe.',
     'admin.role_applications.confirm_note':
         'Andika inyandiko hejuru kugira ngo wemeze.',
     'admin.role_applications.company': 'Ikigo',
