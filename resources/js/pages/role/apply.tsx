@@ -199,7 +199,15 @@ export default function RoleApply(props: RoleApplicationProps) {
         identity_context_revision: props.identity_context_revision,
         expected_revision: application.revision,
     });
-    const error = (key: string) => errors[key];
+    // A field edited since the last save no longer shows the error the server gave its old value.
+    const [edited, setEdited] = useState<string[]>([]);
+    const error = (key: string) =>
+        edited.includes(key) ? undefined : errors[key];
+    const markEdited = (prefix: string, fields: string[]) =>
+        setEdited((before) => [
+            ...before,
+            ...fields.map((field) => `${prefix}${field}`),
+        ]);
     const index = Math.max(0, steps.indexOf(step));
     const percent =
         role === null ? 0 : Math.round((index / steps.length) * 100);
@@ -215,6 +223,7 @@ export default function RoleApply(props: RoleApplicationProps) {
 
     function saveStep(stepAnswers: Record<string, FormDataConvertible>) {
         setBusy(true);
+        setEdited([]);
         router.post(
             save().url,
             { ...envelope(), role, step, answers: stepAnswers },
@@ -233,6 +242,7 @@ export default function RoleApply(props: RoleApplicationProps) {
 
     function send() {
         setBusy(true);
+        setEdited([]);
         router.post(
             submit().url,
             { ...envelope(), declared },
@@ -627,15 +637,19 @@ export default function RoleApply(props: RoleApplicationProps) {
                                         provinces={props.catalog.provinces}
                                         value={company}
                                         error={error}
-                                        onChange={(value) =>
+                                        onChange={(value) => {
+                                            markEdited(
+                                                'company.',
+                                                Object.keys(value),
+                                            );
                                             setAnswers({
                                                 ...answers,
                                                 company: {
                                                     ...company,
                                                     ...value,
                                                 },
-                                            })
-                                        }
+                                            });
+                                        }}
                                     />
                                     <Field
                                         id="company_phone"
@@ -883,15 +897,19 @@ export default function RoleApply(props: RoleApplicationProps) {
                                         provinces={props.catalog.provinces}
                                         value={address}
                                         error={error}
-                                        onChange={(value) =>
+                                        onChange={(value) => {
+                                            markEdited(
+                                                'address.',
+                                                Object.keys(value),
+                                            );
                                             setAnswers({
                                                 ...answers,
                                                 address: {
                                                     ...address,
                                                     ...value,
                                                 },
-                                            })
-                                        }
+                                            });
+                                        }}
                                     />
                                     <div>
                                         <p className={LABEL}>
@@ -1210,7 +1228,11 @@ export default function RoleApply(props: RoleApplicationProps) {
                                                       : step === 'licence'
                                                         ? licence
                                                         : step === 'coverage'
-                                                          ? coverage
+                                                          ? // The registered address is saved with the coverage step.
+                                                            {
+                                                                ...coverage,
+                                                                address,
+                                                            }
                                                           : {},
                                             )
                                         }
