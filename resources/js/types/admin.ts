@@ -316,7 +316,8 @@ export type PolicyItem = {
         | 'raise_days'
         | 'resale_listing_days'
         | 'resale_reservation_minutes'
-        | 'cpa_radius'
+        | 'cpa_dispatch'
+        | 'cpa_weekly_limit'
         | 'sandbox_businesses'
         | 'sandbox_investors'
         | 'sandbox_principal'
@@ -351,6 +352,7 @@ export type PolicyTerm =
     | 'day_31'
     | 'late_schedule'
     | 'pro_rata'
+    | 'district_match'
     | 'resident_rwanda'
     | 'rwanda'
     | 'not_collected';

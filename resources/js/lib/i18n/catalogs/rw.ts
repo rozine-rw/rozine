@@ -319,7 +319,7 @@ const rw: Catalog = {
     'suite.hub.next.role_switch_auditor.title':
         'Konti yawe ihinduka iy’Umugenzuzi',
     'suite.hub.next.role_switch_auditor.body':
-        'Ubwo uzashobora guhabwa akazi ko kugenzura hafi yawe.',
+        'Ubwo uzashobora guhabwa akazi ko kugenzura mu turere uhitamo.',
     'suite.hub.next.investor_ready.title': 'Reba amahirwe yo gushora ari ho',
     'suite.hub.next.investor_ready.body':
         'Konti yawe iriteguye. Fungura Umushoramari urebe ibigo birimo gushaka imari.',
@@ -430,6 +430,7 @@ const rw: Catalog = {
     'admin.role_applications.pep_body':
         'Banza ugenzure byimbitse mbere yo kwemeza: genzura inkomoko y’amafaranga n’umutungo, wandike ibyo wagenzuye mu nyandiko.',
     'admin.role_applications.pep_confirm': 'Nagenzuye byimbitse uyu muntu.',
+    'admin.role_applications.saves_one': ', hanyuma usaba abika inshuro 1',
     'admin.role_applications.saves': ', hanyuma usaba abika inshuro {count}',
     'role.apply.review.unchanged_title': 'Ibi ntabwo urabihindura',
     'role.apply.review.unchanged_body':
@@ -2823,7 +2824,9 @@ const rw: Catalog = {
     'admin.policy.resale_listing_days':
         'Igihe itangazo ryo kugurisha rimara · iminsi',
     'admin.policy.resale_reservation_minutes': 'Gufatira igicuruzwa · iminota',
-    'admin.policy.cpa_radius': 'Intera yo kohereza CPA',
+    'admin.policy.cpa_dispatch': 'Kohereza CPA',
+    'admin.policy.cpa_weekly_limit':
+        'Imirimo CPA ihabwa buri cyumweru (bisanzwe)',
     'admin.policy.sandbox_businesses': 'Imbibi za sandbox · ibigo',
     'admin.policy.sandbox_investors': 'Imbibi za sandbox · abashoramari',
     'admin.policy.sandbox_principal': 'Imbibi za sandbox · igishoro gisigaye',
@@ -2842,6 +2845,7 @@ const rw: Catalog = {
         'Amafaranga menshi konti ishobora kubikuza ku munsi.',
     'admin.policy.term.pro_rata':
         'Byose, bigabanywa abafite inoti ku kigereranyo',
+    'admin.policy.term.district_match': "Akarere k'ubucuruzi gahuye",
     'admin.policy.hint.platform_fee':
         'Bikurwa ku mafaranga yakusanyijwe igihe ahabwa ikigo.',
     'admin.policy.hint.cpa_share':
@@ -2936,7 +2940,10 @@ const rw: Catalog = {
         'Igihe itangazo ryo kongera kugurisha rimara.',
     'admin.policy.hint.resale_reservation_minutes':
         'Igihe umuguzi afata igice mbere yo kwishyura.',
-    'admin.policy.hint.cpa_radius': 'Intera nini umugenzuzi yoherezwa.',
+    'admin.policy.hint.cpa_dispatch':
+        "Akarere k'ubucuruzi kari mu two CPA yemera; nta ntera ntarengwa.",
+    'admin.policy.hint.cpa_weekly_limit':
+        'Igenzura ryinshi CPA ihabwa buri cyumweru, keretse ayihinduye.',
     'admin.policy.hint.sandbox_businesses':
         "Umubare ntarengwa w'ibigo bikora mu igerageza rya CMA.",
     'admin.policy.hint.sandbox_investors':
@@ -4071,8 +4078,8 @@ const rw: Catalog = {
     'auditor.availability.home_paused':
         'Kanda wongere wakire amagenzura yihuse',
     'auditor.availability.toggle': 'Kwakira amagenzura',
-    'auditor.home.nearby_one': 'Igenzura ryihuse 1 hafi yawe',
-    'auditor.home.nearby_other': 'Amagenzura yihuse {count} hafi yawe',
+    'auditor.home.nearby_one': 'Igenzura ryihuse 1 mu turere twawe',
+    'auditor.home.nearby_other': 'Amagenzura yihuse {count} mu turere twawe',
     'auditor.home.nearby_sub': 'Muri {districts} · uwemeye mbere afata dosiye',
     'auditor.home.in_progress': 'Birakorwa',
     'auditor.job.step_of': 'Intambwe {step} kuri {steps}',
@@ -4242,7 +4249,7 @@ const rw: Catalog = {
     'auditor.file.brief.flash.step_1':
         "Iyandikishe ugeze aho ubucuruzi bukorera; aho uri ako kanya handikwa hamwe n'igenzura.",
     'auditor.file.brief.flash.step_2':
-        "Fata amafoto asabwa ukoresheje kamera ya porogaramu uri imbere y'imbibi z'aho ubucuruzi bukorera. Gushyiraho amafoto ari muri telefoni ntibyemewe.",
+        'Fata amafoto asabwa ukoresheje kamera ya porogaramu uri aho ubucuruzi bukorera. Gushyiraho amafoto ari muri telefoni ntibyemewe.',
     'auditor.file.brief.flash.step_3':
         "Bara ububiko ku kibanza wandike agaciro kabwo. Ikinyuranyo cyose n'umubare watangajwe kigomba gusobanurwa mbere yo gufunga.",
     'auditor.file.brief.flash.step_4':
@@ -4254,7 +4261,7 @@ const rw: Catalog = {
     'auditor.file.brief.monthly.step_2':
         "Bara amafaranga n'ibicuruzwa biri mu bubiko ku kibanza. Ikinyuranyo cyose kigomba gusobanurwa mbere yo gufunga.",
     'auditor.file.brief.monthly.step_3':
-        "Fata amafoto asabwa ukoresheje kamera ya porogaramu uri imbere y'imbibi z'aho ubucuruzi bukorera.",
+        'Fata amafoto asabwa ukoresheje kamera ya porogaramu uri aho ubucuruzi bukorera.',
     'auditor.file.brief.monthly.step_4':
         'Funga bitarenze itariki ntarengwa iri kuri raporo: impera z’umunsi wa 7 w’ukwezi gukurikira (ku isaha ya Kigali) muri porogaramu ikoreshwa ubu.',
     'auditor.file.why_review': 'Impamvu isuzuma ry’inyandiko rikenewe',
@@ -4348,7 +4355,7 @@ const rw: Catalog = {
     'auditor.checkin.open': 'Iyandikishe ukoresheje porogaramu',
     'auditor.checkin.review_title': 'Uku kwiyandikisha kuzasuzumwa',
     'auditor.checkin.review_body':
-        "Ukuri kw'aho uri cyangwa intera n'aho ikigo cyanditse birenze amabwiriza. Komeza; ibikorwa by'igenzura bizabisuzuma.",
+        "Aho uri ntihagaragaye neza bihagije ngo hemezwe. Komeza; ibikorwa by'igenzura bizabisuzuma.",
     'auditor.photos.title': "Amafoto y'ikibanza afite aho yafatiwe",
     'auditor.photos.lead':
         'Bifatwa ako kanya muri porogaramu — gukura amafoto mu bubiko byahagaritswe kugira ngo hatabaho uburiganya. {captured} kuri {required} bikenewe byafashwe.',
@@ -6841,7 +6848,7 @@ const rw: Catalog = {
     'auditor.audit.guide.check_in.done':
         'Kwiyandikisha kwawe kwageze kandi kugaragara hano.',
     'auditor.audit.guide.check_in.how':
-        'Hagarara imbere aho bukorera, fungura porogaramu yo gufata ibimenyetso, wemere ko ibona aho uri maze wiyandikishe. Kwiyandikisha kure y’aho bwanditse, cyangwa aho uri hatagaragara neza, bijya kugenzurwa; komeza.',
+        'Hagarara imbere aho bukorera, fungura porogaramu yo gufata ibimenyetso, wemere ko ibona aho uri maze wiyandikishe. Kwiyandikisha aho uri hatagaragara neza bijya kugenzurwa; komeza.',
     'auditor.audit.guide.photos.do':
         'Fata buri foto isabwa ako kanya muri porogaramu yo gufata ibimenyetso.',
     'auditor.audit.guide.photos.upload':
@@ -9597,7 +9604,7 @@ const rw: Catalog = {
     'auditor.academy.lesson.baseline.topic1.option3': 'Yego, ku makusanya mato',
     'auditor.academy.lesson.baseline.topic2.title': 'Amategeko y’ibimenyetso',
     'auditor.academy.lesson.baseline.topic2.body':
-        'Amafoto aturuka gusa kuri kamera iri muri porogaramu, ifite aho uri ako kanya. Kohereza amafoto ari muri telefoni birabujijwe, kandi ifoto yafatiwe hanze y’imbibi z’aho ubucuruzi bukorera irangwa.',
+        'Amafoto aturuka gusa kuri kamera iri muri porogaramu, ifite aho uri ako kanya. Kohereza amafoto ari muri telefoni birabujijwe.',
     'auditor.academy.lesson.baseline.topic2.q':
         'Ejo wafashe ifoto ukoresheje kamera isanzwe ya telefoni yawe. Ushobora kuyohereza?',
     'auditor.academy.lesson.baseline.topic2.option1':
@@ -9949,6 +9956,9 @@ const rw: Catalog = {
     'auditor.availability.weekly_more': 'Umurimo umwe wiyongere ku cyumweru',
     'auditor.availability.districts_title': 'Uturere wemera',
     'auditor.availability.districts_count': 'Uturere {count} kuri {total}',
+    'auditor.availability.saving': 'Biri kubikwa…',
+    'auditor.availability.save_failed':
+        'Ibyo wahisemo ntibyabitswe. Reba murandasi yawe wongere ugerageze.',
     'auditor.availability.districts_none':
         "Hitamo nibura akarere kamwe. Mbere y'uko ubikora, nta genzura wahabwa.",
     'auditor.profile.contact.add_address': 'Ongeraho aderesi yawe yanditse',

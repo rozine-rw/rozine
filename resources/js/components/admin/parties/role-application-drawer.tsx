@@ -6,6 +6,7 @@ import { RevisionPicker } from '@/components/admin/revision-picker';
 import type { PickedItem } from '@/components/admin/revision-picker';
 import { useTranslation } from '@/hooks/use-translation';
 import type { MessageCode } from '@/lib/i18n/types';
+import { answerAt } from '@/lib/role-application-answers';
 import { formatDate, formatDateTime } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import { decide, document } from '@/routes/staff/role-applications';
@@ -20,19 +21,6 @@ const SECTION =
 const BOX = 'rounded-[13px] border border-rz-hairline bg-rz-surface';
 
 type Decision = 'approve' | 'more' | 'reject';
-
-/** The answer at a dotted key such as `company.tin`. */
-function valueAt(answers: object | undefined, key: string): unknown {
-    return key
-        .split('.')
-        .reduce<unknown>(
-            (value, part) =>
-                value !== null && typeof value === 'object'
-                    ? (value as Record<string, unknown>)[part]
-                    : undefined,
-            answers,
-        );
-}
 
 function Fact({ label, children }: { label: string; children: ReactNode }) {
     return (
@@ -137,8 +125,8 @@ export function RoleApplicationDrawer({
         }
 
         return (
-            JSON.stringify(valueAt(application.state.answers, key)) !==
-            JSON.stringify(valueAt(before.answers, key))
+            JSON.stringify(answerAt(application.state.answers, key)) !==
+            JSON.stringify(answerAt(before.answers, key))
         );
     };
     const unchangedCount = (resent?.items ?? []).filter(
@@ -811,7 +799,9 @@ export function RoleApplicationDrawer({
                                         `admin.role_applications.status.${entry.status}` as MessageCode,
                                     )}
                                 </span>
-                                {entry.count > 1 &&
+                                {entry.count === 2 &&
+                                    t('admin.role_applications.saves_one')}
+                                {entry.count > 2 &&
                                     t('admin.role_applications.saves', {
                                         count: String(entry.count - 1),
                                     })}{' '}
