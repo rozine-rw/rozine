@@ -101,6 +101,36 @@ describe('Enter your statement figures', () => {
         ).toBeInTheDocument();
     });
 
+    it("keeps Save in view and holds back a month's errors until something is entered in it", async () => {
+        const user = userEvent.setup();
+        render(<BusinessStatementTranscription {...props(emptyFixture)} />);
+        const sheet = dialog();
+        const page = within(sheet);
+        const save = page.getByRole('button', { name: 'Save figures' });
+
+        expect(sheet).toHaveClass('flex', 'flex-col', 'lg:top-0');
+        const scroll = page.getByTestId('sheet-scroll');
+        const saveBar = page.getByTestId('save-bar');
+
+        expect(scroll).toHaveClass(
+            'flex-1',
+            'lg:min-h-0',
+            'lg:overflow-y-auto',
+        );
+        expect(scroll).not.toContainElement(save);
+        expect(saveBar).toContainElement(save);
+        expect(saveBar).toHaveClass('sticky', 'bottom-0', 'lg:shrink-0');
+        expect(
+            page.queryByText('Tick the statement these figures are from.'),
+        ).not.toBeInTheDocument();
+
+        await user.type(page.getByLabelText('Opening balance (RWF)'), '1000');
+
+        expect(
+            page.getByText('Tick the statement these figures are from.'),
+        ).toBeInTheDocument();
+    });
+
     it('reads a pasted 1,250.00 as 1250 and flags pasted cents instead of scaling them (#396 review)', async () => {
         const user = userEvent.setup();
         render(<BusinessStatementTranscription {...props(emptyFixture)} />);
