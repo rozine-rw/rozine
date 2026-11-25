@@ -52,7 +52,7 @@ const fr: Catalog = {
     'identity.denied.role_not_available.title':
         'Cette application n’est pas sur votre compte',
     'identity.denied.role_not_available.body':
-        'Votre compte n’a pas encore accès à cette application. Choisissez une application ou demandez l’accès depuis vos applications.',
+        'Cette application appartient à un rôle que votre compte n’a pas. Un compte n’a qu’un rôle à la fois : choisissez une de vos applications.',
     'identity.denied.staff_only.title':
         'Cette page est réservée à l’équipe Rozine',
     'identity.denied.staff_only.body':
@@ -502,7 +502,7 @@ const fr: Catalog = {
     'admin.role_applications.kyc.draft': 'Commencé, non envoyé',
     'admin.role_applications.kyc.submitted': 'Envoyé, en attente d’approbation',
     'admin.role_applications.kyc.approved': 'Approuvé',
-    'admin.role_applications.kyc.rejected': 'Rejeté',
+    'admin.role_applications.kyc.rejected': 'Renvoyé',
     'admin.role_applications.open_kyc': 'Ouvrir dans Utilisateurs →',
     'admin.role_applications.two_factor_on':
         'L’authentification à deux facteurs est activée.',
@@ -2648,7 +2648,7 @@ const fr: Catalog = {
         "Pour l'accès Entreprise · aucun accès Investisseur à l'approbation",
     'admin.kyc.purpose.auditor':
         "Pour l'accès Auditeur · l'approbation vérifie aussi la licence ICPAR et en fait un Auditeur",
-    'admin.kyc.status.rejected': 'Rejetée',
+    'admin.kyc.status.rejected': 'Renvoyée',
     'admin.kyc.empty.submitted': "Aucune demande n'attend d'examen.",
     'admin.kyc.empty.decided': 'Aucune décision pour le moment.',
     'admin.kyc.more': 'Afficher plus',
@@ -3502,7 +3502,7 @@ const fr: Catalog = {
     'admin.parties.kyc.verified': 'Vérifié',
     'admin.parties.kyc.pending': 'En attente',
     'admin.parties.kyc.overdue': 'En retard',
-    'admin.parties.kyc.rejected': 'Refusé',
+    'admin.parties.kyc.rejected': 'Renvoyé',
     'admin.parties.status.frozen': 'Gelé',
     'admin.parties.status.suspended': 'Suspendu',
     'admin.parties.status.restricted': 'Restreint',
@@ -9207,7 +9207,7 @@ const fr: Catalog = {
     'admin.users.kyc_filter.verified': 'KYC : Vérifié',
     'admin.users.kyc_filter.in_review': 'KYC : En examen',
     'admin.users.kyc_filter.in_progress': 'KYC : En cours',
-    'admin.users.kyc_filter.rejected': 'KYC : Refusé',
+    'admin.users.kyc_filter.rejected': 'KYC : Renvoyé',
     'admin.users.kyc_filter.not_started': 'KYC : Non commencé',
     'admin.users.sort.newest': 'Tri : Plus récents',
     'admin.users.sort.oldest': 'Tri : Plus anciens',
@@ -9236,7 +9236,7 @@ const fr: Catalog = {
     'admin.users.kyc.verified': 'Vérifié',
     'admin.users.kyc.in_review': 'En examen',
     'admin.users.kyc.in_progress': 'En cours',
-    'admin.users.kyc.rejected': 'Refusé',
+    'admin.users.kyc.rejected': 'Renvoyé',
     'admin.users.kyc.not_started': 'Non commencé',
     'admin.users.badge.restricted': 'Restreint',
     'admin.users.email_unverified': 'E-mail non vérifié',
