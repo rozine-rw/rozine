@@ -3768,7 +3768,7 @@ const rw: Catalog = {
     'admin.parties.audit.redispatch.form_body':
         'Igenzura rihabwa umugenzuzi ukurikira wemerewe ritarahabwa. Igihe ntarengwa cyaryo ntigihinduka.',
     'admin.parties.audit.redispatch.placeholder':
-        'urugero: Umugenzuzi mushya uri hafi y’ubu bucuruzi yemejwe.',
+        'urugero: Umugenzuzi mushya ukorera mu karere k’ubu bucuruzi yemejwe.',
     'admin.parties.audit.redispatch.cta': 'Ohereza ukundi',
     'admin.parties.audit.redispatch.done': 'Igenzura ryasubijwe mu itangwa.',
     'admin.parties.audit.close.open': 'Funga burundu',

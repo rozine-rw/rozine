@@ -3784,7 +3784,7 @@ const fr: Catalog = {
     'admin.parties.audit.redispatch.form_body':
         'L’audit est proposé au prochain Partenaire d’audit éligible à qui il n’a pas encore été proposé. Son délai initial ne change pas.',
     'admin.parties.audit.redispatch.placeholder':
-        'p. ex. Un nouveau Partenaire d’audit proche de cette entreprise a été approuvé.',
+        'p. ex. Un nouveau Partenaire d’audit couvrant le district de cette entreprise a été approuvé.',
     'admin.parties.audit.redispatch.cta': 'Réaffecter',
     'admin.parties.audit.redispatch.done': 'Audit renvoyé à l’attribution.',
     'admin.parties.audit.close.open': 'Clôturer définitivement',

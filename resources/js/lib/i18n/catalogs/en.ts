@@ -3607,7 +3607,7 @@ const en = {
     'admin.parties.audit.redispatch.form_body':
         'The audit is offered to the next eligible Audit Partner it has not been offered to. Its original deadline does not move.',
     'admin.parties.audit.redispatch.placeholder':
-        'e.g. A new Audit Partner near this business was approved.',
+        'e.g. A new Audit Partner covering this business’s district was approved.',
     'admin.parties.audit.redispatch.cta': 'Redispatch',
     'admin.parties.audit.redispatch.done': 'Audit sent back to dispatch.',
     'admin.parties.audit.close.open': 'Close permanently',

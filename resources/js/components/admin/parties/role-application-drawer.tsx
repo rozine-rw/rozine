@@ -429,7 +429,12 @@ export function RoleApplicationDrawer({
                             </Fact>
                         </dl>
                         {answers.address && (
-                            <dl className="mt-2 grid grid-cols-2 gap-2">
+                            <h4 className={cn(SECTION, 'mt-4')}>
+                                {t('role.apply.company.address')}
+                            </h4>
+                        )}
+                        {answers.address && (
+                            <dl className="mt-2.5 grid grid-cols-2 gap-2">
                                 <Fact label={t('role.apply.address.province')}>
                                     {answers.address.province}
                                 </Fact>
