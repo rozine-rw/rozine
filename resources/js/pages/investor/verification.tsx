@@ -1256,7 +1256,12 @@ function VerificationForm({
                     </p>
                 )}
                 {submission.status === 'rejected' &&
-                    submission.decision_reason && (
+                    submission.decision_reason &&
+                    !(
+                        (submission.requested_changes?.items.length ?? 0) > 0 &&
+                        submission.requested_changes?.reason ===
+                            submission.decision_reason
+                    ) && (
                         <div className="mt-4">
                             <ErrorBanner>
                                 {t('investor.kyc.rejected_notice', {

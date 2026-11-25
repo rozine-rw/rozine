@@ -134,6 +134,28 @@ describe('Owners on the People step (#761)', () => {
         ).not.toBeInTheDocument();
     });
 
+    it('leaves a share that is not a plain number out of the total', () => {
+        render(
+            <RoleApply
+                {...props([
+                    { ...jane, ownership_pct: '50', pep: false },
+                    {
+                        full_name: 'Paul Other',
+                        id_type: 'passport',
+                        id_number: 'PC99887',
+                        nationality: 'Kenyan',
+                        ownership_pct: '3e1',
+                        pep: false,
+                    },
+                ])}
+            />,
+        );
+
+        expect(
+            screen.getByText(/Shares listed: 50% of 100%/),
+        ).toBeInTheDocument();
+    });
+
     it('reads a decimal comma as a point and flags anything else as typed, never rewriting it', () => {
         render(
             <RoleApply
