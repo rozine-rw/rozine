@@ -501,7 +501,31 @@ function VerificationForm({
     const { t } = useTranslation();
     // A participant can step back to correct an earlier answer (for example after a rejection); the
     // server's step returns once that earlier step is saved.
-    const [viewing, setViewing] = useState<Step | null>(null);
+    // A send-back opens on the earliest step holding a flagged item (QA #766), not on the step the
+    // form had reached.
+    const [viewing, setViewing] = useState<Step | null>(() => {
+        const order: readonly Step[] =
+            props.investor_type === 'individual'
+                ? PERSONAL_STEPS
+                : ENTITY_STEPS;
+        const requested =
+            props.investor_type === 'individual'
+                ? props.requested_changes
+                : undefined;
+        const flagged = (requested?.items ?? []).map((item): Step =>
+            item.key === 'date_of_birth'
+                ? 'personal'
+                : item.key === 'selfie'
+                  ? 'liveness'
+                  : 'document',
+        );
+        const earliest = order.find((candidate) => flagged.includes(candidate));
+
+        return earliest !== undefined &&
+            order.indexOf(earliest) < order.indexOf(props.step)
+            ? earliest
+            : null;
+    });
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [sending, setSending] = useState<Sending | null>(null);
     const [idNumberTouched, setIdNumberTouched] = useState(false);

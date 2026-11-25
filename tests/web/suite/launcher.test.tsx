@@ -417,6 +417,29 @@ describe('Suite launcher', () => {
             screen.getByRole('link', { name: 'Verify your identity →' }),
         ).toHaveAttribute('href', '/investor/verification');
     });
+    it('keeps a business application with Compliance in view while the identity check waits on fixes (#766)', () => {
+        render(
+            <Launcher
+                identity={identityFrom(pendingFixture)}
+                role_application={{
+                    kyc: 'draft',
+                    status: 'submitted',
+                    role: 'business',
+                }}
+            />,
+        );
+        const business = screen
+            .getAllByRole('listitem')
+            .find((app) => app.dataset.audience === 'business')!;
+
+        expect(within(business).getByRole('link')).toHaveAttribute(
+            'href',
+            '/investor/verification',
+        );
+        expect(within(business).getByRole('link')).toHaveTextContent(
+            'Your application is with Compliance. They can approve it once you fix what they asked on your identity check.Fix your identity check →',
+        );
+    });
     it('says a check already with Compliance is under review instead of asking for it again', () => {
         render(
             <Launcher

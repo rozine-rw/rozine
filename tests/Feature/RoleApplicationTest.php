@@ -481,6 +481,16 @@ test('owners hold 25 to 100 percent between them, are listed once, and a directo
     $people['owners'][1]['ownership_pct'] = '0';
     $save($people)->assertSessionHasErrors(['owners.1.ownership_pct']);
 
+    foreach (['3e1', '+25', '-25', '25.5.5', '2a5', '25.'] as $unreadable) {
+        $people = peopleAnswers();
+        $people['owners'][1]['ownership_pct'] = $unreadable;
+        $save($people)->assertSessionHasErrors(['owners.1.ownership_pct']);
+    }
+
+    $people = peopleAnswers();
+    $people['owners'][0]['ownership_pct'] = '59.5';
+    $save($people)->assertSessionHasNoErrors();
+
     $people = peopleAnswers();
     $people['owners'][1] = [...$people['owners'][0], 'ownership_pct' => '40'];
     $save($people)->assertSessionHasErrors(['owners.1.id_number' => 'This person is already listed.']);

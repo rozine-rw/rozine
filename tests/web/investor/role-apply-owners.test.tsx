@@ -1,3 +1,4 @@
+import { router } from '@inertiajs/react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import RoleApply from '@/pages/role/apply';
@@ -126,6 +127,52 @@ describe('Owners on the People step (#761)', () => {
         expect(
             screen.getByText(/The shares add up to more than 100%/),
         ).toBeInTheDocument();
+        expect(
+            screen.queryByText(
+                'The shares add up to 100%, so no more owners can be added.',
+            ),
+        ).not.toBeInTheDocument();
+    });
+
+    it('reads a decimal comma as a point and flags anything else as typed, never rewriting it', () => {
+        render(
+            <RoleApply
+                {...props([{ ...jane, ownership_pct: '30', pep: false }])}
+            />,
+        );
+        const share = () =>
+            screen.getByLabelText('Share (%)') as HTMLInputElement;
+        const type = (value: string) =>
+            fireEvent.change(share(), { target: { value } });
+        const hint = 'Enter the share as a number, like 25 or 25.5.';
+
+        type('25,5');
+        expect(share().value).toBe('25.5');
+        type('2,5');
+        expect(share().value).toBe('2.5');
+
+        for (const [typed, shown] of [
+            ['-25', '-25'],
+            ['25.5.5', '25.5.5'],
+            ['25,5,5', '25.5,5'],
+            ['2a5', '2a5'],
+        ]) {
+            type(typed);
+            expect(share().value).toBe(shown);
+            expect(screen.getByText(hint)).toBeInTheDocument();
+        }
+
+        // Saving sends what the field shows, never an earlier valid share.
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Save and continue' }),
+        );
+        expect(vi.mocked(router.post).mock.calls.at(-1)?.[1]).toMatchObject({
+            answers: { owners: [{ ownership_pct: '2a5' }] },
+        });
+
+        type('40');
+        expect(share().value).toBe('40');
+        expect(screen.queryByText(hint)).not.toBeInTheDocument();
     });
 
     it('corrects an owner picked from the directors when the director is corrected', () => {

@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import { router } from '@inertiajs/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import RoleApply from '@/pages/role/apply';
 import type { RoleApplicationProps } from '@/types/role-application';
@@ -195,6 +196,41 @@ describe('Fixing an application Compliance sent back', () => {
         ).toBeInTheDocument();
         expect(
             screen.getByText('Compliance asked you to change this.'),
+        ).toBeInTheDocument();
+    });
+
+    it('goes on to the next flagged step after saving, not straight to Check and send (#753)', () => {
+        const base = flagged('company.tin', 'TIN');
+        render(
+            <RoleApply
+                {...base}
+                application={{
+                    ...base.application,
+                    requested_changes: {
+                        ...base.application.requested_changes,
+                        items: [
+                            ...base.application.requested_changes.items,
+                            { key: 'directors', label: 'Directors', note: '' },
+                        ],
+                    },
+                }}
+            />,
+        );
+
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Save and continue' }),
+        );
+        const options = vi.mocked(router.post).mock.calls.at(-1)?.[2] as {
+            onSuccess: (page: unknown) => void;
+        };
+        act(() =>
+            options.onSuccess({
+                props: { application: { step: 'review' } },
+            }),
+        );
+
+        expect(
+            screen.getByRole('heading', { level: 1, name: 'People' }),
         ).toBeInTheDocument();
     });
 
