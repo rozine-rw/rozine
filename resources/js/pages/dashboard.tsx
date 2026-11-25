@@ -602,6 +602,24 @@ function RoleSwitchCard({
         application.role !== role &&
         ['submitted', 'approved'].includes(application.status);
 
+    if (
+        !['submitted', 'approved'].includes(application.kyc) &&
+        mine &&
+        application.status === 'submitted'
+    ) {
+        // The application is already with Compliance and waits on the person's own identity fixes
+        // (QA #766): say so, rather than suggesting they start over.
+        return (
+            <a href={investorVerification().url} className={CARD}>
+                <AppCardBody
+                    role={role}
+                    summary="suite.app.switch.kyc_fix_summary"
+                    action="suite.app.switch.kyc_fix"
+                />
+            </a>
+        );
+    }
+
     if (!['submitted', 'approved'].includes(application.kyc)) {
         return (
             <a href={investorVerification().url} className={CARD}>
@@ -680,13 +698,15 @@ function AppCardBody({
         | 'suite.app.switch.one_role'
         | `suite.app.switch.held_${'business' | 'auditor'}`
         | 'suite.app.switch.under_review_summary'
-        | 'suite.app.switch.asked_summary';
+        | 'suite.app.switch.asked_summary'
+        | 'suite.app.switch.kyc_fix_summary';
     action:
         | 'suite.app.open'
         | 'suite.app.browse'
         | 'suite.app.request_access'
         | 'suite.app.request_sent'
         | 'suite.app.verify_first'
+        | 'suite.app.switch.kyc_fix'
         | 'suite.app.unavailable'
         | 'suite.app.add_access'
         | 'suite.app.switch.start'

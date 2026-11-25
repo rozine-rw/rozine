@@ -386,6 +386,11 @@ const fr: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Les auditeurs partenaires ne peuvent pas avoir un autre rôle Rozine : ce compte ne peut donc pas demander l’accès Auditeur.',
     'suite.app.unavailable': 'Indisponible avec votre accès actuel',
+    'role.apply.people.share_number':
+        'Indiquez la part en chiffres, par exemple 25 ou 25,5.',
+    'suite.app.switch.kyc_fix_summary':
+        'Votre demande est chez Conformité. Elle pourra être approuvée dès que vous aurez corrigé ce qui a été demandé sur votre vérification d’identité.',
+    'suite.app.switch.kyc_fix': 'Corriger votre vérification d’identité →',
     'admin.role_applications.status.resubmitted': 'Renvoyée pour examen',
     'role.apply.people.pick_director':
         'Un administrateur est-il aussi propriétaire ? Choisissez-le :',
@@ -424,7 +429,9 @@ const fr: Catalog = {
     'admin.role_applications.auditor.confirm_body':
         "Cela accrédite {name} comme auditeur, son seul rôle, à la place d'investisseur s'il l'est. Indiquez pourquoi dans la note.",
     'admin.role_applications.confirm_unchanged':
-        '{count} élément(s) à modifier n’ont pas été modifiés.',
+        '{count} éléments que vous avez demandé de modifier n’ont pas été modifiés.',
+    'admin.role_applications.confirm_unchanged_one':
+        '1 élément que vous avez demandé de modifier n’a pas été modifié.',
     'admin.role_applications.confirm_note':
         'Écrivez une note ci-dessus pour approuver.',
     'admin.role_applications.company': 'Entreprise',

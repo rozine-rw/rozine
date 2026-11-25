@@ -379,6 +379,11 @@ const rw: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Abagenzuzi ntibashobora kugira urundi ruhare muri Rozine, bityo iyi konti ntishobora gusaba uburenganzira bw’Umugenzuzi.',
     'suite.app.unavailable': 'Ntibishoboka n’uburenganzira ufite ubu',
+    'role.apply.people.share_number':
+        'Andika umugabane mu mibare, nka 25 cyangwa 25.5.',
+    'suite.app.switch.kyc_fix_summary':
+        'Dosiye yawe iri kwa Compliance. Bashobora kuyemeza nimara gukosora ibyo bagusabye ku igenzura ry’umwirondoro wawe.',
+    'suite.app.switch.kyc_fix': 'Kosora igenzura ry’umwirondoro →',
     'admin.role_applications.status.resubmitted':
         'Yongeye koherezwa ngo isuzumwe',
     'role.apply.people.pick_director':
@@ -419,6 +424,8 @@ const rw: Catalog = {
         'Ibi byemeza {name} nk’Umugenzuzi; ruba uruhare rwe rwonyine, rusimbura urw’Umushoramari niba arufite. Andika impamvu mu nyandiko.',
     'admin.role_applications.confirm_unchanged':
         'Ibintu {count} wasabye guhindura ntibyahinduwe.',
+    'admin.role_applications.confirm_unchanged_one':
+        'Ikintu 1 wasabye guhindura nticyahinduwe.',
     'admin.role_applications.confirm_note':
         'Andika inyandiko hejuru kugira ngo wemeze.',
     'admin.role_applications.company': 'Ikigo',

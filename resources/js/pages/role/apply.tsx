@@ -168,19 +168,17 @@ export default function RoleApply(props: RoleApplicationProps) {
             : (steps[0] ?? 'review');
     // A sent-back application opens on the earliest step holding a flagged item, whatever order
     // Compliance listed the items in.
-    const [step, setStep] = useState<string>(() => {
-        const flaggedSteps =
-            application.status === 'changes_requested' && role !== null
-                ? (application.requested_changes?.items ?? []).map((item) =>
-                      stepForItem(item.key, role),
-                  )
-                : [];
-        const earliest = steps.find((candidate) =>
-            flaggedSteps.includes(candidate),
-        );
-
-        return earliest ?? reached;
-    });
+    const flaggedSteps =
+        application.status === 'changes_requested' && role !== null
+            ? (application.requested_changes?.items ?? []).map((item) =>
+                  stepForItem(item.key, role),
+              )
+            : [];
+    const [step, setStep] = useState<string>(
+        () =>
+            steps.find((candidate) => flaggedSteps.includes(candidate)) ??
+            reached,
+    );
     const [sentBack] = useState(() => ({
         answers: JSON.stringify(application.answers ?? {}),
         uploads: application.uploads,
@@ -232,7 +230,20 @@ export default function RoleApply(props: RoleApplicationProps) {
                 onSuccess: (page) => {
                     const next = (page.props as unknown as RoleApplicationProps)
                         .application.step;
-                    setStep(next ?? step);
+                    // While fixing a send-back, Save and continue goes on to the next step holding a
+                    // flagged item (QA #753), and to Check and send once none is left.
+                    const flaggedNext = steps
+                        .slice(steps.indexOf(step) + 1)
+                        .find(
+                            (candidate) =>
+                                candidate !== 'review' &&
+                                flaggedSteps.includes(candidate),
+                        );
+                    setStep(
+                        flaggedSteps.length > 0
+                            ? (flaggedNext ?? 'review')
+                            : (next ?? step),
+                    );
                     window.scrollTo({ top: 0 });
                 },
                 onFinish: () => setBusy(false),
@@ -1495,7 +1506,7 @@ function Field({
     hint?: string;
     error?: string;
     type?: 'text' | 'date' | 'tel';
-    inputMode?: 'numeric';
+    inputMode?: 'numeric' | 'decimal';
 }) {
     return (
         <div>
@@ -1935,6 +1946,7 @@ function OwnersList({
     onChange: (owners: RoleApplicationPerson[]) => void;
 }) {
     const { t } = useTranslation();
+    const [unreadable, setUnreadable] = useState<Record<number, boolean>>({});
     const total = shareTotal(owners);
     const full = total >= 100;
     const remaining = Math.max(0, 100 - total);
@@ -1971,7 +1983,10 @@ function OwnersList({
                     const director = directors.some((candidate) =>
                         isSamePerson(owner, candidate),
                     );
-                    const shareError = errors[`owners.${index}.ownership_pct`];
+                    const shareError =
+                        unreadable[index] === true
+                            ? t('role.apply.people.share_number')
+                            : errors[`owners.${index}.ownership_pct`];
 
                     return (
                         <div
@@ -2077,11 +2092,21 @@ function OwnersList({
                                 id={`owners_${index}_share`}
                                 label={t('role.apply.people.share')}
                                 value={owner.ownership_pct ?? ''}
-                                inputMode="numeric"
+                                inputMode="decimal"
                                 error={shareError}
-                                onChange={(value) =>
-                                    update(index, { ownership_pct: value })
-                                }
+                                onChange={(value) => {
+                                    // A share is a number. A decimal comma reads as a point; anything
+                                    // else (letters, a minus, a second separator) stays exactly as typed
+                                    // and is flagged, never rewritten into another number, so a save
+                                    // sends what the field shows and the server refuses it too.
+                                    const share = value.replace(',', '.');
+
+                                    setUnreadable({
+                                        ...unreadable,
+                                        [index]: !/^\d*(\.\d*)?$/.test(share),
+                                    });
+                                    update(index, { ownership_pct: share });
+                                }}
                             />
                             <Check
                                 accent={accent}
@@ -2117,47 +2142,48 @@ function OwnersList({
                 {t('role.apply.people.total', { total: formatted })}
                 {total > 100 && <> · {t('role.apply.people.total_over')}</>}
             </p>
-            {full ? (
-                <p className="mt-1.5 text-[12px] text-rz-secondary">
-                    {t('role.apply.people.full')}
-                </p>
-            ) : (
-                owners.length < 12 && (
-                    <>
-                        {candidates.length > 0 && (
-                            <div className="mt-2.5">
-                                <p className="text-[12.5px] text-rz-secondary">
-                                    {t('role.apply.people.pick_director')}
-                                </p>
-                                <div className="mt-1.5 flex flex-wrap gap-2">
-                                    {candidates.map((director) => (
-                                        <button
-                                            key={director.id_number}
-                                            type="button"
-                                            onClick={() => add(director)}
-                                            className="rounded-full border-[1.5px] px-3.5 py-2 text-[13px] font-semibold"
-                                            style={{
-                                                color: accent,
-                                                borderColor: accent,
-                                            }}
-                                        >
-                                            + {director.full_name}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                        <button
-                            type="button"
-                            onClick={() => add(blankPerson(true))}
-                            className="mt-2.5 w-full rounded-2xl border-[1.5px] border-dashed border-rz-border py-3 text-[13px] font-semibold"
-                            style={{ color: accent }}
-                        >
-                            {t('role.apply.people.add_other_owner')}
-                        </button>
-                    </>
-                )
-            )}
+            {full
+                ? // Over 100% the warning above says what to do; "no more owners" is only for exactly 100%.
+                  total <= 100 && (
+                      <p className="mt-1.5 text-[12px] text-rz-secondary">
+                          {t('role.apply.people.full')}
+                      </p>
+                  )
+                : owners.length < 12 && (
+                      <>
+                          {candidates.length > 0 && (
+                              <div className="mt-2.5">
+                                  <p className="text-[12.5px] text-rz-secondary">
+                                      {t('role.apply.people.pick_director')}
+                                  </p>
+                                  <div className="mt-1.5 flex flex-wrap gap-2">
+                                      {candidates.map((director) => (
+                                          <button
+                                              key={director.id_number}
+                                              type="button"
+                                              onClick={() => add(director)}
+                                              className="rounded-full border-[1.5px] px-3.5 py-2 text-[13px] font-semibold"
+                                              style={{
+                                                  color: accent,
+                                                  borderColor: accent,
+                                              }}
+                                          >
+                                              + {director.full_name}
+                                          </button>
+                                      ))}
+                                  </div>
+                              </div>
+                          )}
+                          <button
+                              type="button"
+                              onClick={() => add(blankPerson(true))}
+                              className="mt-2.5 w-full rounded-2xl border-[1.5px] border-dashed border-rz-border py-3 text-[13px] font-semibold"
+                              style={{ color: accent }}
+                          >
+                              {t('role.apply.people.add_other_owner')}
+                          </button>
+                      </>
+                  )}
         </div>
     );
 }
