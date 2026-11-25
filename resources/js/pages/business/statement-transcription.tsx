@@ -488,6 +488,11 @@ export default function BusinessStatementTranscription({
                                             (problem) =>
                                                 problem.month === value,
                                         ).length;
+                                        const started = form.accounts.some(
+                                            (account) =>
+                                                sheetKey(value, account.key) in
+                                                form.sheets,
+                                        );
 
                                         return (
                                             <button
@@ -506,10 +511,13 @@ export default function BusinessStatementTranscription({
                                             >
                                                 {monthLabel(value)}{' '}
                                                 <span
+                                                    data-testid={`month-count-${value}`}
                                                     className={
                                                         open === 0
                                                             ? 'text-rz-positive'
-                                                            : 'text-rz-danger-text'
+                                                            : started
+                                                              ? 'text-rz-danger-text'
+                                                              : 'text-rz-slate'
                                                     }
                                                 >
                                                     {open === 0
