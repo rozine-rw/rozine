@@ -386,6 +386,9 @@ const fr: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Les auditeurs partenaires ne peuvent pas avoir un autre rôle Rozine : ce compte ne peut donc pas demander l’accès Auditeur.',
     'suite.app.unavailable': 'Indisponible avec votre accès actuel',
+    'suite.app.switch.kyc_fix_summary':
+        'Votre demande est chez Conformité. Elle pourra être approuvée dès que vous aurez corrigé ce qui a été demandé sur votre vérification d’identité.',
+    'suite.app.switch.kyc_fix': 'Corriger votre vérification d’identité →',
     'admin.role_applications.status.resubmitted': 'Renvoyée pour examen',
     'role.apply.people.pick_director':
         'Un administrateur est-il aussi propriétaire ? Choisissez-le :',

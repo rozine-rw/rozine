@@ -379,6 +379,9 @@ const rw: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Abagenzuzi ntibashobora kugira urundi ruhare muri Rozine, bityo iyi konti ntishobora gusaba uburenganzira bw’Umugenzuzi.',
     'suite.app.unavailable': 'Ntibishoboka n’uburenganzira ufite ubu',
+    'suite.app.switch.kyc_fix_summary':
+        'Dosiye yawe iri kwa Compliance. Bashobora kuyemeza nimara gukosora ibyo bagusabye ku igenzura ry’umwirondoro wawe.',
+    'suite.app.switch.kyc_fix': 'Kosora igenzura ry’umwirondoro →',
     'admin.role_applications.status.resubmitted':
         'Yongeye koherezwa ngo isuzumwe',
     'role.apply.people.pick_director':

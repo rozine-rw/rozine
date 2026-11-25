@@ -126,6 +126,27 @@ describe('Owners on the People step (#761)', () => {
         expect(
             screen.getByText(/The shares add up to more than 100%/),
         ).toBeInTheDocument();
+        expect(
+            screen.queryByText(
+                'The shares add up to 100%, so no more owners can be added.',
+            ),
+        ).not.toBeInTheDocument();
+    });
+
+    it('keeps a share to digits and one decimal point', () => {
+        render(
+            <RoleApply
+                {...props([{ ...jane, ownership_pct: '', pep: false }])}
+            />,
+        );
+
+        fireEvent.change(screen.getByLabelText('Share (%)'), {
+            target: { value: '4a0.5.5%' },
+        });
+
+        expect(
+            (screen.getByLabelText('Share (%)') as HTMLInputElement).value,
+        ).toBe('40.55');
     });
 
     it('corrects an owner picked from the directors when the director is corrected', () => {

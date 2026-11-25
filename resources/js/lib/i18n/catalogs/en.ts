@@ -373,6 +373,9 @@ const en = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Audit Partners can’t hold another Rozine role, so this account can’t ask for Auditor access.',
     'suite.app.unavailable': 'Not available with your current access',
+    'suite.app.switch.kyc_fix_summary':
+        'Your application is with Compliance. They can approve it once you fix what they asked on your identity check.',
+    'suite.app.switch.kyc_fix': 'Fix your identity check →',
     'admin.role_applications.status.resubmitted': 'Sent again for review',
     'role.apply.people.pick_director':
         'Is a director also an owner? Pick them:',
