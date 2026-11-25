@@ -314,7 +314,7 @@ const en = {
     'suite.hub.next.role_switch_auditor.title':
         'Your account switches to Auditor',
     'suite.hub.next.role_switch_auditor.body':
-        'Then you can receive audit jobs near you.',
+        'Then you can receive audit jobs in the districts you choose.',
     'suite.hub.next.investor_ready.title': 'Browse open deals',
     'suite.hub.next.investor_ready.body':
         'Your account is ready. Open Investor to see the businesses raising now.',
@@ -422,6 +422,7 @@ const en = {
         'Do enhanced due diligence before approving: check the source of funds and wealth, and record what you checked in the note.',
     'admin.role_applications.pep_confirm':
         'I have done enhanced due diligence on this person.',
+    'admin.role_applications.saves_one': ', then 1 save by the applicant',
     'admin.role_applications.saves': ', then {count} saves by the applicant',
     'role.apply.review.unchanged_title': "You haven't changed these yet",
     'role.apply.review.unchanged_body':
@@ -2697,7 +2698,8 @@ const en = {
     'admin.policy.raise_days': 'Raise window · days',
     'admin.policy.resale_listing_days': 'Resale listing life · days',
     'admin.policy.resale_reservation_minutes': 'Resale reservation · minutes',
-    'admin.policy.cpa_radius': 'CPA dispatch radius',
+    'admin.policy.cpa_dispatch': 'CPA dispatch',
+    'admin.policy.cpa_weekly_limit': 'CPA weekly job limit (default)',
     'admin.policy.sandbox_businesses': 'Sandbox limit · businesses',
     'admin.policy.sandbox_investors': 'Sandbox limit · investors',
     'admin.policy.sandbox_principal': 'Sandbox limit · principal outstanding',
@@ -2713,6 +2715,7 @@ const en = {
     'admin.policy.hint.withdrawal_daily_cap':
         'Maximum an account can withdraw per day.',
     'admin.policy.term.pro_rata': 'All of it, pro rata to holders',
+    'admin.policy.term.district_match': 'Business district match',
     'admin.policy.hint.platform_fee':
         'Taken from the raise when it is disbursed to the business.',
     'admin.policy.hint.cpa_share':
@@ -2796,7 +2799,10 @@ const en = {
         'How long a resale listing stays open.',
     'admin.policy.hint.resale_reservation_minutes':
         'How long a buyer holds a resale unit before paying.',
-    'admin.policy.hint.cpa_radius': 'Furthest a CPA is sent for an audit.',
+    'admin.policy.hint.cpa_dispatch':
+        'Business district is one the CPA accepts; no distance limit.',
+    'admin.policy.hint.cpa_weekly_limit':
+        'Most audits a CPA is offered each week, unless they change it.',
     'admin.policy.hint.sandbox_businesses':
         'Cap on active businesses while in the CMA sandbox.',
     'admin.policy.hint.sandbox_investors':
@@ -3904,8 +3910,8 @@ const en = {
     'auditor.availability.home_paused':
         'Tap to start accepting flash audits again',
     'auditor.availability.toggle': 'Accepting audits',
-    'auditor.home.nearby_one': '1 Flash Audit nearby',
-    'auditor.home.nearby_other': '{count} Flash Audits nearby',
+    'auditor.home.nearby_one': '1 Flash Audit in your districts',
+    'auditor.home.nearby_other': '{count} Flash Audits in your districts',
     'auditor.home.nearby_sub':
         'In {districts} · first to accept locks the file',
     'auditor.home.in_progress': 'In progress',
@@ -4074,7 +4080,7 @@ const en = {
     'auditor.file.brief.flash.step_1':
         'Check in at the business premises; your live location is logged with the audit.',
     'auditor.file.brief.flash.step_2':
-        'Take the required photos with the in-app camera inside the premises geofence. Gallery uploads are blocked.',
+        'Take the required photos with the in-app camera at the business. Gallery uploads are blocked.',
     'auditor.file.brief.flash.step_3':
         'Count the stock on site and record its value. Any difference from the declared figure must be explained before you can seal.',
     'auditor.file.brief.flash.step_4':
@@ -4086,7 +4092,7 @@ const en = {
     'auditor.file.brief.monthly.step_2':
         'Count cash and stock units on site. Any difference must be explained before you can seal.',
     'auditor.file.brief.monthly.step_3':
-        'Take the required photos with the in-app camera inside the premises geofence.',
+        'Take the required photos with the in-app camera at the business.',
     'auditor.file.brief.monthly.step_4':
         'Seal by the report’s due date: the end of the 7th of the following month (Kigali time) in the current app.',
     'auditor.file.why_review': 'Why this statement review is required',
@@ -4179,7 +4185,7 @@ const en = {
     'auditor.checkin.open': 'Check in with the capture app',
     'auditor.checkin.review_title': 'This check-in goes to review',
     'auditor.checkin.review_body':
-        "The location's accuracy or its distance from the registered premises is outside policy. Carry on; Audit Operations reviews it.",
+        "The location wasn't accurate enough to confirm. Carry on; Audit Operations reviews it.",
     'auditor.photos.title': 'Geo-tagged site photos',
     'auditor.photos.lead':
         'Captured live in the capture app — gallery uploads are disabled to prevent spoofing. {captured} of {required} required captured.',
@@ -6600,7 +6606,7 @@ const en = {
     'auditor.audit.guide.check_in.done':
         'Your check-in has arrived and shows here.',
     'auditor.audit.guide.check_in.how':
-        'Stand inside the premises, open the capture app, allow location and check in. A check-in far from the registered premises, or with a weak location, goes to review; carry on.',
+        'Stand inside the premises, open the capture app, allow location and check in. A check-in with a weak location goes to review; carry on.',
     'auditor.audit.guide.photos.do':
         'Take every required site photo live in the capture app.',
     'auditor.audit.guide.photos.upload':
@@ -9289,7 +9295,7 @@ const en = {
     'auditor.academy.lesson.baseline.topic1.option3': 'Yes, for small raises',
     'auditor.academy.lesson.baseline.topic2.title': 'Evidence rules',
     'auditor.academy.lesson.baseline.topic2.body':
-        'Photos come only from the in-app camera with live location. Gallery uploads are blocked, and a photo taken outside the premises geofence is rejected.',
+        'Photos come only from the in-app camera with live location. Gallery uploads are blocked.',
     'auditor.academy.lesson.baseline.topic2.q':
         'You took a photo with your phone’s own camera yesterday. Can you upload it?',
     'auditor.academy.lesson.baseline.topic2.option1': 'Yes, from your gallery',
@@ -9620,6 +9626,9 @@ const en = {
     'auditor.availability.weekly_more': 'One more job per week',
     'auditor.availability.districts_title': 'Districts you accept',
     'auditor.availability.districts_count': '{count} of {total} districts',
+    'auditor.availability.saving': 'Saving…',
+    'auditor.availability.save_failed':
+        'Your coverage was not saved. Check your connection and try again.',
     'auditor.availability.districts_none':
         'Choose at least one district. Until you do, no audits can be offered to you.',
     'auditor.profile.contact.add_address': 'Add your registered address',

@@ -325,7 +325,7 @@ const fr: Catalog = {
     'suite.hub.next.role_switch_auditor.title':
         'Votre compte passe en Auditeur',
     'suite.hub.next.role_switch_auditor.body':
-        'Vous pourrez alors recevoir des missions d’audit près de chez vous.',
+        'Vous pourrez alors recevoir des missions d’audit dans les districts que vous choisissez.',
     'suite.hub.next.investor_ready.title': 'Parcourez les offres ouvertes',
     'suite.hub.next.investor_ready.body':
         'Votre compte est prêt. Ouvrez Investisseur pour voir les entreprises qui lèvent des fonds.',
@@ -437,6 +437,7 @@ const fr: Catalog = {
         "Faites une vigilance renforcée avant d'approuver : vérifiez l'origine des fonds et du patrimoine, et notez ce que vous avez vérifié.",
     'admin.role_applications.pep_confirm':
         "J'ai effectué une vigilance renforcée sur cette personne.",
+    'admin.role_applications.saves_one': ', puis 1 enregistrement du demandeur',
     'admin.role_applications.saves':
         ', puis {count} enregistrements du demandeur',
     'role.apply.review.unchanged_title':
@@ -2835,7 +2836,8 @@ const fr: Catalog = {
         "Durée d'une annonce de revente · jours",
     'admin.policy.resale_reservation_minutes':
         'Réservation de revente · minutes',
-    'admin.policy.cpa_radius': "Rayon d'affectation du CPA",
+    'admin.policy.cpa_dispatch': 'Affectation du CPA',
+    'admin.policy.cpa_weekly_limit': 'Limite hebdomadaire du CPA (par défaut)',
     'admin.policy.sandbox_businesses': 'Limite du bac à sable · entreprises',
     'admin.policy.sandbox_investors': 'Limite du bac à sable · investisseurs',
     'admin.policy.sandbox_principal':
@@ -2853,6 +2855,8 @@ const fr: Catalog = {
     'admin.policy.hint.withdrawal_daily_cap':
         "Montant maximum qu'un compte peut retirer par jour.",
     'admin.policy.term.pro_rata': 'La totalité, au prorata des détenteurs',
+    'admin.policy.term.district_match':
+        "Correspondance du district de l'entreprise",
     'admin.policy.hint.platform_fee':
         "Prélevés sur la levée lors du versement à l'entreprise.",
     'admin.policy.hint.cpa_share':
@@ -2946,7 +2950,10 @@ const fr: Catalog = {
     'admin.policy.hint.resale_listing_days': "Durée d'une offre de revente.",
     'admin.policy.hint.resale_reservation_minutes':
         "Durée de réservation d'une part avant paiement.",
-    'admin.policy.hint.cpa_radius': "Distance maximale d'envoi d'un auditeur.",
+    'admin.policy.hint.cpa_dispatch':
+        "Le district de l'entreprise fait partie de ceux que le CPA accepte ; aucune limite de distance.",
+    'admin.policy.hint.cpa_weekly_limit':
+        "Nombre maximal d'audits proposés à un CPA chaque semaine, sauf s'il le modifie.",
     'admin.policy.hint.sandbox_businesses':
         "Plafond d'entreprises actives pendant la sandbox CMA.",
     'admin.policy.hint.sandbox_investors':
@@ -4085,8 +4092,8 @@ const fr: Catalog = {
     'auditor.availability.home_paused':
         'Touchez pour accepter à nouveau les audits flash',
     'auditor.availability.toggle': 'Accepter des audits',
-    'auditor.home.nearby_one': '1 audit flash à proximité',
-    'auditor.home.nearby_other': '{count} audits flash à proximité',
+    'auditor.home.nearby_one': '1 audit flash dans vos districts',
+    'auditor.home.nearby_other': '{count} audits flash dans vos districts',
     'auditor.home.nearby_sub':
         'À {districts} · le premier à accepter verrouille le dossier',
     'auditor.home.in_progress': 'En cours',
@@ -4260,7 +4267,7 @@ const fr: Catalog = {
     'auditor.file.brief.flash.step_1':
         "Enregistrez votre arrivée dans les locaux de l'entreprise ; votre position en direct est consignée avec l'audit.",
     'auditor.file.brief.flash.step_2':
-        "Prenez les photos requises avec l'appareil photo de l'application, à l'intérieur du périmètre des locaux. Les imports depuis la galerie sont bloqués.",
+        "Prenez les photos requises avec l'appareil photo de l'application, sur place dans l'entreprise. Les imports depuis la galerie sont bloqués.",
     'auditor.file.brief.flash.step_3':
         'Comptez le stock sur place et notez sa valeur. Tout écart avec le chiffre déclaré doit être expliqué avant de pouvoir sceller.',
     'auditor.file.brief.flash.step_4':
@@ -4272,7 +4279,7 @@ const fr: Catalog = {
     'auditor.file.brief.monthly.step_2':
         'Comptez la trésorerie et les unités de stock sur place. Tout écart doit être expliqué avant de pouvoir sceller.',
     'auditor.file.brief.monthly.step_3':
-        "Prenez les photos requises avec l'appareil photo de l'application, à l'intérieur du périmètre des locaux.",
+        "Prenez les photos requises avec l'appareil photo de l'application, sur place dans l'entreprise.",
     'auditor.file.brief.monthly.step_4':
         'Scellez avant l’échéance du rapport : la fin du 7 du mois suivant (heure de Kigali) dans l’application actuelle.',
     'auditor.file.why_review': 'Pourquoi cette revue des relevés est requise',
@@ -4365,7 +4372,7 @@ const fr: Catalog = {
     'auditor.checkin.open': "Signaler l'arrivée avec l'application",
     'auditor.checkin.review_title': 'Cette arrivée sera examinée',
     'auditor.checkin.review_body':
-        "La précision de la position ou sa distance aux locaux enregistrés est hors politique. Continuez ; les opérations d'audit l'examinent.",
+        "La position n'était pas assez précise pour être confirmée. Continuez ; les opérations d'audit l'examinent.",
     'auditor.photos.title': 'Photos du site géolocalisées',
     'auditor.photos.lead':
         "Prises en direct dans l'application — l'import depuis la galerie est désactivé pour éviter la fraude. {captured} sur {required} requises prises.",
@@ -6857,7 +6864,7 @@ const fr: Catalog = {
     'auditor.audit.guide.check_in.done':
         'Votre arrivée est reçue et s’affiche ici.',
     'auditor.audit.guide.check_in.how':
-        'Placez-vous dans les locaux, ouvrez l’application de capture, autorisez la localisation et enregistrez-vous. Une arrivée loin des locaux enregistrés, ou avec une localisation faible, part en revue ; continuez.',
+        'Placez-vous dans les locaux, ouvrez l’application de capture, autorisez la localisation et enregistrez-vous. Une arrivée avec une localisation faible part en revue ; continuez.',
     'auditor.audit.guide.photos.do':
         'Prenez chaque photo requise en direct dans l’application de capture.',
     'auditor.audit.guide.photos.upload':
@@ -9634,7 +9641,7 @@ const fr: Catalog = {
         'Oui, pour les petites levées',
     'auditor.academy.lesson.baseline.topic2.title': 'Règles de preuve',
     'auditor.academy.lesson.baseline.topic2.body':
-        'Les photos proviennent uniquement de l’appareil photo de l’application, avec la position en direct. Les imports depuis la galerie sont bloqués et une photo prise hors du périmètre des locaux est refusée.',
+        'Les photos proviennent uniquement de l’appareil photo de l’application, avec la position en direct. Les imports depuis la galerie sont bloqués.',
     'auditor.academy.lesson.baseline.topic2.q':
         'Vous avez pris une photo hier avec l’appareil photo de votre téléphone. Pouvez-vous l’importer ?',
     'auditor.academy.lesson.baseline.topic2.option1':
@@ -9981,6 +9988,9 @@ const fr: Catalog = {
     'auditor.availability.weekly_more': 'Une mission de plus par semaine',
     'auditor.availability.districts_title': 'Districts que vous acceptez',
     'auditor.availability.districts_count': '{count} districts sur {total}',
+    'auditor.availability.saving': 'Enregistrement…',
+    'auditor.availability.save_failed':
+        "Votre couverture n'a pas été enregistrée. Vérifiez votre connexion et réessayez.",
     'auditor.availability.districts_none':
         "Choisissez au moins un district. D'ici là, aucun audit ne peut vous être proposé.",
     'auditor.profile.contact.add_address': 'Ajouter votre adresse enregistrée',

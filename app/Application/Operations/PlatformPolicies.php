@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Operations;
 
+use App\Domain\Auditor\AuditorDispatch;
 use App\Domain\Disbursement\PlatformFee;
 use App\Domain\Identity\Complaint;
 use App\Domain\Identity\InvestorVerificationCase;
@@ -55,9 +56,6 @@ final class PlatformPolicies
 
     /** FEE-R02: the Audit Partner's share of the earnings fee. */
     public const int CPA_EARNINGS_SHARE_PERCENT = 25;
-
-    /** AUD-R02: how far from the CPA's office an assignment may be. */
-    public const int CPA_RADIUS_KM = 30;
 
     /** SBX-R01: the sandbox's hard limits. */
     public const array SANDBOX = ['businesses' => 100, 'investors' => 10000, 'principal' => 5000000000];
@@ -184,7 +182,8 @@ final class PlatformPolicies
             ...self::tab('limits', null, [self::brs(self::term('withdrawal_daily_cap', 'none'), 'LED-R04')]),
             ...self::tab('limits', null, [['key' => 'resale_listing_days', 'value' => (string) intdiv(SecondaryTerms::LISTING_SECONDS, 86400)],
                 ['key' => 'resale_reservation_minutes', 'value' => (string) intdiv(SecondaryTerms::RESERVATION_SECONDS, 60)],
-                self::brs(['key' => 'cpa_radius', 'value' => self::CPA_RADIUS_KM.' km'], 'AUD-R02'),
+                self::brs(self::term('cpa_dispatch', 'district_match'), 'AUD-R02'),
+                ['key' => 'cpa_weekly_limit', 'value' => AuditorDispatch::DEFAULT_MAX_JOBS_PER_WEEK.' (from '.AuditorDispatch::MIN_JOBS_PER_WEEK.' to '.AuditorDispatch::MAX_JOBS_PER_WEEK.')'],
                 self::brs(['key' => 'sandbox_businesses', 'value' => number_format(self::SANDBOX['businesses'])], 'SBX-R01'),
                 self::brs(['key' => 'sandbox_investors', 'value' => number_format(self::SANDBOX['investors'])], 'SBX-R01'),
                 self::brs(['key' => 'sandbox_principal', 'value' => self::rwf(self::SANDBOX['principal'])], 'SBX-R01')])];

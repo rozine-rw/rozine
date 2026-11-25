@@ -14,6 +14,7 @@ import {
     PendingSection,
     SecuritySection,
     TelemetrySection,
+    ADDRESS_ERROR_FIELDS,
 } from '@/components/auditor/profile/account-sections';
 import { AccreditationSection } from '@/components/auditor/profile/accreditation-section';
 import { AvailabilitySection } from '@/components/auditor/profile/availability-section';
@@ -206,7 +207,12 @@ export default function AuditorProfile(props: AuditorProfileProps) {
                         <div className="rz-scroll px-5 lg:flex-1 lg:overflow-y-auto lg:px-[18px] lg:pt-[18px]">
                             <AuditorCommandNotice
                                 placement="page"
-                                shown={['licence', 'expires_on', 'certificate']}
+                                shown={[
+                                    'licence',
+                                    'expires_on',
+                                    'certificate',
+                                    ...ADDRESS_ERROR_FIELDS,
+                                ]}
                                 className="mt-4 lg:mt-0 lg:mb-4"
                             />
                             {wide ? (
