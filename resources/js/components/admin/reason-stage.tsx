@@ -46,6 +46,9 @@ type ReasonStageProps = {
      * Compliance ticks at least one, and they are sent as `items` with the reason.
      */
     revisable?: Record<string, string>;
+    /** A suggested reason and ticked items to start from; staff can change both. */
+    initialReason?: string;
+    initialItems?: PickedItem[];
 };
 
 /**
@@ -65,11 +68,13 @@ export function ReasonStage({
     onCancel,
     payload = {},
     revisable,
+    initialReason = '',
+    initialItems = [],
 }: ReasonStageProps) {
     const { t } = useTranslation();
-    const form = useForm({ reason: '', ...payload });
+    const form = useForm({ reason: initialReason, ...payload });
     const reason = String(form.data.reason);
-    const [items, setItems] = useState<PickedItem[]>([]);
+    const [items, setItems] = useState<PickedItem[]>(initialItems);
     const picking =
         revisable !== undefined && Object.keys(revisable).length > 0;
     const empty = reason.trim() === '' || (picking && items.length === 0);

@@ -2106,6 +2106,8 @@ export type InvestorVerificationReview = {
     links: { close: RouteLink };
     /** The answers and documents Compliance may ask the person to change, key to label. */
     revisable?: Record<string, string>;
+    /** Why approval would be refused, read before anyone tries (QA #765); approve is then not offered. */
+    blocked?: 'IDENTITY_VERIFIED_FOR_ANOTHER_PERSON' | null;
     /** Present only while the case waits for review. */
     actions: { approve?: RouteAction; reject?: RouteAction };
 };

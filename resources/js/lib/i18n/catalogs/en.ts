@@ -373,6 +373,10 @@ const en = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Audit Partners can’t hold another Rozine role, so this account can’t ask for Auditor access.',
     'suite.app.unavailable': 'Not available with your current access',
+    'admin.kyc.blocked.IDENTITY_VERIFIED_FOR_ANOTHER_PERSON':
+        'This ID number is already verified for another person, so it can’t be approved. Send the check back so the person can check the ID they gave.',
+    'admin.kyc.blocked.IDENTITY_VERIFIED_FOR_ANOTHER_PERSON_reason':
+        'The ID number you gave is already verified on another account. Please check it and send again.',
     'role.apply.people.share_number':
         'Enter the share as a number, like 25 or 25.5.',
     'suite.app.switch.kyc_fix_summary':
