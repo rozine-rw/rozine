@@ -13,6 +13,7 @@ const STAFF_ROLES: string[] = [
     'approver',
     'compliance',
     'treasury',
+    'founder',
     'superadmin',
 ] satisfies StaffRole[];
 

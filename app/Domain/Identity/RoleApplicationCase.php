@@ -70,6 +70,9 @@ final class RoleApplicationCase
     /** Directors or owners listed on the form, at most. */
     public const MAX_PEOPLE = 12;
 
+    /** @param  int  $minimumMonthlyCommitment  the founders' institution minimum in force, in RWF */
+    public function __construct(private int $minimumMonthlyCommitment = InstitutionalInvestorTerms::MIN_MONTHLY_COMMITMENT) {}
+
     /** @return State */
     public function empty(string $role): array
     {
@@ -587,9 +590,9 @@ final class RoleApplicationCase
             $errors['institution.type'] = ['Choose the type of institution.'];
         }
         $amount = $institution['monthly_commitment'];
-        if (preg_match('/^[1-9][0-9]{0,12}$/D', $amount) !== 1 || (int) $amount < InstitutionalInvestorTerms::MIN_MONTHLY_COMMITMENT
+        if (preg_match('/^[1-9][0-9]{0,12}$/D', $amount) !== 1 || (int) $amount < $this->minimumMonthlyCommitment
             || (int) $amount > InstitutionalInvestorTerms::MAX_MONTHLY_COMMITMENT) {
-            $errors['institution.monthly_commitment'] = ['Institutions commit to distributing at least RWF 30,000,000 a month.'];
+            $errors['institution.monthly_commitment'] = [sprintf('Institutions commit to distributing at least RWF %s a month.', number_format($this->minimumMonthlyCommitment))];
         }
         if ($institution['bank_name'] === '') {
             $errors['institution.bank_name'] = ['Enter the bank that holds the institution’s account.'];

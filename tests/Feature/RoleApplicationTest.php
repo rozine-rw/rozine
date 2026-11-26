@@ -6,6 +6,7 @@ use App\Application\Identity\Contracts\InstitutionalInvestors;
 use App\Application\Identity\SaveInvestorVerification;
 use App\Application\Identity\SubmitInvestorVerification;
 use App\Application\Identity\UploadInvestorVerificationDocument;
+use App\Application\Operations\Contracts\PolicySettings;
 use App\Domain\Identity\InstitutionalInvestorTerms;
 use App\Domain\Operations\CommandRejection;
 use App\Models\AuditorProfile;
@@ -609,6 +610,8 @@ test('compliance reviews an institution with the business KYB and approval keeps
     expect($application->refresh()->status)->toBe('approved')->and($application->business_id)->toBeNull()
         // No business is onboarded and the Investor role stays: the account now invests for the institution.
         ->and($roles)->toEqual(['investor' => 'active'])->and(BusinessProfile::query()->count())->toBe(0)
+        // It is now held to the institution's cap of any one raise, not the individual's.
+        ->and(app(PolicySettings::class)->holdingCapPercent((string) $this->person->party_id))->toBe(25)
         ->and($institution->only(['role_application_id', 'legal_name', 'rdb_code', 'institution_type', 'monthly_commitment', 'approved_by_user_id']))
         ->toBe(['role_application_id' => $application->id, 'legal_name' => 'Kivu Harvest Ltd', 'rdb_code' => '108123456',
             'institution_type' => 'pension_fund', 'monthly_commitment' => 40000000, 'approved_by_user_id' => $this->officer->id])

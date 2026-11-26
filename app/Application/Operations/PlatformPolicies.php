@@ -8,6 +8,7 @@ use App\Domain\Auditor\AuditorDispatch;
 use App\Domain\Disbursement\PlatformFee;
 use App\Domain\Identity\Complaint;
 use App\Domain\Identity\InvestorVerificationCase;
+use App\Domain\Operations\PolicyChange;
 use App\Domain\Primary\EarningsFeeBand;
 use App\Domain\Primary\RiskStatements;
 use App\Domain\Primary\UnitRights;
@@ -32,7 +33,9 @@ use Brick\Math\BigRational;
  * `rwanda` and `not_collected`.
  *
  * The values are code, not versioned policy data yet, so the console only reads them: a change goes
- * through a release under ADM-R05 rather than an Edit form.
+ * through a release under ADM-R05 rather than an Edit form. The exceptions are the settings in
+ * `PolicyChange` (the per-investor caps and the institution terms), whose values in force are passed
+ * in and change once both founders approve.
  *
  * @phpstan-type PolicyItem array{key: string, value: string, term?: string}
  * @phpstan-type PolicyRule array{tab: string, key: string, value: string, term?: string, version: string|null}
@@ -47,9 +50,6 @@ final class PlatformPolicies
 
     /** UW-R04: the lowest rating that may raise. */
     public const string MIN_RATING = '2.0';
-
-    /** INV-R01: the most of any raise one Investor may hold. */
-    public const int CONCENTRATION_PERCENT = 50;
 
     /** NOTE-R03: how long a raise stays open. */
     public const int RAISE_DAYS = 30;
@@ -136,9 +136,13 @@ final class PlatformPolicies
         return 'RWF '.number_format((int) $amount);
     }
 
-    /** @return list<PolicyRule> */
-    public static function rules(): array
+    /**
+     * @param  array<string, int>  $values  the changeable settings in force, their defaults when left out
+     * @return list<PolicyRule>
+     */
+    public static function rules(array $values = []): array
     {
+        $setting = fn (string $key): int => $values[$key] ?? PolicyChange::SETTINGS[$key]['default'];
         $tenors = FlatReturnPricing::TENORS;
         $bands = implode(' · ', array_map(fn (int $basisPoints): string => ($basisPoints / 100).'%', EarningsFeeBand::RATES));
         [$platform, $share, $upcountry, $listing, $repayment, $resale] = self::fees();
@@ -167,7 +171,10 @@ final class PlatformPolicies
             ...self::tab('investor', null, [self::brs(self::term('residency', 'resident_rwanda'), 'KYC-R02'),
                 ['key' => 'minimum_age', 'value' => (string) InvestorVerificationCase::MINIMUM_AGE],
                 ['key' => 'min_investment', 'value' => self::rwf(UnitRights::UNIT_PRINCIPAL)],
-                self::brs(['key' => 'concentration', 'value' => self::CONCENTRATION_PERCENT.'%'], 'INV-R01'),
+                ['key' => 'investor_cap_percent', 'value' => $setting('investor_cap_percent').'%'],
+                ['key' => 'institution_cap_percent', 'value' => $setting('institution_cap_percent').'%'],
+                ['key' => 'institution_min_commitment', 'value' => self::rwf($setting('institution_min_commitment'))],
+                ['key' => 'institution_reminder_day', 'value' => (string) $setting('institution_reminder_day')],
                 ['key' => 'risk_statements', 'value' => (string) count(RiskStatements::STATEMENTS)]]),
             ...self::tab('kyc', null, [self::term('kyc_investor_id', 'required'), self::term('kyc_investor_selfie', 'required'),
                 self::term('kyc_investor_dob', 'required'), self::term('kyc_investor_address', 'not_collected'), self::term('kyc_business_rdb', 'required'),

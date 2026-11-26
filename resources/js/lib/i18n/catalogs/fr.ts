@@ -1799,7 +1799,7 @@ const fr: Catalog = {
     'business.help.raise.time.q':
         'Combien de temps une levée reste-t-elle ouverte ?',
     'business.help.raise.time.a':
-        'Une levée est ouverte aux investisseurs pendant 30 jours, ou jusqu’à son financement complet. Les investisseurs achètent des parts de 5 000 RWF, et aucun ne peut détenir plus de la moitié de votre levée.\n\nVous pouvez suivre à tout moment le montant engagé dans l’application.',
+        'Une levée est ouverte aux investisseurs pendant 30 jours, ou jusqu’à son financement complet. Les investisseurs achètent des parts de 5 000 RWF, et aucun ne peut détenir plus d’une part fixée de votre levée ; plusieurs investisseurs la remplissent donc.\n\nVous pouvez suivre à tout moment le montant engagé dans l’application.',
     'business.help.raise.unfunded.q':
         'Que se passe-t-il si ma levée n’est pas entièrement financée ?',
     'business.help.raise.unfunded.a':
@@ -2693,6 +2693,68 @@ const fr: Catalog = {
     'admin.role.compliance': 'Conformité',
     'admin.role.access.compliance': 'Accès conformité',
     'admin.role.treasury': 'Trésorerie',
+    'admin.policy.investor_cap_percent':
+        "Part maximale d'une levée pour un particulier",
+    'admin.policy.institution_cap_percent':
+        "Part maximale d'une levée pour une institution",
+    'admin.policy.institution_min_commitment':
+        'Minimum institutionnel · par mois',
+    'admin.policy.institution_reminder_day':
+        'Début des rappels de recharge · jour du mois',
+    'admin.policy.hint.investor_cap_percent':
+        "Plafond qu'un investisseur particulier peut détenir d'une levée. Les fondateurs approuvent les changements.",
+    'admin.policy.hint.institution_cap_percent':
+        "Plafond qu'un investisseur institutionnel peut détenir d'une levée. Les fondateurs approuvent les changements.",
+    'admin.policy.hint.institution_min_commitment':
+        "Montant minimum qu'une institution s'engage à distribuer chaque mois via Auto-Deploy.",
+    'admin.policy.hint.institution_reminder_day':
+        'Jour où les institutions commencent à recevoir les rappels de recharge pour le mois suivant.',
+    'admin.role.founder': 'Fondateur',
+    'admin.role.access.founder': 'Approuve les changements de politique',
+    'admin.policy_changes.title': 'Politiques approuvées par les fondateurs',
+    'admin.policy_changes.intro': {
+        one: "Un changement ne prend effet qu'après l'approbation de {count} fondateur.",
+        other: "Un changement ne prend effet qu'après l'approbation de {count} fondateurs, chacun séparément. Un refus le clôt.",
+    },
+    'admin.policy_changes.waiting':
+        'En attente · {done} sur {count} approbations',
+    'admin.policy_changes.proposed': '{from} → {to}, proposé par {name}',
+    'admin.policy_changes.approved_by': 'Approuvé par {name}',
+    'admin.policy_changes.you_decided':
+        "Vous avez décidé. L'autre fondateur décide ensuite.",
+    'admin.policy_changes.approve': 'Approuver',
+    'admin.policy_changes.reject': 'Refuser',
+    'admin.policy_changes.change': 'Proposer un changement',
+    'admin.policy_changes.new_value': 'Nouvelle valeur pour {name}',
+    'admin.policy_changes.range': 'De {min} à {max}',
+    'admin.policy_changes.next': 'Suivant',
+    'admin.policy_changes.cancel': 'Annuler',
+    'admin.policy_changes.day': 'Jour {day}',
+    'admin.policy_changes.history': 'Décisions récentes',
+    'admin.policy_changes.history_row': '{name} : {from} → {to} · {by}',
+    'admin.policy_changes.status.applied': 'En vigueur',
+    'admin.policy_changes.status.rejected': 'Refusé',
+    'admin.policy_changes.status.pending': 'En attente',
+    'admin.policy_changes.stage.propose.title':
+        'Changer {name} de {from} à {to} ?',
+    'admin.policy_changes.stage.propose.body':
+        "Rien ne change encore. Les deux fondateurs doivent l'approuver, chacun séparément, avant qu'il prenne effet.",
+    'admin.policy_changes.stage.propose.cta': 'Proposer le changement',
+    'admin.policy_changes.stage.propose.placeholder':
+        'Pourquoi ce changement ? Les fondateurs le lisent avant de décider.',
+    'admin.policy_changes.stage.approve.title':
+        'Approuver {name} : {from} → {to} ?',
+    'admin.policy_changes.stage.approve.body':
+        'Votre approbation est enregistrée à votre nom. Le changement prend effet une fois approuvé par chaque fondateur.',
+    'admin.policy_changes.stage.approve.cta': 'Approuver le changement',
+    'admin.policy_changes.stage.approve.placeholder':
+        "Votre raison d'approuver.",
+    'admin.policy_changes.stage.reject.title':
+        'Refuser {name} : {from} → {to} ?',
+    'admin.policy_changes.stage.reject.body':
+        'Refuser clôt ce changement. La valeur en vigueur reste inchangée.',
+    'admin.policy_changes.stage.reject.cta': 'Refuser le changement',
+    'admin.policy_changes.stage.reject.placeholder': 'Votre raison de refuser.',
     'admin.role.access.treasury': 'Accès trésorerie',
     'admin.kyc.intro':
         'Vérifications d’identité de personnes qui souhaitent investir. Ouvrez-en une pour lire ses documents et ses contrôles automatiques. La décision se prend sur la page Utilisateurs, où chaque KYC est approuvé, renvoyé ou rejeté.',
@@ -2930,7 +2992,6 @@ const fr: Catalog = {
     'admin.policy.default_at': 'Défaut',
     'admin.policy.auto_freeze': 'Gel automatique en cas de défaut',
     'admin.policy.min_investment': 'Investissement minimal · une part',
-    'admin.policy.concentration': "Part maximale d'une levée par investisseur",
     'admin.policy.raise_days': 'Durée de la levée · jours',
     'admin.policy.resale_listing_days':
         "Durée d'une annonce de revente · jours",
@@ -3017,8 +3078,6 @@ const fr: Catalog = {
     'admin.policy.hint.residency': "Où l'investisseur doit résider.",
     'admin.policy.hint.minimum_age': "Âge minimum d'un investisseur.",
     'admin.policy.hint.min_investment': 'Plus petit investissement autorisé.',
-    'admin.policy.hint.concentration':
-        "Plafond qu'un investisseur peut placer dans une seule note.",
     'admin.policy.hint.risk_statements':
         'Déclarations acceptées avant un premier investissement.',
     'admin.policy.hint.kyc_investor_id': 'Recto et verso du document.',
@@ -3674,7 +3733,11 @@ const fr: Catalog = {
         'Corriger une écriture réglée par une nouvelle écriture liée, avec un motif.',
     'admin.permission.policies.change': 'Règles',
     'admin.permission_detail.policies.change':
-        "Modifier les règles de tarification, d'éligibilité et d'automatisation.",
+        'Proposer une nouvelle valeur pour une politique que les fondateurs approuvent.',
+    'admin.permission.policies.approve':
+        'Approuver les changements de politique',
+    'admin.permission_detail.policies.approve':
+        'Approuver ou refuser un changement de politique proposé. Il prend effet une fois approuvé par les deux fondateurs.',
     'admin.permission.records.delete': 'Supprimer',
     'admin.permission_detail.records.delete':
         'Retirer définitivement une fiche de la plateforme.',
@@ -5304,11 +5367,11 @@ const fr: Catalog = {
     'investor.market.resale.see_cancelled': 'Voir dans Annulées',
     'investor.market.resale.trade_sell': 'Vendu · {name}',
     'investor.market.resale.refusal.holding_limit': {
-        one: 'Un investisseur peut détenir au plus la moitié d’une levée. Vous pouvez encore acheter jusqu’à {count} part de cette note.',
-        other: 'Un investisseur peut détenir au plus la moitié d’une levée. Vous pouvez encore acheter jusqu’à {count} parts de cette note.',
+        one: 'Un investisseur ne peut détenir qu’une part fixée d’une levée. Vous pouvez encore acheter jusqu’à {count} part de cette note.',
+        other: 'Un investisseur ne peut détenir qu’une part fixée d’une levée. Vous pouvez encore acheter jusqu’à {count} parts de cette note.',
     },
     'investor.market.resale.refusal.holding_full':
-        'Un investisseur peut détenir au plus la moitié d’une levée, et vous avez déjà atteint cette limite pour cette note.',
+        'Un investisseur ne peut détenir qu’une part fixée d’une levée, et vous avez déjà atteint cette limite pour cette note.',
     'investor.market.resale.refusal.price_cap':
         'Le prix dépasse le plafond de {cap} par part.',
     'investor.market.resale.refusal.not_held':
@@ -6472,14 +6535,14 @@ const fr: Catalog = {
     'investor.academy.lesson.diversify.topic2.title':
         'Varier secteurs et durées',
     'investor.academy.lesson.diversify.topic2.body':
-        'Varier les secteurs, les notations et les durées vous évite de dépendre d’un seul choc. Vous pouvez détenir au plus la moitié d’une levée.',
+        'Varier les secteurs, les notations et les durées vous évite de dépendre d’un seul choc. Vous ne pouvez détenir qu’une part fixée d’une levée.',
     'investor.academy.lesson.diversify.topic2.q':
         'Varier secteurs et durées vous aide à…',
     'investor.academy.lesson.diversify.topic2.option1':
         'Ne pas dépendre d’un seul choc',
     'investor.academy.lesson.diversify.topic2.option2': 'Payer moins de frais',
     'investor.academy.lesson.diversify.topic2.option3':
-        'Détenir plus de la moitié d’une levée',
+        'Détenir plus que votre part limite d’une levée',
     'investor.academy.lesson.deals.title': 'Choisir une offre',
     'investor.academy.lesson.deals.sub': 'Lire la page de l’offre',
     'investor.academy.lesson.deals.topic1.title': 'Ce qu’il faut vérifier',
@@ -6542,7 +6605,7 @@ const fr: Catalog = {
         'Vérifiez votre identité, puis alimentez votre portefeuille depuis un compte mobile money ou bancaire à votre nom. Ouvrez une offre dans Marché pour voir sa note, son rendement, sa durée, son échéancier et les chiffres vérifiés de l’entreprise, choisissez le nombre de parts et confirmez.\n\nAvant de confirmer, vous voyez le montant, chaque frais en RWF et exactement ce que vous recevrez.',
     'investor.help.start.minimum.q': 'Y a-t-il un investissement minimum ?',
     'investor.help.start.minimum.a':
-        'Les notes sont vendues par parts de 5 000 RWF ; vous pouvez donc commencer avec une seule part.\n\nVous ne pouvez détenir plus de la moitié d’une levée, et un investissement ne peut jamais dépasser ce qui reste à financer.',
+        'Les notes sont vendues par parts de 5 000 RWF ; vous pouvez donc commencer avec une seule part.\n\nVous ne pouvez détenir qu’une part fixée d’une levée, et un investissement ne peut jamais dépasser ce qui reste à financer.',
     'investor.help.returns.when.q':
         'Comment et quand mes rendements sont-ils versés ?',
     'investor.help.returns.when.a':

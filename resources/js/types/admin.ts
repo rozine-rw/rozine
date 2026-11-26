@@ -35,6 +35,7 @@ export type AdminSection =
     | 'events';
 
 export type StaffRole =
+    | 'founder'
     | 'analyst'
     | 'approver'
     | 'compliance'
@@ -101,6 +102,8 @@ export type AdminPendingSectionProps = AdminFrameShellProps & {
         | 'events';
     /** Policies only: each rule the platform enforces, under its design tab. */
     rules?: PolicyRule[];
+    /** Policies only: the settings the founders approve changes to, and recent decisions. */
+    policy_changes?: PolicyChangeBoard;
     /** A KPI tile's figure by its design key, where the server reads one (Finance). */
     figures?: Partial<Record<string, Money>>;
     /** Finance only, for whoever may read the ledger: each fee stream and who pays it. */
@@ -214,6 +217,60 @@ export type FinanceStream = {
     collected: Money | null;
 };
 
+/** One founder's decision on a proposed policy change. */
+export type PolicyChangeDecision = {
+    by: string;
+    decision: 'approve' | 'reject';
+    reason: string;
+    at: string;
+};
+
+/** The policies the founders approve changes to. */
+export type PolicySettingKey =
+    | 'investor_cap_percent'
+    | 'institution_cap_percent'
+    | 'institution_min_commitment'
+    | 'institution_reminder_day';
+
+/** A proposed new value for a changeable policy, and where the founders' decision stands. */
+export type PolicyChange = {
+    id: string;
+    key: PolicySettingKey;
+    from_value: number;
+    to_value: number;
+    status: 'pending' | 'applied' | 'rejected';
+    reason: string;
+    proposed_by: string;
+    proposed_at: string;
+    decided_at: string | null;
+    decisions: PolicyChangeDecision[];
+    viewer_decided: boolean;
+    /** Present while pending: set only for a founder who has not decided it yet. */
+    approve?: RouteAction | null;
+    reject?: RouteAction | null;
+};
+
+/** A policy the console can change once both founders approve (26 Nov 2026). */
+export type PolicySetting = {
+    key: PolicySettingKey;
+    unit: 'percent' | 'rwf' | 'day';
+    value: number;
+    min: number;
+    max: number;
+    revision: number;
+    updated_at: string;
+    pending: PolicyChange | null;
+};
+
+export type PolicyChangeBoard = {
+    settings: PolicySetting[];
+    history: PolicyChange[];
+    approvals_needed: number;
+    /** Null unless the viewer may propose a change. */
+    propose: RouteAction | null;
+    can_approve: boolean;
+};
+
 /** One rule in effect, with the policy version it comes from when the rule carries one. */
 export type PolicyRule = PolicyItem & {
     tab: string;
@@ -312,7 +369,10 @@ export type PolicyItem = {
         | 'default_at'
         | 'auto_freeze'
         | 'min_investment'
-        | 'concentration'
+        | 'investor_cap_percent'
+        | 'institution_cap_percent'
+        | 'institution_min_commitment'
+        | 'institution_reminder_day'
         | 'raise_days'
         | 'resale_listing_days'
         | 'resale_reservation_minutes'
@@ -797,6 +857,7 @@ export type StaffPermissionKey =
     | 'records.edit'
     | 'ledger.correct'
     | 'policies.change'
+    | 'policies.approve'
     | 'records.delete';
 
 /**

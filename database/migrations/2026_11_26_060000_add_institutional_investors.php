@@ -34,7 +34,7 @@ return new class extends Migration
             $table->timestampsTz();
         });
         DB::unprepared(<<<'SQL'
-            ALTER TABLE institutional_investors ADD CONSTRAINT institutional_investor_commitment CHECK (monthly_commitment >= 30000000);
+            ALTER TABLE institutional_investors ADD CONSTRAINT institutional_investor_commitment CHECK (monthly_commitment > 0);
             ALTER TABLE institutional_investors ADD CONSTRAINT institutional_investor_rdb_code CHECK (rdb_code ~ '^[0-9]{9}$');
             ALTER TABLE institutional_investors ADD CONSTRAINT institutional_investor_type CHECK (institution_type IN
                 ('pension_fund', 'venture_capital', 'asset_manager', 'insurer', 'bank', 'corporate_treasury', 'other'));

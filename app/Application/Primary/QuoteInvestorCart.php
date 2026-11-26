@@ -154,7 +154,8 @@ final readonly class QuoteInvestorCart
 
                 continue;
             }
-            $max = (int) GetInvestorCheckout::capacity($deal, $this->facts->forInvestor($userId, $line['campaign_id'])['campaign_units'], true)['max_units'];
+            $facts = $this->facts->forInvestor($userId, $line['campaign_id']);
+            $max = (int) GetInvestorCheckout::capacity($deal, $facts['campaign_units'], true, $facts['cap_percent'])['max_units'];
             if ($line['units'] > $max) {
                 $over[$line['campaign_id']] = (string) $max;
             }

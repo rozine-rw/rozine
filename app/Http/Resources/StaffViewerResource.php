@@ -14,7 +14,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class StaffViewerResource extends JsonResource
 {
     /** Staff roles from most to least privileged. */
-    public const ROLES = ['superadmin', 'compliance', 'approver', 'treasury', 'analyst'];
+    public const ROLES = ['superadmin', 'founder', 'compliance', 'approver', 'treasury', 'analyst'];
 
     /** @return array{id: string, name: string, email: string, initials: string, role: string} */
     public function toArray(Request $request): array

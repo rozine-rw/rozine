@@ -4,7 +4,12 @@ import { SECTION_DESIGNS } from '@/components/admin/section-designs';
 import en from '@/lib/i18n/catalogs/en';
 import type { MessageCode } from '@/lib/i18n/types';
 import AdminPendingSection from '@/pages/admin/section';
-import type { AdminPendingSectionProps } from '@/types/admin';
+import type {
+    AdminPendingSectionProps,
+    PolicyChange,
+    PolicyChangeBoard,
+    PolicySetting,
+} from '@/types/admin';
 import sectionFixture from '../../../resources/fixtures/ui/admin-section.json';
 import { inertia, resetInertia } from './inertia-mock';
 
@@ -287,9 +292,9 @@ describe('Policies', () => {
                         },
                         {
                             tab: 'investor',
-                            key: 'concentration',
-                            value: '50%',
-                            version: 'brs-2.0-inv-r01',
+                            key: 'institution_cap_percent',
+                            value: '25%',
+                            version: null,
                         },
                     ],
                 })}
@@ -333,7 +338,7 @@ describe('Policies', () => {
                 screen.getByRole('table', { name: 'Investor eligibility' }),
             ).getAllByRole('row')[1],
         ).toHaveTextContent(
-            'Max investment / note · share of the raiseCap one investor can place in a single note.50%brs-2.0-inv-r01',
+            'Most one institution may hold of a raiseCap one institutional investor can hold of any one raise. Founders approve changes.25%—',
         );
         // Four groups have no rule in this fixture, so each shows its empty state.
         expect(screen.getAllByText('No rules to show yet.')).toHaveLength(4);
@@ -840,5 +845,246 @@ describe('App Control', () => {
                 screen.getByRole('table', { name: 'Content' }),
             ).queryAllByRole('button'),
         ).toEqual([]);
+    });
+});
+
+describe('Policies the founders approve', () => {
+    const setting = (
+        overrides: Partial<PolicySetting> = {},
+    ): PolicySetting => ({
+        key: 'investor_cap_percent',
+        unit: 'percent',
+        value: 10,
+        min: 1,
+        max: 100,
+        revision: 1,
+        updated_at: '2026-11-26T06:00:00+00:00',
+        pending: null,
+        ...overrides,
+    });
+    const change = (overrides: Partial<PolicyChange> = {}): PolicyChange => ({
+        id: '01jgpolicychange00000000001',
+        key: 'institution_cap_percent',
+        from_value: 25,
+        to_value: 30,
+        status: 'pending',
+        reason: 'More room for pension funds.',
+        proposed_by: 'Erastus Kirui',
+        proposed_at: '2026-11-26T06:10:00+00:00',
+        decided_at: null,
+        decisions: [
+            {
+                by: 'Erastus Kirui',
+                decision: 'approve',
+                reason: 'Agreed.',
+                at: '2026-11-26T06:11:00+00:00',
+            },
+        ],
+        viewer_decided: false,
+        approve: {
+            url: '/admin/policies/changes/01jgpolicychange00000000001/approve',
+            method: 'post',
+        },
+        reject: {
+            url: '/admin/policies/changes/01jgpolicychange00000000001/reject',
+            method: 'post',
+        },
+        ...overrides,
+    });
+    const board = (
+        overrides: Partial<PolicyChangeBoard> = {},
+    ): PolicyChangeBoard => ({
+        settings: [
+            setting(),
+            setting({
+                key: 'institution_cap_percent',
+                value: 25,
+                pending: change(),
+            }),
+            setting({
+                key: 'institution_min_commitment',
+                unit: 'rwf',
+                value: 30000000,
+                min: 1000000,
+                max: 5000000000,
+            }),
+            setting({
+                key: 'institution_reminder_day',
+                unit: 'day',
+                value: 25,
+                max: 28,
+            }),
+        ],
+        history: [
+            change({
+                id: '01jgpolicychange00000000002',
+                key: 'investor_cap_percent',
+                from_value: 50,
+                to_value: 10,
+                status: 'applied',
+                decided_at: '2026-11-26T05:00:00+00:00',
+                decisions: [
+                    {
+                        by: 'Erastus Kirui',
+                        decision: 'approve',
+                        reason: 'Agreed.',
+                        at: '2026-11-26T04:00:00+00:00',
+                    },
+                    {
+                        by: 'Robert Mugisha',
+                        decision: 'approve',
+                        reason: 'Agreed.',
+                        at: '2026-11-26T05:00:00+00:00',
+                    },
+                ],
+                approve: null,
+                reject: null,
+            }),
+        ],
+        approvals_needed: 2,
+        propose: { url: '/admin/policies/changes', method: 'post' },
+        can_approve: true,
+        ...overrides,
+    });
+
+    it('shows each value in force, the change waiting for founders, and recent decisions', () => {
+        render(
+            <AdminPendingSection
+                {...props({ section: 'policies', policy_changes: board() })}
+            />,
+        );
+        const panel = screen.getByRole('region', {
+            name: 'Policies the founders approve',
+        });
+
+        expect(panel).toHaveTextContent('10%');
+        expect(panel).toHaveTextContent('RWF 30,000,000');
+        expect(panel).toHaveTextContent('Day 25');
+        expect(panel).toHaveTextContent('Waiting · 1 of 2 approvals');
+        expect(panel).toHaveTextContent('25% → 30%, proposed by Erastus Kirui');
+        expect(panel).toHaveTextContent('Approved by Erastus Kirui');
+        expect(
+            within(
+                screen.getByRole('region', { name: 'Recent decisions' }),
+            ).getByText(
+                'Most one individual may hold of a raise: 50% → 10% · Erastus Kirui, Robert Mugisha',
+            ),
+        ).toBeInTheDocument();
+        // A setting with a change waiting cannot get a second one.
+        expect(
+            screen.getAllByRole('button', { name: 'Propose change' }),
+        ).toHaveLength(3);
+    });
+
+    it('proposes a new value in range with a reason, and refuses one out of range', () => {
+        render(
+            <AdminPendingSection
+                {...props({ section: 'policies', policy_changes: board() })}
+            />,
+        );
+        fireEvent.click(
+            screen.getAllByRole('button', { name: 'Propose change' })[2],
+        );
+        const field = screen.getByLabelText('From Day 1 to Day 28');
+        fireEvent.change(field, { target: { value: '31' } });
+        expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
+        fireEvent.change(field, { target: { value: '20' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+
+        const stage = screen.getByRole('form', {
+            name: 'Change Top-up reminders start · day of month from Day 25 to Day 20?',
+        });
+        fireEvent.change(within(stage).getByRole('textbox'), {
+            target: { value: 'Funds asked for more notice.' },
+        });
+        fireEvent.click(
+            within(stage).getByRole('button', { name: 'Propose change' }),
+        );
+
+        expect(inertia.posts).toEqual([
+            {
+                url: '/admin/policies/changes',
+                data: expect.objectContaining({
+                    key: 'institution_reminder_day',
+                    value: '20',
+                    reason: 'Funds asked for more notice.',
+                }),
+            },
+        ]);
+    });
+
+    it('lets a founder approve or refuse the waiting change, and cancel', () => {
+        render(
+            <AdminPendingSection
+                {...props({ section: 'policies', policy_changes: board() })}
+            />,
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Refuse' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Approve' }));
+        const stage = screen.getByRole('form', {
+            name: 'Approve Most one institution may hold of a raise: 25% → 30%?',
+        });
+        fireEvent.change(within(stage).getByRole('textbox'), {
+            target: { value: 'Agreed with Robert.' },
+        });
+        fireEvent.click(
+            within(stage).getByRole('button', { name: 'Approve change' }),
+        );
+
+        expect(inertia.posts[0]?.url).toBe(
+            '/admin/policies/changes/01jgpolicychange00000000001/approve',
+        );
+    });
+
+    it('says when the viewer already decided, offers no proposal without the right, and shows a refusal', () => {
+        inertia.errors = { form: 'This change was already decided.' };
+        render(
+            <AdminPendingSection
+                {...props({
+                    section: 'policies',
+                    policy_changes: board({
+                        propose: null,
+                        can_approve: false,
+                        history: [
+                            change({
+                                status: 'rejected',
+                                decided_at: '2026-11-26T05:00:00+00:00',
+                                approve: null,
+                                reject: null,
+                            }),
+                        ],
+                        settings: [
+                            setting({
+                                pending: change({
+                                    key: 'investor_cap_percent',
+                                    from_value: 10,
+                                    to_value: 12,
+                                    viewer_decided: true,
+                                    approve: null,
+                                    reject: null,
+                                }),
+                            }),
+                        ],
+                    }),
+                })}
+            />,
+        );
+
+        expect(screen.getByRole('alert')).toHaveTextContent(
+            'This change was already decided.',
+        );
+        expect(
+            screen.getByText(
+                'You decided this. The other founder decides next.',
+            ),
+        ).toBeInTheDocument();
+        expect(screen.getByText('Refused')).toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Propose change' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Approve' }),
+        ).not.toBeInTheDocument();
     });
 });

@@ -1739,7 +1739,7 @@ const en = {
         'No. A raise cannot be larger than the size Rozine calculates from your verified figures.\n\nRepaying on time and keeping your monthly verification on track are what improve your next offer.',
     'business.help.raise.time.q': 'How long does a raise stay open?',
     'business.help.raise.time.a':
-        'A raise is open to investors for 30 days, or until it is fully funded. Investors buy units of RWF 5,000, and no investor can hold more than half of your raise.\n\nYou can follow how much is committed in the app at any time.',
+        'A raise is open to investors for 30 days, or until it is fully funded. Investors buy units of RWF 5,000, and no single investor can hold more than a set share of your raise, so it is filled by several investors.\n\nYou can follow how much is committed in the app at any time.',
     'business.help.raise.unfunded.q':
         'What happens if my raise is not fully funded?',
     'business.help.raise.unfunded.a':
@@ -2561,6 +2561,67 @@ const en = {
     'admin.role.compliance': 'Compliance',
     'admin.role.access.compliance': 'Compliance access',
     'admin.role.treasury': 'Treasury',
+    'admin.policy.investor_cap_percent':
+        'Most one individual may hold of a raise',
+    'admin.policy.institution_cap_percent':
+        'Most one institution may hold of a raise',
+    'admin.policy.institution_min_commitment':
+        'Institution minimum · per month',
+    'admin.policy.institution_reminder_day':
+        'Top-up reminders start · day of month',
+    'admin.policy.hint.investor_cap_percent':
+        'Cap one individual investor can hold of any one raise. Founders approve changes.',
+    'admin.policy.hint.institution_cap_percent':
+        'Cap one institutional investor can hold of any one raise. Founders approve changes.',
+    'admin.policy.hint.institution_min_commitment':
+        'Least an institution commits to distribute each month through Auto-Deploy.',
+    'admin.policy.hint.institution_reminder_day':
+        'Day institutions start getting reminders to top up for next month.',
+    'admin.role.founder': 'Founder',
+    'admin.role.access.founder': 'Approves policy changes',
+    'admin.policy_changes.title': 'Policies the founders approve',
+    'admin.policy_changes.intro': {
+        one: 'A change to these takes effect only after {count} founder approves it.',
+        other: 'A change to these takes effect only after {count} founders approve it, each separately. One refusal closes it.',
+    },
+    'admin.policy_changes.waiting': 'Waiting · {done} of {count} approvals',
+    'admin.policy_changes.proposed': '{from} → {to}, proposed by {name}',
+    'admin.policy_changes.approved_by': 'Approved by {name}',
+    'admin.policy_changes.you_decided':
+        'You decided this. The other founder decides next.',
+    'admin.policy_changes.approve': 'Approve',
+    'admin.policy_changes.reject': 'Refuse',
+    'admin.policy_changes.change': 'Propose change',
+    'admin.policy_changes.new_value': 'New value for {name}',
+    'admin.policy_changes.range': 'From {min} to {max}',
+    'admin.policy_changes.next': 'Next',
+    'admin.policy_changes.cancel': 'Cancel',
+    'admin.policy_changes.day': 'Day {day}',
+    'admin.policy_changes.history': 'Recent decisions',
+    'admin.policy_changes.history_row': '{name}: {from} → {to} · {by}',
+    'admin.policy_changes.status.applied': 'In force',
+    'admin.policy_changes.status.rejected': 'Refused',
+    'admin.policy_changes.status.pending': 'Waiting',
+    'admin.policy_changes.stage.propose.title':
+        'Change {name} from {from} to {to}?',
+    'admin.policy_changes.stage.propose.body':
+        'Nothing changes yet. Both founders must approve this, each separately, before it takes effect.',
+    'admin.policy_changes.stage.propose.cta': 'Propose change',
+    'admin.policy_changes.stage.propose.placeholder':
+        'Why this change? The founders read this before deciding.',
+    'admin.policy_changes.stage.approve.title':
+        'Approve {name}: {from} → {to}?',
+    'admin.policy_changes.stage.approve.body':
+        'Your approval is recorded under your name. The change takes effect once every founder has approved it.',
+    'admin.policy_changes.stage.approve.cta': 'Approve change',
+    'admin.policy_changes.stage.approve.placeholder':
+        'Your reason for approving.',
+    'admin.policy_changes.stage.reject.title': 'Refuse {name}: {from} → {to}?',
+    'admin.policy_changes.stage.reject.body':
+        'Refusing closes this change. The value in force stays as it is.',
+    'admin.policy_changes.stage.reject.cta': 'Refuse change',
+    'admin.policy_changes.stage.reject.placeholder':
+        'Your reason for refusing.',
     'admin.role.access.treasury': 'Treasury access',
     'admin.kyc.intro':
         'Identity checks from people who want to invest. Open one to read its documents and automated checks. Decide it in the Users page, where each person’s KYC is approved, sent back or rejected.',
@@ -2793,7 +2854,6 @@ const en = {
     'admin.policy.default_at': 'Default',
     'admin.policy.auto_freeze': 'Auto-freeze on default',
     'admin.policy.min_investment': 'Minimum investment · one unit',
-    'admin.policy.concentration': 'Max investment / note · share of the raise',
     'admin.policy.raise_days': 'Raise window · days',
     'admin.policy.resale_listing_days': 'Resale listing life · days',
     'admin.policy.resale_reservation_minutes': 'Resale reservation · minutes',
@@ -2866,8 +2926,6 @@ const en = {
     'admin.policy.hint.residency': 'Where an investor must live.',
     'admin.policy.hint.minimum_age': 'Youngest an investor may be.',
     'admin.policy.hint.min_investment': 'Smallest single investment allowed.',
-    'admin.policy.hint.concentration':
-        'Cap one investor can place in a single note.',
     'admin.policy.hint.risk_statements':
         'Statements an investor accepts before a first investment.',
     'admin.policy.hint.kyc_investor_id': 'Front and back of the document.',
@@ -3504,7 +3562,10 @@ const en = {
         'Correct a settled entry with a new linked entry and a reason.',
     'admin.permission.policies.change': 'Policies',
     'admin.permission_detail.policies.change':
-        'Change pricing, eligibility and automation rules.',
+        'Propose a new value for a policy the founders approve.',
+    'admin.permission.policies.approve': 'Approve policy changes',
+    'admin.permission_detail.policies.approve':
+        'Approve or refuse a proposed policy change. It takes effect once both founders approve.',
     'admin.permission.records.delete': 'Delete',
     'admin.permission_detail.records.delete':
         'Remove a record from the platform permanently.',
@@ -5095,11 +5156,11 @@ const en = {
     'investor.market.resale.see_cancelled': 'See it in Cancelled',
     'investor.market.resale.trade_sell': 'Sold · {name}',
     'investor.market.resale.refusal.holding_limit': {
-        one: 'One investor can hold at most half of a raise. You can buy up to {count} more unit of this note.',
-        other: 'One investor can hold at most half of a raise. You can buy up to {count} more units of this note.',
+        one: 'One investor can hold only a set share of a raise. You can buy up to {count} more unit of this note.',
+        other: 'One investor can hold only a set share of a raise. You can buy up to {count} more units of this note.',
     },
     'investor.market.resale.refusal.holding_full':
-        'One investor can hold at most half of a raise, and you already hold that much of this note.',
+        'One investor can hold only a set share of a raise, and you already hold that much of this note.',
     'investor.market.resale.refusal.price_cap':
         'The price is above the cap of {cap} per unit.',
     'investor.market.resale.refusal.not_held':
@@ -6233,14 +6294,14 @@ const en = {
     'investor.academy.lesson.diversify.topic2.title':
         'Mix industries and terms',
     'investor.academy.lesson.diversify.topic2.body':
-        'Mixing industries, ratings and terms keeps you from depending on a single shock. You can hold at most half of any one raise.',
+        'Mixing industries, ratings and terms keeps you from depending on a single shock. You can hold only a set share of any one raise.',
     'investor.academy.lesson.diversify.topic2.q':
         'Mixing industries and terms helps you…',
     'investor.academy.lesson.diversify.topic2.option1':
         'Avoid depending on a single shock',
     'investor.academy.lesson.diversify.topic2.option2': 'Pay lower fees',
     'investor.academy.lesson.diversify.topic2.option3':
-        'Hold more than half of a raise',
+        'Hold more than your share limit of a raise',
     'investor.academy.lesson.deals.title': 'Choosing a deal',
     'investor.academy.lesson.deals.sub': 'Reading the deal page',
     'investor.academy.lesson.deals.topic1.title': 'What to check',
@@ -6299,7 +6360,7 @@ const en = {
         "Verify your identity, then add money to your wallet from a mobile money or bank account in your own name. Open a deal on Market to see its rating, return, term, schedule and the business's verified figures, choose how many units you want, and confirm.\n\nBefore you confirm, you see the amount, every fee in RWF and exactly what you get back.",
     'investor.help.start.minimum.q': 'Is there a minimum investment?',
     'investor.help.start.minimum.a':
-        'Notes are sold in units of RWF 5,000, so you can start with a single unit.\n\nYou can hold at most half of any one raise, and an investment can never be larger than what is left to fill.',
+        'Notes are sold in units of RWF 5,000, so you can start with a single unit.\n\nYou can hold only a set share of any one raise, and an investment can never be larger than what is left to fill.',
     'investor.help.returns.when.q': 'How and when are my returns paid?',
     'investor.help.returns.when.a':
         "The first instalment is due one month after the money is disbursed, and each later one on the same day of the following month. On each due date, the business's payment is shared among holders in proportion to the units they hold, and credited to their wallets.\n\nThe full schedule is shown before you commit, and it never changes after the note is issued.",

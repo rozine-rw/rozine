@@ -8,16 +8,18 @@ final class StaffPermission
 {
     /**
      * The design's capabilities no role holds, and why: `not_built` until the console has the
-     * command (a participant freeze, capacity override, record edit, ledger correction as a linked
-     * entry under ADM-R02, and a policy change, which ships as a release under ADM-R05 until policy
-     * is versioned data), and `by_rule` where BRS v2.0 bars every role, Superadmin included
+     * command (a participant freeze, capacity override, record edit and ledger correction as a linked
+     * entry under ADM-R02), and `by_rule` where BRS v2.0 bars every role, Superadmin included
      * (ledger and audit entries are never deleted).
      */
     private const WITHHELD = ['accounts.freeze' => 'not_built', 'capacity.adjust' => 'not_built', 'records.edit' => 'not_built',
-        'ledger.correct' => 'not_built', 'policies.change' => 'not_built', 'records.delete' => 'by_rule'];
+        'ledger.correct' => 'not_built', 'records.delete' => 'by_rule'];
 
-    /** The console's roles from most to least privileged, as the matrix lists them. */
-    private const ORDER = ['superadmin', 'compliance', 'approver', 'treasury', 'analyst'];
+    /**
+     * The console's roles from most to least privileged, as the matrix lists them. A founder approves
+     * policy changes (26 Nov 2026), and usually holds another role beside it.
+     */
+    private const ORDER = ['superadmin', 'founder', 'compliance', 'approver', 'treasury', 'analyst'];
 
     /** @return list<string> */
     public static function roles(): array

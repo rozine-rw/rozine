@@ -79,6 +79,7 @@ use App\Http\Controllers\StaffLedgerController;
 use App\Http\Controllers\StaffMessagingController;
 use App\Http\Controllers\StaffNotesController;
 use App\Http\Controllers\StaffPaymentsController;
+use App\Http\Controllers\StaffPolicyChangeController;
 use App\Http\Controllers\StaffPrimaryMarketController;
 use App\Http\Controllers\StaffReconciliationController;
 use App\Http\Controllers\StaffRoleApplicationController;
@@ -387,6 +388,12 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::get('/', [StaffAuditReportController::class, 'index'])->name('index');
     Route::post('{assignment}/remind', [StaffAuditReportController::class, 'remind'])->whereUlid('assignment')->name('remind');
     Route::get('{report}/pdf', [StaffAuditReportController::class, 'pdf'])->whereUlid('report')->name('pdf');
+});
+
+Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->prefix('admin/policies/changes')->name('staff.policies.')->group(function (): void {
+    Route::post('/', [StaffPolicyChangeController::class, 'propose'])->name('propose');
+    Route::post('{change}/approve', [StaffPolicyChangeController::class, 'approve'])->whereUlid('change')->name('approve');
+    Route::post('{change}/reject', [StaffPolicyChangeController::class, 'reject'])->whereUlid('change')->name('reject');
 });
 
 Route::get('admin/{section}', [StaffSectionController::class, 'show'])->whereIn('section', array_keys(StaffSectionController::SECTIONS))

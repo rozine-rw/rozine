@@ -9,6 +9,7 @@ use App\Application\Identity\AuthorizeActiveRole;
 use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Operations\Contracts\OperationJournal;
+use App\Application\Operations\Contracts\PolicySettings;
 use App\Application\Primary\Contracts\InvestorHoldings;
 use App\Application\Secondary\Contracts\NoteUnitHolders;
 use App\Application\Secondary\Contracts\SecondaryBoard;
@@ -70,7 +71,7 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
 
     public function __construct(private AuthorizeActiveRole $authority, private AuthorizeStaffPermission $staff, private OperationJournal $journal,
         private SecondaryNotes $notes, private NoteUnitHolders $holders, private InvestorHoldings $holdings, private WalletPostings $wallets, private SecondaryLedger $postings,
-        private CampaignTitles $titles, private PartyNotices $notices) {}
+        private CampaignTitles $titles, private PartyNotices $notices, private PolicySettings $policies) {}
 
     public function list(int $userId, int $contextRevision, string $holdingId, string $units, string $price, string $requestId): array
     {
@@ -323,11 +324,12 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
         $window = $this->window($note);
         $open = $this->releaseLapsed($row, $now);
         $held = $this->heldUnits($partyId, $row->business_campaign_id, $now);
+        $capPercent = $this->policies->holdingCapPercent($partyId);
         $reservationId = strtolower((string) Str::ulid());
         $cap = $this->cap($note);
         $before = $this->restore($row, $open)->at($now);
         $listing = $this->decide(fn (): SecondaryListing => $before->reserve($reservationId, $partyId, $units, $note['raise_units'], $held,
-            $cap, $window, $now), ['PRICE_ABOVE_CAP' => ['cap' => self::money((string) $cap)], 'HOLDING_LIMIT_EXCEEDED' => ['maximum_units' => (string) TradingWindow::buyerRoom($note['raise_units'], $held)],
+            $cap, $window, $now, $capPercent), ['PRICE_ABOVE_CAP' => ['cap' => self::money((string) $cap)], 'HOLDING_LIMIT_EXCEEDED' => ['maximum_units' => (string) TradingWindow::buyerRoom($note['raise_units'], $held, $capPercent)],
                 'UNITS_NOT_LISTED' => ['listed_units' => $before->unreservedUnits()], 'TRADING_PAUSED' => $this->paused($window, $now),
                 'LISTING_RESERVED' => ['reserved_until' => $this->firstLapse($open)]]);
         $reservation = $listing->reservation($reservationId) ?? throw new SecondaryViolation('RESERVATION_NOT_OPEN');
