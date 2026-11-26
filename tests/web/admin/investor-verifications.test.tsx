@@ -906,6 +906,32 @@ describe('Compliance figures and decisions', () => {
         );
     });
 
+    it('flags a row whose ID is already verified for someone else instead of saying every check passed (#794)', () => {
+        const base = queue();
+
+        renderWithUser(
+            <AdminInvestorVerifications
+                {...queue({
+                    entries: base.entries.map((entry) => ({
+                        ...entry,
+                        blocked:
+                            'IDENTITY_VERIFIED_FOR_ANOTHER_PERSON' as const,
+                    })),
+                })}
+            />,
+        );
+
+        const jean = screen.getByRole('row', { name: /Jean Habimana/ });
+        expect(
+            within(jean).getByText(
+                'ID number already verified for another person',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            within(jean).queryByText('All automated KYC checks passed'),
+        ).not.toBeInTheDocument();
+    });
+
     it('reads empty figures and shows when a decided case was decided', () => {
         const base = queue();
 

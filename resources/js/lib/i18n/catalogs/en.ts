@@ -373,6 +373,8 @@ const en = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Audit Partners can’t hold another Rozine role, so this account can’t ask for Auditor access.',
     'suite.app.unavailable': 'Not available with your current access',
+    'admin.kyc.checks.blocked.IDENTITY_VERIFIED_FOR_ANOTHER_PERSON':
+        'ID number already verified for another person',
     'admin.kyc.blocked.IDENTITY_VERIFIED_FOR_ANOTHER_PERSON':
         'This ID number is already verified for another person, so it can’t be approved. Send the check back so the person can check the ID they gave.',
     'admin.kyc.blocked.IDENTITY_VERIFIED_FOR_ANOTHER_PERSON_reason':
@@ -2559,7 +2561,7 @@ const en = {
     'admin.kyc.command.verification.upload': 'Uploaded a document',
     'admin.kyc.command.verification.submit': 'Submitted for review',
     'admin.kyc.command.verification.approve': 'Approved by Compliance',
-    'admin.kyc.command.verification.reject': 'Rejected by Compliance',
+    'admin.kyc.command.verification.reject': 'Sent back by Compliance',
     'admin.kyc.approve': 'Approve',
     'admin.kyc.reject': 'Send back',
     'admin.kyc.stage.approve.title': 'Approve this identity',

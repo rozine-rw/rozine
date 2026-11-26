@@ -13,7 +13,8 @@ namespace App\Application\Identity\Contracts;
  *
  * @phpstan-type QueueEntry array{
  *     id: string, revision: int, status: string, submitted_at: string,
- *     decided_at: string|null, name: string, email: string, id_type: string, purpose: 'investor'|'business'|'auditor'
+ *     decided_at: string|null, name: string, email: string, id_type: string, purpose: 'investor'|'business'|'auditor',
+ *     blocked: 'IDENTITY_VERIFIED_FOR_ANOTHER_PERSON'|null
  * }
  * @phpstan-type Queue array{
  *     tab: 'submitted'|'decided', search: string, limit: int, before: string|null, entries: list<QueueEntry>,

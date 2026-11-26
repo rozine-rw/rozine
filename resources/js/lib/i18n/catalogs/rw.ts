@@ -379,6 +379,8 @@ const rw: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Abagenzuzi ntibashobora kugira urundi ruhare muri Rozine, bityo iyi konti ntishobora gusaba uburenganzira bw’Umugenzuzi.',
     'suite.app.unavailable': 'Ntibishoboka n’uburenganzira ufite ubu',
+    'admin.kyc.checks.blocked.IDENTITY_VERIFIED_FOR_ANOTHER_PERSON':
+        'Nomero y’indangamuntu yemejwe ku wundi muntu',
     'admin.kyc.blocked.IDENTITY_VERIFIED_FOR_ANOTHER_PERSON':
         'Iyi nomero y’indangamuntu yamaze kwemezwa ku wundi muntu, ntishobora kwemezwa. Subiza igenzura kugira ngo nyirayo agenzure indangamuntu yatanze.',
     'admin.kyc.blocked.IDENTITY_VERIFIED_FOR_ANOTHER_PERSON_reason':
@@ -2677,7 +2679,7 @@ const rw: Catalog = {
     'admin.kyc.command.verification.approve':
         "Byemejwe n'ushinzwe kubahiriza amategeko",
     'admin.kyc.command.verification.reject':
-        "Byanzwe n'ushinzwe kubahiriza amategeko",
+        "Byasubijwe n'ushinzwe kubahiriza amategeko",
     'admin.kyc.approve': 'Emeza',
     'admin.kyc.reject': 'Subiza',
     'admin.kyc.stage.approve.title': 'Emeza uyu mwirondoro',

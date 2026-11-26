@@ -173,9 +173,17 @@ export default function AdminInvestorVerifications(
                                 </div>
                             </div>
                             <div role="cell" className="min-w-0">
-                                <div className="text-[12px] leading-[1.35] font-semibold break-words text-[#157357] dark:text-[#3fcda0]">
-                                    {t('admin.kyc.checks.passed')}
-                                </div>
+                                {entry.blocked ? (
+                                    <div className="text-[12px] leading-[1.35] font-semibold break-words text-[#c2292e] dark:text-rz-danger-text">
+                                        {t(
+                                            `admin.kyc.checks.blocked.${entry.blocked}`,
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="text-[12px] leading-[1.35] font-semibold break-words text-[#157357] dark:text-[#3fcda0]">
+                                        {t('admin.kyc.checks.passed')}
+                                    </div>
+                                )}
                                 <div
                                     className="mt-0.5 text-[11px] leading-[1.35] break-words text-rz-faint"
                                     title={entry.checks
