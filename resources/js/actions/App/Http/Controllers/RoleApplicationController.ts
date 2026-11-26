@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RoleApplicationController::show
-* @see app/Http/Controllers/RoleApplicationController.php:43
+* @see app/Http/Controllers/RoleApplicationController.php:42
 * @route '/role'
 */
 export const show = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::show
-* @see app/Http/Controllers/RoleApplicationController.php:43
+* @see app/Http/Controllers/RoleApplicationController.php:42
 * @route '/role'
 */
 show.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ show.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::show
-* @see app/Http/Controllers/RoleApplicationController.php:43
+* @see app/Http/Controllers/RoleApplicationController.php:42
 * @route '/role'
 */
 show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -35,7 +35,7 @@ show.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::show
-* @see app/Http/Controllers/RoleApplicationController.php:43
+* @see app/Http/Controllers/RoleApplicationController.php:42
 * @route '/role'
 */
 show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -45,7 +45,7 @@ show.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::show
-* @see app/Http/Controllers/RoleApplicationController.php:43
+* @see app/Http/Controllers/RoleApplicationController.php:42
 * @route '/role'
 */
 const showForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -55,7 +55,7 @@ const showForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::show
-* @see app/Http/Controllers/RoleApplicationController.php:43
+* @see app/Http/Controllers/RoleApplicationController.php:42
 * @route '/role'
 */
 showForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -65,7 +65,7 @@ showForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::show
-* @see app/Http/Controllers/RoleApplicationController.php:43
+* @see app/Http/Controllers/RoleApplicationController.php:42
 * @route '/role'
 */
 showForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,7 +82,7 @@ show.form = showForm
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::save
-* @see app/Http/Controllers/RoleApplicationController.php:93
+* @see app/Http/Controllers/RoleApplicationController.php:91
 * @route '/role/steps'
 */
 export const save = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -97,7 +97,7 @@ save.definition = {
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::save
-* @see app/Http/Controllers/RoleApplicationController.php:93
+* @see app/Http/Controllers/RoleApplicationController.php:91
 * @route '/role/steps'
 */
 save.url = (options?: RouteQueryOptions) => {
@@ -106,7 +106,7 @@ save.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::save
-* @see app/Http/Controllers/RoleApplicationController.php:93
+* @see app/Http/Controllers/RoleApplicationController.php:91
 * @route '/role/steps'
 */
 save.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -116,7 +116,7 @@ save.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::save
-* @see app/Http/Controllers/RoleApplicationController.php:93
+* @see app/Http/Controllers/RoleApplicationController.php:91
 * @route '/role/steps'
 */
 const saveForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -126,7 +126,7 @@ const saveForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::save
-* @see app/Http/Controllers/RoleApplicationController.php:93
+* @see app/Http/Controllers/RoleApplicationController.php:91
 * @route '/role/steps'
 */
 saveForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -138,7 +138,7 @@ save.form = saveForm
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::upload
-* @see app/Http/Controllers/RoleApplicationController.php:103
+* @see app/Http/Controllers/RoleApplicationController.php:101
 * @route '/role/documents'
 */
 export const upload = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -153,7 +153,7 @@ upload.definition = {
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::upload
-* @see app/Http/Controllers/RoleApplicationController.php:103
+* @see app/Http/Controllers/RoleApplicationController.php:101
 * @route '/role/documents'
 */
 upload.url = (options?: RouteQueryOptions) => {
@@ -162,7 +162,7 @@ upload.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::upload
-* @see app/Http/Controllers/RoleApplicationController.php:103
+* @see app/Http/Controllers/RoleApplicationController.php:101
 * @route '/role/documents'
 */
 upload.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -172,7 +172,7 @@ upload.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::upload
-* @see app/Http/Controllers/RoleApplicationController.php:103
+* @see app/Http/Controllers/RoleApplicationController.php:101
 * @route '/role/documents'
 */
 const uploadForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -182,7 +182,7 @@ const uploadForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> =>
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::upload
-* @see app/Http/Controllers/RoleApplicationController.php:103
+* @see app/Http/Controllers/RoleApplicationController.php:101
 * @route '/role/documents'
 */
 uploadForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -194,7 +194,7 @@ upload.form = uploadForm
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::document
-* @see app/Http/Controllers/RoleApplicationController.php:79
+* @see app/Http/Controllers/RoleApplicationController.php:77
 * @route '/role/documents/{slot}'
 */
 export const document = (args: { slot: string | number } | [slot: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -209,7 +209,7 @@ document.definition = {
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::document
-* @see app/Http/Controllers/RoleApplicationController.php:79
+* @see app/Http/Controllers/RoleApplicationController.php:77
 * @route '/role/documents/{slot}'
 */
 document.url = (args: { slot: string | number } | [slot: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -236,7 +236,7 @@ document.url = (args: { slot: string | number } | [slot: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::document
-* @see app/Http/Controllers/RoleApplicationController.php:79
+* @see app/Http/Controllers/RoleApplicationController.php:77
 * @route '/role/documents/{slot}'
 */
 document.get = (args: { slot: string | number } | [slot: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -246,7 +246,7 @@ document.get = (args: { slot: string | number } | [slot: string | number ] | str
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::document
-* @see app/Http/Controllers/RoleApplicationController.php:79
+* @see app/Http/Controllers/RoleApplicationController.php:77
 * @route '/role/documents/{slot}'
 */
 document.head = (args: { slot: string | number } | [slot: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -256,7 +256,7 @@ document.head = (args: { slot: string | number } | [slot: string | number ] | st
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::document
-* @see app/Http/Controllers/RoleApplicationController.php:79
+* @see app/Http/Controllers/RoleApplicationController.php:77
 * @route '/role/documents/{slot}'
 */
 const documentForm = (args: { slot: string | number } | [slot: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -266,7 +266,7 @@ const documentForm = (args: { slot: string | number } | [slot: string | number ]
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::document
-* @see app/Http/Controllers/RoleApplicationController.php:79
+* @see app/Http/Controllers/RoleApplicationController.php:77
 * @route '/role/documents/{slot}'
 */
 documentForm.get = (args: { slot: string | number } | [slot: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -276,7 +276,7 @@ documentForm.get = (args: { slot: string | number } | [slot: string | number ] |
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::document
-* @see app/Http/Controllers/RoleApplicationController.php:79
+* @see app/Http/Controllers/RoleApplicationController.php:77
 * @route '/role/documents/{slot}'
 */
 documentForm.head = (args: { slot: string | number } | [slot: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -293,7 +293,7 @@ document.form = documentForm
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::submit
-* @see app/Http/Controllers/RoleApplicationController.php:114
+* @see app/Http/Controllers/RoleApplicationController.php:112
 * @route '/role/submit'
 */
 export const submit = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -308,7 +308,7 @@ submit.definition = {
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::submit
-* @see app/Http/Controllers/RoleApplicationController.php:114
+* @see app/Http/Controllers/RoleApplicationController.php:112
 * @route '/role/submit'
 */
 submit.url = (options?: RouteQueryOptions) => {
@@ -317,7 +317,7 @@ submit.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::submit
-* @see app/Http/Controllers/RoleApplicationController.php:114
+* @see app/Http/Controllers/RoleApplicationController.php:112
 * @route '/role/submit'
 */
 submit.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -327,7 +327,7 @@ submit.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::submit
-* @see app/Http/Controllers/RoleApplicationController.php:114
+* @see app/Http/Controllers/RoleApplicationController.php:112
 * @route '/role/submit'
 */
 const submitForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -337,7 +337,7 @@ const submitForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> =>
 
 /**
 * @see \App\Http\Controllers\RoleApplicationController::submit
-* @see app/Http/Controllers/RoleApplicationController.php:114
+* @see app/Http/Controllers/RoleApplicationController.php:112
 * @route '/role/submit'
 */
 submitForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
