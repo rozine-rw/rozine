@@ -31,7 +31,7 @@ use App\Domain\Operations\CommandRejection;
  * @phpstan-type Coverage array{districts: list<string>, no_conflicts: bool, will_declare: bool, ethics: bool}
  * @phpstan-type Institution array{type: string, monthly_commitment: string, bank_name: string, account_name: string, account_number: string, automates: bool, own_rules: bool}
  * @phpstan-type Answers array{
- *     company?: Company, representative?: Representative, directors?: list<Person>, owners?: list<Owner>,
+ *     company?: Company, representative?: Representative, directors?: list<Person>, owners?: list<Owner>, no_major_owner?: bool,
  *     licence?: Licence, address?: Address, coverage?: Coverage, institution?: Institution, declared: bool
  * }
  * @phpstan-type RevisionItem array{key: string, label: string, note: string}
@@ -67,6 +67,9 @@ final class RoleApplicationCase
     /** The statuses in which the applicant may still change their answers. */
     public const EDITABLE = ['draft', 'changes_requested', 'rejected'];
 
+    /** The sector an institution may record besides the business sectors (QA #800). */
+    public const string FINANCIAL_SERVICES = 'Financial services';
+
     /** Directors or owners listed on the form, at most. */
     public const MAX_PEOPLE = 12;
 
@@ -99,12 +102,15 @@ final class RoleApplicationCase
         $errors = [];
         switch ($step) {
             case 'company':
-                [$state['answers']['company'], $errors] = $this->company($input, $today, $industries, $provinces);
+                [$state['answers']['company'], $errors] = $this->company($input, $today, $this->sectorsFor($state['role'], $industries), $provinces);
                 break;
             case 'people':
                 [$state['answers']['representative'], $representative] = $this->representative($input['representative'] ?? null);
                 [$state['answers']['directors'], $directors] = $this->directors($input['directors'] ?? null);
-                [$state['answers']['owners'], $owners] = $this->owners($input['owners'] ?? null, $state['answers']['directors']);
+                // An institution such as a pension fund or listed bank may have no one owning 25% (QA #800):
+                // it says so, and its directors stand as the people who control it.
+                $state['answers']['no_major_owner'] = $state['role'] === 'institution' && filter_var($input['no_major_owner'] ?? false, FILTER_VALIDATE_BOOLEAN);
+                [$state['answers']['owners'], $owners] = $this->owners($input['owners'] ?? null, $state['answers']['directors'], $state['answers']['no_major_owner']);
                 $errors = [...$representative, ...$directors, ...$owners];
                 break;
             case 'documents':
@@ -196,10 +202,10 @@ final class RoleApplicationCase
             $institution = $state['role'] === 'institution'
                 ? $this->institution($answers['institution'] ?? [], $answers['company']['legal_name'] ?? '')[1] : [];
 
-            return [...$this->company($answers['company'] ?? [], $today, $industries, $provinces)[1],
+            return [...$this->company($answers['company'] ?? [], $today, $this->sectorsFor($state['role'], $industries), $provinces)[1],
                 ...$this->representative($answers['representative'] ?? null)[1],
                 ...$this->people($answers['directors'] ?? null, 'directors', false)[1],
-                ...$this->people($answers['owners'] ?? null, 'owners', true)[1], ...$institution, ...$this->missingDocuments($state)];
+                ...$this->people($answers['owners'] ?? null, 'owners', true, $state['role'] === 'institution' && ($answers['no_major_owner'] ?? false))[1], ...$institution, ...$this->missingDocuments($state)];
         }
 
         return [...$this->licence($answers['licence'] ?? [], $today)[1], ...RwandaAddress::fromInput($answers['address'] ?? [], $provinces, 'address.')[1],
@@ -442,9 +448,9 @@ final class RoleApplicationCase
      * @param  list<Person>  $directors
      * @return array{0: list<Owner>, 1: array<string, list<string>>}
      */
-    private function owners(mixed $input, array $directors): array
+    private function owners(mixed $input, array $directors, bool $noMajorOwner = false): array
     {
-        [$people, $errors] = $this->people($input, 'owners', true);
+        [$people, $errors] = $this->people($input, 'owners', true, $noMajorOwner);
         $names = array_column($directors, 'full_name', 'id_number');
         foreach ($people as $index => $person) {
             $director = $names[$person['id_number']] ?? null;
@@ -459,16 +465,28 @@ final class RoleApplicationCase
     }
 
     /**
+     * The sectors a company may be recorded under: an institution may also be in financial services.
+     *
+     * @param  list<string>  $industries
+     * @return list<string>
+     */
+    private function sectorsFor(string $role, array $industries): array
+    {
+        return $role === 'institution' ? [...$industries, self::FINANCIAL_SERVICES] : $industries;
+    }
+
+    /**
      * Directors (at least one) or owners of 25% or more (at least one, their shares adding up to no more
-     * than 100%), each with a valid ID number.
+     * than 100%), each with a valid ID number. Owners may be left empty when the institution has said no one
+     * owns 25% or more.
      *
      * @return array{0: list<array{full_name: string, id_type: 'national_id'|'passport', id_number: string, nationality: string, ownership_pct?: string, pep?: bool}>, 1: array<string, list<string>>}
      */
-    private function people(mixed $input, string $field, bool $owners): array
+    private function people(mixed $input, string $field, bool $owners, bool $noneRequired = false): array
     {
         $rows = is_array($input) ? array_values(array_filter($input, 'is_array')) : [];
         $errors = [];
-        if ($rows === []) {
+        if ($rows === [] && ! $noneRequired) {
             $errors[$field] = [$owners ? 'Add every person who owns or controls 25% or more of the company.' : 'Add at least one director.'];
         }
         if (count($rows) > self::MAX_PEOPLE) {

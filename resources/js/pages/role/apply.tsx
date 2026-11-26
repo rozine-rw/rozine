@@ -63,6 +63,9 @@ const FLAG_KEYS: Record<string, string> = {
     account_number: 'institution.bank_account',
 };
 /** The form step that holds an item Compliance flagged, so "Fix now" opens where the change is made. */
+/** The sector an institution may pick besides the business sectors (QA #800); the server allows it too. */
+const FINANCIAL_SERVICES = 'Financial services';
+
 function stepForItem(key: string, role: SwitchRole): string {
     const head = key.split('.')[0];
 
@@ -335,6 +338,8 @@ export default function RoleApply(props: RoleApplicationProps) {
     };
     const directors = answers.directors ?? [blankPerson(false)];
     const owners = answers.owners ?? [];
+    const noMajorOwner =
+        role === 'institution' && answers.no_major_owner === true;
     const licence = answers.licence ?? {
         membership_number: '',
         licence_number: '',
@@ -668,7 +673,15 @@ export default function RoleApply(props: RoleApplicationProps) {
                                         id="industry"
                                         label={t('role.apply.company.sector')}
                                         value={company.industry}
-                                        options={props.catalog.industries}
+                                        options={
+                                            role === 'institution'
+                                                ? [
+                                                      ...props.catalog
+                                                          .industries,
+                                                      FINANCIAL_SERVICES,
+                                                  ]
+                                                : props.catalog.industries
+                                        }
                                         error={error('company.industry')}
                                         onChange={(value) =>
                                             setAnswers({
@@ -800,6 +813,22 @@ export default function RoleApply(props: RoleApplicationProps) {
                                             })
                                         }
                                     />
+                                    {role === 'institution' && (
+                                        <Check
+                                            accent={ACCENT[role]}
+                                            checked={noMajorOwner}
+                                            onChange={(checked) =>
+                                                setAnswers({
+                                                    ...answers,
+                                                    no_major_owner: checked,
+                                                })
+                                            }
+                                        >
+                                            {t(
+                                                'role.apply.people.no_major_owner',
+                                            )}
+                                        </Check>
+                                    )}
                                     <OwnersList
                                         owners={owners}
                                         directors={directors}
@@ -1482,6 +1511,8 @@ export default function RoleApply(props: RoleApplicationProps) {
                                                             representative,
                                                             directors,
                                                             owners,
+                                                            no_major_owner:
+                                                                noMajorOwner,
                                                         }
                                                       : step === 'institution'
                                                         ? institution
