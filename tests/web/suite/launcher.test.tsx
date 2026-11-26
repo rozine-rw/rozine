@@ -852,6 +852,79 @@ describe('Asking for Business or Auditor access', () => {
         );
     });
 
+    it('offers the institutional investor application under the apps, and follows it through review (QA #800)', () => {
+        const { rerender } = render(
+            <Launcher
+                identity={investor}
+                role_application={{
+                    kyc: 'submitted',
+                    status: 'none',
+                    role: null,
+                }}
+            />,
+        );
+
+        expect(
+            screen.getByRole('link', {
+                name: 'Apply as an institutional investor →',
+            }),
+        ).toHaveAttribute('href', '/role?for=institution');
+
+        rerender(
+            <Launcher
+                identity={investor}
+                role_application={{
+                    kyc: 'submitted',
+                    status: 'changes_requested',
+                    role: 'institution',
+                }}
+            />,
+        );
+        expect(
+            screen.getByRole('link', { name: 'Fix and send again →' }),
+        ).toHaveAttribute('href', '/role?for=institution');
+
+        rerender(
+            <Launcher
+                identity={investor}
+                role_application={{
+                    kyc: 'submitted',
+                    status: 'submitted',
+                    role: 'institution',
+                }}
+            />,
+        );
+        expect(
+            screen.getByText(
+                'Your institutional investor application is with Compliance for review.',
+            ),
+        ).toBeInTheDocument();
+
+        // Hidden before the person's own KYC is sent, and while another role is pending.
+        rerender(
+            <Launcher
+                identity={investor}
+                role_application={{
+                    kyc: 'submitted',
+                    status: 'submitted',
+                    role: 'business',
+                }}
+            />,
+        );
+        expect(
+            screen.queryByText(/institutional investor/u),
+        ).not.toBeInTheDocument();
+        rerender(
+            <Launcher
+                identity={investor}
+                role_application={{ kyc: 'none', status: 'none', role: null }}
+            />,
+        );
+        expect(
+            screen.queryByText(/institutional investor/u),
+        ).not.toBeInTheDocument();
+    });
+
     it('shows a sent application on its card and keeps the other role closed, since an account holds one role', () => {
         render(
             <Launcher

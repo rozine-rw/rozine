@@ -455,6 +455,11 @@ export function RoleApplicationDrawer({
                             people={answers.owners ?? []}
                             pep={pep}
                         />
+                        {answers.no_major_owner === true && (
+                            <p className="mt-2 text-[12px] text-rz-body">
+                                {t('role.apply.people.no_major_owner')}
+                            </p>
+                        )}
                     </Section>
                 )}
 
