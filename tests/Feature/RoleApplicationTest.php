@@ -661,6 +661,10 @@ test('an institution may be in financial services and may have no one owning 25%
         'answers' => companyAnswers(['industry' => 'Financial services'])])->assertSessionHasNoErrors();
     $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'institution', 'step' => 'people', 'answers' => [...$people, 'no_major_owner' => false]])
         ->assertSessionHasErrors('owners');
+    // Ticking the declaration after listing an owner is refused rather than sending Compliance both (#801 review).
+    $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'institution', 'step' => 'people',
+        'answers' => [...peopleAnswers(), 'no_major_owner' => true]])
+        ->assertSessionHasErrors(['owners' => 'You said no one owns or controls 25% or more. Remove the owners listed, or untick that box.']);
     $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'institution', 'step' => 'people', 'answers' => $people])
         ->assertSessionHasNoErrors();
 

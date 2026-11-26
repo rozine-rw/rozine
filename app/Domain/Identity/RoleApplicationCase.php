@@ -477,8 +477,8 @@ final class RoleApplicationCase
 
     /**
      * Directors (at least one) or owners of 25% or more (at least one, their shares adding up to no more
-     * than 100%), each with a valid ID number. Owners may be left empty when the institution has said no one
-     * owns 25% or more.
+     * than 100%), each with a valid ID number. An institution that has said no one owns 25% or more lists no
+     * owners at all.
      *
      * @return array{0: list<array{full_name: string, id_type: 'national_id'|'passport', id_number: string, nationality: string, ownership_pct?: string, pep?: bool}>, 1: array<string, list<string>>}
      */
@@ -486,6 +486,10 @@ final class RoleApplicationCase
     {
         $rows = is_array($input) ? array_values(array_filter($input, 'is_array')) : [];
         $errors = [];
+        if ($rows !== [] && $noneRequired) {
+            // A declaration that no one owns 25% and a listed 25% owner contradict each other (#801 review).
+            return [[], [$field => ['You said no one owns or controls 25% or more. Remove the owners listed, or untick that box.']]];
+        }
         if ($rows === [] && ! $noneRequired) {
             $errors[$field] = [$owners ? 'Add every person who owns or controls 25% or more of the company.' : 'Add at least one director.'];
         }

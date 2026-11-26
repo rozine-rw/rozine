@@ -821,6 +821,10 @@ export default function RoleApply(props: RoleApplicationProps) {
                                                 setAnswers({
                                                     ...answers,
                                                     no_major_owner: checked,
+                                                    // The declaration and listed owners exclude each other.
+                                                    owners: checked
+                                                        ? []
+                                                        : owners,
                                                 })
                                             }
                                         >
@@ -829,18 +833,22 @@ export default function RoleApply(props: RoleApplicationProps) {
                                             )}
                                         </Check>
                                     )}
-                                    <OwnersList
-                                        owners={owners}
-                                        directors={directors}
-                                        accent={ACCENT[role]}
-                                        errors={errors}
-                                        onChange={(list) =>
-                                            setAnswers({
-                                                ...answers,
-                                                owners: list,
-                                            })
-                                        }
-                                    />
+                                    {noMajorOwner ? (
+                                        <FieldError message={errors.owners} />
+                                    ) : (
+                                        <OwnersList
+                                            owners={owners}
+                                            directors={directors}
+                                            accent={ACCENT[role]}
+                                            errors={errors}
+                                            onChange={(list) =>
+                                                setAnswers({
+                                                    ...answers,
+                                                    owners: list,
+                                                })
+                                            }
+                                        />
+                                    )}
                                 </div>
                             )}
 
