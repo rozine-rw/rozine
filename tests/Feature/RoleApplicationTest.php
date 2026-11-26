@@ -508,7 +508,10 @@ test('owners hold 25 to 100 percent between them, are listed once, and a directo
     $save($people)->assertSessionHasNoErrors();
 });
 
-/** @return array<string, mixed> */
+/**
+ * @param  array{type?: string, monthly_commitment?: string, bank_name?: string, account_name?: string, account_number?: string, automates?: bool, own_rules?: bool}  $overrides
+ * @return array<string, mixed>
+ */
 function institutionAnswers(array $overrides = []): array
 {
     return ['type' => 'pension_fund', 'monthly_commitment' => '45,000,000', 'bank_name' => 'Bank of Kigali', 'account_name' => 'KIVU HARVEST LTD.',
@@ -558,8 +561,10 @@ test('an investor applies to invest for an institution: its KYB, a monthly commi
     $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'institution', 'step' => 'institution', 'answers' => institutionAnswers()])
         ->assertSessionHasNoErrors();
     $application = RoleApplication::query()->where('party_id', $this->person->party_id)->sole();
+    $institution = $application->state['answers']['institution'] ?? null;
+    expect($institution)->not->toBeNull('The application lost its institution section.');
     expect($application->role)->toBe('institution')->and($application->state['step'])->toBe('documents')
-        ->and($application->state['answers']['institution'])->toMatchArray(['monthly_commitment' => '45000000', 'account_number' => '000412345678']);
+        ->and($institution)->toMatchArray(['monthly_commitment' => '45000000', 'account_number' => '000412345678']);
 
     // The authorisation letter and the bank's letter are required; the business's optional board resolution is not a slot.
     $this->post(route('role-application.upload'), [...roleEnvelope($this->person), 'slot' => 'board_resolution', 'file' => rolePdf('board.pdf')])
