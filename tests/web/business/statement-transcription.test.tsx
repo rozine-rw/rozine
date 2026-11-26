@@ -123,8 +123,15 @@ describe('Enter your statement figures', () => {
         expect(
             page.queryByText('Tick the statement these figures are from.'),
         ).not.toBeInTheDocument();
+        expect(page.getByTestId('month-count-2026-09')).toHaveClass(
+            'text-rz-slate',
+        );
 
         await user.type(page.getByLabelText('Opening balance (RWF)'), '1000');
+
+        expect(page.getByTestId('month-count-2026-09')).toHaveClass(
+            'text-rz-danger-text',
+        );
 
         expect(
             page.getByText('Tick the statement these figures are from.'),
