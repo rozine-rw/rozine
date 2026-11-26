@@ -16,7 +16,7 @@ class OnboardingUpdate extends RozineMail
 {
     /**
      * @param  'kyc_received'|'role_received'|'role_returned'|'role_approved'|'role_rejected'  $event
-     * @param  'business'|'auditor'|null  $role
+     * @param  'business'|'auditor'|'institution'|null  $role
      * @param  list<array{label: string, note: string}>  $items
      */
     private function __construct(
@@ -33,14 +33,14 @@ class OnboardingUpdate extends RozineMail
         return new self('kyc_received', null, null, null, [], $url);
     }
 
-    /** @param 'business'|'auditor' $role */
+    /** @param 'business'|'auditor'|'institution' $role */
     public static function roleReceived(string $role, ?string $company, string $url): self
     {
         return new self('role_received', $role, $company, null, [], $url);
     }
 
     /**
-     * @param  'business'|'auditor'  $role
+     * @param  'business'|'auditor'|'institution'  $role
      * @param  list<array{label: string, note: string}>  $items
      */
     public static function roleReturned(string $role, ?string $company, string $note, array $items, string $url): self
@@ -48,13 +48,13 @@ class OnboardingUpdate extends RozineMail
         return new self('role_returned', $role, $company, $note, $items, $url);
     }
 
-    /** @param 'business'|'auditor' $role */
+    /** @param 'business'|'auditor'|'institution' $role */
     public static function roleApproved(string $role, ?string $company, string $url): self
     {
         return new self('role_approved', $role, $company, null, [], $url);
     }
 
-    /** @param 'business'|'auditor' $role */
+    /** @param 'business'|'auditor'|'institution' $role */
     public static function roleRejected(string $role, ?string $company, string $note, string $url): self
     {
         return new self('role_rejected', $role, $company, $note, [], $url);
@@ -64,9 +64,17 @@ class OnboardingUpdate extends RozineMail
     {
         $subject = match ($this->event) {
             'kyc_received' => __('We have your identity check'),
-            'role_received' => $this->role === 'business' ? __('We have your business application') : __('We have your Auditor application'),
+            'role_received' => match ($this->role) {
+                'business' => __('We have your business application'),
+                'institution' => __('We have your institutional investor application'),
+                default => __('We have your Auditor application'),
+            },
             'role_returned' => __('Compliance needs changes to your application'),
-            'role_approved' => $this->role === 'business' ? __('Your business is approved on Rozine') : __('You are now a Rozine Audit Partner'),
+            'role_approved' => match ($this->role) {
+                'business' => __('Your business is approved on Rozine'),
+                'institution' => __('You now invest for :company on Rozine', ['company' => (string) $this->company]),
+                default => __('You are now a Rozine Audit Partner'),
+            },
             default => __('Your application was not approved'),
         };
 

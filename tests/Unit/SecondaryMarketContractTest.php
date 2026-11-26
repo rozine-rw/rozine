@@ -131,16 +131,18 @@ it('lets other buyers reserve the units no one holds while a reservation is open
     expect([$first['listing']->remainingUnits, $first['listing']->state])->toBe(['0', 'sold']);
 });
 
-it('refuses a seller buying their own listing and a buyer going past half the raise (SEC-R01, INV-R01)', function (): void {
+it('refuses a seller buying their own listing and a buyer going past their share of the raise (SEC-R01, 10% individual cap)', function (): void {
     $listing = tenUnitListing();
     $reserve = fn (string $buyer, string $held, string $units): SecondaryListing => $listing->reserve('r', $buyer, $units, '2160', $held, BigInteger::of(2777), openWindow(),
         secondaryKigali('2026-10-02 12:00'));
 
     expect(fn () => $reserve('seller', '0', '1'))->toThrow(SecondaryViolation::class, 'OWN_LISTING')
-        ->and(fn () => $reserve('buyer', '1078', '3'))->toThrow(SecondaryViolation::class, 'HOLDING_LIMIT_EXCEEDED')
-        ->and($reserve('buyer', '1078', '2')->reservation('r')['units'] ?? null)->toBe('2')
-        ->and((string) TradingWindow::buyerRoom('2161', '0'))->toBe('1080')
-        ->and((string) TradingWindow::buyerRoom('2160', '1200'))->toBe('0');
+        ->and(fn () => $reserve('buyer', '214', '3'))->toThrow(SecondaryViolation::class, 'HOLDING_LIMIT_EXCEEDED')
+        ->and($reserve('buyer', '214', '2')->reservation('r')['units'] ?? null)->toBe('2')
+        ->and((string) TradingWindow::buyerRoom('2161', '0', 50))->toBe('1080')
+        ->and((string) TradingWindow::buyerRoom('2161', '0', 10))->toBe('216')
+        ->and((string) TradingWindow::buyerRoom('2161', '0', 25))->toBe('540')
+        ->and((string) TradingWindow::buyerRoom('2160', '1200', 50))->toBe('0');
 });
 
 it('pauses a note from 23:00 Kigali on its due date until that month\'s payouts post (SEC-R07)', function (): void {

@@ -57,7 +57,7 @@ final class EloquentOnboardingFacts implements OnboardingFacts
         ];
     }
 
-    /** @return array{role: 'business'|'auditor', status: 'draft'|'submitted'|'changes_requested'|'approved'|'rejected', company: ?string, submitted_at: ?string, decided_at: ?string, note: ?string, items: list<array{key: string, label: string, note: string}>, requested_at: ?string} */
+    /** @return array{role: 'business'|'auditor'|'institution', status: 'draft'|'submitted'|'changes_requested'|'approved'|'rejected', company: ?string, submitted_at: ?string, decided_at: ?string, note: ?string, items: list<array{key: string, label: string, note: string}>, requested_at: ?string} */
     private function role(RoleApplication $application): array
     {
         $state = $application->state;
@@ -65,7 +65,7 @@ final class EloquentOnboardingFacts implements OnboardingFacts
         $company = $state['answers']['company']['legal_name'] ?? null;
 
         return [
-            'role' => $application->role === 'auditor' ? 'auditor' : 'business',
+            'role' => $application->role,
             'status' => match ($application->status) {
                 'submitted' => 'submitted', 'changes_requested' => 'changes_requested', 'approved' => 'approved', 'rejected' => 'rejected', default => 'draft',
             },

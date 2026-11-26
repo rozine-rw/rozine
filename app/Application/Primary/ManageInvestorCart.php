@@ -61,7 +61,8 @@ final readonly class ManageInvestorCart
             if ($deal['lifecycle'] !== 'live' || (string) $deal['units']['available'] === '0') {
                 throw new CommandRejection('DEAL_FULLY_FUNDED', 409);
             }
-            $max = (int) GetInvestorCheckout::capacity($deal, $this->facts->forInvestor($userId, $campaignId)['campaign_units'], true)['max_units'];
+            $facts = $this->facts->forInvestor($userId, $campaignId);
+            $max = (int) GetInvestorCheckout::capacity($deal, $facts['campaign_units'], true, $facts['cap_percent'])['max_units'];
             if ($units > $max) {
                 throw new CommandRejection('CART_UNITS_ABOVE_LIMIT', 422, null, ['units' => ["The most you may take in this raise is {$max} notes."]],
                     ['max_units' => (string) $max]);

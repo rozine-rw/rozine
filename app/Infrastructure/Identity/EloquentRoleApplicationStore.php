@@ -41,7 +41,10 @@ final class EloquentRoleApplicationStore implements RoleApplicationStore
     private const string POLICY_VERSION = 'role-application-2026-11-23.1';
 
     /** The staff permission that reviews each role's applications. */
-    private const array PERMISSIONS = ['business' => 'businesses.verify', 'auditor' => 'audit.partners.verify'];
+    private const array PERMISSIONS = ['business' => 'businesses.verify', 'auditor' => 'audit.partners.verify', 'institution' => 'businesses.verify'];
+
+    /** The applications each review queue holds: an institution's KYB is reviewed with businesses' (26 Nov 2026). */
+    private const array QUEUES = ['business' => ['business', 'institution'], 'auditor' => ['auditor'], 'institution' => ['institution']];
 
     public function __construct(
         private OperationJournal $journal,
@@ -153,7 +156,7 @@ final class EloquentRoleApplicationStore implements RoleApplicationStore
         $tab = in_array($tab, ['submitted', 'changes_requested', 'approved', 'rejected'], true) ? $tab : 'submitted';
         // Applications of a Party whose every account is closed leave the queue (#746); the Users page keeps closed accounts.
         $open = fn ($users) => $users->selectRaw('1')->from('users')->whereColumn('users.party_id', 'role_applications.party_id')->whereNull('users.closed_at');
-        $query = $this->withAccount(RoleApplication::query())->where('role', $role)->where('status', $tab)->whereExists($open);
+        $query = $this->withAccount(RoleApplication::query())->whereIn('role', self::QUEUES[$role])->where('status', $tab)->whereExists($open);
         if ($search !== '') {
             $term = '%'.addcslashes(mb_strtolower($search), '%_\\').'%';
             $query->where(fn (Builder $match) => $match->whereLike('search_name', $term)->orWhereExists(fn ($users) => $users->selectRaw('1')->from('users')
@@ -162,7 +165,7 @@ final class EloquentRoleApplicationStore implements RoleApplicationStore
         }
         $tab === 'submitted' ? $query->orderBy('submitted_at')->orderBy('id') : $query->orderByDesc('updated_at')->orderByDesc('id');
         $counts = [];
-        foreach (RoleApplication::query()->where('role', $role)->whereIn('status', ['submitted', 'changes_requested', 'approved', 'rejected'])->whereExists($open)
+        foreach (RoleApplication::query()->whereIn('role', self::QUEUES[$role])->whereIn('status', ['submitted', 'changes_requested', 'approved', 'rejected'])->whereExists($open)
             ->groupBy('status')->selectRaw('status, count(*) AS total')->pluck('total', 'status') as $status => $total) {
             $counts[(string) $status] = (int) $total;
         }
@@ -305,7 +308,7 @@ final class EloquentRoleApplicationStore implements RoleApplicationStore
                 }
             }
             $certificate = $record->role === 'auditor' ? $documents->get($state['documents']['practising_certificate']) : null;
-            $businessId = $switch(['party_id' => $party->id, 'user_id' => $participant, 'email' => (string) User::query()->whereKey($participant)->value('email'),
+            $businessId = $switch(['party_id' => $party->id, 'application_id' => $record->id, 'actor_id' => $actorId, 'user_id' => $participant, 'email' => (string) User::query()->whereKey($participant)->value('email'),
                 'state' => $state, 'reference' => 'role-application:'.$record->id.'@'.$record->revision, 'request_id' => $requestId,
                 'certificate' => $certificate === null ? null : ['filename' => $certificate->filename, 'content' => $certificate->content]]);
         } else {
@@ -406,14 +409,14 @@ final class EloquentRoleApplicationStore implements RoleApplicationStore
      * What every notice about an application names: the role, and the company for a business.
      *
      * @param  State  $state
-     * @return array{role: 'business'|'auditor', company?: string}
+     * @return array{role: 'business'|'auditor'|'institution', company?: string}
      */
     private function noticeFacts(array $state): array
     {
         $company = $state['answers']['company']['legal_name'] ?? null;
 
         $facts = ['role' => $state['role']];
-        if ($state['role'] === 'business' && is_string($company) && $company !== '') {
+        if ($state['role'] !== 'auditor' && is_string($company) && $company !== '') {
             $facts['company'] = $company;
         }
 

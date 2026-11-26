@@ -73,23 +73,24 @@ final readonly class TradingWindow
     }
 
     /**
-     * The most units this buyer may still take in the note: half the raise less what they
-     * already hold or have reserved, primary and secondary together.
+     * The most units this buyer may still take in the note: their cap's share of the raise (10% for an
+     * individual, 25% for an institution, as the founders set it) less what they already hold or have
+     * reserved, primary and secondary together.
      */
-    public static function buyerRoom(string $raiseUnits, string $heldUnits): BigInteger
+    public static function buyerRoom(string $raiseUnits, string $heldUnits, int $capPercent): BigInteger
     {
-        $limit = BigInteger::of($raiseUnits)->dividedBy(2, RoundingMode::Down);
+        $limit = BigInteger::of($raiseUnits)->multipliedBy($capPercent)->dividedBy(100, RoundingMode::Down);
         $held = BigInteger::of($heldUnits);
 
         return $held->isGreaterThanOrEqualTo($limit) ? BigInteger::zero() : $limit->minus($held);
     }
 
-    public static function requireBuyer(string $sellerPartyId, string $buyerPartyId, string $raiseUnits, string $heldUnits, string $buying): void
+    public static function requireBuyer(string $sellerPartyId, string $buyerPartyId, string $raiseUnits, string $heldUnits, string $buying, int $capPercent): void
     {
         if ($sellerPartyId === $buyerPartyId) {
             throw new SecondaryViolation('OWN_LISTING');
         }
-        if (Quantity::units($buying)->isGreaterThan(self::buyerRoom($raiseUnits, $heldUnits))) {
+        if (Quantity::units($buying)->isGreaterThan(self::buyerRoom($raiseUnits, $heldUnits, $capPercent))) {
             throw new SecondaryViolation('HOLDING_LIMIT_EXCEEDED');
         }
     }

@@ -12,7 +12,7 @@ namespace App\Domain\Identity;
  * @phpstan-type Item array{key: string, label: string, note: string}
  * @phpstan-type Kyc array{status: 'none'|'draft'|'submitted'|'rejected'|'approved', submitted_at: ?string, approved_at: ?string,
  *     reason: ?string, items: list<Item>, requested_at: ?string}
- * @phpstan-type Role array{role: 'business'|'auditor', status: 'draft'|'submitted'|'changes_requested'|'approved'|'rejected',
+ * @phpstan-type Role array{role: 'business'|'auditor'|'institution', status: 'draft'|'submitted'|'changes_requested'|'approved'|'rejected',
  *     company: ?string, submitted_at: ?string, decided_at: ?string, note: ?string, items: list<Item>, requested_at: ?string}
  * @phpstan-type Facts array{name: string, created_at: ?string, email_verified_at: ?string, two_factor_at: ?string,
  *     kyc: Kyc, role: ?Role, roles: list<string>}
@@ -72,7 +72,9 @@ final class OnboardingHub
         $open = $target ?? 'investor';
         // Every account starts with Investor access, but investing opens only once the person is verified.
         $ready = $role === null ? $open !== 'investor' || $kyc['status'] === 'approved' : $role['status'] === 'approved';
-        $steps[] = ['key' => 'open', 'state' => in_array($open, $facts['roles'], true) && $ready ? 'done' : 'upcoming',
+        // An institutional investor invests through the Investor role, for the institution.
+        $held = $open === 'institution' ? 'investor' : $open;
+        $steps[] = ['key' => 'open', 'state' => in_array($held, $facts['roles'], true) && $ready ? 'done' : 'upcoming',
             'role' => $open, 'at' => null];
 
         return $steps;
@@ -142,7 +144,9 @@ final class OnboardingHub
             $next[] = 'role_switch';
         }
         if ($next === []) {
-            $next[] = $target === 'business' ? 'business_ready' : ($target === 'auditor' ? 'auditor_ready' : 'investor_ready');
+            $next[] = match ($target) {
+                'business' => 'business_ready', 'auditor' => 'auditor_ready', 'institution' => 'institution_ready', default => 'investor_ready',
+            };
         }
 
         return $next;

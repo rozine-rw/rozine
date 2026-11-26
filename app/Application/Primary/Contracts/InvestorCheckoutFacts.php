@@ -18,10 +18,11 @@ interface InvestorCheckoutFacts
 
     /**
      * The acting user's Party, its active capital, the units it holds or has committed in one
-     * campaign, which count towards the 50% limit (INV-R01), and its newest unexpired held
+     * campaign, which count towards its cap of the raise (`cap_percent`: 10% for an individual, 25% for an
+     * institution, as the founders set it), and its newest unexpired held
      * reservation there, if any.
      *
-     * @return array{party_id: string, active_capital: string, campaign_units: string, held_reservation_id: string|null}
+     * @return array{party_id: string, active_capital: string, campaign_units: string, cap_percent: int, held_reservation_id: string|null}
      */
     public function forInvestor(int $userId, string $campaignId): array;
 }

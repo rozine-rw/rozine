@@ -8,6 +8,7 @@ use App\Application\Business\Contracts\PrimaryCampaignSource;
 use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Operations\Contracts\CanonicalJson;
 use App\Application\Operations\Contracts\ChangeFeed;
+use App\Application\Operations\Contracts\PolicySettings;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\InvestorCart;
 use App\Application\Primary\Contracts\PrimaryReservations;
@@ -24,6 +25,7 @@ use App\Application\Wallet\PostingSource;
 use App\Domain\Identity\PartyNoticeKind;
 use App\Domain\Operations\ChangeScope;
 use App\Domain\Operations\CommandRejection;
+use App\Domain\Operations\PolicyChange;
 use App\Domain\Primary\PrimaryReservation;
 use App\Domain\Primary\PrimaryTerms;
 use App\Domain\Primary\PrimaryViolation;
@@ -50,7 +52,7 @@ use Throwable;
  */
 final readonly class EloquentPrimaryReservations implements PrimaryReservations
 {
-    public function __construct(private PrimaryCampaignSource $campaigns, private WalletPostings $wallets, private CanonicalJson $json, private PrimaryCommittedCash $cash, private PrimaryReturnedCash $returnedCash, private CampaignFundingEvidence $fundings, private ChangeFeed $changes, private RetainedPrimaryReservation $retained, private RetainedHeldClaimRelease $claims, private PartyNotices $notices, private InvestorCart $cart) {}
+    public function __construct(private PrimaryCampaignSource $campaigns, private WalletPostings $wallets, private CanonicalJson $json, private PrimaryCommittedCash $cash, private PrimaryReturnedCash $returnedCash, private CampaignFundingEvidence $fundings, private ChangeFeed $changes, private RetainedPrimaryReservation $retained, private RetainedHeldClaimRelease $claims, private PartyNotices $notices, private InvestorCart $cart, private PolicySettings $policies) {}
 
     public function reservationFacts(string $campaignId, string $partyId, string $reservationId): array
     {
@@ -145,7 +147,8 @@ final readonly class EloquentPrimaryReservations implements PrimaryReservations
                 } catch (PrimaryViolation $exception) {
                     throw new RuntimeException('RESERVATION_INTEGRITY_FAILED', previous: $exception);
                 }
-                if ($partyUnits->plus($quantity)->multipliedBy(2)->isGreaterThan($campaign['units'])) {
+                // The investor's share of the raise: 10% for an individual, 25% for an institution, as the founders set it.
+                if ($partyUnits->plus($quantity)->isGreaterThan(PolicyChange::capUnits((string) $campaign['units'], $this->policies->holdingCapPercent($partyId)))) {
                     throw new CommandRejection('INVESTOR_CAMPAIGN_CAP_EXCEEDED', 422);
                 }
                 $rights = UnitRights::allocate($campaign['principal'], $campaign['payments'], UnitOrdinals::reserve($campaign['units'], $occupied, $units));

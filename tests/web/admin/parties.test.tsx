@@ -967,6 +967,7 @@ describe('Party directories', () => {
             'Capability',
             'What it allows',
             'Super-admin',
+            'Founder',
             'Compliance',
             'Approver',
             'Treasury',
@@ -985,7 +986,7 @@ describe('Party directories', () => {
                 'No role, by rule: ledger and audit entries are never deleted',
             ),
         ).toBeInTheDocument();
-        expect(within(remove).getAllByLabelText('Not allowed')).toHaveLength(5);
+        expect(within(remove).getAllByLabelText('Not allowed')).toHaveLength(6);
 
         // Capabilities the design names carry its words.
         expect(
@@ -1013,6 +1014,7 @@ describe('Party directories', () => {
                 .slice(2)
                 .map((cell) => cell.getAttribute('aria-label')),
         ).toEqual([
+            'Not allowed',
             'Not allowed',
             'Not allowed',
             'Not allowed',

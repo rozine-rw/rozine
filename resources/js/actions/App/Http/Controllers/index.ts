@@ -80,6 +80,7 @@ import RoleBookmarkController from './RoleBookmarkController'
 import Settings from './Settings'
 import StaffNotesController from './StaffNotesController'
 import StaffAuditReportController from './StaffAuditReportController'
+import StaffPolicyChangeController from './StaffPolicyChangeController'
 import StaffSectionController from './StaffSectionController'
 import StaffUserDirectoryController from './StaffUserDirectoryController'
 import StaffCartReleaseController from './StaffCartReleaseController'
@@ -169,6 +170,7 @@ const Controllers = {
     Settings: Object.assign(Settings, Settings),
     StaffNotesController: Object.assign(StaffNotesController, StaffNotesController),
     StaffAuditReportController: Object.assign(StaffAuditReportController, StaffAuditReportController),
+    StaffPolicyChangeController: Object.assign(StaffPolicyChangeController, StaffPolicyChangeController),
     StaffSectionController: Object.assign(StaffSectionController, StaffSectionController),
     StaffUserDirectoryController: Object.assign(StaffUserDirectoryController, StaffUserDirectoryController),
     StaffCartReleaseController: Object.assign(StaffCartReleaseController, StaffCartReleaseController),

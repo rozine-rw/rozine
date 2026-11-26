@@ -4,6 +4,7 @@ import disbursements from './disbursements'
 import applications from './applications'
 import notes from './notes'
 import reports from './reports'
+import policies from './policies'
 import sections from './sections'
 import investors from './investors'
 import users from './users'
@@ -112,6 +113,7 @@ const staffNamespace = {
     applications: Object.assign(applications, applications),
     notes: Object.assign(notes, notes),
     reports: Object.assign(reports, reports),
+    policies: Object.assign(policies, policies),
     sections: Object.assign(sections, sections),
     investors: Object.assign(investors, investors),
     users: Object.assign(users, users),

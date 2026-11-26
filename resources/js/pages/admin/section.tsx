@@ -2,6 +2,7 @@ import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { AdminAcademies } from '@/components/admin/academies';
 import { AdminFrame } from '@/components/admin/admin-frame';
+import { PolicyChanges } from '@/components/admin/policy-changes';
 import { SECTION_DESIGNS } from '@/components/admin/section-designs';
 import type {
     DesignBlock,
@@ -114,6 +115,12 @@ function DesignedSection(props: AdminPendingSectionProps) {
                             />
                         ))}
                     </div>
+                )}
+                {props.policy_changes !== undefined && (
+                    <PolicyChanges
+                        board={props.policy_changes}
+                        viewer={props.viewer}
+                    />
                 )}
                 {design.tabs !== undefined && (
                     <div

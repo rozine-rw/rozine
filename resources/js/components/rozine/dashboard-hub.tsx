@@ -54,9 +54,9 @@ export function actionHref(action: HubAction): string {
 
 function roleKey<T extends string>(
     base: T,
-    role: 'business' | 'auditor' | null,
+    role: 'business' | 'auditor' | 'institution' | null,
 ) {
-    return `${base}_${role === 'auditor' ? 'auditor' : 'business'}` as const;
+    return `${base}_${role ?? 'business'}` as const;
 }
 
 function actionTitle(action: HubAction): MessageCode {
@@ -92,7 +92,7 @@ function stepLabel(step: HubStep): MessageCode {
     if (step.key === 'role') {
         return roleKey(
             'suite.hub.step.role',
-            step.role === 'auditor' ? 'auditor' : 'business',
+            step.role === 'investor' ? 'business' : step.role,
         );
     }
 
@@ -105,7 +105,7 @@ function stepLabel(step: HubStep): MessageCode {
 
 function nextCopy(
     key: HubNext,
-    role: 'business' | 'auditor' | null,
+    role: 'business' | 'auditor' | 'institution' | null,
     identityApproved: boolean,
 ): { title: MessageCode; body: MessageCode } {
     const keyed =

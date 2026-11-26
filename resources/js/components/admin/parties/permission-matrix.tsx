@@ -12,6 +12,7 @@ import type { PermissionMatrixRow, StaffRole } from '@/types/admin';
 /** The console's roles from most to least privileged, as the server orders them. */
 const ROLES: StaffRole[] = [
     'superadmin',
+    'founder',
     'compliance',
     'approver',
     'treasury',
@@ -21,6 +22,7 @@ const ROLES: StaffRole[] = [
 /** The design's role colours on the column heads. */
 const ROLE_TEXT: Record<StaffRole, string> = {
     superadmin: 'text-[#1e3aff] dark:text-[#99a3ff]',
+    founder: 'text-[#5b3fd6] dark:text-[#b199fb]',
     compliance: 'text-[#a4521a] dark:text-[#f0a060]',
     approver: 'text-[#157357] dark:text-[#3fcda0]',
     treasury: 'text-[#1428a8] dark:text-[#99a3ff]',
@@ -28,7 +30,7 @@ const ROLE_TEXT: Record<StaffRole, string> = {
 };
 
 const GRID =
-    'grid grid-cols-[minmax(0,1.5fr)_minmax(0,2fr)_repeat(5,84px)] items-center gap-3.5 px-5';
+    'grid grid-cols-[minmax(0,1.5fr)_minmax(0,2fr)_repeat(6,84px)] items-center gap-3.5 px-5';
 
 /**
  * Role permissions (design Staff & Roles): every capability a role can grant, what it allows, and a

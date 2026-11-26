@@ -35,7 +35,7 @@ class StaffDirectoryResource extends JsonResource
     private const CHIPS = ['all', 'active', 'frozen'];
 
     /** Role names as the 360 states them. */
-    private const ROLE_NAMES = ['superadmin' => 'Super-admin', 'compliance' => 'Compliance', 'approver' => 'Approver', 'treasury' => 'Treasury', 'analyst' => 'Analyst'];
+    private const ROLE_NAMES = ['superadmin' => 'Super-admin', 'founder' => 'Founder', 'compliance' => 'Compliance', 'approver' => 'Approver', 'treasury' => 'Treasury', 'analyst' => 'Analyst'];
 
     /** @return array<string, mixed> */
     public function toArray(Request $request): array

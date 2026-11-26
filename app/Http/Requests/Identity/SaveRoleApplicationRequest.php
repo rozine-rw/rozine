@@ -18,8 +18,8 @@ class SaveRoleApplicationRequest extends FormRequest
     public function rules(): array
     {
         return ['request_id' => ['required', 'uuid'], 'identity_context_revision' => ['required', 'integer', 'min:0'],
-            'expected_revision' => ['required', 'integer', 'min:0'], 'role' => ['required', 'string', 'in:business,auditor'],
-            'step' => ['required', 'string', 'in:company,people,documents,licence,coverage'],
+            'expected_revision' => ['required', 'integer', 'min:0'], 'role' => ['required', 'string', 'in:business,auditor,institution'],
+            'step' => ['required', 'string', 'in:company,people,institution,documents,licence,coverage'],
             'answers' => ['nullable', 'array', 'max:20']];
     }
 }

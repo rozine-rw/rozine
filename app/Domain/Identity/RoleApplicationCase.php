@@ -14,6 +14,11 @@ use App\Domain\Operations\CommandRejection;
  * ids only; it never verifies anyone and grants nothing. Compliance approves, asks for more or rejects,
  * and only approval switches the role.
  *
+ * An Investor may instead apply to invest for an institution (26 Nov 2026, BRS v3 KYC-R02): the
+ * institution's KYB exactly as for a business, plus its type, its monthly distribution commitment, a
+ * bank account in its own name and a letter authorising this person to act for it. They stay an
+ * Investor; approval records the institution they invest for.
+ *
  * @phpstan-type Person array{full_name: string, id_type: 'national_id'|'passport', id_number: string, nationality: string}
  * @phpstan-type Owner array{full_name: string, id_type: 'national_id'|'passport', id_number: string, nationality: string, ownership_pct: string, pep: bool}
  *
@@ -24,22 +29,24 @@ use App\Domain\Operations\CommandRejection;
  * @phpstan-type Representative array{title: string, phone: string, authorised: bool}
  * @phpstan-type Licence array{membership_number: string, licence_number: string, expires_on: string, firm: string}
  * @phpstan-type Coverage array{districts: list<string>, no_conflicts: bool, will_declare: bool, ethics: bool}
+ * @phpstan-type Institution array{type: string, monthly_commitment: string, bank_name: string, account_name: string, account_number: string, automates: bool, own_rules: bool}
  * @phpstan-type Answers array{
  *     company?: Company, representative?: Representative, directors?: list<Person>, owners?: list<Owner>,
- *     licence?: Licence, address?: Address, coverage?: Coverage, declared: bool
+ *     licence?: Licence, address?: Address, coverage?: Coverage, institution?: Institution, declared: bool
  * }
  * @phpstan-type RevisionItem array{key: string, label: string, note: string}
  * @phpstan-type Revision array{note: string|null, items: list<RevisionItem>, requested_at: string, before?: array{answers: Answers, documents: array<string, string>}}
- * @phpstan-type State array{role: 'business'|'auditor', step: string, answers: Answers, documents: array<string, string>, note: string|null, revision?: Revision}
+ * @phpstan-type State array{role: 'business'|'auditor'|'institution', step: string, answers: Answers, documents: array<string, string>, note: string|null, revision?: Revision}
  */
 final class RoleApplicationCase
 {
-    public const ROLES = ['business', 'auditor'];
+    public const ROLES = ['business', 'auditor', 'institution'];
 
     /** Each role's steps in the order they are filled in; `review` is the summary they are sent from. */
     public const STEPS = [
         'business' => ['company', 'people', 'documents', 'review'],
         'auditor' => ['licence', 'coverage', 'review'],
+        'institution' => ['company', 'people', 'institution', 'documents', 'review'],
     ];
 
     /** The company documents KYC-R03 requires. The board resolution is optional (a non-director representative's authority). */
@@ -49,6 +56,12 @@ final class RoleApplicationCase
 
     public const AUDITOR_DOCUMENTS = ['practising_certificate'];
 
+    /**
+     * An institution's KYB documents: the business ones, the letter or board resolution authorising this
+     * person to act for it, and the bank's letter confirming the account is in the institution's name.
+     */
+    public const INSTITUTION_DOCUMENTS = [...self::BUSINESS_DOCUMENTS, 'authorisation_letter', 'bank_letter'];
+
     public const COMPANY_TYPES = ['private_limited', 'public_limited', 'cooperative', 'partnership', 'other'];
 
     /** The statuses in which the applicant may still change their answers. */
@@ -57,11 +70,14 @@ final class RoleApplicationCase
     /** Directors or owners listed on the form, at most. */
     public const MAX_PEOPLE = 12;
 
+    /** @param  int  $minimumMonthlyCommitment  the founders' institution minimum in force, in RWF */
+    public function __construct(private int $minimumMonthlyCommitment = InstitutionalInvestorTerms::MIN_MONTHLY_COMMITMENT) {}
+
     /** @return State */
     public function empty(string $role): array
     {
         $this->role($role);
-        $role = $role === 'auditor' ? 'auditor' : 'business';
+        $role = in_array($role, ['auditor', 'institution'], true) ? $role : 'business';
 
         return ['role' => $role, 'step' => self::STEPS[$role][0], 'answers' => ['declared' => false], 'documents' => [], 'note' => null];
     }
@@ -97,6 +113,9 @@ final class RoleApplicationCase
             case 'licence':
                 [$state['answers']['licence'], $licence] = $this->licence($input, $today);
                 $errors = [...$licence, ...$this->missingDocuments($state)];
+                break;
+            case 'institution':
+                [$state['answers']['institution'], $errors] = $this->institution($input, $state['answers']['company']['legal_name'] ?? '');
                 break;
             case 'coverage':
                 [$state['answers']['address'], $address] = RwandaAddress::fromInput(is_array($input['address'] ?? null) ? $input['address'] : [], $provinces, 'address.');
@@ -173,11 +192,14 @@ final class RoleApplicationCase
     public function problems(array $state, string $today, array $industries, array $provinces): array
     {
         $answers = $state['answers'];
-        if ($state['role'] === 'business') {
+        if ($state['role'] !== 'auditor') {
+            $institution = $state['role'] === 'institution'
+                ? $this->institution($answers['institution'] ?? [], $answers['company']['legal_name'] ?? '')[1] : [];
+
             return [...$this->company($answers['company'] ?? [], $today, $industries, $provinces)[1],
                 ...$this->representative($answers['representative'] ?? null)[1],
                 ...$this->people($answers['directors'] ?? null, 'directors', false)[1],
-                ...$this->people($answers['owners'] ?? null, 'owners', true)[1], ...$this->missingDocuments($state)];
+                ...$this->people($answers['owners'] ?? null, 'owners', true)[1], ...$institution, ...$this->missingDocuments($state)];
         }
 
         return [...$this->licence($answers['licence'] ?? [], $today)[1], ...RwandaAddress::fromInput($answers['address'] ?? [], $provinces, 'address.')[1],
@@ -197,7 +219,7 @@ final class RoleApplicationCase
             return self::AUDITOR_DOCUMENTS;
         }
 
-        return [...self::BUSINESS_DOCUMENTS, ...self::OPTIONAL_DOCUMENTS,
+        return [...($state['role'] === 'institution' ? self::INSTITUTION_DOCUMENTS : [...self::BUSINESS_DOCUMENTS, ...self::OPTIONAL_DOCUMENTS]),
             ...array_map(fn (string $id): string => 'id:'.$id, array_map('strval', array_keys($this->peopleById($state))))];
     }
 
@@ -227,7 +249,7 @@ final class RoleApplicationCase
     public function missingDocuments(array $state): array
     {
         $errors = [];
-        foreach ($state['role'] === 'business' ? self::BUSINESS_DOCUMENTS : self::AUDITOR_DOCUMENTS as $slot) {
+        foreach ($this->requiredDocuments($state['role']) as $slot) {
             if (($state['documents'][$slot] ?? null) === null) {
                 $errors['documents.'.$slot] = ['Upload this document.'];
             }
@@ -239,6 +261,16 @@ final class RoleApplicationCase
         }
 
         return $errors;
+    }
+
+    /** @return list<string> */
+    private function requiredDocuments(string $role): array
+    {
+        return match ($role) {
+            'auditor' => self::AUDITOR_DOCUMENTS,
+            'institution' => self::INSTITUTION_DOCUMENTS,
+            default => self::BUSINESS_DOCUMENTS,
+        };
     }
 
     /**
@@ -286,6 +318,12 @@ final class RoleApplicationCase
             'documents.rdb_certificate' => 'RDB registration certificate', 'documents.tin_certificate' => 'TIN certificate',
             'documents.articles' => 'Articles of Association', 'documents.shareholder_register' => 'Shareholder register',
             'documents.board_resolution' => 'Board resolution'];
+        if ($state['role'] === 'institution') {
+            unset($items['documents.board_resolution']);
+            $items = [...$items, 'institution.type' => 'Type of institution', 'institution.monthly_commitment' => 'Monthly distribution commitment',
+                'institution.bank_account' => 'Bank account in the institution’s name', 'institution.declarations' => 'Automation declarations',
+                'documents.authorisation_letter' => 'Letter authorising you to act for the institution', 'documents.bank_letter' => 'Bank confirmation letter'];
+        }
         foreach ($this->peopleById($state) as $idNumber => $person) {
             $items['documents.id:'.$idNumber] = $person['full_name']."'s ID";
         }
@@ -303,7 +341,7 @@ final class RoleApplicationCase
     public function role(string $role): void
     {
         if (! in_array($role, self::ROLES, true)) {
-            throw new CommandRejection('APPLICATION_ROLE_INVALID', 422, fieldErrors: ['role' => ['Choose Business or Auditor.']]);
+            throw new CommandRejection('APPLICATION_ROLE_INVALID', 422, fieldErrors: ['role' => ['Choose Business, Auditor or Institutional investor.']]);
         }
     }
 
@@ -529,6 +567,50 @@ final class RoleApplicationCase
         }
 
         return [$coverage, $errors];
+    }
+
+    /**
+     * The institution's type, its monthly distribution commitment (at least RWF 30,000,000), the bank
+     * account in its own registered name, and its two declarations: it automates the distribution, and
+     * it sets its own rules because Rozine recommends no business (Robert, 26 Nov 2026).
+     *
+     * @param  array<string, mixed>  $input
+     * @return array{0: Institution, 1: array<string, list<string>>}
+     */
+    private function institution(array $input, string $legalName): array
+    {
+        $text = fn (string $key, int $max): string => mb_substr(trim($this->text($input[$key] ?? '')), 0, $max);
+        $institution = ['type' => $text('type', 40), 'monthly_commitment' => (string) preg_replace('/[\s,]+/', '', $text('monthly_commitment', 20)),
+            'bank_name' => $text('bank_name', 80), 'account_name' => $text('account_name', 180),
+            'account_number' => (string) preg_replace('/[\s-]+/', '', $text('account_number', 40)),
+            'automates' => filter_var($input['automates'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'own_rules' => filter_var($input['own_rules'] ?? false, FILTER_VALIDATE_BOOLEAN)];
+        $errors = [];
+        if (! in_array($institution['type'], InstitutionalInvestorTerms::TYPES, true)) {
+            $errors['institution.type'] = ['Choose the type of institution.'];
+        }
+        $amount = $institution['monthly_commitment'];
+        if (preg_match('/^[1-9][0-9]{0,12}$/D', $amount) !== 1 || (int) $amount < $this->minimumMonthlyCommitment
+            || (int) $amount > InstitutionalInvestorTerms::MAX_MONTHLY_COMMITMENT) {
+            $errors['institution.monthly_commitment'] = [sprintf('Institutions commit to distributing at least RWF %s a month.', number_format($this->minimumMonthlyCommitment))];
+        }
+        if ($institution['bank_name'] === '') {
+            $errors['institution.bank_name'] = ['Enter the bank that holds the institution’s account.'];
+        }
+        if (! InstitutionalInvestorTerms::accountNameMatches($institution['account_name'], $legalName)) {
+            $errors['institution.account_name'] = ['The account must be in the institution’s registered name, exactly as on the RDB certificate.'];
+        }
+        if (preg_match('/^[0-9]{6,20}$/D', $institution['account_number']) !== 1) {
+            $errors['institution.account_number'] = ['Enter the account number, 6 to 20 digits.'];
+        }
+        if (! $institution['automates']) {
+            $errors['institution.automates'] = ['Confirm the institution will distribute this amount every month through Auto-Deploy.'];
+        }
+        if (! $institution['own_rules']) {
+            $errors['institution.own_rules'] = ['Confirm the institution sets its own investing rules. Rozine does not recommend businesses.'];
+        }
+
+        return [$institution, $errors];
     }
 
     private function pastDate(string $date, string $today): bool

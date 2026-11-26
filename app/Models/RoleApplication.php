@@ -13,7 +13,7 @@ use Illuminate\Support\Carbon;
  *
  * @property string $id
  * @property string $party_id
- * @property 'business'|'auditor' $role
+ * @property 'business'|'auditor'|'institution' $role
  * @property int $revision
  * @property 'draft'|'submitted'|'changes_requested'|'approved'|'rejected' $status
  * @property State $state

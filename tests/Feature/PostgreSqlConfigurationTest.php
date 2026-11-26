@@ -180,6 +180,10 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $disbursementPayouts->down();
     $servicingPayouts->down();
     $secondaryMarket->down();
+    // Institutional investors reference role applications and parties, so they come off before them and go back after them.
+    $institutionalInvestors = require database_path('migrations/2026_11_26_060000_add_institutional_investors.php');
+    $institutionalInvestors->down();
+    expect(Schema::hasTable('institutional_investors'))->toBeFalse();
     // Role applications reference parties and Business profiles, which are rebuilt below, so they come off first and go back last.
     $roleApplications = require database_path('migrations/2026_11_23_200000_create_role_applications.php');
     $roleApplications->down();
@@ -526,6 +530,7 @@ test('the identity migration can be rolled back and reapplied on PostgreSQL', fu
     $releasedIdentities->up();
     $legalConsents->up();
     $roleApplications->up();
+    $institutionalInvestors->up();
     expect(Schema::hasTable('role_applications'))->toBeTrue();
     expect(Schema::hasTable('business_visit_ready_ticks'))->toBeTrue();
     $secondaryMarket->up();

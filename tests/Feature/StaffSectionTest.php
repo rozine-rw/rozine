@@ -52,7 +52,8 @@ test('Policies lists the rules the domain enforces under the design tabs, and ot
         ->and($values)->not->toHaveKeys(['rate_band', 'tenors'])
         ->and(array_values(array_unique(array_column($rules, 'tab'))))->toBe(['fees', 'underwriting', 'business', 'investor', 'kyc', 'penalties', 'limits'])
         ->and(array_column($rules, 'value', 'key'))->toMatchArray(['earnings_fee' => '15% · 12% · 10% · 9% · 8%', 'resale_fee' => '2%',
-            'min_revenue' => 'RWF 30,000,000', 'min_rating' => '2.0', 'concentration' => '50%', 'resale_listing_days' => '7',
+            'min_revenue' => 'RWF 30,000,000', 'min_rating' => '2.0', 'investor_cap_percent' => '10%', 'institution_cap_percent' => '25%',
+            'institution_min_commitment' => 'RWF 30,000,000', 'institution_reminder_day' => '25', 'resale_listing_days' => '7',
             'resale_reservation_minutes' => '5', 'cpa_weekly_limit' => '4 (from 1 to 20)', 'sandbox_principal' => 'RWF 5,000,000,000', 'min_investment' => 'RWF 5,000', 'risk_statements' => '5'])
         ->and(array_column(array_filter($rules, fn (array $rule): bool => isset($rule['term'])), 'term', 'key'))->toBe([
             'withdrawal_fee' => 'none', 'loss_reserve' => 'none', 'listing_audit' => 'every_deal', 'registration_countries' => 'rwanda',

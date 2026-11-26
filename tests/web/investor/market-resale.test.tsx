@@ -302,12 +302,12 @@ describe('Market resale (BRS v3.0 §12)', () => {
 
         await user.click(reserve);
         expect(within(sheet).getByRole('alert')).toHaveTextContent(
-            'One investor can hold at most half of a raise. You can buy up to 12 more units of this note.',
+            'One investor can hold only a set share of a raise. You can buy up to 12 more units of this note.',
         );
 
         await user.click(reserve);
         expect(within(sheet).getByRole('alert')).toHaveTextContent(
-            'One investor can hold at most half of a raise, and you already hold that much of this note.',
+            'One investor can hold only a set share of a raise, and you already hold that much of this note.',
         );
 
         await user.click(reserve);

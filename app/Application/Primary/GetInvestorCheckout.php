@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Application\Primary;
 
 use App\Application\Business\Contracts\InvestorDealCatalogue;
+use App\Application\Operations\Contracts\PolicySettings;
 use App\Application\Primary\Contracts\InvestorCheckoutFacts;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Application\Primary\Contracts\RiskAcknowledgements;
 use App\Domain\Operations\CommandRejection;
+use App\Domain\Operations\PolicyChange;
 use App\Domain\Primary\EarningsFeeBand;
 use App\Domain\Primary\PrimaryDisclosure;
 use App\Domain\Primary\UnitRights;
@@ -35,7 +37,7 @@ final class GetInvestorCheckout
     private const array QUICK_PICKS = [1, 2, 5, 10];
 
     public function __construct(private GetInvestorViewer $viewer, private InvestorDealCatalogue $catalogue, private PrimaryCheckout $checkout,
-        private InvestorCheckoutFacts $facts, private RiskAcknowledgements $risks) {}
+        private InvestorCheckoutFacts $facts, private RiskAcknowledgements $risks, private PolicySettings $policies) {}
 
     /** @return CheckoutPage */
     public function handle(int $userId, ?int $contextRevision, string $campaignId, ?int $units, ?string $reservationId): array
@@ -45,10 +47,11 @@ final class GetInvestorCheckout
         $context = $viewer['identity_context_revision'];
         $wallet = $viewer['wallet'];
         $eligible = $wallet !== null && $wallet['wallet']['status'] === 'active';
-        $facts = $wallet === null ? ['active_capital' => '0', 'campaign_units' => '0', 'held_reservation_id' => null] : $this->facts->forInvestor($userId, $campaignId);
+        $facts = $wallet === null ? ['active_capital' => '0', 'campaign_units' => '0', 'cap_percent' => $this->policies->value('investor_cap_percent'), 'held_reservation_id' => null]
+            : $this->facts->forInvestor($userId, $campaignId);
         $reservationId ??= $facts['held_reservation_id'];
         $reservation = $wallet === null || $reservationId === null ? null : $this->reservation($userId, $context, $campaignId, $reservationId);
-        $capacity = self::capacity($deal, $facts['campaign_units'], $eligible);
+        $capacity = self::capacity($deal, $facts['campaign_units'], $eligible, $facts['cap_percent']);
         $max = (int) $capacity['max_units'];
         $chosen = $reservation === null ? max(1, min($units ?? 1, max($max, 1))) : (int) $reservation['units'];
         $quote = [...($reservation === null ? $this->indicative($deal, $chosen, $facts['active_capital']) : $this->reserved($deal, $reservation)), 'capacity' => $capacity];
@@ -89,17 +92,18 @@ final class GetInvestorCheckout
 
     /**
      * The most units this Party may take in the deal now: what is left to fill while the raise is
-     * live, bounded by the 50% limit less the units it already holds or committed (INV-R01). The
+     * live, bounded by its cap of the raise (10% for an individual, 25% for an institution, as the
+     * founders set it) less the units it already holds or committed. The
      * cart (`ManageInvestorCart`, `GetInvestorCart`) bounds its lines by the same rule.
      *
      * @param  array<string, mixed>  $deal
      * @return array{max_units: string, binding: string, remaining: array{raise: array{currency: string, amount: string}}}
      */
-    public static function capacity(array $deal, string $campaignUnits, bool $eligible): array
+    public static function capacity(array $deal, string $campaignUnits, bool $eligible, int $capPercent): array
     {
         $open = $deal['lifecycle'] === 'live';
         $available = $open ? BigInteger::of((string) $deal['units']['available']) : BigInteger::zero();
-        $cap = BigInteger::max(BigInteger::zero(), BigInteger::of((string) $deal['units']['total'])->quotient(2)->minus($campaignUnits));
+        $cap = BigInteger::max(BigInteger::zero(), BigInteger::of(PolicyChange::capUnits((string) $deal['units']['total'], $capPercent))->minus($campaignUnits));
         $binding = ! $eligible ? 'restriction' : ($cap->isLessThanOrEqualTo($available) ? 'raise_cap' : 'availability');
 
         return ['max_units' => $eligible ? (string) BigInteger::min($available, $cap) : '0', 'binding' => $binding,

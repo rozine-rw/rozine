@@ -15,8 +15,8 @@
         }
     },
     "nonCriticalApprovals": {},
-    "sourceManifestSha256": "e8254b7a5112ce734bf631bd0d66c68df3afc8f53e18028d3ae0a5dccbfdd62d",
-    "coverageSetSha256": "88458a009b7b35b4d2d0ce3bf729cb00d07a0e5f15f3bd118bc73609bc7d452d",
+    "sourceManifestSha256": "6f359cd5ea7f47201adf8bd01a4f4287c5b6305fd3fd23fe1563dbff47487080",
+    "coverageSetSha256": "7702c7982f02129cb1cc28cb4a11398f26a343d738c442bd2156186c0fb04aad",
     "thresholds": {
         "critical": {
             "global": {
@@ -77,6 +77,7 @@
         "resources/js/components/admin/parties/role-application-queue.tsx",
         "resources/js/components/admin/parties/user-drawer.tsx",
         "resources/js/components/admin/parties/user-roles.tsx",
+        "resources/js/components/admin/policy-changes.tsx",
         "resources/js/components/admin/reason-stage.tsx",
         "resources/js/components/admin/repayments/panels.tsx",
         "resources/js/components/admin/repayments/repayment-drawer.tsx",

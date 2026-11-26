@@ -221,11 +221,15 @@ final readonly class EloquentPartyNotices implements PartyNotices
      * The role an application notice is about.
      *
      * @param  array<string, string>  $facts
-     * @return 'business'|'auditor'
+     * @return 'business'|'auditor'|'institution'
      */
     private static function role(array $facts): string
     {
-        return ($facts['role'] ?? '') === 'auditor' ? 'auditor' : 'business';
+        return match ($facts['role'] ?? '') {
+            'auditor' => 'auditor',
+            'institution' => 'institution',
+            default => 'business',
+        };
     }
 
     /**

@@ -43,6 +43,8 @@ const props = (): RoleApplicationProps => ({
     two_factor: true,
     identity_context_revision: 3,
     catalog: {
+        institution_types: [],
+        min_monthly_commitment: 30000000,
         industries: [],
         districts: ['Gasabo', 'Kicukiro'],
         provinces: { 'Kigali City': ['Gasabo', 'Kicukiro'] },
