@@ -71,8 +71,9 @@ final readonly class GetInvestorCart
         $deal = $this->catalogue->deal($campaignId);
         $card = $deal ?? $this->catalogue->card($campaignId) ?? throw new RuntimeException('CART_DEAL_UNPUBLISHED');
         $filled = $deal === null || $deal['lifecycle'] !== 'live' || (string) $deal['units']['available'] === '0';
-        $capacity = $filled ? ['max_units' => '0', 'binding' => 'availability']
-            : GetInvestorCheckout::capacity($deal, $this->facts->forInvestor($userId, $campaignId)['campaign_units'], $eligible);
+        $facts = $filled ? null : $this->facts->forInvestor($userId, $campaignId);
+        $capacity = $facts === null ? ['max_units' => '0', 'binding' => 'availability']
+            : GetInvestorCheckout::capacity($deal, $facts['campaign_units'], $eligible, $facts['cap_percent']);
         $return = (string) GetInvestorCheckout::flatReturn($card, BigInteger::of(UnitRights::UNIT_PRINCIPAL));
 
         return ['campaign_id' => $campaignId, 'deal' => self::card($card), 'units' => (string) $units,

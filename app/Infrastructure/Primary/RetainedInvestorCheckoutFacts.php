@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Primary;
 
+use App\Application\Operations\Contracts\PolicySettings;
 use App\Application\Primary\Contracts\InvestorCheckoutFacts;
 use App\Models\User;
 use Brick\Math\BigInteger;
@@ -15,6 +16,8 @@ use Illuminate\Support\Facades\DB;
  */
 final readonly class RetainedInvestorCheckoutFacts implements InvestorCheckoutFacts
 {
+    public function __construct(private PolicySettings $policies) {}
+
     public function activeCapital(string $partyId): string
     {
         $row = (array) DB::selectOne("SELECT
@@ -38,6 +41,7 @@ final readonly class RetainedInvestorCheckoutFacts implements InvestorCheckoutFa
             ORDER BY r.created_at DESC, r.id DESC LIMIT 1", [$campaignId, $partyId]);
 
         return ['party_id' => $partyId, 'active_capital' => $this->activeCapital($partyId), 'campaign_units' => (string) $row['units'],
+            'cap_percent' => $this->policies->holdingCapPercent($partyId),
             'held_reservation_id' => $held === null ? null : (string) ((array) $held)['id']];
     }
 }

@@ -68,6 +68,8 @@ const props = (
     two_factor: true,
     identity_context_revision: 3,
     catalog: {
+        institution_types: [],
+        min_monthly_commitment: 30000000,
         industries: ['Agriculture'],
         districts: ['Rubavu'],
         provinces: { Western: ['Rubavu'] },

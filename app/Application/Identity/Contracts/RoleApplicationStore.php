@@ -18,25 +18,25 @@ use Closure;
  * @phpstan-type Standing array{
  *     revision: int,
  *     status: 'none'|'draft'|'submitted'|'changes_requested'|'approved'|'rejected',
- *     role: 'business'|'auditor'|null,
+ *     role: 'business'|'auditor'|'institution'|null,
  *     state: State|null,
  *     kyc: 'none'|'draft'|'submitted'|'approved'|'rejected',
  *     roles: list<string>,
  *     blockers: list<string>,
  *     identity_context_revision: int
  * }
- * @phpstan-type Row array{id: string, revision: int, role: 'business'|'auditor', status: string, name: string, email: string,
+ * @phpstan-type Row array{id: string, revision: int, role: 'business'|'auditor'|'institution', status: string, name: string, email: string,
  *     company: string|null, company_code: string|null, submitted_at: string|null, kyc: string}
  * @phpstan-type Queue array{role: 'business'|'auditor', tab: string, entries: list<Row>, counts: array<string, int>}
  * @phpstan-type Review array{
- *     id: string, revision: int, role: 'business'|'auditor', status: string, submitted_at: string|null, decided_at: string|null,
+ *     id: string, revision: int, role: 'business'|'auditor'|'institution', status: string, submitted_at: string|null, decided_at: string|null,
  *     account: array{name: string, email: string, two_factor: bool}, kyc: string, kyc_verification_id: string|null,
  *     state: State, people: array<string, array{full_name: string, roles: list<string>}>,
  *     documents: list<array{id: string, slot: string, filename: string, media_type: string, size_bytes: int, uploaded_at: string, current: bool}>,
  *     history: list<array{revision: int, status: string, command: string, reason: string|null, at: string}>,
  *     blockers: list<string>, problems: list<string>, business_id: string|null, allowed_actions: list<string>
  * }
- * @phpstan-type Approval array{party_id: string, user_id: int, email: string, state: State, reference: string, request_id: string,
+ * @phpstan-type Approval array{party_id: string, application_id: string, actor_id: int, user_id: int, email: string, state: State, reference: string, request_id: string,
  *     certificate: array{filename: string, content: string}|null}
  */
 interface RoleApplicationStore

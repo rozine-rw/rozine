@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Application\Identity;
 
 use App\Application\Identity\Contracts\RoleApplicationStore;
+use App\Application\Operations\Contracts\PolicySettings;
+use App\Domain\Identity\InstitutionalInvestorTerms;
 
 /**
  * A person's own application to switch from Investor to Business representative or Auditor: where it
@@ -14,7 +16,18 @@ use App\Application\Identity\Contracts\RoleApplicationStore;
  */
 final class ApplyForRole
 {
-    public function __construct(private RoleApplicationStore $store) {}
+    public function __construct(private RoleApplicationStore $store, private PolicySettings $policies) {}
+
+    /**
+     * What the institutional investor step offers (26 Nov 2026): the institution types and the
+     * smallest monthly distribution an institution may commit to.
+     *
+     * @return array{institution_types: list<string>, min_monthly_commitment: int}
+     */
+    public function institutionCatalog(): array
+    {
+        return ['institution_types' => InstitutionalInvestorTerms::TYPES, 'min_monthly_commitment' => $this->policies->value('institution_min_commitment')];
+    }
 
     /** @return Standing */
     public function standing(int $userId): array

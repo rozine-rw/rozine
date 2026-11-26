@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Identity\LegalDocuments;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /*
@@ -20,6 +21,7 @@ use Tests\TestCase;
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
+    ->beforeEach(fn () => twoInvestorRaiseCap())
     ->in('Feature');
 
 /*
@@ -29,9 +31,20 @@ pest()->extend(TestCase::class)
  */
 pest()->extend(TestCase::class)
     ->use(DatabaseTruncation::class)
+    ->beforeEach(fn () => twoInvestorRaiseCap())
     ->in('Concurrency');
 
 pest()->tia()->locally();
+
+/**
+ * The suite's raises are filled by two investors, each holding half (written under INV-R01's 50%
+ * cap), so each test starts with the individual cap at 50%. The live default is 10% (25% for an
+ * institution, Erastus, 26 Nov 2026); tests of the caps themselves set the values they check.
+ */
+function twoInvestorRaiseCap(int $percent = 50): void
+{
+    DB::table('policy_settings')->updateOrInsert(['key' => 'investor_cap_percent'], ['value' => $percent, 'revision' => 1, 'updated_at' => now()]);
+}
 
 /**
  * The sign-up fields that tick the Terms, the Privacy Notice and the Disclaimers, each with the

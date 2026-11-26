@@ -117,6 +117,7 @@
         "resources/js/actions/App/Http/Controllers/StaffMessagingController.ts",
         "resources/js/actions/App/Http/Controllers/StaffNotesController.ts",
         "resources/js/actions/App/Http/Controllers/StaffPaymentsController.ts",
+        "resources/js/actions/App/Http/Controllers/StaffPolicyChangeController.ts",
         "resources/js/actions/App/Http/Controllers/StaffPrimaryMarketController.ts",
         "resources/js/actions/App/Http/Controllers/StaffReconciliationController.ts",
         "resources/js/actions/App/Http/Controllers/StaffRoleApplicationController.ts",
@@ -376,6 +377,7 @@
         "resources/js/routes/staff/messaging/index.ts",
         "resources/js/routes/staff/notes/index.ts",
         "resources/js/routes/staff/payments/index.ts",
+        "resources/js/routes/staff/policies/index.ts",
         "resources/js/routes/staff/primary-market/index.ts",
         "resources/js/routes/staff/reconciliation/index.ts",
         "resources/js/routes/staff/reports/index.ts",
@@ -448,6 +450,7 @@
         "resources/js/components/admin/parties/role-application-queue.tsx",
         "resources/js/components/admin/parties/user-drawer.tsx",
         "resources/js/components/admin/parties/user-roles.tsx",
+        "resources/js/components/admin/policy-changes.tsx",
         "resources/js/components/admin/reason-stage.tsx",
         "resources/js/components/admin/repayments/panels.tsx",
         "resources/js/components/admin/repayments/repayment-drawer.tsx",
@@ -883,10 +886,10 @@
         "resources/js/pages/welcome.tsx"
     ],
     "counts": {
-        "totalTrackedSources": 852,
-        "generated": 368,
+        "totalTrackedSources": 855,
+        "generated": 370,
         "declarationOnly": 22,
-        "authoredExecutable": 462
+        "authoredExecutable": 463
     },
-    "coverageSetSha256": "88458a009b7b35b4d2d0ce3bf729cb00d07a0e5f15f3bd118bc73609bc7d452d"
+    "coverageSetSha256": "7702c7982f02129cb1cc28cb4a11398f26a343d738c442bd2156186c0fb04aad"
 }

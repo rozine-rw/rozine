@@ -345,6 +345,37 @@ const fr: Catalog = {
     'suite.hub.done.role_sent_auditor': 'Demande d’auditeur envoyée',
     'suite.hub.done.role_approved_business': 'Entreprise approuvée',
     'suite.hub.done.role_approved_auditor': 'Licence ICPAR vérifiée',
+    'suite.hub.step.role_institution': 'Vérification de l’institution',
+    'suite.hub.step.open_institution': 'Investir pour l’institution',
+    'suite.hub.action.role_changes_institution.title':
+        'La Conformité demande des modifications à votre demande d’institution',
+    'suite.hub.action.role_rejected_institution.title':
+        'Votre demande d’institution n’a pas été approuvée',
+    'suite.hub.action.role_continue_institution.title':
+        'Terminez votre demande d’institution',
+    'suite.hub.next.role_send_institution.title':
+        'Envoyez votre demande d’institution',
+    'suite.hub.next.role_send_institution.body':
+        'La Conformité l’examine une fois votre identité approuvée.',
+    'suite.hub.next.role_send_institution.body_approved':
+        'Votre identité est approuvée : la Conformité l’examine dès son envoi.',
+    'suite.hub.next.role_review_institution.title':
+        '{company} est en cours d’examen',
+    'suite.hub.next.role_review_institution.body':
+        'La Conformité l’examine une fois votre identité approuvée. Nous vous écrivons dès la décision.',
+    'suite.hub.next.role_review_institution.body_approved':
+        'La Conformité examine l’institution. Nous vous écrivons dès la décision.',
+    'suite.hub.next.role_switch_institution.title':
+        'Vous investissez pour l’institution',
+    'suite.hub.next.role_switch_institution.body':
+        'Ensuite, vous configurez Auto-Deploy avec les règles de l’institution pour sa distribution mensuelle.',
+    'suite.hub.next.institution_ready.title': 'Investir pour l’institution',
+    'suite.hub.next.institution_ready.body':
+        'L’institution est approuvée. Ouvrez Investisseur pour alimenter son portefeuille et investir.',
+    'suite.hub.done.role_sent_institution': 'Demande d’institution envoyée',
+    'suite.hub.done.role_approved_institution': 'Institution approuvée',
+    'suite.hub.flash.role_title_institution':
+        'Votre demande d’institution nécessite des modifications',
     'suite.hub.recent.title': 'Mises à jour récentes',
     'suite.hub.recent.empty':
         'Les mises à jour de la Conformité s’affichent ici.',
@@ -481,6 +512,21 @@ const fr: Catalog = {
         'Investisseurs demandant à devenir auditeur. Vérifiez le certificat ICPAR dans le registre, puis décidez ici.',
     'admin.role_applications.auditor.kicker': 'Demande auditeur',
     'admin.role_applications.auditor.approve': 'Approuver et accréditer',
+    'admin.role_applications.institution.confirm_title':
+        'Autoriser {name} à investir pour cette institution ?',
+    'admin.role_applications.institution.confirm_body':
+        '{name} reste Investisseur et investit désormais pour l’institution, selon son engagement mensuel. Notez ce que vous avez vérifié.',
+    'admin.role_applications.institution.title':
+        'Demandes d’investisseurs institutionnels',
+    'admin.role_applications.institution.caption':
+        'Investisseurs demandant à investir pour une institution.',
+    'admin.role_applications.institution.kicker':
+        'Demande d’investisseur institutionnel',
+    'admin.role_applications.institution.approve': 'Approuver l’institution',
+    'admin.role_applications.institution.badge': 'Investisseur institutionnel',
+    'admin.role_applications.institution.declared':
+        'Automatise sa distribution selon ses propres règles',
+    'admin.role_applications.institution.not_declared': 'Non confirmé',
     'admin.role_applications.tabs': 'Statut des demandes',
     'admin.role_applications.tab.submitted': 'En attente',
     'admin.role_applications.tab.changes_requested': 'Renvoyées',
@@ -548,6 +594,8 @@ const fr: Catalog = {
         'Un compte n’a qu’un rôle à la fois. Votre autre demande est chez la Conformité.',
     'suite.app.switch.held_business':
         'Un compte n’a qu’un rôle à la fois, et le vôtre est Entreprise.',
+    'suite.app.switch.held_institution':
+        'Un compte n’a qu’un rôle à la fois, et le vôtre investit pour une institution.',
     'suite.app.switch.held_auditor':
         'Un compte n’a qu’un rôle à la fois, et le vôtre est Auditeur.',
     'suite.app.switch.under_review_summary':
@@ -703,6 +751,45 @@ const fr: Catalog = {
         'Notre équipe Conformité vérifie votre entreprise. Vous restez Investisseur jusqu’à l’approbation.',
     'role.apply.review_state.auditor':
         'Notre équipe Conformité vérifie votre licence. Vous restez Investisseur jusqu’à l’approbation.',
+    'role.choice.institution.title': 'Investisseur institutionnel',
+    'role.choice.institution.body':
+        'Investissez pour un fonds de pension, un fonds de capital-risque, une banque ou une autre institution. Vous ajoutez son immatriculation, ses dirigeants, son compte bancaire et une distribution mensuelle d’au moins 30 M RWF.',
+    'role.choice.institution.start': 'Postuler pour une institution',
+    'role.apply.kicker_institution': 'Demande d’investisseur institutionnel',
+    'role.apply.step.institution.title': 'Engagement et compte',
+    'role.apply.step.institution.subtitle':
+        'Ce que l’institution distribue chaque mois, et le compte bancaire à son nom.',
+    'role.apply.institution.type': 'Type d’institution',
+    'role.apply.institution.type.pension_fund': 'Fonds de pension',
+    'role.apply.institution.type.venture_capital': 'Capital-risque',
+    'role.apply.institution.type.asset_manager': 'Gestionnaire d’actifs',
+    'role.apply.institution.type.insurer': 'Assureur',
+    'role.apply.institution.type.bank': 'Banque',
+    'role.apply.institution.type.corporate_treasury': 'Trésorerie d’entreprise',
+    'role.apply.institution.type.other': 'Autre',
+    'role.apply.institution.monthly_commitment': 'Distribution mensuelle (RWF)',
+    'role.apply.institution.monthly_commitment_hint':
+        'Au moins {amount} RWF par mois',
+    'role.apply.institution.month': 'mois',
+    'role.apply.institution.account': 'Compte bancaire de l’institution',
+    'role.apply.institution.bank_name': 'Banque',
+    'role.apply.institution.account_number': 'Numéro de compte',
+    'role.apply.institution.account_name': 'Titulaire du compte',
+    'role.apply.institution.account_name_hint':
+        'Doit être le nom enregistré : {name}',
+    'role.apply.institution.declarations': 'Comment l’institution investit',
+    'role.apply.institution.automates':
+        'L’institution distribuera {amount} RWF chaque mois via Auto-Deploy et approvisionnera son compte pour chaque mois.',
+    'role.apply.institution.own_rules':
+        'L’institution fixe ses propres règles et plafonds d’investissement. Rozine ne recommande aucune entreprise.',
+    'role.apply.document.authorisation_letter':
+        'Lettre ou résolution du conseil vous autorisant à agir pour l’institution',
+    'role.apply.document.bank_letter':
+        'Lettre de la banque confirmant que le compte est au nom de l’institution',
+    'role.apply.review.declare_institution':
+        'Je confirme que ces informations sont exactes et complètes, et que je peux agir pour cette institution.',
+    'role.apply.review_state.institution':
+        'Notre équipe Conformité vérifie l’institution. Vous restez Investisseur et investissez pour elle une fois approuvée.',
     'role.apply.review_state.sent': 'Demande envoyée',
     'role.apply.review_state.kyc': 'Vérification d’identité approuvée',
     'role.apply.review_state.compliance': 'Décision de la Conformité',
@@ -1712,7 +1799,7 @@ const fr: Catalog = {
     'business.help.raise.time.q':
         'Combien de temps une levée reste-t-elle ouverte ?',
     'business.help.raise.time.a':
-        'Une levée est ouverte aux investisseurs pendant 30 jours, ou jusqu’à son financement complet. Les investisseurs achètent des parts de 5 000 RWF, et aucun ne peut détenir plus de la moitié de votre levée.\n\nVous pouvez suivre à tout moment le montant engagé dans l’application.',
+        'Une levée est ouverte aux investisseurs pendant 30 jours, ou jusqu’à son financement complet. Les investisseurs achètent des parts de 5 000 RWF, et aucun ne peut détenir plus d’une part fixée de votre levée ; plusieurs investisseurs la remplissent donc.\n\nVous pouvez suivre à tout moment le montant engagé dans l’application.',
     'business.help.raise.unfunded.q':
         'Que se passe-t-il si ma levée n’est pas entièrement financée ?',
     'business.help.raise.unfunded.a':
@@ -2606,6 +2693,68 @@ const fr: Catalog = {
     'admin.role.compliance': 'Conformité',
     'admin.role.access.compliance': 'Accès conformité',
     'admin.role.treasury': 'Trésorerie',
+    'admin.policy.investor_cap_percent':
+        "Part maximale d'une levée pour un particulier",
+    'admin.policy.institution_cap_percent':
+        "Part maximale d'une levée pour une institution",
+    'admin.policy.institution_min_commitment':
+        'Minimum institutionnel · par mois',
+    'admin.policy.institution_reminder_day':
+        'Début des rappels de recharge · jour du mois',
+    'admin.policy.hint.investor_cap_percent':
+        "Plafond qu'un investisseur particulier peut détenir d'une levée. Les fondateurs approuvent les changements.",
+    'admin.policy.hint.institution_cap_percent':
+        "Plafond qu'un investisseur institutionnel peut détenir d'une levée. Les fondateurs approuvent les changements.",
+    'admin.policy.hint.institution_min_commitment':
+        "Montant minimum qu'une institution s'engage à distribuer chaque mois via Auto-Deploy.",
+    'admin.policy.hint.institution_reminder_day':
+        'Jour où les institutions commencent à recevoir les rappels de recharge pour le mois suivant.',
+    'admin.role.founder': 'Fondateur',
+    'admin.role.access.founder': 'Approuve les changements de politique',
+    'admin.policy_changes.title': 'Politiques approuvées par les fondateurs',
+    'admin.policy_changes.intro': {
+        one: "Un changement ne prend effet qu'après l'approbation de {count} fondateur.",
+        other: "Un changement ne prend effet qu'après l'approbation de {count} fondateurs, chacun séparément. Un refus le clôt.",
+    },
+    'admin.policy_changes.waiting':
+        'En attente · {done} sur {count} approbations',
+    'admin.policy_changes.proposed': '{from} → {to}, proposé par {name}',
+    'admin.policy_changes.approved_by': 'Approuvé par {name}',
+    'admin.policy_changes.you_decided':
+        "Vous avez décidé. L'autre fondateur décide ensuite.",
+    'admin.policy_changes.approve': 'Approuver',
+    'admin.policy_changes.reject': 'Refuser',
+    'admin.policy_changes.change': 'Proposer un changement',
+    'admin.policy_changes.new_value': 'Nouvelle valeur pour {name}',
+    'admin.policy_changes.range': 'De {min} à {max}',
+    'admin.policy_changes.next': 'Suivant',
+    'admin.policy_changes.cancel': 'Annuler',
+    'admin.policy_changes.day': 'Jour {day}',
+    'admin.policy_changes.history': 'Décisions récentes',
+    'admin.policy_changes.history_row': '{name} : {from} → {to} · {by}',
+    'admin.policy_changes.status.applied': 'En vigueur',
+    'admin.policy_changes.status.rejected': 'Refusé',
+    'admin.policy_changes.status.pending': 'En attente',
+    'admin.policy_changes.stage.propose.title':
+        'Changer {name} de {from} à {to} ?',
+    'admin.policy_changes.stage.propose.body':
+        "Rien ne change encore. Les deux fondateurs doivent l'approuver, chacun séparément, avant qu'il prenne effet.",
+    'admin.policy_changes.stage.propose.cta': 'Proposer le changement',
+    'admin.policy_changes.stage.propose.placeholder':
+        'Pourquoi ce changement ? Les fondateurs le lisent avant de décider.',
+    'admin.policy_changes.stage.approve.title':
+        'Approuver {name} : {from} → {to} ?',
+    'admin.policy_changes.stage.approve.body':
+        'Votre approbation est enregistrée à votre nom. Le changement prend effet une fois approuvé par chaque fondateur.',
+    'admin.policy_changes.stage.approve.cta': 'Approuver le changement',
+    'admin.policy_changes.stage.approve.placeholder':
+        "Votre raison d'approuver.",
+    'admin.policy_changes.stage.reject.title':
+        'Refuser {name} : {from} → {to} ?',
+    'admin.policy_changes.stage.reject.body':
+        'Refuser clôt ce changement. La valeur en vigueur reste inchangée.',
+    'admin.policy_changes.stage.reject.cta': 'Refuser le changement',
+    'admin.policy_changes.stage.reject.placeholder': 'Votre raison de refuser.',
     'admin.role.access.treasury': 'Accès trésorerie',
     'admin.kyc.intro':
         'Vérifications d’identité de personnes qui souhaitent investir. Ouvrez-en une pour lire ses documents et ses contrôles automatiques. La décision se prend sur la page Utilisateurs, où chaque KYC est approuvé, renvoyé ou rejeté.',
@@ -2843,7 +2992,6 @@ const fr: Catalog = {
     'admin.policy.default_at': 'Défaut',
     'admin.policy.auto_freeze': 'Gel automatique en cas de défaut',
     'admin.policy.min_investment': 'Investissement minimal · une part',
-    'admin.policy.concentration': "Part maximale d'une levée par investisseur",
     'admin.policy.raise_days': 'Durée de la levée · jours',
     'admin.policy.resale_listing_days':
         "Durée d'une annonce de revente · jours",
@@ -2930,8 +3078,6 @@ const fr: Catalog = {
     'admin.policy.hint.residency': "Où l'investisseur doit résider.",
     'admin.policy.hint.minimum_age': "Âge minimum d'un investisseur.",
     'admin.policy.hint.min_investment': 'Plus petit investissement autorisé.',
-    'admin.policy.hint.concentration':
-        "Plafond qu'un investisseur peut placer dans une seule note.",
     'admin.policy.hint.risk_statements':
         'Déclarations acceptées avant un premier investissement.',
     'admin.policy.hint.kyc_investor_id': 'Recto et verso du document.',
@@ -3587,7 +3733,11 @@ const fr: Catalog = {
         'Corriger une écriture réglée par une nouvelle écriture liée, avec un motif.',
     'admin.permission.policies.change': 'Règles',
     'admin.permission_detail.policies.change':
-        "Modifier les règles de tarification, d'éligibilité et d'automatisation.",
+        'Proposer une nouvelle valeur pour une politique que les fondateurs approuvent.',
+    'admin.permission.policies.approve':
+        'Approuver les changements de politique',
+    'admin.permission_detail.policies.approve':
+        'Approuver ou refuser un changement de politique proposé. Il prend effet une fois approuvé par les deux fondateurs.',
     'admin.permission.records.delete': 'Supprimer',
     'admin.permission_detail.records.delete':
         'Retirer définitivement une fiche de la plateforme.',
@@ -5217,11 +5367,11 @@ const fr: Catalog = {
     'investor.market.resale.see_cancelled': 'Voir dans Annulées',
     'investor.market.resale.trade_sell': 'Vendu · {name}',
     'investor.market.resale.refusal.holding_limit': {
-        one: 'Un investisseur peut détenir au plus la moitié d’une levée. Vous pouvez encore acheter jusqu’à {count} part de cette note.',
-        other: 'Un investisseur peut détenir au plus la moitié d’une levée. Vous pouvez encore acheter jusqu’à {count} parts de cette note.',
+        one: 'Un investisseur ne peut détenir qu’une part fixée d’une levée. Vous pouvez encore acheter jusqu’à {count} part de cette note.',
+        other: 'Un investisseur ne peut détenir qu’une part fixée d’une levée. Vous pouvez encore acheter jusqu’à {count} parts de cette note.',
     },
     'investor.market.resale.refusal.holding_full':
-        'Un investisseur peut détenir au plus la moitié d’une levée, et vous avez déjà atteint cette limite pour cette note.',
+        'Un investisseur ne peut détenir qu’une part fixée d’une levée, et vous avez déjà atteint cette limite pour cette note.',
     'investor.market.resale.refusal.price_cap':
         'Le prix dépasse le plafond de {cap} par part.',
     'investor.market.resale.refusal.not_held':
@@ -6385,14 +6535,14 @@ const fr: Catalog = {
     'investor.academy.lesson.diversify.topic2.title':
         'Varier secteurs et durées',
     'investor.academy.lesson.diversify.topic2.body':
-        'Varier les secteurs, les notations et les durées vous évite de dépendre d’un seul choc. Vous pouvez détenir au plus la moitié d’une levée.',
+        'Varier les secteurs, les notations et les durées vous évite de dépendre d’un seul choc. Vous ne pouvez détenir qu’une part fixée d’une levée.',
     'investor.academy.lesson.diversify.topic2.q':
         'Varier secteurs et durées vous aide à…',
     'investor.academy.lesson.diversify.topic2.option1':
         'Ne pas dépendre d’un seul choc',
     'investor.academy.lesson.diversify.topic2.option2': 'Payer moins de frais',
     'investor.academy.lesson.diversify.topic2.option3':
-        'Détenir plus de la moitié d’une levée',
+        'Détenir plus que votre part limite d’une levée',
     'investor.academy.lesson.deals.title': 'Choisir une offre',
     'investor.academy.lesson.deals.sub': 'Lire la page de l’offre',
     'investor.academy.lesson.deals.topic1.title': 'Ce qu’il faut vérifier',
@@ -6455,7 +6605,7 @@ const fr: Catalog = {
         'Vérifiez votre identité, puis alimentez votre portefeuille depuis un compte mobile money ou bancaire à votre nom. Ouvrez une offre dans Marché pour voir sa note, son rendement, sa durée, son échéancier et les chiffres vérifiés de l’entreprise, choisissez le nombre de parts et confirmez.\n\nAvant de confirmer, vous voyez le montant, chaque frais en RWF et exactement ce que vous recevrez.',
     'investor.help.start.minimum.q': 'Y a-t-il un investissement minimum ?',
     'investor.help.start.minimum.a':
-        'Les notes sont vendues par parts de 5 000 RWF ; vous pouvez donc commencer avec une seule part.\n\nVous ne pouvez détenir plus de la moitié d’une levée, et un investissement ne peut jamais dépasser ce qui reste à financer.',
+        'Les notes sont vendues par parts de 5 000 RWF ; vous pouvez donc commencer avec une seule part.\n\nVous ne pouvez détenir qu’une part fixée d’une levée, et un investissement ne peut jamais dépasser ce qui reste à financer.',
     'investor.help.returns.when.q':
         'Comment et quand mes rendements sont-ils versés ?',
     'investor.help.returns.when.a':
@@ -8404,6 +8554,10 @@ const fr: Catalog = {
         '{company} est approuvée. Votre compte est désormais un compte Entreprise.',
     'investor.notices.role.application_approved.body_auditor':
         'Votre licence ICPAR est approuvée. Votre compte est désormais un compte Auditeur.',
+    'investor.notices.role.application_submitted.body_institution':
+        'La Conformité a reçu la demande pour {company}. Elle est décidée une fois votre identité approuvée.',
+    'investor.notices.role.application_approved.body_institution':
+        '{company} est approuvée. Vous investissez désormais pour elle.',
     'investor.notices.role.application_rejected.title': 'Demande non approuvée',
     'investor.notices.role.application_rejected.body':
         'La Conformité n’a pas pu l’approuver : {note}',

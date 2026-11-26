@@ -67,12 +67,16 @@ class StaffRoleApplicationController extends Controller
         }
         $application = $review->show($actorId, $applicationId);
         Inertia::flash('toast', ['type' => 'success', 'message' => __(match ($decision) {
-            'approve' => $application['role'] === 'business' ? ':name is now the representative of an onboarded business.' : ':name is now an active Auditor.',
+            'approve' => match ($application['role']) {
+                'business' => ':name is now the representative of an onboarded business.',
+                'institution' => ':name now invests for :company.',
+                default => ':name is now an active Auditor.',
+            },
             'more' => 'Sent back to :name. They have been emailed and see each item you ticked.',
             default => 'Rejected. :name will see your note.',
-        }, ['name' => $application['account']['name']])]);
+        }, ['name' => $application['account']['name'], 'company' => $application['state']['answers']['company']['legal_name'] ?? ''])]);
 
-        return redirect()->route($application['role'] === 'business' ? 'staff.businesses.index' : 'staff.auditors.index',
+        return redirect()->route($application['role'] === 'auditor' ? 'staff.auditors.index' : 'staff.businesses.index',
             ['application' => $applicationId, 'kyb' => $decision === 'approve' ? 'approved' : ($decision === 'more' ? 'changes_requested' : 'rejected')]);
     }
 }

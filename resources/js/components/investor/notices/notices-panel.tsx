@@ -860,6 +860,13 @@ function body(
         case 'verification.submitted':
             return t('investor.notices.verification.submitted.body');
         case 'role.application_submitted':
+            if (notice.facts.role === 'institution') {
+                return t(
+                    'investor.notices.role.application_submitted.body_institution',
+                    { company: notice.facts.company ?? '' },
+                );
+            }
+
             return notice.facts.role === 'business'
                 ? t(
                       'investor.notices.role.application_submitted.body_business',
@@ -873,6 +880,13 @@ function body(
                 items: notice.facts.items.map((item) => item.label).join(', '),
             });
         case 'role.application_approved':
+            if (notice.facts.role === 'institution') {
+                return t(
+                    'investor.notices.role.application_approved.body_institution',
+                    { company: notice.facts.company ?? '' },
+                );
+            }
+
             return notice.facts.role === 'business'
                 ? t(
                       'investor.notices.role.application_approved.body_business',

@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Application\Business\BrowseBusinessDirectory;
 use App\Application\Identity\GetStaffAccess;
 use App\Application\Operations\BrowseLedger;
+use App\Application\Operations\ChangePlatformPolicies;
 use App\Application\Operations\EngineSettings;
 use App\Application\Operations\PlatformPolicies;
 use App\Application\Operations\ReadSandboxUsage;
@@ -64,7 +65,7 @@ class StaffSectionController extends Controller
      * sent to that queue, and whoever may read message history to Messaging & Automations.
      */
     public function show(Request $request, GetStaffAccess $access, BrowseLedger $ledger, BrowseBusinessDirectory $businesses, ReadSandboxUsage $sandbox,
-        string $section): Response|RedirectResponse
+        ChangePlatformPolicies $policies, string $section): Response|RedirectResponse
     {
         $staff = $access->handle((int) $request->user()?->getAuthIdentifier(), true);
         /** @var list<string> $roles */
@@ -95,7 +96,8 @@ class StaffSectionController extends Controller
                 'initials' => StaffViewerResource::initials($name), 'role' => current(array_intersect(self::ROLES, $roles)) ?: 'analyst'],
             'nav' => (new StaffNavigationResource($permissions))->resolve($request),
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => '', 'section' => self::SECTIONS[$section],
-            'rules' => $section === 'policies' ? PlatformPolicies::rules() : [], ...$finance, ...$book,
+            'rules' => $section === 'policies' ? PlatformPolicies::rules($policies->values()) : [], ...$finance, ...$book,
+            ...($section === 'policies' ? ['policy_changes' => self::changes($policies->board((int) $request->user()?->getAuthIdentifier()))] : []),
             ...($section === 'app-control' ? ['sandbox' => $sandbox->handle((int) $request->user()?->getAuthIdentifier()), 'apps' => self::APPS, 'content' => $content] : []),
             'engine' => match (true) {
                 ! $underwriter => [],
@@ -103,6 +105,31 @@ class StaffSectionController extends Controller
                 $section === 'ratings' => EngineSettings::scorecard(),
                 default => [],
             }]);
+    }
+
+    /**
+     * The Policies page's changeable settings with the routes each one may be changed or decided by:
+     * a proposal for staff who may propose and the setting has no change waiting, an approval and a
+     * refusal for founders who have not decided the waiting change yet.
+     *
+     * @param  array{settings: list<array<string, mixed>>, history: list<array<string, mixed>>, approvals_needed: int, can_propose: bool, can_approve: bool}  $board
+     * @return array<string, mixed>
+     */
+    private static function changes(array $board): array
+    {
+        $route = fn (string $name, array $parameters = []): array => ['url' => route($name, $parameters, false), 'method' => 'post'];
+        $settings = array_map(function (array $setting) use ($board, $route): array {
+            /** @var array{id: string, viewer_decided: bool}|null $pending */
+            $pending = $setting['pending'];
+            $decidable = $pending !== null && $board['can_approve'] && ! $pending['viewer_decided'];
+
+            return [...$setting, 'pending' => $pending === null ? null : [...$pending,
+                'approve' => $decidable ? $route('staff.policies.approve', ['change' => $pending['id']]) : null,
+                'reject' => $decidable ? $route('staff.policies.reject', ['change' => $pending['id']]) : null]];
+        }, $board['settings']);
+
+        return ['settings' => $settings, 'history' => $board['history'], 'approvals_needed' => $board['approvals_needed'],
+            'propose' => $board['can_propose'] ? $route('staff.policies.propose') : null, 'can_approve' => $board['can_approve']];
     }
 
     /**

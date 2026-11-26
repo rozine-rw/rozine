@@ -116,7 +116,7 @@ final readonly class SecondaryListing
      * cap: a payout lowers the cap, so a price set before it may no longer trade (SEC-R03).
      */
     public function reserve(string $reservationId, string $buyerPartyId, string $units, string $raiseUnits, string $heldUnits,
-        BigInteger $cap, TradingWindow $window, DateTimeImmutable $at): self
+        BigInteger $cap, TradingWindow $window, DateTimeImmutable $at, int $capPercent = 10): self
     {
         $current = $this->requireOpen($at);
         $window->requireOpen($at);
@@ -126,7 +126,7 @@ final readonly class SecondaryListing
         if ($free->isZero() || $buyerHolds !== []) {
             throw new SecondaryViolation('LISTING_RESERVED');
         }
-        TradingWindow::requireBuyer($current->sellerPartyId, $buyerPartyId, $raiseUnits, $heldUnits, $units);
+        TradingWindow::requireBuyer($current->sellerPartyId, $buyerPartyId, $raiseUnits, $heldUnits, $units, $capPercent);
         if (Quantity::units($units)->isGreaterThan($free)) {
             throw new SecondaryViolation('UNITS_NOT_LISTED');
         }

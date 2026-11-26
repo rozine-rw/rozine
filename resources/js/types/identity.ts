@@ -160,7 +160,7 @@ export type RoleApplicationOffer = {
         | 'changes_requested'
         | 'approved'
         | 'rejected';
-    role: 'business' | 'auditor' | null;
+    role: 'business' | 'auditor' | 'institution' | null;
 };
 
 /** One answer or document Compliance asked to change (24 Nov 2026), with its optional word on what to fix. */
@@ -176,7 +176,7 @@ export type HubStep = {
         | 'review'
         | 'current'
         | 'upcoming';
-    role: 'investor' | 'business' | 'auditor' | null;
+    role: 'investor' | 'business' | 'auditor' | 'institution' | null;
     at: string | null;
 };
 
@@ -191,7 +191,7 @@ export type HubAction = {
         | 'role_continue'
         | 'two_factor';
     urgent: boolean;
-    role: 'business' | 'auditor' | null;
+    role: 'business' | 'auditor' | 'institution' | null;
     company: string | null;
     note: string | null;
     items: RevisionItem[];
@@ -209,7 +209,8 @@ export type HubNext =
     | 'role_switch'
     | 'investor_ready'
     | 'business_ready'
-    | 'auditor_ready';
+    | 'auditor_ready'
+    | 'institution_ready';
 
 export type HubDone = {
     key:
@@ -220,7 +221,7 @@ export type HubDone = {
         | 'kyc_approved'
         | 'role_sent'
         | 'role_approved';
-    role: 'business' | 'auditor' | null;
+    role: 'business' | 'auditor' | 'institution' | null;
     at: string | null;
 };
 

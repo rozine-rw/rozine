@@ -176,7 +176,7 @@ export function RoleApplicationDrawer({
             ? application.account.email
             : application.account.name;
     const title =
-        application.role === 'business'
+        application.role !== 'auditor'
             ? (answers.company?.legal_name ?? name)
             : name;
     const closeLink = { url: close, method: 'get' as const };
@@ -330,7 +330,7 @@ export function RoleApplicationDrawer({
                     )}
                 </Section>
 
-                {application.role === 'business' && answers.company && (
+                {application.role !== 'auditor' && answers.company && (
                     <Section title={t('admin.role_applications.company')}>
                         <dl className="grid grid-cols-2 gap-2">
                             <Fact label={t('role.apply.company.rdb_code')}>
@@ -372,7 +372,53 @@ export function RoleApplicationDrawer({
                     </Section>
                 )}
 
-                {application.role === 'business' && (
+                {application.role === 'institution' && answers.institution && (
+                    <Section title={t('role.apply.step.institution.title')}>
+                        <dl className="grid grid-cols-2 gap-2">
+                            <Fact label={t('role.apply.institution.type')}>
+                                {t(
+                                    `role.apply.institution.type.${answers.institution.type}` as MessageCode,
+                                )}
+                            </Fact>
+                            <Fact
+                                label={t(
+                                    'role.apply.institution.monthly_commitment',
+                                )}
+                            >
+                                {Number(
+                                    answers.institution.monthly_commitment,
+                                ).toLocaleString(locale)}
+                            </Fact>
+                            <Fact label={t('role.apply.institution.bank_name')}>
+                                {answers.institution.bank_name}
+                            </Fact>
+                            <Fact
+                                label={t(
+                                    'role.apply.institution.account_number',
+                                )}
+                            >
+                                {answers.institution.account_number}
+                            </Fact>
+                            <Fact
+                                label={t('role.apply.institution.account_name')}
+                            >
+                                {answers.institution.account_name}
+                            </Fact>
+                            <Fact
+                                label={t('role.apply.institution.declarations')}
+                            >
+                                {t(
+                                    answers.institution.automates &&
+                                        answers.institution.own_rules
+                                        ? 'admin.role_applications.institution.declared'
+                                        : 'admin.role_applications.institution.not_declared',
+                                )}
+                            </Fact>
+                        </dl>
+                    </Section>
+                )}
+
+                {application.role !== 'auditor' && (
                     <Section title={t('role.apply.step.people.title')}>
                         {answers.representative && (
                             <dl className="grid grid-cols-2 gap-2">

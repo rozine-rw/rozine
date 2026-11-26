@@ -1,4 +1,4 @@
-export type SwitchRole = 'business' | 'auditor';
+export type SwitchRole = 'business' | 'auditor' | 'institution';
 
 export type RoleApplicationStatus =
     | 'none'
@@ -49,6 +49,17 @@ export type RoleApplicationAddress = {
     street: string;
 };
 
+export type RoleApplicationInstitution = {
+    type: string;
+    /** Whole RWF, as digits. */
+    monthly_commitment: string;
+    bank_name: string;
+    account_name: string;
+    account_number: string;
+    automates: boolean;
+    own_rules: boolean;
+};
+
 export type RoleApplicationAnswers = {
     company?: RoleApplicationCompany;
     representative?: { title: string; phone: string; authorised: boolean };
@@ -67,6 +78,8 @@ export type RoleApplicationAnswers = {
         will_declare: boolean;
         ethics: boolean;
     };
+    /** An institutional investor's commitment and account (26 Nov 2026). */
+    institution?: RoleApplicationInstitution;
     declared: boolean;
 };
 
@@ -101,6 +114,8 @@ export type RoleApplicationProps = {
     two_factor: boolean;
     identity_context_revision: number;
     catalog: {
+        institution_types: string[];
+        min_monthly_commitment: number;
         industries: string[];
         districts: string[];
         /** Each province's districts, for the address's district list. */
@@ -179,7 +194,8 @@ export type RoleApplicationReview = {
 };
 
 export type RoleApplicationQueue = {
-    role: SwitchRole;
+    /** An institution's KYB is reviewed in the Businesses queue. */
+    role: Exclude<SwitchRole, 'institution'>;
     tab: 'submitted' | 'changes_requested' | 'approved' | 'rejected';
     entries: RoleApplicationRow[];
     counts: Partial<Record<RoleApplicationStatus, number>>;

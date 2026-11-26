@@ -696,7 +696,7 @@ function AppCardBody({
         | 'suite.app.request_sent_summary'
         | `suite.app.${'business' | 'auditor'}.switch`
         | 'suite.app.switch.one_role'
-        | `suite.app.switch.held_${'business' | 'auditor'}`
+        | `suite.app.switch.held_${'business' | 'auditor' | 'institution'}`
         | 'suite.app.switch.under_review_summary'
         | 'suite.app.switch.asked_summary'
         | 'suite.app.switch.kyc_fix_summary';

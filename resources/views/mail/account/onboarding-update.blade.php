@@ -1,8 +1,10 @@
 <x-mail::message>
 @php
-$what = $role === 'business'
-    ? ($company !== null ? __('your application for :company', ['company' => $company]) : __('your business application'))
-    : __('your Auditor application');
+$what = match ($role) {
+    'business' => $company !== null ? __('your application for :company', ['company' => $company]) : __('your business application'),
+    'institution' => $company !== null ? __('your institutional investor application for :company', ['company' => $company]) : __('your institutional investor application'),
+    default => __('your Auditor application'),
+};
 @endphp
 @if ($event === 'kyc_received')
 # {{ __('We have your identity check') }}
@@ -48,6 +50,20 @@ $what = $role === 'business'
 
 <x-mail::button :url="$url" color="investor">
 {{ __('Make the changes') }}
+</x-mail::button>
+@elseif ($event === 'role_approved' && $role === 'institution')
+# {{ __('You now invest for :company', ['company' => $company]) }}
+
+<x-mail::notice tone="success">
+{{ __('Institutional investor status: Verified') }}
+</x-mail::notice>
+
+{{ __('Compliance approved :what. You stay an Investor and now invest for the institution, from its own bank account.', ['what' => $what]) }}
+
+{{ __('Next, set up Auto-Deploy with your own rules so your monthly distribution runs automatically. Rozine does not recommend businesses.') }}
+
+<x-mail::button :url="$url" color="investor">
+{{ __('Open Investor') }}
 </x-mail::button>
 @elseif ($event === 'role_approved')
 # {{ $role === 'business' ? __('Your business is approved') : __('You are an active Audit Partner') }}
