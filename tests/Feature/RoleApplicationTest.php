@@ -641,3 +641,35 @@ test('an institution is recorded once, and its account name must match its regis
     expect(fn () => $store->record($this->officer->id, (string) $this->person->party_id, $application->id, 'Kivu Harvest Ltd', '108123456', 'pension_fund', 45000000))
         ->toThrow(CommandRejection::class);
 });
+
+test('an institution may be in financial services and may have no one owning 25%, which a business may not (QA #800)', function (): void {
+    kycSent($this->person);
+    $this->actingAs($this->person);
+    $people = [...peopleAnswers(), 'owners' => [], 'no_major_owner' => true];
+
+    // A business still lists its 25% owners and keeps to the business sectors.
+    $this->post(route('role-application.save'), [...roleEnvelope($this->person, 0), 'role' => 'business', 'step' => 'company',
+        'answers' => companyAnswers(['industry' => 'Financial services'])])->assertSessionHasErrors('company.industry');
+    $this->post(route('role-application.save'), [...roleEnvelope($this->person, 0), 'role' => 'business', 'step' => 'company', 'answers' => companyAnswers()])
+        ->assertSessionHasNoErrors();
+    $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'business', 'step' => 'people', 'answers' => $people])
+        ->assertSessionHasErrors(['owners' => 'Add every person who owns or controls 25% or more of the company.']);
+
+    // Choosing the institution instead starts over. A pension fund records financial services, says no one owns 25%,
+    // and its directors stand as the people who control it.
+    $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'institution', 'step' => 'company',
+        'answers' => companyAnswers(['industry' => 'Financial services'])])->assertSessionHasNoErrors();
+    $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'institution', 'step' => 'people', 'answers' => [...$people, 'no_major_owner' => false]])
+        ->assertSessionHasErrors('owners');
+    // Ticking the declaration after listing an owner is refused rather than sending Compliance both (#801 review).
+    $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'institution', 'step' => 'people',
+        'answers' => [...peopleAnswers(), 'no_major_owner' => true]])
+        ->assertSessionHasErrors(['owners' => 'You said no one owns or controls 25% or more. Remove the owners listed, or untick that box.']);
+    $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'institution', 'step' => 'people', 'answers' => $people])
+        ->assertSessionHasNoErrors();
+
+    $answers = RoleApplication::query()->where('party_id', $this->person->party_id)->sole()->state['answers'];
+    expect($answers['company']['industry'] ?? null)->toBe('Financial services')
+        ->and($answers['owners'] ?? null)->toBe([])
+        ->and($answers['no_major_owner'] ?? null)->toBeTrue();
+});

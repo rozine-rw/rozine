@@ -65,6 +65,8 @@ export type RoleApplicationAnswers = {
     representative?: { title: string; phone: string; authorised: boolean };
     directors?: RoleApplicationPerson[];
     owners?: RoleApplicationPerson[];
+    /** An institution with no one owning 25% or more (QA #800); its directors are the people who control it. */
+    no_major_owner?: boolean;
     licence?: {
         membership_number: string;
         licence_number: string;

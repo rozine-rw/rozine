@@ -492,7 +492,7 @@ const rw: Catalog = {
     'admin.kyc.open_in_users': 'Fungura mu Bakoresha',
     'admin.role_applications.business.title': 'Dosiye z’ubucuruzi (KYB)',
     'admin.role_applications.business.caption':
-        'Abashoramari basaba guhindukira abahagarariye ubucuruzi. Suzuma ikigo, abantu bacyo n’inyandiko, hanyuma ufate icyemezo hano.',
+        'Abashoramari basaba guhindukira abahagarariye ubucuruzi cyangwa gushora mu izina ry’ikigo. Suzuma ikigo, abantu bacyo n’inyandiko, hanyuma ufate icyemezo hano.',
     'admin.role_applications.business.kicker': 'Dosiye y’ubucuruzi',
     'admin.role_applications.business.approve': 'Emeza kandi winjize',
     'admin.role_applications.auditor.title': 'Dosiye z’abagenzuzi',
@@ -584,6 +584,11 @@ const rw: Catalog = {
         'Konti igira uruhare rumwe icyarimwe, urwawe ni Ubucuruzi.',
     'suite.app.switch.held_institution':
         'Konti igira uruhare rumwe icyarimwe, iyawe ishora mu izina ry’ikigo.',
+    'suite.institution.prompt':
+        'Ushora mu izina ry’ikigega cy’izabukuru, ikigo cy’ishoramari, ikigo cy’ubwishingizi cyangwa ikindi kigo?',
+    'suite.institution.apply': 'Saba kuba umushoramari w’ikigo →',
+    'suite.institution.under_review':
+        'Ubusabe bwawe bwo kuba umushoramari w’ikigo burimo gusuzumwa n’ishami rishinzwe kubahiriza amategeko.',
     'suite.app.switch.held_auditor':
         'Konti igira uruhare rumwe icyarimwe, urwawe ni Umugenzuzi.',
     'suite.app.switch.under_review_summary':
@@ -655,6 +660,8 @@ const rw: Catalog = {
     'role.apply.people.authorised':
         'Mfite uburenganzira bwo guhagararira iki kigo kuri Rozine.',
     'role.apply.people.directors': 'Abayobozi',
+    'role.apply.people.no_major_owner':
+        'Nta muntu ufite cyangwa ugenzura 25% cyangwa irenga by’iki kigo (urugero ikigega cy’izabukuru, ikigo cy’ubwishingizi cyangwa banki iri ku isoko ry’imari). Abayobozi bacyo ni bo bakigenzura.',
     'role.apply.people.owners': 'Ba nyir’imigabane ya 25% cyangwa irenga',
     'role.apply.people.full_name': 'Amazina yose',
     'role.apply.people.national_id': 'Indangamuntu',
@@ -2698,7 +2705,7 @@ const rw: Catalog = {
     'admin.policy_changes.title': 'Amategeko abashinze bemeza',
     'admin.policy_changes.intro': {
         one: 'Impinduka ikurikizwa ari uko uwashinze {count} ayemeje.',
-        other: 'Impinduka ikurikizwa ari uko abashinze {count} bayemeje, buri wese ukwe. Kwanga kumwe kurayihagarika.',
+        other: 'Impinduka ikurikizwa ari uko abashinze bombi bayemeje (byemezo {count}), buri wese ukwe. Kwanga kumwe kurayihagarika.',
     },
     'admin.policy_changes.waiting': 'Bitegereje · {done} kuri {count} byemejwe',
     'admin.policy_changes.proposed': '{from} → {to}, byasabwe na {name}',

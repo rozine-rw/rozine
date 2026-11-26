@@ -378,6 +378,11 @@ export default function Launcher({
                                     </li>
                                 ))}
                             </ul>
+                            {role_application && (
+                                <InstitutionLink
+                                    application={role_application}
+                                />
+                            )}
                             {investorOffer !== null && addingInvestor && (
                                 <AddInvestorAccess
                                     key={investorOffer.terms.sha256}
@@ -679,6 +684,57 @@ function RoleSwitchCard({
                 }
             />
         </Link>
+    );
+}
+
+/**
+ * The way into the institutional investor application (QA #800): an institution invests through the
+ * Investor app, so it has no app card of its own. Once the person's own KYC is sent, a line under the
+ * cards offers to apply, continue, fix what Compliance asked for, or says the application is under
+ * review. Hidden while another role is pending or held, and once the institution is approved.
+ */
+function InstitutionLink({
+    application,
+}: {
+    application: RoleApplicationOffer;
+}) {
+    const { t } = useTranslation();
+    const mine = application.role === 'institution';
+
+    if (
+        !['submitted', 'approved'].includes(application.kyc) ||
+        (application.role !== null &&
+            !mine &&
+            ['submitted', 'approved'].includes(application.status)) ||
+        (mine && application.status === 'approved')
+    ) {
+        return null;
+    }
+
+    if (mine && application.status === 'submitted') {
+        return (
+            <p role="status" className="mt-4 text-sm text-rz-body">
+                {t('suite.institution.under_review')}
+            </p>
+        );
+    }
+
+    return (
+        <p className="mt-4 text-sm text-rz-body">
+            {t('suite.institution.prompt')}{' '}
+            <Link
+                href={roleApplication({ query: { for: 'institution' } })}
+                className="font-semibold text-rz-accent-text"
+            >
+                {t(
+                    mine && application.status === 'changes_requested'
+                        ? 'suite.app.switch.fix'
+                        : mine && application.status !== 'none'
+                          ? 'suite.app.switch.continue'
+                          : 'suite.institution.apply',
+                )}
+            </Link>
+        </p>
     );
 }
 

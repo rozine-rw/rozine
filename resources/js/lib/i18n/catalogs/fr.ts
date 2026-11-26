@@ -504,7 +504,7 @@ const fr: Catalog = {
     'admin.kyc.open_in_users': 'Ouvrir dans Utilisateurs',
     'admin.role_applications.business.title': 'Demandes d’entreprise (KYB)',
     'admin.role_applications.business.caption':
-        'Investisseurs demandant à devenir représentant d’entreprise. Examinez l’entreprise, ses personnes et ses documents, puis décidez ici.',
+        'Investisseurs demandant à devenir représentant d’entreprise ou à investir pour une institution. Examinez l’entreprise, ses personnes et ses documents, puis décidez ici.',
     'admin.role_applications.business.kicker': 'Demande entreprise',
     'admin.role_applications.business.approve': 'Approuver et intégrer',
     'admin.role_applications.auditor.title': 'Demandes d’auditeur',
@@ -596,6 +596,11 @@ const fr: Catalog = {
         'Un compte n’a qu’un rôle à la fois, et le vôtre est Entreprise.',
     'suite.app.switch.held_institution':
         'Un compte n’a qu’un rôle à la fois, et le vôtre investit pour une institution.',
+    'suite.institution.prompt':
+        'Vous investissez pour un fonds de pension, une société de capital-risque, un assureur ou une autre institution ?',
+    'suite.institution.apply': 'Postuler comme investisseur institutionnel →',
+    'suite.institution.under_review':
+        'Votre demande d’investisseur institutionnel est en cours d’examen par la Conformité.',
     'suite.app.switch.held_auditor':
         'Un compte n’a qu’un rôle à la fois, et le vôtre est Auditeur.',
     'suite.app.switch.under_review_summary':
@@ -668,6 +673,8 @@ const fr: Catalog = {
     'role.apply.people.authorised':
         'Je suis autorisé(e) à agir pour cette entreprise sur Rozine.',
     'role.apply.people.directors': 'Administrateurs',
+    'role.apply.people.no_major_owner':
+        'Personne ne détient ni ne contrôle 25 % ou plus de cette institution (par exemple un fonds de pension, un assureur ou une banque cotée). Ses administrateurs sont les personnes qui la contrôlent.',
     'role.apply.people.owners': 'Propriétaires de 25 % ou plus',
     'role.apply.people.full_name': 'Nom complet',
     'role.apply.people.national_id': 'Carte d’identité',
@@ -2714,7 +2721,7 @@ const fr: Catalog = {
     'admin.policy_changes.title': 'Politiques approuvées par les fondateurs',
     'admin.policy_changes.intro': {
         one: "Un changement ne prend effet qu'après l'approbation de {count} fondateur.",
-        other: "Un changement ne prend effet qu'après l'approbation de {count} fondateurs, chacun séparément. Un refus le clôt.",
+        other: "Un changement ne prend effet qu'après l'approbation des deux fondateurs ({count} approbations), chacun séparément. Un refus le clôt.",
     },
     'admin.policy_changes.waiting':
         'En attente · {done} sur {count} approbations',

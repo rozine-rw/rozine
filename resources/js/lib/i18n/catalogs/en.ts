@@ -486,7 +486,7 @@ const en = {
     'admin.kyc.open_in_users': 'Open in Users',
     'admin.role_applications.business.title': 'Business applications (KYB)',
     'admin.role_applications.business.caption':
-        'Investors asking to switch to Business representative. Review the company, its people and documents, then decide here.',
+        'Investors asking to switch to Business representative or to invest for an institution. Review the company, its people and documents, then decide here.',
     'admin.role_applications.business.kicker': 'Business application',
     'admin.role_applications.business.approve': 'Approve and onboard',
     'admin.role_applications.auditor.title': 'Auditor applications',
@@ -575,6 +575,11 @@ const en = {
         'An account holds one role at a time, and yours is Business.',
     'suite.app.switch.held_institution':
         'An account holds one role at a time, and yours invests for an institution.',
+    'suite.institution.prompt':
+        'Investing for a pension fund, VC firm, insurer or other institution?',
+    'suite.institution.apply': 'Apply as an institutional investor →',
+    'suite.institution.under_review':
+        'Your institutional investor application is with Compliance for review.',
     'suite.app.switch.held_auditor':
         'An account holds one role at a time, and yours is Auditor.',
     'suite.app.switch.under_review_summary':
@@ -646,6 +651,8 @@ const en = {
     'role.apply.people.authorised':
         'I am authorised to act for this company on Rozine.',
     'role.apply.people.directors': 'Directors',
+    'role.apply.people.no_major_owner':
+        'No one owns or controls 25% or more of this institution (for example a pension fund, insurer or listed bank). Its directors are the people who control it.',
     'role.apply.people.owners': 'Owners with 25% or more',
     'role.apply.people.full_name': 'Full name',
     'role.apply.people.national_id': 'National ID',
@@ -2582,7 +2589,7 @@ const en = {
     'admin.policy_changes.title': 'Policies the founders approve',
     'admin.policy_changes.intro': {
         one: 'A change to these takes effect only after {count} founder approves it.',
-        other: 'A change to these takes effect only after {count} founders approve it, each separately. One refusal closes it.',
+        other: 'A change to these takes effect only after both founders approve it ({count} approvals), each separately. One refusal closes it.',
     },
     'admin.policy_changes.waiting': 'Waiting · {done} of {count} approvals',
     'admin.policy_changes.proposed': '{from} → {to}, proposed by {name}',
