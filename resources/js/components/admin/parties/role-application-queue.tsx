@@ -13,7 +13,11 @@ export const APPLICATION_TABS = [
     'rejected',
 ] as const;
 
-const ACCENT = { business: '#17795a', auditor: '#a3480a' } as const;
+const ACCENT = {
+    business: '#17795a',
+    auditor: '#a3480a',
+    institution: '#5b3fd6',
+} as const;
 
 /**
  * The applications to switch to this page's role (Erastus, 23 Nov 2026): business KYB on the
@@ -85,13 +89,13 @@ export function RoleApplicationQueuePanel({
                                 'rounded-2xl border border-l-4 border-rz-hairline bg-rz-surface px-[18px] py-4',
                                 CARD_SHADOW,
                             )}
-                            style={{ borderLeftColor: accent }}
+                            style={{ borderLeftColor: ACCENT[entry.role] }}
                         >
                             <div className="flex flex-wrap items-center gap-3">
                                 <div
                                     aria-hidden="true"
                                     className="flex size-[42px] shrink-0 items-center justify-center rounded-xl text-[16px] font-bold text-white"
-                                    style={{ background: accent }}
+                                    style={{ background: ACCENT[entry.role] }}
                                 >
                                     {initialOf(entry.company ?? entry.name) ||
                                         '?'}
@@ -106,6 +110,13 @@ export function RoleApplicationQueuePanel({
                                             : entry.email}
                                     </p>
                                 </div>
+                                {entry.role === 'institution' && (
+                                    <span className="rounded-md bg-[rgba(91,63,214,.12)] px-2 py-0.5 text-[10.5px] font-bold whitespace-nowrap text-[#5b3fd6] dark:text-[#b3a4ff]">
+                                        {t(
+                                            'admin.role_applications.institution.badge',
+                                        )}
+                                    </span>
+                                )}
                                 <span
                                     className={cn(
                                         'rounded-md px-2 py-0.5 text-[10.5px] font-bold whitespace-nowrap',

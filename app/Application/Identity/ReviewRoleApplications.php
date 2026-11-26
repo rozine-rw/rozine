@@ -8,6 +8,7 @@ use App\Application\Auditor\Contracts\AuditorProfileStore;
 use App\Application\Business\Contracts\BusinessContacts;
 use App\Application\Business\OnboardBusiness;
 use App\Application\Identity\Contracts\IdentityAccessStore;
+use App\Application\Identity\Contracts\InstitutionalInvestors;
 use App\Application\Identity\Contracts\RoleApplicationStore;
 use App\Domain\Operations\CommandRejection;
 
@@ -30,6 +31,7 @@ final class ReviewRoleApplications
         private IdentityAccessStore $access,
         private AuditorProfileStore $auditors,
         private BusinessContacts $contacts,
+        private InstitutionalInvestors $institutions,
     ) {}
 
     /** @return Queue */
@@ -59,7 +61,8 @@ final class ReviewRoleApplications
         }
 
         return ['applications' => $this->store->queue($actorId, $role, $tab, '', 50),
-            'application' => $application !== null && $application['role'] === $role ? $application : null];
+            'application' => $application !== null && ($application['role'] === $role || ($role === 'business' && $application['role'] === 'institution'))
+                ? $application : null];
     }
 
     /**
@@ -90,8 +93,11 @@ final class ReviewRoleApplications
     public function decide(int $actorId, string $applicationId, int $expectedRevision, string $decision, string $note, string $requestId, array $items = []): array
     {
         return $this->store->decide($actorId, $applicationId, $expectedRevision, $decision, $note, $requestId,
-            fn (array $approval): ?string => $approval['state']['role'] === 'business'
-                ? $this->business($actorId, $approval) : $this->auditor($actorId, $approval), $items);
+            fn (array $approval): ?string => match ($approval['state']['role']) {
+                'business' => $this->business($actorId, $approval),
+                'institution' => $this->institution($actorId, $approval),
+                default => $this->auditor($actorId, $approval),
+            }, $items);
     }
 
     /** @param Approval $approval */
@@ -113,6 +119,22 @@ final class ReviewRoleApplications
         $this->access->switchRole($actorId, 'businesses.verify', $approval['party_id'], 'business', $reason, self::derived($approval['request_id'], 'switch'));
 
         return $result['business_id'];
+    }
+
+    /**
+     * An institution's KYB approved: the account keeps its Investor role and from now on invests for the
+     * institution, under the monthly commitment it made (BRS v3 KYC-R02, 26 Nov 2026).
+     *
+     * @param  Approval  $approval
+     */
+    private function institution(int $actorId, array $approval): null
+    {
+        $company = $approval['state']['answers']['company'] ?? throw new CommandRejection('APPLICATION_INCOMPLETE', 409);
+        $institution = $approval['state']['answers']['institution'] ?? throw new CommandRejection('APPLICATION_INCOMPLETE', 409);
+        $this->institutions->record($actorId, $approval['party_id'], $approval['application_id'], $company['legal_name'], $company['rdb_code'],
+            $institution['type'], (int) $institution['monthly_commitment']);
+
+        return null;
     }
 
     /** @param Approval $approval */

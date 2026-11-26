@@ -2,13 +2,17 @@
 
 declare(strict_types=1);
 
+use App\Application\Identity\Contracts\InstitutionalInvestors;
 use App\Application\Identity\SaveInvestorVerification;
 use App\Application\Identity\SubmitInvestorVerification;
 use App\Application\Identity\UploadInvestorVerificationDocument;
+use App\Domain\Identity\InstitutionalInvestorTerms;
+use App\Domain\Operations\CommandRejection;
 use App\Models\AuditorProfile;
 use App\Models\BusinessContactVersion;
 use App\Models\BusinessProfile;
 use App\Models\IdentityAuditEvent;
+use App\Models\InstitutionalInvestor;
 use App\Models\InvestorVerification;
 use App\Models\Party;
 use App\Models\PartyNotice;
@@ -502,4 +506,130 @@ test('owners hold 25 to 100 percent between them, are listed once, and a directo
     $people = peopleAnswers();
     $people['owners'][0]['full_name'] = 'aline uwase';
     $save($people)->assertSessionHasNoErrors();
+});
+
+/** @return array<string, mixed> */
+function institutionAnswers(array $overrides = []): array
+{
+    return ['type' => 'pension_fund', 'monthly_commitment' => '45,000,000', 'bank_name' => 'Bank of Kigali', 'account_name' => 'KIVU HARVEST LTD.',
+        'account_number' => '0004 1234 5678', 'automates' => true, 'own_rules' => true, ...$overrides];
+}
+
+/** A complete institutional investor application, sent (26 Nov 2026). */
+function institutionSent(TestCase $test, User $user): RoleApplication
+{
+    $test->actingAs($user)->post(route('role-application.save'), [...roleEnvelope($user), 'role' => 'institution', 'step' => 'company', 'answers' => companyAnswers()])
+        ->assertSessionHasNoErrors();
+    $test->post(route('role-application.save'), [...roleEnvelope($user), 'role' => 'institution', 'step' => 'people', 'answers' => peopleAnswers()])->assertSessionHasNoErrors();
+    $test->post(route('role-application.save'), [...roleEnvelope($user), 'role' => 'institution', 'step' => 'institution', 'answers' => institutionAnswers()])
+        ->assertSessionHasNoErrors();
+    foreach (['rdb_certificate', 'tin_certificate', 'articles', 'shareholder_register', 'authorisation_letter', 'bank_letter', 'id:1199080012345678', 'id:PC99887'] as $slot) {
+        $test->post(route('role-application.upload'), [...roleEnvelope($user), 'slot' => $slot, 'file' => rolePdf(str_replace(':', '-', $slot).'.pdf')])->assertSessionHasNoErrors();
+    }
+    $test->post(route('role-application.save'), [...roleEnvelope($user), 'role' => 'institution', 'step' => 'documents', 'answers' => []])->assertSessionHasNoErrors();
+    $test->post(route('role-application.submit'), [...roleEnvelope($user), 'declared' => true])->assertRedirect(route('dashboard'))->assertSessionHasNoErrors();
+
+    return RoleApplication::query()->where('party_id', $user->party_id)->sole();
+}
+
+test('an investor applies to invest for an institution: its KYB, a monthly commitment of RWF 30M or more and an account in its own name', function (): void {
+    kycSent($this->person);
+    $this->actingAs($this->person)->get(route('role-application.show', ['for' => 'institution']))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('role', 'institution')->where('catalog.min_monthly_commitment', 30000000)
+            ->where('catalog.institution_types', ['pension_fund', 'venture_capital', 'asset_manager', 'insurer', 'bank', 'corporate_treasury', 'other']));
+
+    // The institution's step comes after the company and its people.
+    $this->post(route('role-application.save'), [...roleEnvelope($this->person, 0), 'role' => 'institution', 'step' => 'institution', 'answers' => institutionAnswers()])
+        ->assertSessionHasErrors(['form' => 'Finish the earlier steps first.']);
+    $this->post(route('role-application.save'), [...roleEnvelope($this->person, 0), 'role' => 'institution', 'step' => 'company', 'answers' => companyAnswers()])->assertSessionHasNoErrors();
+    $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'institution', 'step' => 'people', 'answers' => peopleAnswers()])->assertSessionHasNoErrors();
+
+    // Robert's rules: at least RWF 30,000,000 a month, automated under the institution's own rules, from an account in its own name.
+    $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'institution', 'step' => 'institution',
+        'answers' => institutionAnswers(['type' => 'hedge', 'monthly_commitment' => '29,999,999', 'account_name' => 'Aline Uwase', 'account_number' => '12',
+            'bank_name' => ' ', 'automates' => false, 'own_rules' => false])])
+        ->assertSessionHasErrors(['institution.type' => 'Choose the type of institution.',
+            'institution.monthly_commitment' => 'Institutions commit to distributing at least RWF 30,000,000 a month.',
+            'institution.account_name' => 'The account must be in the institution’s registered name, exactly as on the RDB certificate.',
+            'institution.account_number' => 'Enter the account number, 6 to 20 digits.',
+            'institution.bank_name' => 'Enter the bank that holds the institution’s account.',
+            'institution.automates' => 'Confirm the institution will distribute this amount every month through Auto-Deploy.',
+            'institution.own_rules' => 'Confirm the institution sets its own investing rules. Rozine does not recommend businesses.']);
+    $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'institution', 'step' => 'institution', 'answers' => institutionAnswers()])
+        ->assertSessionHasNoErrors();
+    $application = RoleApplication::query()->where('party_id', $this->person->party_id)->sole();
+    expect($application->role)->toBe('institution')->and($application->state['step'])->toBe('documents')
+        ->and($application->state['answers']['institution'])->toMatchArray(['monthly_commitment' => '45000000', 'account_number' => '000412345678']);
+
+    // The authorisation letter and the bank's letter are required; the business's optional board resolution is not a slot.
+    $this->post(route('role-application.upload'), [...roleEnvelope($this->person), 'slot' => 'board_resolution', 'file' => rolePdf('board.pdf')])
+        ->assertSessionHasErrors('slot');
+    $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'institution', 'step' => 'documents', 'answers' => []])
+        ->assertSessionHasErrors(['documents.authorisation_letter', 'documents.bank_letter', 'documents.rdb_certificate']);
+});
+
+test('compliance reviews an institution with the business KYB and approval keeps the person an Investor, investing for it', function (): void {
+    Notification::fake();
+    $kyc = kycSent($this->person);
+    $application = institutionSent($this, $this->person);
+    Notification::assertSentTo($this->person, OnboardingUpdate::class, fn (OnboardingUpdate $mail): bool => $mail->event === 'role_received'
+        && $mail->role === 'institution' && $mail->company === 'Kivu Harvest Ltd');
+
+    $this->actingAs($this->officer)->get(route('staff.businesses.index', ['application' => $application->id]))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('applications.role', 'business')->where('applications.counts.submitted', 1)
+            ->where('applications.entries.0.role', 'institution')->where('applications.entries.0.company', 'Kivu Harvest Ltd')
+            ->where('application.role', 'institution')->where('application.problems', [])->has('application.documents', 8)
+            ->where('application.revisable', fn (Collection $items): bool => $items->get('institution.monthly_commitment') === 'Monthly distribution commitment'
+                && ! $items->has('documents.board_resolution'))
+            ->where('application.state.answers.institution.type', 'pension_fund'));
+    // The Auditors page does not carry it.
+    $this->get(route('staff.auditors.index', ['application' => $application->id]))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('application', null));
+
+    // Sent back naming the commitment, then fixed and sent again.
+    decideApplication($this, $this->officer, $application, 'more', '', [['key' => 'institution.monthly_commitment', 'note' => 'Board letter says 40M.']])
+        ->assertSessionHasNoErrors();
+    $this->actingAs($this->person)->get(route('dashboard'))->assertInertia(fn (Assert $page): Assert => $page
+        ->where('hub.actions.0.kind', 'role_changes')->where('hub.actions.0.role', 'institution'));
+    $this->post(route('role-application.save'), [...roleEnvelope($this->person), 'role' => 'institution', 'step' => 'institution',
+        'answers' => institutionAnswers(['monthly_commitment' => '40000000'])])->assertSessionHasNoErrors();
+    $this->post(route('role-application.submit'), [...roleEnvelope($this->person), 'declared' => true])->assertSessionHasNoErrors();
+
+    approveKyc($this, $this->officer, $kyc);
+    decideApplication($this, $this->officer, $application, 'approve')->assertSessionHasNoErrors()
+        ->assertRedirect(route('staff.businesses.index', ['application' => $application->id, 'kyb' => 'approved']));
+
+    $roles = RoleMembership::query()->where('party_id', $this->person->party_id)->pluck('status', 'role')->all();
+    $institution = InstitutionalInvestor::query()->where('party_id', $this->person->party_id)->sole();
+    expect($application->refresh()->status)->toBe('approved')->and($application->business_id)->toBeNull()
+        // No business is onboarded and the Investor role stays: the account now invests for the institution.
+        ->and($roles)->toEqual(['investor' => 'active'])->and(BusinessProfile::query()->count())->toBe(0)
+        ->and($institution->only(['role_application_id', 'legal_name', 'rdb_code', 'institution_type', 'monthly_commitment', 'approved_by_user_id']))
+        ->toBe(['role_application_id' => $application->id, 'legal_name' => 'Kivu Harvest Ltd', 'rdb_code' => '108123456',
+            'institution_type' => 'pension_fund', 'monthly_commitment' => 40000000, 'approved_by_user_id' => $this->officer->id])
+        ->and(app(InstitutionalInvestors::class)->forParty((string) $this->person->party_id))->toMatchArray(['legal_name' => 'Kivu Harvest Ltd', 'monthly_commitment' => 40000000])
+        ->and(app(InstitutionalInvestors::class)->forParty('01JZZZZZZZZZZZZZZZZZZZZZZZ'))->toBeNull();
+    Notification::assertSentTo($this->person, OnboardingUpdate::class, fn (OnboardingUpdate $mail): bool => $mail->event === 'role_approved'
+        && $mail->role === 'institution' && str_contains((string) $mail->toMail($this->person)->subject, 'You now invest for Kivu Harvest Ltd'));
+
+    $hub = $this->actingAs($this->person)->get(route('dashboard'))->viewData('page')['props']['hub'];
+    expect(array_column($hub['steps'], 'state'))->toBe(['done', 'done', 'done', 'done', 'done'])->and($hub['next'])->toBe(['institution_ready'])
+        ->and($hub['role'])->toBe('institution');
+    // The decided application closes the role page.
+    $this->get(route('role-application.show'))->assertRedirect(route('dashboard'));
+});
+
+test('an institution is recorded once, and its account name must match its registered name', function (): void {
+    expect(InstitutionalInvestorTerms::accountNameMatches('KIVU HARVEST LTD.', 'Kivu Harvest Ltd'))->toBeTrue()
+        ->and(InstitutionalInvestorTerms::accountNameMatches('Kivu Harvest', 'Kivu Harvest Ltd'))->toBeFalse()
+        ->and(InstitutionalInvestorTerms::accountNameMatches('...', ''))->toBeFalse();
+
+    $kyc = kycSent($this->person);
+    $application = institutionSent($this, $this->person);
+    approveKyc($this, $this->officer, $kyc);
+    $store = app(InstitutionalInvestors::class);
+    $store->record($this->officer->id, (string) $this->person->party_id, $application->id, 'Kivu Harvest Ltd', '108123456', 'pension_fund', 45000000);
+    // A second record for the same Party is refused, so a replayed approval cannot write two institutions.
+    expect(fn () => $store->record($this->officer->id, (string) $this->person->party_id, $application->id, 'Kivu Harvest Ltd', '108123456', 'pension_fund', 45000000))
+        ->toThrow(CommandRejection::class);
 });

@@ -339,6 +339,34 @@ const rw: Catalog = {
     'suite.hub.done.role_sent_auditor': 'Ubusabe bw’umugenzuzi bwoherejwe',
     'suite.hub.done.role_approved_business': 'Ikigo cyemejwe',
     'suite.hub.done.role_approved_auditor': 'Uruhushya rwa ICPAR rwemejwe',
+    'suite.hub.step.role_institution': 'Igenzura ry’ikigo',
+    'suite.hub.step.open_institution': 'Shora mu izina ry’ikigo',
+    'suite.hub.action.role_changes_institution.title':
+        'Hakenewe impinduka ku busabe bw’ikigo',
+    'suite.hub.action.role_rejected_institution.title':
+        'Ubusabe bw’ikigo ntibwemejwe',
+    'suite.hub.action.role_continue_institution.title':
+        'Rangiza ubusabe bw’ikigo',
+    'suite.hub.next.role_send_institution.title': 'Ohereza ubusabe bw’ikigo',
+    'suite.hub.next.role_send_institution.body':
+        'Burasuzumwa umwirondoro wawe numara kwemezwa.',
+    'suite.hub.next.role_send_institution.body_approved':
+        'Umwirondoro wawe warememejwe, bityo burasuzumwa ukimara kubwohereza.',
+    'suite.hub.next.role_review_institution.title': '{company} kiri gusuzumwa',
+    'suite.hub.next.role_review_institution.body':
+        'Burasuzumwa umwirondoro wawe numara kwemezwa. Tuzakwandikira icyemezo nikimara gufatwa.',
+    'suite.hub.next.role_review_institution.body_approved':
+        'Ikigo kiri gusuzumwa ubu. Tuzakwandikira icyemezo nikimara gufatwa.',
+    'suite.hub.next.role_switch_institution.title': 'Ushora mu izina ry’ikigo',
+    'suite.hub.next.role_switch_institution.body':
+        'Hanyuma ushyiraho Auto-Deploy ukoresheje amategeko y’ikigo ku mafaranga gishora buri kwezi.',
+    'suite.hub.next.institution_ready.title': 'Shora mu izina ry’ikigo',
+    'suite.hub.next.institution_ready.body':
+        'Ikigo cyemejwe. Fungura Umushoramari ushyire amafaranga ku gikapu cyacyo kandi ushore.',
+    'suite.hub.done.role_sent_institution': 'Ubusabe bw’ikigo bwoherejwe',
+    'suite.hub.done.role_approved_institution': 'Ikigo cyemejwe',
+    'suite.hub.flash.role_title_institution':
+        'Ubusabe bw’ikigo bukeneye impinduka',
     'suite.hub.recent.title': 'Amakuru mashya',
     'suite.hub.recent.empty': 'Amakuru ava kwa Compliance agaragara hano.',
     'suite.hub.recent.emailed': 'Byoherejwe kuri imeyili',
@@ -472,6 +500,21 @@ const rw: Catalog = {
         'Abashoramari basaba guhindukira abagenzuzi. Genzura icyemezo cya ICPAR mu gitabo, hanyuma ufate icyemezo hano.',
     'admin.role_applications.auditor.kicker': 'Dosiye y’umugenzuzi',
     'admin.role_applications.auditor.approve': 'Emeza kandi wemerere',
+    'admin.role_applications.institution.confirm_title':
+        'Wemerera {name} gushora mu izina ry’iki kigo?',
+    'admin.role_applications.institution.confirm_body':
+        '{name} akomeza kuba Umushoramari kandi guhera ubu ashora mu izina ry’ikigo, akurikije ibyo cyiyemeje buri kwezi. Andika ibyo wagenzuye.',
+    'admin.role_applications.institution.title':
+        'Ubusabe bw’abashoramari b’ibigo',
+    'admin.role_applications.institution.caption':
+        'Abashoramari basaba gushora mu izina ry’ikigo.',
+    'admin.role_applications.institution.kicker':
+        'Ubusabe bw’umushoramari w’ikigo',
+    'admin.role_applications.institution.approve': 'Emeza ikigo',
+    'admin.role_applications.institution.badge': 'Umushoramari w’ikigo',
+    'admin.role_applications.institution.declared':
+        'Ikoresha Auto-Deploy ku mategeko yacyo',
+    'admin.role_applications.institution.not_declared': 'Ntibyemejwe',
     'admin.role_applications.tabs': 'Aho dosiye zigeze',
     'admin.role_applications.tab.submitted': 'Zitegereje',
     'admin.role_applications.tab.changes_requested': 'Zasubijwe',
@@ -539,6 +582,8 @@ const rw: Catalog = {
         'Konti igira uruhare rumwe gusa icyarimwe. Indi dosiye yawe iri kwa Compliance.',
     'suite.app.switch.held_business':
         'Konti igira uruhare rumwe icyarimwe, urwawe ni Ubucuruzi.',
+    'suite.app.switch.held_institution':
+        'Konti igira uruhare rumwe icyarimwe, iyawe ishora mu izina ry’ikigo.',
     'suite.app.switch.held_auditor':
         'Konti igira uruhare rumwe icyarimwe, urwawe ni Umugenzuzi.',
     'suite.app.switch.under_review_summary':
@@ -698,6 +743,47 @@ const rw: Catalog = {
         'Itsinda rya Compliance riri kugenzura ikigo cyawe. Ukomeza kuba Umushoramari kugeza cyemejwe.',
     'role.apply.review_state.auditor':
         'Itsinda rya Compliance riri kugenzura uruhushya rwawe. Ukomeza kuba Umushoramari kugeza rwemejwe.',
+    'role.choice.institution.title': 'Umushoramari w’ikigo',
+    'role.choice.institution.body':
+        'Shora mu izina ry’ikigega cy’ubwiteganyirize, ikigega cy’ishoramari, banki cyangwa ikindi kigo. Wongeraho iyandikwa ryacyo, abayobozi, konti ya banki n’amafaranga uzashora buri kwezi angana nibura na RWF 30M.',
+    'role.choice.institution.start': 'Saba mu izina ry’ikigo',
+    'role.apply.kicker_institution': 'Dosiye y’umushoramari w’ikigo',
+    'role.apply.step.institution.title': 'Ibyo wiyemeje na konti',
+    'role.apply.step.institution.subtitle':
+        'Ayo ikigo kizashora buri kwezi, na konti ya banki iri mu izina ryacyo.',
+    'role.apply.institution.type': 'Ubwoko bw’ikigo',
+    'role.apply.institution.type.pension_fund': 'Ikigega cy’ubwiteganyirize',
+    'role.apply.institution.type.venture_capital': 'Ikigega cy’ishoramari (VC)',
+    'role.apply.institution.type.asset_manager': 'Ucunga umutungo',
+    'role.apply.institution.type.insurer': 'Ikigo cy’ubwishingizi',
+    'role.apply.institution.type.bank': 'Banki',
+    'role.apply.institution.type.corporate_treasury':
+        'Imari y’ikigo cy’ubucuruzi',
+    'role.apply.institution.type.other': 'Ikindi',
+    'role.apply.institution.monthly_commitment':
+        'Ayo muzashora buri kwezi (RWF)',
+    'role.apply.institution.monthly_commitment_hint':
+        'Nibura RWF {amount} buri kwezi',
+    'role.apply.institution.month': 'ukwezi',
+    'role.apply.institution.account': 'Konti ya banki y’ikigo',
+    'role.apply.institution.bank_name': 'Banki',
+    'role.apply.institution.account_number': 'Nimero ya konti',
+    'role.apply.institution.account_name': 'Izina rya konti',
+    'role.apply.institution.account_name_hint':
+        'Rigomba kuba izina ryanditswe: {name}',
+    'role.apply.institution.declarations': 'Uko ikigo gishora',
+    'role.apply.institution.automates':
+        'Ikigo kizashora RWF {amount} buri kwezi binyuze kuri Auto-Deploy, kandi kizajya cyongera amafaranga kuri konti buri kwezi.',
+    'role.apply.institution.own_rules':
+        'Ikigo gishyiraho amategeko yacyo n’imbibi z’ishoramari. Rozine ntigira ubucuruzi isaba gushoramo.',
+    'role.apply.document.authorisation_letter':
+        'Ibaruwa cyangwa icyemezo cy’inama y’ubuyobozi bikwemerera guhagararira ikigo',
+    'role.apply.document.bank_letter':
+        'Ibaruwa ya banki yemeza ko konti iri mu izina ry’ikigo',
+    'role.apply.review.declare_institution':
+        'Nemeza ko aya makuru ari ukuri kandi yuzuye, kandi ko nemerewe guhagararira iki kigo.',
+    'role.apply.review_state.institution':
+        'Itsinda ryacu rishinzwe kubahiriza amategeko riri kugenzura ikigo. Ukomeza kuba Umushoramari, kandi uzashora mu izina ryacyo nikimara kwemezwa.',
     'role.apply.review_state.sent': 'Dosiye yoherejwe',
     'role.apply.review_state.kyc': 'Isuzuma ry’umwirondoro ryemejwe',
     'role.apply.review_state.compliance': 'Icyemezo cya Compliance',
@@ -8373,6 +8459,10 @@ const rw: Catalog = {
         '{company} yemejwe. Konti yawe ubu ni konti y’Ubucuruzi.',
     'investor.notices.role.application_approved.body_auditor':
         'Uruhushya rwawe rwa ICPAR rwemejwe. Konti yawe ubu ni konti y’Umugenzuzi.',
+    'investor.notices.role.application_submitted.body_institution':
+        'Ubusabe bwa {company} bwakiriwe. Buzafatirwa icyemezo umwirondoro wawe numara kwemezwa.',
+    'investor.notices.role.application_approved.body_institution':
+        '{company} cyemejwe. Ubu ushora mu izina ryacyo.',
     'investor.notices.role.application_rejected.title': 'Dosiye ntiyemejwe',
     'investor.notices.role.application_rejected.body':
         'Compliance ntiyashoboye kuyemeza: {note}',

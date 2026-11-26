@@ -43,7 +43,8 @@ class RoleApplicationController extends Controller
     {
         $userId = (int) $request->user()?->getAuthIdentifier();
         $standing = $applications->standing($userId);
-        if (array_intersect(['business', 'auditor'], $standing['roles']) !== []) {
+        // An approved institution leaves the person an Investor, so the approval itself closes this page.
+        if (array_intersect(['business', 'auditor'], $standing['roles']) !== [] || $standing['status'] === 'approved') {
             return redirect()->route('dashboard');
         }
         if (! in_array($standing['kyc'], ['submitted', 'approved'], true)) {
@@ -51,7 +52,7 @@ class RoleApplicationController extends Controller
 
             return redirect()->route('investor.verification');
         }
-        $chosen = in_array($request->query('for'), ['business', 'auditor'], true) ? (string) $request->query('for') : null;
+        $chosen = in_array($request->query('for'), ['business', 'auditor', 'institution'], true) ? (string) $request->query('for') : null;
         $editable = in_array($standing['status'], ['none', 'draft', 'changes_requested', 'rejected'], true);
         $role = $editable && $chosen !== null ? $chosen : $standing['role'];
 
@@ -68,7 +69,7 @@ class RoleApplicationController extends Controller
             'blockers' => $standing['blockers'],
             'two_factor' => $request->user()?->hasEnabledTwoFactorAuthentication() === true,
             'identity_context_revision' => $standing['identity_context_revision'],
-            'catalog' => ['industries' => OnboardBusiness::sectors(), 'districts' => array_merge(...array_values((array) config('rwanda.districts', []))), 'provinces' => (array) config('rwanda.districts', [])],
+            'catalog' => [...ApplyForRole::institutionCatalog(), 'industries' => OnboardBusiness::sectors(), 'districts' => array_merge(...array_values((array) config('rwanda.districts', []))), 'provinces' => (array) config('rwanda.districts', [])],
         ]);
     }
 

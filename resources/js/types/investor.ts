@@ -1819,12 +1819,15 @@ export type InvestorNotice = {
     | { kind: 'verification.submitted'; facts: never[] }
     | {
           kind: 'role.application_submitted' | 'role.application_approved';
-          facts: { role: 'business' | 'auditor'; company: string | null };
+          facts: {
+              role: 'business' | 'auditor' | 'institution';
+              company: string | null;
+          };
       }
     | {
           kind: 'role.application_returned';
           facts: {
-              role: 'business' | 'auditor';
+              role: 'business' | 'auditor' | 'institution';
               company: string | null;
               note: string;
               items: { label: string; note: string }[];
@@ -1833,7 +1836,7 @@ export type InvestorNotice = {
     | {
           kind: 'role.application_rejected';
           facts: {
-              role: 'business' | 'auditor';
+              role: 'business' | 'auditor' | 'institution';
               company: string | null;
               note: string;
           };

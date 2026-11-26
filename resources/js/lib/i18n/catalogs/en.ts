@@ -334,6 +334,36 @@ const en = {
     'suite.hub.done.role_sent_auditor': 'Auditor application sent',
     'suite.hub.done.role_approved_business': 'Business approved',
     'suite.hub.done.role_approved_auditor': 'ICPAR licence verified',
+    'suite.hub.step.role_institution': 'Institution check',
+    'suite.hub.step.open_institution': 'Invest for the institution',
+    'suite.hub.action.role_changes_institution.title':
+        'Compliance needs changes to your institution application',
+    'suite.hub.action.role_rejected_institution.title':
+        'Your institution application was not approved',
+    'suite.hub.action.role_continue_institution.title':
+        'Finish your institution application',
+    'suite.hub.next.role_send_institution.title':
+        'Send your institution application',
+    'suite.hub.next.role_send_institution.body':
+        'Compliance reviews it once your identity check is approved.',
+    'suite.hub.next.role_send_institution.body_approved':
+        'Your identity is approved, so Compliance reviews it as soon as you send it.',
+    'suite.hub.next.role_review_institution.title': '{company} is reviewed',
+    'suite.hub.next.role_review_institution.body':
+        'Compliance reviews it once your identity check is approved. We email you as soon as it is decided.',
+    'suite.hub.next.role_review_institution.body_approved':
+        'Compliance is reviewing the institution now. We email you as soon as it is decided.',
+    'suite.hub.next.role_switch_institution.title':
+        'You invest for the institution',
+    'suite.hub.next.role_switch_institution.body':
+        'Then you set up Auto-Deploy with the institution’s own rules for its monthly distribution.',
+    'suite.hub.next.institution_ready.title': 'Invest for the institution',
+    'suite.hub.next.institution_ready.body':
+        'The institution is approved. Open Investor to fund its wallet and invest.',
+    'suite.hub.done.role_sent_institution': 'Institution application sent',
+    'suite.hub.done.role_approved_institution': 'Institution approved',
+    'suite.hub.flash.role_title_institution':
+        'Your institution application needs changes',
     'suite.hub.recent.title': 'Recent updates',
     'suite.hub.recent.empty': 'Updates from Compliance show here.',
     'suite.hub.recent.emailed': 'Emailed',
@@ -464,6 +494,21 @@ const en = {
         'Investors asking to switch to Auditor. Check the ICPAR certificate against the register, then decide here.',
     'admin.role_applications.auditor.kicker': 'Auditor application',
     'admin.role_applications.auditor.approve': 'Approve and accredit',
+    'admin.role_applications.institution.confirm_title':
+        'Approve {name} to invest for this institution?',
+    'admin.role_applications.institution.confirm_body':
+        '{name} stays an Investor and invests for the institution from now on, under its monthly commitment. Record what you checked in the note.',
+    'admin.role_applications.institution.title':
+        'Institutional investor applications',
+    'admin.role_applications.institution.caption':
+        'Investors asking to invest for an institution.',
+    'admin.role_applications.institution.kicker':
+        'Institutional investor application',
+    'admin.role_applications.institution.approve': 'Approve institution',
+    'admin.role_applications.institution.badge': 'Institutional investor',
+    'admin.role_applications.institution.declared':
+        'Automates its distribution under its own rules',
+    'admin.role_applications.institution.not_declared': 'Not confirmed',
     'admin.role_applications.tabs': 'Application status',
     'admin.role_applications.tab.submitted': 'Waiting',
     'admin.role_applications.tab.changes_requested': 'Sent back',
@@ -528,6 +573,8 @@ const en = {
         'An account holds one role at a time. Your other application is with Compliance.',
     'suite.app.switch.held_business':
         'An account holds one role at a time, and yours is Business.',
+    'suite.app.switch.held_institution':
+        'An account holds one role at a time, and yours invests for an institution.',
     'suite.app.switch.held_auditor':
         'An account holds one role at a time, and yours is Auditor.',
     'suite.app.switch.under_review_summary':
@@ -680,6 +727,45 @@ const en = {
         'Our Compliance team is checking your company. You stay an Investor until it is approved.',
     'role.apply.review_state.auditor':
         'Our Compliance team is checking your licence. You stay an Investor until it is approved.',
+    'role.choice.institution.title': 'Institutional investor',
+    'role.choice.institution.body':
+        'Invest for a pension fund, VC, bank or other institution. You add its registration, people, bank account and a monthly distribution of RWF 30M or more.',
+    'role.choice.institution.start': 'Apply for an institution',
+    'role.apply.kicker_institution': 'Institutional investor application',
+    'role.apply.step.institution.title': 'Commitment and account',
+    'role.apply.step.institution.subtitle':
+        'What the institution distributes each month, and the bank account in its own name.',
+    'role.apply.institution.type': 'Type of institution',
+    'role.apply.institution.type.pension_fund': 'Pension fund',
+    'role.apply.institution.type.venture_capital': 'Venture capital',
+    'role.apply.institution.type.asset_manager': 'Asset manager',
+    'role.apply.institution.type.insurer': 'Insurer',
+    'role.apply.institution.type.bank': 'Bank',
+    'role.apply.institution.type.corporate_treasury': 'Corporate treasury',
+    'role.apply.institution.type.other': 'Other',
+    'role.apply.institution.monthly_commitment': 'Monthly distribution (RWF)',
+    'role.apply.institution.monthly_commitment_hint':
+        'At least RWF {amount} a month',
+    'role.apply.institution.month': 'month',
+    'role.apply.institution.account': 'Institution’s bank account',
+    'role.apply.institution.bank_name': 'Bank',
+    'role.apply.institution.account_number': 'Account number',
+    'role.apply.institution.account_name': 'Account name',
+    'role.apply.institution.account_name_hint':
+        'Must be the registered name: {name}',
+    'role.apply.institution.declarations': 'How the institution invests',
+    'role.apply.institution.automates':
+        'The institution will distribute RWF {amount} every month through Auto-Deploy, and will keep its account topped up for each month.',
+    'role.apply.institution.own_rules':
+        'The institution sets its own investing rules and caps. Rozine does not recommend businesses.',
+    'role.apply.document.authorisation_letter':
+        'Letter or board resolution authorising you to act for the institution',
+    'role.apply.document.bank_letter':
+        'Bank letter confirming the account is in the institution’s name',
+    'role.apply.review.declare_institution':
+        'I confirm these details are true and complete, and that I may act for this institution.',
+    'role.apply.review_state.institution':
+        'Our Compliance team is checking the institution. You stay an Investor, and invest for it once it is approved.',
     'role.apply.review_state.sent': 'Application sent',
     'role.apply.review_state.kyc': 'Your identity check approved',
     'role.apply.review_state.compliance': 'Compliance decision',
@@ -8052,6 +8138,10 @@ const en = {
         '{company} is approved. Your account is now a Business account.',
     'investor.notices.role.application_approved.body_auditor':
         'Your ICPAR licence is approved. Your account is now an Auditor account.',
+    'investor.notices.role.application_submitted.body_institution':
+        'Compliance has the application for {company}. It is decided once your identity is approved.',
+    'investor.notices.role.application_approved.body_institution':
+        '{company} is approved. You now invest for it.',
     'investor.notices.role.application_rejected.title':
         'Application not approved',
     'investor.notices.role.application_rejected.body':

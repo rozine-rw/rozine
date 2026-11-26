@@ -56,9 +56,14 @@ const FLAG_KEYS: Record<string, string> = {
     licence_number: 'licence.licence_number',
     expires_on: 'licence.expires_on',
     firm: 'licence.firm',
+    institution_type: 'institution.type',
+    monthly_commitment: 'institution.monthly_commitment',
+    bank_name: 'institution.bank_account',
+    account_name: 'institution.bank_account',
+    account_number: 'institution.bank_account',
 };
 /** The form step that holds an item Compliance flagged, so "Fix now" opens where the change is made. */
-function stepForItem(key: string, role: 'business' | 'auditor'): string {
+function stepForItem(key: string, role: SwitchRole): string {
     const head = key.split('.')[0];
 
     if (head === 'documents') {
@@ -74,6 +79,7 @@ function stepForItem(key: string, role: 'business' | 'auditor'): string {
             licence: 'licence',
             address: 'coverage',
             coverage: 'coverage',
+            institution: 'institution',
         }[head] ?? 'review'
     );
 }
@@ -107,10 +113,12 @@ const flagged = (flags: Record<string, string>, id: string): boolean =>
 const STEPS: Record<SwitchRole, string[]> = {
     business: ['company', 'people', 'documents', 'review'],
     auditor: ['licence', 'coverage', 'review'],
+    institution: ['company', 'people', 'institution', 'documents', 'review'],
 };
 const ACCENT: Record<SwitchRole, string> = {
     business: '#17795a',
     auditor: '#7d420f',
+    institution: '#5b3fd6',
 };
 const COMPANY_TYPES = [
     'private_limited',
@@ -126,6 +134,22 @@ const BUSINESS_DOCUMENTS = [
     'shareholder_register',
     'board_resolution',
 ] as const;
+/** An institution's documents: the business ones, its authorisation letter and its bank's letter (26 Nov 2026). */
+const INSTITUTION_DOCUMENTS = [
+    'rdb_certificate',
+    'tin_certificate',
+    'articles',
+    'shareholder_register',
+    'authorisation_letter',
+    'bank_letter',
+] as const;
+
+/** RWF digits grouped by thousands, as typed. */
+function groupDigits(value: string): string {
+    const digits = value.replace(/\D/g, '');
+
+    return digits === '' ? '' : Number(digits).toLocaleString('en-US');
+}
 
 type Errors = Record<string, string>;
 type Sending = { slot: string; percent: number | null };
@@ -214,10 +238,13 @@ export default function RoleApply(props: RoleApplicationProps) {
         return <RoleChoice {...props} />;
     }
 
-    const kicker =
-        role === 'business'
-            ? 'role.apply.kicker_business'
-            : 'role.apply.kicker_auditor';
+    const kicker = (
+        {
+            business: 'role.apply.kicker_business',
+            auditor: 'role.apply.kicker_auditor',
+            institution: 'role.apply.kicker_institution',
+        } as const
+    )[role];
 
     function saveStep(stepAnswers: Record<string, FormDataConvertible>) {
         setBusy(true);
@@ -320,6 +347,17 @@ export default function RoleApply(props: RoleApplicationProps) {
         will_declare: false,
         ethics: false,
     };
+    const institution = answers.institution ?? {
+        type: '',
+        monthly_commitment: '',
+        bank_name: '',
+        account_name: '',
+        account_number: '',
+        automates: false,
+        own_rules: false,
+    };
+    const setInstitution = (change: Partial<typeof institution>) =>
+        setAnswers({ ...answers, institution: { ...institution, ...change } });
     const people = distinctPeople(directors, owners);
     const tile = (slot: string, label: string, hint?: string) => (
         <UploadTile
@@ -779,7 +817,10 @@ export default function RoleApply(props: RoleApplicationProps) {
 
                             {step === 'documents' && (
                                 <div className="mt-5 flex flex-col gap-2.5 lg:grid lg:grid-cols-2 lg:gap-x-6 lg:gap-y-3">
-                                    {BUSINESS_DOCUMENTS.map((slot) =>
+                                    {(role === 'institution'
+                                        ? INSTITUTION_DOCUMENTS
+                                        : BUSINESS_DOCUMENTS
+                                    ).map((slot) =>
                                         tile(
                                             slot,
                                             t(`role.apply.document.${slot}`),
@@ -813,6 +854,180 @@ export default function RoleApply(props: RoleApplicationProps) {
                                     <p className="text-[11.5px] text-rz-secondary lg:col-span-2">
                                         {t('role.apply.document.formats')}
                                     </p>
+                                </div>
+                            )}
+
+                            {step === 'institution' && (
+                                <div className="mt-5 flex flex-col gap-[13px] lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-6">
+                                    <div className="lg:col-span-2">
+                                        <p className={LABEL}>
+                                            {t('role.apply.institution.type')}
+                                        </p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {props.catalog.institution_types.map(
+                                                (type) => (
+                                                    <Chip
+                                                        key={type}
+                                                        accent={ACCENT[role]}
+                                                        active={
+                                                            institution.type ===
+                                                            type
+                                                        }
+                                                        onClick={() =>
+                                                            setInstitution({
+                                                                type,
+                                                            })
+                                                        }
+                                                    >
+                                                        {t(
+                                                            `role.apply.institution.type.${type}` as MessageCode,
+                                                        )}
+                                                    </Chip>
+                                                ),
+                                            )}
+                                        </div>
+                                        <Flag id="institution.type" />
+                                        <FieldError
+                                            message={error('institution.type')}
+                                        />
+                                    </div>
+                                    <Field
+                                        id="monthly_commitment"
+                                        inputMode="numeric"
+                                        label={t(
+                                            'role.apply.institution.monthly_commitment',
+                                        )}
+                                        hint={t(
+                                            'role.apply.institution.monthly_commitment_hint',
+                                            {
+                                                amount: props.catalog.min_monthly_commitment.toLocaleString(
+                                                    'en-US',
+                                                ),
+                                            },
+                                        )}
+                                        value={groupDigits(
+                                            institution.monthly_commitment,
+                                        )}
+                                        error={error(
+                                            'institution.monthly_commitment',
+                                        )}
+                                        onChange={(value) =>
+                                            setInstitution({
+                                                monthly_commitment:
+                                                    value.replace(/\D/g, ''),
+                                            })
+                                        }
+                                    />
+                                    <p
+                                        className={cn(
+                                            LABEL,
+                                            'mt-2 lg:col-span-2',
+                                        )}
+                                    >
+                                        {t('role.apply.institution.account')}
+                                    </p>
+                                    <div className="lg:col-span-2">
+                                        <Flag id="institution.bank_account" />
+                                    </div>
+                                    <Field
+                                        id="bank_name"
+                                        grouped
+                                        label={t(
+                                            'role.apply.institution.bank_name',
+                                        )}
+                                        value={institution.bank_name}
+                                        error={error('institution.bank_name')}
+                                        onChange={(value) =>
+                                            setInstitution({ bank_name: value })
+                                        }
+                                    />
+                                    <Field
+                                        id="account_number"
+                                        inputMode="numeric"
+                                        grouped
+                                        label={t(
+                                            'role.apply.institution.account_number',
+                                        )}
+                                        value={institution.account_number}
+                                        error={error(
+                                            'institution.account_number',
+                                        )}
+                                        onChange={(value) =>
+                                            setInstitution({
+                                                account_number: value,
+                                            })
+                                        }
+                                    />
+                                    <div className="lg:col-span-2">
+                                        <Field
+                                            id="account_name"
+                                            grouped
+                                            label={t(
+                                                'role.apply.institution.account_name',
+                                            )}
+                                            hint={t(
+                                                'role.apply.institution.account_name_hint',
+                                                { name: company.legal_name },
+                                            )}
+                                            value={institution.account_name}
+                                            error={error(
+                                                'institution.account_name',
+                                            )}
+                                            onChange={(value) =>
+                                                setInstitution({
+                                                    account_name: value,
+                                                })
+                                            }
+                                        />
+                                    </div>
+                                    <p
+                                        className={cn(
+                                            LABEL,
+                                            'mt-2 lg:col-span-2',
+                                        )}
+                                    >
+                                        {t(
+                                            'role.apply.institution.declarations',
+                                        )}
+                                    </p>
+                                    <div className="lg:col-span-2">
+                                        <Flag id="institution.declarations" />
+                                    </div>
+                                    {(['automates', 'own_rules'] as const).map(
+                                        (key) => (
+                                            <div
+                                                key={key}
+                                                className="lg:col-span-2"
+                                            >
+                                                <Check
+                                                    accent={ACCENT[role]}
+                                                    checked={institution[key]}
+                                                    error={error(
+                                                        `institution.${key}`,
+                                                    )}
+                                                    onChange={(checked) =>
+                                                        setInstitution({
+                                                            [key]: checked,
+                                                        })
+                                                    }
+                                                >
+                                                    {t(
+                                                        `role.apply.institution.${key}`,
+                                                        {
+                                                            amount: groupDigits(
+                                                                institution.monthly_commitment ||
+                                                                    String(
+                                                                        props
+                                                                            .catalog
+                                                                            .min_monthly_commitment,
+                                                                    ),
+                                                            ),
+                                                        },
+                                                    )}
+                                                </Check>
+                                            </div>
+                                        ),
+                                    )}
                                 </div>
                             )}
 
@@ -1076,7 +1291,7 @@ export default function RoleApply(props: RoleApplicationProps) {
                                             </ul>
                                         </div>
                                     )}
-                                    {role === 'business' ? (
+                                    {role !== 'auditor' ? (
                                         <>
                                             <Summary
                                                 title={t(
@@ -1118,6 +1333,31 @@ export default function RoleApply(props: RoleApplicationProps) {
                                                     ],
                                                 ]}
                                             />
+                                            {role === 'institution' && (
+                                                <Summary
+                                                    title={t(
+                                                        'role.apply.step.institution.title',
+                                                    )}
+                                                    onEdit={() =>
+                                                        setStep('institution')
+                                                    }
+                                                    rows={[
+                                                        [
+                                                            institution.type ===
+                                                            ''
+                                                                ? ''
+                                                                : t(
+                                                                      `role.apply.institution.type.${institution.type}` as MessageCode,
+                                                                  ),
+                                                            `RWF ${groupDigits(institution.monthly_commitment)} / ${t('role.apply.institution.month')}`,
+                                                        ],
+                                                        [
+                                                            institution.bank_name,
+                                                            institution.account_name,
+                                                        ],
+                                                    ]}
+                                                />
+                                            )}
                                             <Summary
                                                 title={t(
                                                     'role.apply.step.documents.title',
@@ -1196,9 +1436,16 @@ export default function RoleApply(props: RoleApplicationProps) {
                                         onChange={setDeclared}
                                     >
                                         {t(
-                                            role === 'business'
-                                                ? 'role.apply.review.declare_business'
-                                                : 'role.apply.review.declare_auditor',
+                                            (
+                                                {
+                                                    business:
+                                                        'role.apply.review.declare_business',
+                                                    auditor:
+                                                        'role.apply.review.declare_auditor',
+                                                    institution:
+                                                        'role.apply.review.declare_institution',
+                                                } as const
+                                            )[role],
                                         )}
                                     </Check>
                                     <ProblemList errors={errors} />
@@ -1236,15 +1483,17 @@ export default function RoleApply(props: RoleApplicationProps) {
                                                             directors,
                                                             owners,
                                                         }
-                                                      : step === 'licence'
-                                                        ? licence
-                                                        : step === 'coverage'
-                                                          ? // The registered address is saved with the coverage step.
-                                                            {
-                                                                ...coverage,
-                                                                address,
-                                                            }
-                                                          : {},
+                                                      : step === 'institution'
+                                                        ? institution
+                                                        : step === 'licence'
+                                                          ? licence
+                                                          : step === 'coverage'
+                                                            ? // The registered address is saved with the coverage step.
+                                                              {
+                                                                  ...coverage,
+                                                                  address,
+                                                              }
+                                                            : {},
                                             )
                                         }
                                     >
@@ -1308,7 +1557,7 @@ function RoleChoice(props: RoleApplicationProps) {
                 <p className="mt-1.5 text-[13.5px] text-rz-secondary">
                     {t('role.choice.subtitle')}
                 </p>
-                <div className="mt-4 flex flex-col gap-2.5 lg:mt-8 lg:grid lg:grid-cols-3 lg:items-stretch lg:gap-5">
+                <div className="mt-4 flex flex-col gap-2.5 lg:mt-8 lg:grid lg:grid-cols-2 lg:items-stretch lg:gap-5">
                     <div className={CARD}>
                         <div className="flex items-center justify-between">
                             <span className="text-[15px] font-semibold text-rz-ink">
@@ -1326,25 +1575,27 @@ function RoleChoice(props: RoleApplicationProps) {
                             )}
                         </p>
                     </div>
-                    {(['business', 'auditor'] as const).map((option) => (
-                        <div key={option} className={CARD}>
-                            <span className="text-[15px] font-semibold text-rz-ink">
-                                {t(`role.choice.${option}.title`)}
-                            </span>
-                            <p className="mt-1 text-[12px] text-rz-secondary">
-                                {t(`role.choice.${option}.body`)}
-                            </p>
-                            <Link
-                                href={show({ query: { for: option } })}
-                                className="mt-2.5 flex h-10 items-center justify-center rounded-[11px] text-[13px] font-semibold text-white"
-                                style={{ background: ACCENT[option] }}
-                            >
-                                {t(`role.choice.${option}.start`)}
-                            </Link>
-                        </div>
-                    ))}
+                    {(['business', 'auditor', 'institution'] as const).map(
+                        (option) => (
+                            <div key={option} className={CARD}>
+                                <span className="text-[15px] font-semibold text-rz-ink">
+                                    {t(`role.choice.${option}.title`)}
+                                </span>
+                                <p className="mt-1 text-[12px] text-rz-secondary">
+                                    {t(`role.choice.${option}.body`)}
+                                </p>
+                                <Link
+                                    href={show({ query: { for: option } })}
+                                    className="mt-2.5 flex h-10 items-center justify-center rounded-[11px] text-[13px] font-semibold text-white"
+                                    style={{ background: ACCENT[option] }}
+                                >
+                                    {t(`role.choice.${option}.start`)}
+                                </Link>
+                            </div>
+                        ),
+                    )}
                     {props.blockers.length > 0 && (
-                        <div className="rounded-2xl border border-[#f1d9bd] bg-[#fff8ef] px-4 py-3 lg:col-span-3 dark:border-[rgba(255,180,100,.3)] dark:bg-[rgba(194,102,31,.12)]">
+                        <div className="rounded-2xl border border-[#f1d9bd] bg-[#fff8ef] px-4 py-3 lg:col-span-2 dark:border-[rgba(255,180,100,.3)] dark:bg-[rgba(194,102,31,.12)]">
                             <p className="text-[11px] font-bold tracking-[.05em] text-[#8a4b0f] uppercase dark:text-[#f0b37a]">
                                 {t('role.apply.blockers.title')}
                             </p>
@@ -1360,7 +1611,7 @@ function RoleChoice(props: RoleApplicationProps) {
                         </div>
                     )}
                     {props.kyc !== 'approved' && (
-                        <p className="text-[12px] text-rz-secondary lg:col-span-3">
+                        <p className="text-[12px] text-rz-secondary lg:col-span-2">
                             {t('role.choice.kyc_note')}{' '}
                             <a
                                 href={investorVerification().url}
@@ -1391,11 +1642,7 @@ function UnderReview({
                 {t('role.apply.review_state.title')}
             </h1>
             <p className="mt-1.5 text-[13.5px] text-rz-secondary">
-                {t(
-                    role === 'business'
-                        ? 'role.apply.review_state.business'
-                        : 'role.apply.review_state.auditor',
-                )}
+                {t(`role.apply.review_state.${role}`)}
             </p>
             <div className={cn(CARD, 'mt-4')}>
                 <ul className="flex flex-col gap-3 text-[13px]">
