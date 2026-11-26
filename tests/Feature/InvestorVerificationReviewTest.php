@@ -258,6 +258,10 @@ test('an identity already verified for another person is never relinked by staff
     $this->actingAs($this->officer)->get(route('staff.users.index', ['user' => $this->person->id]))->assertOk()
         ->assertInertia(fn (Assert $page): Assert => $page->where('kyc_review.blocked', 'IDENTITY_VERIFIED_FOR_ANOTHER_PERSON')
             ->has('kyc_review.actions.reject')->missing('kyc_review.actions.approve'));
+    // The queue row says so too, rather than that every check passed (QA #794).
+    $this->actingAs($this->officer)->get(route('staff.investor-verifications.index'))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('entries.0.id', $case->id)
+            ->where('entries.0.blocked', 'IDENTITY_VERIFIED_FOR_ANOTHER_PERSON'));
 
     $this->actingAs($this->officer)->post(route('staff.investor-verifications.approve', $case), reviewDecision($case))
         ->assertSessionHasErrors(['form' => 'This ID number is already verified for another person, so it cannot be approved. Reject the case so the person can check the ID they gave.']);

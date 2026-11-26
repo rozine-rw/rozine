@@ -18,7 +18,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * approval reruns them under its locks. AML alerts and sanctions hits stay null until screening
  * (KYC-R04) is connected, so the console says so rather than showing a count.
  *
- * @phpstan-type Entry array{id: string, revision: int, status: string, submitted_at: string, decided_at: string|null, name: string, email: string, id_type: string, purpose: string}
+ * @phpstan-type Entry array{id: string, revision: int, status: string, submitted_at: string, decided_at: string|null, name: string, email: string, id_type: string, purpose: string, blocked: string|null}
  * @phpstan-type Review array{
  *     id: string, revision: int, status: string, purpose: string, licence: array{number: string, expires_on: string}|null, submitted_at: string|null, account: array{name: string, email: string},
  *     state: array{date_of_birth: string, id_type: string, id_number: string, decision: array{outcome: string, reason: string, decided_at: string}|null},

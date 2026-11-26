@@ -2041,6 +2041,8 @@ export type InvestorVerificationEntry = {
     purpose: KycPurpose;
     /** The automated checks the case passed before it could be submitted. */
     checks: KycCheck[];
+    /** Set when approval would be refused (QA #794), so the row doesn't say every check passed. */
+    blocked?: 'IDENTITY_VERIFIED_FOR_ANOTHER_PERSON' | null;
     selected: boolean;
     link: RouteLink;
 };
