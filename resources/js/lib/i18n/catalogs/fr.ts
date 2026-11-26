@@ -386,6 +386,8 @@ const fr: Catalog = {
     'suite.app.unavailable_reason.auditor_only_role':
         'Les auditeurs partenaires ne peuvent pas avoir un autre rôle Rozine : ce compte ne peut donc pas demander l’accès Auditeur.',
     'suite.app.unavailable': 'Indisponible avec votre accès actuel',
+    'admin.kyc.checks.blocked.IDENTITY_VERIFIED_FOR_ANOTHER_PERSON':
+        'Numéro de pièce déjà vérifié pour une autre personne',
     'admin.kyc.blocked.IDENTITY_VERIFIED_FOR_ANOTHER_PERSON':
         'Ce numéro de pièce est déjà vérifié pour une autre personne, il ne peut donc pas être approuvé. Renvoyez la vérification pour que la personne contrôle la pièce indiquée.',
     'admin.kyc.blocked.IDENTITY_VERIFIED_FOR_ANOTHER_PERSON_reason':
@@ -2690,7 +2692,7 @@ const fr: Catalog = {
     'admin.kyc.command.verification.upload': 'Document téléversé',
     'admin.kyc.command.verification.submit': 'Envoyée pour examen',
     'admin.kyc.command.verification.approve': 'Approuvée par la conformité',
-    'admin.kyc.command.verification.reject': 'Rejetée par la conformité',
+    'admin.kyc.command.verification.reject': 'Renvoyée par la conformité',
     'admin.kyc.approve': 'Approuver',
     'admin.kyc.reject': 'Renvoyer',
     'admin.kyc.stage.approve.title': 'Approuver cette identité',

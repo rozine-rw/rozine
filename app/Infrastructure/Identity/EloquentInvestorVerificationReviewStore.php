@@ -71,6 +71,8 @@ final class EloquentInvestorVerificationReviewStore implements InvestorVerificat
                 'submitted_at' => $record->submitted_at?->toIso8601String() ?? '', 'decided_at' => $record->state['decision']['decided_at'] ?? null,
                 'name' => (string) $record->getAttribute('account_name'), 'email' => (string) $record->getAttribute('account_email'),
                 'id_type' => $record->state['id_type'], 'purpose' => $record->purpose,
+                // The row must not say every check passed when approval is blocked (QA #794).
+                'blocked' => $this->approvalBlocked($record),
             ])->all()),
             'next_cursor' => $more ? $records->last()?->id : null,
             'counts' => ['submitted' => InvestorVerification::query()->where('status', 'submitted')->count(),
