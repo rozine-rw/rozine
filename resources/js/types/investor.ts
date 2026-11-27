@@ -1434,6 +1434,11 @@ export type MonthlyUpdateSummary = Omit<MonthlyUpdate, 'photos'> & {
 export type C3DealDetail = C3DealCard & {
     /** Null until the business signs its prospectus. */
     prospectus?: ProspectusSummary | null;
+    /**
+     * The verified Investor's own limit in this live raise (QA #832): the most notes they may still
+     * take and what binds it. Null before verification or once the raise is not live.
+     */
+    limit?: DealLimit | null;
     use_of_funds: UseOfFunds[];
     financials: C3DealFinancials;
     /** The engine's published rating basis; null until the engine publishes one. */
@@ -1456,6 +1461,14 @@ export type CapacityBinding =
     | 'availability'
     | 'restriction'
     | 'connected_party';
+
+export type DealLimit = {
+    max_units: Units;
+    /** What binds `max_units`, as `InvestorCapacity.binding`. */
+    bound_by: CapacityBinding;
+    /** The share of one raise this Investor may hold: 10 for a person, 25 for an institution. */
+    cap_percent: number;
+};
 
 export type InvestorCapacity = {
     max_units: Units;

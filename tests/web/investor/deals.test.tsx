@@ -31,7 +31,14 @@ import gatedFixture from '../../../resources/fixtures/ui/investor-deals-gated.js
 import minimalFixture from '../../../resources/fixtures/ui/investor-deals-live-minimal.json';
 import restrictedFixture from '../../../resources/fixtures/ui/investor-deals-restricted.json';
 import dealsFixture from '../../../resources/fixtures/ui/investor-deals.json';
-import { answers, fails, inertia, resetInertia, setWide } from './inertia-mock';
+import {
+    answers,
+    fails,
+    inertia,
+    invalid,
+    resetInertia,
+    setWide,
+} from './inertia-mock';
 
 vi.mock('@inertiajs/react', () => import('./inertia-mock'));
 
@@ -1880,6 +1887,66 @@ describe('Add to cart', () => {
 
         expect(within(bar).getByRole('alert')).toBeInTheDocument();
         expect(inertia.calls).toHaveLength(3);
+    });
+
+    it('shows the server’s reason when an add goes over the Investor’s limit, and stops the notes at it (QA #832)', async () => {
+        const page = deals();
+        const focus = page.focus as NonNullable<typeof page.focus>;
+
+        focus.campaign_id = page.deals[0].campaign_id;
+        focus.limit = {
+            max_units: '100',
+            bound_by: 'raise_cap',
+            cap_percent: 10,
+        };
+        /* The server sends Deals no quote; the limit alone bounds the choice. */
+        page.quote = null;
+        page.cart = {
+            campaign_ids: [],
+            add: { url: '/preview/investor-cart-add', method: 'post' },
+            remove: null,
+        };
+        inertia.queue.push(
+            invalid({
+                units: 'The most you may take in this raise is 100 notes.',
+            }),
+        );
+        render(<InvestorDeals {...page} />);
+
+        const bar = screen.getByRole('article', { name: 'GreenLeaf Agro' });
+
+        await userEvent.click(
+            within(bar).getByRole('button', { name: 'Add to cart' }),
+        );
+
+        expect(within(bar).getByRole('alert')).toHaveTextContent(
+            'The most you may take in this raise is 100 notes.',
+        );
+        expect(screen.getAllByRole('slider')[0]).toHaveAttribute('max', '100');
+        expect(
+            screen.getAllByText(/up to 100 for you/u).length,
+        ).toBeGreaterThan(0);
+    });
+
+    it('names an institution’s own limit, not a single investor’s, at the cap (QA #832)', () => {
+        const page = deals();
+        const focus = page.focus as NonNullable<typeof page.focus>;
+
+        focus.campaign_id = page.deals[0].campaign_id;
+        focus.limit = {
+            max_units: '1',
+            bound_by: 'raise_cap',
+            cap_percent: 25,
+        };
+        page.quote = null;
+        inertia.shared = { investing_for: 'Kivu Pension Fund' };
+        render(<InvestorDeals {...page} />);
+
+        expect(
+            screen.getAllByText(
+                "Up to 1 note: your institution's limit for this raise.",
+            ).length,
+        ).toBeGreaterThan(0);
     });
 
     it('cannot add a fully funded deal', () => {

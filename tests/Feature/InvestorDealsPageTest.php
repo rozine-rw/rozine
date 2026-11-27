@@ -10,6 +10,7 @@ use App\Application\Business\Contracts\PublishedCampaignEvidence;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
 use App\Application\Primary\Contracts\PrimaryCheckout;
 use App\Domain\Identity\InvestorVerificationCase;
+use App\Domain\Operations\PolicyChange;
 use App\Infrastructure\Business\RetainedCampaignPublication;
 use App\Models\AuditReportSeal;
 use App\Models\BusinessApplicationQuote;
@@ -84,6 +85,12 @@ it('lists the live publication with allowlisted facts, live fill, no quote and a
             'financials' => ['avg_monthly_revenue' => $card['avg_monthly_revenue'], 'ebitda' => ['value' => null, 'unavailable' => 'NOT_SOURCED_AS_EBITDA']],
             'rationale' => null, 'track_record' => null, 'updates' => [], 'overdue_report' => null,
             'about' => ['description' => $this->draft['story'], 'industry' => $card['industry'], 'district' => $card['district']]]);
+
+    // The verified Investor's own limit in the raise, so the notes field and slider stop there (QA #832).
+    $units = (string) $this->campaign->payload['quote']['units'];
+    $percent = $props['focus']['limit']['cap_percent'];
+    expect($props['focus']['limit'])->toBe(['max_units' => PolicyChange::capUnits($units, $percent), 'bound_by' => 'raise_cap', 'cap_percent' => $percent])
+        ->and($percent)->toBeInt()->toBeGreaterThan(0);
 
     $seal = AuditReportSeal::query()->where('audit_report_id', $this->campaign->payload['binding']['report']['id'])->sole();
     expect($props['focus']['audit'])->toBe(['standard' => null, 'partner' => $seal->payload['auditor_name'], 'licence' => $seal->payload['report']['licence'],
@@ -294,7 +301,8 @@ it('lets a person still being verified browse the deals, with no wallet and no w
         ->and($props['links'])->toMatchArray(['wallet' => null, 'deposit' => null, 'withdraw' => null, 'checkout' => null,
             'deals' => ['url' => '/investor/deals', 'method' => 'get']])
         ->and(array_column($props['deals'], 'campaign_id'))->toBe([$this->campaign->id])
-        ->and($props['focus']['campaign_id'])->toBe($this->campaign->id);
+        ->and($props['focus']['campaign_id'])->toBe($this->campaign->id)
+        ->and($props['focus']['limit'])->toBeNull();
     $this->get(route('investor.deals.show', ['campaign' => $this->campaign->id]))->assertOk()
         ->assertInertia(fn ($page) => $page->component('investor/deal')->where('gate', $gate)
             ->where('deal.campaign_id', $this->campaign->id)->where('links.checkout', null)->where('home.wallet', null));

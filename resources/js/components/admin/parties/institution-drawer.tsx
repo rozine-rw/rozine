@@ -111,23 +111,30 @@ export function InstitutionDrawer({
 
         return t(`role.apply.document.${slot}` as MessageCode);
     };
-    // One applicant save is one Draft revision, so a run of them reads as one row with a count (QA #826).
+    /*
+     * History comes newest first, and every revision in a status after the one that entered it is an
+     * applicant save. A run in one status reads as one row: Drafts with their count, and a Sent back
+     * with the saves the applicant made after it, under the reason and time of the revision that
+     * opened the run (QA #826).
+     */
     const history = institution.history.reduce<
         (InstitutionDetail['history'][number] & { saves: number })[]
     >((rows, entry) => {
         const last = rows[rows.length - 1];
 
-        if (
-            last !== undefined &&
-            last.status === 'draft' &&
-            entry.status === 'draft'
-        ) {
+        if (last !== undefined && last.status === entry.status) {
             last.saves += 1;
+
+            if (entry.status !== 'draft') {
+                last.command = entry.command;
+                last.reason = entry.reason;
+                last.at = entry.at;
+            }
 
             return rows;
         }
 
-        return [...rows, { ...entry, saves: 1 }];
+        return [...rows, { ...entry, saves: entry.status === 'draft' ? 1 : 0 }];
     }, []);
 
     return (
@@ -526,7 +533,8 @@ export function InstitutionDrawer({
                                         className="truncate font-semibold text-rz-accent-app-text"
                                     >
                                         {slotLabel(document.slot)}
-                                        <span className="ml-1.5 font-normal text-rz-muted">
+                                        <span className="font-normal text-rz-muted">
+                                            {' · '}
                                             {document.filename}
                                         </span>
                                     </a>
@@ -563,13 +571,29 @@ export function InstitutionDrawer({
                                                   `admin.institutions.status.${entry.status as InstitutionStatus}`,
                                               )
                                             : entry.status}
-                                        {entry.saves > 1 && (
-                                            <span className="ml-1.5 font-normal text-rz-muted">
-                                                {t('admin.institutions.saves', {
-                                                    count: entry.saves,
-                                                })}
-                                            </span>
-                                        )}
+                                        {entry.status === 'draft'
+                                            ? entry.saves > 1 && (
+                                                  <span className="font-normal text-rz-muted">
+                                                      {' '}
+                                                      {t(
+                                                          'admin.institutions.saves',
+                                                          {
+                                                              count: entry.saves,
+                                                          },
+                                                      )}
+                                                  </span>
+                                              )
+                                            : entry.saves > 0 && (
+                                                  <span className="font-normal text-rz-muted">
+                                                      {' '}
+                                                      {t(
+                                                          'admin.institutions.then_saves',
+                                                          {
+                                                              count: entry.saves,
+                                                          },
+                                                      )}
+                                                  </span>
+                                              )}
                                     </span>
                                     <span className="shrink-0 text-[11.5px] text-rz-muted">
                                         {formatTimestamp(entry.at)}

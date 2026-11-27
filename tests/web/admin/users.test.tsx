@@ -223,6 +223,10 @@ describe('Users', () => {
         expect(rowOf('Inès Institution')).toHaveTextContent(
             'Investor for Kivu Pension Fund',
         );
+        /* The plain Investor chip would only repeat it. */
+        expect(
+            within(rowOf('Inès Institution')).queryByText('Investor'),
+        ).not.toBeInTheDocument();
         expect(rowOf('Jules Applying')).toHaveTextContent(
             'Institution (applying)',
         );

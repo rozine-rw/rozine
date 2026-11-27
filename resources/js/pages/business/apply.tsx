@@ -69,6 +69,13 @@ const requestKey = (
     term: TermMonths | null,
 ): string => `${target ?? ''}|${term ?? ''}`;
 
+/**
+ * The words around the request: title, uses and story. The quote binds the saved draft, these
+ * included, so a Continue after editing them saves and re-quotes first (QA #833).
+ */
+const narrativeKey = (fields: Record<string, unknown>): string =>
+    JSON.stringify([fields.title, fields.use_of_funds, fields.story]);
+
 /** The request a save or evaluation carried. */
 const payloadKey = (payload: ApplicationCommand['payload']): string =>
     requestKey(
@@ -125,6 +132,18 @@ export default function BusinessApply(props: BusinessApplyProps) {
     useEffect(() => {
         revision.current = props.application.revision;
     }, [props.application.revision]);
+
+    /** The narrative last saved, and the one the current quote was evaluated on. */
+    const savedNarrative = useRef(narrativeKey({ ...props.application }));
+    const quotedNarrative = useRef(narrativeKey({ ...props.application }));
+    /**
+     * A Continue that found the narrative changed since the quote: the draft is saved, evaluated
+     * again on the same request, and then continued, instead of being refused as a stale quote
+     * that discards what was typed (QA #833).
+     */
+    const [requote, setRequote] = useState<'evaluate' | 'continue' | null>(
+        null,
+    );
 
     const [raise, setRaise] = useState<RaiseFields>({
         title: application.title,
@@ -251,6 +270,9 @@ export default function BusinessApply(props: BusinessApplyProps) {
 
                 if (sent.name === 'evaluate') {
                     setEvaluatedKey(sentKey);
+                    quotedNarrative.current = savedNarrative.current;
+                } else {
+                    savedNarrative.current = narrativeKey(sent.payload);
                 }
             }
 
@@ -263,6 +285,8 @@ export default function BusinessApply(props: BusinessApplyProps) {
             router.reload({ only: REMAINING_PROPS });
         },
         onRefused: (sent, code, status) => {
+            setRequote(null);
+
             const halted =
                 sent.name === 'submit' ? null : payloadKey(sent.payload);
 
@@ -377,6 +401,40 @@ export default function BusinessApply(props: BusinessApplyProps) {
     const remind = () => show(t('business.apply.incomplete'));
     const idle = !command.busy && !command.unresolved && !refreshing;
 
+    /* The re-quote a Continue started runs one command at a time: evaluate, then continue. */
+    const advanceRequote = useEffectEvent(() => {
+        if (requote === 'evaluate') {
+            setRequote('continue');
+            startEvaluation(true);
+
+            return;
+        }
+
+        setRequote(null);
+
+        /* A changed offer waits on this step to be read; only the same ready offer continues. */
+        if (
+            readyQuote !== null &&
+            quotedNarrative.current === narrativeKey({ ...raise })
+        ) {
+            send({
+                name: 'save',
+                advance: true,
+                payload: draftPayload('review'),
+            });
+        }
+    });
+
+    useEffect(() => {
+        if (!idle || requote === null) {
+            return;
+        }
+
+        const timer = window.setTimeout(() => advanceRequote(), 0);
+
+        return () => window.clearTimeout(timer);
+    }, [idle, requote]);
+
     const raiseReady =
         raise.title.trim() !== '' &&
         readyQuote !== null &&
@@ -414,6 +472,17 @@ export default function BusinessApply(props: BusinessApplyProps) {
                 }
 
                 remind();
+
+                return;
+            }
+
+            if (narrativeKey({ ...raise }) !== quotedNarrative.current) {
+                setRequote('evaluate');
+                send({
+                    name: 'save',
+                    advance: false,
+                    payload: draftPayload(null),
+                });
 
                 return;
             }

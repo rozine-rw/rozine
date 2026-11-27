@@ -250,6 +250,7 @@ export function DealsBody({ overlay, ...props }: DealsBodyProps) {
             <InvestBar
                 deal={current}
                 quote={quote}
+                limit={focused ? props.focus?.limit : null}
                 units={quoted.units}
                 onUnits={quoted.setUnits}
                 quoting={quoted.quoting}

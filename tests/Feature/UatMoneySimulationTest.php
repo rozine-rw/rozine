@@ -18,6 +18,7 @@ use App\Application\Disbursement\SyntheticDisbursementGuard;
 use App\Application\Environment\EnvironmentIsolation;
 use App\Application\Environment\UatMoneySimulation;
 use App\Application\Primary\Contracts\CampaignFundingEvidence;
+use App\Application\Primary\Contracts\HeldNoteCapital;
 use App\Application\Primary\Contracts\RetainedNoteSchedules;
 use App\Application\Secondary\Contracts\NoteUnitHolders;
 use App\Application\Secondary\Contracts\SecondaryMarket;
@@ -211,6 +212,13 @@ it('lets the Business repay its note on UAT and pays each holder its share less 
     expect($payouts)->toHaveCount(2)
         ->and((string) $payouts->sum(fn (object $row): int => (int) $row->principal))->toBe($first->principal)
         ->and((string) $payouts->sum(fn (object $row): int => (int) $row->contractual_return))->toBe($first->contractualReturn);
+    // Once paid out, each holder's held capital is complete again and reduced by the principal its lot was paid,
+    // so the cart can price its fee band (QA #831).
+    foreach ($payouts as $payout) {
+        $held = app(HeldNoteCapital::class)->current($payout->party_id);
+        $issued = (string) collect($schedule->holdings)->where('partyId', $payout->party_id)->sum(fn ($holding): int => (int) $holding->principal);
+        expect($held['complete'])->toBeTrue()->and($held['outstanding_principal'])->toBe((string) ((int) $issued - (int) $payout->principal));
+    }
     foreach ($payouts as $payout) {
         expect((int) $payout->fee)->toBe((int) round((int) $payout->contractual_return * $payout->rate_bps / 10000))
             ->and((int) $payout->net)->toBe((int) $payout->principal + (int) $payout->contractual_return - (int) $payout->fee)

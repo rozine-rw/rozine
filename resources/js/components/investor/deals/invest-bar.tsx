@@ -1,4 +1,4 @@
-import { Link, router, useHttp } from '@inertiajs/react';
+import { Link, router, useHttp, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { raiseOpen } from '@/components/investor/deals/time-left';
 import { POSITIVE_TEXT } from '@/components/investor/tokens';
@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import type { RouteLink } from '@/types';
 import type {
     C3DealCard,
+    DealLimit,
     InvestGate,
     InvestorAllowedAction,
     PrimaryQuote,
@@ -49,25 +50,39 @@ export function canReserve({
 export function CapNote({
     quote,
     units,
+    limit = null,
     className,
 }: {
     quote: PrimaryQuote | null;
     units: number;
+    /** The Investor's own limit, for a deal shown without a quote (QA #832). */
+    limit?: DealLimit | null;
     className?: string;
 }) {
     const { t } = useTranslation();
+    const investingFor = usePage<{ investing_for?: string | null }>().props
+        .investing_for;
+    const capacity =
+        quote?.capacity ??
+        (limit === null
+            ? null
+            : { max_units: limit.max_units, binding: limit.bound_by });
 
-    if (quote === null) {
+    if (capacity === null) {
         return null;
     }
 
-    const max = Number(quote.capacity.max_units);
+    const max = Number(capacity.max_units);
 
     if (units < max) {
         return null;
     }
 
-    const reason = t(`investor.deal.cap.reason.${quote.capacity.binding}`);
+    /* An institution's limit is its own, not a single person's (QA #832). */
+    const reason =
+        capacity.binding === 'raise_cap' && investingFor
+            ? t('investor.deal.cap.reason.raise_cap_institution')
+            : t(`investor.deal.cap.reason.${capacity.binding}`);
 
     return (
         <p
@@ -119,6 +134,8 @@ export function CartToggle({
     const http = useHttp<Record<string, never>, unknown>();
     const [busy, setBusy] = useState(false);
     const [failed, setFailed] = useState(false);
+    /* The server's own reason, such as the most this Investor may take in the raise (QA #832). */
+    const [reason, setReason] = useState<string | null>(null);
     const full = !cart.inCart && fullyFunded(deal);
     const action = cart.action;
     const label = cart.inCart
@@ -131,6 +148,7 @@ export function CartToggle({
     const toggle = async (target: RouteAction) => {
         setBusy(true);
         setFailed(false);
+        setReason(null);
         http.transform(() =>
             cart.inCart
                 ? { identity_context_revision: cart.identityRevision }
@@ -139,7 +157,10 @@ export function CartToggle({
 
         /* The toggle stays busy until the reload brings the new cart state, so a second tap cannot repeat the change. */
         try {
-            const answer = await http.submit(target, {});
+            const answer = await http.submit(target, {
+                onError: (errors: Record<string, string | undefined>) =>
+                    setReason(Object.values(errors).find(Boolean) ?? null),
+            });
 
             if (answer === undefined) {
                 setFailed(true);
@@ -227,7 +248,7 @@ export function CartToggle({
                             : 'mt-1.5 text-center',
                     )}
                 >
-                    {t('investor.cart.update_failed')}
+                    {reason ?? t('investor.cart.update_failed')}
                 </p>
             )}
         </div>
@@ -254,6 +275,8 @@ type InvestBarProps = {
     deal: C3DealCard;
     /** The server's quote for this deal, or null while it is not the focused one. */
     quote: PrimaryQuote | null;
+    /** The Investor's own limit in this raise, or null while unknown (QA #832). */
+    limit?: DealLimit | null;
     /** The quantity the investor has chosen; a whole number of notes. */
     units: number;
     onUnits: (units: number) => void;
@@ -274,6 +297,7 @@ type InvestBarProps = {
 export function InvestBar({
     deal,
     quote,
+    limit = null,
     units,
     onUnits,
     quoting,
@@ -284,9 +308,13 @@ export function InvestBar({
     const { t } = useTranslation();
     const [draft, setDraft] = useState<string | null>(null);
     const current = quote;
-    /* Unquoted, the notes still open bound the choice; the checkout applies the Investor's caps. */
+    /* Unquoted, the Investor's own limit bounds the choice, else the notes still open. */
     const max = Math.max(
-        Number(current?.capacity.max_units ?? deal.units.available),
+        Number(
+            current?.capacity.max_units ??
+                limit?.max_units ??
+                deal.units.available,
+        ),
         1,
     );
     const soldOut = deal.lifecycle !== 'live' || deal.restriction !== null;
@@ -400,6 +428,10 @@ export function InvestBar({
                                     Number(deal.units.available),
                                 ),
                             })}
+                            {limit?.bound_by === 'raise_cap' &&
+                                t('investor.deals.up_to_you', {
+                                    count: formatCount(Number(limit.max_units)),
+                                })}
                         </span>
                     )}
                 </div>
@@ -544,7 +576,12 @@ export function InvestBar({
                 </p>
             ) : (
                 !soldOut && (
-                    <CapNote quote={current} units={units} className="mt-2" />
+                    <CapNote
+                        quote={current}
+                        limit={limit}
+                        units={units}
+                        className="mt-2"
+                    />
                 )
             )}
         </section>
