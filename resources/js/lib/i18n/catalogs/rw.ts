@@ -359,7 +359,7 @@ const rw: Catalog = {
         'Ikigo kiri gusuzumwa ubu. Tuzakwandikira icyemezo nikimara gufatwa.',
     'suite.hub.next.role_switch_institution.title': 'Ushora mu izina ry’ikigo',
     'suite.hub.next.role_switch_institution.body':
-        'Hanyuma ushyiraho Auto-Deploy ukoresheje amategeko y’ikigo ku mafaranga gishora buri kwezi.',
+        'Hanyuma ufungura Umushoramari ugashyira amafaranga mu gikapu cy’ikigo ugashora mu izina ryacyo.',
     'suite.hub.next.institution_ready.title': 'Shora mu izina ry’ikigo',
     'suite.hub.next.institution_ready.body':
         'Ikigo cyemejwe. Fungura Umushoramari ushyire amafaranga ku gikapu cyacyo kandi ushore.',
@@ -501,7 +501,7 @@ const rw: Catalog = {
     'admin.role_applications.auditor.kicker': 'Dosiye y’umugenzuzi',
     'admin.role_applications.auditor.approve': 'Emeza kandi wemerere',
     'admin.role_applications.institution.confirm_title':
-        'Wemerera {name} gushora mu izina ry’iki kigo?',
+        'Wemerera {person} gushora mu izina rya {name}?',
     'admin.role_applications.institution.confirm_body':
         '{name} akomeza kuba Umushoramari kandi guhera ubu ashora mu izina ry’ikigo, akurikije ibyo cyiyemeje buri kwezi. Andika ibyo wagenzuye.',
     'admin.role_applications.institution.title':
@@ -5225,6 +5225,7 @@ const rw: Catalog = {
     'business.audit_prep.closing':
         "Ntabwo wowe ubwawe utanga raporo y'ukwezi. CPA wawe araza, agasuzuma inyandiko zawe aho ukorera agafunga raporo — uruhare rwawe ni ukwitegura, hanyuma ugasuzuma ibyo yabonye ukajurira niba hari ikitari cyo.",
 
+    'investor.investing_for': 'Ushora mu izina rya {name}',
     'investor.nav.deals': 'Amahirwe',
     'investor.nav.portfolio': 'Ishoramari ryanjye',
     'investor.nav.profile': 'Umwirondoro',
@@ -9339,6 +9340,7 @@ const rw: Catalog = {
         'Ibigega by’izabukuru, VC n’ibindi bigo bishora binyuze kuri Rozine',
     'admin.section.institutions.search':
         'Shakisha ukoresheje izina, kode ya RDB cyangwa imeyili…',
+    'admin.institutions.stats.approved_only': 'Ibigo byemejwe',
     'admin.institutions.stats.institutions': 'Ibigo',
     'admin.institutions.stats.awaiting_review': 'Bitegereje gusuzumwa',
     'admin.institutions.stats.committed_monthly': 'Byiyemejwe buri kwezi',
@@ -9431,6 +9433,10 @@ const rw: Catalog = {
     'admin.institutions.documents': 'Inyandiko',
     'admin.institutions.documents_empty': 'Nta nyandiko irashyirwaho.',
     'admin.institutions.history': 'Amateka',
+    'admin.institutions.saves': {
+        one: '· inshuro {count} yabitswe',
+        other: '· inshuro {count} zabitswe',
+    },
     'admin.institutions.history_empty': 'Nta mateka arahari.',
     'admin.users.select.kyc': 'Shungura ukurikije KYC',
     'admin.users.select.sort': 'Tondeka abakoresha',
@@ -9462,6 +9468,8 @@ const rw: Catalog = {
     'admin.users.membership.suspended': 'Byahagaritswe',
     'admin.users.membership.revoked': 'Byakuweho',
     'admin.users.staff_roles': 'Umukozi: {roles}',
+    'admin.users.institution_applying': 'Ikigo (gisaba)',
+    'admin.users.invests_for': 'Ashorera {name}',
     'admin.users.requested': '{role} yasabwe',
     'admin.users.no_role': 'Nta nshingano arabona',
     'admin.users.kyc.verified': 'Yemejwe',

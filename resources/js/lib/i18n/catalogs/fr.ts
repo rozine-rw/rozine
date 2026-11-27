@@ -368,7 +368,7 @@ const fr: Catalog = {
     'suite.hub.next.role_switch_institution.title':
         'Vous investissez pour l’institution',
     'suite.hub.next.role_switch_institution.body':
-        'Ensuite, vous configurez Auto-Deploy avec les règles de l’institution pour sa distribution mensuelle.',
+        'Ensuite, vous ouvrez Investisseur pour alimenter le portefeuille de l’institution et investir pour elle.',
     'suite.hub.next.institution_ready.title': 'Investir pour l’institution',
     'suite.hub.next.institution_ready.body':
         'L’institution est approuvée. Ouvrez Investisseur pour alimenter son portefeuille et investir.',
@@ -513,7 +513,7 @@ const fr: Catalog = {
     'admin.role_applications.auditor.kicker': 'Demande auditeur',
     'admin.role_applications.auditor.approve': 'Approuver et accréditer',
     'admin.role_applications.institution.confirm_title':
-        'Autoriser {name} à investir pour cette institution ?',
+        'Autoriser {person} à investir pour {name} ?',
     'admin.role_applications.institution.confirm_body':
         '{name} reste Investisseur et investit désormais pour l’institution, selon son engagement mensuel. Notez ce que vous avez vérifié.',
     'admin.role_applications.institution.title':
@@ -5241,6 +5241,7 @@ const fr: Catalog = {
     'business.audit_prep.closing':
         "Vous ne déposez jamais vous-même le rapport mensuel. Votre expert-comptable passe, examine vos registres sur place et scelle le rapport — votre rôle est d'être prêt, puis d'examiner ses constats et de les contester en cas d'erreur.",
 
+    'investor.investing_for': 'Vous investissez pour {name}',
     'investor.nav.deals': 'Offres',
     'investor.nav.portfolio': 'Portefeuille',
     'investor.nav.profile': 'Profil',
@@ -9380,6 +9381,7 @@ const fr: Catalog = {
         'Fonds de pension, fonds de capital-risque et autres institutions qui investissent via Rozine',
     'admin.section.institutions.search':
         'Rechercher par nom, code RDB ou e-mail…',
+    'admin.institutions.stats.approved_only': 'Institutions approuvées',
     'admin.institutions.stats.institutions': 'Institutions',
     'admin.institutions.stats.awaiting_review': 'En attente d’examen',
     'admin.institutions.stats.committed_monthly': 'Engagé chaque mois',
@@ -9478,6 +9480,10 @@ const fr: Catalog = {
     'admin.institutions.documents_empty':
         'Aucun document téléversé pour l’instant.',
     'admin.institutions.history': 'Historique',
+    'admin.institutions.saves': {
+        one: '· {count} enregistrement',
+        other: '· {count} enregistrements',
+    },
     'admin.institutions.history_empty': 'Pas encore d’historique.',
     'admin.users.select.kyc': 'Filtrer par KYC',
     'admin.users.select.sort': 'Trier les utilisateurs',
@@ -9509,6 +9515,8 @@ const fr: Catalog = {
     'admin.users.membership.suspended': 'Suspendu',
     'admin.users.membership.revoked': 'Révoqué',
     'admin.users.staff_roles': 'Personnel : {roles}',
+    'admin.users.institution_applying': 'Institution (demande en cours)',
+    'admin.users.invests_for': 'Investisseur pour {name}',
     'admin.users.requested': '{role} demandé',
     'admin.users.no_role': 'Aucun rôle pour l’instant',
     'admin.users.kyc.verified': 'Vérifié',

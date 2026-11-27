@@ -48,7 +48,7 @@ export function UserRoleChips({
     row,
     current = false,
 }: {
-    row: Pick<UserRow, 'memberships' | 'staff' | 'requested'>;
+    row: Pick<UserRow, 'memberships' | 'staff' | 'requested' | 'institution'>;
     /** Only the roles held now; the drawer lists revoked ones with their dates underneath. */
     current?: boolean;
 }) {
@@ -61,7 +61,8 @@ export function UserRoleChips({
     const none =
         memberships.length === 0 &&
         row.staff === null &&
-        row.requested.length === 0;
+        row.requested.length === 0 &&
+        !row.institution;
 
     return (
         <span className="flex flex-wrap gap-1">
@@ -95,15 +96,22 @@ export function UserRoleChips({
                           })}
                 </Chip>
             )}
+            {row.institution && (
+                <Chip tone="blue">
+                    {t('admin.users.invests_for', { name: row.institution })}
+                </Chip>
+            )}
             {row.requested.map((role) => (
                 <Chip
                     key={`requested-${role}`}
                     tone="grey"
                     className="border border-dashed border-rz-hairline bg-transparent"
                 >
-                    {t('admin.users.requested', {
-                        role: t(`admin.users.role.${role}`),
-                    })}
+                    {role === 'institution'
+                        ? t('admin.users.institution_applying')
+                        : t('admin.users.requested', {
+                              role: t(`admin.users.role.${role}`),
+                          })}
                 </Chip>
             ))}
             {none && (

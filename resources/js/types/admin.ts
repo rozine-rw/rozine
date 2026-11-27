@@ -2444,7 +2444,9 @@ export type UserRow = {
     memberships: UserMembership[];
     staff: { roles: string[]; enabled: boolean } | null;
     /** Roles asked for from the launcher and not held yet. */
-    requested: ('business' | 'auditor')[];
+    requested: ('business' | 'auditor' | 'institution')[];
+    /** The institution the account invests for, once approved. */
+    institution: string | null;
     kyc: UserKyc;
     restricted: boolean;
     /** When the holder closed the account (soft delete); null while it is open. */
