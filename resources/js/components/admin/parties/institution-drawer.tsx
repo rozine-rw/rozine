@@ -116,6 +116,7 @@ export function InstitutionDrawer({
         (InstitutionDetail['history'][number] & { saves: number })[]
     >((rows, entry) => {
         const last = rows[rows.length - 1];
+
         if (
             last !== undefined &&
             last.status === 'draft' &&
