@@ -66,6 +66,17 @@ const FLAG_KEYS: Record<string, string> = {
 /** The sector an institution may pick besides the business sectors (QA #800); the server allows it too. */
 const FINANCIAL_SERVICES = 'Financial services';
 
+/** An institution's sectors: the business sectors with Financial services, kept before "Other" (QA #805). */
+const withFinancialServices = (industries: string[]): string[] => {
+    const other = industries.filter((industry) => industry === 'Other');
+
+    return [
+        ...industries.filter((industry) => industry !== 'Other'),
+        FINANCIAL_SERVICES,
+        ...other,
+    ];
+};
+
 function stepForItem(key: string, role: SwitchRole): string {
     const head = key.split('.')[0];
 
@@ -675,11 +686,9 @@ export default function RoleApply(props: RoleApplicationProps) {
                                         value={company.industry}
                                         options={
                                             role === 'institution'
-                                                ? [
-                                                      ...props.catalog
-                                                          .industries,
-                                                      FINANCIAL_SERVICES,
-                                                  ]
+                                                ? withFinancialServices(
+                                                      props.catalog.industries,
+                                                  )
                                                 : props.catalog.industries
                                         }
                                         error={error('company.industry')}
@@ -1362,12 +1371,23 @@ export default function RoleApply(props: RoleApplicationProps) {
                                                             directors.length,
                                                         ),
                                                     ],
-                                                    [
-                                                        t(
-                                                            'role.apply.people.owners',
-                                                        ),
-                                                        String(owners.length),
-                                                    ],
+                                                    noMajorOwner
+                                                        ? [
+                                                              t(
+                                                                  'role.apply.people.owners',
+                                                              ),
+                                                              t(
+                                                                  'role.apply.people.no_major_owner',
+                                                              ),
+                                                          ]
+                                                        : [
+                                                              t(
+                                                                  'role.apply.people.owners',
+                                                              ),
+                                                              String(
+                                                                  owners.length,
+                                                              ),
+                                                          ],
                                                 ]}
                                             />
                                             {role === 'institution' && (

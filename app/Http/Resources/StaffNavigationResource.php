@@ -32,6 +32,8 @@ class StaffNavigationResource extends JsonResource
         'events' => ['permission' => 'investors.verify', 'route' => 'staff.events.index'],
         'investors' => ['permission' => 'investors.verify', 'route' => 'staff.investors.index'],
         'users' => ['permission' => 'investors.verify', 'route' => 'staff.users.index'],
+        // Institutions are reviewed with business KYB, so whoever verifies Businesses sees them (27 Nov 2026).
+        'institutions' => ['permission' => 'businesses.verify', 'route' => 'staff.institutions.index'],
         'businesses' => ['permission' => 'businesses.view', 'route' => 'staff.businesses.index'],
         'auditors' => ['permission' => 'audit.partners.verify', 'route' => 'staff.auditors.index'],
         'applications' => ['permission' => 'applications.review', 'route' => 'staff.applications.index'],
