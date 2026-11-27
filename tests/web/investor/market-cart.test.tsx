@@ -584,6 +584,30 @@ describe('Cart with notes', () => {
         ).toBeInTheDocument();
     });
 
+    it("names an institution's own limit on a capped Cart line (QA #832)", () => {
+        const page = cart();
+        const [line] = page.cart?.lines ?? [];
+
+        line.max_units = '0';
+        line.binding = 'raise_cap';
+        line.checkout = null;
+        line.actions.units = null;
+        inertia.shared = { investing_for: 'Kivu Pension Fund' };
+
+        render(<InvestorCart {...page} />);
+
+        const greenleaf = within(screen.getByTestId('cart-line-cmp_greenleaf'));
+
+        expect(
+            greenleaf.getByText(
+                "You can't take any more notes here: your institution's limit for this raise.",
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText(/single-investor limit/u),
+        ).not.toBeInTheDocument();
+    });
+
     it('shows the empty cart to a person with no cart yet', () => {
         const page = cart();
 
