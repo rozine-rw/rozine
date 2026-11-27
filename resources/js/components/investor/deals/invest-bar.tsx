@@ -7,6 +7,7 @@ import { formatAmount, formatCount } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { RouteLink } from '@/types';
 import type {
+    CapacityBinding,
     C3DealCard,
     DealLimit,
     InvestGate,
@@ -46,6 +47,21 @@ export function canReserve({
     );
 }
 
+/**
+ * Words for what bounds an Investor's units. An institution's raise cap is its
+ * own limit, not a single person's (QA #832), on the deal panel and the Cart alike.
+ */
+export function useCapReason(): (binding: CapacityBinding) => string {
+    const { t } = useTranslation();
+    const investingFor = usePage<{ investing_for?: string | null }>().props
+        .investing_for;
+
+    return (binding) =>
+        binding === 'raise_cap' && investingFor
+            ? t('investor.deal.cap.reason.raise_cap_institution')
+            : t(`investor.deal.cap.reason.${binding}`);
+}
+
 /** Names the cap that binds once the chosen quantity reaches `max_units` (H9 `capacity.binding`). */
 export function CapNote({
     quote,
@@ -60,8 +76,7 @@ export function CapNote({
     className?: string;
 }) {
     const { t } = useTranslation();
-    const investingFor = usePage<{ investing_for?: string | null }>().props
-        .investing_for;
+    const capReason = useCapReason();
     const capacity =
         quote?.capacity ??
         (limit === null
@@ -78,11 +93,7 @@ export function CapNote({
         return null;
     }
 
-    /* An institution's limit is its own, not a single person's (QA #832). */
-    const reason =
-        capacity.binding === 'raise_cap' && investingFor
-            ? t('investor.deal.cap.reason.raise_cap_institution')
-            : t(`investor.deal.cap.reason.${capacity.binding}`);
+    const reason = capReason(capacity.binding);
 
     return (
         <p

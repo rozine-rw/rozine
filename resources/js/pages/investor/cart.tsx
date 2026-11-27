@@ -9,7 +9,10 @@ import {
     useCartQuote,
     cartBlock,
 } from '@/components/investor/cart/whole-cart';
-import { RANGE_CLASS } from '@/components/investor/deals/invest-bar';
+import {
+    RANGE_CLASS,
+    useCapReason,
+} from '@/components/investor/deals/invest-bar';
 import { InvestorShell } from '@/components/investor/investor-shell';
 import { POSITIVE_TEXT } from '@/components/investor/tokens';
 import { C3Notice } from '@/components/rozine/c3-notice';
@@ -103,7 +106,7 @@ function CartCard({
     const max = Number(line.max_units);
     const taken = Number(deal.units.total) - Number(deal.units.available);
     const leftToFill = Number(deal.left_to_fill.amount);
-    const reason = t(`investor.deal.cap.reason.${line.binding}`);
+    const reason = useCapReason()(line.binding);
 
     return (
         <article
