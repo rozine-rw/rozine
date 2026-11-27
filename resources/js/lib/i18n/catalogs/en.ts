@@ -1893,6 +1893,14 @@ const en = {
     'admin.market.listings.title': 'Open listings',
     'admin.market.listings.table': 'Open resale listings',
     'admin.market.listings.empty': 'No listing is open.',
+    'admin.market.state.simulated':
+        'Resale is running in the staging money simulation. A halt cancels every open listing it covers and releases reservations. The people affected are told the reason in the app and by email.',
+    'admin.market.notes.title': 'Issued notes',
+    'admin.market.notes.table': 'Issued notes',
+    'admin.market.notes.explain':
+        'Halt resale of one note, whether or not it has a listing open.',
+    'admin.market.notes.empty': 'No note has been issued yet.',
+    'admin.market.notes.halted': 'Halted',
     'admin.market.col.scope': 'Covers',
     'admin.market.col.reason': 'Reason',
     'admin.market.col.halted_at': 'Halted',
@@ -2281,6 +2289,12 @@ const en = {
         'Compliance rejects a Business or Auditor application',
     'admin.messaging.trigger.market.units_bought': 'A resale purchase settles',
     'admin.messaging.trigger.market.units_sold': "A holder's listed units sell",
+    'admin.messaging.trigger.market.listing_cancelled':
+        "Compliance or a halt cancels a holder's listing",
+    'admin.messaging.trigger.market.reservation_released':
+        "A halt releases a buyer's reservation",
+    'admin.messaging.trigger.market.resale_reopened':
+        "A halt that stopped someone's order is lifted",
     'admin.messaging.trigger.wallet.payout_received':
         'Servicing pays a holder its share of a repayment',
     'admin.messaging.trigger.wallet.deposit_received':
@@ -5097,6 +5111,7 @@ const en = {
     'investor.market.order_detail.status_expired': 'Expired',
     'investor.market.order_detail.listed': 'Units listed',
     'investor.market.order_detail.ended': 'Ended',
+    'investor.market.order_detail.reason': 'Reason',
     'investor.market.order_detail.status_reserved': 'Reserved by a buyer',
     'investor.market.order_detail.status_reserved_for_you': 'Reserved for you',
     'investor.market.order_detail.filled': 'Filled',
@@ -8181,6 +8196,20 @@ const en = {
         one: 'Your {count} note of {title} sold. {amount} reached your wallet after the {fee} resale fee.',
         other: 'Your {count} notes of {title} sold. {amount} reached your wallet after the {fee} resale fee.',
     },
+    'investor.notices.market.listing_cancelled.title': 'Listing cancelled',
+    'investor.notices.market.listing_cancelled.body':
+        'Rozine cancelled your listing of {units} notes of {title}. Reason: {reason}',
+    'investor.notices.market.listing_cancelled.body_halt':
+        'Resale of {title} is halted, so your listing of {units} notes was cancelled. Reason: {reason}',
+    'investor.notices.market.reservation_released.title':
+        'Reservation released',
+    'investor.notices.market.reservation_released.body':
+        'Resale of {title} is halted, so your reservation of {units} notes ended. Its cash is back in your wallet. Reason: {reason}',
+    'investor.notices.market.resale_reopened.title': 'Resale reopened',
+    'investor.notices.market.resale_reopened.body':
+        'Resale of {title} has reopened. Reason: {reason}',
+    'investor.notices.market.resale_reopened.body_market':
+        'The resale market has reopened. Reason: {reason}',
     'investor.notices.wallet.payout_received.title': 'Payout received',
     'investor.notices.wallet.payout_received.body':
         '{net} reached your wallet from {title}, instalment {instalments}: {gross} less the {fee} earnings fee.',

@@ -759,7 +759,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
     return (
         <div className="flex items-baseline justify-between gap-3 border-b border-[#eef2f9] py-2 last:border-b-0 dark:border-rz-divider">
             <dt className="text-[12px] text-rz-secondary">{label}</dt>
-            <dd className="text-right text-[12.5px] font-semibold text-rz-ink">
+            <dd className="min-w-0 text-right text-[12.5px] font-semibold break-words text-rz-ink">
                 {value}
             </dd>
         </div>
@@ -814,6 +814,12 @@ export function OrderDetail({
                         label={t('investor.market.order_detail.ended')}
                         value={formatDateTime(listing.ended_at, locale)}
                     />
+                    {listing.reason !== null && (
+                        <DetailRow
+                            label={t('investor.market.order_detail.reason')}
+                            value={listing.reason}
+                        />
+                    )}
                 </dl>
             </div>
         );

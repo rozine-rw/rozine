@@ -19,7 +19,7 @@ namespace App\Application\Secondary\Contracts;
  * @phpstan-type SellableLot array{lot_id: string, note_id: string, deal_name: string, units: string, free_units: string, cap: Money, tradable: bool}
  * @phpstan-type Trade array{transfer_id: string, side: 'buy'|'sell', deal_name: string, units: string, price: Money, amount: Money, fee: Money, settled_at: string}
  * @phpstan-type ClosedListing array{listing_id: string, deal_name: string, listed_units: string, remaining_units: string, price: Money, listed_at: string,
- *     state: 'cancelled'|'expired', cancelled_by: 'seller'|'staff'|'halt'|null, ended_at: string}
+ *     state: 'cancelled'|'expired', cancelled_by: 'seller'|'staff'|'halt'|null, reason: string|null, ended_at: string}
  * @phpstan-type Board array{open: bool, listings: list<BoardListing>, sellable: list<SellableLot>, trades: list<Trade>, closed: list<ClosedListing>}
  */
 interface SecondaryBoard

@@ -231,6 +231,7 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
                 return ['listing_id' => $row->id, 'deal_name' => $name($row->business_campaign_id), 'listed_units' => (string) $row->listed_units,
                     'remaining_units' => (string) $row->remaining_units, 'price' => self::money($row->price),
                     'listed_at' => $row->listed_at->utc()->format(DateTimeInterface::ATOM), 'state' => $state, 'cancelled_by' => $by,
+                    'reason' => in_array($by, ['staff', 'halt'], true) ? $row->cancel_reason : null,
                     'ended_at' => ($row->updated_at ?? $row->listed_at)->utc()->format(DateTimeInterface::ATOM)];
             })->all());
     }
@@ -416,6 +417,9 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
         $open = $this->releaseLapsed($row, $now);
         $this->persist($row, $this->decide(fn (): SecondaryListing => $this->restore($row, $open)->cancelByStaff($reason, $now),
             ['LISTING_RESERVED' => ['reserved_until' => $this->lastLapse($open)]]), $now);
+        // The seller hears that Compliance ended the listing, and why (SEC-R09).
+        $this->notices->record($row->seller_party_id, PartyNoticeKind::ListingCancelled, ['title' => $this->titles->title($row->business_campaign_id),
+            'units' => (string) $row->remaining_units, 'reason' => $reason, 'by' => 'staff'], 'secondary-staff-cancel:'.$row->id);
 
         return new OperationResult('SECONDARY_LISTING_CANCELLED', ['listing' => $this->present($row, $now)], 1);
     }
@@ -444,16 +448,25 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
         $released = 0;
         $listings = SecondaryListingRecord::query()->where('state', 'open')->when($noteId !== null, fn ($query) => $query->where('business_campaign_id', $noteId))
             ->orderBy('id')->pluck('id');
+        $titles = [];
         foreach ($listings as $listingId) {
             $row = $this->lockListing($listingId);
+            $title = $titles[$row->business_campaign_id] ??= $this->titles->title($row->business_campaign_id);
             $current = $this->restore($row, $this->liveReservations($row, $now))->at($now);
             foreach (SecondaryReservationRecord::query()->where('listing_id', $row->id)->whereNull('ended')->orderBy('id')->get() as $open) {
-                $this->release($open, $open->expires_at <= $now ? 'lapsed' : 'halted', $now);
+                $why = $open->expires_at <= $now ? 'lapsed' : 'halted';
+                $this->release($open, $why, $now);
                 $released++;
+                if ($why === 'halted') {
+                    $this->notices->record($open->buyer_party_id, PartyNoticeKind::ReservationReleased, ['title' => $title, 'units' => (string) $open->units,
+                        'reason' => $reason], 'secondary-halt-release:'.$halt->id.':'.$open->id);
+                }
             }
             if ($current->state === 'open') {
                 $current = $current->halt($reason, $now);
                 $cancelled++;
+                $this->notices->record($row->seller_party_id, PartyNoticeKind::ListingCancelled, ['title' => $title,
+                    'units' => (string) $current->remainingUnits, 'reason' => $reason, 'by' => 'halt'], 'secondary-halt-cancel:'.$halt->id.':'.$row->id);
             }
             $this->persist($row, $current, $now);
         }
@@ -472,9 +485,31 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
         $halt = $this->activeHalt($noteId) ?? throw new CommandRejection($noteId === null ? 'MARKET_NOT_HALTED' : 'NOTE_NOT_HALTED');
         (new SecondaryHaltLift)->forceFill(['halt_id' => $halt->id, 'reason' => $reason, 'staff_user_id' => $staffUserId, 'operation_id' => $operationId,
             'lifted_at' => $now])->save();
+        $this->noticeReopened($halt, $reason);
 
         return new OperationResult('SECONDARY_HALT_LIFTED', ['halt_id' => $halt->id, 'note_id' => $noteId, 'reason' => $reason,
             'lifted_at' => $now->format(DateTimeInterface::ATOM)], 1);
+    }
+
+    /**
+     * Tells everyone the halt stopped (each seller whose listing it cancelled, each buyer whose
+     * reservation it released) that resale has reopened, with the reason for the lift (SEC-R08).
+     */
+    private function noticeReopened(SecondaryHalt $halt, string $reason): void
+    {
+        $noteId = $halt->business_campaign_id;
+        $sellers = SecondaryListingRecord::query()->where('cancelled_by', 'halt')->where('updated_at', $halt->halted_at)
+            ->when($noteId !== null, fn ($query) => $query->where('business_campaign_id', $noteId))->pluck('seller_party_id')->all();
+        $buyers = SecondaryReservationRecord::query()->where('end_reason', 'halted')->where('ended_at', $halt->halted_at)
+            ->when($noteId !== null, fn ($query) => $query->whereIn('listing_id',
+                SecondaryListingRecord::query()->select('id')->where('business_campaign_id', $noteId)))->pluck('buyer_party_id')->all();
+        $title = $noteId === null ? '' : $this->titles->title($noteId);
+        $parties = array_values(array_unique([...$sellers, ...$buyers]));
+        sort($parties);
+        foreach ($parties as $partyId) {
+            $this->notices->record((string) $partyId, PartyNoticeKind::ResaleReopened, ['title' => $title, 'reason' => $reason],
+                'secondary-reopen:'.$halt->id.':'.$partyId);
+        }
     }
 
     /**

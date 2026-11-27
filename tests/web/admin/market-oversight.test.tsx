@@ -13,6 +13,7 @@ const oversight = (
     overrides: Partial<MarketOversight> = {},
 ): MarketOversight => ({
     trading: true,
+    mode: 'live',
     market_halted: false,
     halt: { url: '/admin/secondary-market/halt', method: 'post' },
     halts: [],
@@ -32,6 +33,7 @@ const oversight = (
             },
         },
     ],
+    notes: [],
     ...overrides,
 });
 
@@ -194,8 +196,77 @@ describe('Secondary Market resale controls (SEC-R08, SEC-R09)', () => {
         });
     });
 
+    it('halts an issued note that has no open listing, and marks a halted one', () => {
+        render(
+            page(
+                oversight({
+                    listings: [],
+                    notes: [
+                        {
+                            note_id: NOTE,
+                            deal_name: 'Kivu Harvest',
+                            halt: {
+                                url: '/admin/secondary-market/halt',
+                                method: 'post',
+                            },
+                        },
+                        {
+                            note_id: '01jx5b3m2k4q6r8t0v2w4y6z8d',
+                            deal_name: 'Ruhango Dairy',
+                            halt: null,
+                        },
+                    ],
+                }),
+            ),
+        );
+
+        const notes = screen.getByRole('group', { name: 'Issued notes' });
+        expect(within(notes).getByText('Halted')).toBeInTheDocument();
+        expect(
+            within(notes).queryByRole('button', {
+                name: 'Halt resale of Ruhango Dairy',
+            }),
+        ).not.toBeInTheDocument();
+
+        fireEvent.click(
+            within(notes).getByRole('button', {
+                name: 'Halt resale of Kivu Harvest',
+            }),
+        );
+        const stage = screen.getByRole('form', {
+            name: 'Halt resale of Kivu Harvest',
+        });
+        fireEvent.change(within(stage).getByRole('textbox'), {
+            target: { value: 'Business under review.' },
+        });
+        fireEvent.click(
+            within(stage).getByRole('button', { name: 'Halt note' }),
+        );
+
+        expect(inertia.posts[0]).toEqual({
+            url: '/admin/secondary-market/halt',
+            data: expect.objectContaining({
+                note_id: NOTE,
+                reason: 'Business under review.',
+            }),
+        });
+    });
+
+    it('says resale runs in the staging simulation rather than that it is off', () => {
+        render(page(oversight({ mode: 'simulated' })));
+
+        expect(
+            screen.getByText(
+                'Resale is running in the staging money simulation. A halt cancels every open listing it covers and releases reservations. The people affected are told the reason in the app and by email.',
+            ),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText(/Resale trading is switched off/u),
+        ).not.toBeInTheDocument();
+    });
+
     it('says when resale trading is switched off', () => {
-        render(page(oversight({ trading: false, listings: [] })));
+        render(page(oversight({ trading: false, mode: 'off', listings: [] })));
 
         expect(
             screen.getByText(

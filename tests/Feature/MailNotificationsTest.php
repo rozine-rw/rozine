@@ -22,6 +22,7 @@ use App\Notifications\Investor\PayoutReceived;
 use App\Notifications\Investor\PurchaseConfirmed;
 use App\Notifications\Investor\RaiseExpired as InvestorRaiseExpired;
 use App\Notifications\Investor\ReportPublished;
+use App\Notifications\Investor\ResaleUpdate;
 use App\Notifications\Investor\VerificationDecided;
 use App\Notifications\Investor\WalletTransfer;
 use App\Notifications\Investor\WalletTransferCompleted;
@@ -215,6 +216,28 @@ test('an expired raise refunds the Investor in full with no fee', function () {
         ->and($text)->toContain('Returned to your wallet: RWF 150,000')
         ->and($text)->toContain('Fee: RWF 0');
 });
+
+test('a resale update names the note, what happened to the order and the reason Compliance recorded', function (ResaleUpdate $update, string $subject, string $tone, string $line) {
+    [$mail, $html, $text] = rozineMail($update);
+
+    expect($mail->subject)->toBe($subject)
+        ->and($html)->toContain('brand-tile-investor')
+        ->and($html)->toContain("notice-{$tone}")
+        ->and($text)->toContain($line)
+        ->and($text)->toContain('Reason: Business under review.')
+        ->and($text)->toContain('Open the Market');
+})->with([
+    'staff cancel' => [fn () => ResaleUpdate::listingCancelled('Kivu Harvest', '10', 'Business under review.', false, 'https://rozine.test/investor/market'),
+        'Rozine cancelled your Kivu Harvest listing', 'warning', 'Compliance cancelled your listing of 10 notes of Kivu Harvest. You still hold the notes.'],
+    'halt cancel' => [fn () => ResaleUpdate::listingCancelled('Kivu Harvest', '10', 'Business under review.', true, 'https://rozine.test/investor/market'),
+        'Resale of Kivu Harvest is halted: your listing was cancelled', 'warning', 'Compliance halted resale of Kivu Harvest, so your listing of 10 notes was cancelled.'],
+    'released reservation' => [fn () => ResaleUpdate::reservationReleased('Kivu Harvest', '4', 'Business under review.', 'https://rozine.test/investor/market'),
+        'Resale of Kivu Harvest is halted: your reservation was released', 'warning', 'The cash it held is back in your wallet.'],
+    'one note reopened' => [fn () => ResaleUpdate::reopened('Kivu Harvest', 'Business under review.', 'https://rozine.test/investor/market'),
+        'Resale has reopened on Kivu Harvest', 'success', 'Compliance lifted the halt on Kivu Harvest.'],
+    'market reopened' => [fn () => ResaleUpdate::reopened('', 'Business under review.', 'https://rozine.test/investor/market'),
+        'Resale has reopened on the resale market', 'success', 'Compliance lifted the halt on the resale market.'],
+]);
 
 test('an application decision gives its outcome and, unless approved, the reason', function (ApplicationOutcome $outcome, ?string $reason, string $subject, string $tone, string $line) {
     [$mail, $html, $text] = rozineMail(new ApplicationDecided($outcome, 'Karongi Freight Ltd', '12000000', 6, 'https://rozine.test/business', $reason));
