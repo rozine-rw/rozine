@@ -5516,6 +5516,7 @@ const rw: Catalog = {
     'investor.deals.notes_quantity': "Umubare w'impapuro",
     'investor.deals.notes_suffix': 'IMPAPURO',
     'investor.deals.of_left': 'kuri {count} zisigaye',
+    'investor.deals.up_to_you': ' · kugeza kuri {count} kuri wowe',
     'investor.deals.term': 'IGIHE',
     'investor.deals.months_short': 'Amezi {count}',
     'investor.deals.bar_invest': 'SHORA',
@@ -8270,6 +8271,8 @@ const rw: Catalog = {
         'Ntushobora gufata izindi mpapuro hano: {reason}.',
     'investor.deal.cap.reason.raise_cap':
         "umupaka w'umushoramari umwe kuri iki gikorwa cyo gukusanya",
+    'investor.deal.cap.reason.raise_cap_institution':
+        'imbibi z’ikigo cyawe muri iki gikorwa cyo gukusanya',
     'investor.deal.cap.reason.availability': 'izo ni zo mpapuro zose zisigaye',
     'investor.deal.cap.reason.restriction': 'hari ikumira rikurikizwa',
     'investor.deal.cap.reason.connected_party': "ufitanye isano n'iki kigo",
@@ -9436,6 +9439,10 @@ const rw: Catalog = {
     'admin.institutions.saves': {
         one: '· inshuro {count} yabitswe',
         other: '· inshuro {count} zabitswe',
+    },
+    'admin.institutions.then_saves': {
+        one: '· hanyuma usaba abika inshuro {count}',
+        other: '· hanyuma usaba abika inshuro {count}',
     },
     'admin.institutions.history_empty': 'Nta mateka arahari.',
     'admin.users.select.kyc': 'Shungura ukurikije KYC',

@@ -5531,6 +5531,7 @@ const fr: Catalog = {
     'investor.deals.notes_quantity': 'Nombre de titres',
     'investor.deals.notes_suffix': 'TITRES',
     'investor.deals.of_left': 'sur {count} restants',
+    'investor.deals.up_to_you': ' · jusqu’à {count} pour vous',
     'investor.deals.term': 'DURÉE',
     'investor.deals.months_short': '{count} mois',
     'investor.deals.bar_invest': 'INVESTIR',
@@ -8307,6 +8308,8 @@ const fr: Catalog = {
         'Vous ne pouvez plus prendre de titres ici : {reason}.',
     'investor.deal.cap.reason.raise_cap':
         'votre plafond par investisseur pour cette levée',
+    'investor.deal.cap.reason.raise_cap_institution':
+        'la limite de votre institution pour cette levée',
     'investor.deal.cap.reason.availability':
         'ce sont tous les titres encore disponibles',
     'investor.deal.cap.reason.restriction': "une restriction s'applique",
@@ -9483,6 +9486,10 @@ const fr: Catalog = {
     'admin.institutions.saves': {
         one: '· {count} enregistrement',
         other: '· {count} enregistrements',
+    },
+    'admin.institutions.then_saves': {
+        one: '· puis {count} enregistrement par le demandeur',
+        other: '· puis {count} enregistrements par le demandeur',
     },
     'admin.institutions.history_empty': 'Pas encore d’historique.',
     'admin.users.select.kyc': 'Filtrer par KYC',

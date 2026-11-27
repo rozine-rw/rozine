@@ -761,6 +761,25 @@ describe('Apply — step 2, the quote', () => {
                     revision: 6,
                     data: snapshotOf(page, {
                         application: { ...saved, revision: 6 },
+                        quote: null,
+                    }),
+                }),
+            ),
+            answers(
+                operation({
+                    code: 'APPLICATION_EVALUATED',
+                    revision: 7,
+                    data: snapshotOf(page, {
+                        application: { ...saved, revision: 7 },
+                        quote,
+                    }),
+                }),
+            ),
+            answers(
+                operation({
+                    revision: 8,
+                    data: snapshotOf(page, {
+                        application: { ...saved, revision: 8 },
                         quote,
                     }),
                 }),
@@ -848,12 +867,24 @@ describe('Apply — step 2, the quote', () => {
                 method: 'get',
             }),
         );
+        /*
+         * The quote binds the saved draft, uses included, so the changed uses are saved and
+         * evaluated again before the Continue, never refused as a stale quote (QA #833).
+         */
         expect(inertia.calls[2].body).toMatchObject({
+            use_of_funds: ['equipment', 'hiring'],
+            expected_revision: 5,
+        });
+        expect(inertia.calls[2].body).not.toHaveProperty('step');
+        expect(inertia.calls[3].url).toBe(
+            '/preview/business-apply-evaluations',
+        );
+        expect(inertia.calls[4].body).toMatchObject({
             target: '25000000',
             term_months: 4,
             use_of_funds: ['equipment', 'hiring'],
             step: 'review',
-            expected_revision: 5,
+            expected_revision: 7,
         });
     });
 
@@ -898,6 +929,41 @@ describe('Apply — step 2, the quote', () => {
             vi.advanceTimersByTime(2000);
         });
         expect(inertia.calls).toHaveLength(2);
+    });
+
+    it('saves and re-quotes a story edited after the quote before it continues, keeping what was typed (QA #833)', async () => {
+        const user = userEvent.setup();
+        const page = props(raiseStep);
+        const story = 'We supply fresh produce to forty Kigali shops.';
+
+        inertia.queue.push(
+            answers(operation({ data: snapshotOf(page) })),
+            answers(
+                operation({
+                    code: 'APPLICATION_EVALUATED',
+                    data: snapshotOf(page),
+                }),
+            ),
+            answers(operation({ data: snapshotOf(page) })),
+        );
+        render(<BusinessApply {...page} />);
+
+        const field = screen.getByLabelText(
+            'Why should investors trust your business?',
+        );
+
+        await user.clear(field);
+        await user.type(field, story);
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+        await waitFor(() => expect(inertia.calls).toHaveLength(3));
+        expect(inertia.calls[0].body).toMatchObject({ story });
+        expect(inertia.calls[0].body).not.toHaveProperty('step');
+        expect(inertia.calls[1].url).toBe(
+            '/preview/business-apply-evaluations',
+        );
+        expect(inertia.calls[2].body).toMatchObject({ story, step: 'review' });
+        expect(field).toHaveValue(story);
     });
 
     it('opens on a refusal without re-evaluating it', () => {
