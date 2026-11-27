@@ -1866,6 +1866,7 @@ const en = {
     'admin.auth.submitting': 'Signing in…',
     'admin.auth.back': '← Back to all apps',
     'admin.nav.label': 'Console navigation',
+    'admin.nav.related': 'Pages under {title}',
     'admin.nav.open_menu': 'Open menu',
     'admin.nav.close_menu': 'Close menu',
     'admin.nav.all_apps': '← All apps',

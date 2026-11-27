@@ -1924,6 +1924,7 @@ const rw: Catalog = {
     'admin.auth.submitting': 'Birimo kwinjira…',
     'admin.auth.back': '← Subira kuri porogaramu zose',
     'admin.nav.label': 'Kugenda muri konsole',
+    'admin.nav.related': 'Amapaji ari munsi ya {title}',
     'admin.nav.open_menu': 'Fungura urutonde',
     'admin.nav.close_menu': 'Funga urutonde',
     'admin.nav.all_apps': '← Porogaramu zose',

@@ -354,6 +354,18 @@ const LIT_BY: Partial<Record<AdminFrameSection, AdminFrameSection>> = {
     complaints: 'compliance',
 };
 
+/**
+ * Pages a sidebar entry holds beyond its own, offered as a row of links at the top of each of them,
+ * so a queue the design's sidebar does not name is still one click away (staging audit, 27 Nov
+ * 2026): the disbursement queue and the ledger under Payments, reconciliation under Finance and
+ * complaints under Users. Only the links the server sends appear.
+ */
+const SUB_PAGES: Partial<Record<AdminFrameSection, AdminFrameSection[]>> = {
+    payments: ['disbursements', 'ledger'],
+    finance: ['reconciliation'],
+    users: ['complaints'],
+};
+
 type AdminFrameProps = AdminFrameShellProps & {
     section: AdminFrameSection;
     /**
@@ -396,6 +408,12 @@ export function AdminFrame({
     const title = t(`admin.section.${section}.title`);
     /** The sidebar entry this page sits under, named before its title (#623). */
     const parent = LIT_BY[section];
+    const entry = parent ?? section;
+    const related = [entry, ...(SUB_PAGES[entry] ?? [])].flatMap((key) => {
+        const href = nav[key];
+
+        return href === null || href === undefined ? [] : [{ key, href }];
+    });
 
     const runSearch = (
         q: string,
@@ -722,6 +740,34 @@ export function AdminFrame({
                             tabIndex={-1}
                             className="rz-scroll px-4 pt-5 pb-10 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:px-7 lg:pt-[26px] lg:pb-[34px]"
                         >
+                            {related.length > 1 && (
+                                <nav
+                                    aria-label={t('admin.nav.related', {
+                                        title: t(`admin.nav.${entry}`),
+                                    })}
+                                    className="mb-4 flex flex-wrap gap-2"
+                                >
+                                    {related.map(({ key, href }) => (
+                                        <Link
+                                            key={key}
+                                            href={href}
+                                            aria-current={
+                                                key === section
+                                                    ? 'page'
+                                                    : undefined
+                                            }
+                                            className={cn(
+                                                'rounded-[10px] border px-3 py-[7px] text-[12.5px] font-semibold',
+                                                key === section
+                                                    ? 'border-[#1e3aff] bg-[rgba(30,58,255,.08)] text-[#1e3aff] dark:border-[#8fa2ff] dark:text-white'
+                                                    : 'border-rz-hairline bg-rz-surface text-rz-slate',
+                                            )}
+                                        >
+                                            {t(`admin.nav.${key}`)}
+                                        </Link>
+                                    ))}
+                                </nav>
+                            )}
                             {children}
                         </main>
                         {overlay}

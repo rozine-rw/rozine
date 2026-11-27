@@ -1932,6 +1932,7 @@ const fr: Catalog = {
     'admin.auth.submitting': 'Connexion…',
     'admin.auth.back': '← Retour à toutes les applications',
     'admin.nav.label': 'Navigation de la console',
+    'admin.nav.related': 'Pages sous {title}',
     'admin.nav.open_menu': 'Ouvrir le menu',
     'admin.nav.close_menu': 'Fermer le menu',
     'admin.nav.all_apps': '← Toutes les applications',
