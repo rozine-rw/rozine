@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 import listings from './listings'
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::halt
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:34
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:33
 * @route '/admin/secondary-market/halt'
 */
 export const halt = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -17,7 +17,7 @@ halt.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::halt
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:34
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:33
 * @route '/admin/secondary-market/halt'
 */
 halt.url = (options?: RouteQueryOptions) => {
@@ -26,7 +26,7 @@ halt.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::halt
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:34
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:33
 * @route '/admin/secondary-market/halt'
 */
 halt.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -36,7 +36,7 @@ halt.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::halt
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:34
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:33
 * @route '/admin/secondary-market/halt'
 */
 const haltForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -46,7 +46,7 @@ const haltForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::halt
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:34
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:33
 * @route '/admin/secondary-market/halt'
 */
 haltForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -58,7 +58,7 @@ halt.form = haltForm
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::lift
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:40
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:39
 * @route '/admin/secondary-market/lift'
 */
 export const lift = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -73,7 +73,7 @@ lift.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::lift
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:40
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:39
 * @route '/admin/secondary-market/lift'
 */
 lift.url = (options?: RouteQueryOptions) => {
@@ -82,7 +82,7 @@ lift.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::lift
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:40
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:39
 * @route '/admin/secondary-market/lift'
 */
 lift.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -92,7 +92,7 @@ lift.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::lift
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:40
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:39
 * @route '/admin/secondary-market/lift'
 */
 const liftForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -102,7 +102,7 @@ const liftForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::lift
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:40
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:39
 * @route '/admin/secondary-market/lift'
 */
 liftForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

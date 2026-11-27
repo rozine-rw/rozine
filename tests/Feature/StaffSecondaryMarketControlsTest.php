@@ -21,6 +21,16 @@ use Tests\Support\StaffFixture;
  * halts in force and open listings, and the halt, lift and cancel commands with a written reason.
  * One note is issued and its seller has one open listing of 10 units at RWF 2,700.
  */
+
+/** @param  list<string>  $roles */
+function secondaryMarketStaff(array $roles): User
+{
+    $user = User::factory()->withTwoFactor()->create();
+    StaffFixture::provision($user, $roles, 'Market surveillance duty.');
+
+    return $user;
+}
+
 beforeEach(function (): void {
     $this->withoutVite();
     config(['app.secondary_trading' => true]);
@@ -31,12 +41,7 @@ beforeEach(function (): void {
     $seller = User::query()->where('party_id', $holding->party_id)->sole();
     $this->listing = app(EloquentSecondaryMarket::class)->list($seller->id, 1, $holding->id, '10', '2700', (string) Str::uuid())['data']['listing'];
     PrimaryHoldingFixture::flushDeferredChecks();
-    $this->staff = function (array $roles): User {
-        $user = User::factory()->withTwoFactor()->create();
-        StaffFixture::provision($user, $roles, 'Market surveillance duty.');
-
-        return $user;
-    };
+    $this->staff = secondaryMarketStaff(...);
     $this->compliance = ($this->staff)(['compliance']);
     $this->command = fn (string $route, array $input, array $parameters = []) => $this->actingAs($this->compliance)
         ->from('/admin/secondary-market')->post(route($route, $parameters), ['request_id' => (string) Str::uuid(), ...$input]);

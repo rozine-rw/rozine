@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Application\Secondary\Contracts\SecondaryMarket;
-use App\Domain\Operations\CommandRejection;
+use App\Application\Secondary\OverseeSecondaryMarket;
 use App\Http\Requests\Staff\OverseeSecondaryMarketRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
@@ -31,32 +30,28 @@ class StaffSecondaryMarketController extends Controller
         'REASON_REQUIRED' => 'Write the reason. It is recorded and shown to the people affected.',
     ];
 
-    public function halt(OverseeSecondaryMarketRequest $request, SecondaryMarket $market): RedirectResponse
+    public function halt(OverseeSecondaryMarketRequest $request, OverseeSecondaryMarket $market): RedirectResponse
     {
         return $this->answer(fn (): array => $market->halt($this->staff($request), $this->note($request), (string) $request->validated('reason'),
             (string) $request->validated('request_id')));
     }
 
-    public function lift(OverseeSecondaryMarketRequest $request, SecondaryMarket $market): RedirectResponse
+    public function lift(OverseeSecondaryMarketRequest $request, OverseeSecondaryMarket $market): RedirectResponse
     {
         return $this->answer(fn (): array => $market->lift($this->staff($request), $this->note($request), (string) $request->validated('reason'),
             (string) $request->validated('request_id')));
     }
 
-    public function cancel(OverseeSecondaryMarketRequest $request, SecondaryMarket $market, string $listing): RedirectResponse
+    public function cancel(OverseeSecondaryMarketRequest $request, OverseeSecondaryMarket $market, string $listing): RedirectResponse
     {
-        return $this->answer(fn (): array => $market->cancelListing($this->staff($request), $listing, (string) $request->validated('reason'),
+        return $this->answer(fn (): array => $market->cancel($this->staff($request), $listing, (string) $request->validated('reason'),
             (string) $request->validated('request_id')));
     }
 
     /** @param  callable(): array{status: string, code: string}  $command */
     private function answer(callable $command): RedirectResponse
     {
-        try {
-            $result = $command();
-        } catch (CommandRejection $rejection) {
-            $result = ['status' => 'rejected', 'code' => $rejection->reason];
-        }
+        $result = $command();
         if ($result['status'] !== 'completed') {
             throw ValidationException::withMessages(['reason' => [self::MESSAGES[$result['code']] ?? 'We could not record this. Try again.']]);
         }

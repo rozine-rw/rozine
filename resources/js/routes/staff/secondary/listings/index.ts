@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::cancel
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:46
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:45
 * @route '/admin/secondary-market/listings/{listing}/cancel'
 */
 export const cancel = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ cancel.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::cancel
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:46
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:45
 * @route '/admin/secondary-market/listings/{listing}/cancel'
 */
 cancel.url = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -43,7 +43,7 @@ cancel.url = (args: { listing: string | number } | [listing: string | number ] |
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::cancel
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:46
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:45
 * @route '/admin/secondary-market/listings/{listing}/cancel'
 */
 cancel.post = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -53,7 +53,7 @@ cancel.post = (args: { listing: string | number } | [listing: string | number ] 
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::cancel
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:46
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:45
 * @route '/admin/secondary-market/listings/{listing}/cancel'
 */
 const cancelForm = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -63,7 +63,7 @@ const cancelForm = (args: { listing: string | number } | [listing: string | numb
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::cancel
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:46
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:45
 * @route '/admin/secondary-market/listings/{listing}/cancel'
 */
 cancelForm.post = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
