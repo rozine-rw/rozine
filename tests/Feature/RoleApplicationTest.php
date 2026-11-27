@@ -35,6 +35,7 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
 use Symfony\Component\HttpFoundation\Response;
+use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryHoldingFixture;
 use Tests\Support\StaffFixture;
 use Tests\TestCase;
@@ -720,9 +721,18 @@ test('the Institutions page lists every institution and opens its 360, the Users
         ->where('application.id', $application->id)->where('application.role', 'institution')
         ->where('applications_close', '/admin/institutions?institution='.$application->id));
     $this->get(route('staff.institutions.index', ['institution' => '01JZZZZZZZZZZZZZZZZZZZZZZZ']))->assertNotFound();
+    // Before approval, Users lists the account as applying for an institution.
+    $this->get(route('staff.users.index', ['role' => 'institution']))->assertInertia(fn (Assert $page): Assert => $page
+        ->where('rows.0.requested', ['institution'])->where('rows.0.institution', null));
 
     approveKyc($this, $this->officer, $kyc);
     decideApplication($this, $this->officer, $application, 'approve')->assertSessionHasNoErrors();
+    // The Investor app names the institution its holder invests for (QA #826).
+    $membership = RoleMembership::query()->where('party_id', $this->person->party_id)->where('role', 'investor')->sole();
+    $this->person->forceFill(['active_membership_id' => $membership->id, 'active_membership_revision' => $membership->revision])->save();
+    $this->actingAs($this->person)->get(route('investor.deals'))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('investing_for', 'Kivu Harvest Ltd'));
+    $this->actingAs($this->officer);
     // A commitment to a raise counts against the cap of that raise: held at the institution's cap.
     $campaign = BusinessCampaign::factory()->create();
     $reservation = PrimaryReservationRecord::factory()->withInitialVersion()->create(['party_id' => $this->person->party_id, 'units' => 10, 'principal' => '50000',
@@ -737,10 +747,11 @@ test('the Institutions page lists every institution and opens its 360, the Users
         ->where('institution.raises.0.share_bps', intdiv(50000 * 10000, $raise))->where('institution.raises.0.cap_percent', 25));
     $directory(['q' => '108123'])->assertInertia(fn (Assert $page): Assert => $page->where('total', 1));
 
-    // Users can be filtered to the accounts that invest for an institution.
+    // Users can be filtered to the accounts that invest for an institution, each naming the institution once approved.
     $this->get(route('staff.users.index', ['role' => 'institution']))->assertOk()->assertInertia(fn (Assert $page): Assert => $page
         ->where('chips.2.key', 'institution')->where('chips.2.count', 1)->where('chips.2.active', true)
-        ->where('total', 1)->where('rows.0.email', $this->person->email));
+        ->where('total', 1)->where('rows.0.email', $this->person->email)
+        ->where('rows.0.institution', 'Kivu Harvest Ltd')->where('rows.0.requested', []));
 
     // Only staff who review business KYB see the page.
     $this->actingAs($this->person)->get(route('staff.institutions.index'))->assertForbidden();
@@ -763,4 +774,19 @@ test('an institution\'s 360 lists the notes its account holds, by business (27 N
         ->assertInertia(fn (Assert $page): Assert => $page->where('rows.0.holdings', 1)
             ->where('institution.holdings.0.principal.amount', (string) $holding->principal)->where('institution.holdings.0.notes', 1)
             ->where('institution.holdings.0.business_id', (string) $campaign->business_id));
+});
+
+test('an institution is not approved while its applicant still holds money in their own Investor wallet (QA #828)', function (): void {
+    $investor = InvestorWalletFixture::funded('114504');
+    $application = institutionSent($this, $investor['user']);
+
+    // The applicant is told on the role page, and Compliance sees it in the review drawer.
+    $this->actingAs($investor['user'])->get(route('role-application.show', ['for' => 'institution']))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('blockers', ['INVESTOR_WALLET_BALANCE']));
+    $this->actingAs($this->officer)->get(route('staff.institutions.index', ['institution' => $application->id, 'application' => $application->id]))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('application.blockers', ['INVESTOR_WALLET_BALANCE']));
+
+    decideApplication($this, $this->officer, $application, 'approve')
+        ->assertSessionHasErrors(['form' => 'The applicant still holds investments, open orders or money in their Investor wallet. They must clear these before switching role.']);
+    expect($application->refresh()->status)->toBe('submitted')->and(InstitutionalInvestor::query()->count())->toBe(0);
 });

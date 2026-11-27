@@ -1689,6 +1689,15 @@ describe('Add to cart', () => {
         );
     });
 
+    it('names the institution its holder invests for (QA #826)', () => {
+        inertia.shared = { investing_for: 'Kivu Pension Fund' };
+        render(<InvestorDeals {...deals()} />);
+
+        expect(
+            screen.getByText('You invest for Kivu Pension Fund'),
+        ).toBeInTheDocument();
+    });
+
     it('keeps a shortened In cart deck usable after its last selected card is removed', async () => {
         const page = deals();
         page.deals = page.deals.slice(0, 2);

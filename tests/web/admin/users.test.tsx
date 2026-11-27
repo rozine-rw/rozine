@@ -24,6 +24,7 @@ const row = (
     memberships: [],
     staff: null,
     requested: [],
+    institution: null,
     kyc: 'not_started',
     restricted: false,
     closed_at: null,
@@ -197,6 +198,37 @@ const detail = (overrides: Partial<UserDetail> = {}): UserDetail => {
 beforeEach(resetInertia);
 
 describe('Users', () => {
+    it('names the institution an account invests for, or shows it applying (QA #826)', () => {
+        const rows = [
+            row({
+                id: '7',
+                name: 'Inès Institution',
+                institution: 'Kivu Pension Fund',
+                memberships: [
+                    {
+                        role: 'investor',
+                        status: 'active',
+                        since: '2027-01-20T08:00:00+02:00',
+                    },
+                ],
+            }),
+            row({
+                id: '8',
+                name: 'Jules Applying',
+                requested: ['institution'],
+            }),
+        ];
+        render(<AdminUsers {...page({ rows, shown: 2, total: 2 })} />);
+
+        expect(rowOf('Inès Institution')).toHaveTextContent(
+            'Investor for Kivu Pension Fund',
+        );
+        expect(rowOf('Jules Applying')).toHaveTextContent(
+            'Institution (applying)',
+        );
+        expect(rowOf('Jules Applying')).not.toHaveTextContent('No role yet');
+    });
+
     it('lists every account with its roles, KYC state, sign-up date and last activity', () => {
         render(<AdminUsers {...page()} />);
 

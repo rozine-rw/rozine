@@ -60,7 +60,7 @@ $what = match ($role) {
 
 {{ __('Compliance approved :what. You stay an Investor and now invest for the institution, from its own bank account.', ['what' => $what]) }}
 
-{{ __('Next, set up Auto-Deploy with your own rules so your monthly distribution runs automatically. Rozine does not recommend businesses.') }}
+{{ __('Next, open Investor to fund the institution’s wallet and invest. Auto-Deploy, which runs the monthly distribution under the institution’s own rules, comes later. Rozine does not recommend businesses.') }}
 
 <x-mail::button :url="$url" color="investor">
 {{ __('Open Investor') }}

@@ -708,14 +708,14 @@ export function RoleApplicationDrawer({
                                 role="group"
                                 aria-label={t(
                                     `admin.role_applications.${application.role}.confirm_title`,
-                                    { name: title },
+                                    { name: title, person: name },
                                 )}
                                 className="mt-3 rounded-[11px] border border-rz-hairline bg-rz-surface px-3.5 py-3 text-[12.5px] text-rz-body"
                             >
                                 <p className="text-[13px] font-semibold text-rz-ink">
                                     {t(
                                         `admin.role_applications.${application.role}.confirm_title`,
-                                        { name: title },
+                                        { name: title, person: name },
                                     )}
                                 </p>
                                 <p className="mt-1">

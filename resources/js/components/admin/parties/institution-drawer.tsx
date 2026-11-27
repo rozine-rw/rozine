@@ -8,6 +8,7 @@ import {
 } from '@/components/admin/format';
 import { Chip } from '@/components/admin/ui';
 import { useTranslation } from '@/hooks/use-translation';
+import type { MessageCode } from '@/lib/i18n/types';
 import { formatDate, formatRwf } from '@/lib/rozine/format';
 import { cn } from '@/lib/utils';
 import type { InstitutionDetail, InstitutionStatus, Tone } from '@/types/admin';
@@ -94,6 +95,40 @@ export function InstitutionDrawer({
             : institution.name;
     const company = institution.company;
     const account = institution.account_details;
+    const people = [...institution.directors, ...institution.owners];
+    // Each document by what it is, as the review drawer names it (QA #826).
+    const slotLabel = (slot: string): string => {
+        if (slot.startsWith('id:')) {
+            const number = slot.slice(3);
+            const person = people.find(
+                (candidate) => candidate.id_number === number,
+            );
+
+            return t('role.apply.document.person_id', {
+                name: person?.full_name ?? number,
+            });
+        }
+
+        return t(`role.apply.document.${slot}` as MessageCode);
+    };
+    // One applicant save is one Draft revision, so a run of them reads as one row with a count (QA #826).
+    const history = institution.history.reduce<
+        (InstitutionDetail['history'][number] & { saves: number })[]
+    >((rows, entry) => {
+        const last = rows[rows.length - 1];
+
+        if (
+            last !== undefined &&
+            last.status === 'draft' &&
+            entry.status === 'draft'
+        ) {
+            last.saves += 1;
+
+            return rows;
+        }
+
+        return [...rows, { ...entry, saves: 1 }];
+    }, []);
 
     return (
         <Drawer
@@ -490,7 +525,10 @@ export function InstitutionDrawer({
                                         rel="noreferrer"
                                         className="truncate font-semibold text-rz-accent-app-text"
                                     >
-                                        {document.filename}
+                                        {slotLabel(document.slot)}
+                                        <span className="ml-1.5 font-normal text-rz-muted">
+                                            {document.filename}
+                                        </span>
                                     </a>
                                     <span className="shrink-0 text-[11.5px] text-rz-muted">
                                         {formatDate(
@@ -506,7 +544,7 @@ export function InstitutionDrawer({
 
                 <Section title={t('admin.institutions.history')}>
                     <ol className={cn(BOX, 'overflow-hidden')}>
-                        {institution.history.map((entry) => (
+                        {history.map((entry) => (
                             <li key={entry.revision} className={ITEM}>
                                 <div className="flex justify-between gap-3">
                                     <span className="font-semibold text-rz-ink">
@@ -525,6 +563,13 @@ export function InstitutionDrawer({
                                                   `admin.institutions.status.${entry.status as InstitutionStatus}`,
                                               )
                                             : entry.status}
+                                        {entry.saves > 1 && (
+                                            <span className="ml-1.5 font-normal text-rz-muted">
+                                                {t('admin.institutions.saves', {
+                                                    count: entry.saves,
+                                                })}
+                                            </span>
+                                        )}
                                     </span>
                                     <span className="shrink-0 text-[11.5px] text-rz-muted">
                                         {formatTimestamp(entry.at)}
