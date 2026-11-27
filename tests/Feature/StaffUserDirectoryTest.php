@@ -94,7 +94,7 @@ test('every account is listed with its roles, KYC state and basics, and the chip
                 ['key' => 'kyc_verified', 'value' => ['kind' => 'percent', 'value' => '16']],
                 ['key' => 'awaiting_kyc', 'value' => ['kind' => 'count', 'value' => 1]]])
             ->where('chips', fn (Collection $chips): bool => $chips->pluck('count', 'key')->all()
-                === ['all' => 6, 'investor' => 2, 'business' => 2, 'auditor' => 1, 'staff' => 1, 'no_role' => 1])
+                === ['all' => 6, 'investor' => 2, 'institution' => 0, 'business' => 2, 'auditor' => 1, 'staff' => 1, 'no_role' => 1])
             ->where('chips.0', ['key' => 'all', 'count' => 6, 'link' => ['url' => '/admin/users', 'method' => 'get'], 'active' => true])
             ->where('filters', [['key' => 'kyc', 'value' => 'any', 'options' => ['any', 'verified', 'in_review', 'in_progress', 'rejected', 'not_started']],
                 ['key' => 'sort', 'value' => 'newest', 'options' => ['newest', 'oldest', 'name']]])

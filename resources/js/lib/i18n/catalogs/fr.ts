@@ -368,7 +368,7 @@ const fr: Catalog = {
     'suite.hub.next.role_switch_institution.title':
         'Vous investissez pour l’institution',
     'suite.hub.next.role_switch_institution.body':
-        'Ensuite, vous configurez Auto-Deploy avec les règles de l’institution pour sa distribution mensuelle.',
+        'Ensuite, vous ouvrez Investisseur pour alimenter le portefeuille de l’institution et investir pour elle.',
     'suite.hub.next.institution_ready.title': 'Investir pour l’institution',
     'suite.hub.next.institution_ready.body':
         'L’institution est approuvée. Ouvrez Investisseur pour alimenter son portefeuille et investir.',
@@ -513,7 +513,7 @@ const fr: Catalog = {
     'admin.role_applications.auditor.kicker': 'Demande auditeur',
     'admin.role_applications.auditor.approve': 'Approuver et accréditer',
     'admin.role_applications.institution.confirm_title':
-        'Autoriser {name} à investir pour cette institution ?',
+        'Autoriser {person} à investir pour {name} ?',
     'admin.role_applications.institution.confirm_body':
         '{name} reste Investisseur et investit désormais pour l’institution, selon son engagement mensuel. Notez ce que vous avez vérifié.',
     'admin.role_applications.institution.title':
@@ -524,6 +524,8 @@ const fr: Catalog = {
         'Demande d’investisseur institutionnel',
     'admin.role_applications.institution.approve': 'Approuver l’institution',
     'admin.role_applications.institution.badge': 'Investisseur institutionnel',
+    'admin.role_applications.institution.name_differs':
+        'Écrit autrement que le nom enregistré, {name}.',
     'admin.role_applications.institution.declared':
         'Automatise sa distribution selon ses propres règles',
     'admin.role_applications.institution.not_declared': 'Non confirmé',
@@ -568,6 +570,8 @@ const fr: Catalog = {
     'admin.role_applications.note': 'Note au demandeur',
     'admin.role_applications.note_hint':
         'Une note est requise pour refuser. Pour renvoyer, cochez les éléments à modifier ; la note est facultative. Approuver en fait le seul rôle du demandeur, à la place d’Investisseur s’il l’est.',
+    'admin.role_applications.note_hint_institution':
+        'Une note est requise pour refuser. Pour renvoyer, cochez les éléments à modifier ; la note est facultative. Approuver laisse le demandeur Investisseur, investissant pour l’institution.',
     'admin.role_applications.reject': 'Rejeter',
     'admin.role_applications.more': 'Demander plus',
     'admin.revision.legend': 'Que doit modifier le demandeur ?',
@@ -576,6 +580,7 @@ const fr: Catalog = {
     'admin.revision.group.people': 'Personnes',
     'admin.revision.group.licence': 'Licence ICPAR',
     'admin.revision.group.coverage': 'Couverture',
+    'admin.revision.group.institution': 'Engagement et compte',
     'admin.revision.group.documents': 'Documents',
     'admin.revision.note_label': 'Ce qu’il faut corriger dans {item}',
     'admin.revision.note_placeholder': 'Ce qu’il faut corriger (facultatif)',
@@ -5288,6 +5293,7 @@ const fr: Catalog = {
     'business.audit_prep.closing':
         "Vous ne déposez jamais vous-même le rapport mensuel. Votre expert-comptable passe, examine vos registres sur place et scelle le rapport — votre rôle est d'être prêt, puis d'examiner ses constats et de les contester en cas d'erreur.",
 
+    'investor.investing_for': 'Vous investissez pour {name}',
     'investor.nav.deals': 'Offres',
     'investor.nav.portfolio': 'Portefeuille',
     'investor.nav.profile': 'Profil',
@@ -5577,6 +5583,7 @@ const fr: Catalog = {
     'investor.deals.notes_quantity': 'Nombre de titres',
     'investor.deals.notes_suffix': 'TITRES',
     'investor.deals.of_left': 'sur {count} restants',
+    'investor.deals.up_to_you': ' · jusqu’à {count} pour vous',
     'investor.deals.term': 'DURÉE',
     'investor.deals.months_short': '{count} mois',
     'investor.deals.bar_invest': 'INVESTIR',
@@ -8353,6 +8360,8 @@ const fr: Catalog = {
         'Vous ne pouvez plus prendre de titres ici : {reason}.',
     'investor.deal.cap.reason.raise_cap':
         'votre plafond par investisseur pour cette levée',
+    'investor.deal.cap.reason.raise_cap_institution':
+        'la limite de votre institution pour cette levée',
     'investor.deal.cap.reason.availability':
         'ce sont tous les titres encore disponibles',
     'investor.deal.cap.reason.restriction': "une restriction s'applique",
@@ -9420,6 +9429,121 @@ const fr: Catalog = {
     'admin.users.chip.auditor': 'Auditeurs',
     'admin.users.chip.staff': 'Personnel',
     'admin.users.chip.no_role': 'Sans rôle',
+    'admin.users.chip.institution': 'Institutions',
+    'admin.nav.institutions': 'Institutions',
+    'admin.section.institutions.title': 'Institutions',
+    'admin.section.institutions.subtitle':
+        'Fonds de pension, fonds de capital-risque et autres institutions qui investissent via Rozine',
+    'admin.section.institutions.search':
+        'Rechercher par nom, code RDB ou e-mail…',
+    'admin.institutions.stats.approved_only': 'Institutions approuvées',
+    'admin.institutions.stats.institutions': 'Institutions',
+    'admin.institutions.stats.awaiting_review': 'En attente d’examen',
+    'admin.institutions.stats.committed_monthly': 'Engagé chaque mois',
+    'admin.institutions.stats.invested': 'Investi',
+    'admin.institutions.filter': 'Filtrer les institutions par statut',
+    'admin.institutions.chip.all': 'Toutes',
+    'admin.institutions.chip.approved': 'Approuvées',
+    'admin.institutions.chip.submitted': 'En examen',
+    'admin.institutions.chip.changes_requested': 'Renvoyées',
+    'admin.institutions.chip.draft': 'Brouillon',
+    'admin.institutions.chip.rejected': 'Rejetées',
+    'admin.institutions.status.approved': 'Approuvée',
+    'admin.institutions.status.submitted': 'En examen',
+    'admin.institutions.status.changes_requested': 'Renvoyée',
+    'admin.institutions.status.draft': 'Brouillon',
+    'admin.institutions.status.rejected': 'Rejetée',
+    'admin.institutions.showing': '{shown} institutions affichées sur {total}',
+    'admin.institutions.count': {
+        one: '{count} institution',
+        other: '{count} institutions',
+    },
+    'admin.institutions.table': 'Institutions',
+    'admin.institutions.empty':
+        'Aucune institution ne correspond à ces filtres',
+    'admin.institutions.col.institution': 'Institution',
+    'admin.institutions.col.representative': 'Représentant',
+    'admin.institutions.col.status': 'Statut',
+    'admin.institutions.col.commitment': 'Engagement mensuel',
+    'admin.institutions.col.invested': 'Investi',
+    'admin.institutions.col.wallet': 'Portefeuille',
+    'admin.institutions.name_pending': 'Nom pas encore indiqué',
+    'admin.institutions.rdb': 'RDB {code}',
+    'admin.institutions.drawer_label': '{name}, institution',
+    'admin.institutions.review': 'Examiner la demande',
+    'admin.institutions.open_application': 'Ouvrir la demande',
+    'admin.institutions.open_user': 'Compte utilisateur →',
+    'admin.institutions.open_investor': 'Vue 360 investisseur →',
+    'admin.institutions.overview': 'Aperçu',
+    'admin.institutions.fact.commitment': 'Engagement mensuel',
+    'admin.institutions.fact.invested': 'Investi',
+    'admin.institutions.fact.wallet': 'Portefeuille',
+    'admin.institutions.fact.committed': 'Engagé, non émis',
+    'admin.institutions.fact.holdings': 'Positions',
+    'admin.institutions.fact.cap': 'Plafond par levée',
+    'admin.institutions.fact.submitted': 'Soumise',
+    'admin.institutions.fact.approved': 'Approuvée',
+    'admin.institutions.cap_value': '{percent} % d’une levée',
+    'admin.institutions.not_yet': 'Pas encore',
+    'admin.institutions.approved_by': '{date} par {name}',
+    'admin.institutions.auto_deploy': 'Auto-Deploy',
+    'admin.institutions.auto_deploy_on': 'Auto-Deploy est activé',
+    'admin.institutions.auto_deploy_off':
+        'Auto-Deploy n’est pas encore configuré',
+    'admin.institutions.auto_deploy_body':
+        'L’institution engage {amount} par mois. Ses propres règles d’investissement, sa limite par engagement et chaque engagement automatique apparaîtront ici.',
+    'admin.institutions.raises': 'Part de chaque levée',
+    'admin.institutions.raises_empty':
+        'Aucun engagement ni position dans une levée pour l’instant.',
+    'admin.institutions.share_of_cap':
+        '{share} % de la levée · plafond {cap} %',
+    'admin.institutions.raise_amounts': '{amount} sur {total}',
+    'admin.institutions.investments': 'Investissements',
+    'admin.institutions.holdings_empty':
+        'Aucune position émise pour l’instant.',
+    'admin.institutions.holding': {
+        one: '{amount} · {count} note',
+        other: '{amount} · {count} notes',
+    },
+    'admin.institutions.company': 'Société et compte',
+    'admin.institutions.company_empty':
+        'Le demandeur n’a pas encore donné les informations de la société.',
+    'admin.institutions.fact.tin': 'NIF',
+    'admin.institutions.fact.sector': 'Secteur',
+    'admin.institutions.fact.incorporated': 'Constituée le',
+    'admin.institutions.fact.address': 'Adresse enregistrée',
+    'admin.institutions.fact.phone': 'Téléphone',
+    'admin.institutions.fact.bank': 'Compte bancaire',
+    'admin.institutions.people': 'Administrateurs et propriétaires',
+    'admin.institutions.director': 'Administrateur',
+    'admin.institutions.owner': 'Propriétaire · {percent} %',
+    'admin.institutions.pep': 'Personne politiquement exposée',
+    'admin.institutions.people_empty':
+        'Aucune personne indiquée pour l’instant.',
+    'admin.institutions.representative': 'Représentant',
+    'admin.institutions.fact.name': 'Nom',
+    'admin.institutions.fact.email': 'E-mail',
+    'admin.institutions.fact.title': 'Fonction',
+    'admin.institutions.fact.kyc': 'KYC personnel',
+    'admin.institutions.fact.two_factor': 'Connexion à deux facteurs',
+    'admin.institutions.kyc.approved': 'Approuvé',
+    'admin.institutions.kyc.submitted': 'En examen',
+    'admin.institutions.kyc.rejected': 'Renvoyé',
+    'admin.institutions.kyc.draft': 'En cours',
+    'admin.institutions.kyc.none': 'Pas commencé',
+    'admin.institutions.documents': 'Documents',
+    'admin.institutions.documents_empty':
+        'Aucun document téléversé pour l’instant.',
+    'admin.institutions.history': 'Historique',
+    'admin.institutions.saves': {
+        one: '· {count} enregistrement',
+        other: '· {count} enregistrements',
+    },
+    'admin.institutions.then_saves': {
+        one: '· puis {count} enregistrement par le demandeur',
+        other: '· puis {count} enregistrements par le demandeur',
+    },
+    'admin.institutions.history_empty': 'Pas encore d’historique.',
     'admin.users.select.kyc': 'Filtrer par KYC',
     'admin.users.select.sort': 'Trier les utilisateurs',
     'admin.users.kyc_filter.any': 'KYC : Tous',
@@ -9450,6 +9574,8 @@ const fr: Catalog = {
     'admin.users.membership.suspended': 'Suspendu',
     'admin.users.membership.revoked': 'Révoqué',
     'admin.users.staff_roles': 'Personnel : {roles}',
+    'admin.users.institution_applying': 'Institution (demande en cours)',
+    'admin.users.invests_for': 'Investisseur pour {name}',
     'admin.users.requested': '{role} demandé',
     'admin.users.no_role': 'Aucun rôle pour l’instant',
     'admin.users.kyc.verified': 'Vérifié',

@@ -76,6 +76,11 @@ class StaffRoleApplicationController extends Controller
             default => 'Rejected. :name will see your note.',
         }, ['name' => $application['account']['name'], 'company' => $application['state']['answers']['company']['legal_name'] ?? ''])]);
 
+        // An institution's review returns to its 360 on the Institutions page (27 Nov 2026).
+        if ($application['role'] === 'institution') {
+            return redirect()->route('staff.institutions.index', ['institution' => $applicationId, 'application' => $applicationId]);
+        }
+
         return redirect()->route($application['role'] === 'auditor' ? 'staff.auditors.index' : 'staff.businesses.index',
             ['application' => $applicationId, 'kyb' => $decision === 'approve' ? 'approved' : ($decision === 'more' ? 'changes_requested' : 'rejected')]);
     }

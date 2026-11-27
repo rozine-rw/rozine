@@ -22,16 +22,17 @@ use RuntimeException;
  * issued campaign without its schedule all fail closed with PRIMARY_ISSUANCE_INTEGRITY_FAILED.
  * Principal is taken from the schedule.
  *
- * The original principal is the outstanding principal only while nothing can have reduced it.
- * Holdings cannot be updated, deleted or reassigned (`protect_primary_holding`), and there is no
- * transfer producer. The only way principal comes back is a Business repayment allocated by
- * servicing, so the figure is complete only while no Business repayment has been recorded at all.
- * Once servicing records one, this source reports incomplete until servicing supplies the
- * reductions, and pricing refuses with POLICY_INPUT_REQUIRED instead of using a stale figure.
+ * Holdings cannot be updated, deleted or reassigned (`protect_primary_holding`). The only way
+ * principal comes back is a Business repayment, which servicing pays out to each lot as an
+ * immutable `servicing_payouts` row. Outstanding principal is each Holding's scheduled principal
+ * less the principal its own lot has been paid. The figure is complete only while every recorded
+ * Business repayment has its payouts: a repayment not yet paid out could still reduce principal, so
+ * the source reports incomplete and pricing refuses with POLICY_INPUT_REQUIRED rather than guess
+ * (QA #831: before, any repayment anywhere left every investor's cart unpriceable).
  */
 final readonly class RetainedHeldNoteCapital implements HeldNoteCapital
 {
-    public const string VERSION = 'held-note-capital-2';
+    public const string VERSION = 'held-note-capital-3';
 
     public function __construct(private CanonicalJson $json, private RetainedNoteSchedules $schedules) {}
 
@@ -49,13 +50,16 @@ final readonly class RetainedHeldNoteCapital implements HeldNoteCapital
                 }
             }
             usort($notes, fn (array $left, array $right): int => strcmp($left['id'], $right['id']));
-            $reduced = DB::table('business_repayments')->exists();
-            $outstanding = (string) $principal;
+            $repaid = $notes === [] ? '0' : (string) DB::table('servicing_payouts')->where('lot_type', 'primary_holding')
+                ->whereIn('lot_id', array_column($notes, 'id'))->sum('principal');
+            $complete = ! DB::table('business_repayments as repayment')
+                ->whereNotExists(fn ($payouts) => $payouts->from('servicing_payouts')->whereColumn('servicing_payouts.repayment_id', 'repayment.id'))->exists();
+            $outstanding = (string) $principal->minus(BigInteger::of($repaid));
 
             return ['outstanding_principal' => $outstanding, 'revision' => count($notes),
                 'sha256' => hash('sha256', $this->json->encode(['version' => self::VERSION, 'party_id' => $partyId, 'notes' => $notes,
-                    'outstanding_principal' => $outstanding, 'complete' => ! $reduced])),
-                'complete' => ! $reduced, 'as_of' => now('UTC')->format('Y-m-d\TH:i:s\Z')];
+                    'repaid_principal' => (string) BigInteger::of($repaid), 'outstanding_principal' => $outstanding, 'complete' => $complete])),
+                'complete' => $complete, 'as_of' => now('UTC')->format('Y-m-d\TH:i:s\Z')];
         });
     }
 

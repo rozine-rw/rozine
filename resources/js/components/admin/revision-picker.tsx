@@ -10,6 +10,7 @@ type Group =
     | 'licence'
     | 'coverage'
     | 'documents'
+    | 'institution'
     | 'details';
 
 const groupOf = (key: string): Group => {
@@ -19,7 +20,8 @@ const groupOf = (key: string): Group => {
         prefix === 'company' ||
         prefix === 'licence' ||
         prefix === 'coverage' ||
-        prefix === 'documents'
+        prefix === 'documents' ||
+        prefix === 'institution'
     ) {
         return prefix;
     }
@@ -41,6 +43,7 @@ const ORDER: Group[] = [
     'people',
     'licence',
     'coverage',
+    'institution',
     'documents',
 ];
 

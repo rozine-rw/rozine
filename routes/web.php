@@ -73,6 +73,7 @@ use App\Http\Controllers\StaffDirectoryController;
 use App\Http\Controllers\StaffDisbursementController;
 use App\Http\Controllers\StaffExceptionsController;
 use App\Http\Controllers\StaffHomeController;
+use App\Http\Controllers\StaffInstitutionDirectoryController;
 use App\Http\Controllers\StaffInvestorDirectoryController;
 use App\Http\Controllers\StaffInvestorVerificationController;
 use App\Http\Controllers\StaffLedgerController;
@@ -405,6 +406,9 @@ Route::get('admin/investors', [StaffInvestorDirectoryController::class, 'index']
 
 Route::get('admin/users', [StaffUserDirectoryController::class, 'index'])
     ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.users.index');
+
+Route::get('admin/institutions', [StaffInstitutionDirectoryController::class, 'index'])
+    ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.institutions.index');
 
 Route::get('admin/businesses', [StaffBusinessDirectoryController::class, 'index'])
     ->middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->name('staff.businesses.index');

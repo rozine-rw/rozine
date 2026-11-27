@@ -27,10 +27,10 @@ namespace App\Application\Identity\Contracts;
  * @phpstan-type Staff array{roles: list<string>, enabled: bool}|null
  * @phpstan-type DirectoryRow array{
  *     id: int, party_id: string|null, name: string, email: string, email_verified: bool, signed_up_at: string, last_seen_at: string|null,
- *     memberships: list<Membership>, staff: Staff, requested: list<'business'|'auditor'>, kyc: Kyc, restricted: bool,
+ *     memberships: list<Membership>, staff: Staff, requested: list<'business'|'auditor'|'institution'>, institution: string|null, kyc: Kyc, restricted: bool,
  *     closed_at: string|null, closure_reason: string|null
  * }
- * @phpstan-type Counts array{all: int, investor: int, business: int, auditor: int, staff: int, no_role: int}
+ * @phpstan-type Counts array{all: int, investor: int, business: int, auditor: int, staff: int, no_role: int, institution: int}
  * @phpstan-type Directory array{rows: list<DirectoryRow>, matching: int, counts: Counts, everyone: int, new_this_week: int, kyc_verified: int, awaiting_review: int, closed: int}
  * @phpstan-type Detail array{
  *     row: DirectoryRow, email_verified_at: string|null, two_factor: bool, passkeys: int, verification_id: string|null, submitted_at: string|null,
@@ -43,7 +43,7 @@ interface UserDirectoryStore
     /**
      * One page of accounts under a role chip, KYC filter, sort and name or email search.
      *
-     * @param  'all'|'investor'|'business'|'auditor'|'staff'|'no_role'  $role
+     * @param  'all'|'investor'|'institution'|'business'|'auditor'|'staff'|'no_role'  $role
      * @param  'any'|Kyc  $kyc
      * @param  'newest'|'oldest'|'name'  $sort
      * @return Directory

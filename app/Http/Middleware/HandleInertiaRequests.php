@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Application\Environment\EnvironmentIsolation;
+use App\Application\Identity\Contracts\InstitutionalInvestors;
 use App\Application\Identity\GetIdentityContext;
 use App\Application\Identity\GetStaffAccess;
 use App\Application\Primary\AcknowledgeInvestorRisks;
@@ -58,6 +59,8 @@ class HandleInertiaRequests extends Middleware
             // The Investor app's Cart tab badge; every other page has no cart.
             'cart_count' => fn (): ?int => $request->routeIs('investor.*') && $request->user() !== null
                 ? app(GetInvestorCart::class)->count((int) $request->user()->getAuthIdentifier()) : null,
+            // The institution an Investor invests for, named across the Investor app once approved (QA #826).
+            'investing_for' => fn (): ?string => $this->investingFor($request),
             // The floating "Held for checkout" countdown on every Investor page but the checkout itself,
             // sent on partial reloads too so a change beacon drops a hold released or confirmed elsewhere.
             'checkout_holds' => Inertia::always(fn (): ?array => $this->checkoutHolds($request)),
@@ -101,6 +104,14 @@ class HandleInertiaRequests extends Middleware
             'expires_at' => $hold['expires_at'],
             'link' => ['url' => route('investor.checkout', ['campaign' => $hold['campaign_id'], 'reservation' => $hold['reservation_id']], false), 'method' => 'get'],
         ], $holds)];
+    }
+
+    /** The legal name of the institution the signed-in Investor invests for, on Investor pages only. */
+    private function investingFor(Request $request): ?string
+    {
+        $partyId = $request->routeIs('investor.*') ? $request->user()?->getAttribute('party_id') : null;
+
+        return is_string($partyId) ? (app(InstitutionalInvestors::class)->forParty($partyId)['legal_name'] ?? null) : null;
     }
 
     /**

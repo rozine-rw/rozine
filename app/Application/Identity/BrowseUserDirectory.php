@@ -22,7 +22,7 @@ final class BrowseUserDirectory
     public function __construct(private UserDirectoryStore $store, private AuthorizeStaffPermission $staff) {}
 
     /**
-     * @param  'all'|'investor'|'business'|'auditor'|'staff'|'no_role'  $role
+     * @param  'all'|'investor'|'institution'|'business'|'auditor'|'staff'|'no_role'  $role
      * @param  'any'|Kyc  $kyc
      * @param  'newest'|'oldest'|'name'  $sort
      * @return Directory
