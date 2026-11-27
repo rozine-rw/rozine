@@ -720,9 +720,18 @@ test('the Institutions page lists every institution and opens its 360, the Users
         ->where('application.id', $application->id)->where('application.role', 'institution')
         ->where('applications_close', '/admin/institutions?institution='.$application->id));
     $this->get(route('staff.institutions.index', ['institution' => '01JZZZZZZZZZZZZZZZZZZZZZZZ']))->assertNotFound();
+    // Before approval, Users lists the account as applying for an institution.
+    $this->get(route('staff.users.index', ['role' => 'institution']))->assertInertia(fn (Assert $page): Assert => $page
+        ->where('rows.0.requested', ['institution'])->where('rows.0.institution', null));
 
     approveKyc($this, $this->officer, $kyc);
     decideApplication($this, $this->officer, $application, 'approve')->assertSessionHasNoErrors();
+    // The Investor app names the institution its holder invests for (QA #826).
+    $membership = RoleMembership::query()->where('party_id', $this->person->party_id)->where('role', 'investor')->sole();
+    $this->person->forceFill(['active_membership_id' => $membership->id, 'active_membership_revision' => $membership->revision])->save();
+    $this->actingAs($this->person)->get(route('investor.deals'))->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page->where('investing_for', 'Kivu Harvest Ltd'));
+    $this->actingAs($this->officer);
     // A commitment to a raise counts against the cap of that raise: held at the institution's cap.
     $campaign = BusinessCampaign::factory()->create();
     $reservation = PrimaryReservationRecord::factory()->withInitialVersion()->create(['party_id' => $this->person->party_id, 'units' => 10, 'principal' => '50000',
@@ -737,10 +746,11 @@ test('the Institutions page lists every institution and opens its 360, the Users
         ->where('institution.raises.0.share_bps', intdiv(50000 * 10000, $raise))->where('institution.raises.0.cap_percent', 25));
     $directory(['q' => '108123'])->assertInertia(fn (Assert $page): Assert => $page->where('total', 1));
 
-    // Users can be filtered to the accounts that invest for an institution.
+    // Users can be filtered to the accounts that invest for an institution, each naming the institution once approved.
     $this->get(route('staff.users.index', ['role' => 'institution']))->assertOk()->assertInertia(fn (Assert $page): Assert => $page
         ->where('chips.2.key', 'institution')->where('chips.2.count', 1)->where('chips.2.active', true)
-        ->where('total', 1)->where('rows.0.email', $this->person->email));
+        ->where('total', 1)->where('rows.0.email', $this->person->email)
+        ->where('rows.0.institution', 'Kivu Harvest Ltd')->where('rows.0.requested', []));
 
     // Only staff who review business KYB see the page.
     $this->actingAs($this->person)->get(route('staff.institutions.index'))->assertForbidden();

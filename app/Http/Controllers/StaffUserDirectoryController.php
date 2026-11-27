@@ -92,7 +92,7 @@ class StaffUserDirectoryController extends Controller
     {
         return ['id' => (string) $row['id'], 'name' => $row['name'], 'email' => $row['email'], 'email_verified' => $row['email_verified'],
             'signed_up_at' => $row['signed_up_at'], 'last_seen_at' => $row['last_seen_at'], 'memberships' => $row['memberships'],
-            'staff' => $row['staff'], 'requested' => $row['requested'], 'kyc' => $row['kyc'], 'restricted' => $row['restricted'],
+            'staff' => $row['staff'], 'requested' => $row['requested'], 'institution' => $row['institution'], 'kyc' => $row['kyc'], 'restricted' => $row['restricted'],
             'closed_at' => $row['closed_at'], 'closure_reason' => $row['closure_reason']];
     }
 

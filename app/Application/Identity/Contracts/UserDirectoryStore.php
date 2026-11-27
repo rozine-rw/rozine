@@ -27,7 +27,7 @@ namespace App\Application\Identity\Contracts;
  * @phpstan-type Staff array{roles: list<string>, enabled: bool}|null
  * @phpstan-type DirectoryRow array{
  *     id: int, party_id: string|null, name: string, email: string, email_verified: bool, signed_up_at: string, last_seen_at: string|null,
- *     memberships: list<Membership>, staff: Staff, requested: list<'business'|'auditor'>, kyc: Kyc, restricted: bool,
+ *     memberships: list<Membership>, staff: Staff, requested: list<'business'|'auditor'|'institution'>, institution: string|null, kyc: Kyc, restricted: bool,
  *     closed_at: string|null, closure_reason: string|null
  * }
  * @phpstan-type Counts array{all: int, investor: int, business: int, auditor: int, staff: int, no_role: int, institution: int}

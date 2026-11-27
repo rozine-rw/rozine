@@ -173,6 +173,26 @@ const detail = (
                 current: true,
                 link: link('/admin/role-applications/A1/documents/D1'),
             },
+            {
+                id: 'D2',
+                slot: 'id:1199080012345678',
+                filename: 'front.jpg',
+                media_type: 'image/jpeg',
+                size_bytes: 2048,
+                uploaded_at: '2027-01-20T08:00:00+02:00',
+                current: true,
+                link: link('/admin/role-applications/A1/documents/D2'),
+            },
+            {
+                id: 'D3',
+                slot: 'id:UNKNOWN1',
+                filename: 'other.jpg',
+                media_type: 'image/jpeg',
+                size_bytes: 2048,
+                uploaded_at: '2027-01-20T08:00:00+02:00',
+                current: true,
+                link: link('/admin/role-applications/A1/documents/D3'),
+            },
         ],
         holdings: [
             {
@@ -196,18 +216,32 @@ const detail = (
         auto_deploy: { enabled: false },
         history: [
             {
-                revision: 2,
+                revision: 4,
                 status: 'approved',
                 command: 'approve',
                 reason: 'All checks passed.',
                 at: '2027-01-21T08:00:00+02:00',
             },
             {
-                revision: 1,
+                revision: 3,
                 status: 'submitted',
                 command: 'submit',
                 reason: null,
                 at: '2027-01-20T08:00:00+02:00',
+            },
+            {
+                revision: 1,
+                status: 'draft',
+                command: 'save',
+                reason: null,
+                at: '2027-01-19T09:00:00+02:00',
+            },
+            {
+                revision: 0,
+                status: 'draft',
+                command: 'save',
+                reason: null,
+                at: '2027-01-19T08:00:00+02:00',
             },
         ],
         links: {
@@ -271,6 +305,10 @@ describe('Institutions', () => {
         expect(drawer).toHaveTextContent('Marie Owner');
         expect(drawer).toHaveTextContent('Bank of Kigali');
         expect(drawer).toHaveTextContent('All checks passed.');
+        expect(drawer).toHaveTextContent('RDB certificate of incorporation');
+        expect(drawer).toHaveTextContent('ID of Jean Director');
+        expect(drawer).toHaveTextContent('ID of UNKNOWN1');
+        expect(drawer).toHaveTextContent('· 2 saves');
         expect(
             within(drawer).getByRole('link', { name: 'User account →' }),
         ).toHaveAttribute('href', '/admin/users?user=7');

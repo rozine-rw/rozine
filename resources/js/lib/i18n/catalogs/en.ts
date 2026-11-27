@@ -356,7 +356,7 @@ const en = {
     'suite.hub.next.role_switch_institution.title':
         'You invest for the institution',
     'suite.hub.next.role_switch_institution.body':
-        'Then you set up Auto-Deploy with the institution’s own rules for its monthly distribution.',
+        'Then you open Investor to fund the institution’s wallet and invest for it.',
     'suite.hub.next.institution_ready.title': 'Invest for the institution',
     'suite.hub.next.institution_ready.body':
         'The institution is approved. Open Investor to fund its wallet and invest.',
@@ -495,7 +495,7 @@ const en = {
     'admin.role_applications.auditor.kicker': 'Auditor application',
     'admin.role_applications.auditor.approve': 'Approve and accredit',
     'admin.role_applications.institution.confirm_title':
-        'Approve {name} to invest for this institution?',
+        'Approve {person} to invest for {name}?',
     'admin.role_applications.institution.confirm_body':
         '{name} stays an Investor and invests for the institution from now on, under its monthly commitment. Record what you checked in the note.',
     'admin.role_applications.institution.title':
@@ -5034,6 +5034,7 @@ const en = {
         'You read the findings and, if something is wrong, dispute with counter-proof by {date}.',
     'business.audit_prep.closing':
         'You never file the monthly report yourself. Your CPA visits, reviews your records on site and seals the report — your part is being ready, then reviewing what they found and disputing it if something is wrong.',
+    'investor.investing_for': 'You invest for {name}',
     'investor.nav.deals': 'Deals',
     'investor.nav.portfolio': 'Portfolio',
     'investor.nav.profile': 'Profile',
@@ -9046,6 +9047,7 @@ const en = {
     'admin.section.institutions.subtitle':
         'Pension funds, VCs and other institutions that invest through Rozine',
     'admin.section.institutions.search': 'Search by name, RDB code or email…',
+    'admin.institutions.stats.approved_only': 'Approved institutions',
     'admin.institutions.stats.institutions': 'Institutions',
     'admin.institutions.stats.awaiting_review': 'Awaiting review',
     'admin.institutions.stats.committed_monthly': 'Committed each month',
@@ -9138,6 +9140,10 @@ const en = {
     'admin.institutions.documents': 'Documents',
     'admin.institutions.documents_empty': 'No documents uploaded yet.',
     'admin.institutions.history': 'History',
+    'admin.institutions.saves': {
+        one: '· {count} save',
+        other: '· {count} saves',
+    },
     'admin.institutions.history_empty': 'No history yet.',
     'admin.users.select.kyc': 'Filter by KYC',
     'admin.users.select.sort': 'Sort users',
@@ -9169,6 +9175,8 @@ const en = {
     'admin.users.membership.suspended': 'Suspended',
     'admin.users.membership.revoked': 'Revoked',
     'admin.users.staff_roles': 'Staff: {roles}',
+    'admin.users.institution_applying': 'Institution (applying)',
+    'admin.users.invests_for': 'Investor for {name}',
     'admin.users.requested': '{role} requested',
     'admin.users.no_role': 'No role yet',
     'admin.users.kyc.verified': 'Verified',

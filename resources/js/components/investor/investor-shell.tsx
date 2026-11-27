@@ -80,7 +80,8 @@ export function InvestorShell({
     children,
 }: InvestorShellProps) {
     const { t } = useTranslation();
-    const cartCount = usePage().props.cart_count;
+    const { cart_count: cartCount, investing_for: investingFor } =
+        usePage().props;
     useChangeBeacon(beacon);
     const nav = (
         ['deals', 'portfolio', 'market', 'cart', 'profile'] as const
@@ -112,6 +113,11 @@ export function InvestorShell({
             showTabBar={showTabBar}
         >
             <Head title={title} />
+            {typeof investingFor === 'string' && (
+                <p className="mx-4 mt-3 rounded-[10px] bg-rz-accent-soft px-3 py-2 text-[12.5px] font-semibold text-rz-accent-app-text lg:mx-6">
+                    {t('investor.investing_for', { name: investingFor })}
+                </p>
+            )}
             {children}
             <FloatingHold wallet={links.wallet} raised={showTabBar ?? true} />
             <RiskGate />

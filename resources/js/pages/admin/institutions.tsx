@@ -148,6 +148,11 @@ export default function AdminInstitutions(props: AdminInstitutionsProps) {
                         index={index}
                         label={t(`admin.institutions.stats.${stat.key}`)}
                         value={format(stat.value)}
+                        sub={
+                            stat.key === 'committed_monthly'
+                                ? t('admin.institutions.stats.approved_only')
+                                : undefined
+                        }
                     />
                 ))}
             </div>

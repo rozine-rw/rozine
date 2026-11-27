@@ -125,6 +125,8 @@ final class EloquentUserDirectoryStore implements UserDirectoryStore
                 EXISTS (SELECT 1 FROM role_memberships m WHERE m.party_id = users.party_id AND m.role = 'investor' AND m.status <> 'revoked') AS is_investor, EXISTS (SELECT 1 FROM role_memberships m WHERE m.party_id = users.party_id AND m.role = 'business' AND m.status <> 'revoked') AS is_business, EXISTS (SELECT 1 FROM role_memberships m WHERE m.party_id = users.party_id AND m.role = 'auditor' AND m.status <> 'revoked') AS is_auditor,
                 staff_accounts.user_id IS NOT NULL AS is_staff, coalesce(staff_accounts.enabled, false) AS staff_enabled,
                 EXISTS (SELECT 1 FROM role_applications ra WHERE ra.party_id = users.party_id AND ra.role = 'institution') AS is_institution,
+                (SELECT ra.status FROM role_applications ra WHERE ra.party_id = users.party_id AND ra.role = 'institution') AS institution_status,
+                (SELECT ii.legal_name FROM institutional_investors ii WHERE ii.party_id = users.party_id) AS institution_name,
                 EXISTS (SELECT 1 FROM investor_account_restrictions r WHERE r.party_id = users.party_id AND r.effective_at <= now()
                     AND (r.expires_at IS NULL OR r.expires_at > now())) AS restricted");
     }
@@ -157,6 +159,10 @@ final class EloquentUserDirectoryStore implements UserDirectoryStore
                     $requested[] = $role;
                 }
             }
+            // An institution's application under way reads as a role asked for; once approved, the institution is named (QA #826).
+            if (in_array($record->institution_status, ['draft', 'submitted', 'changes_requested'], true)) {
+                $requested[] = 'institution';
+            }
             $account = $staff->get((int) $record->id);
             $staffRoles = $account === null ? [] : array_values(array_map(fn (mixed $name): string => (string) $name, $account->roles->pluck('name')->sort()->all()));
 
@@ -164,7 +170,8 @@ final class EloquentUserDirectoryStore implements UserDirectoryStore
                 'email_verified' => (bool) $record->email_verified, 'signed_up_at' => (string) self::time($record->signed_up_at),
                 'last_seen_at' => $record->last_activity === null ? null : Carbon::createFromTimestamp((int) $record->last_activity)->toIso8601String(),
                 'memberships' => $held, 'staff' => $account === null ? null : ['roles' => $staffRoles, 'enabled' => (bool) $record->staff_enabled],
-                'requested' => $requested, 'kyc' => self::kyc((string) $record->kyc), 'restricted' => (bool) $record->restricted,
+                'requested' => $requested, 'institution' => $record->institution_name === null ? null : (string) $record->institution_name,
+                'kyc' => self::kyc((string) $record->kyc), 'restricted' => (bool) $record->restricted,
                 'closed_at' => self::time($record->closed_at), 'closure_reason' => $record->closure_reason === null ? null : (string) $record->closure_reason];
         }, $records);
     }
