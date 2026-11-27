@@ -122,6 +122,40 @@ export type AdminPendingSectionProps = AdminFrameShellProps & {
     apps?: AppStatus[];
     /** App Control only, for whoever may view Businesses: the Businesses that raised most. */
     content?: AppContentRow[];
+    /** Secondary Market only, for Compliance: halts in force and open listings (SEC-R08, SEC-R09). */
+    market_oversight?: MarketOversight;
+};
+
+/** A halt in force: the whole market when `note_id` is null, else one note. */
+export type MarketHalt = {
+    halt_id: string;
+    note_id: string | null;
+    deal_name: string | null;
+    reason: string;
+    halted_at: string;
+    lift: RouteAction;
+};
+
+/** An open resale listing a staff cancel could end, with the note's halt unless it is halted. */
+export type MarketListing = {
+    listing_id: string;
+    note_id: string;
+    deal_name: string;
+    remaining_units: string;
+    price: Money;
+    listed_at: string;
+    expires_at: string;
+    halt_note: RouteAction | null;
+    cancel: RouteAction | null;
+};
+
+/** Compliance's controls on the secondary market. `halt` is null while the market is halted. */
+export type MarketOversight = {
+    trading: boolean;
+    market_halted: boolean;
+    halt: RouteAction | null;
+    halts: MarketHalt[];
+    listings: MarketListing[];
 };
 
 /** One rated Business in the rating book. */
