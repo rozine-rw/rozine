@@ -3915,6 +3915,9 @@ const en = {
     'admin.parties.licence_field.expires_on': 'Expires',
     'admin.parties.licence_field.district': 'District',
     'admin.parties.account_state': 'Account state',
+    'admin.parties.readiness.title': 'Readiness requirements',
+    'admin.parties.readiness.empty':
+        'No readiness requirement has been triggered yet.',
     'admin.parties.frozen_by': 'Frozen by {actor} · {at}',
     'admin.parties.legal_hold':
         'A legal hold keeps this account frozen. Only Compliance or Legal can release it.',

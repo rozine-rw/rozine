@@ -4096,6 +4096,9 @@ const fr: Catalog = {
     'admin.parties.licence_field.expires_on': 'Expire le',
     'admin.parties.licence_field.district': 'District',
     'admin.parties.account_state': 'État du compte',
+    'admin.parties.readiness.title': 'Exigences de préparation',
+    'admin.parties.readiness.empty':
+        'Aucune exigence de préparation déclenchée pour le moment.',
     'admin.parties.frozen_by': 'Gelé par {actor} · {at}',
     'admin.parties.legal_hold':
         'Une retenue légale maintient ce compte gelé. Seuls la conformité ou le juridique peuvent le lever.',

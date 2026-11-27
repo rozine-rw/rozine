@@ -4074,6 +4074,8 @@ const rw: Catalog = {
     'admin.parties.licence_field.expires_on': 'Rurangira',
     'admin.parties.licence_field.district': 'Akarere',
     'admin.parties.account_state': 'Uko konti imeze',
+    'admin.parties.readiness.title': 'Ibisabwa byo kwitegura',
+    'admin.parties.readiness.empty': 'Nta gisabwa cyo kwitegura kiratangira.',
     'admin.parties.frozen_by': 'Yahagaritswe na {actor} · {at}',
     'admin.parties.legal_hold':
         "Icyemezo cy'amategeko gituma iyi konti ikomeza guhagarikwa. Ubwubahirize cyangwa Amategeko gusa ni bo bashobora kuyifungura.",

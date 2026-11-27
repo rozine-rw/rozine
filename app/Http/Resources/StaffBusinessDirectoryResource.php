@@ -32,7 +32,8 @@ use Illuminate\Support\Str;
  *
  * @phpstan-type Page array{
  *     rows: list<DirectoryRow>, matching: int, counts: Counts, active_notes: int, raised: string, average_score: string|null,
- *     sectors: list<string>, chip: string, sort: string, sector: string, search: string, business: Detail|null, audit?: array{engagement: Engagement|null, closed: bool, partners: list<NearbyPartner>, statements: Readiness}|null,
+ *     sectors: list<string>, chip: string, sort: string, sector: string, search: string, business: Detail|null,
+ *     readiness?: list<array{code: string, status: string, triggered_on: string, due_on: string|null, met_on: string|null}>|null, audit?: array{engagement: Engagement|null, closed: bool, partners: list<NearbyPartner>, statements: Readiness}|null,
  *     roles: list<string>, permissions: list<string>, policy: list<array{key: string, value: string}>,
  *     onboarded?: array{business_id: string, representative: string, business_access: bool}|null, onboarding_sectors?: list<string>,
  *     onboarding_prefill?: array{name: string, rdb_code: string, representative_email: string}|null, onboarding_request_closed?: bool
@@ -97,6 +98,7 @@ class StaffBusinessDirectoryResource extends JsonResource
                 'raised' => $money($row['raised']), 'capacity_used_pct' => null, 'health' => $row['stage'], 'frozen' => null, 'kyc' => $row['kyc'],
                 'link' => $link([...$position, 'business' => $row['business_id']])], $page['rows'])],
             'party' => $page['business'] === null ? null : [...self::business($page['business'], $link($position)),
+                'readiness' => $page['readiness'] ?? [],
                 'audit' => ($page['audit'] ?? null) === null ? null : self::audit($page['audit']['engagement'], $page['audit']['closed'], $page['audit']['partners'], $page['audit']['statements'], $page['business']['row']['business_id'], $prefix === '')]];
     }
 
