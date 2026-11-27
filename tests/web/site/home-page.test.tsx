@@ -186,7 +186,7 @@ describe('the Invest calculator', () => {
 
 describe('the Businesses view', () => {
     it.each(['tab', 'shared link'])(
-        'explains offer pricing without competing ranges via the %s',
+        'explains offer pricing with one consistent range via the %s',
         (entry) => {
             if (entry === 'shared link') {
                 window.history.replaceState(null, '', '/#businesses');
@@ -201,22 +201,19 @@ describe('the Businesses view', () => {
             expect(
                 screen.getByRole('heading', {
                     level: 2,
-                    name: 'Clear pricing for the whole term, plus a 3% fee only if your raise succeeds.',
+                    name: 'Pay 12.5–15% for the whole term, plus a 3% fee only if your raise succeeds.',
                 }),
             ).toBeInTheDocument();
             const explanation = screen.getByText(
                 /Your return to investors is set from your verified rating and term/u,
             );
-            expect(explanation).toHaveTextContent('shown in your offer');
             expect(explanation).toHaveTextContent(
-                'It applies to the whole term, never per year.',
+                '12.5% to 15% of the amount, for the whole term, never per year.',
             );
             expect(explanation).toHaveTextContent(
                 'one-time 3% platform fee when your raise is funded.',
             );
-            expect(explanation).not.toHaveTextContent(
-                /10\s*[–-]\s*15%|12[.,]5%?\s*(?:to|[–-])\s*15%/u,
-            );
+            expect(explanation).not.toHaveTextContent(/10\s*[–-]\s*15%/u);
             expect(
                 screen.getByText('Platform fee (3%, once)'),
             ).toBeInTheDocument();
