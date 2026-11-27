@@ -20,6 +20,7 @@ return new class extends Migration
             $table->decimal('statement', 21, 0);
             $table->decimal('difference', 21, 0);
             $table->string('statement_source', 40);
+            $table->string('statement_reference');
             $table->jsonb('alert_audiences');
             $table->timestampTz('created_at', 6)->index();
             $table->unique(['business_date', 'account_id']);
@@ -28,7 +29,7 @@ return new class extends Migration
             ALTER TABLE reconciliation_variances ADD CONSTRAINT reconciliation_variance_account
                 CHECK (account_id IN ('deposits', 'withdrawals'));
             ALTER TABLE reconciliation_variances ADD CONSTRAINT reconciliation_variance_difference
-                CHECK (difference = ledger - statement AND difference <> 0 AND statement_source = 'provider_outcomes');
+                CHECK (difference = ledger - statement AND difference <> 0 AND statement_source = 'authoritative_statement' AND length(trim(statement_reference)) > 0);
             CREATE OR REPLACE FUNCTION reject_reconciliation_variance_mutation() RETURNS trigger LANGUAGE plpgsql AS $$
             BEGIN
                 RAISE EXCEPTION 'Reconciliation cutoff evidence is immutable' USING ERRCODE = '23514';

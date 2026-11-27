@@ -3,8 +3,11 @@
 declare(strict_types=1);
 
 use App\Application\Identity\ConfigureStaffAccess;
+use App\Application\Operations\Contracts\AuthoritativeClearingStatements;
 use App\Application\Operations\Contracts\ReconciliationStore;
+use App\Application\Operations\Contracts\ReconciliationVariances;
 use App\Application\Operations\RecordReconciliationDay;
+use App\Domain\Operations\StatementBalance;
 use App\Events\ReconciliationVarianceOpened;
 use App\Infrastructure\Operations\EloquentReconciliationStore;
 use App\Models\User;
@@ -36,17 +39,17 @@ beforeEach(function (): void {
  *
  * @param  list<array{id: 'deposits'|'withdrawals', ledger: string, statement: string}>  $accounts
  */
-function reconciliationBalanceFeed(array $accounts): void
+function reconciliationBalanceFeed(array $accounts, string $referenceRevision = '1'): void
 {
     $real = app(EloquentReconciliationStore::class);
-    $source = new class($accounts, $real) implements ReconciliationStore
+    $source = new class($accounts, $real, $referenceRevision) implements ReconciliationStore
     {
         /** @param list<array{id: 'deposits'|'withdrawals', ledger: string, statement: string}> $rows */
-        public function __construct(private array $rows, private EloquentReconciliationStore $store) {}
+        public function __construct(private array $rows, private EloquentReconciliationStore $store, private string $referenceRevision) {}
 
         public function accounts(DateTimeInterface $asOf): array
         {
-            return $this->rows;
+            return array_map(fn (array $row): array => [...$row, 'statement_reference' => 'synthetic:'.$row['id'].':'.$asOf->format('U.u').':'.$this->referenceRevision], $this->rows);
         }
 
         public function breaks(DateTimeInterface $asOf): array
@@ -115,12 +118,13 @@ it('records no variance for a healthy cutoff and keeps missing or duplicate feed
     'duplicate feed' => ['duplicate', 'not_reconciled'],
 ]);
 
-it('uses the exact Kigali midnight cutoff for actual ledger lines and provider outcomes', function (): void {
+it('uses the exact Kigali midnight ledger cutoff with an independently supplied statement', function (): void {
     $this->travelTo(CarbonImmutable::parse('2026-11-26T23:59:59+02:00'));
     InvestorWalletFixture::policy(maximum: null);
     $investor = InvestorWalletFixture::ready();
     InvestorWalletFixture::settle(InvestorWalletFixture::deposit($investor, '5000')['data']['intent_id']);
     $this->travelTo(CarbonImmutable::parse('2026-11-27T00:01:00+02:00'));
+    independentStatementFeed([['id' => 'deposits', 'amount' => '5000'], ['id' => 'withdrawals', 'amount' => '0']]);
     InvestorWalletFixture::settle(InvestorWalletFixture::deposit($investor, '7000')['data']['intent_id']);
     $this->travelTo(CarbonImmutable::parse('2026-11-27T10:00:00+02:00'));
 
@@ -188,4 +192,65 @@ it('does not notify an analyst or a disabled reconciliation operator', function 
     expect(Artisan::call('reconciliation:record-day'))->toBe(0);
     Notification::assertNotSentTo([$analyst, $disabled], ReconciliationVarianceDetected::class);
     Notification::assertSentToTimes($this->treasury, ReconciliationVarianceDetected::class, 1);
+});
+
+/** @param list<array{id: string, amount: string}> $balances */
+function independentStatementFeed(array $balances, bool $wrongCutoff = false): void
+{
+    app()->instance(AuthoritativeClearingStatements::class, new class($balances, $wrongCutoff) implements AuthoritativeClearingStatements
+    {
+        /** @param list<array{id: string, amount: string}> $balances */
+        public function __construct(private array $balances, private bool $wrongCutoff) {}
+
+        public function at(DateTimeInterface $asOf): array
+        {
+            $cutoff = DateTimeImmutable::createFromInterface($asOf);
+            if ($this->wrongCutoff) {
+                $cutoff = $cutoff->modify('-1 second');
+            }
+
+            return array_map(fn (array $row): StatementBalance => new StatementBalance($row['id'], $row['amount'], $cutoff, 'synthetic-independent:'.$row['id'].':'.$cutoff->format('U.u')), $this->balances);
+        }
+    });
+}
+
+it('does not manufacture a healthy close from empty provider outcome tables when no independent statement is configured', function (): void {
+    $this->actingAs($this->treasury)->get(route('staff.reconciliation.index'))->assertOk()
+        ->assertInertia(fn ($page) => $page->where('day_close.state', 'not_reconciled')->where('accounts', []));
+    expect(app(RecordReconciliationDay::class)->handle())->toBe(['state' => 'unavailable', 'recorded' => 0]);
+    expect(DB::table('reconciliation_variances')->count())->toBe(0);
+    Notification::assertNothingSent();
+});
+
+it('only reconciles complete independent statement coverage at the exact cutoff', function (string $scenario): void {
+    [$balances, $wrongCutoff, $closed] = match ($scenario) {
+        'complete' => [[['id' => 'deposits', 'amount' => '0'], ['id' => 'withdrawals', 'amount' => '0']], false, true],
+        'partial' => [[['id' => 'deposits', 'amount' => '0']], false, false],
+        'duplicate' => [[['id' => 'deposits', 'amount' => '0'], ['id' => 'deposits', 'amount' => '0']], false, false],
+        'wrong cutoff' => [[['id' => 'deposits', 'amount' => '0'], ['id' => 'withdrawals', 'amount' => '0']], true, false],
+        default => throw new InvalidArgumentException('Unknown statement fixture.'),
+    };
+    independentStatementFeed($balances, $wrongCutoff);
+    $this->actingAs($this->treasury)->get(route('staff.reconciliation.index'))->assertOk()
+        ->assertInertia(fn ($page) => $page->where('day_close.state', $closed ? 'reconciled' : 'not_reconciled'));
+})->with(['complete', 'partial', 'duplicate', 'wrong cutoff']);
+
+it('refuses to silently rebind a retained variance to a different statement reference', function (): void {
+    $accounts = [['id' => 'deposits', 'ledger' => '1', 'statement' => '0'], ['id' => 'withdrawals', 'ledger' => '0', 'statement' => '0']];
+    reconciliationBalanceFeed($accounts);
+    expect(app(RecordReconciliationDay::class)->handle()['recorded'])->toBe(1);
+    $reference = DB::table('reconciliation_variances')->sole()->statement_reference;
+    reconciliationBalanceFeed($accounts, '2');
+    expect(fn () => app(RecordReconciliationDay::class)->handle())->toThrow(RuntimeException::class, 'RECONCILIATION_CUTOFF_CHANGED');
+    expect(DB::table('reconciliation_variances')->sole()->statement_reference)->toBe($reference);
+});
+
+it('refuses a date or instant other than the claimed Kigali daily close at the persistence boundary', function (): void {
+    $cutoff = now('Africa/Kigali')->toImmutable()->subDay()->endOfDay();
+    $rows = [['id' => 'deposits', 'ledger' => '1', 'statement' => '0', 'statement_reference' => 'synthetic-reference']];
+    $store = app(ReconciliationVariances::class);
+    expect(fn () => $store->record($cutoff->toDateString(), $cutoff->subSecond(), $rows))->toThrow(RuntimeException::class, 'RECONCILIATION_CUTOFF_INVALID');
+    expect(fn () => $store->record($cutoff->addDay()->toDateString(), $cutoff, $rows))->toThrow(RuntimeException::class, 'RECONCILIATION_CUTOFF_INVALID');
+    expect(DB::table('reconciliation_variances')->count())->toBe(0);
+    Notification::assertNothingSent();
 });

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Application\Operations\Contracts\AuthoritativeClearingStatements;
+use App\Domain\Operations\StatementBalance;
 use App\Models\Party;
 use App\Models\User;
 use App\Models\WalletProviderEvent;
@@ -53,7 +55,8 @@ beforeEach(function (): void {
     };
 });
 
-it('closes yesterday as reconciled when every provider outcome was followed', function (): void {
+it('closes yesterday only with complete independently supplied statement balances and no breaks', function (): void {
+    reconciliationIndependentStatement('0', '0');
     $props = ($this->page)(reconciliationStaff(['treasury']));
     $yesterday = now('Africa/Kigali')->subDay()->endOfDay();
     $zero = ['currency' => 'RWF', 'amount' => '0'];
@@ -73,6 +76,7 @@ it('closes yesterday as reconciled when every provider outcome was followed', fu
 });
 
 it('sets the clearing accounts beside the provider and keeps every unfollowed outcome open as a break', function (): void {
+    reconciliationIndependentStatement('555000', '0');
     InvestorWalletFixture::policy(maximum: null);
     $investor = InvestorWalletFixture::ready();
     InvestorWalletFixture::settle(InvestorWalletFixture::deposit($investor, '500000')['data']['intent_id']);
@@ -112,6 +116,7 @@ it('sets the clearing accounts beside the provider and keeps every unfollowed ou
 });
 
 it('is for Treasury, Compliance and superadmin only, and over API v1 with its own ability', function (): void {
+    reconciliationIndependentStatement('0', '0');
     foreach (['analyst', 'approver'] as $role) {
         $this->actingAs(reconciliationStaff([$role]))->get(route('staff.reconciliation.index'))->assertForbidden();
     }
@@ -125,3 +130,19 @@ it('is for Treasury, Compliance and superadmin only, and over API v1 with its ow
     Sanctum::actingAs($treasury, ['staff:dashboard:read']);
     $this->getJson(route('api.v1.staff.reconciliation.index'))->assertForbidden();
 });
+
+function reconciliationIndependentStatement(string $deposits, string $withdrawals): void
+{
+    app()->instance(AuthoritativeClearingStatements::class, new class($deposits, $withdrawals) implements AuthoritativeClearingStatements
+    {
+        public function __construct(private string $deposits, private string $withdrawals) {}
+
+        public function at(DateTimeInterface $asOf): array
+        {
+            $cutoff = DateTimeImmutable::createFromInterface($asOf);
+
+            return [new StatementBalance('deposits', $this->deposits, $cutoff, 'synthetic-statement-deposits'),
+                new StatementBalance('withdrawals', $this->withdrawals, $cutoff, 'synthetic-statement-withdrawals')];
+        }
+    });
+}

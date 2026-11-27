@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Operations;
 
+use App\Application\Operations\Contracts\AuthoritativeClearingStatements;
 use App\Application\Operations\Contracts\ReconciliationStore;
 use Brick\Math\BigInteger;
 use DateTimeInterface;
@@ -11,49 +12,47 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Reads the provider clearing accounts from `ledger_lines` and the provider's signed outcomes from
- * the four outcome tables (`wallet_provider_events`, `business_provider_events`,
- * `wallet_withdrawal_events`, `business_withdrawal_events`). Amounts are summed in the database
- * as whole francs, so nothing is rounded.
+ * Reads clearing ledger balances against an independent authoritative statement at the same cutoff.
+ * Provider outcome exceptions remain a separate source of breaks, never a substitute statement.
+ * Ledger amounts are summed as whole francs in one database snapshot, without rounding.
  *
  * @phpstan-import-type Account from ReconciliationStore
  * @phpstan-import-type BreakRecord from ReconciliationStore
  */
 final readonly class EloquentReconciliationStore implements ReconciliationStore
 {
-    /**
-     * How much of each provider outcome the provider says moved, by disposition and state. A
-     * withdrawal counts its quoted charge with what was received, as its payout posting does.
-     */
-    private const string MOVED = <<<'SQL'
-        CASE
-            WHEN state = 'succeeded' AND disposition IN ('applied', 'conflict') THEN expected
-            WHEN state = 'succeeded' AND disposition IN ('mismatch', 'key_conflict') THEN reported
-            WHEN state = 'failed' AND disposition = 'after_final' THEN -expected
-            ELSE 0
-        END
-        SQL;
+    public function __construct(private AuthoritativeClearingStatements $statements) {}
 
     public function accounts(DateTimeInterface $asOf): array
     {
         // Preserve the offset and microseconds: Laravel's default DateTime binding drops both.
         $cutoff = $asOf->format('Y-m-d H:i:s.uP');
-        // One SQL statement gives both sides and both accounts the same MVCC snapshot and cutoff.
+        $statements = [];
+        foreach ($this->statements->at($asOf) as $statement) {
+            if ($statement->asOf->format('U.u') !== $asOf->format('U.u') || isset($statements[$statement->accountId])) {
+                return [];
+            }
+            $statements[$statement->accountId] = $statement;
+        }
+        if ($statements === []) {
+            return [];
+        }
+        // Both ledger accounts share one MVCC snapshot and the statement's exact cutoff.
         $ledger = DB::table('ledger_lines')->join('ledger_accounts', 'ledger_accounts.id', '=', 'ledger_lines.account_id')
             ->whereIn('ledger_accounts.kind', ['deposit_clearing', 'withdrawal_clearing'])->where('ledger_lines.created_at', '<=', $cutoff)
             ->groupBy('ledger_accounts.kind')->selectRaw("ledger_accounts.kind, sum(CASE WHEN
                 (ledger_accounts.kind = 'deposit_clearing' AND ledger_lines.direction = 'debit') OR
                 (ledger_accounts.kind = 'withdrawal_clearing' AND ledger_lines.direction = 'credit')
                 THEN ledger_lines.amount ELSE -ledger_lines.amount END) AS total");
-        $statement = DB::query()->fromSub($this->outcomes($asOf), 'outcome')->groupBy('account_id')
-            ->selectRaw('account_id, sum('.self::MOVED.') AS total');
         $rows = DB::query()->fromRaw("(VALUES ('deposits', 'deposit_clearing'), ('withdrawals', 'withdrawal_clearing')) AS clearing(id, kind)")
             ->leftJoinSub($ledger, 'ledger', 'ledger.kind', '=', 'clearing.kind')
-            ->leftJoinSub($statement, 'provider', 'provider.account_id', '=', 'clearing.id')->orderBy('clearing.id')
-            ->get(['clearing.id', DB::raw('coalesce(ledger.total, 0)::text AS ledger'), DB::raw('coalesce(provider.total, 0)::text AS statement')]);
+            ->orderBy('clearing.id')->get(['clearing.id', DB::raw('coalesce(ledger.total, 0)::text AS ledger')]);
         $accounts = [];
         foreach ($rows as $row) {
-            $accounts[] = ['id' => $row->id === 'deposits' ? 'deposits' : 'withdrawals', 'ledger' => (string) $row->ledger, 'statement' => (string) $row->statement];
+            $id = $row->id === 'deposits' ? 'deposits' : 'withdrawals';
+            if (isset($statements[$id])) {
+                $accounts[] = ['id' => $id, 'ledger' => (string) $row->ledger, 'statement' => $statements[$id]->amount, 'statement_reference' => $statements[$id]->reference];
+            }
         }
 
         return $accounts;
@@ -88,7 +87,7 @@ final readonly class EloquentReconciliationStore implements ReconciliationStore
             $breaks[] = ['id' => (string) $case->id, 'account_id' => $case->account_id === 'deposits' ? 'deposits' : 'withdrawals',
                 'flow' => 'clearing', 'kind' => 'balance_variance', 'reference' => 'REC-'.$case->business_date.'-'.$case->account_id,
                 'amount' => (string) BigInteger::of((string) $case->difference)->abs(), 'opened_at' => (string) $case->created_at,
-                'cutoff_at' => (string) $case->cutoff_at, 'party_id' => null, 'business_id' => null];
+                'cutoff_at' => (string) $case->cutoff_at, 'statement_reference' => (string) $case->statement_reference, 'party_id' => null, 'business_id' => null];
         }
         usort($breaks, fn (array $left, array $right): int => [$left['opened_at'], $left['id']] <=> [$right['opened_at'], $right['id']]);
 
