@@ -403,6 +403,19 @@ export function RoleApplicationDrawer({
                                 label={t('role.apply.institution.account_name')}
                             >
                                 {answers.institution.account_name}
+                                {answers.company &&
+                                    answers.institution.account_name.trim() !==
+                                        answers.company.legal_name.trim() && (
+                                        <span className="mt-0.5 block text-[11.5px] font-normal text-[#8a4b0f] dark:text-[#f0b37a]">
+                                            {t(
+                                                'admin.role_applications.institution.name_differs',
+                                                {
+                                                    name: answers.company
+                                                        .legal_name,
+                                                },
+                                            )}
+                                        </span>
+                                    )}
                             </Fact>
                             <Fact
                                 label={t('role.apply.institution.declarations')}
@@ -840,7 +853,11 @@ export function RoleApplicationDrawer({
                                 </p>
                             )}
                         <p className="mt-2 text-[11.5px] text-rz-muted">
-                            {t('admin.role_applications.note_hint')}
+                            {t(
+                                application.role === 'institution'
+                                    ? 'admin.role_applications.note_hint_institution'
+                                    : 'admin.role_applications.note_hint',
+                            )}
                         </p>
                     </Section>
                 )}

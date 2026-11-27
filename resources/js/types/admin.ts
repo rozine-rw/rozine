@@ -1,6 +1,13 @@
 import type { BusinessRating, NoteStatus } from './business';
 import type { InvestorNotice } from './investor';
 import type { Money } from './money';
+import type {
+    RoleApplicationCompany,
+    RoleApplicationDocument,
+    RoleApplicationInstitution,
+    RoleApplicationPerson,
+    RoleApplicationReview,
+} from './role-application';
 import type { RouteAction, RouteLink } from './routing';
 import type {
     AllocationKind,
@@ -66,6 +73,7 @@ export type AdminOptionalSection =
     | 'mail_testers'
     | 'access_requests'
     | 'users'
+    | 'institutions'
     | AdminPendingSection;
 
 /**
@@ -2478,6 +2486,7 @@ export type UserDetail = Omit<UserRow, 'link'> & {
 export type UserRoleChip =
     | 'all'
     | 'investor'
+    | 'institution'
     | 'business'
     | 'auditor'
     | 'staff'
@@ -2516,4 +2525,119 @@ export type AdminUsersProps = AdminFrameShellProps & {
     user: UserDetail | null;
     /** The open account's own KYC, for a viewer who approves identity checks. */
     kyc_review?: InvestorVerificationReview | null;
+};
+
+/* ------------------------------------------------------------------------------------------ */
+/* Institutions (Accounts; Erastus, 27 Nov 2026)                                               */
+/* ------------------------------------------------------------------------------------------ */
+
+export type InstitutionStatus =
+    | 'draft'
+    | 'submitted'
+    | 'changes_requested'
+    | 'approved'
+    | 'rejected';
+
+export type InstitutionRow = {
+    /** The institution's application, which also keys its 360. */
+    id: string;
+    party_id: string;
+    status: InstitutionStatus;
+    /** Empty until the applicant names the company. */
+    name: string;
+    rdb_code: string;
+    type: string;
+    monthly_commitment: Money;
+    representative: string;
+    email: string;
+    wallet: Money;
+    invested: Money;
+    holdings: number;
+    submitted_at: string | null;
+    approved_at: string | null;
+    link: RouteLink;
+};
+
+/** One raise the institution holds or has committed to, against its cap of the raise. */
+export type InstitutionRaise = {
+    campaign_id: string;
+    business: string;
+    units: string;
+    amount: Money;
+    raise_amount: Money;
+    /** Its share of the raise in basis points (2500 = 25%). */
+    share_bps: number;
+    cap_percent: number;
+};
+
+export type InstitutionDetail = Omit<InstitutionRow, 'link' | 'holdings'> & {
+    approved_by: string | null;
+    decided_at: string | null;
+    cap_percent: number;
+    committed: Money;
+    company: RoleApplicationCompany | null;
+    representative_role: {
+        title: string;
+        phone: string;
+        authorised: boolean;
+    } | null;
+    account_details: RoleApplicationInstitution | null;
+    directors: RoleApplicationPerson[];
+    owners: RoleApplicationPerson[];
+    no_major_owner: boolean;
+    account: {
+        user_id: number | null;
+        name: string;
+        email: string;
+        two_factor: boolean;
+        kyc: string;
+    };
+    documents: (RoleApplicationDocument & { link: RouteLink })[];
+    holdings: {
+        business_id: string;
+        name: string;
+        principal: Money;
+        notes: number;
+    }[];
+    raises: InstitutionRaise[];
+    auto_deploy: { enabled: boolean };
+    history: {
+        revision: number;
+        status: string;
+        command: string;
+        reason: string | null;
+        at: string;
+    }[];
+    links: {
+        close: RouteLink;
+        review: RouteLink;
+        user: RouteLink | null;
+        investor: RouteLink | null;
+    };
+};
+
+export type InstitutionChip = 'all' | InstitutionStatus;
+
+export type AdminInstitutionsProps = AdminFrameShellProps & {
+    server_time: string;
+    stats: {
+        key:
+            | 'institutions'
+            | 'awaiting_review'
+            | 'committed_monthly'
+            | 'invested';
+        value: StatValue;
+    }[];
+    chips: {
+        key: InstitutionChip;
+        count: number;
+        link: RouteLink;
+        active: boolean;
+    }[];
+    shown: number;
+    total: number;
+    rows: InstitutionRow[];
+    institution: InstitutionDetail | null;
+    application: RoleApplicationReview | null;
+    applications_close: string;
 };

@@ -612,8 +612,9 @@ final class RoleApplicationCase
             $errors['institution.type'] = ['Choose the type of institution.'];
         }
         $amount = $institution['monthly_commitment'];
-        if (preg_match('/^[1-9][0-9]{0,12}$/D', $amount) !== 1 || (int) $amount < $this->minimumMonthlyCommitment
-            || (int) $amount > InstitutionalInvestorTerms::MAX_MONTHLY_COMMITMENT) {
+        if (preg_match('/^[1-9][0-9]{0,12}$/D', $amount) === 1 && (int) $amount > InstitutionalInvestorTerms::MAX_MONTHLY_COMMITMENT) {
+            $errors['institution.monthly_commitment'] = [sprintf('The most the form takes is RWF %s a month.', number_format(InstitutionalInvestorTerms::MAX_MONTHLY_COMMITMENT))];
+        } elseif (preg_match('/^[1-9][0-9]{0,12}$/D', $amount) !== 1 || (int) $amount < $this->minimumMonthlyCommitment) {
             $errors['institution.monthly_commitment'] = [sprintf('Institutions commit to distributing at least RWF %s a month.', number_format($this->minimumMonthlyCommitment))];
         }
         if ($institution['bank_name'] === '') {

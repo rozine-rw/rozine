@@ -8,6 +8,7 @@ import policies from './policies'
 import sections from './sections'
 import investors from './investors'
 import users from './users'
+import institutions from './institutions'
 import businesses from './businesses'
 import auditors from './auditors'
 import staff from './staff'
@@ -117,6 +118,7 @@ const staffNamespace = {
     sections: Object.assign(sections, sections),
     investors: Object.assign(investors, investors),
     users: Object.assign(users, users),
+    institutions: Object.assign(institutions, institutions),
     businesses: Object.assign(businesses, businesses),
     auditors: Object.assign(auditors, auditors),
     dashboard: Object.assign(dashboard, dashboard),

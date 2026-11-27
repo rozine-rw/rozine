@@ -32,7 +32,8 @@ class StaffUserDirectoryController extends Controller
     /** Like the other directories, the page shows the first sixty matches and says how many more there are. */
     private const LIMIT = 60;
 
-    private const ROLES = ['all', 'investor', 'business', 'auditor', 'staff', 'no_role'];
+    /** Institutions are accounts that applied to invest for an institution, whatever its status (27 Nov 2026). */
+    private const ROLES = ['all', 'investor', 'institution', 'business', 'auditor', 'staff', 'no_role'];
 
     private const KYC = ['any', 'verified', 'in_review', 'in_progress', 'rejected', 'not_started'];
 
@@ -43,7 +44,7 @@ class StaffUserDirectoryController extends Controller
     public function index(ListUserDirectoryRequest $request, GetStaffAccess $access, ReviewInvestorVerifications $reviews): Response
     {
         $actorId = (int) $request->user()?->getAuthIdentifier();
-        /** @var 'all'|'investor'|'business'|'auditor'|'staff'|'no_role' $role */
+        /** @var 'all'|'investor'|'institution'|'business'|'auditor'|'staff'|'no_role' $role */
         $role = (string) $request->validated('role', 'all');
         /** @var 'any'|'verified'|'in_review'|'in_progress'|'rejected'|'not_started' $kyc */
         $kyc = (string) $request->validated('kyc', 'any');
