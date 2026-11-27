@@ -84,6 +84,7 @@ use App\Http\Controllers\StaffPolicyChangeController;
 use App\Http\Controllers\StaffPrimaryMarketController;
 use App\Http\Controllers\StaffReconciliationController;
 use App\Http\Controllers\StaffRoleApplicationController;
+use App\Http\Controllers\StaffSecondaryMarketController;
 use App\Http\Controllers\StaffSectionController;
 use App\Http\Controllers\StaffStagingMailTesterController;
 use App\Http\Controllers\StaffSystemHealthController;
@@ -446,6 +447,10 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
     Route::get('admin/ledger', StaffLedgerController::class)->name('staff.ledger.index');
     Route::get('admin/exceptions', StaffExceptionsController::class)->name('staff.exceptions.index');
     Route::post('admin/exceptions/cart-releases/{checkout}/retry', StaffCartReleaseController::class)->whereUlid('checkout')->name('staff.exceptions.cart-releases.retry');
+    Route::post('admin/secondary-market/halt', [StaffSecondaryMarketController::class, 'halt'])->name('staff.secondary.halt');
+    Route::post('admin/secondary-market/lift', [StaffSecondaryMarketController::class, 'lift'])->name('staff.secondary.lift');
+    Route::post('admin/secondary-market/listings/{listing}/cancel', [StaffSecondaryMarketController::class, 'cancel'])->where('listing', '[0-9A-Za-z]{26}')
+        ->name('staff.secondary.listings.cancel');
     Route::get('admin/primary-market', StaffPrimaryMarketController::class)->name('staff.primary-market.index');
     Route::get('admin/payments', StaffPaymentsController::class)->name('staff.payments.index');
     Route::get('admin/coverage', StaffCoverageController::class)->name('staff.coverage.index');

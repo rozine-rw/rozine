@@ -46,7 +46,9 @@ describe('Repayments queue', () => {
         render(<AdminRepayments {...props(queueFixture)} />);
 
         expect(
-            screen.getByRole('link', { name: /^Payments/u }),
+            within(
+                screen.getByRole('navigation', { name: 'Console navigation' }),
+            ).getByRole('link', { name: /^Payments/u }),
         ).toHaveAttribute('aria-current', 'page');
         expect(screen.getByText('3 due today')).toBeInTheDocument();
         expect(screen.getByText('1 overdue')).toBeInTheDocument();

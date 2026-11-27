@@ -1937,6 +1937,55 @@ const fr: Catalog = {
     'admin.auth.submitting': 'Connexion…',
     'admin.auth.back': '← Retour à toutes les applications',
     'admin.nav.label': 'Navigation de la console',
+    'admin.nav.related': 'Pages sous {title}',
+    'admin.market.title': 'Contrôles de revente',
+    'admin.market.state.open':
+        "La revente est ouverte. Une suspension annule chaque annonce ouverte qu'elle couvre et libère les réservations. Le motif est enregistré et montré aux personnes concernées.",
+    'admin.market.state.halted':
+        "Tout le marché est suspendu. Rien ne s'échange tant que la suspension n'est pas levée.",
+    'admin.market.state.off':
+        "La revente est désactivée. Suspensions et annulations sont refusées tant qu'elle n'est pas activée.",
+    'admin.market.halt_market': 'Suspendre tout le marché',
+    'admin.market.halt_note': 'Suspendre la note',
+    'admin.market.halt_note_label': 'Suspendre la revente de {note}',
+    'admin.market.lift': 'Lever la suspension',
+    'admin.market.lift_label': 'Lever la suspension de {scope}',
+    'admin.market.cancel': "Annuler l'annonce",
+    'admin.market.cancel_label': "Annuler l'annonce sur {note}",
+    'admin.market.whole_market': 'Tout le marché',
+    'admin.market.halts.title': 'Suspensions en vigueur',
+    'admin.market.halts.table': 'Suspensions en vigueur',
+    'admin.market.halts.empty': 'Aucune suspension en vigueur.',
+    'admin.market.listings.title': 'Annonces ouvertes',
+    'admin.market.listings.table': 'Annonces de revente ouvertes',
+    'admin.market.listings.empty': 'Aucune annonce ouverte.',
+    'admin.market.col.scope': 'Couvre',
+    'admin.market.col.reason': 'Motif',
+    'admin.market.col.halted_at': 'Suspendu',
+    'admin.market.col.note': 'Note',
+    'admin.market.col.units': 'Unités restantes',
+    'admin.market.col.price': 'Prix par unité',
+    'admin.market.col.expires_at': 'Expire',
+    'admin.market.col.actions': 'Actions',
+    'admin.market.stage.placeholder':
+        "Pourquoi ? C'est enregistré et montré aux personnes concernées.",
+    'admin.market.stage.halt_market.title':
+        'Suspendre tout le marché de revente',
+    'admin.market.stage.halt_market.body':
+        'Chaque annonce ouverte est annulée définitivement et chaque réservation libérée. Rien ne revient quand la suspension est levée.',
+    'admin.market.stage.halt_market.cta': 'Suspendre le marché',
+    'admin.market.stage.halt_note.title': 'Suspendre la revente de {note}',
+    'admin.market.stage.halt_note.body':
+        'Chaque annonce ouverte sur cette note est annulée définitivement et ses réservations libérées. Le reste du marché continue.',
+    'admin.market.stage.halt_note.cta': 'Suspendre la note',
+    'admin.market.stage.lift.title': 'Lever la suspension de {scope}',
+    'admin.market.stage.lift.body':
+        'Les échanges peuvent reprendre. Les annonces annulées par la suspension le restent.',
+    'admin.market.stage.lift.cta': 'Lever la suspension',
+    'admin.market.stage.cancel.title': "Annuler l'annonce sur {note}",
+    'admin.market.stage.cancel.body':
+        "Le vendeur voit votre motif. Une annonce avec une réservation ouverte ne peut être annulée qu'une fois celle-ci terminée.",
+    'admin.market.stage.cancel.cta': "Annuler l'annonce",
     'admin.nav.open_menu': 'Ouvrir le menu',
     'admin.nav.close_menu': 'Fermer le menu',
     'admin.nav.all_apps': '← Toutes les applications',
@@ -4052,6 +4101,9 @@ const fr: Catalog = {
     'admin.parties.licence_field.expires_on': 'Expire le',
     'admin.parties.licence_field.district': 'District',
     'admin.parties.account_state': 'État du compte',
+    'admin.parties.readiness.title': 'Exigences de préparation',
+    'admin.parties.readiness.empty':
+        'Aucune exigence de préparation déclenchée pour le moment.',
     'admin.parties.frozen_by': 'Gelé par {actor} · {at}',
     'admin.parties.legal_hold':
         'Une retenue légale maintient ce compte gelé. Seuls la conformité ou le juridique peuvent le lever.',

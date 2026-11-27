@@ -1532,6 +1532,54 @@ describe('Party 360', () => {
         partners: [],
     };
 
+    it("shows a Business's readiness requirements with their status and date (RDY-R03)", async () => {
+        const fixture = props(frozenFixture);
+
+        fixture.party = {
+            ...party(frozenFixture),
+            readiness: [
+                {
+                    code: 'C1',
+                    status: 'met',
+                    triggered_on: '2026-10-01',
+                    due_on: null,
+                    met_on: '2026-10-05',
+                },
+                {
+                    code: 'F2',
+                    status: 'overdue',
+                    triggered_on: '2026-10-01',
+                    due_on: '2026-11-01',
+                    met_on: null,
+                },
+            ],
+        };
+        const { user } = renderWithUser(<AdminParties {...fixture} />);
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+        const readiness = screen.getByRole('region', {
+            name: 'Readiness requirements',
+        });
+
+        expect(readiness).toHaveTextContent('Tax and RSSB up to date');
+        expect(readiness).toHaveTextContent('Met');
+        expect(readiness).toHaveTextContent('Overdue');
+        expect(within(readiness).getAllByRole('listitem')).toHaveLength(2);
+    });
+
+    it('says when a Business has triggered no readiness requirement yet', async () => {
+        const fixture = props(frozenFixture);
+
+        fixture.party = { ...party(frozenFixture), readiness: [] };
+        const { user } = renderWithUser(<AdminParties {...fixture} />);
+
+        await user.click(screen.getByRole('tab', { name: 'Controls' }));
+
+        expect(
+            screen.getByRole('region', { name: 'Readiness requirements' }),
+        ).toHaveTextContent('No readiness requirement has been triggered yet.');
+    });
+
     it('says what a Business still lacks before its statements can be reviewed', async () => {
         const { user } = renderWithUser(
             <AdminParties

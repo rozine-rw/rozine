@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Business\Contracts\BusinessDirectoryStore;
 use App\Application\Business\Contracts\BusinessExposureStore;
+use App\Application\Business\Contracts\ReadinessRequirementStore;
 use App\Application\Business\Contracts\ServicingRecord;
 use App\Models\AuditAssignment;
 use App\Models\BusinessApplication;
@@ -238,6 +239,19 @@ test("a Business's 360 carries its notes, rating, KYC and history, and an unknow
             ->assertJsonPath('data.party.history.0.action.label', $label)
             ->assertJsonPath('data.party.history.0.action.tone', $tone);
     }
+});
+
+test("a Business's 360 lists the readiness requirements it has triggered, for staff who may view Businesses (RDY-R03, #821)", function (): void {
+    $seed = businessDirectoryNote('Isoko Farms', 'Agriculture', ['title' => 'Seed stock']);
+    $store = app(ReadinessRequirementStore::class);
+    $store->trigger($seed->business_id, 'C1', 'met', null, '2026-11-10');
+    $store->trigger($seed->business_id, 'F2', 'due', '2026-12-10', '2026-11-10');
+
+    $this->actingAs($this->analyst)->get(route('staff.businesses.index', ['business' => $seed->business_id]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('party.readiness', $store->forBusiness($seed->business_id))
+            ->where('party.readiness.0.code', 'C1')->where('party.readiness.1.status', 'due'));
+    $this->actingAs($this->analyst)->get(route('staff.businesses.index'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('party', null));
 });
 
 test('staff web and API history distinguish an authentic funded failure from unfunded expiry', function (string $cause): void {
