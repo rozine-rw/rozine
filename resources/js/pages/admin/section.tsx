@@ -2,6 +2,7 @@ import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { AdminAcademies } from '@/components/admin/academies';
 import { AdminFrame } from '@/components/admin/admin-frame';
+import { MarketOversight } from '@/components/admin/market-oversight';
 import { PolicyChanges } from '@/components/admin/policy-changes';
 import { SECTION_DESIGNS } from '@/components/admin/section-designs';
 import type {
@@ -115,6 +116,12 @@ function DesignedSection(props: AdminPendingSectionProps) {
                             />
                         ))}
                     </div>
+                )}
+                {props.market_oversight !== undefined && (
+                    <MarketOversight
+                        oversight={props.market_oversight}
+                        viewer={props.viewer}
+                    />
                 )}
                 {props.policy_changes !== undefined && (
                     <PolicyChanges

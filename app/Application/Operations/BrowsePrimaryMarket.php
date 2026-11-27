@@ -51,7 +51,8 @@ final readonly class BrowsePrimaryMarket
 
         $raises = [];
         foreach ($this->deals->deals() as $deal) {
-            if ($deal['lifecycle'] === 'funded') {
+            // A raise that reached 100% has stopped filling: it is paying out or its note is issued.
+            if (in_array($deal['lifecycle'], ['funded', 'disbursing', 'issued'], true)) {
                 continue;
             }
             $closes = $kigali($deal['clock']['expires_at']);

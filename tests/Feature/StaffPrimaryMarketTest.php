@@ -88,12 +88,14 @@ it('lists a live publication with its fill, terms and days left, and offers no m
     expect(($this->page)(primaryMarketStaff(['analyst']), ['q' => 'no such raise'])['raises'])->toBe([]);
 });
 
-it('measures fill and completion across raises, leaves funded raises out, searches and pages', function (): void {
+it('measures fill and completion across raises, leaves funded, paying-out and issued raises out, searches and pages', function (): void {
     $this->travelTo(CarbonImmutable::parse('2026-10-15 10:00', 'Africa/Kigali'));
     app()->instance(InvestorDealCatalogue::class, Mockery::mock(InvestorDealCatalogue::class, ['deals' => [
         primaryMarketDeal('01K0000000000000000000AAAA', 'Ubuki Crafts', '3000000', '4000000'),
         primaryMarketDeal('01K0000000000000000000BBBB', 'GreenLeaf Agro', '1000000', '6000000', 'closing_pending_settlement', '2026-10-14T08:00:00Z'),
         primaryMarketDeal('01K0000000000000000000CCCC', 'Funded Foods', '5000000', '5000000', 'funded'),
+        primaryMarketDeal('01K0000000000000000000DDDD', 'Paying Out Ltd', '4000000', '4000000', 'disbursing'),
+        primaryMarketDeal('01K0000000000000000000EEEE', 'Issued Harvest', '6000000', '6000000', 'issued'),
     ]]));
     app()->instance(OperationsDashboardStore::class, Mockery::mock(OperationsDashboardStore::class, ['figures' => [
         'capital_raised' => '0', 'active_businesses' => 0, 'disbursements_waiting' => 0, 'disbursed' => '0',

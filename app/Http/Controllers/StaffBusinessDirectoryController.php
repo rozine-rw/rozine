@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Application\Auditor\GetBusinessAuditEngagement;
 use App\Application\Auditor\ManageBusinessAudit;
 use App\Application\Business\BrowseBusinessDirectory;
+use App\Application\Business\GetStaffBusinessReadiness;
 use App\Application\Business\OnboardBusiness;
 use App\Application\Evidence\GetStaffStatementAuditReadiness;
 use App\Application\Evidence\RequestStatementReview;
@@ -95,7 +96,8 @@ class StaffBusinessDirectoryController extends Controller
     public function __construct(private BrowseBusinessDirectory $directory) {}
 
     public function index(ListBusinessDirectoryRequest $request, GetStaffAccess $access, GetBusinessAuditEngagement $audits,
-        GetStaffStatementAuditReadiness $statements, BrowseRoleAccessRequests $requests, ReviewRoleApplications $applications): Response|StaffBusinessDirectoryResource
+        GetStaffStatementAuditReadiness $statements, BrowseRoleAccessRequests $requests, ReviewRoleApplications $applications,
+        GetStaffBusinessReadiness $readiness): Response|StaffBusinessDirectoryResource
     {
         $actorId = (int) $request->user()?->getAuthIdentifier();
         /** @var 'all' $chip */
@@ -114,6 +116,7 @@ class StaffBusinessDirectoryController extends Controller
         $resource = new StaffBusinessDirectoryResource([...$this->directory->directory($actorId, $chip, $sort, $sector, $search, self::LIMIT), 'policy' => PlatformPolicies::businesses(),
             'chip' => $chip, 'sort' => $sort, 'sector' => $sector, 'search' => $search,
             'business' => $business,
+            'readiness' => $business === null ? null : $readiness->handle($actorId, $business['row']['business_id']),
             'audit' => $business !== null && in_array('audit.assignments.manage', $staff['allowed_actions'], true)
                 ? ['engagement' => $audits->handle($actorId, $business['row']['business_id']), 'closed' => $audits->closed($business['row']['business_id']),
                     'partners' => $audits->partners($actorId, $business['row']['business_id']),

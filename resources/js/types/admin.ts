@@ -130,6 +130,40 @@ export type AdminPendingSectionProps = AdminFrameShellProps & {
     apps?: AppStatus[];
     /** App Control only, for whoever may view Businesses: the Businesses that raised most. */
     content?: AppContentRow[];
+    /** Secondary Market only, for Compliance: halts in force and open listings (SEC-R08, SEC-R09). */
+    market_oversight?: MarketOversight;
+};
+
+/** A halt in force: the whole market when `note_id` is null, else one note. */
+export type MarketHalt = {
+    halt_id: string;
+    note_id: string | null;
+    deal_name: string | null;
+    reason: string;
+    halted_at: string;
+    lift: RouteAction;
+};
+
+/** An open resale listing a staff cancel could end, with the note's halt unless it is halted. */
+export type MarketListing = {
+    listing_id: string;
+    note_id: string;
+    deal_name: string;
+    remaining_units: string;
+    price: Money;
+    listed_at: string;
+    expires_at: string;
+    halt_note: RouteAction | null;
+    cancel: RouteAction | null;
+};
+
+/** Compliance's controls on the secondary market. `halt` is null while the market is halted. */
+export type MarketOversight = {
+    trading: boolean;
+    market_halted: boolean;
+    halt: RouteAction | null;
+    halts: MarketHalt[];
+    listings: MarketListing[];
 };
 
 /** One rated Business in the rating book. */
@@ -997,6 +1031,15 @@ export type StatementReview = {
         | null;
 };
 
+/** One readiness requirement a Business has triggered (RDY-R03). */
+export type ReadinessRequirementRow = {
+    code: 'C1' | 'F1' | 'F2' | 'F3' | 'F4' | 'P1' | 'P2' | 'G1' | 'G2';
+    status: 'due' | 'overdue' | 'met' | 'lapsed';
+    triggered_on: string;
+    due_on: string | null;
+    met_on: string | null;
+};
+
 export type PartyDetail = {
     id: string;
     kind: PartyKind;
@@ -1058,6 +1101,8 @@ export type PartyDetail = {
     } | null;
     /** A Business's open audit; sent only to viewers who manage audit assignments. */
     audit?: BusinessAudit | null;
+    /** A Business's readiness requirements triggered so far (RDY-R03); absent for other parties. */
+    readiness?: ReadinessRequirementRow[];
     links: { close: RouteLink };
     actions: {
         freeze?: RouteAction;

@@ -7,6 +7,7 @@ import {
 } from '@/components/admin/format';
 import { KycReview } from '@/components/admin/kyc-review';
 import { BusinessAuditSection } from '@/components/admin/parties/business-audit';
+import { BusinessReadiness } from '@/components/admin/parties/business-readiness';
 import { KYC_TONE } from '@/components/admin/parties/directory-table';
 import { ReasonStage } from '@/components/admin/reason-stage';
 import type { StageTone } from '@/components/admin/reason-stage';
@@ -659,6 +660,12 @@ export function PartyDrawer({
                         )}
                         {party.coverage && (
                             <PartnerCoverage coverage={party.coverage} />
+                        )}
+                        {party.readiness !== undefined && (
+                            <BusinessReadiness
+                                requirements={party.readiness}
+                                section={SECTION}
+                            />
                         )}
                         {party.audit && (
                             <BusinessAuditSection

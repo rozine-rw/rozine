@@ -104,6 +104,38 @@ const rowOf = (reference: string) => {
 beforeEach(resetInertia);
 
 describe('Payment Center', () => {
+    it('links the disbursement queue and the ledger that sit under Payments', () => {
+        render(<AdminPayments {...props()} />);
+
+        const related = screen.getByRole('navigation', {
+            name: 'Pages under Payments',
+        });
+
+        expect(
+            within(related).getByRole('link', { name: 'Payments' }),
+        ).toHaveAttribute('aria-current', 'page');
+        expect(
+            within(related).getByRole('link', { name: 'Disbursements' }),
+        ).toHaveAttribute('href', '/preview/admin-disbursements');
+        expect(
+            within(related).getByRole('link', { name: 'Ledger' }),
+        ).toHaveAttribute('href', '/preview/admin-ledger');
+    });
+
+    it('shows no row of related pages where the viewer may open none of them', () => {
+        const page = props();
+        render(
+            <AdminPayments
+                {...page}
+                nav={{ ...page.nav, disbursements: null, ledger: null }}
+            />,
+        );
+
+        expect(
+            screen.queryByRole('navigation', { name: 'Pages under Payments' }),
+        ).not.toBeInTheDocument();
+    });
+
     it('shows the fourteen-day money movement and every payout in flight, with no release or hold', () => {
         render(<AdminPayments {...props()} />);
 

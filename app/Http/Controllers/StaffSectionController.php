@@ -11,6 +11,7 @@ use App\Application\Operations\ChangePlatformPolicies;
 use App\Application\Operations\EngineSettings;
 use App\Application\Operations\PlatformPolicies;
 use App\Application\Operations\ReadSandboxUsage;
+use App\Application\Secondary\Contracts\SecondaryOversight;
 use App\Http\Resources\StaffNavigationResource;
 use App\Http\Resources\StaffViewerResource;
 use Brick\Math\BigInteger;
@@ -25,7 +26,8 @@ use Inertia\Response;
  * read beyond the viewer's own access, so nothing can be invented, except where a section has a live
  * read: Policies lists the rules the domain enforces, Finance shows the ledger's fee revenue to
  * whoever may read the ledger, over every posting or a window of Kigali dates, Engines and Ratings show underwriters the engine's settings and the
- * rating scorecard, Ratings lists every rated Business to whoever may view Businesses, and App
+ * rating scorecard, Ratings lists every rated Business to whoever may view Businesses, Secondary Market shows Compliance
+ * the halts in force and open listings with their halt, lift and cancel commands, and App
  * Control shows how much of the sandbox's limits is used, which app features are built and the largest Businesses.
  */
 class StaffSectionController extends Controller
@@ -65,7 +67,7 @@ class StaffSectionController extends Controller
      * sent to that queue, and whoever may read message history to Messaging & Automations.
      */
     public function show(Request $request, GetStaffAccess $access, BrowseLedger $ledger, BrowseBusinessDirectory $businesses, ReadSandboxUsage $sandbox,
-        ChangePlatformPolicies $policies, string $section): Response|RedirectResponse
+        ChangePlatformPolicies $policies, SecondaryOversight $oversight, string $section): Response|RedirectResponse
     {
         $staff = $access->handle((int) $request->user()?->getAuthIdentifier(), true);
         /** @var list<string> $roles */
@@ -90,13 +92,16 @@ class StaffSectionController extends Controller
             ? self::content($businesses->directory((int) $request->user()?->getAuthIdentifier(), 'all', 'raised', '', '', self::CONTENT_LIMIT)['rows']) : [];
         $book = $section === 'ratings' && in_array('businesses.view', $permissions, true)
             ? self::book($businesses->directory((int) $request->user()?->getAuthIdentifier(), 'all', 'name', '', '', self::BOOK_LIMIT)['rows']) : [];
+        $market = $section === 'secondary-market' && in_array('secondary.halt', $permissions, true)
+            ? ['market_oversight' => self::oversight($oversight->overview((int) $request->user()?->getAuthIdentifier()),
+                in_array('secondary.listings.cancel', $permissions, true))] : [];
 
         return Inertia::render('admin/section', ['server_time' => now()->toIso8601String(),
             'viewer' => ['id' => (string) $request->user()?->getAuthIdentifier(), 'name' => $name, 'email' => (string) $request->user()?->email,
                 'initials' => StaffViewerResource::initials($name), 'role' => current(array_intersect(self::ROLES, $roles)) ?: 'analyst'],
             'nav' => (new StaffNavigationResource($permissions))->resolve($request),
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => '', 'section' => self::SECTIONS[$section],
-            'rules' => $section === 'policies' ? PlatformPolicies::rules($policies->values()) : [], ...$finance, ...$book,
+            'rules' => $section === 'policies' ? PlatformPolicies::rules($policies->values()) : [], ...$finance, ...$book, ...$market,
             ...($section === 'policies' ? ['policy_changes' => self::changes($policies->board((int) $request->user()?->getAuthIdentifier()))] : []),
             ...($section === 'app-control' ? ['sandbox' => $sandbox->handle((int) $request->user()?->getAuthIdentifier()), 'apps' => self::APPS, 'content' => $content] : []),
             'engine' => match (true) {
@@ -105,6 +110,29 @@ class StaffSectionController extends Controller
                 $section === 'ratings' => EngineSettings::scorecard(),
                 default => [],
             }]);
+    }
+
+    /**
+     * The Secondary Market page's halts in force and open listings for Compliance (SEC-R08, SEC-R09),
+     * with the route each command posts to: a halt of the whole market unless one is in force, a halt
+     * of one listed note unless it is halted, a lift for every halt, and a cancel for every listing
+     * when the viewer may cancel. `trading` says whether resale is switched on at all.
+     *
+     * @param  array{halts: list<array{halt_id: string, note_id: string|null, deal_name: string|null, reason: string, halted_at: string}>,
+     *     listings: list<array{listing_id: string, note_id: string, deal_name: string, remaining_units: string, price: array{currency: string, amount: string}, listed_at: string, expires_at: string}>}  $overview
+     * @return array<string, mixed>
+     */
+    private static function oversight(array $overview, bool $mayCancel): array
+    {
+        $route = fn (string $name, array $parameters = []): array => ['url' => route($name, $parameters, false), 'method' => 'post'];
+        $halted = array_map(fn (array $halt): ?string => $halt['note_id'], $overview['halts']);
+
+        return ['trading' => config('app.secondary_trading') === true, 'market_halted' => in_array(null, $halted, true),
+            'halt' => in_array(null, $halted, true) ? null : $route('staff.secondary.halt'),
+            'halts' => array_map(fn (array $halt): array => [...$halt, 'lift' => $route('staff.secondary.lift')], $overview['halts']),
+            'listings' => array_map(fn (array $listing): array => [...$listing,
+                'halt_note' => in_array($listing['note_id'], $halted, true) ? null : $route('staff.secondary.halt'),
+                'cancel' => $mayCancel ? $route('staff.secondary.listings.cancel', ['listing' => $listing['listing_id']]) : null], $overview['listings'])];
     }
 
     /**
