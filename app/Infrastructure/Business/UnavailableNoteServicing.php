@@ -9,6 +9,7 @@ use App\Application\Business\Contracts\ServicingStatements;
 use App\Application\Business\ServicingQuote;
 use App\Domain\Operations\CommandRejection;
 use App\Domain\Wallet\WalletMoney;
+use DateTimeImmutable;
 
 /**
  * No servicing domain is bound yet (S4-B). No note is a servicing note, so `repayment.pay` is refused
@@ -28,6 +29,11 @@ final class UnavailableNoteServicing implements NoteServicing, ServicingStatemen
     }
 
     public function current(string $businessId): ?array
+    {
+        return null;
+    }
+
+    public function forNote(string $businessId, string $noteId, DateTimeImmutable $asOf): ?array
     {
         return null;
     }

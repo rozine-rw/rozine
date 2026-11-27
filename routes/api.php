@@ -52,6 +52,7 @@ use App\Http\Controllers\StaffMessagingController;
 use App\Http\Controllers\StaffPaymentsController;
 use App\Http\Controllers\StaffPrimaryMarketController;
 use App\Http\Controllers\StaffReconciliationController;
+use App\Http\Controllers\StaffServicingController;
 use App\Http\Controllers\StaffStatementAuditReadinessController;
 use App\Http\Controllers\StaffStatementReviewController;
 use App\Http\Controllers\StaffSystemHealthController;
@@ -289,6 +290,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1', 'cache.headers:private;no_st
     Route::get('v1/staff/exceptions', StaffExceptionsController::class)->name('api.v1.staff.exceptions.index');
     Route::get('v1/staff/primary-market', StaffPrimaryMarketController::class)->name('api.v1.staff.primary-market.index');
     Route::get('v1/staff/payments', StaffPaymentsController::class)->name('api.v1.staff.payments.index');
+    Route::get('v1/staff/repayments', StaffServicingController::class)->name('api.v1.staff.repayments.index');
     Route::get('v1/staff/coverage', StaffCoverageController::class)->name('api.v1.staff.coverage.index');
     Route::get('v1/staff/complaints', [StaffComplaintController::class, 'index'])->name('api.v1.staff.complaints.index');
     Route::get('v1/staff/system-health', StaffSystemHealthController::class)->name('api.v1.staff.system-health.index');

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Business\Contracts;
 
+use DateTimeImmutable;
+
 /**
  * Where the Business's repaying note stands, for its Repayments sheet (business-servicing-v1): the
  * schedule with what each instalment was paid, what is due and payable now, its progress and its
@@ -26,4 +28,12 @@ interface ServicingStatements
 {
     /** @return Statement|null */
     public function current(string $businessId): ?array;
+
+    /**
+     * The exact note, including fully repaid notes; never substitutes a different current note.
+     * The date applies to delinquency classification, not a historical repayment snapshot.
+     *
+     * @return Statement|null
+     */
+    public function forNote(string $businessId, string $noteId, DateTimeImmutable $asOf): ?array;
 }

@@ -13,6 +13,7 @@ import ledger from './ledger'
 import exceptions from './exceptions'
 import primaryMarket from './primary-market'
 import payments from './payments'
+import repayments from './repayments'
 import coverage from './coverage'
 import complaints from './complaints'
 import systemHealth from './system-health'
@@ -114,6 +115,7 @@ const staffNamespace = {
     exceptions: Object.assign(exceptions, exceptions),
     primaryMarket: Object.assign(primaryMarket, primaryMarket),
     payments: Object.assign(payments, payments),
+    repayments: Object.assign(repayments, repayments),
     coverage: Object.assign(coverage, coverage),
     complaints: Object.assign(complaints, complaints),
     systemHealth: Object.assign(systemHealth, systemHealth),

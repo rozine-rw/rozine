@@ -86,6 +86,7 @@ use App\Http\Controllers\StaffReconciliationController;
 use App\Http\Controllers\StaffRoleApplicationController;
 use App\Http\Controllers\StaffSecondaryMarketController;
 use App\Http\Controllers\StaffSectionController;
+use App\Http\Controllers\StaffServicingController;
 use App\Http\Controllers\StaffStagingMailTesterController;
 use App\Http\Controllers\StaffSystemHealthController;
 use App\Http\Controllers\StaffUserDirectoryController;
@@ -453,6 +454,7 @@ Route::middleware(['auth', 'throttle:60,1', 'cache.headers:private;no_store'])->
         ->name('staff.secondary.listings.cancel');
     Route::get('admin/primary-market', StaffPrimaryMarketController::class)->name('staff.primary-market.index');
     Route::get('admin/payments', StaffPaymentsController::class)->name('staff.payments.index');
+    Route::get('admin/repayments/data', StaffServicingController::class)->name('staff.repayments.data');
     Route::get('admin/coverage', StaffCoverageController::class)->name('staff.coverage.index');
     Route::get('admin/access-requests', [RoleAccessRequestController::class, 'index'])->name('staff.access-requests.index');
     Route::post('admin/access-requests/{accessRequest}/grant', [RoleAccessRequestController::class, 'grant'])->whereUlid('accessRequest')->name('staff.access-requests.grant');
