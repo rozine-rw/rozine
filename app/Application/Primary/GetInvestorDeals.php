@@ -8,6 +8,7 @@ use App\Application\Business\Contracts\BusinessProspectuses;
 use App\Application\Business\Contracts\InvestorDealCatalogue;
 use App\Application\Identity\Contracts\PartyNotices;
 use App\Application\Primary\Contracts\InvestorCart;
+use App\Application\Primary\Contracts\InvestorCheckoutFacts;
 use App\Domain\Operations\CommandRejection;
 use Brick\Math\BigDecimal;
 
@@ -29,7 +30,7 @@ final class GetInvestorDeals
     public const array SORTS = ['all', 'top_interest', 'top_rated', 'top_picks', 'in_cart'];
 
     public function __construct(private GetInvestorViewer $viewer, private InvestorDealCatalogue $catalogue, private PartyNotices $notices,
-        private InvestorCart $cart, private BusinessProspectuses $prospectuses) {}
+        private InvestorCart $cart, private BusinessProspectuses $prospectuses, private InvestorCheckoutFacts $facts) {}
 
     /**
      * @param  array{sort?: string|null, industry?: string|null, deal?: string|null}  $query
@@ -53,7 +54,7 @@ final class GetInvestorDeals
             'industries' => [['industry' => null, 'count' => count($all)],
                 ...array_map(fn (string $name): array => ['industry' => $name,
                     'count' => count(array_filter($all, fn (array $deal): bool => $deal['industry'] === $name))], $names)],
-            'deals' => $deals, 'focus' => $focusId === null ? null : $this->focus($focusId)];
+            'deals' => $deals, 'focus' => $focusId === null ? null : $this->focus($focusId, $viewer['available'] !== null ? $userId : null)];
     }
 
     /**
@@ -61,11 +62,22 @@ final class GetInvestorDeals
      *
      * @return array<string, mixed>|null
      */
-    private function focus(string $campaignId): ?array
+    private function focus(string $campaignId, ?int $investorId): ?array
     {
         $deal = $this->catalogue->deal($campaignId);
+        if ($deal === null) {
+            return null;
+        }
+        // A verified Investor's own limit in this raise (QA #832): the most they may still take, so the
+        // notes field and slider stop there and say why before Add to cart, as checkout does.
+        $limit = null;
+        if ($investorId !== null && ($deal['lifecycle'] ?? null) === 'live') {
+            $facts = $this->facts->forInvestor($investorId, $campaignId);
+            $capacity = GetInvestorCheckout::capacity($deal, $facts['campaign_units'], true, $facts['cap_percent']);
+            $limit = ['max_units' => $capacity['max_units'], 'bound_by' => $capacity['binding'], 'cap_percent' => $facts['cap_percent']];
+        }
 
-        return $deal === null ? null : [...$deal, 'prospectus' => $this->prospectuses->published($campaignId)['summary'] ?? null];
+        return [...$deal, 'prospectus' => $this->prospectuses->published($campaignId)['summary'] ?? null, 'limit' => $limit];
     }
 
     /**

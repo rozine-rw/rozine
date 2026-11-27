@@ -62,12 +62,12 @@ it('counts only the principal of notes the retained schedule issued the Party, n
         ->and($held['revision'])->toBe(2)
         ->and($held['complete'])->toBeTrue()
         ->and($held['as_of'])->toBe(now('UTC')->format('Y-m-d\TH:i:s\Z'))
-        ->and($held['sha256'])->toBe(hash('sha256', app(CanonicalJson::class)->encode(['version' => 'held-note-capital-2',
-            'party_id' => $party, 'notes' => $notes, 'outstanding_principal' => '5400000', 'complete' => true])))
+        ->and($held['sha256'])->toBe(hash('sha256', app(CanonicalJson::class)->encode(['version' => 'held-note-capital-3',
+            'party_id' => $party, 'notes' => $notes, 'repaid_principal' => '0', 'outstanding_principal' => '5400000', 'complete' => true])))
         ->and($capital->current(PrimaryHolding::query()->where('units', 1080)->sole()->party_id)['outstanding_principal'])->toBe('5400000');
 });
 
-it('reports the held figure incomplete once any Business repayment could have reduced principal', function (): void {
+it('reports the held figure incomplete while a Business repayment has not been paid out to its holders', function (): void {
     PrimaryIssuanceFixture::close(now('UTC')->toIso8601String());
     $party = PrimaryHolding::query()->orderBy('id')->firstOrFail()->party_id;
     $complete = app(HeldNoteCapital::class)->current($party);

@@ -230,6 +230,34 @@ const detail = (
                 at: '2027-01-20T08:00:00+02:00',
             },
             {
+                revision: 7,
+                status: 'changes_requested',
+                command: 'application.save',
+                reason: null,
+                at: '2027-01-19T12:00:00+02:00',
+            },
+            {
+                revision: 6,
+                status: 'changes_requested',
+                command: 'application.save',
+                reason: null,
+                at: '2027-01-19T11:00:00+02:00',
+            },
+            {
+                revision: 5,
+                status: 'changes_requested',
+                command: 'application.request_changes',
+                reason: 'Upload the current RDB certificate.',
+                at: '2027-01-19T10:00:00+02:00',
+            },
+            {
+                revision: 2,
+                status: 'submitted',
+                command: 'submit',
+                reason: null,
+                at: '2027-01-19T09:30:00+02:00',
+            },
+            {
                 revision: 1,
                 status: 'draft',
                 command: 'save',
@@ -308,7 +336,14 @@ describe('Institutions', () => {
         expect(drawer).toHaveTextContent('RDB certificate of incorporation');
         expect(drawer).toHaveTextContent('ID of Jean Director');
         expect(drawer).toHaveTextContent('ID of UNKNOWN1');
-        expect(drawer).toHaveTextContent('· 2 saves');
+        expect(drawer).toHaveTextContent('Draft · 2 saves');
+        expect(drawer).toHaveTextContent(
+            'Sent back · then 2 saves by the applicant',
+        );
+        expect(drawer).toHaveTextContent('Upload the current RDB certificate.');
+        expect(drawer).toHaveTextContent(
+            'RDB certificate of incorporation · rdb.pdf',
+        );
         expect(
             within(drawer).getByRole('link', { name: 'User account →' }),
         ).toHaveAttribute('href', '/admin/users?user=7');

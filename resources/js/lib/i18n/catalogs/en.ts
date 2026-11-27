@@ -5318,6 +5318,7 @@ const en = {
     'investor.deals.notes_quantity': 'Number of notes',
     'investor.deals.notes_suffix': 'NOTES',
     'investor.deals.of_left': 'of {count} left',
+    'investor.deals.up_to_you': ' · up to {count} for you',
     'investor.deals.term': 'TERM',
     'investor.deals.months_short': '{count} mo',
     'investor.deals.bar_invest': 'INVEST',
@@ -7954,6 +7955,8 @@ const en = {
     'investor.deal.cap.none': "You can't take any more notes here: {reason}.",
     'investor.deal.cap.reason.raise_cap':
         'your single-investor limit for this raise',
+    'investor.deal.cap.reason.raise_cap_institution':
+        "your institution's limit for this raise",
     'investor.deal.cap.reason.availability':
         "that's every note still available",
     'investor.deal.cap.reason.restriction': 'a restriction applies',
@@ -9143,6 +9146,10 @@ const en = {
     'admin.institutions.saves': {
         one: '· {count} save',
         other: '· {count} saves',
+    },
+    'admin.institutions.then_saves': {
+        one: '· then {count} save by the applicant',
+        other: '· then {count} saves by the applicant',
     },
     'admin.institutions.history_empty': 'No history yet.',
     'admin.users.select.kyc': 'Filter by KYC',

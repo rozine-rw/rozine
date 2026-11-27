@@ -53,11 +53,21 @@ export function UserRoleChips({
     current?: boolean;
 }) {
     const { t } = useTranslation();
-    const memberships = current
-        ? row.memberships.filter(
-              (membership) => membership.status !== 'revoked',
-          )
-        : row.memberships;
+    /* An institution's active Investor role reads once, as "Investor for {institution}" (QA #826). */
+    const memberships = (
+        current
+            ? row.memberships.filter(
+                  (membership) => membership.status !== 'revoked',
+              )
+            : row.memberships
+    ).filter(
+        (membership) =>
+            !(
+                row.institution &&
+                membership.role === 'investor' &&
+                membership.status === 'active'
+            ),
+    );
     const none =
         memberships.length === 0 &&
         row.staff === null &&
