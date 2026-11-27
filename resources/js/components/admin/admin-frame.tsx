@@ -230,6 +230,15 @@ const GLYPHS: Record<AdminFrameSection, ReactNode> = {
             />
         </>
     ),
+    institutions: (
+        <>
+            <path d="M3 10 12 4l9 6" strokeLinejoin="round" />
+            <path
+                d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"
+                strokeLinecap="round"
+            />
+        </>
+    ),
     access_requests: (
         <>
             <circle cx="10" cy="8" r="3.2" />
@@ -314,6 +323,7 @@ const GROUPS: {
             'users',
             'businesses',
             'investors',
+            'institutions',
             'auditors',
             'access_requests',
         ],

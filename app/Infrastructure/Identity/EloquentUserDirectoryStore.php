@@ -38,10 +38,10 @@ final class EloquentUserDirectoryStore implements UserDirectoryStore
             $accounts->where('kyc', $kyc);
         }
         $totals = (clone $accounts)->selectRaw('count(*) AS everyone, count(*) FILTER (WHERE is_investor) AS investor, count(*) FILTER (WHERE is_business) AS business,
-            count(*) FILTER (WHERE is_auditor) AS auditor, count(*) FILTER (WHERE is_staff) AS staff,
+            count(*) FILTER (WHERE is_auditor) AS auditor, count(*) FILTER (WHERE is_staff) AS staff, count(*) FILTER (WHERE is_institution) AS institution,
             count(*) FILTER (WHERE NOT (is_investor OR is_business OR is_auditor OR is_staff)) AS no_role')->first();
         match ($role) {
-            'investor', 'business', 'auditor', 'staff' => $accounts->where('is_'.$role, true),
+            'investor', 'business', 'auditor', 'staff', 'institution' => $accounts->where('is_'.$role, true),
             'no_role' => $accounts->whereNot(fn (Builder $any) => $any->where('is_investor', true)->orWhere('is_business', true)
                 ->orWhere('is_auditor', true)->orWhere('is_staff', true)),
             default => null,
@@ -55,7 +55,8 @@ final class EloquentUserDirectoryStore implements UserDirectoryStore
 
         return ['rows' => $this->rows(array_values($accounts->limit($limit)->get()->all())), 'matching' => $matching,
             'counts' => ['all' => (int) ($totals->everyone ?? 0), 'investor' => (int) ($totals->investor ?? 0), 'business' => (int) ($totals->business ?? 0),
-                'auditor' => (int) ($totals->auditor ?? 0), 'staff' => (int) ($totals->staff ?? 0), 'no_role' => (int) ($totals->no_role ?? 0)],
+                'auditor' => (int) ($totals->auditor ?? 0), 'staff' => (int) ($totals->staff ?? 0), 'no_role' => (int) ($totals->no_role ?? 0),
+                'institution' => (int) ($totals->institution ?? 0)],
             'everyone' => (int) ($platform->everyone ?? 0), 'new_this_week' => (int) ($platform->new_this_week ?? 0), 'kyc_verified' => (int) ($platform->verified ?? 0),
             'awaiting_review' => (int) ($platform->awaiting ?? 0), 'closed' => $closedCount];
     }
@@ -123,6 +124,7 @@ final class EloquentUserDirectoryStore implements UserDirectoryStore
                     WHEN iv.status = 'rejected' THEN 'rejected' WHEN iv.id IS NOT NULL THEN 'in_progress' ELSE 'not_started' END AS kyc,
                 EXISTS (SELECT 1 FROM role_memberships m WHERE m.party_id = users.party_id AND m.role = 'investor' AND m.status <> 'revoked') AS is_investor, EXISTS (SELECT 1 FROM role_memberships m WHERE m.party_id = users.party_id AND m.role = 'business' AND m.status <> 'revoked') AS is_business, EXISTS (SELECT 1 FROM role_memberships m WHERE m.party_id = users.party_id AND m.role = 'auditor' AND m.status <> 'revoked') AS is_auditor,
                 staff_accounts.user_id IS NOT NULL AS is_staff, coalesce(staff_accounts.enabled, false) AS staff_enabled,
+                EXISTS (SELECT 1 FROM role_applications ra WHERE ra.party_id = users.party_id AND ra.role = 'institution') AS is_institution,
                 EXISTS (SELECT 1 FROM investor_account_restrictions r WHERE r.party_id = users.party_id AND r.effective_at <= now()
                     AND (r.expires_at IS NULL OR r.expires_at > now())) AS restricted");
     }

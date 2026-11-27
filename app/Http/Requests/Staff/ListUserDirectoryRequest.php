@@ -16,7 +16,7 @@ class ListUserDirectoryRequest extends FormRequest
     /** @return array<string, list<string>> */
     public function rules(): array
     {
-        return ['role' => ['sometimes', 'string', 'in:all,investor,business,auditor,staff,no_role'],
+        return ['role' => ['sometimes', 'string', 'in:all,investor,business,auditor,staff,no_role,institution'],
             'kyc' => ['sometimes', 'string', 'in:any,verified,in_review,in_progress,rejected,not_started'],
             'sort' => ['sometimes', 'string', 'in:newest,oldest,name'], 'status' => ['sometimes', 'string', 'in:active,deleted'],
             'q' => ['sometimes', 'nullable', 'string', 'max:120'], 'user' => ['sometimes', 'integer', 'min:1']];
