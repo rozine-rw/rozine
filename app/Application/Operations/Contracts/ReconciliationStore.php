@@ -25,8 +25,8 @@ use DateTimeInterface;
  *
  * @phpstan-type Account array{id: 'deposits'|'withdrawals', ledger: string, statement: string}
  * @phpstan-type BreakRecord array{
- *     id: string, account_id: 'deposits'|'withdrawals', flow: 'investor'|'business', kind: 'conflict'|'reversed'|'mismatch'|'key_conflict',
- *     reference: string, amount: string, opened_at: string, party_id: string|null, business_id: string|null
+ *     id: string, account_id: 'deposits'|'withdrawals', flow: 'investor'|'business'|'clearing', kind: 'conflict'|'reversed'|'mismatch'|'key_conflict'|'balance_variance',
+ *     reference: string, amount: string, opened_at: string, party_id: string|null, business_id: string|null, cutoff_at?: string
  * }
  */
 interface ReconciliationStore

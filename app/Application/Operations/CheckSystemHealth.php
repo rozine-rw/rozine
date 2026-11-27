@@ -10,6 +10,7 @@ use App\Application\Identity\AuthorizeStaffPermission;
 use App\Application\Identity\Contracts\StaffDirectoryStore;
 use App\Application\Operations\Contracts\ActivityTrailStore;
 use App\Application\Operations\Contracts\ReconciliationStore;
+use App\Domain\Operations\ReconciliationBalances;
 use Brick\Math\BigInteger;
 use Carbon\CarbonImmutable;
 
@@ -73,8 +74,9 @@ final readonly class CheckSystemHealth
         $frozen = $this->operators->directory('all', '')['counts']['frozen'];
 
         return [
-            ['key' => 'ledger', 'status' => $unmatched > 0 ? 'critical' : ($breaks > 0 ? 'watch' : 'healthy'),
-                'facts' => ['accounts' => count($accounts), 'unmatched' => $unmatched, 'breaks' => $breaks]],
+            ['key' => 'ledger', 'status' => $unmatched > 0 ? 'critical' : (! ReconciliationBalances::complete($accounts) || $breaks > 0 ? 'watch' : 'healthy'),
+                'facts' => ['accounts' => count($accounts), 'unmatched' => $unmatched, 'breaks' => $breaks,
+                    ...(! ReconciliationBalances::complete($accounts) ? ['coverage' => 'unavailable'] : [])]],
             ['key' => 'capital', 'status' => 'healthy', 'facts' => ['amount' => (string) $raised, 'raises' => $raises]],
             ['key' => 'queue', 'status' => $pending > self::QUEUE_TOLERANCE ? 'watch' : 'healthy', 'facts' => ['pending' => $pending]],
             ['key' => 'events', 'status' => $lastHour > 0 ? 'healthy' : 'watch', 'facts' => ['last_hour' => $lastHour, 'total' => $total]],

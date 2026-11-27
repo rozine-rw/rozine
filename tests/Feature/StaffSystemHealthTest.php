@@ -111,7 +111,7 @@ beforeEach(function (): void {
 });
 
 it('reads every signal healthy when the books match, the queue is short and actions flow', function (): void {
-    healthReadings([['id' => 'deposits', 'ledger' => '500', 'statement' => '500']], 0, ['300000', '200000'], 2, 7, 90);
+    healthReadings([['id' => 'deposits', 'ledger' => '500', 'statement' => '500'], ['id' => 'withdrawals', 'ledger' => '0', 'statement' => '0']], 0, ['300000', '200000'], 2, 7, 90);
 
     $props = ($this->page)(healthStaff(['superadmin']), ['q' => 'ledger']);
 
@@ -120,7 +120,7 @@ it('reads every signal healthy when the books match, the queue is short and acti
         ->and(array_column($props['signals'], 'key'))->toBe(['ledger', 'capital', 'queue', 'events', 'frozen', 'default_rate', 'arrears', 'outstanding', 'treasury'])
         ->and(array_column($props['signals'], 'status'))->toBe(['healthy', 'healthy', 'healthy', 'healthy', 'healthy', 'untracked', 'untracked', 'untracked', 'untracked'])
         ->and($props['signals'][4]['facts'])->toBe(['accounts' => 0])
-        ->and($props['signals'][0]['facts'])->toBe(['accounts' => 1, 'unmatched' => 0, 'breaks' => 0])
+        ->and($props['signals'][0]['facts'])->toBe(['accounts' => 2, 'unmatched' => 0, 'breaks' => 0])
         ->and($props['signals'][1]['facts'])->toBe(['amount' => '500000', 'raises' => 2])
         ->and($props['signals'][3]['facts'])->toBe(['last_hour' => 7, 'total' => 90])
         ->and(array_filter(array_column($props['signals'], 'action')))->toBe([])
@@ -139,7 +139,7 @@ it('puts what needs a look first and links it to the page that resolves it', fun
         ->and($props['signals'][1]['action']['url'])->toBe('/admin/applications')
         ->and($props['signals'][2]['action'])->toBeNull();
 
-    healthReadings([['id' => 'deposits', 'ledger' => '500', 'statement' => '500']], 2, [], 0, 1, 1);
+    healthReadings([['id' => 'deposits', 'ledger' => '500', 'statement' => '500'], ['id' => 'withdrawals', 'ledger' => '0', 'statement' => '0']], 2, [], 0, 1, 1);
     $treasury = ($this->page)(healthStaff(['treasury']));
 
     expect($treasury['signals'][0])->toMatchArray(['key' => 'ledger', 'status' => 'watch', 'action' => ['url' => '/admin/reconciliation', 'method' => 'get']]);
@@ -153,8 +153,18 @@ it('puts what needs a look first and links it to the page that resolves it', fun
         ->and($watch(($this->page)(healthStaff(['treasury'])))['action'])->toBeNull();
 });
 
+it('does not report healthy ledger integrity from incomplete statement coverage', function (): void {
+    healthReadings([], 0, [], 0, 1, 1);
+    $props = ($this->page)(healthStaff(['treasury']));
+    $ledger = array_values(array_filter($props['signals'], fn (array $signal): bool => $signal['key'] === 'ledger'))[0];
+
+    expect($ledger['status'])->toBe('watch')
+        ->and($ledger['facts'])->toBe(['accounts' => 0, 'unmatched' => 0, 'breaks' => 0, 'coverage' => 'unavailable'])
+        ->and($ledger['action']['url'])->toBe('/admin/reconciliation');
+});
+
 it('is for operations staff, replaces the pending section, and serves API v1 with its own ability', function (): void {
-    healthReadings([], 0, [], 6, 1, 1);
+    healthReadings([['id' => 'deposits', 'ledger' => '0', 'statement' => '0'], ['id' => 'withdrawals', 'ledger' => '0', 'statement' => '0']], 0, [], 6, 1, 1);
 
     expect(StaffSectionController::SECTIONS)->not->toHaveKey('system-health');
     $this->actingAs(healthStaff(['analyst']))->get(route('staff.system-health.index'))->assertForbidden();

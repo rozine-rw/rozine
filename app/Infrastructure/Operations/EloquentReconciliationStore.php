@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Operations;
 
 use App\Application\Operations\Contracts\ReconciliationStore;
+use Brick\Math\BigInteger;
 use DateTimeInterface;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -35,10 +36,27 @@ final readonly class EloquentReconciliationStore implements ReconciliationStore
 
     public function accounts(DateTimeInterface $asOf): array
     {
-        return [
-            ['id' => 'deposits', 'ledger' => $this->ledger('deposit_clearing', 'debit', $asOf), 'statement' => $this->statement('deposits', $asOf)],
-            ['id' => 'withdrawals', 'ledger' => $this->ledger('withdrawal_clearing', 'credit', $asOf), 'statement' => $this->statement('withdrawals', $asOf)],
-        ];
+        // Preserve the offset and microseconds: Laravel's default DateTime binding drops both.
+        $cutoff = $asOf->format('Y-m-d H:i:s.uP');
+        // One SQL statement gives both sides and both accounts the same MVCC snapshot and cutoff.
+        $ledger = DB::table('ledger_lines')->join('ledger_accounts', 'ledger_accounts.id', '=', 'ledger_lines.account_id')
+            ->whereIn('ledger_accounts.kind', ['deposit_clearing', 'withdrawal_clearing'])->where('ledger_lines.created_at', '<=', $cutoff)
+            ->groupBy('ledger_accounts.kind')->selectRaw("ledger_accounts.kind, sum(CASE WHEN
+                (ledger_accounts.kind = 'deposit_clearing' AND ledger_lines.direction = 'debit') OR
+                (ledger_accounts.kind = 'withdrawal_clearing' AND ledger_lines.direction = 'credit')
+                THEN ledger_lines.amount ELSE -ledger_lines.amount END) AS total");
+        $statement = DB::query()->fromSub($this->outcomes($asOf), 'outcome')->groupBy('account_id')
+            ->selectRaw('account_id, sum('.self::MOVED.') AS total');
+        $rows = DB::query()->fromRaw("(VALUES ('deposits', 'deposit_clearing'), ('withdrawals', 'withdrawal_clearing')) AS clearing(id, kind)")
+            ->leftJoinSub($ledger, 'ledger', 'ledger.kind', '=', 'clearing.kind')
+            ->leftJoinSub($statement, 'provider', 'provider.account_id', '=', 'clearing.id')->orderBy('clearing.id')
+            ->get(['clearing.id', DB::raw('coalesce(ledger.total, 0)::text AS ledger'), DB::raw('coalesce(provider.total, 0)::text AS statement')]);
+        $accounts = [];
+        foreach ($rows as $row) {
+            $accounts[] = ['id' => $row->id === 'deposits' ? 'deposits' : 'withdrawals', 'ledger' => (string) $row->ledger, 'statement' => (string) $row->statement];
+        }
+
+        return $accounts;
     }
 
     public function breaks(DateTimeInterface $asOf): array
@@ -66,26 +84,15 @@ final readonly class EloquentReconciliationStore implements ReconciliationStore
             ];
         }
 
+        foreach (DB::table('reconciliation_variances')->where('created_at', '<=', $asOf->format('Y-m-d H:i:s.uP'))->orderBy('created_at')->orderBy('id')->get() as $case) {
+            $breaks[] = ['id' => (string) $case->id, 'account_id' => $case->account_id === 'deposits' ? 'deposits' : 'withdrawals',
+                'flow' => 'clearing', 'kind' => 'balance_variance', 'reference' => 'REC-'.$case->business_date.'-'.$case->account_id,
+                'amount' => (string) BigInteger::of((string) $case->difference)->abs(), 'opened_at' => (string) $case->created_at,
+                'cutoff_at' => (string) $case->cutoff_at, 'party_id' => null, 'business_id' => null];
+        }
+        usort($breaks, fn (array $left, array $right): int => [$left['opened_at'], $left['id']] <=> [$right['opened_at'], $right['id']]);
+
         return $breaks;
-    }
-
-    /** The account's balance on its natural side, from every line posted by the instant. */
-    private function ledger(string $kind, string $side, DateTimeInterface $asOf): string
-    {
-        $sum = DB::table('ledger_lines')->join('ledger_accounts', 'ledger_accounts.id', '=', 'ledger_lines.account_id')
-            ->where('ledger_accounts.kind', $kind)->where('ledger_lines.created_at', '<=', $asOf)
-            ->selectRaw('coalesce(sum(CASE WHEN ledger_lines.direction = ? THEN ledger_lines.amount ELSE -ledger_lines.amount END), 0) AS total', [$side])
-            ->value('total');
-
-        return (string) $sum;
-    }
-
-    private function statement(string $account, DateTimeInterface $asOf): string
-    {
-        $sum = DB::query()->fromSub($this->outcomes($asOf), 'outcome')->where('account_id', $account)
-            ->selectRaw('coalesce(sum('.self::MOVED.'), 0) AS total')->value('total');
-
-        return (string) $sum;
     }
 
     /**
@@ -94,17 +101,18 @@ final readonly class EloquentReconciliationStore implements ReconciliationStore
      */
     private function outcomes(DateTimeInterface $asOf): Builder
     {
+        $cutoff = $asOf->format('Y-m-d H:i:s.uP');
         $investorDeposits = DB::table('wallet_provider_events AS event')->join('wallet_deposit_intents AS record', 'record.id', '=', 'event.intent_id')
-            ->where('event.created_at', '<=', $asOf)->selectRaw("event.id, 'deposits' AS account_id, 'investor' AS flow, event.state, event.disposition, "
+            ->where('event.created_at', '<=', $cutoff)->selectRaw("event.id, 'deposits' AS account_id, 'investor' AS flow, event.state, event.disposition, "
                 .'event.provider_event_id, event.amount AS expected, event.amount AS reported, event.created_at, record.party_id, NULL AS business_id');
         $businessDeposits = DB::table('business_provider_events AS event')->join('business_deposit_intents AS record', 'record.id', '=', 'event.intent_id')
-            ->where('event.created_at', '<=', $asOf)->selectRaw("event.id, 'deposits' AS account_id, 'business' AS flow, event.state, event.disposition, "
+            ->where('event.created_at', '<=', $cutoff)->selectRaw("event.id, 'deposits' AS account_id, 'business' AS flow, event.state, event.disposition, "
                 .'event.provider_event_id, event.amount AS expected, event.amount AS reported, event.created_at, NULL AS party_id, record.business_id');
         $investorWithdrawals = DB::table('wallet_withdrawal_events AS event')->join('wallet_withdrawals AS record', 'record.id', '=', 'event.withdrawal_id')
-            ->where('event.created_at', '<=', $asOf)->selectRaw("event.id, 'withdrawals' AS account_id, 'investor' AS flow, event.state, event.disposition, "
+            ->where('event.created_at', '<=', $cutoff)->selectRaw("event.id, 'withdrawals' AS account_id, 'investor' AS flow, event.state, event.disposition, "
                 .'event.provider_event_id, record.amount AS expected, event.amount + record.provider_charge AS reported, event.created_at, record.party_id, NULL AS business_id');
         $businessWithdrawals = DB::table('business_withdrawal_events AS event')->join('business_withdrawals AS record', 'record.id', '=', 'event.withdrawal_id')
-            ->where('event.created_at', '<=', $asOf)->selectRaw("event.id, 'withdrawals' AS account_id, 'business' AS flow, event.state, event.disposition, "
+            ->where('event.created_at', '<=', $cutoff)->selectRaw("event.id, 'withdrawals' AS account_id, 'business' AS flow, event.state, event.disposition, "
                 .'event.provider_event_id, record.amount AS expected, event.amount + record.provider_charge AS reported, event.created_at, NULL AS party_id, record.business_id');
 
         return $investorDeposits->unionAll($businessDeposits)->unionAll($investorWithdrawals)->unionAll($businessWithdrawals);
