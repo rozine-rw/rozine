@@ -35,6 +35,7 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
 use Symfony\Component\HttpFoundation\Response;
+use Tests\Support\InvestorWalletFixture;
 use Tests\Support\PrimaryHoldingFixture;
 use Tests\Support\StaffFixture;
 use Tests\TestCase;
@@ -773,4 +774,19 @@ test('an institution\'s 360 lists the notes its account holds, by business (27 N
         ->assertInertia(fn (Assert $page): Assert => $page->where('rows.0.holdings', 1)
             ->where('institution.holdings.0.principal.amount', (string) $holding->principal)->where('institution.holdings.0.notes', 1)
             ->where('institution.holdings.0.business_id', (string) $campaign->business_id));
+});
+
+test('an institution is not approved while its applicant still holds money in their own Investor wallet (QA #828)', function (): void {
+    $investor = InvestorWalletFixture::funded('114504');
+    $application = institutionSent($this, $investor['user']);
+
+    // The applicant is told on the role page, and Compliance sees it in the review drawer.
+    $this->actingAs($investor['user'])->get(route('role-application.show', ['for' => 'institution']))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('blockers', ['INVESTOR_WALLET_BALANCE']));
+    $this->actingAs($this->officer)->get(route('staff.institutions.index', ['institution' => $application->id, 'application' => $application->id]))
+        ->assertInertia(fn (Assert $page): Assert => $page->where('application.blockers', ['INVESTOR_WALLET_BALANCE']));
+
+    decideApplication($this, $this->officer, $application, 'approve')
+        ->assertSessionHasErrors(['form' => 'The applicant still holds investments, open orders or money in their Investor wallet. They must clear these before switching role.']);
+    expect($application->refresh()->status)->toBe('submitted')->and(InstitutionalInvestor::query()->count())->toBe(0);
 });
