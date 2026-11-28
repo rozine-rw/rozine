@@ -567,8 +567,9 @@ export function HeadCell({
     return (
         <span
             role="columnheader"
+            // Relative, so a screen-reader-only label stays inside its table's scroller on a phone (QA #816).
             className={cn(
-                'text-[11px] font-semibold uppercase',
+                'relative text-[11px] font-semibold uppercase',
                 LABEL,
                 end && 'text-right',
             )}

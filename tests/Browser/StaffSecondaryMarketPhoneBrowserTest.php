@@ -27,6 +27,7 @@ const SM_SECRET = 'JBSWY3DPEHPK3PXP';
 
 it('shows the Secondary Market controls on a phone without sideways scrolling', function (): void {
     config(['app.secondary_trading' => true]);
+    twoInvestorRaiseCap();
     PrimaryIssuanceFixture::close(now()->subDay()->toIso8601String());
     PrimaryIssuanceFixture::close(now()->subDay()->toIso8601String());
     $holding = PrimaryHolding::query()->orderBy('id')->firstOrFail();
