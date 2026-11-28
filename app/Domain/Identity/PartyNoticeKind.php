@@ -10,7 +10,8 @@ namespace App\Domain\Identity;
  * screen that already holds the record. A KYC received, a verification result, a role application received,
  * sent back with the items to change, approved or rejected (24 Nov 2026), a refunded raise, a sent withdrawal,
  * a confirmed purchase, an issued Holding, a Business's approved application, its expired raise and its monthly reporting window, and an Audit
- * Partner's accreditation decision and job offers are also e-mailed. Rozine's answer to a complaint and its
+ * Partner's accreditation decision and job offers are also e-mailed, as is every staff or halt action on resale: a cancelled listing
+ * and its reason, a reservation a halt released, and the reopening when the halt is lifted (SEC-R08, SEC-R09). Rozine's answer to a complaint and its
  * resolution are in-app only, as are a Business's visit-ready checklist notices (D−14, and D−11 for the
  * items still open). A Business's notices belong to its entity Party.
  */
@@ -28,6 +29,9 @@ enum PartyNoticeKind: string
     case PayoutReceived = 'wallet.payout_received';
     case UnitsBought = 'market.units_bought';
     case UnitsSold = 'market.units_sold';
+    case ListingCancelled = 'market.listing_cancelled';
+    case ReservationReleased = 'market.reservation_released';
+    case ResaleReopened = 'market.resale_reopened';
     case WithdrawalReturned = 'wallet.withdrawal_returned';
     case RaiseRefunded = 'primary.refunded';
     case ReportPublished = 'primary.report_published';
@@ -69,7 +73,7 @@ enum PartyNoticeKind: string
             self::RoleApplicationReturned, self::RoleApplicationApproved, self::RoleApplicationRejected, self::RaiseRefunded, self::WithdrawalSent,
             self::BusinessApplicationApproved, self::BusinessRaiseExpired, self::AuditorAccreditationApproved, self::AuditorAccreditationRejected,
             self::AuditorJobOffered, self::NewDevice, self::ReportPublished, self::CommitmentConfirmed, self::HoldingIssued,
-            self::BusinessReportingWindowOpen], true);
+            self::BusinessReportingWindowOpen, self::ListingCancelled, self::ReservationReleased, self::ResaleReopened], true);
     }
 
     /**
@@ -103,7 +107,8 @@ enum PartyNoticeKind: string
             self::DepositReceived, self::WithdrawalSent, self::WithdrawalReturned, self::PayoutReceived, self::BusinessDepositReceived, self::BusinessWithdrawalSent,
             self::BusinessWithdrawalReturned => 'wallet',
             self::RaiseRefunded, self::RaiseFunded, self::BusinessRaiseExpired, self::BusinessRaiseFunded => 'fundraising',
-            self::CommitmentConfirmed, self::HoldingIssued, self::UnitsBought, self::UnitsSold => 'portfolio',
+            self::CommitmentConfirmed, self::HoldingIssued, self::UnitsBought, self::UnitsSold, self::ListingCancelled, self::ReservationReleased,
+            self::ResaleReopened => 'portfolio',
             self::ReportPublished, self::BusinessReportSealed, self::BusinessReportReviewClosing, self::BusinessReportingWindowOpen,
             self::BusinessReadinessStageChanged, self::BusinessReadinessRequirementDue, self::BusinessReadinessRequirementClosing, self::BusinessReadinessRequirementOverdue => 'reporting',
             self::BusinessVisitReadyOpen, self::BusinessVisitReadyReminder => 'reporting',

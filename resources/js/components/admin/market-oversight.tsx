@@ -19,12 +19,15 @@ import type { RouteAction } from '@/types';
 import type {
     MarketHalt,
     MarketListing,
+    MarketNote,
     MarketOversight as Oversight,
     StaffViewer,
 } from '@/types/admin';
 
 const GRID =
     'grid grid-cols-[minmax(0,2fr)_minmax(0,0.8fr)_minmax(0,1fr)_minmax(0,1.2fr)_auto] gap-3 px-5';
+
+const NOTE_GRID = 'grid grid-cols-[minmax(0,1fr)_auto] gap-3 px-5';
 
 const DANGER_BUTTON =
     'h-[32px] rounded-[9px] border border-[#e5484d] px-3 text-[12.5px] font-bold whitespace-nowrap text-[#c2292e] dark:text-rz-danger-text';
@@ -35,13 +38,13 @@ const QUIET_BUTTON =
 /** The command waiting for its written reason. */
 type Stage =
     | { kind: 'halt_market' }
-    | { kind: 'halt_note'; listing: MarketListing }
+    | { kind: 'halt_note'; note: MarketNote }
     | { kind: 'lift'; halt: MarketHalt }
     | { kind: 'cancel'; listing: MarketListing };
 
 /**
  * Compliance's controls on the Secondary Market page (BRS v3.0 SEC-R08, SEC-R09): halt the whole
- * market or one note, lift a halt in force, and cancel an open listing. Every command goes through
+ * market or one note (listed or not), lift a halt in force, and cancel an open listing. Every command goes through
  * the reason stage, and the server records the reason and refuses what no longer applies.
  */
 export function MarketOversight({
@@ -80,9 +83,11 @@ export function MarketOversight({
                             {t(
                                 oversight.market_halted
                                     ? 'admin.market.state.halted'
-                                    : oversight.trading
+                                    : oversight.mode === 'live'
                                       ? 'admin.market.state.open'
-                                      : 'admin.market.state.off',
+                                      : oversight.mode === 'simulated'
+                                        ? 'admin.market.state.simulated'
+                                        : 'admin.market.state.off',
                             )}
                         </p>
                     </div>
@@ -256,7 +261,14 @@ export function MarketOversight({
                                 <button
                                     type="button"
                                     onClick={() =>
-                                        open({ kind: 'halt_note', listing })
+                                        open({
+                                            kind: 'halt_note',
+                                            note: {
+                                                note_id: listing.note_id,
+                                                deal_name: listing.deal_name,
+                                                halt: listing.halt_note,
+                                            },
+                                        })
                                     }
                                     aria-label={t(
                                         'admin.market.halt_note_label',
@@ -285,6 +297,74 @@ export function MarketOversight({
                     </div>
                 ))}
             </TableCard>
+            <TableCard
+                label={t('admin.market.notes.table')}
+                minWidth="min-w-[420px]"
+                header={
+                    <div className="px-5 pt-4 pb-2">
+                        <CardTitle>{t('admin.market.notes.title')}</CardTitle>
+                        <p
+                            className={cn(
+                                'mt-1 text-[12.5px] leading-[1.55]',
+                                EXPLAIN,
+                            )}
+                        >
+                            {t('admin.market.notes.explain')}
+                        </p>
+                    </div>
+                }
+                empty={
+                    oversight.notes.length === 0 && (
+                        <EmptyState title={t('admin.market.notes.empty')} />
+                    )
+                }
+            >
+                {oversight.notes.length > 0 && (
+                    <div role="row" className={cn(NOTE_GRID, TABLE_HEAD)}>
+                        <HeadCell>{t('admin.market.col.note')}</HeadCell>
+                        <HeadCell>
+                            <span className="sr-only">
+                                {t('admin.market.col.actions')}
+                            </span>
+                        </HeadCell>
+                    </div>
+                )}
+                {oversight.notes.map((note) => (
+                    <div
+                        key={note.note_id}
+                        role="row"
+                        className={cn(NOTE_GRID, ROW_RULE, 'items-center py-3')}
+                    >
+                        <div
+                            role="cell"
+                            className="truncate text-[13px] font-semibold text-rz-ink"
+                        >
+                            {note.deal_name}
+                        </div>
+                        <div role="cell">
+                            {note.halt === null ? (
+                                <span className="text-[12px] font-semibold text-rz-muted">
+                                    {t('admin.market.notes.halted')}
+                                </span>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        open({ kind: 'halt_note', note })
+                                    }
+                                    aria-label={t(
+                                        'admin.market.halt_note_label',
+                                        { note: note.deal_name },
+                                    )}
+                                    className={QUIET_BUTTON}
+                                >
+                                    {t('admin.market.halt_note')}
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </TableCard>
         </section>
     );
 
@@ -306,14 +386,14 @@ export function MarketOversight({
                           payload: {},
                       };
             case 'halt_note':
-                return current.listing.halt_note === null
+                return current.note.halt === null
                     ? null
                     : {
                           title: t('admin.market.stage.halt_note.title', {
-                              note: current.listing.deal_name,
+                              note: current.note.deal_name,
                           }),
-                          action: current.listing.halt_note,
-                          payload: { note_id: current.listing.note_id },
+                          action: current.note.halt,
+                          payload: { note_id: current.note.note_id },
                       };
             case 'lift':
                 return {

@@ -1959,6 +1959,14 @@ const fr: Catalog = {
     'admin.market.listings.title': 'Annonces ouvertes',
     'admin.market.listings.table': 'Annonces de revente ouvertes',
     'admin.market.listings.empty': 'Aucune annonce ouverte.',
+    'admin.market.state.simulated':
+        "La revente fonctionne dans la simulation monétaire de staging. Une suspension annule chaque annonce ouverte qu'elle couvre et libère les réservations. Les personnes concernées reçoivent le motif dans l'application et par e-mail.",
+    'admin.market.notes.title': 'Titres émis',
+    'admin.market.notes.table': 'Titres émis',
+    'admin.market.notes.explain':
+        "Suspendre la revente d'un titre, qu'il ait ou non une annonce ouverte.",
+    'admin.market.notes.empty': "Aucun titre n'a encore été émis.",
+    'admin.market.notes.halted': 'Suspendu',
     'admin.market.col.scope': 'Couvre',
     'admin.market.col.reason': 'Motif',
     'admin.market.col.halted_at': 'Suspendu',
@@ -2393,6 +2401,12 @@ const fr: Catalog = {
         'Un achat sur le marché secondaire est réglé',
     'admin.messaging.trigger.market.units_sold':
         "Les parts mises en vente d'un détenteur sont vendues",
+    'admin.messaging.trigger.market.listing_cancelled':
+        "La Conformité ou une suspension annule l'annonce d'un détenteur",
+    'admin.messaging.trigger.market.reservation_released':
+        "Une suspension libère la réservation d'un acheteur",
+    'admin.messaging.trigger.market.resale_reopened':
+        'Une suspension qui a arrêté un ordre est levée',
     'admin.messaging.trigger.wallet.payout_received':
         'Le service verse à un détenteur sa part d’un remboursement',
     'admin.messaging.trigger.wallet.deposit_received':
@@ -5305,6 +5319,7 @@ const fr: Catalog = {
     'investor.market.order_detail.status_expired': 'Expirée',
     'investor.market.order_detail.listed': 'Parts proposées',
     'investor.market.order_detail.ended': 'Terminée',
+    'investor.market.order_detail.reason': 'Motif',
     'investor.market.order_detail.status_reserved': 'Réservé par un acheteur',
     'investor.market.order_detail.status_reserved_for_you': 'Réservé pour vous',
     'investor.market.order_detail.filled': 'Exécuté',
@@ -8535,6 +8550,19 @@ const fr: Catalog = {
         one: 'Votre {count} part de {title} est vendue. {amount} a été crédité sur votre portefeuille après {fee} de frais de revente.',
         other: 'Vos {count} parts de {title} sont vendues. {amount} a été crédité sur votre portefeuille après {fee} de frais de revente.',
     },
+    'investor.notices.market.listing_cancelled.title': 'Annonce annulée',
+    'investor.notices.market.listing_cancelled.body':
+        'Rozine a annulé votre annonce de {units} parts de {title}. Motif : {reason}',
+    'investor.notices.market.listing_cancelled.body_halt':
+        'La revente de {title} est suspendue, votre annonce de {units} parts a donc été annulée. Motif : {reason}',
+    'investor.notices.market.reservation_released.title': 'Réservation libérée',
+    'investor.notices.market.reservation_released.body':
+        'La revente de {title} est suspendue, votre réservation de {units} parts a donc pris fin. Les fonds sont de retour dans votre portefeuille. Motif : {reason}',
+    'investor.notices.market.resale_reopened.title': 'Revente rouverte',
+    'investor.notices.market.resale_reopened.body':
+        'La revente de {title} a rouvert. Motif : {reason}',
+    'investor.notices.market.resale_reopened.body_market':
+        'Le marché de revente a rouvert. Motif : {reason}',
     'investor.notices.wallet.payout_received.title': 'Paiement reçu',
     'investor.notices.wallet.payout_received.body':
         '{net} est arrivé dans votre portefeuille de {title}, échéance {instalments} : {gross} moins {fee} de frais sur les gains.',

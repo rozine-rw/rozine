@@ -466,4 +466,41 @@ describe('Market resale (BRS v3.0 §12)', () => {
             ).getByText('Units listed'),
         ).toBeInTheDocument();
     });
+    it('shows a seller the reason Compliance gave for cancelling their listing (SEC-R09)', async () => {
+        const user = userEvent.setup();
+        const props = page();
+        props.market.closed = [
+            {
+                listing_id: '01kc0000000000000000000009',
+                deal_name: 'Kivu Harvest Ltd',
+                listed_units: '5',
+                remaining_units: '5',
+                price: { currency: 'RWF', amount: '5000' },
+                listed_at: '2026-11-15T08:00:00+00:00',
+                state: 'cancelled',
+                cancelled_by: 'staff',
+                reason: 'Price misleads buyers.',
+                ended_at: '2026-11-15T09:30:00+00:00',
+            },
+        ];
+        render(<InvestorMarket {...props} />);
+
+        await user.click(screen.getByRole('tab', { name: 'Orders' }));
+        await user.click(screen.getByRole('tab', { name: 'Cancelled' }));
+        const cancelled = screen.getByRole('list', { name: 'Cancelled' });
+        await user.click(
+            within(cancelled).getByRole('button', {
+                name: /Listing · Kivu Harvest Ltd/u,
+            }),
+        );
+        const detail = screen.getByRole('dialog', { name: 'Order detail' });
+
+        expect(
+            within(detail).getByText('Cancelled by Rozine'),
+        ).toBeInTheDocument();
+        expect(within(detail).getByText('Reason')).toBeInTheDocument();
+        expect(
+            within(detail).getByText('Price misleads buyers.'),
+        ).toBeInTheDocument();
+    });
 });

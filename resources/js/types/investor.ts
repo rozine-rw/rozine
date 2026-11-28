@@ -1263,6 +1263,8 @@ export type MarketClosedListing = {
     listed_at: string;
     state: 'cancelled' | 'expired';
     cancelled_by: 'seller' | 'staff' | 'halt' | null;
+    /** The reason Compliance recorded when staff or a halt cancelled it; null otherwise. */
+    reason: string | null;
     ended_at: string;
 };
 
@@ -1778,6 +1780,24 @@ export type InvestorNotice = {
     | {
           kind: 'market.units_sold';
           facts: Money & { units: string; fee: string; title: string };
+      }
+    | {
+          kind: 'market.listing_cancelled';
+          facts: {
+              title: string;
+              units: string;
+              reason: string;
+              by: 'staff' | 'halt';
+          };
+      }
+    | {
+          kind: 'market.reservation_released';
+          facts: { title: string; units: string; reason: string };
+      }
+    | {
+          kind: 'market.resale_reopened';
+          /** `title` is empty when the whole market reopened. */
+          facts: { title: string; reason: string };
       }
     | {
           kind: 'wallet.withdrawal_sent';

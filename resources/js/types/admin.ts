@@ -157,13 +157,25 @@ export type MarketListing = {
     cancel: RouteAction | null;
 };
 
-/** Compliance's controls on the secondary market. `halt` is null while the market is halted. */
+/** An issued note a halt can name, with its halt unless it is halted. */
+export type MarketNote = {
+    note_id: string;
+    deal_name: string;
+    halt: RouteAction | null;
+};
+
+/**
+ * Compliance's controls on the secondary market. `halt` is null while the market is halted.
+ * `mode` is how resale runs: switched on, served by UAT's money simulation, or off.
+ */
 export type MarketOversight = {
     trading: boolean;
+    mode: 'live' | 'simulated' | 'off';
     market_halted: boolean;
     halt: RouteAction | null;
     halts: MarketHalt[];
     listings: MarketListing[];
+    notes: MarketNote[];
 };
 
 /** One rated Business in the rating book. */
