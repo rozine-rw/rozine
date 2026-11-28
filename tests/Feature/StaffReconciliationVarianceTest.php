@@ -12,7 +12,6 @@ use App\Events\ReconciliationVarianceOpened;
 use App\Infrastructure\Operations\EloquentReconciliationStore;
 use App\Models\User;
 use App\Notifications\Staff\ReconciliationVarianceDetected;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -119,14 +118,15 @@ it('records no variance for a healthy cutoff and keeps missing or duplicate feed
 ]);
 
 it('uses the exact Kigali midnight ledger cutoff with an independently supplied statement', function (): void {
-    $this->travelTo(CarbonImmutable::parse('2026-11-26T23:59:59+02:00'));
+    $day = now('Africa/Kigali')->toImmutable()->startOfDay();
+    $this->travelTo($day->subDay()->setTime(23, 59, 59));
     InvestorWalletFixture::policy(maximum: null);
     $investor = InvestorWalletFixture::ready();
     InvestorWalletFixture::settle(InvestorWalletFixture::deposit($investor, '5000')['data']['intent_id']);
-    $this->travelTo(CarbonImmutable::parse('2026-11-27T00:01:00+02:00'));
+    $this->travelTo($day->setTime(0, 1));
     independentStatementFeed([['id' => 'deposits', 'amount' => '5000'], ['id' => 'withdrawals', 'amount' => '0']]);
     InvestorWalletFixture::settle(InvestorWalletFixture::deposit($investor, '7000')['data']['intent_id']);
-    $this->travelTo(CarbonImmutable::parse('2026-11-27T10:00:00+02:00'));
+    $this->travelTo($day->setTime(10, 0));
 
     $this->actingAs($this->treasury)->get(route('staff.reconciliation.index'))->assertOk()
         ->assertInertia(fn ($page) => $page->where('accounts.0.ledger.amount', '5000')
