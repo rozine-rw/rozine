@@ -101,12 +101,24 @@ final readonly class SimulatedNoteServicing implements NoteServicing, ServicingS
         return $repaid;
     }
 
+    public function forNote(string $businessId, string $noteId, \DateTimeImmutable $asOf): ?array
+    {
+        $this->assertSimulating();
+        if (! $this->simulation->covers($businessId)) {
+            return null;
+        }
+        $campaignId = self::campaignId(strtolower($noteId));
+        $schedule = $campaignId === null ? null : $this->schedules->find($campaignId);
+
+        return $schedule === null || $schedule->businessId !== $businessId ? null : $this->statement($schedule, $asOf);
+    }
+
     /** @return Statement */
-    private function statement(RetainedNoteSchedule $schedule): array
+    private function statement(RetainedNoteSchedule $schedule, ?\DateTimeImmutable $asOf = null): array
     {
         $noteId = strtolower($schedule->campaignId);
         $title = $this->titles->title($schedule->campaignId);
-        $today = self::today();
+        $today = $asOf === null ? self::today() : CarbonImmutable::instance($asOf)->setTimezone('Africa/Kigali')->toDateString();
         $paid = $this->paid($noteId);
         $repayments = BusinessRepayment::query()->where('note_id', $noteId)->orderBy('id')->get();
         $payouts = DB::table('servicing_payouts')->where('note_id', $noteId)->groupBy('repayment_id')
