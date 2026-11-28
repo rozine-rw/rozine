@@ -8511,14 +8511,20 @@ const rw: Catalog = {
         other: "Imigabane yawe {count} ya {title} yagurishijwe. {amount} yageze mu gikapu cyawe nyuma y'amafaranga {fee} yo kugurisha.",
     },
     'investor.notices.market.listing_cancelled.title': 'Itangazo ryakuweho',
-    'investor.notices.market.listing_cancelled.body':
-        "Rozine yakuyeho itangazo ryawe ry'impapuro {units} za {title}. Impamvu: {reason}",
-    'investor.notices.market.listing_cancelled.body_halt':
-        "Igurisha rya {title} ryahagaritswe, bityo itangazo ryawe ry'impapuro {units} ryakuweho. Impamvu: {reason}",
+    'investor.notices.market.listing_cancelled.body': {
+        one: "Rozine yakuyeho itangazo ryawe ry'urupapuro {count} rwa {title}. Impamvu: {reason}",
+        other: "Rozine yakuyeho itangazo ryawe ry'impapuro {count} za {title}. Impamvu: {reason}",
+    },
+    'investor.notices.market.listing_cancelled.body_halt': {
+        one: "Igurisha rya {title} ryahagaritswe, bityo itangazo ryawe ry'urupapuro {count} ryakuweho. Impamvu: {reason}",
+        other: "Igurisha rya {title} ryahagaritswe, bityo itangazo ryawe ry'impapuro {count} ryakuweho. Impamvu: {reason}",
+    },
     'investor.notices.market.reservation_released.title':
         'Ibyo wafashe byarekuwe',
-    'investor.notices.market.reservation_released.body':
-        "Igurisha rya {title} ryahagaritswe, bityo ibyo wafashe by'impapuro {units} byarangiye. Amafaranga yasubiye mu gikapu cyawe. Impamvu: {reason}",
+    'investor.notices.market.reservation_released.body': {
+        one: "Igurisha rya {title} ryahagaritswe, bityo ibyo wafashe by'urupapuro {count} byarangiye. Amafaranga yasubiye mu gikapu cyawe. Impamvu: {reason}",
+        other: "Igurisha rya {title} ryahagaritswe, bityo ibyo wafashe by'impapuro {count} byarangiye. Amafaranga yasubiye mu gikapu cyawe. Impamvu: {reason}",
+    },
     'investor.notices.market.resale_reopened.title':
         'Igurisha ryongeye gufungura',
     'investor.notices.market.resale_reopened.body':

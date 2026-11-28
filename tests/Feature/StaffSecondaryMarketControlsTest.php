@@ -89,6 +89,8 @@ it('shows Compliance the open listings with a halt and a cancel each, and nobody
 
 it('halts one note, tells its seller why, shows the halt in force without a second halt of it, then lifts it and says so (SEC-R08)', function (): void {
     Notification::fake();
+    // A real halt lands mid-second; the lift still finds whom it stopped (QA #816, 28 Nov 2026).
+    $this->travelTo(now()->addSecond()->setMicrosecond(123456));
     ($this->command)('staff.secondary.halt', ['note_id' => strtoupper($this->noteId), 'reason' => 'Business under review.'])
         ->assertRedirect('/admin/secondary-market')->assertSessionHasNoErrors();
     PrimaryHoldingFixture::flushDeferredChecks();
@@ -143,12 +145,18 @@ it('halts and lifts a note that has no open listing, telling nobody when nobody 
 it('halts the whole market, offers no second market halt, and refuses lifting a halt that is not there', function (): void {
     ($this->command)('staff.secondary.lift', ['reason' => 'Nothing to lift.'])
         ->assertSessionHasErrors(['reason' => 'The whole market is not halted. Refresh the page.']);
+    $this->travelTo(now()->addSecond()->setMicrosecond(654321));
     ($this->command)('staff.secondary.halt', ['note_id' => '', 'reason' => 'Suspected wash trading.'])->assertSessionHasNoErrors();
     PrimaryHoldingFixture::flushDeferredChecks();
 
     $this->actingAs($this->compliance)->get('/admin/secondary-market')->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('market_oversight.market_halted', true)->where('market_oversight.halt', null)
-            ->where('market_oversight.halts.0.note_id', null)->where('market_oversight.halts.0.deal_name', null));
+            ->where('market_oversight.halts.0.note_id', null)->where('market_oversight.halts.0.deal_name', null)
+            ->where('market_oversight.notes.0.halt', null));
+
+    ($this->command)('staff.secondary.lift', ['reason' => 'Review closed.'])->assertSessionHasNoErrors();
+    PrimaryHoldingFixture::flushDeferredChecks();
+    expect(resaleNotices($this->sellerParty)[1] ?? null)->toBe(['market.resale_reopened', ['title' => '', 'reason' => 'Review closed.']]);
 });
 
 it('cancels one listing with the reason shown to the seller, and refuses one that has ended (SEC-R09)', function (): void {

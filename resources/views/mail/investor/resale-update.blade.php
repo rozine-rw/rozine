@@ -6,15 +6,15 @@
 @elseif ($event === 'reservation_released')
 # {{ __('Your reservation was released') }}
 
-{{ __('Compliance halted resale of :title, so your reservation of :units notes ended. The cash it held is back in your wallet.', ['title' => $title, 'units' => $units]) }}
+{{ trans_choice('Compliance halted resale of :title, so your reservation of :units note ended. The cash it held is back in your wallet.|Compliance halted resale of :title, so your reservation of :units notes ended. The cash it held is back in your wallet.', (int) $units, ['title' => $title, 'units' => $units]) }}
 @elseif ($event === 'listing_halted')
 # {{ __('Your listing was cancelled') }}
 
-{{ __('Compliance halted resale of :title, so your listing of :units notes was cancelled. You still hold the notes.', ['title' => $title, 'units' => $units]) }}
+{{ trans_choice('Compliance halted resale of :title, so your listing of :units note was cancelled. You still hold the note.|Compliance halted resale of :title, so your listing of :units notes was cancelled. You still hold the notes.', (int) $units, ['title' => $title, 'units' => $units]) }}
 @else
 # {{ __('Your listing was cancelled') }}
 
-{{ __('Compliance cancelled your listing of :units notes of :title. You still hold the notes.', ['title' => $title, 'units' => $units]) }}
+{{ trans_choice('Compliance cancelled your listing of :units note of :title. You still hold the note.|Compliance cancelled your listing of :units notes of :title. You still hold the notes.', (int) $units, ['title' => $title, 'units' => $units]) }}
 @endif
 
 <x-mail::notice :tone="$event === 'reopened' ? 'success' : 'warning'">

@@ -8197,14 +8197,20 @@ const en = {
         other: 'Your {count} notes of {title} sold. {amount} reached your wallet after the {fee} resale fee.',
     },
     'investor.notices.market.listing_cancelled.title': 'Listing cancelled',
-    'investor.notices.market.listing_cancelled.body':
-        'Rozine cancelled your listing of {units} notes of {title}. Reason: {reason}',
-    'investor.notices.market.listing_cancelled.body_halt':
-        'Resale of {title} is halted, so your listing of {units} notes was cancelled. Reason: {reason}',
+    'investor.notices.market.listing_cancelled.body': {
+        one: 'Rozine cancelled your listing of {count} note of {title}. Reason: {reason}',
+        other: 'Rozine cancelled your listing of {count} notes of {title}. Reason: {reason}',
+    },
+    'investor.notices.market.listing_cancelled.body_halt': {
+        one: 'Resale of {title} is halted, so your listing of {count} note was cancelled. Reason: {reason}',
+        other: 'Resale of {title} is halted, so your listing of {count} notes was cancelled. Reason: {reason}',
+    },
     'investor.notices.market.reservation_released.title':
         'Reservation released',
-    'investor.notices.market.reservation_released.body':
-        'Resale of {title} is halted, so your reservation of {units} notes ended. Its cash is back in your wallet. Reason: {reason}',
+    'investor.notices.market.reservation_released.body': {
+        one: 'Resale of {title} is halted, so your reservation of {count} note ended. Its cash is back in your wallet. Reason: {reason}',
+        other: 'Resale of {title} is halted, so your reservation of {count} notes ended. Its cash is back in your wallet. Reason: {reason}',
+    },
     'investor.notices.market.resale_reopened.title': 'Resale reopened',
     'investor.notices.market.resale_reopened.body':
         'Resale of {title} has reopened. Reason: {reason}',

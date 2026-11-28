@@ -135,8 +135,9 @@ class StaffSectionController extends Controller
             'listings' => array_map(fn (array $listing): array => [...$listing,
                 'halt_note' => in_array($listing['note_id'], $halted, true) ? null : $route('staff.secondary.halt'),
                 'cancel' => $mayCancel ? $route('staff.secondary.listings.cancel', ['listing' => $listing['listing_id']]) : null], $overview['listings']),
+            // While the whole market is halted every note already is, so none offers its own halt (QA #816).
             'notes' => array_map(fn (array $note): array => [...$note,
-                'halt' => in_array($note['note_id'], $halted, true) ? null : $route('staff.secondary.halt')], $overview['notes'])];
+                'halt' => in_array(null, $halted, true) || in_array($note['note_id'], $halted, true) ? null : $route('staff.secondary.halt')], $overview['notes'])];
     }
 
     /**
