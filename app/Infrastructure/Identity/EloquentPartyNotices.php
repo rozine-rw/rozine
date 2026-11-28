@@ -22,6 +22,7 @@ use App\Notifications\Investor\InvestmentConfirmed;
 use App\Notifications\Investor\PurchaseConfirmed;
 use App\Notifications\Investor\RaiseExpired;
 use App\Notifications\Investor\ReportPublished;
+use App\Notifications\Investor\ResaleUpdate;
 use App\Notifications\Investor\VerificationDecided;
 use App\Notifications\Investor\WalletTransfer;
 use App\Notifications\Investor\WalletTransferCompleted;
@@ -212,6 +213,10 @@ final readonly class EloquentPartyNotices implements PartyNotices
             PartyNoticeKind::RoleApplicationReturned => OnboardingUpdate::roleReturned(self::role($facts), $facts['company'] ?? null, $facts['note'] ?? '',
                 $items, route('role-application.show')),
             PartyNoticeKind::RoleApplicationApproved => OnboardingUpdate::roleApproved(self::role($facts), $facts['company'] ?? null, route('dashboard')),
+            PartyNoticeKind::ListingCancelled => ResaleUpdate::listingCancelled($facts['title'], $facts['units'], $facts['reason'], $facts['by'] === 'halt',
+                route('investor.market')),
+            PartyNoticeKind::ReservationReleased => ResaleUpdate::reservationReleased($facts['title'], $facts['units'], $facts['reason'], route('investor.market')),
+            PartyNoticeKind::ResaleReopened => ResaleUpdate::reopened($facts['title'], $facts['reason'], route('investor.market')),
             PartyNoticeKind::RoleApplicationRejected => OnboardingUpdate::roleRejected(self::role($facts), $facts['company'] ?? null, $facts['note'] ?? '', route('dashboard')),
             default => VerificationDecided::rejected($facts['reason'], route('investor.verification'), $items),
         };

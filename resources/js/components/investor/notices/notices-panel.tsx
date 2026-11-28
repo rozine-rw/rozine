@@ -45,6 +45,26 @@ const TONES: Record<InvestorNotice['kind'], Tone> = {
         tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
         icon: <path d="M17 17H7V7M17 7L7 17" {...stroke} />,
     },
+    'market.listing_cancelled': {
+        bar: 'bg-[#b07a12]',
+        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418] dark:text-rz-warning-text',
+        icon: <path d="M6 6l12 12M18 6L6 18" {...stroke} />,
+    },
+    'market.reservation_released': {
+        bar: 'bg-[#b07a12]',
+        tile: 'bg-[rgba(194,102,31,.10)] text-[#a55418] dark:text-rz-warning-text',
+        icon: (
+            <path
+                d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"
+                {...stroke}
+            />
+        ),
+    },
+    'market.resale_reopened': {
+        bar: 'bg-[#17795a]',
+        tile: 'bg-[rgba(29,158,117,.10)] text-[#157357] dark:text-rz-positive',
+        icon: <path d="M5 12l5 5L20 7" {...stroke} />,
+    },
     'wallet.withdrawal_sent': {
         bar: 'bg-[#0c1830] dark:bg-rz-slate',
         tile: 'bg-[rgba(12,24,48,.08)] text-[#0c1830] dark:text-rz-ink',
@@ -758,6 +778,32 @@ function body(
                 }),
                 title: notice.facts.title,
             });
+        case 'market.listing_cancelled':
+            return t(
+                notice.facts.by === 'halt'
+                    ? 'investor.notices.market.listing_cancelled.body_halt'
+                    : 'investor.notices.market.listing_cancelled.body',
+                {
+                    units: notice.facts.units,
+                    title: notice.facts.title,
+                    reason: notice.facts.reason,
+                },
+            );
+        case 'market.reservation_released':
+            return t('investor.notices.market.reservation_released.body', {
+                units: notice.facts.units,
+                title: notice.facts.title,
+                reason: notice.facts.reason,
+            });
+        case 'market.resale_reopened':
+            return notice.facts.title === ''
+                ? t('investor.notices.market.resale_reopened.body_market', {
+                      reason: notice.facts.reason,
+                  })
+                : t('investor.notices.market.resale_reopened.body', {
+                      title: notice.facts.title,
+                      reason: notice.facts.reason,
+                  });
         case 'wallet.withdrawal_sent':
             return t('investor.notices.wallet.withdrawal_sent.body', {
                 amount: formatRwf({

@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../wayfinder'
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::halt
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:33
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:42
 * @route '/admin/secondary-market/halt'
 */
 export const halt = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ halt.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::halt
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:33
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:42
 * @route '/admin/secondary-market/halt'
 */
 halt.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ halt.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::halt
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:33
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:42
 * @route '/admin/secondary-market/halt'
 */
 halt.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -35,7 +35,7 @@ halt.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::halt
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:33
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:42
 * @route '/admin/secondary-market/halt'
 */
 const haltForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -45,7 +45,7 @@ const haltForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::halt
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:33
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:42
 * @route '/admin/secondary-market/halt'
 */
 haltForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -57,7 +57,7 @@ halt.form = haltForm
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::lift
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:39
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:48
 * @route '/admin/secondary-market/lift'
 */
 export const lift = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -72,7 +72,7 @@ lift.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::lift
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:39
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:48
 * @route '/admin/secondary-market/lift'
 */
 lift.url = (options?: RouteQueryOptions) => {
@@ -81,7 +81,7 @@ lift.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::lift
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:39
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:48
 * @route '/admin/secondary-market/lift'
 */
 lift.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -91,7 +91,7 @@ lift.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::lift
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:39
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:48
 * @route '/admin/secondary-market/lift'
 */
 const liftForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -101,7 +101,7 @@ const liftForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => (
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::lift
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:39
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:48
 * @route '/admin/secondary-market/lift'
 */
 liftForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -113,7 +113,7 @@ lift.form = liftForm
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::cancel
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:45
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:54
 * @route '/admin/secondary-market/listings/{listing}/cancel'
 */
 export const cancel = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -128,7 +128,7 @@ cancel.definition = {
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::cancel
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:45
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:54
 * @route '/admin/secondary-market/listings/{listing}/cancel'
 */
 cancel.url = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -155,7 +155,7 @@ cancel.url = (args: { listing: string | number } | [listing: string | number ] |
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::cancel
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:45
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:54
 * @route '/admin/secondary-market/listings/{listing}/cancel'
 */
 cancel.post = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -165,7 +165,7 @@ cancel.post = (args: { listing: string | number } | [listing: string | number ] 
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::cancel
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:45
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:54
 * @route '/admin/secondary-market/listings/{listing}/cancel'
 */
 const cancelForm = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -175,7 +175,7 @@ const cancelForm = (args: { listing: string | number } | [listing: string | numb
 
 /**
 * @see \App\Http\Controllers\StaffSecondaryMarketController::cancel
-* @see app/Http/Controllers/StaffSecondaryMarketController.php:45
+* @see app/Http/Controllers/StaffSecondaryMarketController.php:54
 * @route '/admin/secondary-market/listings/{listing}/cancel'
 */
 cancelForm.post = (args: { listing: string | number } | [listing: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

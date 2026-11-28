@@ -1951,6 +1951,14 @@ const rw: Catalog = {
     'admin.market.listings.title': 'Amatangazo afunguye',
     'admin.market.listings.table': "Amatangazo y'igurisha afunguye",
     'admin.market.listings.empty': 'Nta tangazo rifunguye.',
+    'admin.market.state.simulated':
+        "Igurisha rya kabiri rikorera mu igerageza ry'amafaranga rya staging. Guhagarika bihagarika amatangazo yose afunguye bireba kandi bikarekura ibyafashwe. Abo bireba babwirwa impamvu muri porogaramu no kuri imeri.",
+    'admin.market.notes.title': 'Impapuro zatanzwe',
+    'admin.market.notes.table': 'Impapuro zatanzwe',
+    'admin.market.notes.explain':
+        "Hagarika igurisha ry'urupapuro rumwe, rwaba rufite itangazo rifunguye cyangwa rutarifite.",
+    'admin.market.notes.empty': 'Nta rupapuro rwari rwatangwa.',
+    'admin.market.notes.halted': 'Byahagaritswe',
     'admin.market.col.scope': 'Bireba',
     'admin.market.col.reason': 'Impamvu',
     'admin.market.col.halted_at': 'Byahagaritswe',
@@ -2379,6 +2387,12 @@ const rw: Catalog = {
         'Kugura ku isoko rya kabiri birangiye',
     'admin.messaging.trigger.market.units_sold':
         'Imigabane umuntu yashyize ku isoko igurishijwe',
+    'admin.messaging.trigger.market.listing_cancelled':
+        "Compliance cyangwa ihagarikwa bikuraho itangazo ry'umuntu",
+    'admin.messaging.trigger.market.reservation_released':
+        'Ihagarikwa rirekura ibyo umuguzi yafashe',
+    'admin.messaging.trigger.market.resale_reopened':
+        "Ihagarikwa ryahagaritse itegeko ry'umuntu rivanweho",
     'admin.messaging.trigger.wallet.payout_received':
         'Serivisi yishyura nyir’impapuro umugabane we w’ubwishyu',
     'admin.messaging.trigger.wallet.deposit_received':
@@ -5287,6 +5301,7 @@ const rw: Catalog = {
     'investor.market.order_detail.status_expired': 'Igihe cyarangiye',
     'investor.market.order_detail.listed': 'Imigabane yashyizwe ku isoko',
     'investor.market.order_detail.ended': 'Byarangiye',
+    'investor.market.order_detail.reason': 'Impamvu',
     'investor.market.order_detail.status_reserved': 'Byafashwe n’umuguzi',
     'investor.market.order_detail.status_reserved_for_you': 'Byagufatiwe',
     'investor.market.order_detail.filled': 'Byarangiye',
@@ -8495,6 +8510,21 @@ const rw: Catalog = {
         one: "Umugabane wawe {count} wa {title} wagurishijwe. {amount} yageze mu gikapu cyawe nyuma y'amafaranga {fee} yo kugurisha.",
         other: "Imigabane yawe {count} ya {title} yagurishijwe. {amount} yageze mu gikapu cyawe nyuma y'amafaranga {fee} yo kugurisha.",
     },
+    'investor.notices.market.listing_cancelled.title': 'Itangazo ryakuweho',
+    'investor.notices.market.listing_cancelled.body':
+        "Rozine yakuyeho itangazo ryawe ry'impapuro {units} za {title}. Impamvu: {reason}",
+    'investor.notices.market.listing_cancelled.body_halt':
+        "Igurisha rya {title} ryahagaritswe, bityo itangazo ryawe ry'impapuro {units} ryakuweho. Impamvu: {reason}",
+    'investor.notices.market.reservation_released.title':
+        'Ibyo wafashe byarekuwe',
+    'investor.notices.market.reservation_released.body':
+        "Igurisha rya {title} ryahagaritswe, bityo ibyo wafashe by'impapuro {units} byarangiye. Amafaranga yasubiye mu gikapu cyawe. Impamvu: {reason}",
+    'investor.notices.market.resale_reopened.title':
+        'Igurisha ryongeye gufungura',
+    'investor.notices.market.resale_reopened.body':
+        'Igurisha rya {title} ryongeye gufungura. Impamvu: {reason}',
+    'investor.notices.market.resale_reopened.body_market':
+        'Isoko rya kabiri ryongeye gufungura. Impamvu: {reason}',
     'investor.notices.wallet.payout_received.title': 'Ubwishyu bwakiriwe',
     'investor.notices.wallet.payout_received.body':
         '{net} yageze mu gikapu cyawe ivuye kuri {title}, igice {instalments}: {gross} ukuyemo {fee} y’amafaranga ku nyungu.',

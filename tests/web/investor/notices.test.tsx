@@ -421,6 +421,79 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
         );
     });
 
+    it('words a cancelled listing, a released reservation and a reopened market with the reason Compliance gave (SEC-R08, SEC-R09)', async () => {
+        const user = userEvent.setup();
+        const inbox = notices();
+        const [first] = inbox.notices;
+
+        inbox.notices = [
+            {
+                ...first,
+                id: 'cancelled',
+                kind: 'market.listing_cancelled',
+                facts: {
+                    title: 'Kivu Harvest Ltd',
+                    units: '10',
+                    reason: 'Price misleads buyers.',
+                    by: 'staff',
+                },
+            },
+            {
+                ...first,
+                id: 'halted',
+                kind: 'market.listing_cancelled',
+                facts: {
+                    title: 'Kivu Harvest Ltd',
+                    units: '4',
+                    reason: 'Business under review.',
+                    by: 'halt',
+                },
+            },
+            {
+                ...first,
+                id: 'released',
+                kind: 'market.reservation_released',
+                facts: {
+                    title: 'Kivu Harvest Ltd',
+                    units: '2',
+                    reason: 'Business under review.',
+                },
+            },
+            {
+                ...first,
+                id: 'reopened',
+                kind: 'market.resale_reopened',
+                facts: { title: '', reason: 'Review closed.' },
+            },
+        ] as InvestorNotices['notices'];
+        render(<InvestorDeals {...deals()} />);
+        const panel = await openBell(user);
+
+        inertia.queue.push(answers({ data: inbox }));
+        await user.click(
+            screen.getByRole('button', { name: 'Notifications, 2 unread' }),
+        );
+
+        const items = await within(panel).findAllByRole('button', {
+            name: /Listing cancelled|Reservation released|Resale reopened/u,
+        });
+
+        expect(items.map((item) => item.textContent)).toEqual([
+            expect.stringContaining(
+                'Rozine cancelled your listing of 10 notes of Kivu Harvest Ltd. Reason: Price misleads buyers.',
+            ),
+            expect.stringContaining(
+                'Resale of Kivu Harvest Ltd is halted, so your listing of 4 notes was cancelled. Reason: Business under review.',
+            ),
+            expect.stringContaining(
+                'Resale of Kivu Harvest Ltd is halted, so your reservation of 2 notes ended. Its cash is back in your wallet. Reason: Business under review.',
+            ),
+            expect.stringContaining(
+                'The resale market has reopened. Reason: Review closed.',
+            ),
+        ]);
+    });
+
     it('words a sent and a returned withdrawal with the account they went to', async () => {
         const user = userEvent.setup();
         const inbox = notices();

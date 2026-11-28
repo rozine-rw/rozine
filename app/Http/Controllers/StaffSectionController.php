@@ -113,13 +113,15 @@ class StaffSectionController extends Controller
     }
 
     /**
-     * The Secondary Market page's halts in force and open listings for Compliance (SEC-R08, SEC-R09),
-     * with the route each command posts to: a halt of the whole market unless one is in force, a halt
-     * of one listed note unless it is halted, a lift for every halt, and a cancel for every listing
-     * when the viewer may cancel. `trading` says whether resale is switched on at all.
+     * The Secondary Market page's halts in force, open listings and issued notes for Compliance
+     * (SEC-R08, SEC-R09), with the route each command posts to: a halt of the whole market unless one
+     * is in force, a halt of one note (listed or not) unless it is halted, a lift for every halt, and
+     * a cancel for every listing when the viewer may cancel. `mode` says how resale runs (`live`,
+     * `simulated` on UAT, or `off`); `trading` is whether it runs at all.
      *
-     * @param  array{halts: list<array{halt_id: string, note_id: string|null, deal_name: string|null, reason: string, halted_at: string}>,
-     *     listings: list<array{listing_id: string, note_id: string, deal_name: string, remaining_units: string, price: array{currency: string, amount: string}, listed_at: string, expires_at: string}>}  $overview
+     * @param  array{mode: 'live'|'simulated'|'off', halts: list<array{halt_id: string, note_id: string|null, deal_name: string|null, reason: string, halted_at: string}>,
+     *     listings: list<array{listing_id: string, note_id: string, deal_name: string, remaining_units: string, price: array{currency: string, amount: string}, listed_at: string, expires_at: string}>,
+     *     notes: list<array{note_id: string, deal_name: string}>}  $overview
      * @return array<string, mixed>
      */
     private static function oversight(array $overview, bool $mayCancel): array
@@ -127,12 +129,14 @@ class StaffSectionController extends Controller
         $route = fn (string $name, array $parameters = []): array => ['url' => route($name, $parameters, false), 'method' => 'post'];
         $halted = array_map(fn (array $halt): ?string => $halt['note_id'], $overview['halts']);
 
-        return ['trading' => config('app.secondary_trading') === true, 'market_halted' => in_array(null, $halted, true),
+        return ['trading' => $overview['mode'] !== 'off', 'mode' => $overview['mode'], 'market_halted' => in_array(null, $halted, true),
             'halt' => in_array(null, $halted, true) ? null : $route('staff.secondary.halt'),
             'halts' => array_map(fn (array $halt): array => [...$halt, 'lift' => $route('staff.secondary.lift')], $overview['halts']),
             'listings' => array_map(fn (array $listing): array => [...$listing,
                 'halt_note' => in_array($listing['note_id'], $halted, true) ? null : $route('staff.secondary.halt'),
-                'cancel' => $mayCancel ? $route('staff.secondary.listings.cancel', ['listing' => $listing['listing_id']]) : null], $overview['listings'])];
+                'cancel' => $mayCancel ? $route('staff.secondary.listings.cancel', ['listing' => $listing['listing_id']]) : null], $overview['listings']),
+            'notes' => array_map(fn (array $note): array => [...$note,
+                'halt' => in_array($note['note_id'], $halted, true) ? null : $route('staff.secondary.halt')], $overview['notes'])];
     }
 
     /**
