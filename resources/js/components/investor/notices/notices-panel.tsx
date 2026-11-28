@@ -784,14 +784,14 @@ function body(
                     ? 'investor.notices.market.listing_cancelled.body_halt'
                     : 'investor.notices.market.listing_cancelled.body',
                 {
-                    units: notice.facts.units,
+                    count: Number(notice.facts.units),
                     title: notice.facts.title,
                     reason: notice.facts.reason,
                 },
             );
         case 'market.reservation_released':
             return t('investor.notices.market.reservation_released.body', {
-                units: notice.facts.units,
+                count: Number(notice.facts.units),
                 title: notice.facts.title,
                 reason: notice.facts.reason,
             });

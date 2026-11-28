@@ -8551,13 +8551,19 @@ const fr: Catalog = {
         other: 'Vos {count} parts de {title} sont vendues. {amount} a été crédité sur votre portefeuille après {fee} de frais de revente.',
     },
     'investor.notices.market.listing_cancelled.title': 'Annonce annulée',
-    'investor.notices.market.listing_cancelled.body':
-        'Rozine a annulé votre annonce de {units} parts de {title}. Motif : {reason}',
-    'investor.notices.market.listing_cancelled.body_halt':
-        'La revente de {title} est suspendue, votre annonce de {units} parts a donc été annulée. Motif : {reason}',
+    'investor.notices.market.listing_cancelled.body': {
+        one: 'Rozine a annulé votre annonce de {count} part de {title}. Motif : {reason}',
+        other: 'Rozine a annulé votre annonce de {count} parts de {title}. Motif : {reason}',
+    },
+    'investor.notices.market.listing_cancelled.body_halt': {
+        one: 'La revente de {title} est suspendue, votre annonce de {count} part a donc été annulée. Motif : {reason}',
+        other: 'La revente de {title} est suspendue, votre annonce de {count} parts a donc été annulée. Motif : {reason}',
+    },
     'investor.notices.market.reservation_released.title': 'Réservation libérée',
-    'investor.notices.market.reservation_released.body':
-        'La revente de {title} est suspendue, votre réservation de {units} parts a donc pris fin. Les fonds sont de retour dans votre portefeuille. Motif : {reason}',
+    'investor.notices.market.reservation_released.body': {
+        one: 'La revente de {title} est suspendue, votre réservation de {count} part a donc pris fin. Les fonds sont de retour dans votre portefeuille. Motif : {reason}',
+        other: 'La revente de {title} est suspendue, votre réservation de {count} parts a donc pris fin. Les fonds sont de retour dans votre portefeuille. Motif : {reason}',
+    },
     'investor.notices.market.resale_reopened.title': 'Revente rouverte',
     'investor.notices.market.resale_reopened.body':
         'La revente de {title} a rouvert. Motif : {reason}',

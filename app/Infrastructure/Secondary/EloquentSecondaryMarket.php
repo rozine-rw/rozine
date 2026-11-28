@@ -498,9 +498,11 @@ final readonly class EloquentSecondaryMarket implements SecondaryBoard, Secondar
     private function noticeReopened(SecondaryHalt $halt, string $reason): void
     {
         $noteId = $halt->business_campaign_id;
-        $sellers = SecondaryListingRecord::query()->where('cancelled_by', 'halt')->where('updated_at', $halt->halted_at)
+        // A bound DateTime loses its microseconds, so the halt's exact instant is matched as text.
+        $haltedAt = $halt->halted_at->utc()->format('Y-m-d H:i:s.uP');
+        $sellers = SecondaryListingRecord::query()->where('cancelled_by', 'halt')->where('updated_at', $haltedAt)
             ->when($noteId !== null, fn ($query) => $query->where('business_campaign_id', $noteId))->pluck('seller_party_id')->all();
-        $buyers = SecondaryReservationRecord::query()->where('end_reason', 'halted')->where('ended_at', $halt->halted_at)
+        $buyers = SecondaryReservationRecord::query()->where('end_reason', 'halted')->where('ended_at', $haltedAt)
             ->when($noteId !== null, fn ($query) => $query->whereIn('listing_id',
                 SecondaryListingRecord::query()->select('id')->where('business_campaign_id', $noteId)))->pluck('buyer_party_id')->all();
         $title = $noteId === null ? '' : $this->titles->title($noteId);

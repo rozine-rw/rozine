@@ -444,7 +444,7 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
                 kind: 'market.listing_cancelled',
                 facts: {
                     title: 'Kivu Harvest Ltd',
-                    units: '4',
+                    units: '1',
                     reason: 'Business under review.',
                     by: 'halt',
                 },
@@ -483,7 +483,7 @@ describe('Notices behind the bell (BRS NTF-R01)', () => {
                 'Rozine cancelled your listing of 10 notes of Kivu Harvest Ltd. Reason: Price misleads buyers.',
             ),
             expect.stringContaining(
-                'Resale of Kivu Harvest Ltd is halted, so your listing of 4 notes was cancelled. Reason: Business under review.',
+                'Resale of Kivu Harvest Ltd is halted, so your listing of 1 note was cancelled. Reason: Business under review.',
             ),
             expect.stringContaining(
                 'Resale of Kivu Harvest Ltd is halted, so your reservation of 2 notes ended. Its cash is back in your wallet. Reason: Business under review.',

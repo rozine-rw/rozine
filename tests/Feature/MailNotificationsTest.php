@@ -231,6 +231,8 @@ test('a resale update names the note, what happened to the order and the reason 
         'Rozine cancelled your Kivu Harvest listing', 'warning', 'Compliance cancelled your listing of 10 notes of Kivu Harvest. You still hold the notes.'],
     'halt cancel' => [fn () => ResaleUpdate::listingCancelled('Kivu Harvest', '10', 'Business under review.', true, 'https://rozine.test/investor/market'),
         'Resale of Kivu Harvest is halted: your listing was cancelled', 'warning', 'Compliance halted resale of Kivu Harvest, so your listing of 10 notes was cancelled.'],
+    'one note halt cancel' => [fn () => ResaleUpdate::listingCancelled('Kivu Harvest', '1', 'Business under review.', true, 'https://rozine.test/investor/market'),
+        'Resale of Kivu Harvest is halted: your listing was cancelled', 'warning', 'so your listing of 1 note was cancelled. You still hold the note.'],
     'released reservation' => [fn () => ResaleUpdate::reservationReleased('Kivu Harvest', '4', 'Business under review.', 'https://rozine.test/investor/market'),
         'Resale of Kivu Harvest is halted: your reservation was released', 'warning', 'The cash it held is back in your wallet.'],
     'one note reopened' => [fn () => ResaleUpdate::reopened('Kivu Harvest', 'Business under review.', 'https://rozine.test/investor/market'),

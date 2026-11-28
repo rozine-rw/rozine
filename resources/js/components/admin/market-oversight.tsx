@@ -299,7 +299,7 @@ export function MarketOversight({
             </TableCard>
             <TableCard
                 label={t('admin.market.notes.table')}
-                minWidth="min-w-[420px]"
+                minWidth="min-w-0"
                 header={
                     <div className="px-5 pt-4 pb-2">
                         <CardTitle>{t('admin.market.notes.title')}</CardTitle>
