@@ -212,7 +212,7 @@
                 "state": "approved",
                 "decision": {
                     "code": "reject",
-                    "reason": "Requested exceeds CFADS debt capacity (max RWF 15M at DSCR 1.25)"
+                    "reason": "Requested exceeds CFADS debt capacity (max RWF 15M at DSCR 1.50)"
                 },
                 "link": {
                     "url": "/preview/admin-applications-release",
@@ -229,7 +229,7 @@
             "state": "approved",
             "decision": {
                 "code": "reject",
-                "reason": "Requested exceeds CFADS debt capacity (max RWF 15M at DSCR 1.25)"
+                "reason": "Requested exceeds CFADS debt capacity (max RWF 15M at DSCR 1.50)"
             },
             "requested": {
                 "currency": "RWF",

@@ -40,7 +40,7 @@ it('publishes one immutable replayable quote with a minimal public offer and exa
         ->and($result['data']['quote']['status'])->toBe('ready')
         ->and($result['data']['quote']['principal']['amount'])->toBe('10800000')
         ->and($result['data']['quote']['offered_principal']['amount'])->toBe('10800000')
-        ->and($result['data']['quote']['requested_principal']['amount'])->toBe('12000000')
+        ->and($result['data']['quote']['requested_principal']['amount'])->toBe('10800000')
         ->and($result['data']['quote']['rate_pct'])->toBe('11.1')
         ->and($result['data']['quote']['total']['amount'])->toBe('11998800')
         ->and($result['data']['quote']['schedule'])->toHaveCount(6)
@@ -50,7 +50,7 @@ it('publishes one immutable replayable quote with a minimal public offer and exa
     $quote = BusinessApplicationQuote::query()->firstOrFail();
     $payload = $quote->payload;
     expect(app(ApplicationUnderwriting::class)->evaluate($payload['result']['inputs']))->toBe($payload['result'])
-        ->and($payload['application_revision'])->toBe(2)->and($payload['draft']['target'])->toBe('12000000')
+        ->and($payload['application_revision'])->toBe(2)->and($payload['draft']['target'])->toBe('10800000')
         ->and($payload['credit']['sha256'])->toBe(BusinessCreditSnapshot::query()->firstOrFail()->sha256)
         ->and($quote->sha256)->toBe(hash('sha256', app(CanonicalJson::class)->encode($payload)))
         ->and($quote->getRawOriginal('payload'))->not->toContain('first-time-history', 'scorecard')
@@ -125,7 +125,7 @@ it('keeps the original request and maximum offer when publishing a lower accepte
     expect($lower['revision'])->toBe(4)->and($lower['data']['quote']['quote_revision'])->toBe(2)
         ->and($lower['data']['quote']['principal']['amount'])->toBe('5000000')
         ->and($lower['data']['quote']['offered_principal']['amount'])->toBe('10800000')
-        ->and($lower['data']['quote']['requested_principal']['amount'])->toBe('12000000')
+        ->and($lower['data']['quote']['requested_principal']['amount'])->toBe('10800000')
         ->and($lower['data']['quote']['repeat_growth_limit'])->toBeNull()
         ->and($lower['data']['quote']['interest']['amount'])->toBe('555000')
         ->and($lower['data']['quote']['quote_id'])->not->toBe($first['data']['quote']['quote_id'])
@@ -213,7 +213,7 @@ it('invalidates current offers after source mandate draft or calendar changes wh
 it('advances to Review only with the same current ready quote and complete draft', function (): void {
     $fixture = BusinessQuoteFixture::make();
     $user = $fixture['audit']['authority']['users'][0];
-    $save = fn (int $revision, string $target = '12000000'): array => app(SaveBusinessApplication::class)->handle($user->id, 1,
+    $save = fn (int $revision, string $target = '10800000'): array => app(SaveBusinessApplication::class)->handle($user->id, 1,
         $fixture['audit']['business'], $fixture['application']->id, $revision, BusinessApplicationFixture::fields($target), 'review', (string) Str::uuid());
     expect($save(2)['code'])->toBe('QUOTE_STALE');
     $quote = BusinessQuoteFixture::evaluate($fixture)['data']['quote'];
@@ -278,7 +278,7 @@ it('rejects corrupted or misbound quote payloads before presenting them', functi
 it('allows incomplete descriptive fields in a quote but requires them for Review', function (): void {
     $fixture = BusinessQuoteFixture::make();
     $user = $fixture['audit']['authority']['users'][0];
-    $fields = [...BusinessApplicationFixture::fields('12000000'), 'title' => '', 'use_of_funds' => []];
+    $fields = [...BusinessApplicationFixture::fields('10800000'), 'title' => '', 'use_of_funds' => []];
     $action = app(SaveBusinessApplication::class);
     expect($action->handle($user->id, 1, $fixture['audit']['business'], $fixture['application']->id, 2, $fields, 'raise', (string) Str::uuid())['code'])->toBe('APPLICATION_SAVED');
     expect(BusinessQuoteFixture::evaluate($fixture, 3)['data']['quote']['status'])->toBe('ready');
@@ -337,3 +337,66 @@ it('never treats a synthetic historical factory quote as current borrowing autho
     $fixture['application']->forceFill(['current_quote_id' => $quote->id])->save();
     expect(app(GetBusinessApplicationQuote::class)->handle($fixture['authority']['users'][0]->id, 1, $fixture['business']->id, $fixture['application']->id))->toBeNull();
 });
+
+it('refuses an original request below 1.50 rather than accepting its former counteroffer', function (): void {
+    $fixture = BusinessQuoteFixture::make(requestedPrincipal: '12000000');
+    $request = (string) Str::uuid();
+    $receipt = BusinessQuoteFixture::evaluate($fixture, accepted: '10800000', request: $request);
+    expect($receipt['data']['quote']['status'])->toBe('refused')
+        ->and($receipt['data']['quote']['code'])->toBe('DSCR_BELOW_CUTOFF')
+        ->and($receipt['data']['quote'])->not->toHaveKey('principal')
+        ->and(BusinessQuoteFixture::evaluate($fixture, accepted: '10800000', request: $request))->toBe($receipt);
+    $quote = BusinessApplicationQuote::query()->firstOrFail();
+    expect($quote->payload['result']['inputs']['requested_principal'])->toBe('12000000')
+        ->and($quote->payload['result']['capacity']['offer'])->toBeNull()
+        ->and($quote->payload['calculation_version'])->toBe(ApplicationUnderwriting::VERSION);
+    $this->assertDatabaseCount('business_application_submissions', 0);
+    $this->assertDatabaseCount('business_application_signatures', 0);
+});
+
+it('does not rescue an unaffordable repeat request through its growth cap or a smaller acceptance', function (): void {
+    $fixture = BusinessQuoteFixture::make(requestedPrincipal: '12000000');
+    app()->instance(ServicingRecord::class, repaidServicing(['6000000']));
+    $request = (string) Str::uuid();
+
+    $receipt = BusinessQuoteFixture::evaluate($fixture, accepted: '9000000', request: $request);
+
+    expect($receipt['data']['quote']['status'])->toBe('refused')
+        ->and($receipt['data']['quote']['code'])->toBe('DSCR_BELOW_CUTOFF')
+        ->and($receipt['data']['quote'])->not->toHaveKey('principal')
+        ->and(BusinessQuoteFixture::evaluate($fixture, accepted: '9000000', request: $request))->toBe($receipt)
+        ->and(app(FindBusinessOperation::class)->handle($fixture['audit']['authority']['users'][0]->id, 1, 'evaluate', $request))->toBe($receipt);
+    $payload = BusinessApplicationQuote::query()->firstOrFail()->payload;
+    expect($payload['result']['inputs']['requested_principal'])->toBe('12000000')
+        ->and($payload['result']['inputs']['last_repaid_principal'])->toBe('6000000')
+        ->and($payload['result']['maximum_capacity']['offer'])->toBeNull();
+    $this->assertDatabaseCount('business_application_submissions', 0);
+    $this->assertDatabaseCount('business_application_signatures', 0);
+});
+
+it('invalidates legacy pending quotes without rewriting their retained payload or operation receipt', function (string $legacyVersion): void {
+    $fixture = BusinessQuoteFixture::make();
+    Event::listen('eloquent.creating: '.BusinessApplicationQuote::class, function (BusinessApplicationQuote $quote) use ($legacyVersion): void {
+        $payload = $quote->payload;
+        $payload['calculation_version'] = $legacyVersion;
+        $payload['result']['calculation_version'] = $legacyVersion;
+        $quote->forceFill(['payload' => $payload, 'sha256' => hash('sha256', app(CanonicalJson::class)->encode($payload))]);
+    });
+    $request = (string) Str::uuid();
+    $receipt = BusinessQuoteFixture::evaluate($fixture, request: $request);
+    Event::forget('eloquent.creating: '.BusinessApplicationQuote::class);
+    $original = BusinessApplicationQuote::query()->firstOrFail();
+    $payload = $original->payload;
+    expect(BusinessQuoteFixture::quote($fixture))->toBeNull()
+        ->and(BusinessQuoteFixture::evaluate($fixture, request: $request))->toBe($receipt);
+    $save = app(SaveBusinessApplication::class)->handle($fixture['audit']['authority']['users'][0]->id, 1,
+        $fixture['audit']['business'], $fixture['application']->id, 3, BusinessApplicationFixture::fields('10800000'), 'review', (string) Str::uuid());
+    expect($save['code'])->toBe('QUOTE_STALE');
+    $current = BusinessQuoteFixture::evaluate($fixture, 3);
+    expect($current['data']['quote']['calculation_version'])->toBe(ApplicationUnderwriting::VERSION)
+        ->and($original->refresh()->payload)->toBe($payload)
+        ->and(app(FindBusinessOperation::class)->handle($fixture['audit']['authority']['users'][0]->id, 1, 'evaluate', $request))->toBe($receipt);
+    $this->assertDatabaseCount('business_application_quotes', 2);
+    $this->assertDatabaseCount('business_application_submissions', 0);
+    $this->assertDatabaseCount('business_application_signatures', 0);
+})->with(['application-underwriting-2', 'application-underwriting-2-repeat-growth', 'application-underwriting-3']);

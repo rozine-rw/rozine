@@ -1800,7 +1800,7 @@ const fr: Catalog = {
     'business.help.capacity.how.q':
         'Comment le montant de ma note est-il fixé ?',
     'business.help.capacity.how.a':
-        'Rozine calcule la trésorerie qui reste chaque mois à votre entreprise après les charges d’exploitation, les prélèvements du propriétaire et les autres remboursements de dettes, et dimensionne la note pour que cette trésorerie couvre 1,5 fois la mensualité. Une entreprise qui la couvrirait moins de 1,25 fois ne se voit pas proposer de note.\n\nUne note ne dépasse jamais 35 % de votre chiffre d’affaires annuel vérifié et se situe entre 3 000 000 et 100 000 000 RWF.',
+        'Rozine calcule la trésorerie qui reste chaque mois à votre entreprise après les charges d’exploitation, les prélèvements du propriétaire et les autres remboursements de dettes. Chaque échéance réelle du montant demandé doit avoir une couverture d’au moins 1,50. Une demande sous 1,50 est refusée avant le dimensionnement ou les autres plafonds ; elle n’est pas automatiquement réduite en une offre. La capacité pour une nouvelle demande plus petite est distincte.\n\nUne note ne dépasse jamais 35 % de votre chiffre d’affaires annuel vérifié et se situe entre 3 000 000 et 100 000 000 RWF.',
     'business.help.capacity.rate.q': 'Quel rendement vais-je payer ?',
     'business.help.capacity.rate.a':
         'Un rendement total de 10,0 % à 15,0 % du principal pour toute la durée, fixé selon votre note, avec une petite prime pour les durées plus longues. Il est figé à l’ouverture de la levée.\n\nUn changement ultérieur de votre note ne modifie jamais les conditions d’une note déjà émise.',
@@ -3011,7 +3011,7 @@ const fr: Catalog = {
     'admin.engine.weak': 'Faible',
     'admin.engine.distressed': 'En difficulté',
     'admin.design.engines.sizing.sub':
-        "Les quatre limites s'appliquent et la plus basse l'emporte : capacité au DSCR cible, montant demandé, levée maximale et marge d'exposition restante. Une levée sous le minimum est refusée. Le montant est ensuite réduit jusqu'à tenir le DSCR cible, puis arrondi à l'unité d'émission.",
+        'Refusez d’abord la demande initiale si une échéance réelle a une couverture inférieure à 1,50 ; un montant plus petit ne peut pas transformer ce refus en offre. Pour une demande abordable, la plus basse des limites s’applique : capacité de trésorerie, montant demandé, levée maximale et marge d’exposition restante. Refusez une levée sous le minimum et revérifiez chaque échéance après l’arrondi à l’unité d’émission. La capacité pour une nouvelle demande plus petite est distincte.',
     'admin.design.ratings.movers.title': 'Ce qui fait bouger une note',
     'admin.design.ratings.movers.sub':
         "Chaque relevé vérifié recalcule les critères financiers : la hausse ou la baisse des revenus et de la trésorerie fait bouger la note. Les remboursements et les rapports mensuels font bouger la conduite, et les plafonds maintiennent la note basse tant qu'un retard, un manquement de reporting ou un défaut persiste. Aucune dérogation du personnel n'existe.",
@@ -3395,7 +3395,7 @@ const fr: Catalog = {
     'admin.decision.reason_code.CURRENT_RELEASE_REVIEW_REQUIRED':
         "Revue d'autorisation actuelle requise : une offre conservée n'est pas une approbation en cours. Vérifiez les contrôles d'autorisation ci-dessous.",
     'admin.decision.reason_code.DSCR_BELOW_CUTOFF':
-        "Couverture inférieure à 1,25 : les flux de trésorerie ne couvrent pas l'échéance.",
+        'Couverture inférieure à 1,50 : la trésorerie ne couvre pas chaque échéance demandée avec la marge requise.',
     'admin.decision.reason_code.RESTRICTION_ACTIVE':
         'Une restriction de crédit active bloque tout nouvel emprunt.',
     'admin.applications.term_only': '{term} mois',
@@ -4980,7 +4980,7 @@ const fr: Catalog = {
     'business.rating.sizing.term': 'Durée et taux retenus',
     'business.rating.sizing.term_value': '{months} mois · {rate} % forfaitaire',
     'business.rating.sizing.explainer':
-        'Votre capacité est ce que la trésorerie conservée chaque mois peut rembourser avec cette marge de sécurité, plafonnée par la plus basse des trois limites ci-dessus. Personne chez Rozine ne fixe ce montant à la main. La marge disponible est cette capacité moins les levées signées depuis ce calcul ; chaque nouvelle demande est recalculée sur des relevés récents.',
+        'Votre capacité est ce que la trésorerie conservée chaque mois peut rembourser avec cette marge de sécurité, plafonnée par la plus basse des trois limites ci-dessus. Elle peut guider une nouvelle demande plus petite, mais n’approuve ni ne réduit automatiquement une demande dont les échéances n’atteignent pas une couverture de 1,50. Personne chez Rozine ne fixe ce montant à la main. La marge disponible est cette capacité moins les levées signées depuis ce calcul ; chaque nouvelle demande est recalculée sur des relevés récents.',
     'business.rating.limits': 'Trois limites · la plus basse s’applique',
     'business.rating.limit.cash_flow': 'Ce que votre trésorerie supporte',
     'business.rating.limit.cash_flow_detail':
@@ -10067,7 +10067,7 @@ const fr: Catalog = {
     'auditor.academy.lesson.numbers.topic1.option3': '5 500 000 RWF',
     'auditor.academy.lesson.numbers.topic2.title': 'Couverture et offre',
     'auditor.academy.lesson.numbers.topic2.body':
-        'La couverture est le CFADS divisé par l’échéance proposée. L’offre est la plus basse entre la demande, le montant à une couverture de 1,50, 35 % du chiffre d’affaires annuel vérifié et 100 000 000 RWF. Vos contrôles sur place confirment les registres sur lesquels reposent ces chiffres.',
+        'La couverture est le CFADS divisé par chaque échéance mensuelle proposée. Refusez la demande initiale si une échéance réelle a une couverture inférieure à 1,50, avant le dimensionnement ou les autres plafonds. La capacité pour une nouvelle demande plus petite n’est pas une contre-offre automatique. Une offre abordable reste limitée par la demande, la capacité de trésorerie, 35 % du chiffre d’affaires annuel vérifié et 100 000 000 RWF. Vos contrôles sur place confirment les registres sur lesquels reposent ces chiffres.',
     'auditor.academy.lesson.numbers.topic2.q':
         'À quelle couverture Rozine calcule-t-elle une offre ?',
     'auditor.academy.lesson.numbers.topic2.option1': '1,00',

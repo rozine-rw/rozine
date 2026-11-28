@@ -103,3 +103,16 @@ it('projects corresponding calendar months with the median cap and exactly one d
         ->and((string) $projection[0]['cfads'])->toBe('3700000')->and((string) $projection[1]['cfads'])->toBe('-1000000')
         ->and($projection[4]['source_month'])->toBe('2026-01')->and((string) $projection[4]['existing_debt_service'])->toBe('300000');
 });
+
+it('retains verified seasonal highs weak and negative months in the cash-flow mean', function (): void {
+    $months = UnderwritingEvidenceFixture::months(36, '3000000', '1000000');
+    foreach ($months as $index => $month) {
+        $months[$index] = [...$month, 'operating_inflow' => match ($index) {
+            0 => '9000000', 1 => '1000000', 2 => '0', default => $month['operating_inflow'],
+        }];
+    }
+    $result = (new CashFlowEvidence)->analyze($months, '2026-08', '2026-09', 6, '0', []);
+    expect($result['verified_months'])->toBe(36)->and($result['positive_months'])->toBe(34)
+        ->and($result['mean_nocf']->isEqualTo(BigRational::of('73000000/36')))->toBeTrue()
+        ->and($result['cfads']->isEqualTo($result['mean_nocf']))->toBeTrue();
+});

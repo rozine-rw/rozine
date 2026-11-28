@@ -149,7 +149,7 @@ describe('Applications queue', () => {
         expect(within(row).getByText('21d ago')).toBeInTheDocument();
         expect(within(row).getByText('Flag: reject')).toHaveAttribute(
             'title',
-            'Requested exceeds CFADS debt capacity (max RWF 15M at DSCR 1.25)',
+            'Requested exceeds CFADS debt capacity (max RWF 15M at DSCR 1.50)',
         );
         expect(
             within(row).getByRole('link', { name: 'Approve Kigali Motors' }),
