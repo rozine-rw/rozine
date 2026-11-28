@@ -26,8 +26,8 @@ use Carbon\CarbonImmutable;
  * @phpstan-import-type Hold from AccountHolds
  *
  * @phpstan-type Variance array{
- *     id: string, account_id: 'deposits'|'withdrawals', flow: 'investor'|'business', kind: 'conflict'|'reversed'|'mismatch'|'key_conflict',
- *     reference: string, amount: string, opened_at: string, party_id: string|null, business_id: string|null, age_days: int
+ *     id: string, account_id: 'deposits'|'withdrawals', flow: 'investor'|'business'|'clearing', kind: 'conflict'|'reversed'|'mismatch'|'key_conflict'|'balance_variance',
+ *     reference: string, amount: string, opened_at: string, party_id: string|null, business_id: string|null, age_days: int, cutoff_at?: string
  * }
  * @phpstan-type Halt array{
  *     id: string, party_id: string, name: string|null, cause: string, scope: list<string>, effective_at: string, expires_at: string|null, age_days: int

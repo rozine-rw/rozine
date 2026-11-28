@@ -36,6 +36,8 @@ Schedule::command('secondary:expire')->everyMinute()->withoutOverlapping(5);
 
 Schedule::command('disbursements:reconcile')->everyMinute()->withoutOverlapping(5);
 
+Schedule::command('reconciliation:record-day')->hourly()->withoutOverlapping(30);
+
 Schedule::command('staging:record-audit-sources')->everyMinute()->withoutOverlapping(5);
 
 Schedule::command('staging:open-monthly-audit')->everyFiveMinutes()->withoutOverlapping(10)

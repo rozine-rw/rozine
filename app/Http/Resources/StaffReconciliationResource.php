@@ -48,8 +48,9 @@ class StaffReconciliationResource extends JsonResource
             'allowed_actions' => [], 'viewer' => (new StaffViewerResource($resource['roles']))->resolve($request),
             'nav' => (new StaffNavigationResource($resource['permissions']))->resolve($request),
             'badges' => ['applications' => null, 'disbursements' => null], 'search' => '',
-            'day_close' => $page['closed'] ? ['business_date' => $page['business_date'], 'state' => 'reconciled', 'reconciled_at' => $asOf]
-                : ['business_date' => $page['business_date'], 'state' => 'open_break'],
+            'day_close' => ! $page['complete'] ? ['business_date' => $page['business_date'], 'state' => 'not_reconciled']
+                : ($page['closed'] ? ['business_date' => $page['business_date'], 'state' => 'reconciled', 'reconciled_at' => $asOf]
+                    : ['business_date' => $page['business_date'], 'state' => 'open_break']),
             'accounts' => array_map(fn (array $account): array => ['id' => $account['id'], 'label' => self::ACCOUNTS[$account['id']], 'as_of' => $asOf,
                 'ledger' => $money($account['ledger']), 'statement' => $money($account['statement']),
                 'difference' => $money((string) BigInteger::of($account['ledger'])->minus($account['statement'])), 'feed' => ['state' => 'available']], $page['accounts']),
@@ -66,10 +67,16 @@ class StaffReconciliationResource extends JsonResource
     /**
      * What the provider reported for a break, in the words the console shows.
      *
-     * @param  array{account_id: 'deposits'|'withdrawals', flow: 'investor'|'business', kind: 'conflict'|'reversed'|'mismatch'|'key_conflict'}  $break
+     * @param  array{account_id: 'deposits'|'withdrawals', flow: 'investor'|'business'|'clearing', kind: 'conflict'|'reversed'|'mismatch'|'key_conflict'|'balance_variance'}  $break
      */
     public static function describe(array $break): string
     {
-        return strtr(self::KINDS[$break['kind']], [':flow' => self::FLOWS[$break['flow']][$break['account_id']]]);
+        if ($break['kind'] === 'balance_variance') {
+            return 'Clearing-account ledger and provider statement differ at the recorded business-day cutoff';
+        }
+
+        $flow = self::FLOWS[$break['flow']] ?? throw new \LogicException('RECONCILIATION_FLOW_INVALID');
+
+        return strtr(self::KINDS[$break['kind']], [':flow' => $flow[$break['account_id']]]);
     }
 }
